@@ -7,6 +7,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Discord.Addons.Interactive;
+using Jibril.Services;
 
 namespace Jibril
 {
@@ -26,7 +27,7 @@ namespace Jibril
             _config = BuildConfig();
 
             var services = ConfigureServices();
-            services.GetRequiredService<LoggingService>();
+            services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
@@ -40,6 +41,12 @@ namespace Jibril
         {
             return new ServiceCollection()
                 .AddSingleton(_client)
+                .AddSingleton<CommandService>()
+                .AddSingleton<CommandHandlingService>()
+                .AddLogging()
+                .AddSingleton<LogService>()
+                .AddSingleton(_config)
+                .AddSingleton<InteractiveService>()
                 .BuildServiceProvider();
         }
 
