@@ -1,4 +1,12 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Discord.Addons.Interactive;
 
 namespace Jibril
 {
@@ -11,7 +19,36 @@ namespace Jibril
 
         public async Task MainASync()
         {
+            _client = new DiscordSocketClient(new DiscordSocketConfig
+            {
+                MessageCacheSize = 100
+            });
+            _config = BuildConfig();
 
+            var services = ConfigureServices();
+            services.GetRequiredService<LoggingService>();
+            await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+
+            await _client.LoginAsync(TokenType.Bot, _config["token"]);
+            await _client.StartAsync();
+
+            await Task.Delay(-1);
+            
+        }
+
+        private IServiceProvider ConfigureServices()
+        {
+            return new ServiceCollection()
+                .AddSingleton(_client)
+                .BuildServiceProvider();
+        }
+
+        private IConfiguration BuildConfig()
+        {
+            return new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("config.json")
+                .Build();
         }
     }
 }
