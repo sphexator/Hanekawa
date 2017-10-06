@@ -26,7 +26,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\" />
+    <Folder Include="Modules\Administration\Services\" />
+    <Folder Include="Modules\Fleet\" />
+    <Folder Include="Modules\Gambling\" />
+    <Folder Include="Modules\Level\" />
+    <Folder Include="Modules\Game\" />
+    <Folder Include="Modules\Suggestion\" />
+    <Folder Include="Modules\Profile\" />
   </ItemGroup>
 
 </Project>
