@@ -5,7 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace Jibril.Services
+namespace Jibril.Services.Logging
 {
     public class LogService
     {

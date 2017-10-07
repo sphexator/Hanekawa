@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Discord.Addons.Interactive;
 using Jibril.Services;
+using Jibril.Services.Logging;
 
 namespace Jibril
 {

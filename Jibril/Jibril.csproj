@@ -28,12 +28,14 @@
 
   <ItemGroup>
     <Folder Include="Modules\Administration\Services\" />
-    <Folder Include="Modules\Fleet\" />
-    <Folder Include="Modules\Gambling\" />
-    <Folder Include="Modules\Level\" />
-    <Folder Include="Modules\Game\" />
-    <Folder Include="Modules\Suggestion\" />
-    <Folder Include="Modules\Profile\" />
+    <Folder Include="Modules\Fleet\Services\" />
+    <Folder Include="Modules\Gambling\Services\" />
+    <Folder Include="Modules\Game\Services\" />
+    <Folder Include="Modules\Profile\Services\" />
+    <Folder Include="Data\" />
+    <Folder Include="Modules\Suggestion\Services\" />
+    <Folder Include="Services\Welcome\" />
+    <Folder Include="Services\Reaction\" />
   </ItemGroup>
 
 </Project>
