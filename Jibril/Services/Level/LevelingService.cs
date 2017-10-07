@@ -1,5 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Services.Level.Services;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -23,7 +25,28 @@ namespace Jibril.Services.Level
 
         public async Task GiveExp(SocketMessage msg)
         {
+            await Task.Run(() =>
+            {
+                var user = msg.Author as SocketGuildUser;
+                var guild = user.Guild.Id;
 
+                //Check if user is in Db or not
+
+                //Getting list of userdata
+                //var userData = 
+                var xp = Calculate.ReturnXP(msg);
+                var credit = Calculate.ReturnCredit();
+                var levelupReq = Calculate.CalculateNextLevel(1);
+
+                if (xp >= levelupReq)
+                {
+
+                }
+                else
+                {
+
+                }
+            });
         }
 
     }

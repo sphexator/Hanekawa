@@ -7,7 +7,7 @@ namespace Jibril.Services.Level.Services
 {
     public class Calculate
     {
-        public static int returnXP(SocketMessage msg)
+        public static int ReturnXP(SocketMessage msg)
         {
             Random rand = new Random();
             var defxp = rand.Next(10, 20);

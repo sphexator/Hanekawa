@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Discord.Addons.Interactive;
 using Jibril.Services;
 using Jibril.Services.Logging;
+using Jibril.Services.Level;
 
 namespace Jibril
 {
@@ -44,6 +45,7 @@ namespace Jibril
                 .AddSingleton(_client)
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
+                .AddSingleton<LevelingService>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
