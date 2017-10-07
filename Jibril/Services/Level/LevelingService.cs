@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Jibril.Services.Level
 {
@@ -30,21 +31,25 @@ namespace Jibril.Services.Level
                 var user = msg.Author as SocketGuildUser;
                 var guild = user.Guild.Id;
 
-                //Check if user is in Db or not
+                var CheckUser = DatabaseService.CheckUser(user);
+                if (CheckUser == null)
+                {
+                    DatabaseService.EnterUser(user);
+                }
 
-                //Getting list of userdata
-                //var userData = 
-                var xp = Calculate.ReturnXP(msg);
+                var userData = DatabaseService.UserData(user).FirstOrDefault();
+                var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
                 var levelupReq = Calculate.CalculateNextLevel(1);
-
-                if (xp >= levelupReq)
+                var cooldownCheck = Cooldown.ExperienceCooldown(userData.Cooldown);
+                if (cooldownCheck == true && user.IsBot != true)
                 {
-
-                }
-                else
-                {
-
+                    DbService.AddExperience(user, exp, credit);
+                    if ((userData.Xp + exp) >= levelupReq)
+                    {
+                        var remainingExp = userData.Xp - exp;
+                        DbService.Levelup(user, remainingExp);
+                    }
                 }
             });
         }

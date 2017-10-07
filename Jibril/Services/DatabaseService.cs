@@ -13,9 +13,41 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
+        public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
+        public static List<String> CheckUser(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+
+                var result = new List<String>();
+                var sql = $"SELECT * FROM exp WHERE user_id = '{user.Id}'";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                SQLiteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    var userId = (string)reader["user_id"];
+                    result.Add(userId);
+                }
+                connection.Close();
+                return result;
+            }
+        }
+
+        public static void EnterUser(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                var sql = $"INSERT INTO exp (user_id, username, tokens, level, xp ) VALUES ('{user.Id}', 'username', '0', '1', '1')";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                connection.Close();
+                return;
+            }
+        }
+        
         public static List<UserData> UserData(IUser user)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(@"Data Source = data\database.db;Version=3;Foreign Keys=ON;"))
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
             {
                 connection.Open();
                 var result = new List<UserData>();
