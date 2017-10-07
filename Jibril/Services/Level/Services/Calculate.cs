@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -35,11 +36,25 @@ namespace Jibril.Services.Level.Services
             return credit;
         }
 
-        public static int ReturnVoiceXP()
+        //Voice Experience credit calculations = VECC
+        public static void VECC(IUser user, DateTime vcTimer)
         {
-            Random rand = new Random();
-            int xp = rand.Next();
-            return xp;
+            DateTime now = DateTime.Now;
+
+            TimeSpan diff = now - vcTimer;
+            Int32 hours = Int32.Parse(diff.Hours.ToString());
+            Int32 minutes = Int32.Parse(diff.Minutes.ToString());
+            Int32 totalTime = (hours * 60) + minutes;
+
+            int CalculateXP = totalTime * 2;
+            int CalculateCredit = totalTime;
+
+            if (CalculateXP > 0)
+            {
+                LevelDatabase.AddExperience(user, CalculateXP, CalculateCredit);
+                return;
+            }
+            else return;
         }
     }
 }

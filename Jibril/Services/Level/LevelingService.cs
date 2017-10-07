@@ -22,6 +22,7 @@ namespace Jibril.Services.Level
             _provider = provider;
 
             _discord.MessageReceived += GiveExp;
+            _discord.UserVoiceStateUpdated += VoiceExp;
         }
 
         public async Task GiveExp(SocketMessage msg)
@@ -44,13 +45,42 @@ namespace Jibril.Services.Level
                 var cooldownCheck = Cooldown.ExperienceCooldown(userData.Cooldown);
                 if (cooldownCheck == true && user.IsBot != true)
                 {
-                    DbService.AddExperience(user, exp, credit);
+                    LevelDatabase.ChangeCooldown(user);
+                    LevelDatabase.AddExperience(user, exp, credit);
                     if ((userData.Xp + exp) >= levelupReq)
                     {
                         var remainingExp = userData.Xp - exp;
-                        DbService.Levelup(user, remainingExp);
+                        LevelDatabase.Levelup(user, remainingExp);
                         await LevelRoles.AssignNewRole(user, userData.Level);
                     }
+                }
+            });
+        }
+
+        public async Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
+        {
+            await Task.Run(() =>
+            {
+                var gusr = usr as IGuildUser;
+                var oldVc = oldState.VoiceChannel;
+                var newVc = newState.VoiceChannel;
+                try
+                {
+                    var CheckUser = DatabaseService.CheckUser(gusr);
+                    if (CheckUser == null) DatabaseService.EnterUser(gusr);
+                    if (newVc != null && oldVc == null)
+                    {
+                        LevelDatabase.StartVoiceCounter(gusr);
+                    }
+                    if (oldVc != null && newVc == null)
+                    {
+                        var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
+                        Calculate.VECC(gusr, userInfo.Voice_timer);
+                    }
+                }
+                catch
+                {
+
                 }
             });
         }

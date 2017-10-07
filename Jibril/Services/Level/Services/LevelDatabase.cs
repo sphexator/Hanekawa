@@ -7,7 +7,7 @@ using Jibril.Services.Level.Lists;
 
 namespace Jibril.Services.Level.Services
 {
-    public class DbService
+    public class LevelDatabase
     {
         public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
         public static void AddExperience(IUser user, int exp, int credit)
@@ -28,6 +28,30 @@ namespace Jibril.Services.Level.Services
             {
                 connection.Open();
                 var sql = $"UPDATE exp SET level = level + 1, xp = '{exp}' WHERE user_id = '{user.Id}'";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                connection.Close();
+                return;
+            }
+        }
+
+        public static void ChangeCooldown(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var sql = $"UPDATE exp SET cooldown = curtime() WHERE user_id = '{user.Id}'";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                connection.Close();
+                return;
+            }
+        }
+
+        public static void StartVoiceCounter(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var sql = $"UPDATE exp SET voice_timer = curtime() WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                 connection.Close();
                 return;
