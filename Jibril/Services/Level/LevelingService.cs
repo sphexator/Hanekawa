@@ -26,7 +26,7 @@ namespace Jibril.Services.Level
 
         public async Task GiveExp(SocketMessage msg)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 var user = msg.Author as SocketGuildUser;
                 var guild = user.Guild.Id;
@@ -49,6 +49,7 @@ namespace Jibril.Services.Level
                     {
                         var remainingExp = userData.Xp - exp;
                         DbService.Levelup(user, remainingExp);
+                        await LevelRoles.AssignNewRole(user, userData.Level);
                     }
                 }
             });

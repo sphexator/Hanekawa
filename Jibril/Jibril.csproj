@@ -32,9 +32,7 @@
     <Folder Include="Modules\Administration\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Gambling\Services\" />
-    <Folder Include="Modules\Game\Services\" />
     <Folder Include="Modules\Profile\Services\" />
-    <Folder Include="Data\" />
     <Folder Include="Modules\Suggestion\Services\" />
     <Folder Include="Services\Welcome\" />
     <Folder Include="Services\Reaction\" />
