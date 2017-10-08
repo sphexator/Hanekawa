@@ -33,10 +33,7 @@ namespace Jibril.Services.Level
                 var guild = user.Guild.Id;
 
                 var CheckUser = DatabaseService.CheckUser(user);
-                if (CheckUser == null)
-                {
-                    DatabaseService.EnterUser(user);
-                }
+                if (CheckUser == null) DatabaseService.EnterUser(user);
 
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var exp = Calculate.ReturnXP(msg);

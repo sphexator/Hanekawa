@@ -22,6 +22,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0001" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.105.2" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
     <PackageReference Include="System.Data.SQLite.EF6" Version="1.0.105.2" />
@@ -29,13 +31,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Images\Profile\Cache\Preview\" />
+    <Folder Include="Data\Images\Welcome\Cache\Banner\" />
+    <Folder Include="Data\Images\Welcome\Cache\Avatar\" />
     <Folder Include="Modules\Administration\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Gambling\Services\" />
     <Folder Include="Modules\Profile\Services\" />
     <Folder Include="Modules\Suggestion\Services\" />
-    <Folder Include="Services\Welcome\" />
     <Folder Include="Services\Reaction\" />
+    <Folder Include="Services\Welcome\Lists\" />
   </ItemGroup>
 
 </Project>
