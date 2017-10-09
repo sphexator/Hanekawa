@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Services.Common;
+using Jibril.Data.Variables;
 
 namespace Jibril.Services.Logging
 {
@@ -37,33 +39,51 @@ namespace Jibril.Services.Logging
 
         private async Task UserJoined(SocketGuildUser user)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
            {
-
+               var content = $"" +
+               $"📥 {user.Mention} has joined. (**{user.Id}**)\n" +
+               $"Account created: {user.CreatedAt}";
+               var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
+               var channel = user.Guild.GetTextChannel(339380907146477579);
+               await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
            });
         }
 
         private async Task UserLeft(SocketGuildUser user)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-
+                var content = $"" +
+                $"📤 {user.Mention} has left.\n" +
+                $"Username: {user.Username}#{user.Discriminator}";
+                var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                var channel = user.Guild.GetTextChannel(339380907146477579);
+                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
         }
 
         private async Task Banned(SocketUser user, SocketGuild guild)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-
+                var content = $"" +
+                $"❌ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
+                var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                var log = guild.GetTextChannel(339381104534355970);
+                await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
         }
 
         private async Task Unbanned(SocketUser user, SocketGuild guild)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-
+                var content = $"" +
+                $"❕ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
+                var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
+                var log = guild.GetTextChannel(339381104534355970);
+                await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
         }
 

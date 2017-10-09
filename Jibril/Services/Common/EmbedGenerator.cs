@@ -18,7 +18,7 @@ namespace Jibril.Services.Common
             return embed;
         }
 
-        public static EmbedBuilder FooterEmbed(string content, string footerContent, uint color, IUser user)
+        public static EmbedBuilder FooterEmbed(string content, uint color, IUser user)
         {
             EmbedBuilder embed = new EmbedBuilder
             {
@@ -27,7 +27,7 @@ namespace Jibril.Services.Common
             };
 
             EmbedFooterBuilder footer = new EmbedFooterBuilder();
-            footer.WithText(footerContent);
+            footer.WithText($"{DateTime.Now}");
             footer.WithIconUrl(user.GetAvatarUrl());
 
             embed.WithFooter(footer);
