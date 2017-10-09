@@ -26,6 +26,61 @@ namespace Jibril.Services.Logging
 
             _discord.Log += LogDiscord;
             _commands.Log += LogCommand;
+
+            _discord.UserBanned += Banned;
+            _discord.UserUnbanned += Unbanned;
+            _discord.UserJoined += UserJoined;
+            _discord.UserLeft += UserLeft;
+            _discord.MessageDeleted += MessageDeleted;
+            _discord.MessageUpdated += MessageUpdated;
+        }
+
+        private async Task UserJoined(SocketGuildUser user)
+        {
+            await Task.Run(() =>
+           {
+
+           });
+        }
+
+        private async Task UserLeft(SocketGuildUser user)
+        {
+            await Task.Run(() =>
+            {
+
+            });
+        }
+
+        private async Task Banned(SocketUser user, SocketGuild guild)
+        {
+            await Task.Run(() =>
+            {
+
+            });
+        }
+
+        private async Task Unbanned(SocketUser user, SocketGuild guild)
+        {
+            await Task.Run(() =>
+            {
+
+            });
+        }
+
+        private async Task MessageDeleted(Cacheable<IMessage, ulong> msg, ISocketMessageChannel channel)
+        {
+            await Task.Run(() =>
+            {
+
+            });
+        }
+
+        private async Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg, ISocketMessageChannel channel)
+        {
+            await Task.Run(() =>
+            {
+
+            });
         }
 
         private ILoggerFactory ConfigureLogging(ILoggerFactory factory)

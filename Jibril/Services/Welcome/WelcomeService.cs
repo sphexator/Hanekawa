@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Services.Common;
+using Jibril.Services.Welcome.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,11 +22,14 @@ namespace Jibril.Services.Welcome
             _discord.UserJoined += Welcomer;
         }
 
-        public async Task Welcomer(SocketGuildUser user)
+        private async Task Welcomer(SocketGuildUser user)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-
+                var image = WelcImgGen.WelcomeImageGeneratorAsync(user).ToString();
+                var guild = _discord.GetGuild(user.Guild.Id);
+                var channel = guild.GetTextChannel(339371997802790913);
+                await channel.SendFileAsync(image, "");
             });
         }
     }

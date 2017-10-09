@@ -16,14 +16,15 @@ namespace Jibril.Services.Welcome.Services
 {
     public class WelcImgGen
     {
-        public static async Task WelcomeImageGeneratorAsync(SocketGuildUser user)
+        public static async Task<string> WelcomeImageGeneratorAsync(SocketGuildUser user)
         {
             var randomString = RandomStringGenerator.StringGenerator();
             var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);
+            var filePath = $"Data/Welcome/Cache/Banner/{randomString}.png";
             Random rand = new Random();
             var randomImage = rand.Next(Images.Welcome.Length);
             var filetoLoad = Images.Welcome[randomImage];
-
+            
             using (var img = Image.Load(filetoLoad))
             {
                 PathBuilder pathBuilder = new PathBuilder();
@@ -44,8 +45,9 @@ namespace Jibril.Services.Welcome.Services
                         WrapTextWidth = path.Length
                     }));
                 img.Mutate(ctx => ctx.DrawImage(avatar, new Size(80, 80), new Point(10, 10), GraphicsOptions.Default));
-                img.Save($"Data/Welcome/Cache/Banner/{randomString}.png");
+                img.Save(filePath);
             }
+            return filePath;
         }
     }
 }

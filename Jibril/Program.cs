@@ -10,6 +10,7 @@ using Discord.Addons.Interactive;
 using Jibril.Services;
 using Jibril.Services.Logging;
 using Jibril.Services.Level;
+using Jibril.Services.Welcome;
 
 namespace Jibril
 {
@@ -46,6 +47,7 @@ namespace Jibril
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<LevelingService>()
+                .AddSingleton<WelcomeService>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
