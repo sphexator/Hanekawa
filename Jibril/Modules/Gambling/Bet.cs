@@ -2,6 +2,7 @@
 using Discord.Addons.Preconditions;
 using Discord.Commands;
 using Jibril.Data.Variables;
+using Jibril.Modules.Gambling.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
@@ -52,19 +53,14 @@ namespace Jibril.Modules.Gambling
                 if (userRoll == rolled)
                 {
                     uint award = bet * 5;
-                    //TO DO
-                    //ADD CURRENCY ADD/REMOVE
-                    var embed = EmbedGenerator.($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n", Colours.OKColour);
-                    embed.WithColor(new Color(0x4d006d));
-                    embed.Description = $"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n" +
-                        $"You rolled: {userRoll} - Bot rolled: {rolled}";
+                    GambleDB.AddCredit(user, award);
+                    var embed = EmbedGenerator.DefaultEmbed($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n", Colours.OKColour);
                     await Context.Channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
                 }
                 else
                 {
                     int betlost = Convert.ToInt32(bet);
-                    //TO DO
-                    //ADD CURRENCY ADD/REMOVE
+                    GambleDB.RemoveCredit(user, betlost);
                     var embed = EmbedGenerator.DefaultEmbed($"Sorry **{user.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
                         $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.FailColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -100,24 +96,21 @@ namespace Jibril.Modules.Gambling
                 if (rolled >= 90)
                 {
                     uint award = bet * 2;
-                    //TO DO
-                    //ADD CURRENCY ADD/REMOVE
+                    GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}", Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else if (rolled >= 50)
                 {
                     uint award = bet;
-                    //TO DO
-                    //ADD CURRENCY ADD/REMOVE
+                    GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}", Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
                 {
                     int betlost = Convert.ToInt32(bet);
-                    //TO DO
-                    //ADD CURRENCY ADD/REMOVE
+                    GambleDB.RemoveCredit(user, betlost);
                     var embed = EmbedGenerator.DefaultEmbed($"Sorry **{user.Mention}**, You have lost ${bet} Off a roll of **{rolled}**", Colours.FailColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
