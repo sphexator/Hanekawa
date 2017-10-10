@@ -35,6 +35,7 @@
     <Folder Include="Data\Images\Welcome\Cache\Banner\" />
     <Folder Include="Data\Images\Welcome\Cache\Avatar\" />
     <Folder Include="Modules\Administration\Services\" />
+    <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Profile\Services\" />
     <Folder Include="Modules\Suggestion\Services\" />

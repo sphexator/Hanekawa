@@ -36,12 +36,13 @@ namespace Jibril.Modules.Gambling
                 $"Event Tokens: {userData.Event_tokens}", user.Mention, Colours.DefaultColour, user);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
-
+        /* 
         [Command("Richest")]
         [RequiredChannel(339383206669320192)]
         public async Task Richest()
         {
 
         }
+        */
     }
 }
