@@ -1,9 +1,8 @@
 ﻿using Discord;
-using Jibril.Data.Variables;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Text;
+using Jibril.Data.Variables;
 
 namespace Jibril.Modules.Game.Services
 {
@@ -66,7 +65,7 @@ namespace Jibril.Modules.Game.Services
             }
         }
 
-        public static void AddNPCDefault(IUser user, int enemyid, int health, int enemyhealth)
+        public static void AddNPCDefault(IUser user, int health)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
             {
@@ -75,6 +74,43 @@ namespace Jibril.Modules.Game.Services
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                 connection.Close();
                 return;
+            }
+        }
+
+        public static List<GameStatus>GetUserGameStatus(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var result = new List<GameStatus>();
+                var sql = $"SELECT * FROM shipgame WHERE user_id = '{user.Id}'";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                SQLiteDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    var UserID = (string)reader["user_id"];
+                    var health = (int)reader["health"];
+                    var damagetaken = (int)reader["damagetaken"];
+                    var combatstatus = (int)reader["combatstatus"];
+                    var enemyid = (int)reader["enemyid"];
+                    var enemyDamageTaken = (int)reader["enemyDamageTaken"];
+                    var enemyhealth = (int)reader["enemyhealth"];
+                    var killAmount = (int)reader["killAmount"];
+
+                    result.Add(new GameStatus
+                    {
+                        UserID = UserID,
+                        Health = health,
+                        Damagetaken = damagetaken,
+                        Combatstatus = combatstatus,
+                        Enemyid = enemyid,
+                        EnemyDamageTaken = enemyDamageTaken,
+                        Enemyhealth = enemyhealth,
+                        KillAmount = killAmount
+                    });
+                }
+                connection.Close();
+                return result;
             }
         }
 
