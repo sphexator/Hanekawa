@@ -22,15 +22,16 @@ namespace Jibril.Services.Welcome
             _discord.UserJoined += Welcomer;
         }
 
-        private async Task Welcomer(SocketGuildUser user)
+        private Task Welcomer(SocketGuildUser user)
         {
-            await Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var image = WelcImgGen.WelcomeImageGeneratorAsync(user).ToString();
                 var guild = _discord.GetGuild(user.Guild.Id);
                 var channel = guild.GetTextChannel(339371997802790913);
                 await channel.SendFileAsync(image, "");
             });
+            return Task.CompletedTask;
         }
     }
 }

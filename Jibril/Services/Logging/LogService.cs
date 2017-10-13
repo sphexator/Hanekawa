@@ -37,9 +37,9 @@ namespace Jibril.Services.Logging
             _discord.MessageUpdated += MessageUpdated;
         }
 
-        private async Task UserJoined(SocketGuildUser user)
+        private Task UserJoined(SocketGuildUser user)
         {
-            await Task.Run(async () =>
+            var _ =  Task.Run(async () =>
            {
                var content = $"" +
                $"📥 {user.Mention} has joined. (**{user.Id}**)\n" +
@@ -48,11 +48,12 @@ namespace Jibril.Services.Logging
                var channel = user.Guild.GetTextChannel(339380907146477579);
                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
            });
+            return Task.CompletedTask;
         }
 
-        private async Task UserLeft(SocketGuildUser user)
+        private  Task UserLeft(SocketGuildUser user)
         {
-            await Task.Run(async () =>
+            var _ =  Task.Run(async () =>
             {
                 var content = $"" +
                 $"📤 {user.Mention} has left.\n" +
@@ -61,11 +62,12 @@ namespace Jibril.Services.Logging
                 var channel = user.Guild.GetTextChannel(339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
+            return Task.CompletedTask;
         }
 
-        private async Task Banned(SocketUser user, SocketGuild guild)
+        private Task Banned(SocketUser user, SocketGuild guild)
         {
-            await Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var content = $"" +
                 $"❌ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
@@ -73,11 +75,12 @@ namespace Jibril.Services.Logging
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
+            return Task.CompletedTask;
         }
 
-        private async Task Unbanned(SocketUser user, SocketGuild guild)
+        private Task Unbanned(SocketUser user, SocketGuild guild)
         {
-            await Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var content = $"" +
                 $"❕ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
@@ -85,22 +88,25 @@ namespace Jibril.Services.Logging
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
+            return Task.CompletedTask;
         }
 
-        private async Task MessageDeleted(Cacheable<IMessage, ulong> msg, ISocketMessageChannel channel)
+        private Task MessageDeleted(Cacheable<IMessage, ulong> msg, ISocketMessageChannel channel)
         {
-            await Task.Run(() =>
+            var _ =  Task.Run(() =>
             {
 
             });
+            return Task.CompletedTask;
         }
 
-        private async Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg, ISocketMessageChannel channel)
+        private Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg, ISocketMessageChannel channel)
         {
-            await Task.Run(() =>
+            var _ =  Task.Run(() =>
             {
 
             });
+            return Task.CompletedTask;
         }
 
         private ILoggerFactory ConfigureLogging(ILoggerFactory factory)

@@ -25,9 +25,9 @@ namespace Jibril.Services.Level
             _discord.UserVoiceStateUpdated += VoiceExp;
         }
 
-        public async Task GiveExp(SocketMessage msg)
+        public Task GiveExp(SocketMessage msg)
         {
-            await Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var user = msg.Author as SocketGuildUser;
                 var guild = user.Guild.Id;
@@ -52,11 +52,12 @@ namespace Jibril.Services.Level
                     }
                 }
             });
+            return Task.CompletedTask;
         }
 
-        public async Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
+        public Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
         {
-            await Task.Run(() =>
+            var _ = Task.Run(() =>
             {
                 var gusr = usr as IGuildUser;
                 var oldVc = oldState.VoiceChannel;
@@ -80,6 +81,7 @@ namespace Jibril.Services.Level
 
                 }
             });
+            return Task.CompletedTask;
         }
 
     }

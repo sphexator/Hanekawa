@@ -10,6 +10,7 @@ using System.Linq;
 using Jibril.Modules.Game.Services;
 using Jibril.Services;
 using Jibril.Data.Variables;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Game
 {
@@ -61,10 +62,12 @@ namespace Jibril.Modules.Game
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var enemyData = GameDatabase.Enemy(gameData.Enemyid).FirstOrDefault();
 
+
             }
             else
             {
-
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} is currently not in a fight.", Colours.DefaultColour);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
     }

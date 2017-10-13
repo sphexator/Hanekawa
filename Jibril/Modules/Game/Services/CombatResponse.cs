@@ -44,10 +44,10 @@ namespace Jibril.Modules.Game.Services
             return embed;
         }
 
-        public static EmbedBuilder CombatStart(IUser user,int enemy, int enemyHealth, UserData userData, EnemyId enemyName)
+        public static EmbedBuilder CombatStart(IUser user,uint Colour, int enemy, int enemyHealth, UserData userData, EnemyId enemyName)
         {
             EmbedBuilder embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x4d006d));
+            embed.WithColor(new Color(Colour));
             //embed.WithTitle(enemyName.FirstOrDefault().enemyName);
             embed.WithImageUrl($"http://i.imgur.com/{enemyName.ImagePath}.png");
 

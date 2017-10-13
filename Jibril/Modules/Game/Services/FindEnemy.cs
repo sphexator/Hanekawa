@@ -27,7 +27,7 @@ namespace Jibril.Modules.Game.Services
                 if (result.Count <= 0) GameDatabase.AddNPCStart(user, enemy, userHealth, enemyHealth);
                 else GameDatabase.UpdateNPCStart(user, enemy, userHealth, enemyHealth);
 
-                var embed = CombatResponse.CombatStart(user, enemy, enemyHealth, userData, enemyData);
+                var embed = CombatResponse.CombatStart(user, Colours.DefaultColour, enemy, enemyHealth, userData, enemyData);
                 return embed;
             }
             else if(chance >= 95 && userData.Level >= 40)
@@ -41,7 +41,7 @@ namespace Jibril.Modules.Game.Services
                 if (result.Count <= 0) GameDatabase.AddNPCStart(user, enemy, userHealth, enemyHealth);
                 else GameDatabase.UpdateNPCStart(user, enemy, userHealth, enemyHealth);
 
-                var embed = CombatResponse.CombatStart(user, enemy, enemyHealth, userData, enemyData);
+                var embed = CombatResponse.CombatStart(user, Colours.DefaultColour, enemy, enemyHealth, userData, enemyData);
                 return embed;
             }
             else
