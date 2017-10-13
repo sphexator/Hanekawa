@@ -19,8 +19,9 @@ namespace Jibril.Modules.Administration
         {
             if (x <= 2000)
             {
+                var channel = Context.Channel as ITextChannel;
                 var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).Flatten();
-                await Context.Channel.DeleteMessagesAsync(messagesToDelete);
+                await channel.DeleteMessagesAsync(messagesToDelete);
                 var embed = new EmbedBuilder();
                 var guild = Context.Guild as SocketGuild;
                 embed.WithColor(new Color(0x4d006d));
@@ -62,6 +63,7 @@ namespace Jibril.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task Mute(SocketGuildUser user)
         {
+            var channel = Context.Channel as ITextChannel;
             var alterAuthor = Context.User as IGuildUser;
             var alterUser = user as IGuildUser;
             var adminRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Admiral");
@@ -97,7 +99,7 @@ namespace Jibril.Modules.Administration
                         }
                         bulkDeletable.Add(Context.Message as IMessage);
 
-                        await Task.WhenAll(Task.Delay(1000), Context.Channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
+                        await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
                     }
                     catch
                     {
