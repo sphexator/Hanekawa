@@ -78,5 +78,32 @@ namespace Jibril.Modules.Game.Services
 
             return embed;
         }
+
+        public static EmbedBuilder CombatResponseMessage(EnemyId enemyData, uint Colour, string Content, string Usr, string Enemy)
+        {
+            EmbedBuilder embed = new EmbedBuilder();
+            EmbedAuthorBuilder authorBuilder = new EmbedAuthorBuilder();
+            EmbedFieldBuilder userHealth = new EmbedFieldBuilder();
+            EmbedFieldBuilder enemyHealth = new EmbedFieldBuilder();
+
+            authorBuilder.WithName($"{enemyData.EnemyName}");
+            authorBuilder.WithIconUrl($"http://i.imgur.com/{enemyData.ImagePath}.png");
+
+            userHealth.WithName("Your Health");
+            userHealth.WithValue(Usr);
+            userHealth.WithIsInline(true);
+
+            enemyHealth.WithName("Enemy Health");
+            enemyHealth.WithValue(Enemy);
+            enemyHealth.WithIsInline(true);
+
+            embed.WithColor(new Color(Colour));
+            embed.WithAuthor(authorBuilder);
+            embed.AddField(userHealth);
+            embed.AddField(enemyHealth);
+            embed.WithDescription(Content);
+
+            return embed;
+        }
     }
 }
