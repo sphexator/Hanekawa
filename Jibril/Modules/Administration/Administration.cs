@@ -26,7 +26,7 @@ namespace Jibril.Modules.Administration
                 embed.WithColor(new Color(0x4d006d));
                 embed.Title = string.Format(" ");
                 embed.Description = string.Format("{0} messages deleted!", x);
-                await ReplyAndDeleteAsync("", false, embed).ConfigureAwait(false);
+                await ReplyAndDeleteAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else
             {
@@ -34,7 +34,7 @@ namespace Jibril.Modules.Administration
                 embed.WithColor(new Color(0x4d006d));
                 embed.Title = string.Format(" ");
                 embed.Description = string.Format("you cannot delete more than 1000 messages");
-                await ReplyAndDeleteAsync("", false, embed).ConfigureAwait(false);
+                await ReplyAndDeleteAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
 
