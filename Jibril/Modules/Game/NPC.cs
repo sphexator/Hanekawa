@@ -61,6 +61,8 @@ namespace Jibril.Modules.Game
             {
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var enemyData = GameDatabase.Enemy(gameData.Enemyid).FirstOrDefault();
+                var embed = Combat.CombatDamage(user, gameData, userData, enemyData);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else
             {

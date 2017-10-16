@@ -15,6 +15,7 @@ namespace Jibril.Modules.ApplicationForm
     {
         [Command("apply", RunMode = RunMode.Async)]
         [Ratelimit(1, 60, Measure.Minutes, false, true)]
+        [RequireContext(ContextType.DM)]
         [Priority(0)]
         public async Task ApplicationProcess()
         {

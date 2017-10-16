@@ -10,7 +10,7 @@ namespace Jibril.Modules.Game.Services
 {
     public class Combat
     {
-        public static void CombatDamage(IUser user, GameStatus gameData, UserData userData, EnemyId enemyData)
+        public static EmbedBuilder CombatDamage(IUser user, GameStatus gameData, UserData userData, EnemyId enemyData)
         {
             var userDamage = BaseStats.CriticalStrike(userData.ShipClass, userData.Level);
             var enemyDamage = EnemyStat.Avoidance(userData.ShipClass, userData.Level);
@@ -34,6 +34,7 @@ namespace Jibril.Modules.Game.Services
                     var embed = CombatResponse.CombatResponseMessage(enemyData, Colours.FailColour, content, userTotalHp, enemyTotalHp);
                     // You died
                     GameDatabase.GameOverNPC(user);
+                    return embed;
                 }
                 else
                 {
@@ -46,6 +47,7 @@ namespace Jibril.Modules.Game.Services
                         $"**{enemyData.EnemyName}** counter attacked for **{enemyDamage}** damage";
                     var embed = CombatResponse.CombatResponseMessage(enemyData, Colours.DefaultColour, content, userTotalHp, enemyTotalHp);
                     // Apply damage
+                    return embed;
                 }
             }
             else
@@ -61,6 +63,7 @@ namespace Jibril.Modules.Game.Services
                 // Killed enemy
                 GameDatabase.FightOver(enemyData.ExpGain, enemyData.CurrenyGain, user);
                 GameDatabase.FinishedNPCFight(user);
+                return embed;
             }
         }
     }
