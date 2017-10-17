@@ -57,7 +57,7 @@ namespace Jibril.Modules.Game
         {
             var user = Context.User;
             var gameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
-            if(gameData.Combatstatus == 1)
+            if (gameData.Combatstatus == 1)
             {
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var enemyData = GameDatabase.Enemy(gameData.Enemyid).FirstOrDefault();
@@ -69,6 +69,37 @@ namespace Jibril.Modules.Game
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} is currently not in a fight.", Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
+        }
+
+        [Command("health")]
+        [Alias("hp")]
+        [RequiredChannel(346429281314013184)]
+        public async Task SelfHealth()
+        {
+            var user = Context.User;
+            var gamedata = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
+            var health = gamedata.Health - gamedata.Damagetaken;
+            var embed = EmbedGenerator.AuthorEmbed($"Health: {health}/{gamedata.Health}", $"{user.Mention}", Colours.DefaultColour, user);
+            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+        }
+
+        [Command("flee")]
+        [Alias("run")]
+        [RequiredChannel(346429281314013184)]
+        public async Task FleeFromCombat()
+        {
+            var user = Context.User;
+            try
+            {
+                GameDatabase.FinishedNPCFight(user);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} has fleed from combat", Colours.DefaultColour);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            }
+            catch
+            {
+                await ReplyAsync(":thinking:").ConfigureAwait(false);
+            }
+
         }
     }
 }
