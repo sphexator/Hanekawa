@@ -55,7 +55,7 @@ namespace Jibril.Modules.Gambling
                     uint award = bet * 5;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n", Colours.OKColour);
-                    await Context.Channel.SendMessageAsync("", false, embed).ConfigureAwait(false);
+                    await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
                 {

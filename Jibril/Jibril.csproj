@@ -31,9 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Images\Profile\Cache\" />
-    <Folder Include="Data\Images\Welcome\Cache\Banner\" />
-    <Folder Include="Data\Images\Welcome\Cache\Avatar\" />
     <Folder Include="Modules\Administration\Services\" />
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
@@ -44,6 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\Images\Game\Enemy\BattleshipReClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -143,6 +143,9 @@
     <None Update="Data\Images\Profile\Backgrounds\9.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Data\Images\Profile\Cache\placeboAvatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\Images\Profile\ShipClass\Aircraft Carrier.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -162,6 +165,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Profile\Template\profile.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Images\Welcome\Cache\Avatar\placeboAvatar.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Images\Welcome\Cache\Banner\placeboAvatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Welcome\Template\1.png">

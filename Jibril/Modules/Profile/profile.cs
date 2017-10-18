@@ -16,7 +16,8 @@ namespace Jibril.Modules.Profile
         public async Task PostProfile()
         {
             var user = Context.User;
-            ProfileCreator.PfpCreator(user);
+            var profile = ProfileCreator.PfpCreator(user);
+            await Context.Channel.SendFileAsync(profile);
         }
     }
 }

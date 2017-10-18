@@ -13,7 +13,7 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
-        public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = data\database.sqlite;Version=3;Foreign Keys=ON;";
         public static List<String> CheckUser(IUser user)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))

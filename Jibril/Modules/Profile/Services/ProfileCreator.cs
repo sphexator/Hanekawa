@@ -12,11 +12,12 @@ namespace Jibril.Modules.Profile.Services
 {
     public class ProfileCreator
     {
-        public static void PfpCreator(SocketUser user)
+        public static string PfpCreator(SocketUser user)
         {
             var randomString = RandomStringGenerator.StringGenerator();
             var image = DetectBackground.GetBackground(user, randomString).ToString();
             var applyText = ApplyText.ApplyTextToProfile(image, user, randomString);
+            return applyText;
         }
     }
 }
