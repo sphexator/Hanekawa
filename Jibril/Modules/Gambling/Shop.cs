@@ -25,24 +25,14 @@ namespace Jibril.Modules.Gambling
             for (var i = 0; i < 3; i++)
             {
                 var c = shoplist[i];
-                /*
-                embed.AddField(y =>
-                {
-                    y.Name = "Number";
-                    y.Value = $"{i}";
-                    y.IsInline = true;
-                });
-                */
                 embed.AddField(y =>
                 {
                     y.Name = $"{i}: {c.Item}";
                     y.Value = $"${c.Price}";
                     y.IsInline = true;
                 });
-                //embed.AddInlineField($"price", $"${c.price}");
             }
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-
         }
 
         [Command("eventshop", RunMode = RunMode.Async)]

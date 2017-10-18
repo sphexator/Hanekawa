@@ -31,14 +31,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Images\Profile\Cache\Preview\" />
+    <Folder Include="Data\Images\Profile\Cache\" />
     <Folder Include="Data\Images\Welcome\Cache\Banner\" />
     <Folder Include="Data\Images\Welcome\Cache\Avatar\" />
     <Folder Include="Modules\Administration\Services\" />
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />
-    <Folder Include="Modules\Profile\Services\" />
     <Folder Include="Modules\Suggestion\Services\" />
     <Folder Include="Services\Reaction\" />
     <Folder Include="Services\Welcome\Lists\" />
