@@ -19,7 +19,7 @@ namespace Jibril.Modules.Gambling
         [Command("bet")]
         [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
-        public async Task HardBet(uint bet)
+        public async Task HardBet(int bet)
         {
             var user = Context.User;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
@@ -52,7 +52,7 @@ namespace Jibril.Modules.Gambling
 
                 if (userRoll == rolled)
                 {
-                    uint award = bet * 5;
+                    int award = bet * 5;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n", Colours.OKColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -72,7 +72,7 @@ namespace Jibril.Modules.Gambling
         [Command("roll")]
         [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
-        public async Task BetRoll(uint bet)
+        public async Task BetRoll(int bet)
         {
             var user = Context.User;
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
@@ -95,14 +95,14 @@ namespace Jibril.Modules.Gambling
 
                 if (rolled >= 90)
                 {
-                    uint award = bet * 2;
+                    int award = bet * 2;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}", Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else if (rolled >= 50)
                 {
-                    uint award = bet;
+                    int award = bet;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}", Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);

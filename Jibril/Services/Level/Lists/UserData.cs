@@ -8,8 +8,8 @@ namespace Jibril.Services.Level.Lists
     {
         public string UserId { get; set; }
         public string Username { get; set; }
-        public uint Tokens { get; set; }
-        public uint Event_tokens { get; set; }
+        public int Tokens { get; set; }
+        public int Event_tokens { get; set; }
         public int Level { get; set; }
         public int Xp { get; set; }
         public int Total_xp { get; set; }

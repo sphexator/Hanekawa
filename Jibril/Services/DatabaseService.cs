@@ -58,8 +58,8 @@ namespace Jibril.Services
                 {
                     var userId = (string)reader["user_id"];
                     var userName = (string)reader["username"];
-                    var currentTokens = (uint)reader["tokens"];
-                    var event_tokens = (uint)reader["event_tokens"];
+                    var currentTokens = (int)reader["tokens"];
+                    var event_tokens = (int)reader["event_tokens"];
                     var level = (int)reader["level"];
                     var exp = (int)reader["xp"];
                     var totalExp = (int)reader["total_xp"];
