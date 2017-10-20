@@ -19,30 +19,27 @@ namespace Jibril.Modules.Gambling
         [Command("bet")]
         [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
-        public async Task HardBet(int bet)
+        public async Task HardBet(int amount)
         {
             var user = Context.User;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
-            if (bet == 0)
+            if (amount <= 0)
             {
                 var embed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you don't have enough credit", Colours.FailColour);
                 await ReplyAsync("",false, embed.Build());
                 return;
             }
 
-            if (userData.Tokens < bet)
+            if (userData.Tokens < amount)
             {
                 var embed = EmbedGenerator.DefaultEmbed($":thinking: {user.Mention} don't have enough money for that kind of bet.", Colours.FailColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 return;
             }
-            if (bet > 500)
-            {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention}I only accept a maximum of $500 per bet.", Colours.FailColour);
-                await ReplyAsync("", false, embed.Build());
-                return;
-            }
-            else if (userData.Tokens >= bet)
+
+            var bet = BetAdjust.Adjust(amount);
+
+            if (userData.Tokens >= bet)
             {
                 Random rand = new Random();
                 Random rand2 = new Random();
@@ -72,23 +69,20 @@ namespace Jibril.Modules.Gambling
         [Command("roll")]
         [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
-        public async Task BetRoll(int bet)
+        public async Task BetRoll(int amount)
         {
             var user = Context.User;
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
-            if (bet == 0)
+            if (amount <= 0)
             {
                 var embed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you don't have enough credit", Colours.FailColour);
                 await ReplyAsync("", false, embed.Build());
                 return;
             }
-            if (bet > 500)
-            {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention}I only accept a maximum of $500 per bet.", Colours.FailColour);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-                return;
-            }
-            else if (userdata.Tokens >= bet)
+
+            var bet = BetAdjust.Adjust(amount);
+
+            if (userdata.Tokens >= bet)
             {
                 Random rand = new Random();
                 int rolled = rand.Next(1, 100);

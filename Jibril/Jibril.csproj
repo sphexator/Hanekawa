@@ -36,7 +36,6 @@
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />
-    <Folder Include="Modules\Suggestion\Services\" />
     <Folder Include="Services\Reaction\" />
     <Folder Include="Services\Welcome\Lists\" />
   </ItemGroup>
