@@ -9,6 +9,7 @@ using Jibril.Services;
 using System.Linq;
 using Jibril.Services.Common;
 using Jibril.Data.Variables;
+using Jibril.Modules.Gambling.Services;
 
 namespace Jibril.Modules.Gambling
 {
@@ -36,13 +37,27 @@ namespace Jibril.Modules.Gambling
                 $"Event Tokens: {userData.Event_tokens}", user.Mention, Colours.DefaultColour, user);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
-        /* 
+
         [Command("Richest")]
         [RequiredChannel(339383206669320192)]
         public async Task Richest()
         {
-
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithColor(new Color(Colours.DefaultColour));
+            embed.Title = "Leaderboard";
+            var result = GambleDB.GetLeaderBoard().ToList();
+            for (var i = 0; i < 10; i++)
+            {
+                var c = result[i];
+                var rank = i + 1;
+                embed.AddField(y =>
+                {
+                    y.Name = $"Rank {rank}";
+                    y.Value = $"<@!{c.UserId}> | Credit:{c.Tokens}";
+                    y.IsInline = false;
+                });
+            }
+            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
-        */
     }
 }

@@ -27,7 +27,7 @@ namespace Jibril.Preconditions
             }
             else
             {
-                return baseResult;
+                return PreconditionResult.FromError("Wrong channel");
             }
         }
     }

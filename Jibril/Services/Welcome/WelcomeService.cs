@@ -19,6 +19,7 @@ namespace Jibril.Services.Welcome
         {
             _discord = discord;
             _provider = provider;
+
             _discord.UserJoined += Welcomer;
         }
 
@@ -27,8 +28,8 @@ namespace Jibril.Services.Welcome
             var _ = Task.Run(async () =>
             {
                 var image = WelcImgGen.WelcomeImageGeneratorAsync(user).ToString();
-                var guild = _discord.GetGuild(user.Guild.Id);
-                var channel = guild.GetTextChannel(339371997802790913);
+                var guild = _discord.GetGuild(234505708861652993);
+                var channel = guild.GetTextChannel(360140270605434882);
                 await channel.SendFileAsync(image, "");
             });
             return Task.CompletedTask;

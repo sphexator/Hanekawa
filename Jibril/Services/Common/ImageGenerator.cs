@@ -33,8 +33,8 @@ namespace Jibril.Services.Common
             using (var img = Image.Load(inputStream))
             {
                 img.Save(aviPath);
+                return aviPath;
             }
-            return aviPath;
         }
     }
 }

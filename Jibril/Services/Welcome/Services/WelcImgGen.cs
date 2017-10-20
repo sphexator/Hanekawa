@@ -46,6 +46,7 @@ namespace Jibril.Services.Welcome.Services
                     }));
                 img.Mutate(ctx => ctx.DrawImage(avatar, new Size(80, 80), new Point(10, 10), GraphicsOptions.Default));
                 img.Save(filePath);
+                img.Dispose();
             }
             return filePath;
         }

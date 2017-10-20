@@ -57,5 +57,60 @@ namespace Jibril.Services.Level.Services
                 return;
             }
         }
+
+        public static List<UserData> GetLeaderBoard()
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var result = new List<UserData>();
+                var sql = "SELECT * FROM exp ORDER BY total_xp DESC LIMIT 10";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                SQLiteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+
+                    var userId = (string)reader["user_id"];
+                    var userName = (string)reader["username"];
+                    var currentTokens = (int)reader["tokens"];
+                    var event_tokens = (int)reader["event_tokens"];
+                    var level = (int)reader["level"];
+                    var exp = (int)reader["xp"];
+                    var totalExp = (int)reader["total_xp"];
+                    var daily = (DateTime)reader["daily"];
+                    var cooldown = (DateTime)reader["cooldown"];
+                    var voice_timer = (DateTime)reader["voice_timer"];
+                    var fleetName = (string)reader["fleetName"];
+                    var shipClass = (string)reader["shipClass"];
+                    var profilepic = (string)reader["shipclass"];
+                    var gameCD = (DateTime)reader["game_cooldown"];
+                    var gambleCD = (DateTime)reader["gambling_cooldown"];
+                    var hasrole = (string)reader["hasrole"];
+
+                    result.Add(new UserData
+                    {
+                        UserId = userId,
+                        Username = userName,
+                        Tokens = currentTokens,
+                        Event_tokens = event_tokens,
+                        Level = level,
+                        Xp = exp,
+                        Total_xp = totalExp,
+                        Daily = daily,
+                        Cooldown = cooldown,
+                        Voice_timer = voice_timer,
+                        FleetName = fleetName,
+                        ShipClass = shipClass,
+                        Profilepic = profilepic,
+                        GameCD = gameCD,
+                        BetCD = gambleCD,
+                        Hasrole = hasrole
+                    });
+                }
+                connection.Close();
+                return result;
+            }
+        }
     }
 }

@@ -1,31 +1,28 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Jibril.Services.Level.Services;
+﻿using Jibril.Services.Level.Services;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using Discord.WebSocket;
+using Discord;
+using Discord.Commands;
 
 namespace Jibril.Services.Level
 {
     public class LevelingService
     {
-        private readonly DiscordSocketClient _discord;
+        public DiscordSocketClient _client { get; }
         private IServiceProvider _provider;
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
         {
-            _discord = discord;
+            _client = discord;
             _provider = provider;
 
-            _discord.MessageReceived += GiveExp;
-            _discord.UserVoiceStateUpdated += VoiceExp;
+            _client.MessageReceived += GiveExp;
+            _client.UserVoiceStateUpdated += VoiceExp;
         }
 
-        public Task GiveExp(SocketMessage msg)
+        private Task GiveExp(SocketMessage msg)
         {
             var _ = Task.Run(async () =>
             {
@@ -39,6 +36,7 @@ namespace Jibril.Services.Level
                 var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
                 var levelupReq = Calculate.CalculateNextLevel(1);
+                Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
                 var cooldownCheck = Cooldown.ExperienceCooldown(userData.Cooldown);
                 if (cooldownCheck == true && user.IsBot != true)
                 {
@@ -55,7 +53,7 @@ namespace Jibril.Services.Level
             return Task.CompletedTask;
         }
 
-        public Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
+        private Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
         {
             var _ = Task.Run(() =>
             {

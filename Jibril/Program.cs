@@ -32,6 +32,8 @@ namespace Jibril
             var services = ConfigureServices();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
+            services.GetRequiredService<LevelingService>();
+            services.GetRequiredService<WelcomeService>();
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
