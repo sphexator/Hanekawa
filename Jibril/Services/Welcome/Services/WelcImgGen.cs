@@ -1,17 +1,12 @@
 ﻿using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Services.Common;
+using Jibril.Extensions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Drawing.Brushes;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Services.Welcome.Services
 {
@@ -48,11 +43,10 @@ namespace Jibril.Services.Welcome.Services
                 var text = user.Username.ToString();
 
                 img.Mutate(ctx => ctx
-                    .DrawImage(avatar, new Size(70, 70), new Point(10, 10), GraphicsOptions.Default)
-                    .Draw(Rgba32.Black, 3, path)
-                    .DrawText(text, font, Rgba32.White, path, new TextGraphicsOptions(true) // draw the text along the path wrapping at the end of the line
+                    .DrawImage(avatar, new Size(60, 60), new Point(10, 10), GraphicsOptions.Default)
+                    .DrawText(text.Truncate(15), font, Rgba32.White, path, new TextGraphicsOptions(true) // draw the text along the path wrapping at the end of the line
                     {
-                        // WrapTextWidth = path.Length,
+                        WrapTextWidth = path.Length,
                         Antialias = true,
                         ApplyKerning = true,
                         HorizontalAlignment = HorizontalAlignment.Center
