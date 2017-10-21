@@ -27,10 +27,12 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
-                var image = WelcImgGen.WelcomeImageGeneratorAsync(user).ToString();
+                var avatarToLoad = await ImageGenerator.AvatarGenerator(user);
+                var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad);
+                var imgstr = image.ToString();
                 var guild = _discord.GetGuild(234505708861652993);
                 var channel = guild.GetTextChannel(360140270605434882);
-                await channel.SendFileAsync(image, "");
+                await channel.SendFileAsync(@"Data\Images\Welcome\Cache\Banner\welcome.png", "");
             });
             return Task.CompletedTask;
         }

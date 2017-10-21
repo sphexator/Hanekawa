@@ -16,11 +16,11 @@ namespace Jibril.Services.Common
 
         }
 
-        public static async Task<string> AvatarGenerator(SocketUser user, string randomString)
+        public static async Task<string> AvatarGenerator(SocketUser user)
         {
             HttpClient httpClient = new HttpClient();
             HttpResponseMessage response = null;
-            var aviPath = $"Data/Welcome/Cache/Avatar/{randomString}.jpg";
+            var aviPath = @"Data\Images\Welcome\Cache\Avatar\ava.jpg";
             try
             {
                 response = await httpClient.GetAsync(user.GetAvatarUrl());
