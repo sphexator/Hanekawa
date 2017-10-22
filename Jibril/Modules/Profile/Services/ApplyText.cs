@@ -12,15 +12,17 @@ using Jibril.Services.Level.Lists;
 using Jibril.Data.Variables;
 using SixLabors.Shapes;
 using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Jibril.Modules.Profile.Services
 {
-    public class ApplyText
+    public static class ApplyText
     {
         public static string ApplyTextToProfile(string filepath, SocketUser user, string randomString, UserData userData, GameStatus gameData)
         {
             var finalPath = $"Data/Images/Profile/Cache/{randomString}Final.png";
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
+            var nameFont = SystemFonts.CreateFont("Good Times Rg", 12, FontStyle.Regular);
             var classFont = SystemFonts.CreateFont("Good Times Rg", 8, FontStyle.Regular);
             using (Image<Rgba32> img = Image.Load(filepath))
             {
@@ -37,17 +39,18 @@ namespace Jibril.Modules.Profile.Services
                 PathBuilder CommanderPath = new PathBuilder();
                 PathBuilder missionPath = new PathBuilder();
 
-                usernamePath.AddLine((new Point(114, 96)), (new Point(284, 96)));
-                levelPath.AddLine((new Point(114, 120)), (new Point(284, 120)));
-                expPath.AddLine((new Point(114, 132)), (new Point(284, 132)));
-                totalexpPath.AddLine((new Point(114, 144)), (new Point(284, 144)));
-                creditPath.AddLine((new Point(114, 156)), (new Point(284, 156)));
-                healthPath.AddLine((new Point(114, 185)), (new Point(284, 185)));
-                damagePath.AddLine((new Point(114, 195)), (new Point(284, 195)));
-                npckillPath.AddLine((new Point(114, 205)), (new Point(284, 205)));
-                fleetPath.AddLine((new Point(114, 215)), (new Point(284, 215)));
-                CommanderPath.AddLine((new Point(114, 225)), (new Point(284, 225)));
-                missionPath.AddLine((new Point(114, 235)), (new Point(284, 235)));
+                usernamePath.AddLine((new Point(114, 105)), (new Point(284, 105)));
+                levelPath.AddLine((new Point(114, 132)), (new Point(284, 132)));
+                expPath.AddLine((new Point(114, 144)), (new Point(284, 144)));
+                totalexpPath.AddLine((new Point(114, 156)), (new Point(284, 156)));
+                creditPath.AddLine((new Point(114, 168)), (new Point(284, 168)));
+
+                healthPath.AddLine((new Point(114, 191)), (new Point(284, 191)));
+                damagePath.AddLine((new Point(114, 201)), (new Point(284, 201)));
+                npckillPath.AddLine((new Point(114, 211)), (new Point(284, 211)));
+                fleetPath.AddLine((new Point(114, 221)), (new Point(284, 221)));
+                CommanderPath.AddLine((new Point(114, 231)), (new Point(284, 231)));
+                missionPath.AddLine((new Point(114, 241)), (new Point(284, 241)));
 
 
                 IPath username = usernamePath.Build();
@@ -77,8 +80,8 @@ namespace Jibril.Modules.Profile.Services
                 img.Mutate(x => x
                 // User info
                 // Username area
-                //.Draw(Rgba32.Gray, 3, username)
-                .DrawText($"{user.Username}", statFont, Rgba32.Black, username, new TextGraphicsOptions(true)
+                .Draw(Rgba32.DarkGray, 1, username)
+                .DrawText($"{user.Username}", nameFont, Rgba32.Black, username, new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Antialias = true,
@@ -87,7 +90,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Level area
-                //.Draw(Rgba32.Gray, 3, level)
+                .Draw(Rgba32.DarkGray, 1, level)
                 .DrawText(levelstr, statFont, Rgba32.Black, (new Point(114, 120)), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -105,7 +108,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 //Exp area
-                //.Draw(Rgba32.Gray, 3, exp)
+                .Draw(Rgba32.DarkGray, 1, exp)
                 .DrawText(expstr, statFont, Rgba32.Black, new Point(114, 132), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -123,7 +126,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 //Total exp area
-                //.Draw(Rgba32.Gray, 3, totalexp)
+                .Draw(Rgba32.DarkGray, 1, totalexp)
                 .DrawText(totalexpstr, statFont, Rgba32.Black, new Point(114, 144), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -140,7 +143,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Credit area
-                //.Draw(Rgba32.Gray, 3, credit)
+                .Draw(Rgba32.DarkGray, 1, credit)
                 .DrawText(creditstr, statFont, Rgba32.Black, new Point(114, 156), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -159,7 +162,7 @@ namespace Jibril.Modules.Profile.Services
 
                 // Game info
                 // Health area
-                //.Draw(Rgba32.Gray, 3, health)
+                .Draw(Rgba32.DarkGray, 1, health)
                 .DrawText(healthstr, classFont, Rgba32.Black, new Point(114, 180), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -176,7 +179,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Damage area
-                //.Draw(Rgba32.Gray, 3, damage)
+                .Draw(Rgba32.DarkGray, 1, damage)
                 .DrawText(damagestr, classFont, Rgba32.Black, new Point(114, 190), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -193,7 +196,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // NPC kills area
-                //.Draw(Rgba32.Gray, 3, npckill)
+                .Draw(Rgba32.DarkGray, 1, npckill)
                 .DrawText(npckillstr, classFont, Rgba32.Black, new Point(114, 200), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -210,7 +213,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Fleet area
-                //.Draw(Rgba32.Gray, 3, fleet)
+                .Draw(Rgba32.DarkGray, 1, fleet)
                 .DrawText(fleetstr, classFont, Rgba32.Black, new Point(114, 210), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -227,7 +230,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Commander area
-                //.Draw(Rgba32.Gray, 3, commander)
+                .Draw(Rgba32.DarkGray, 1, commander)
                 .DrawText(commanderstr, classFont, Rgba32.Black, new Point(114, 220), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -244,7 +247,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 // Mission Completed area
-                //.Draw(Rgba32.Gray, 3, mission)
+                .Draw(Rgba32.DarkGray, 1, mission)
                 .DrawText(missionstr, classFont, Rgba32.Black, new Point(114, 230), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Left,
@@ -258,7 +261,6 @@ namespace Jibril.Modules.Profile.Services
                     Antialias = true,
                     ApplyKerning = true
                 })
-
                 .DrawText($"{userData.ShipClass}", classFont, Rgba32.Black, new PointF(6, 275))
                 );
                 img.Save(finalPath);

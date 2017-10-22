@@ -18,6 +18,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -30,6 +31,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET tokens = tokens - '{credit}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -160,6 +162,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE inventory SET {itemName} = {itemName} + '1' WHERE user_ID = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -172,6 +175,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET event_tokens = event_tokens - '{price}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -184,6 +188,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE eventshop SET stock = stock - '1'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -219,6 +224,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET hasrole = 'yes' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -232,6 +238,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"UPDATE inventory SET {itemName} = {itemName} - '1' WHERE user_ID = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -245,6 +252,7 @@ namespace Jibril.Modules.Gambling.Services
                 connection.Open();
                 var sql = $"INSERT INTO inventory (user_id) VALUES ('{user.Id}')";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }

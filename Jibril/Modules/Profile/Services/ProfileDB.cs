@@ -17,6 +17,7 @@ namespace Jibril.Modules.Profile.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET profilepic = '{url}' WHERE user_id = {user.Id}";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -29,6 +30,7 @@ namespace Jibril.Modules.Profile.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET profilepic = 'o' WHERE user_id = {user.Id}";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }

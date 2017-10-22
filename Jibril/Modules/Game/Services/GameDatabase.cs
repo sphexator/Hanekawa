@@ -36,6 +36,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET shipclass = '{shipClass}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -48,6 +49,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET enemyid = '{enemyid}', health = '{health}', enemyhealth = '{enemyhealth}', enemyDamageTaken = '0', combatstatus = '1' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -60,6 +62,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"INSERT INTO shipgame (user_id, health, damagetaken, combatstatus, enemyid, enemyDamageTaken, enemyhealth, killAmount) VALUES ('{user.Id}', '{health}', '0', '1', '{enemyid}', '0', {enemyhealth}, 0)";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -72,6 +75,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"INSERT INTO shipgame (user_id, health, damagetaken, combatstatus, enemyid, enemyDamageTaken, enemyhealth, killAmount) VALUES ('{user.Id}', '{health}', '0', '0', '0', '0', 0, 0)";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -158,6 +162,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET enemyDamageTaken = enemyDamageTaken + {damage} WHERE user_id = {user.Id}";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -170,6 +175,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET damageTaken = damageTaken + {damage} WHERE user_id = {user.Id}";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -182,6 +188,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET xp = xp + '{exp}', tokens = tokens + '{currency}' WHERE user_id = {user.Id}";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -194,6 +201,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET combatstatus = '0', killAmount = killAmount + '1', enemyDamageTaken = '0' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -206,6 +214,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET combatstatus = '0', enemyDamageTaken = '0' WHERE user_id = '{ user.Id }'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -218,6 +227,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET damagetaken = '0' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -230,6 +240,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET health = '{health}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -242,6 +253,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE shipgame SET health = '{health}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -279,6 +291,7 @@ namespace Jibril.Modules.Game.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET shipClass = '{shipClass}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }

@@ -16,6 +16,7 @@ namespace Jibril.Modules.Suggestion.Services
                 connection.Open();
                 var sql = $"INSERT INTO suggestion (user_id, date) VALUES ('{user.Id}', '{now}')";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -50,6 +51,7 @@ namespace Jibril.Modules.Suggestion.Services
                 connection.Open();
                 var sql = $"UPDATE suggestion SET msgid = '{msgid}' WHERE id = '{id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -62,6 +64,7 @@ namespace Jibril.Modules.Suggestion.Services
                 connection.Open();
                 var sql = $"UPDATE suggestion SET responduser = '{user.Id}', response = '{response}' WHERE id = '{casenr}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }

@@ -61,7 +61,7 @@ namespace Jibril.Modules.Profile.Services
                 img.Mutate(x => x
                     .DrawImage(Template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
                     .DrawImage(Shipclass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default)
-                    .DrawImage(avi, new Size(88, 88), new Point(6, 86), GraphicsOptions.Default)
+                    .DrawImage(avi, new Size(86, 86), new Point(7, 87), GraphicsOptions.Default)
                     );
                 img.Save(background);
                 return background;

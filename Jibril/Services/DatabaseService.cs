@@ -40,6 +40,7 @@ namespace Jibril.Services
             {
                 var sql = $"INSERT INTO exp (user_id, username, tokens, level, xp ) VALUES ('{user.Id}', 'username', '0', '1', '1')";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
