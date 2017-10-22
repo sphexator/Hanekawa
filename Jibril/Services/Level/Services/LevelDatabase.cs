@@ -9,7 +9,7 @@ namespace Jibril.Services.Level.Services
 {
     public class LevelDatabase
     {
-        public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
         public static void AddExperience(IUser user, int exp, int credit)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
@@ -17,9 +17,10 @@ namespace Jibril.Services.Level.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET xp = xp + '{exp}', total_xp = total_xp + '{exp}', tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
-                return;
             }
+            return;
         }
 
         public static void Levelup(IUser user, int exp)
@@ -29,9 +30,10 @@ namespace Jibril.Services.Level.Services
                 connection.Open();
                 var sql = $"UPDATE exp SET level = level + 1, xp = '{exp}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
-                return;
             }
+            return;
         }
 
         public static void ChangeCooldown(IUser user)
@@ -39,8 +41,9 @@ namespace Jibril.Services.Level.Services
             using (SQLiteConnection connection = new SQLiteConnection(DB))
             {
                 connection.Open();
-                var sql = $"UPDATE exp SET cooldown = curtime() WHERE user_id = '{user.Id}'";
+                var sql = $"UPDATE exp SET cooldown = '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }
@@ -51,8 +54,9 @@ namespace Jibril.Services.Level.Services
             using (SQLiteConnection connection = new SQLiteConnection(DB))
             {
                 connection.Open();
-                var sql = $"UPDATE exp SET voice_timer = curtime() WHERE user_id = '{user.Id}'";
+                var sql = $"UPDATE exp SET voice_timer = '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}' WHERE user_id = '{user.Id}'";
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
                 connection.Close();
                 return;
             }

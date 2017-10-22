@@ -35,13 +35,14 @@ namespace Jibril.Services.Level
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
-                var levelupReq = Calculate.CalculateNextLevel(1);
-                Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
-                var cooldownCheck = Cooldown.ExperienceCooldown(userData.Cooldown);
+                DateTime cooldown = Convert.ToDateTime(userData.Cooldown);
+                var levelupReq = Calculate.CalculateNextLevel(userData.Level);
+                var cooldownCheck = Cooldown.ExperienceCooldown(cooldown);
                 if (cooldownCheck == true && user.IsBot != true)
                 {
                     LevelDatabase.ChangeCooldown(user);
                     LevelDatabase.AddExperience(user, exp, credit);
+                    Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
                     if ((userData.Xp + exp) >= levelupReq)
                     {
                         var remainingExp = userData.Xp - exp;
@@ -71,7 +72,8 @@ namespace Jibril.Services.Level
                     if (oldVc != null && newVc == null)
                     {
                         var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
-                        Calculate.VECC(gusr, userInfo.Voice_timer);
+                        DateTime cooldown = Convert.ToDateTime(userInfo.Voice_timer);
+                        Calculate.VECC(gusr, cooldown);
                     }
                 }
                 catch

@@ -8,7 +8,7 @@ namespace Jibril.Modules.Game.Services
 {
     public class GameDatabase
     {
-        public static string DB = @"Data Source = data\database.sqlite;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
 
         public static List<String> GameCheckExistingUser(IUser user)
         {

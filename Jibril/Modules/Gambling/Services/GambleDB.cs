@@ -10,7 +10,7 @@ namespace Jibril.Modules.Gambling.Services
 {
     public class GambleDB
     {
-        public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
         public static void AddCredit(IUser user, int credit)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))

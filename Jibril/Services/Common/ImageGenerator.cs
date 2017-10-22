@@ -16,11 +16,6 @@ namespace Jibril.Services.Common
 {
     public static class ImageGenerator
     {
-        public static void RandomBackground()
-        {
-
-        }
-
         public static async Task<string> AvatarGenerator(SocketUser user)
         {
             HttpClient httpClient = new HttpClient();

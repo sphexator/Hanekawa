@@ -13,7 +13,7 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
-        public static string DB = @"Data Source = data\database.sqlite;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
         public static List<String> CheckUser(IUser user)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
@@ -68,7 +68,7 @@ namespace Jibril.Services
                     var voice_timer = (DateTime)reader["voice_timer"];
                     var fleetName = (string)reader["fleetName"];
                     var shipClass = (string)reader["shipClass"];
-                    var profilepic = (string)reader["shipclass"];
+                    var profilepic = (string)reader["profilepic"];
                     var gameCD = (DateTime)reader["game_cooldown"];
                     var gambleCD = (DateTime)reader["gambling_cooldown"];
                     var hasrole = (string)reader["hasrole"];

@@ -8,7 +8,7 @@ namespace Jibril.Modules.Suggestion.Services
 {
     public class SuggestionDB
     {
-        public static string DB = @"Data Source = data\database.db;Version=3;Foreign Keys=ON;";
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
         public static void AddSuggestion(IUser user, DateTime now)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
