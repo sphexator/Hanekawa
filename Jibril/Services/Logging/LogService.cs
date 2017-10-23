@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services.Common;
 using Jibril.Data.Variables;
+using Discord.Rest;
 
 namespace Jibril.Services.Logging
 {
@@ -69,8 +71,10 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"" +
-                $"❌ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
+                var content = $"Action: *bent* \n" +
+                $"❌ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                $"Moderator: \n" +
+                $"Reason:";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -82,8 +86,10 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"" +
-                $"❕ {user.Username}#{user.Discriminator} got *bent*. (**{user.Id}**)";
+                var content = $"Action: *bent* \n" +
+                $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                $"Moderator: \n" +
+                $"Reason:";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);

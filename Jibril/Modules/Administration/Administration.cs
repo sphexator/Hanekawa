@@ -114,6 +114,14 @@ namespace Jibril.Modules.Administration
 
                 var channel = Context.Channel as ITextChannel;
                 await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
+
+                var content = $"Action: *Gagged* \n" +
+                $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                $"Moderator: {Context.User.Mention} \n" +
+                $"Reason: \n";
+                var embed = EmbedGenerator.DefaultEmbed(content, Colours.FailColour);
+                var log = Context.Guild.GetChannel(339381104534355970) as ITextChannel;
+                await log.SendMessageAsync("", false, embed.Build());
             }
             catch
             {
