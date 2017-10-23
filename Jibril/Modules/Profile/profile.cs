@@ -16,7 +16,7 @@ namespace Jibril.Modules.Profile
     public class Profile : ModuleBase<SocketCommandContext>
     {
         [Command("Profile", RunMode = RunMode.Async)]
-        [RequiredChannel(360140270605434882)]
+        [RequiredChannel(339383206669320192)]
         public async Task PostProfile()
         {
             var user = Context.User;
@@ -33,7 +33,7 @@ namespace Jibril.Modules.Profile
         }
 
         [Command("Profile", RunMode = RunMode.Async)]
-        [RequiredChannel(360140270605434882)]
+        [RequiredChannel(339383206669320192)]
         public async Task PostProfile(SocketUser user)
         {
 

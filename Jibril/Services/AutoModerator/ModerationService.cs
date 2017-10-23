@@ -66,7 +66,7 @@ namespace Jibril.Services.AutoModerator
                             var content = $"Action: *Gagged* \n" +
                             $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
-                            $"Reason: Scam link \n" +
+                            $"Reason: Scam/malicious link \n" +
                             $"Message: {rawMessage.Content}";
                             var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
 

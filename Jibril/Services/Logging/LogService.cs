@@ -97,20 +97,82 @@ namespace Jibril.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task MessageDeleted(Cacheable<IMessage, ulong> msg, ISocketMessageChannel channel)
+        private Task MessageDeleted(Cacheable<IMessage, ulong> optMsg, ISocketMessageChannel ch)
         {
-            var _ =  Task.Run(() =>
+            var _ =  Task.Run(async () =>
             {
+                try
+                {
+                    var msg = (optMsg.HasValue ? optMsg.Value : null) as IUserMessage;
+                    if (msg == null)
+                        return;
 
+                    var channel = ch as ITextChannel;
+                    if (channel == null)
+                        return;
+                    ITextChannel logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
+                    var user = msg.Author as IUser;
+                    if (user.IsBot != true)
+                    {
+                        EmbedBuilder embed = new EmbedBuilder();
+                        embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
+                        embed.AddField(efb =>
+                        {
+                            efb.Name = $"Content:";
+                            efb.Value = ($"{msg.Content}");
+                            efb.IsInline = false;
+                        });
+                        embed.WithFooter($"{DateTime.Now}");
+                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    // ignored
+                }
             });
             return Task.CompletedTask;
         }
 
         private Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg, ISocketMessageChannel channel)
         {
-            var _ =  Task.Run(() =>
+            var _ =  Task.Run(async () =>
             {
+                try
+                {
+                    var msg = (oldMsg.HasValue ? oldMsg.Value : null) as IUserMessage;
+                    var chtx = channel as ITextChannel;
+                    var user = msg.Author as IUser;
+                    ITextChannel logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
 
+                    if (msg == null) return;
+                    if (newMsg == null) return;
+                    if (chtx == null) return;
+                    if (user.IsBot != true)
+                    {
+                        EmbedBuilder embed = new EmbedBuilder();
+                        embed.WithDescription($"{msg.Author.Mention} updated a message in {chtx.Mention}");
+                        embed.AddField(y =>
+                        {
+                            y.Name = "Updated Message:";
+                            y.Value = $"{newMsg.Content}";
+                            y.IsInline = false;
+                        });
+                        embed.AddField(x =>
+                        {
+                            x.Name = "Old Message:";
+                            x.Value = $"{msg.Content}";
+                            x.IsInline = false;
+                        });
+                        embed.WithFooter($"{DateTime.Now}");
+                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             });
             return Task.CompletedTask;
         }
