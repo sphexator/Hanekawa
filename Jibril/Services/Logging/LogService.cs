@@ -114,7 +114,10 @@ namespace Jibril.Services.Logging
                     var user = msg.Author as IUser;
                     if (user.IsBot != true)
                     {
-                        EmbedBuilder embed = new EmbedBuilder();
+                        EmbedBuilder embed = new EmbedBuilder
+                        {
+                            Color = new Color(Colours.DefaultColour)
+                        };
                         embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
                         embed.AddField(efb =>
                         {
@@ -151,7 +154,10 @@ namespace Jibril.Services.Logging
                     if (chtx == null) return;
                     if (user.IsBot != true)
                     {
-                        EmbedBuilder embed = new EmbedBuilder();
+                        EmbedBuilder embed = new EmbedBuilder
+                        {
+                            Color = new Color(Colours.DefaultColour)
+                        };
                         embed.WithDescription($"{msg.Author.Mention} updated a message in {chtx.Mention}");
                         embed.AddField(y =>
                         {
