@@ -32,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\Administration\Services\" />
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />

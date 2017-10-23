@@ -11,6 +11,8 @@ using Jibril.Services;
 using Jibril.Services.Logging;
 using Jibril.Services.Level;
 using Jibril.Services.Welcome;
+using Jibril.Services.Reaction;
+using Jibril.Services.AutoModerator;
 
 namespace Jibril
 {
@@ -34,6 +36,8 @@ namespace Jibril
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
             services.GetRequiredService<WelcomeService>();
+            services.GetRequiredService<ReactionService>();
+            services.GetRequiredService<ModerationService>();
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -50,6 +54,8 @@ namespace Jibril
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<LevelingService>()
                 .AddSingleton<WelcomeService>()
+                .AddSingleton<ReactionService>()
+                .AddSingleton<ModerationService>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)

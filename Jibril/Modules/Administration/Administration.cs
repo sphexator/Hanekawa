@@ -26,7 +26,7 @@ namespace Jibril.Modules.Administration
                 var channel = Context.Channel as ITextChannel;
                 var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).Flatten();
                 await channel.DeleteMessagesAsync(messagesToDelete);
-                var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete} messages deleted!", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!", Colours.OKColour);
                 var guild = Context.Guild as SocketGuild;
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             }
@@ -127,8 +127,24 @@ namespace Jibril.Modules.Administration
             {
 
             }
-
         }
+
+        /*
+        [Command("mute", RunMode = RunMode.Async)]
+        [Alias("Mute", "m")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
+        public async Task TimedMute(int minutes, SocketGuildUser user)
+        {
+            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
+            {
+                await user.AddRoleAsync(Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute"));
+                await user.ModifyAsync(x => x.Mute = true);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} has been muted for {minutes} minutes.", Colours.OKColour);
+                await ReplyAsync("", false, embed.Build());
+            }
+        }
+        */
 
         [Command("unmute", RunMode = RunMode.Async)]
         [Alias("Unmute", "unm")]

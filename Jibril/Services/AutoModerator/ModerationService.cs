@@ -72,7 +72,7 @@ namespace Jibril.Services.AutoModerator
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
-                        if (rawMessage.Content.Length >= 1000)
+                        if (rawMessage.Content.Length >= 1900)
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
@@ -84,7 +84,7 @@ namespace Jibril.Services.AutoModerator
                             var content = $"Action: *Gagged* \n" +
                             $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
-                            $"Reason: Character count >= 1500 \n" +
+                            $"Reason: Character count >= 1900 \n" +
                             $"Message: Too Long Didn't Read.";
                             var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
 
