@@ -13,6 +13,7 @@ using Jibril.Data.Variables;
 using SixLabors.Shapes;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.PixelFormats;
+using Jibril.Services.Level.Services;
 
 namespace Jibril.Modules.Profile.Services
 {
@@ -24,6 +25,14 @@ namespace Jibril.Modules.Profile.Services
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
             var nameFont = SystemFonts.CreateFont("Good Times Rg", 12, FontStyle.Regular);
             var classFont = SystemFonts.CreateFont("Good Times Rg", 8, FontStyle.Regular);
+            var shipFont = SystemFonts.CreateFont("Good Times Rg", 5, FontStyle.Regular);
+
+            var ap = BaseStats.BaseAttackPoint(userData.Level, userData.ShipClass);
+            var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
+
+            var gdclassFont = GoodFont(shipFont, $"{userData.ShipClass}", 5, 88, 16);
+            var NameFont = GoodFont(nameFont, $"{user.Username}", 5, 170, 30);
+
             using (Image<Rgba32> img = Image.Load(filepath))
             {
                 // Paths
@@ -53,6 +62,7 @@ namespace Jibril.Modules.Profile.Services
                 missionPath.AddLine((new Point(114, 241)), (new Point(284, 241)));
 
 
+
                 IPath username = usernamePath.Build();
                 IPath level = levelPath.Build();
                 IPath exp = expPath.Build();
@@ -80,8 +90,7 @@ namespace Jibril.Modules.Profile.Services
                 img.Mutate(x => x
                 // User info
                 // Username area
-                .Draw(Rgba32.DarkGray, 1, username)
-                .DrawText($"{user.Username}", nameFont, Rgba32.Black, username, new TextGraphicsOptions(true)
+                .DrawText($"{user.Username}", NameFont, Rgba32.Black, username, new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Antialias = true,
@@ -118,7 +127,7 @@ namespace Jibril.Modules.Profile.Services
                 })
 
                 //Exp Value
-                .DrawText($"{userData.Xp}", statFont, Rgba32.Black, new Point(284, 132), new TextGraphicsOptions(true)
+                .DrawText($"{userData.Xp}/{xpToLevelUp}", statFont, Rgba32.Black, new Point(284, 132), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Right,
                     Antialias = true,
@@ -188,7 +197,7 @@ namespace Jibril.Modules.Profile.Services
                     WrapTextWidth = damage.Length
                 })
 
-                .DrawText($"{gameData.Damagetaken}", classFont, Rgba32.Black, new Point(284, 190), new TextGraphicsOptions(true)
+                .DrawText($"{ap}", classFont, Rgba32.Black, new Point(284, 190), new TextGraphicsOptions(true)
                 {
                     HorizontalAlignment = HorizontalAlignment.Right,
                     Antialias = true,
@@ -261,11 +270,32 @@ namespace Jibril.Modules.Profile.Services
                     Antialias = true,
                     ApplyKerning = true
                 })
-                .DrawText($"{userData.ShipClass}", classFont, Rgba32.Black, new PointF(6, 275))
+                // Ship Class Text
+                .DrawText($"{userData.ShipClass}", gdclassFont, Rgba32.Black, new PointF(50, 280), new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Antialias = true,
+                    ApplyKerning = true
+                })
                 );
                 img.Save(finalPath);
                 return finalPath;
             }
+        }
+
+        public static Font GoodFont(Font font, string text, float padding, int Width, int Height)
+        {
+            float targetWidth = Width - (padding * 2);
+            float targetHeight = Height - (padding * 2);
+
+            SizeF size = TextMeasurer.Measure(text, new RendererOptions(font));
+
+            float scalingFactor = Math.Min(Width / size.Width, Height / size.Height);
+
+            Font scaledFont = new Font(font, scalingFactor * font.Size);
+
+            return scaledFont;
         }
     }
 }
