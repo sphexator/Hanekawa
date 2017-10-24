@@ -11,6 +11,20 @@ namespace Jibril.Modules.Gambling.Services
     public class GambleDB
     {
         public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
+
+        public static void AddEventCredit(IUser user, int credit)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var sql = $"UPDATE exp SET event_tokens = event_tokens + '{credit}' WHERE user_id = {user.Id}";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
+                connection.Close();
+                return;
+            }
+        }
+
         public static void AddCredit(IUser user, int credit)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))

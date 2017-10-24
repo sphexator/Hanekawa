@@ -59,5 +59,17 @@ namespace Jibril.Modules.Gambling
             }
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
+
+        [Command("give")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task GiveCredit(int amount, IUser user)
+        {
+            if (amount == 0) return;
+
+            GambleDB.AddEventCredit(user, amount);
+            var content = $"{Context.User.Mention} awarded {amount} credit to {user.Mention}";
+            var embed = EmbedGenerator.DefaultEmbed(content, Colours.DefaultColour);
+            await ReplyAsync("", false, embed.Build());
+        }
     }
 }
