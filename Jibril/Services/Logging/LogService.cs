@@ -44,7 +44,7 @@ namespace Jibril.Services.Logging
             var _ =  Task.Run(async () =>
            {
                var content = $"" +
-               $"📥 {user.Mention} has joined. (**{user.Id}**)\n" +
+               $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
                $"Account created: {user.CreatedAt}";
                var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
                var channel = user.Guild.GetTextChannel(339380907146477579);
@@ -53,12 +53,12 @@ namespace Jibril.Services.Logging
             return Task.CompletedTask;
         }
 
-        private  Task UserLeft(SocketGuildUser user)
+        private Task UserLeft(SocketGuildUser user)
         {
             var _ =  Task.Run(async () =>
             {
                 var content = $"" +
-                $"📤 {user.Mention} has left.\n" +
+                $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
                 $"Username: {user.Username}#{user.Discriminator}";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
                 var channel = user.Guild.GetTextChannel(339380907146477579);
@@ -73,8 +73,7 @@ namespace Jibril.Services.Logging
             {
                 var content = $"Action: *bent* \n" +
                 $"❌ {user.Mention} got *bent*. (**{user.Id}**)\n" +
-                $"Moderator: \n" +
-                $"Reason:";
+                $"Moderator:";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -87,9 +86,7 @@ namespace Jibril.Services.Logging
             var _ = Task.Run(async () =>
             {
                 var content = $"Action: *bent* \n" +
-                $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
-                $"Moderator: \n" +
-                $"Reason:";
+                $"❕ {user.Mention} got *unbent*. (**{user.Id}**)";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);

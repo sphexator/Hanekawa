@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Modules.Gambling.Services;
+using Jibril.Modules.Game.Services;
 using Jibril.Services.Common;
 using Jibril.Services.Welcome.Services;
 using System;
@@ -27,6 +29,9 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
+                DatabaseService.EnterUser(user);
+                GameDatabase.CreateGameDBEntry(user);
+                GambleDB.CreateInventory(user);
                 var avatarToLoad = await ImageGenerator.AvatarGenerator(user);
                 var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad);
                 var imgstr = image.ToString();

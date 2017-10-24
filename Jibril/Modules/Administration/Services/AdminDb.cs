@@ -32,7 +32,7 @@ namespace Jibril.Modules.Administration.Services
         }
 
         //Checking Regular DB
-        public static void AddWarn(IUser user)
+        public static void RAddWarn(IUser user)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
             {
@@ -90,12 +90,11 @@ namespace Jibril.Modules.Administration.Services
             using (SQLiteConnection connection = new SQLiteConnection(WarnDb))
             {
                 connection.Open();
-                var sql = ($"CREATE TABLE `senjougahara`.`{user.Id}` (" +
-                $"`id` INT(11) NOT NULL AUTO_INCREMENT," +
-                $"`staff_id` VARCHAR(45) NULL DEFAULT NULL," +
-                $"`message` LONGTEXT NULL DEFAULT NULL," +
-                $"`warndate` DATETIME NULL DEFAULT '0001-01-01 00:00:00'," +
-                $"PRIMARY KEY(`id`));");
+                var sql = ($"CREATE TABLE '{user.Id}' ( " +
+                    "`id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                    "`staff_id` varchar ( 45 ) DEFAULT NULL, " +
+                    "`message` longtext, " +
+                    "`warndate` datetime DEFAULT '0001-01-01 00:00:00' )");
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                 command.ExecuteNonQuery();
                 connection.Close();
@@ -108,7 +107,7 @@ namespace Jibril.Modules.Administration.Services
             using (SQLiteConnection connection = new SQLiteConnection(WarnDb))
             {
                 connection.Open();
-                var sql = ($"INSERT INTO `{user.Id}` (staff_id, message, warndate ) VALUES ('{staff.Id}', '{msg}', curtime())");
+                var sql = ($"INSERT INTO {user.Id} (staff_id, message, warndate ) VALUES ('{staff.Id}', '{msg}', '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}')");
                 SQLiteCommand command = new SQLiteCommand(sql, connection);
                 command.ExecuteNonQuery();
                 connection.Close();

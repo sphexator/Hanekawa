@@ -43,7 +43,7 @@ namespace Jibril.Services.AutoModerator
                             await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
                             await user.ModifyAsync(x => x.Mute = true);
 
-                            var ch = guild.Channels.Select(x => x.Id == 339381104534355970) as ITextChannel;
+                            var ch = guild.GetTextChannel(339381104534355970);
 
                             var content = $"Action: *Gagged* \n" +
                             $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
@@ -54,14 +54,14 @@ namespace Jibril.Services.AutoModerator
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
-                        if (rawMessage.Content.IsScamLink() == true)
+                        else if (rawMessage.Content.IsScamLink() == true)
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
                             await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
                             await user.ModifyAsync(x => x.Mute = true);
 
-                            var ch = guild.Channels.Select(x => x.Id == 339381104534355970) as ITextChannel;
+                            var ch = guild.GetTextChannel(339381104534355970);
 
                             var content = $"Action: *Gagged* \n" +
                             $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
@@ -72,19 +72,19 @@ namespace Jibril.Services.AutoModerator
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
-                        if (rawMessage.Content.Length >= 1900)
+                        else if (rawMessage.Content.Length >= 1500)
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
                             await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
                             await user.ModifyAsync(x => x.Mute = true);
 
-                            var ch = guild.Channels.Select(x => x.Id == 339381104534355970) as ITextChannel;
+                            var ch = guild.GetTextChannel(339381104534355970);
 
                             var content = $"Action: *Gagged* \n" +
                             $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
-                            $"Reason: Character count >= 1900 \n" +
+                            $"Reason: Character count >= 1500 \n" +
                             $"Message: Too Long Didn't Read.";
                             var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
 

@@ -56,7 +56,7 @@ namespace Jibril.Modules.Administration
                 if (reason == null)
                 {
                     AdminDb.AddWarn(user, Context.User, "No reason provided");
-                    AdminDb.AddWarn(user);
+                    AdminDb.RAddWarn(user);
                     await Context.Message.DeleteAsync();
                     if ((result.Warnings++) == 3)
                     {
@@ -86,7 +86,7 @@ namespace Jibril.Modules.Administration
                 else
                 {
                     AdminDb.AddWarn(user, Context.User, reason.Replace("'", ""));
-                    AdminDb.AddWarn(user);
+                    AdminDb.RAddWarn(user);
                     await Context.Message.DeleteAsync();
                     if (result.Warnings++ == 3)
                     {

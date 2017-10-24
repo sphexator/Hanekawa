@@ -68,6 +68,19 @@ namespace Jibril.Modules.Game.Services
             }
         }
 
+        public static void CreateGameDBEntry(IUser user)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            {
+                connection.Open();
+                var sql = $"INSERT INTO shipgame (user_id, health, damagetaken, combatstatus, enemyid, enemyDamageTaken, enemyhealth, killAmount) VALUES ('{user.Id}', '10', '0', '1', '0', '0', 9999, 0)";
+                SQLiteCommand command = new SQLiteCommand(sql, connection);
+                command.ExecuteNonQuery();
+                connection.Close();
+                return;
+            }
+        }
+
         public static void AddNPCDefault(IUser user, int health)
         {
             using (SQLiteConnection connection = new SQLiteConnection(DB))
