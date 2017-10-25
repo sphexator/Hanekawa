@@ -40,7 +40,8 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
+                            var role = guild.GetRole(339711429211062273);
+                            await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);
@@ -58,7 +59,8 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
+                            var role = guild.GetRole(339711429211062273);
+                            await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);
@@ -76,7 +78,8 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            await user.AddRoleAsync(guild.Roles.Select(x => x.Id == 341316158781259776) as IRole);
+                            var role = guild.GetRole(339711429211062273);
+                            await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);

@@ -1,96 +1,115 @@
 ﻿using Discord;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Text;
 
 namespace Jibril.Modules.Suggestion.Services
 {
     public class SuggestionDB
     {
-        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
+        private string _table { get; set; }
+        string server = "localhost";
+        string database = "hanekawa";
+        string username = "admin";
+        string password = "jevel123";
+        Boolean POOLING = false;
+        private MySqlConnection dbConnection;
+
+        public SuggestionDB(string table)
+        {
+            _table = table;
+            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            {
+                Server = server,
+                UserID = username,
+                Password = password,
+                Database = database,
+                SslMode = MySqlSslMode.None,
+                Pooling = POOLING
+            };
+            var connectionString = stringBuilder.ToString();
+            dbConnection = new MySqlConnection(connectionString);
+            dbConnection.Open();
+        }
+        public MySqlDataReader FireCommand(string query)
+        {
+            if (dbConnection == null)
+            {
+                return null;
+            }
+            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var mySqlReader = command.ExecuteReader();
+            return mySqlReader;
+        }
+        public void CloseConnection()
+        {
+            if (dbConnection != null)
+            {
+                dbConnection.Close();
+            }
+        }
+
+
         public static void AddSuggestion(IUser user, DateTime now)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
-            {
-                connection.Open();
-                var sql = $"INSERT INTO suggestion (user_id, date) VALUES ('{user.Id}', '{now}')";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                command.ExecuteNonQuery();
-                connection.Close();
-                return;
-            }
+            var database = new SuggestionDB("hanekawa");
+            var str = $"INSERT INTO suggestion (user_id, date) VALUES ('{user.Id}', '{now}')";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
         }
 
         public static List<int> GetSuggestionID(DateTime time)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            var result = new List<int>();
+            var database = new SuggestionDB("hanekawa");
+            var str = $"SELECT * FROM suggestion WHERE date = '{time}'";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
             {
-                connection.Open();
-
-                var result = new List<int>();
-                var sql = $"SELECT * FROM suggestion WHERE date = '{time}'";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                SQLiteDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    var suggestNr = (int)reader["id"];
-                    result.Add(suggestNr);
-                }
-
-                connection.Close();
-                return result;
+                var suggestNr = (int)reader["id"];
+                result.Add(suggestNr);
             }
+            database.CloseConnection();
+            return result;
+
         }
 
         public static void UpdateSuggestion(string msgid, int id)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
-            {
-                connection.Open();
-                var sql = $"UPDATE suggestion SET msgid = '{msgid}' WHERE id = '{id}'";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                command.ExecuteNonQuery();
-                connection.Close();
-                return;
-            }
+            var database = new SuggestionDB("hanekawa");
+            var str = $"UPDATE suggestion SET msgid = '{msgid}' WHERE id = '{id}'";
+            var tablename = database.FireCommand(str);
+            database.CloseConnection();
+            return;
         }
 
         public static void RespondSuggestion(uint casenr, string response, IUser user)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
-            {
-                connection.Open();
-                var sql = $"UPDATE suggestion SET responduser = '{user.Id}', response = '{response}' WHERE id = '{casenr}'";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                command.ExecuteNonQuery();
-                connection.Close();
-                return;
-            }
+            var database = new SuggestionDB("hanekawa");
+            var str = $"UPDATE suggestion SET responduser = '{user.Id}', response = '{response}' WHERE id = '{casenr}'";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
         }
 
         public static List<String> SuggestionMessage(uint casenr)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
+            var result = new List<String>();
+            var database = new SuggestionDB("hanekawa");
+            var str = ($"SELECT * FROM suggestion WHERE id = '{casenr}'");
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
             {
-                connection.Open();
+                var msgid = (string)reader["msgid"];
 
-                var result = new List<String>();
-                var sql = $"SELECT * FROM suggestion WHERE id = '{casenr}'";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                SQLiteDataReader reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    var msgid = (string)reader["msgid"];
-
-                    result.Add(msgid);
-                }
-
-                connection.Close();
-                return result;
+                result.Add(msgid);
             }
+            database.CloseConnection();
+            return result;
         }
     }
 }

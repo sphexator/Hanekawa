@@ -22,12 +22,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
+    <PackageReference Include="MySql.Data" Version="8.0.9-dmr" />
+    <PackageReference Include="MySql.Data.Entity" Version="7.0.7-m61" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0001" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.105.2" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
-    <PackageReference Include="System.Data.SQLite.EF6" Version="1.0.105.2" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>
 

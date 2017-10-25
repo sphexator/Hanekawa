@@ -1,40 +1,69 @@
 ﻿using Discord;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Data.SQLite;
+using MySql.Data.MySqlClient;
 
 namespace Jibril.Modules.Profile.Services
 {
     public class ProfileDB
     {
-        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
+        private string _table { get; set; }
+        string server = "localhost";
+        string database = "hanekawa";
+        string username = "admin";
+        string password = "jevel123";
+        Boolean POOLING = false;
+        private MySqlConnection dbConnection;
+
+        public ProfileDB(string table)
+        {
+            _table = table;
+            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            {
+                Server = server,
+                UserID = username,
+                Password = password,
+                Database = database,
+                SslMode = MySqlSslMode.None,
+                Pooling = POOLING
+            };
+            var connectionString = stringBuilder.ToString();
+            dbConnection = new MySqlConnection(connectionString);
+            dbConnection.Open();
+        }
+        public MySqlDataReader FireCommand(string query)
+        {
+            if (dbConnection == null)
+            {
+                return null;
+            }
+            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var mySqlReader = command.ExecuteReader();
+            return mySqlReader;
+        }
+        public void CloseConnection()
+        {
+            if (dbConnection != null)
+            {
+                dbConnection.Close();
+            }
+        }
 
         public static void AddProfileURL(IUser user, string url)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
-            {
-                connection.Open();
-                var sql = $"UPDATE exp SET profilepic = '{url}' WHERE user_id = {user.Id}";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                command.ExecuteNonQuery();
-                connection.Close();
-                return;
-            }
+            var database = new ProfileDB("hanekawa");
+            var str = $"UPDATE exp SET profilepic = '{url}' WHERE user_id = {user.Id}";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
         }
 
         public static void RemoveProfileURL(IUser user)
         {
-            using (SQLiteConnection connection = new SQLiteConnection(DB))
-            {
-                connection.Open();
-                var sql = $"UPDATE exp SET profilepic = 'o' WHERE user_id = {user.Id}";
-                SQLiteCommand command = new SQLiteCommand(sql, connection);
-                command.ExecuteNonQuery();
-                connection.Close();
-                return;
-            }
-
+            var database = new ProfileDB("hanekawa");
+            var str = $"UPDATE exp SET profilepic = 'o' WHERE user_id = {user.Id}";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
         }
     }
 }

@@ -23,11 +23,11 @@ namespace Jibril.Modules.Administration
             var dm = await user.GetOrCreateDMChannelAsync();
             if (userCheck.Count <= 0 && user.IsBot != true)
             {
-                AdminDb.EnterUser(user);
+                WarningDB.EnterUser(user);
                 AdminDb.CreateWarn(user);
                 if (reason == null)
                 {
-                    AdminDb.AddWarn(user, Context.User, "No Reason Provided");
+                    WarningDB.AddWarn(user, Context.User, "No Reason Provided");
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
@@ -39,7 +39,7 @@ namespace Jibril.Modules.Administration
                 }
                 else
                 {
-                    AdminDb.AddWarn(user, Context.User, reason.Replace("'", ""));
+                    WarningDB.AddWarn(user, Context.User, reason.Replace("'", ""));
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
@@ -55,8 +55,8 @@ namespace Jibril.Modules.Administration
                 var result = AdminDb.GetWarnings(user).FirstOrDefault();
                 if (reason == null)
                 {
-                    AdminDb.AddWarn(user, Context.User, "No reason provided");
-                    AdminDb.RAddWarn(user);
+                    WarningDB.AddWarn(user, Context.User, "No reason provided");
+                    AdminDb.AddWarn(user);
                     await Context.Message.DeleteAsync();
                     if ((result.Warnings++) == 3)
                     {
@@ -85,8 +85,8 @@ namespace Jibril.Modules.Administration
                 }
                 else
                 {
-                    AdminDb.AddWarn(user, Context.User, reason.Replace("'", ""));
-                    AdminDb.RAddWarn(user);
+                    WarningDB.AddWarn(user, Context.User, reason.Replace("'", ""));
+                    AdminDb.AddWarn(user);
                     await Context.Message.DeleteAsync();
                     if (result.Warnings++ == 3)
                     {
@@ -121,7 +121,7 @@ namespace Jibril.Modules.Administration
             var result = AdminDb.GetWarnings(user).FirstOrDefault();
             if (result != null)
             {
-                var list = AdminDb.WarnList(user).ToList();
+                var list = WarningDB.WarnList(user).ToList();
                 EmbedBuilder embed = new EmbedBuilder();
                 EmbedAuthorBuilder author = new EmbedAuthorBuilder();
 
