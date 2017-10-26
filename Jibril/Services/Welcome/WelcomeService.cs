@@ -35,8 +35,8 @@ namespace Jibril.Services.Welcome
                 var avatarToLoad = await ImageGenerator.AvatarGenerator(user);
                 var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad);
                 var imgstr = image.ToString();
-                var guild = _discord.GetGuild(234505708861652993);
-                var channel = guild.GetTextChannel(360140270605434882);
+                var guild = _discord.GetGuild(339370914724446208);
+                var channel = guild.GetTextChannel(339371997802790913);
                 await channel.SendFileAsync(@"Data\Images\Welcome\Cache\Banner\welcome.png", "");
             });
             return Task.CompletedTask;

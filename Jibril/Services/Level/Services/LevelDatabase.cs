@@ -10,7 +10,7 @@ namespace Jibril.Services.Level.Services
     public class LevelDatabase
     {
         private string _table { get; set; }
-        string server = "localhost";
+        string server = "192.168.10.143";
         string database = "hanekawa";
         string username = "admin";
         string password = "jevel123";
@@ -19,19 +19,26 @@ namespace Jibril.Services.Level.Services
 
         public LevelDatabase(string table)
         {
-            _table = table;
-            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            try
             {
-                Server = server,
-                UserID = username,
-                Password = password,
-                Database = database,
-                SslMode = MySqlSslMode.None,
-                Pooling = POOLING
-            };
-            var connectionString = stringBuilder.ToString();
-            dbConnection = new MySqlConnection(connectionString);
-            dbConnection.Open();
+                _table = table;
+                MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+                {
+                    Server = server,
+                    UserID = username,
+                    Password = password,
+                    Database = database,
+                    SslMode = MySqlSslMode.None,
+                    Pooling = POOLING
+                };
+                var connectionString = stringBuilder.ToString();
+                dbConnection = new MySqlConnection(connectionString);
+                dbConnection.Open();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
         public MySqlDataReader FireCommand(string query)
         {
@@ -53,11 +60,18 @@ namespace Jibril.Services.Level.Services
 
         public static void AddExperience(IUser user, int exp, int credit)
         {
-            var database = new LevelDatabase("hanekawa");
-            var str = $"UPDATE exp SET xp = xp + '{exp}', total_xp = total_xp + '{exp}', tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
-            var reader = database.FireCommand(str);
-            database.CloseConnection();
-            return;
+            try
+            {
+                var database = new LevelDatabase("hanekawa");
+                var str = $"UPDATE exp SET xp = xp + '{exp}', total_xp = total_xp + '{exp}', tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
+                var reader = database.FireCommand(str);
+                database.CloseConnection();
+                return;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public static void Levelup(IUser user, int exp)
@@ -98,8 +112,8 @@ namespace Jibril.Services.Level.Services
             {
                 var userId = (string)reader["user_id"];
                 var userName = (string)reader["username"];
-                var currentTokens = (int)reader["tokens"];
-                var event_tokens = (int)reader["event_tokens"];
+                var currentTokens = (uint)reader["tokens"];
+                var event_tokens = (uint)reader["event_tokens"];
                 var level = (int)reader["level"];
                 var exp = (int)reader["xp"];
                 var totalExp = (int)reader["total_xp"];

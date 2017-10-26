@@ -14,7 +14,7 @@ namespace Jibril.Services
     public class DatabaseService
     {
         private string _table { get; set; }
-        string server = "localhost";
+        string server = "192.168.10.143";
         string database = "hanekawa";
         string username = "admin";
         string password = "jevel123";
@@ -59,10 +59,8 @@ namespace Jibril.Services
         {
             var result = new List<String>();
             var database = new DatabaseService("hanekawa");
-
             var str = $"SELECT * FROM exp WHERE user_id = '{user.Id}'";
             var exec = database.FireCommand(str);
-
             while (exec.Read())
             {
                 var userId = (string)exec["user_id"];
@@ -91,8 +89,8 @@ namespace Jibril.Services
             {
                 var userId = (string)exec["user_id"];
                 var userName = (string)exec["username"];
-                var currentTokens = (int)exec["tokens"];
-                var event_tokens = (int)exec["event_tokens"];
+                var currentTokens = (uint)exec["tokens"];
+                var event_tokens = (uint)exec["event_tokens"];
                 var level = (int)exec["level"];
                 var exp = (int)exec["xp"];
                 var totalExp = (int)exec["total_xp"];

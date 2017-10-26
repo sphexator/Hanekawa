@@ -9,7 +9,7 @@ namespace Jibril.Modules.Suggestion.Services
     public class SuggestionDB
     {
         private string _table { get; set; }
-        string server = "localhost";
+        string server = "192.168.10.143";
         string database = "hanekawa";
         string username = "admin";
         string password = "jevel123";

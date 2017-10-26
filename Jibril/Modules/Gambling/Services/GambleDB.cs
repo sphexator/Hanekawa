@@ -10,7 +10,7 @@ namespace Jibril.Modules.Gambling.Services
     public class GambleDB
     {
         private string _table { get; set; }
-        string server = "localhost";
+        string server = "192.168.10.143";
         string database = "hanekawa";
         string username = "admin";
         string password = "jevel123";
@@ -100,8 +100,8 @@ namespace Jibril.Modules.Gambling.Services
 
                 var userId = (string)reader["user_id"];
                 var userName = (string)reader["username"];
-                var currentTokens = (int)reader["tokens"];
-                var event_tokens = (int)reader["event_tokens"];
+                var currentTokens = (uint)reader["tokens"];
+                var event_tokens = (uint)reader["event_tokens"];
                 var level = (int)reader["level"];
                 var exp = (int)reader["xp"];
                 var totalExp = (int)reader["total_xp"];
