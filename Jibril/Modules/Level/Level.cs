@@ -10,6 +10,7 @@ using Jibril.Services.Level.Services;
 using Jibril.Services;
 using Jibril.Data.Variables;
 using Jibril.Preconditions;
+using Jibril.Modules.Gambling.Services;
 
 namespace Jibril.Modules.Level
 {
@@ -108,6 +109,38 @@ namespace Jibril.Modules.Level
                 });
             }
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+        }
+
+        [Command("daily", RunMode = RunMode.Async)]
+        [RequiredChannel(339383206669320192)]
+        public async Task Daily()
+        {
+            var user = Context.User;
+            var result = DatabaseService.CheckUser(user);
+            if (result.Count() <= 0) DatabaseService.EnterUser(user);
+            var userData = DatabaseService.UserData(user).FirstOrDefault();
+
+            DateTime now = DateTime.Now;
+            DateTime daily = userData.Daily;
+            int difference = DateTime.Compare(daily, now);
+
+            if ((userData.Daily.ToString() == "0001-01-01 00:00:00") || (daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0))
+            {
+                LevelDatabase.ChangeDaily(user);
+                if ((userData.Daily.ToString() == "0001-01-01 00:00:00") || (daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0))
+                {
+                    int tokens = 200;
+                    GambleDB.AddCredit(user, tokens);
+                    await ReplyAsync($"You received your daily ${tokens}!");
+                }
+            }
+            else
+            {
+                TimeSpan diff = now - daily;
+                TimeSpan di = new TimeSpan(23 - diff.Hours, 60 - diff.Minutes, 60 - diff.Seconds);
+
+                await ReplyAsync($"Your credits refresh in {di}!");
+            }
         }
     }
 }

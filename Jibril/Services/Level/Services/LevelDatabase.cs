@@ -35,7 +35,7 @@ namespace Jibril.Services.Level.Services
                 dbConnection = new MySqlConnection(connectionString);
                 dbConnection.Open();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -68,7 +68,7 @@ namespace Jibril.Services.Level.Services
                 database.CloseConnection();
                 return;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -88,6 +88,15 @@ namespace Jibril.Services.Level.Services
             var database = new LevelDatabase("hanekawa");
             var str = $"UPDATE exp SET cooldown = curtime() WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
+            database.CloseConnection();
+            return;
+        }
+
+        public static void ChangeDaily(IUser user)
+        {
+            var database = new LevelDatabase("hanekawa");
+            var strings = string.Format($"UPDATE exp SET daily = curtime() WHERE user_id = '{user.Id}'");
+            var reader = database.FireCommand(strings);
             database.CloseConnection();
             return;
         }

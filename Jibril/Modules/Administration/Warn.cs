@@ -114,6 +114,7 @@ namespace Jibril.Modules.Administration
                 }
             }
         }
+
         [Command("warnlog")]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task WarnLog(SocketGuildUser user)

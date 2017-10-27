@@ -45,6 +45,36 @@ namespace Jibril.Modules.Game
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You're either not damaged or in combat", Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
+        }
+
+        [Command("kit")]
+        [RequiredChannel(346429281314013184)]
+        public async Task UseKit()
+        {
+            var user = Context.User;
+            var inventoryCheck = GambleDB.Inventory(user).FirstOrDefault();
+            if (inventoryCheck == null)
+            {
+                GambleDB.CreateInventory(user);
+            }
+            var inventory = GambleDB.Inventory(user).FirstOrDefault();
+            if (inventory.Repairkit > 0)
+            {
+                GambleDB.UseItem(user, "RepairKit");
+                GameDatabase.Repair(user);
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithColor(new Color(0x4d006d));
+                embed.Description = $"{user.Username} used a repair kit.";
+                await ReplyAsync("", false, embed.Build());
+            }
+            else if (inventory.Repairkit <= 0)
+            {
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithColor(new Color(211, 47, 47));
+                embed.Description = $"{user.Username} - You do not have any repair kits on you";
+                await ReplyAsync("", false, embed.Build());
+            }
 
         }
     }

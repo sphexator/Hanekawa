@@ -71,8 +71,8 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"Action: *bent* \n" +
-                $"❌ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                var content = $"❌ *bent* \n" +
+                $"{user.Mention} got *bent*. (**{user.Id}**)\n" +
                 $"Moderator:";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
@@ -85,8 +85,8 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"Action: *bent* \n" +
-                $"❕ {user.Mention} got *unbent*. (**{user.Id}**)";
+                var content = $"❕ *unbent* \n" +
+                $"{user.Mention} (**{user.Id}**)";
                 var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
                 var log = guild.GetTextChannel(339381104534355970);
                 await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);

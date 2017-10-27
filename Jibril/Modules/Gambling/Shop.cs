@@ -15,6 +15,35 @@ namespace Jibril.Modules.Gambling
 {
     public class Shop : ModuleBase<SocketCommandContext>
     {
+        [Command("inventory", RunMode = RunMode.Async)]
+        [Alias("inv")]
+        [RequiredChannel(339383206669320192)]
+        public async Task UserInventory()
+        {
+            var user = Context.User;
+            var inventoryCheck = GambleDB.Inventory(user).FirstOrDefault();
+            if (inventoryCheck == null)
+            {
+                GambleDB.CreateInventory(user);
+            }
+            var inventory = GambleDB.Inventory(user).FirstOrDefault();
+
+            string[] items = { "Repair Kit", "Damage Boost", "Shield", "Custom Role" };
+            EmbedBuilder embed = new EmbedBuilder();
+            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+
+            author.WithIconUrl(user.GetAvatarUrl());
+            author.WithName(user.Username);
+            embed.WithAuthor(author);
+            embed.WithColor(new Color(Colours.DefaultColour));
+            embed.Description = $"" +
+                $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
+                $"{items[1].PadRight(15)}   {inventory.Dmgboost}\n" +
+                $"{items[2].PadRight(25)}   {inventory.Shield}\n" +
+                $"{items[3].PadRight(17)}   {inventory.CustomRole}";
+            await ReplyAsync($"", false, embed.Build());
+        }
+
         [Command("shop", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         public async Task Shoplist()
