@@ -2,7 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Services;
-using System;
+using System;https://www.reddit.com/r/LivestreamFail/
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,8 +22,6 @@ namespace Jibril.Modules.ApplicationForm
             var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
             if (userData.Level >= 10)
             {
-
-
                 await ReplyAsync("Application process started.\n" +
                                     "Required userdata collected." +
                                     "\n" +
@@ -31,56 +29,63 @@ namespace Jibril.Modules.ApplicationForm
                                     "Keep in mind, when you answer the questions, you need to keep them all in one(1) message." +
                                     "\n" +
                                     "\n" +
-                                    "Question 1/3 \n" +
+                                    "Question 1/4 \n" +
                                     "How old are you?");
                 var age = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                 if (age != null)
                 {
-                    await ReplyAsync("Question 2/3 \n" +
-                                        "Tell us a bit about yourself.");
-                    var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
+                    await ReplyAsync("Question 2/4\n" +
+                                        "Region and/or timezone?");
+                    var region = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
-                    if (response != null & age != null)
+                    if (region != null)
                     {
-                        await ReplyAsync("Question 3/3 \n" +
-                                            "Do you have any previous moderation experience?\n" +
-                                            "\n" +
-                                            "Prioritize experience on discord but name any you got");
-                        var experience = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
+                        await ReplyAsync("Question 3/4 \n" +
+                                            "Tell us a bit about yourself.");
+                        var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
-                        if (experience != null && response != null && age != null)
+                        if (response != null)
                         {
-                            await ReplyAsync($"Application sent.");
-                            EmbedBuilder embed = new EmbedBuilder();
-                            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
-                            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+                            await ReplyAsync("Question 4/4 \n" +
+                                                "Do you have any previous moderation experience?\n" +
+                                                "\n" +
+                                                "Prioritize experience on discord but name any you got");
+                            var experience = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
-                            author.IconUrl = Context.User.GetAvatarUrl();
-                            author.Name = Context.User.Username;
-                            footer.WithText($"{DateTime.Now}");
+                            var totalMessageCount = $"**Age:** {age}\n" +
+                                                    $"**Region/Timezone:**\n" +
+                                                    $"{region}\n" +
+                                                    $"**About:**\n" +
+                                                    $"{response}\n" +
+                                                    $"\n" +
+                                                    $"**Experience:**\n" +
+                                                    $"{experience}";
 
-                            embed.Description = $"Age:{age}\n" +
-                                                $"\n" +
-                                                $"Tell us a bit about yourself:\n" +
-                                                $"{response}\n" +
-                                                $"\n" +
-                                                $"Experience:\n" +
-                                                $"{experience}";
+                            if (experience != null && totalMessageCount.Length <= 2000)
+                            {
+                                EmbedBuilder embed = new EmbedBuilder();
+                                EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+                                EmbedFooterBuilder footer = new EmbedFooterBuilder();
 
-                            embed.WithAuthor(author);
-                            embed.WithFooter(footer);
+                                author.IconUrl = Context.User.GetAvatarUrl();
+                                author.Name = Context.User.Mention;
+                                footer.WithText($"{DateTime.Now}");
 
-                            var guild = Context.Client.GetGuild(339370914724446208);
+                                embed.Description = totalMessageCount;
 
-                            var log = guild.GetChannel(366672975153594378) as ITextChannel;
-                            await log.SendMessageAsync("", false, embed.Build());
-
-                        }
-                        else
-                        {
-                            await ReplyAsync("Timed out");
-                            return;
+                                embed.WithAuthor(author);
+                                embed.WithFooter(footer);
+                                var guild = Context.Client.GetGuild(339370914724446208);
+                                var log = guild.GetChannel(366672975153594378) as ITextChannel;
+                                await log.SendMessageAsync("", false, embed.Build());
+                                await ReplyAsync($"Application sent.");
+                            }
+                            else
+                            {
+                                await ReplyAsync("Timed out");
+                                return;
+                            }
                         }
                     }
                     else

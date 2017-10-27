@@ -43,8 +43,7 @@ namespace Jibril.Modules.Suggestion
             EmbedFooterBuilder footer = new EmbedFooterBuilder();
 
             embed.Color = new Color(Colours.DefaultColour);
-            embed.Description = $"{content}" +
-                $"\n";
+            embed.Description = $"{content}";
 
             author.WithIconUrl(Context.User.GetAvatarUrl());
             author.WithName(Context.User.Username);
@@ -62,7 +61,6 @@ namespace Jibril.Modules.Suggestion
                 await suggestMsg.AddReactionAsync(new Emoji("👍")).ConfigureAwait(false);
                 await Task.Delay(260);
                 await suggestMsg.AddReactionAsync(new Emoji("👎")).ConfigureAwait(false);
-
             }
             catch (Exception e)
             {
