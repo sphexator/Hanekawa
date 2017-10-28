@@ -30,13 +30,13 @@ namespace Jibril.Modules.Profile
             var finalizeBG = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
 
             await Context.Channel.SendFileAsync(finalizeBG);
+            RemoveImage.RemoveSavedProfile();
         }
 
         [Command("Profile", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         public async Task PostProfile(SocketUser user)
         {
-
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var gameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
 
@@ -46,6 +46,7 @@ namespace Jibril.Modules.Profile
             var finalizeBG = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
 
             await Context.Channel.SendFileAsync(finalizeBG);
+            RemoveImage.RemoveSavedProfile();
         }
     }
 }

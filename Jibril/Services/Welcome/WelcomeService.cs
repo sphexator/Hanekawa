@@ -29,15 +29,14 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
-                DatabaseService.EnterUser(user);
-                GameDatabase.CreateGameDBEntry(user);
-                GambleDB.CreateInventory(user);
-                var avatarToLoad = await ImageGenerator.AvatarGenerator(user);
-                var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad);
+                DatabaseInsert.InserToDb(user);
+                var randomString = RandomStringGenerator.StringGenerator();
+                var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);
+                var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad, randomString);
                 var imgstr = image.ToString();
                 var guild = _discord.GetGuild(339370914724446208);
                 var channel = guild.GetTextChannel(339371997802790913);
-                await channel.SendFileAsync(@"Data\Images\Welcome\Cache\Banner\welcome.png", "");
+                await channel.SendFileAsync(imgstr, "");
             });
             return Task.CompletedTask;
         }

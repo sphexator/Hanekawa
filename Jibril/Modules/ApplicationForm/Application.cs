@@ -2,7 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Services;
-using System;https://www.reddit.com/r/LivestreamFail/
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
