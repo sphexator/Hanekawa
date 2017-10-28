@@ -37,6 +37,7 @@ namespace Jibril.Services.Welcome
                 var guild = _discord.GetGuild(339370914724446208);
                 var channel = guild.GetTextChannel(339371997802790913);
                 await channel.SendFileAsync(imgstr, "");
+                RemoveImage.WelcomeFileDelete();
             });
             return Task.CompletedTask;
         }

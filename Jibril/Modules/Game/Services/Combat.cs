@@ -17,7 +17,7 @@ namespace Jibril.Modules.Game.Services
             GameDatabase.EnemyDamageTaken(userDamage, user);
             var enemyHealth = gameData.Enemyhealth - gameData.EnemyDamageTaken;
             var afterUserDmg = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
-            if(gameData.Enemyhealth > afterUserDmg.Damagetaken)
+            if(gameData.Enemyhealth > afterUserDmg.EnemyDamageTaken)
             {
                 GameDatabase.UserDamageTaken(enemyDamage, user);
                 var afterDmg = GameDatabase.GetUserGameStatus(user).FirstOrDefault();

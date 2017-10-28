@@ -40,14 +40,14 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            var role = guild.GetRole(339711429211062273);
+                            var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"Action: *Gagged* \n" +
-                            $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                            var content = $"🔇 user *Gagged* \n" +
+                            $"User: {user.Mention}. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
                             $"Reason: Discord invite link \n" +
                             $"Message: {rawMessage.Content}";
@@ -55,18 +55,18 @@ namespace Jibril.Services.AutoModerator
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
-                        else if (rawMessage.Content.IsScamLink() == true)
+                        if (rawMessage.Content.IsScamLink() == true)
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            var role = guild.GetRole(339711429211062273);
+                            var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"Action: *Gagged* \n" +
-                            $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                            var content = $"🔇 user *Gagged* \n" +
+                            $"User: {user.Mention}. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
                             $"Reason: Scam/malicious link \n" +
                             $"Message: {rawMessage.Content}";
@@ -74,18 +74,18 @@ namespace Jibril.Services.AutoModerator
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
-                        else if (rawMessage.Content.Length >= 1500)
+                        if (rawMessage.Content.Length >= 1500)
                         {
                             await rawMessage.DeleteAsync();
                             var guild = _discord.GetGuild(339370914724446208);
-                            var role = guild.GetRole(339711429211062273);
+                            var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
                             await user.ModifyAsync(x => x.Mute = true);
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"Action: *Gagged* \n" +
-                            $"❕ {user.Mention} got *bent*. (**{user.Id}**)\n" +
+                            var content = $"🔇 user *Gagged* \n" +
+                            $"User: {user.Mention}. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
                             $"Reason: Character count >= 1500 \n" +
                             $"Message: Too Long Didn't Read.";

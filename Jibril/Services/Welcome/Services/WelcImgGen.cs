@@ -34,12 +34,12 @@ namespace Jibril.Services.Welcome.Services
 
                 img.Mutate(ctx => ctx
                     .DrawImage(avatar, new Size(60, 60), new Point(10, 10), GraphicsOptions.Default)
-                    .DrawText(text.Truncate(15), font, Rgba32.White, path, new TextGraphicsOptions(true)
+                    .DrawText(text.Truncate(15), font, Rgba32.White, new PointF(245, 51), new TextGraphicsOptions(true)
                     {
-                        WrapTextWidth = path.Length,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
                         Antialias = true,
-                        ApplyKerning = true,
-                        HorizontalAlignment = HorizontalAlignment.Center
+                        ApplyKerning = true
                     }));
                 img.Save(filePath);
             }

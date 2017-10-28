@@ -38,13 +38,22 @@ namespace Jibril.Modules.Suggestion
             SuggestionDB.AddSuggestion(Context.User, time);
             var suggestionNr = SuggestionDB.GetSuggestionID(time);
 
-            EmbedBuilder embed = new EmbedBuilder();
+
             EmbedAuthorBuilder author = new EmbedAuthorBuilder();
             EmbedFooterBuilder footer = new EmbedFooterBuilder();
-
-            embed.Color = new Color(Colours.DefaultColour);
-            embed.Description = $"{content}";
-
+            EmbedBuilder embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.DefaultColour),
+                Description = $"{content}"
+            };
+            if (Context.Message.Attachments != null)
+            {
+                var file = Context.Message.Attachments.Select(x => x.Url).ToString();
+                if (_AttachmentUrl(file) == true)
+                {
+                    embed.ImageUrl = file;
+                }
+            }
             author.WithIconUrl(Context.User.GetAvatarUrl());
             author.WithName(Context.User.Username);
 
@@ -52,6 +61,7 @@ namespace Jibril.Modules.Suggestion
 
             embed.WithAuthor(author);
             embed.WithFooter(footer);
+
             try
             {
                 var suggestMsg = await sc.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -156,6 +166,15 @@ namespace Jibril.Modules.Suggestion
 
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+        }
+
+        private static Boolean _AttachmentUrl(string url)
+        {
+            if (url.EndsWith(".png") == true) return true;
+            if (url.EndsWith(".jpeg") == true) return true;
+            if (url.EndsWith(".jpg") == true) return true;
+            if (url.EndsWith(".gif") == true) return true;
+            else return false;
         }
     }
 }
