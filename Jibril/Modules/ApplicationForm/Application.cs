@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord.Addons.Preconditions;
+using Jibril.Data.Variables;
 
 namespace Jibril.Modules.ApplicationForm
 {
@@ -78,10 +79,12 @@ namespace Jibril.Modules.ApplicationForm
                                     EmbedFooterBuilder footer = new EmbedFooterBuilder();
 
                                     author.IconUrl = Context.User.GetAvatarUrl();
-                                    author.Name = Context.User.Mention;
+                                    author.Name = $"{Context.User.Username}#{Context.User.Discriminator}";
+
                                     footer.WithText($"{DateTime.Now}");
 
                                     embed.Description = totalMessageCount;
+                                    embed.Color = new Color(Colours.DefaultColour);
 
                                     embed.WithAuthor(author);
                                     embed.WithFooter(footer);
