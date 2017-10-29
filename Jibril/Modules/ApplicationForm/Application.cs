@@ -52,7 +52,7 @@ namespace Jibril.Modules.ApplicationForm
                         if (region != null)
                         {
                             await ReplyAsync("Question 4/5 \n" +
-                                                "Tell us a bit about yourself.");
+                                                "Tell us briefly about yourself.");
                             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                             if (response != null)
@@ -64,8 +64,11 @@ namespace Jibril.Modules.ApplicationForm
                                 var experience = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                                 var totalMessageCount = $"**Age:** {age}\n" +
+                                                        $"**Position**\n" +
+                                                        $"{position}\n" +
                                                         $"**Region/Timezone:**\n" +
                                                         $"{region}\n" +
+                                                        $"\n" +
                                                         $"**About:**\n" +
                                                         $"{response}\n" +
                                                         $"\n" +
