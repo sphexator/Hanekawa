@@ -9,10 +9,10 @@ namespace Jibril.Modules.Game.Services
     public class GameDatabase
     {
         private string _table { get; set; }
-        string server = "localhost";
-        string database = "hanekawa";
-        string username = "admin";
-        string password = "jevel123";
+        string server = DbInfo.server;
+        string database = DbInfo.DbNorm;
+        string username = DbInfo.username;
+        string password = DbInfo.password;
         Boolean POOLING = false;
         private MySqlConnection dbConnection;
 

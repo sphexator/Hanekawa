@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using Discord.WebSocket;
 using Discord;
-using Discord.Commands;
 
 namespace Jibril.Services.Level
 {
@@ -45,7 +44,7 @@ namespace Jibril.Services.Level
                     Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
                     if ((userData.Xp + exp) >= levelupReq)
                     {
-                        var remainingExp = userData.Xp - exp;
+                        var remainingExp = (userData.Xp + exp) - userData.Xp;
                         LevelDatabase.Levelup(user, remainingExp);
                         await LevelRoles.AssignNewRole(user, userData.Level);
                     }
@@ -83,6 +82,5 @@ namespace Jibril.Services.Level
             });
             return Task.CompletedTask;
         }
-
     }
 }

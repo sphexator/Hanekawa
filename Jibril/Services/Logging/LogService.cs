@@ -38,7 +38,7 @@ namespace Jibril.Services.Logging
             _discord.MessageDeleted += MessageDeleted;
             _discord.MessageUpdated += MessageUpdated;
         }
-         
+
         private Task UserJoined(SocketGuildUser user)
         {
             var _ =  Task.Run(async () =>

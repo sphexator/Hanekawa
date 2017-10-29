@@ -18,7 +18,7 @@ namespace Jibril.Extensions
         public static bool IsDiscordInvite(this string str)
             => filterRegex.IsMatch(str);
 
-        private static readonly Regex scamFilterSteam = new Regex(@"(?:linkd\.in|t\.co|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli\.|steam-halloween\.com|google\.com|snip\.li).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex scamFilterSteam = new Regex(@"(?:linkd\.in|t\.co|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli\.|steam-halloween\.com|google\.com|snip\.li|pointsprizes\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         public static bool IsScamLink(this string str)
             => scamFilterSteam.IsMatch(str);
     }

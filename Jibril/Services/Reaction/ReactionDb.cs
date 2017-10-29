@@ -1,4 +1,5 @@
-﻿using Jibril.Services.Reaction.List;
+﻿using Jibril.Data.Variables;
+using Jibril.Services.Reaction.List;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,10 @@ namespace Jibril.Services.Reaction
     public class ReactionDb
     {
         private string _table { get; set; }
-        string server = "192.168.10.143";
-        string database = "hanekawa";
-        string username = "admin";
-        string password = "jevel123";
+        string server = DbInfo.server;
+        string database = DbInfo.DbNorm;
+        string username = DbInfo.username;
+        string password = DbInfo.password;
         Boolean POOLING = false;
         private MySqlConnection dbConnection;
 

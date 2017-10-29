@@ -43,7 +43,6 @@ namespace Jibril
             await _client.StartAsync();
 
             await Task.Delay(-1);
-            
         }
 
         private IServiceProvider ConfigureServices()

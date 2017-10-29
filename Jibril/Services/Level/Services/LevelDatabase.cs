@@ -4,16 +4,17 @@ using System.Text;
 using Discord;
 using Jibril.Services.Level.Lists;
 using MySql.Data.MySqlClient;
+using Jibril.Data.Variables;
 
 namespace Jibril.Services.Level.Services
 {
     public class LevelDatabase
     {
         private string _table { get; set; }
-        string server = "192.168.10.143";
-        string database = "hanekawa";
-        string username = "admin";
-        string password = "jevel123";
+        string server = DbInfo.server;
+        string database = DbInfo.DbNorm;
+        string username = DbInfo.username;
+        string password = DbInfo.password;
         Boolean POOLING = false;
         private MySqlConnection dbConnection;
 
@@ -77,7 +78,7 @@ namespace Jibril.Services.Level.Services
         public static void Levelup(IUser user, int exp)
         {
             var database = new LevelDatabase("hanekawa");
-            var str = $"UPDATE exp SET level = level + 1, xp = '{exp}' WHERE user_id = '{user.Id}'";
+            var str = $"UPDATE exp SET level = level + 1, xp = 1 WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
             return;

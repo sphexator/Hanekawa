@@ -46,7 +46,7 @@ namespace Jibril.Services.AutoModerator
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"🔇 user *Gagged* \n" +
+                            var content = $"🔇 *Gagged* \n" +
                             $"User: {user.Mention}. (**{user.Id}**)\n" +
                             $"Moderator: Auto Moderator \n" +
                             $"Reason: Discord invite link \n" +

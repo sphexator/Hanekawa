@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Data.Variables;
 using Jibril.Services.Level.Lists;
 using MySql.Data.MySqlClient;
 using System;
@@ -14,10 +15,10 @@ namespace Jibril.Services
     public class DatabaseService
     {
         private string _table { get; set; }
-        string server = "192.168.10.143";
-        string database = "hanekawa";
-        string username = "admin";
-        string password = "jevel123";
+        string server = DbInfo.server;
+        string database = DbInfo.DbNorm;
+        string username = DbInfo.username;
+        string password = DbInfo.password;
         Boolean POOLING = false;
         private MySqlConnection dbConnection;
 

@@ -170,10 +170,10 @@ namespace Jibril.Modules.Suggestion
 
         private static Boolean _AttachmentUrl(string url)
         {
-            if (url.EndsWith(".png") == true) return true;
-            if (url.EndsWith(".jpeg") == true) return true;
-            if (url.EndsWith(".jpg") == true) return true;
-            if (url.EndsWith(".gif") == true) return true;
+            if (url.EndsWith(".png") == true)   return true;
+            if (url.EndsWith(".jpeg") == true)  return true;
+            if (url.EndsWith(".jpg") == true)   return true;
+            if (url.EndsWith(".gif") == true)   return true;
             else return false;
         }
     }
