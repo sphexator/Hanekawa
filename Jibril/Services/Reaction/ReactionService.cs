@@ -23,7 +23,7 @@ namespace Jibril.Services.Reaction
             _discord.ReactionRemoved += _discord_ReactionRemoved;
         }
 
-        private Task _discord_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
             var _ = Task.Run(async () =>
             {
@@ -81,7 +81,7 @@ namespace Jibril.Services.Reaction
 
         }
 
-        private Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private Task _discord_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
             var _ = Task.Run(() =>
             {
