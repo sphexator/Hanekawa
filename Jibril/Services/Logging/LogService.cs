@@ -186,7 +186,7 @@ namespace Jibril.Services.Logging
             factory.AddConsole();
             return factory;
         }
-
+         
         private Task LogDiscord(LogMessage message)
         {
             _discordLogger.Log(
