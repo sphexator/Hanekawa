@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Jibril.Services.Common;
 using Jibril.Data.Variables;
 using Discord.Rest;
+using Jibril.Modules.Administration.Services;
 
 namespace Jibril.Services.Logging
 {
@@ -71,25 +72,35 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var caseid = CaseNumberGenerator.InsertCaseID(user);
-                var content = $"❌ *bent* \n" +
-                $"User: {user.Mention}. (**{user.Id}**)";
-                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
-                embed.AddField(x =>
+                try
                 {
-                    x.Name = "Moderator";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-                embed.AddField(x =>
+                    var time = DateTime.Now;
+                    AdminDb.AddActionCase(user, time);
+                    var caseId = AdminDb.GetActionCaseID(time);
+
+                    var content = $"❌ *bent* \n" +
+                    $"User: {user.Mention}. (**{user.Id}**)";
+                    var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseId[0]}", Colours.FailColour, user);
+                    embed.AddField(x =>
+                    {
+                        x.Name = "Moderator";
+                        x.Value = "N/A";
+                        x.IsInline = true;
+                    });
+                    embed.AddField(x =>
+                    {
+                        x.Name = "Reason";
+                        x.Value = "N/A";
+                        x.IsInline = true;
+                    });
+                    var log = guild.GetTextChannel(339381104534355970);
+                    var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                    CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseId[0]);
+                }
+                catch(Exception e)
                 {
-                    x.Name = "Reason";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-                var log = guild.GetTextChannel(339381104534355970);
-                var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
-                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                    Console.WriteLine(e);
+                }
             });
             return Task.CompletedTask;
         }
@@ -98,25 +109,32 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var caseid = CaseNumberGenerator.InsertCaseID(user);
-                var content = $"✔ *unbent* \n" +
-                $"user: {user.Mention} (**{user.Id}**)";
-                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.OKColour, user);
-                embed.AddField(x =>
+                try
                 {
-                    x.Name = "Moderator";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-                embed.AddField(x =>
+                    var caseid = CaseNumberGenerator.InsertCaseID(user);
+                    var content = $"✔ *unbent* \n" +
+                    $"user: {user.Mention} (**{user.Id}**)";
+                    var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.OKColour, user);
+                    embed.AddField(x =>
+                    {
+                        x.Name = "Moderator";
+                        x.Value = "N/A";
+                        x.IsInline = true;
+                    });
+                    embed.AddField(x =>
+                    {
+                        x.Name = "Reason";
+                        x.Value = "N/A";
+                        x.IsInline = true;
+                    });
+                    var log = guild.GetTextChannel(339381104534355970);
+                    var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                    CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                }
+                catch(Exception e)
                 {
-                    x.Name = "Reason";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-                var log = guild.GetTextChannel(339381104534355970);
-                var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
-                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                    Console.WriteLine(e);
+                }
             });
             return Task.CompletedTask;
         }
