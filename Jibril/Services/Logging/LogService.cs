@@ -218,10 +218,7 @@ namespace Jibril.Services.Logging
                             x.Value = $"{msg.Content}";
                             x.IsInline = false;
                         });
-                        if(newMsg.Embeds.Select(x => x.Image).ToString() != null)
-                        {
-                            embed.ImageUrl = newMsg.Embeds.Select(x => x.Image).ToString();
-                        }
+
                         footer.WithText($"{DateTime.Now}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
