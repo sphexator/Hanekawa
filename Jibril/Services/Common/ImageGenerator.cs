@@ -20,6 +20,10 @@ namespace Jibril.Services.Common
         {
             HttpClient httpClient = new HttpClient();
             HttpResponseMessage response = null;
+
+            Random rand = new Random();
+            var avaMutate = rand.Next(0, 60);
+
             var aviPath = $"Data/Images/Welcome/Cache/Avatar/{randomString}.png";
             try
             {
@@ -32,7 +36,7 @@ namespace Jibril.Services.Common
             Stream inputStream = await response.Content.ReadAsStreamAsync();
             using (var img = Image.Load(inputStream))
             {
-                img.Mutate(x => x.ConvertToAvatar(new Size(60, 60), 20));
+                img.Mutate(x => x.ConvertToAvatar(new Size(60, 60), avaMutate));
                 img.Save(aviPath);
                 return aviPath;
             }      

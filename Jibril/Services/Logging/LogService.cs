@@ -125,6 +125,7 @@ namespace Jibril.Services.Logging
                         });
                         embed.WithFooter($"{DateTime.Now}");
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await Task.Delay(2000);
                     }
                 }
                 catch (Exception ex)
@@ -150,7 +151,7 @@ namespace Jibril.Services.Logging
                     if (msg == null) return;
                     if (newMsg == null) return;
                     if (chtx == null) return;
-                    if (user.IsBot != true)
+                    if (user.IsBot != true && oldMsg.Value.Content != newMsg.Content)
                     {
                         EmbedBuilder embed = new EmbedBuilder
                         {
@@ -169,8 +170,13 @@ namespace Jibril.Services.Logging
                             x.Value = $"{msg.Content}";
                             x.IsInline = false;
                         });
+                        if(newMsg.Attachments != null)
+                        {
+                            embed.ImageUrl = newMsg.Attachments.ToString();
+                        }
                         embed.WithFooter($"{DateTime.Now}");
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await Task.Delay(2000);
                     }
                 }
                 catch (Exception e)
@@ -186,7 +192,7 @@ namespace Jibril.Services.Logging
             factory.AddConsole();
             return factory;
         }
-         
+        
         private Task LogDiscord(LogMessage message)
         {
             _discordLogger.Log(
