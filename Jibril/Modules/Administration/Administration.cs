@@ -115,7 +115,7 @@ namespace Jibril.Modules.Administration
                 var channel = Context.Channel as ITextChannel;
                 await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
 
-                var content = $"🔇 user *Gagged* \n" +
+                var content = $"🔇 *Gagged* \n" +
                 $"User: {user.Mention}. (**{user.Id}**)\n" +
                 $"Moderator: {Context.User.Mention} \n" +
                 $"Reason: \n";
