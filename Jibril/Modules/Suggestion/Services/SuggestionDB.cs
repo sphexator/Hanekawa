@@ -75,7 +75,6 @@ namespace Jibril.Modules.Suggestion.Services
             }
             database.CloseConnection();
             return result;
-
         }
 
         public static void UpdateSuggestion(string msgid, int id)

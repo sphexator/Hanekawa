@@ -39,6 +39,7 @@ namespace Jibril.Services.AutoModerator
                         if (rawMessage.Content.IsDiscordInvite() == true)
                         {
                             await rawMessage.DeleteAsync();
+                            var caseid = CaseNumberGenerator.InsertCaseID(user);
                             var guild = _discord.GetGuild(339370914724446208);
                             var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
@@ -47,17 +48,33 @@ namespace Jibril.Services.AutoModerator
                             var ch = guild.GetTextChannel(339381104534355970);
 
                             var content = $"🔇 *Gagged* \n" +
-                            $"User: {user.Mention}. (**{user.Id}**)\n" +
-                            $"Moderator: Auto Moderator \n" +
-                            $"Reason: Discord invite link \n" +
-                            $"Message: {rawMessage.Content}";
-                            var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                            $"User: {user.Mention}. (**{user.Id}**)";
+                            var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Auto Moderator";
+                                x.Value = "N/A";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Reason";
+                                x.Value = "Discord invite link";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Message";
+                                x.Value = $"{rawMessage.Content}";
+                                x.IsInline = false;
+                            });
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
                         if (rawMessage.Content.IsScamLink() == true)
                         {
                             await rawMessage.DeleteAsync();
+                            var caseid = CaseNumberGenerator.InsertCaseID(user);
                             var guild = _discord.GetGuild(339370914724446208);
                             var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
@@ -65,18 +82,34 @@ namespace Jibril.Services.AutoModerator
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"🔇 user *Gagged* \n" +
-                            $"User: {user.Mention}. (**{user.Id}**)\n" +
-                            $"Moderator: Auto Moderator \n" +
-                            $"Reason: Scam/malicious link \n" +
-                            $"Message: {rawMessage.Content}";
-                            var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                            var content = $"🔇 *Gagged* \n" +
+                            $"User: {user.Mention}. (**{user.Id}**)";
+                            var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Auto Moderator";
+                                x.Value = "N/A";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Reason";
+                                x.Value = "Scam/malicious link";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Message";
+                                x.Value = $"{rawMessage.Content}";
+                                x.IsInline = false;
+                            });
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
                         if (rawMessage.Content.Length >= 1500)
                         {
                             await rawMessage.DeleteAsync();
+                            var caseid = CaseNumberGenerator.InsertCaseID(user);
                             var guild = _discord.GetGuild(339370914724446208);
                             var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                             await user.AddRoleAsync(role);
@@ -84,17 +117,31 @@ namespace Jibril.Services.AutoModerator
 
                             var ch = guild.GetTextChannel(339381104534355970);
 
-                            var content = $"🔇 user *Gagged* \n" +
-                            $"User: {user.Mention}. (**{user.Id}**)\n" +
-                            $"Moderator: Auto Moderator \n" +
-                            $"Reason: Character count >= 1500 \n" +
-                            $"Message: Too Long Didn't Read.";
-                            var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                            var content = $"🔇 *Gagged* \n" +
+                            $"User: {user.Mention}. (**{user.Id}**)";
+                            var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Auto Moderator";
+                                x.Value = "N/A";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Reason";
+                                x.Value = "Character count >= 1500";
+                                x.IsInline = true;
+                            });
+                            embed.AddField(x =>
+                            {
+                                x.Name = "Message";
+                                x.Value = $"Too Long Didn't Read.";
+                                x.IsInline = false;
+                            });
 
                             await ch.SendMessageAsync("", false, embed.Build());
                         }
                     }
-                    else return;
                 }
                 catch
                 {

@@ -99,31 +99,26 @@ namespace Jibril.Modules.ApplicationForm
                                 else
                                 {
                                     await ReplyAsync("Timed out");
-                                    return;
                                 }
                             }
                             else
                             {
                                 await ReplyAsync("Timed out");
-                                return;
                             }
                         }
                         else
                         {
                             await ReplyAsync("Timed out");
-                            return;
                         }
                     }
                     else
                     {
                         await ReplyAsync("Timed out");
-                        return;
                     }
                 }
                 else
                 {
                     await ReplyAsync("Timed out");
-                    return;
                 }
             }
             else

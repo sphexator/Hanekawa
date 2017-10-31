@@ -31,7 +31,7 @@ namespace Jibril.Modules.Suggestion
 
             var time = DateTime.Now;
             var guild = Context.Guild as SocketGuild;
-            var sc = guild.GetChannel(342519715215835136) as ITextChannel;
+            var sc = guild.GetTextChannel(342519715215835136);
 
             await Task.Delay(100);
 

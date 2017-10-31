@@ -68,6 +68,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
             return result;
         }
+
         public static void AddWarn(IUser user)
         {
             var database = new AdminDb("hanekawa");
@@ -104,6 +105,69 @@ namespace Jibril.Modules.Administration.Services
                     Warnings = warnings,
                     Total_warnings = total_warnings
                 });
+            }
+            database.CloseConnection();
+            return result;
+        }
+
+
+        // Cases
+
+        public static void AddActionCase(IUser user, DateTime now)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"INSERT INTO modlog (user_id, date) VALUES ('{user.Id}', {now})";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
+        }
+
+        public static List<int> GetActionCaseID(DateTime time)
+        {
+            var result = new List<int>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM modlog WHERE date = '{time}'";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var suggestNr = (int)reader["id"];
+                result.Add(suggestNr);
+            }
+            database.CloseConnection();
+            return result;
+        }
+
+        public static void UpdateActionCase(string msgid, int id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE modlog SET msgid = '{msgid}' WHERE id = '{id}'";
+            var tablename = database.FireCommand(str);
+            database.CloseConnection();
+            return;
+        }
+
+        public static void RespondActionCase(uint casenr, string response, IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE modlog SET responduser = '{user.Id}', response = '{response}' WHERE id = '{casenr}'";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+            return;
+        }
+
+        public static List<String> ActionCaseMessage(uint casenr)
+        {
+            var result = new List<String>();
+            var database = new AdminDb("hanekawa");
+            var str = ($"SELECT * FROM modlog WHERE id = '{casenr}'");
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var msgid = (string)reader["msgid"];
+
+                result.Add(msgid);
             }
             database.CloseConnection();
             return result;

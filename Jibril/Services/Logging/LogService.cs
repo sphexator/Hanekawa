@@ -46,7 +46,7 @@ namespace Jibril.Services.Logging
                var content = $"" +
                $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
                $"Account created: {user.CreatedAt}";
-               var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
+               var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OKColour, user);
                var channel = user.Guild.GetTextChannel(339380907146477579);
                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
            });
@@ -60,7 +60,7 @@ namespace Jibril.Services.Logging
                 var content = $"" +
                 $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
                 $"Username: {user.Username}#{user.Discriminator}";
-                var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.FailColour, user);
                 var channel = user.Guild.GetTextChannel(339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -71,13 +71,25 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"❌ user *bent* \n" +
-                $"User: {user.Mention}. (**{user.Id}**)\n" +
-                $"Moderator: \n" +
-                $"Reason:";
-                var embed = EmbedGenerator.FooterEmbed(content, Colours.FailColour, user);
+                var caseid = CaseNumberGenerator.InsertCaseID(user);
+                var content = $"❌ *bent* \n" +
+                $"User: {user.Mention}. (**{user.Id}**)";
+                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
                 var log = guild.GetTextChannel(339381104534355970);
-                await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
             });
             return Task.CompletedTask;
         }
@@ -86,11 +98,25 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"✔ user *unbent* \n" +
+                var caseid = CaseNumberGenerator.InsertCaseID(user);
+                var content = $"✔ *unbent* \n" +
                 $"user: {user.Mention} (**{user.Id}**)";
-                var embed = EmbedGenerator.FooterEmbed(content, Colours.OKColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.OKColour, user);
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
                 var log = guild.GetTextChannel(339381104534355970);
-                await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
             });
             return Task.CompletedTask;
         }
