@@ -160,6 +160,7 @@ namespace Jibril.Services.Logging
                         {
                             Color = new Color(Colours.DefaultColour)
                         };
+                        EmbedFooterBuilder footer = new EmbedFooterBuilder();
                         embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
                         embed.AddField(efb =>
                         {
@@ -167,7 +168,9 @@ namespace Jibril.Services.Logging
                             efb.Value = ($"{msg.Content}");
                             efb.IsInline = false;
                         });
-                        embed.WithFooter($"{DateTime.Now}", optMsg.Value.Author.GetAvatarUrl());
+                        footer.WithText($"{DateTime.Now}");
+                        footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
+                        embed.WithFooter(footer);
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                         await Task.Delay(2000);
                     }
@@ -201,6 +204,7 @@ namespace Jibril.Services.Logging
                         {
                             Color = new Color(Colours.DefaultColour)
                         };
+                        EmbedFooterBuilder footer = new EmbedFooterBuilder();
                         embed.WithDescription($"{msg.Author.Mention} updated a message in {chtx.Mention}");
                         embed.AddField(y =>
                         {
@@ -218,7 +222,9 @@ namespace Jibril.Services.Logging
                         {
                             embed.ImageUrl = newMsg.Attachments.ToString();
                         }
-                        embed.WithFooter($"{DateTime.Now}", newMsg.Author.GetAvatarUrl());
+                        footer.WithText($"{DateTime.Now}");
+                        footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
+                        embed.WithFooter(footer);
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                         await Task.Delay(2000);
                     }
