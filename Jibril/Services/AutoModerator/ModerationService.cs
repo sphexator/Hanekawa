@@ -59,8 +59,8 @@ namespace Jibril.Services.AutoModerator
                                 var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
-                                    x.Name = "Auto Moderator";
-                                    x.Value = "N/A";
+                                    x.Name = "Moderator";
+                                    x.Value = "Auto Moderator";
                                     x.IsInline = true;
                                 });
                                 embed.AddField(x =>
@@ -105,8 +105,8 @@ namespace Jibril.Services.AutoModerator
                                 var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
-                                    x.Name = "Auto Moderator";
-                                    x.Value = "N/A";
+                                    x.Name = "Moderator";
+                                    x.Value = "Auto Moderator";
                                     x.IsInline = true;
                                 });
                                 embed.AddField(x =>
@@ -151,8 +151,8 @@ namespace Jibril.Services.AutoModerator
                                 var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
-                                    x.Name = "Auto Moderator";
-                                    x.Value = "N/A";
+                                    x.Name = "Moderator";
+                                    x.Value = "Auto Moderator";
                                     x.IsInline = true;
                                 });
                                 embed.AddField(x =>
