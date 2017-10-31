@@ -116,7 +116,7 @@ namespace Jibril.Modules.Administration.Services
         public static void AddActionCase(IUser user, DateTime now)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"INSERT INTO modlog (user_id, date) VALUES ('{user.Id}', {now})";
+            var str = $"INSERT INTO modlog (user_id, date) VALUES ('{user.Id}', '{now}')";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
             return;
