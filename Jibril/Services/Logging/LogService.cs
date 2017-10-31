@@ -168,7 +168,7 @@ namespace Jibril.Services.Logging
                             efb.Value = ($"{msg.Content}");
                             efb.IsInline = false;
                         });
-                        footer.WithText($"{DateTime.Now}");
+                        footer.WithText($"{DateTime.UtcNow}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -218,9 +218,9 @@ namespace Jibril.Services.Logging
                             x.Value = $"{msg.Content}";
                             x.IsInline = false;
                         });
-                        if(newMsg.Attachments != null)
+                        if(newMsg.Embeds.Select(x => x.Image).ToString() != null)
                         {
-                            embed.ImageUrl = newMsg.Attachments.ToString();
+                            embed.ImageUrl = newMsg.Embeds.Select(x => x.Image).ToString();
                         }
                         footer.WithText($"{DateTime.Now}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
