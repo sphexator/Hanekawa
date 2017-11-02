@@ -4,6 +4,7 @@ using Discord.Addons.Preconditions;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Modules.Administration.Services;
 using Jibril.Services.Common;
 using System;
 using System.Collections.Generic;
@@ -115,13 +116,31 @@ namespace Jibril.Modules.Administration
                 var channel = Context.Channel as ITextChannel;
                 await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
 
+                var time = DateTime.Now;
+                AdminDb.AddActionCase(user, time);
+                var caseid = AdminDb.GetActionCaseID(time);
+
                 var content = $"🔇 *Gagged* \n" +
                 $"User: {user.Mention}. (**{user.Id}**)\n" +
                 $"Moderator: {Context.User.Mention} \n" +
                 $"Reason: \n";
-                var embed = EmbedGenerator.DefaultEmbed(content, Colours.FailColour);
+                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = $"{Context.User.Username}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
+
                 var log = Context.Guild.GetChannel(339381104534355970) as ITextChannel;
-                await log.SendMessageAsync("", false, embed.Build());
+                var msg = await log.SendMessageAsync("", false, embed.Build());
+                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
             }
             catch
             {
