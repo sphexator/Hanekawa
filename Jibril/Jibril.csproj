@@ -26,6 +26,7 @@
     <PackageReference Include="Discord.Net.Rpc" Version="2.0.0-alpha-build-00839" />
     <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-alpha-build-00839" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-alpha-build-00839" />
+    <PackageReference Include="Dropbox.Api" Version="4.5.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.2" />
@@ -39,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Images\PictureSpam\" />
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Fleet\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />
