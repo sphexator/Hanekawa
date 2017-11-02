@@ -121,9 +121,7 @@ namespace Jibril.Modules.Administration
                 var caseid = AdminDb.GetActionCaseID(time);
 
                 var content = $"🔇 *Gagged* \n" +
-                $"User: {user.Mention}. (**{user.Id}**)\n" +
-                $"Moderator: {Context.User.Mention} \n" +
-                $"Reason: \n";
+                $"User: {user.Mention}. (**{user.Id}**)";
                 var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
                 embed.AddField(x =>
                 {
