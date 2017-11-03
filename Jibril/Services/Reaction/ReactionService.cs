@@ -56,9 +56,16 @@ namespace Jibril.Services.Reaction
                                         embed.ImageUrl = file;
                                     }
                                 }
+
+                                var month = $"{arg1.Value.Timestamp.DateTime.ToString("MMMM")}";
+                                var day = $"{arg1.Value.Timestamp.DateTime.ToString("ddd")}";
+                                var doh = $"{arg1.Value.Timestamp.DateTime.ToString("dd")}";
+                                var hour = $"{arg1.Value.Timestamp.DateTime.ToString("HH")}";
+                                var minute = $"{arg1.Value.Timestamp.DateTime.ToString("mm")}";
+
                                 author.IconUrl = arg1.Value.Author.GetAvatarUrl();
                                 author.Name = arg1.Value.Author.Username;
-                                footer.Text = $"{arg1.Value.Timestamp.DateTime}";
+                                footer.Text = $"{day} {month} {doh} at {hour}:{minute}";
                                 embed.Description = content;
                                 embed.WithAuthor(author);
                                 embed.WithFooter(footer);
