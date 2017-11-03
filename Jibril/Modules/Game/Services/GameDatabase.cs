@@ -96,7 +96,7 @@ namespace Jibril.Modules.Game.Services
         public static void CreateGameDBEntry(IUser user)
         {
             var database = new GameDatabase("hanekawa");
-            var str = $"INSERT INTO shipgame (user_id, health, damagetaken, combatstatus, enemyid, enemyDamageTaken, enemyhealth, killAmount) VALUES ('{user.Id}', '10', '0', '1', '0', '0', 9999, 0)";
+            var str = $"INSERT INTO shipgame (user_id, health, damagetaken, combatstatus, enemyid, enemyDamageTaken, enemyhealth, killAmount) VALUES ('{user.Id}', '10', '0', '0', '0', '0', 9999, 0)";
             var reader = database.FireCommand(str);
             database.CloseConnection();
             return;
