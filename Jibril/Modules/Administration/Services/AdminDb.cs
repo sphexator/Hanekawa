@@ -172,6 +172,25 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
             return result;
         }
+
+        // ----------------- Get text from db----------------- //
+
+        public static List<String> GetRules(string guildid)
+        {
+            var result = new List<String>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM guildinfo WHERE guild = '{guildid}'";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var rules = (string)reader["rules"];
+
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
     }
 
     public class WarningDB
