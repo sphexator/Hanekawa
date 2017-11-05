@@ -15,6 +15,7 @@ namespace Jibril.Modules.ApplicationForm
     public class Application : InteractiveBase
     {
         [Command("apply", RunMode = RunMode.Async)]
+        [RequireOwner]
         [Ratelimit(1, 60, Measure.Minutes, false, true)]
         [RequireContext(ContextType.DM)]
         [Priority(0)]
