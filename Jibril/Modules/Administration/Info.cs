@@ -33,9 +33,9 @@ namespace Jibril.Modules.Administration
             var guild = Context.Guild as IGuild;
             var usrs = (await guild.GetUsersAsync()).ToArray();
 
-            var admins =    usrs.Where(x => x.RoleIds.Contains(adminRole.Id)).Select(x => x.ToString()).ToArray();
-            var Mod =       usrs.Where(x => x.RoleIds.Contains(ModRole.Id))  .Select(x => x.ToString()).ToArray();
-            var Trial =     usrs.Where(x => x.RoleIds.Contains(TrialRole.Id)).Select(x => x.ToString()).ToArray();
+            var admins =    usrs.Where(x => x.RoleIds.Contains(adminRole.Id)).ToArray();
+            var Mod =       usrs.Where(x => x.RoleIds.Contains(ModRole.Id))  .ToArray();
+            var Trial =     usrs.Where(x => x.RoleIds.Contains(TrialRole.Id)).ToArray();
 
             var Adminstaff = string.Join("\n ", admins
                 .OrderBy(x => rng.Next()).Take(50));
