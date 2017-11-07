@@ -1,6 +1,5 @@
 ﻿using Discord.Addons.Interactive;
 using Discord.Commands;
-using Dropbox.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
