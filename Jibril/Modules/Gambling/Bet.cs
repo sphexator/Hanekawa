@@ -17,6 +17,7 @@ namespace Jibril.Modules.Gambling
     {
         [Command("bet")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds, false, false)]
         public async Task HardBet(int amount)
         {
             var user = Context.User;
@@ -66,6 +67,7 @@ namespace Jibril.Modules.Gambling
 
         [Command("roll")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds, false, false)]
         public async Task BetRoll(int amount)
         {
             var user = Context.User;

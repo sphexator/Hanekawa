@@ -4,6 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
+using Jibril.Preconditions;
 using Jibril.Services.Common;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace Jibril.Modules.Administration
         [Alias("Prune")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
         public async Task ClearMessage([Remainder] int x = 0)
         {
             if (x <= 2000)
@@ -39,6 +41,7 @@ namespace Jibril.Modules.Administration
         [Command("Ban", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireRole(339371670311796736)]
         public async Task BanAsync(SocketGuildUser user = null, [Remainder] string reason = "No Reason provided")
         {
             if (user == null) throw new ArgumentException("You must mention a user");
@@ -59,6 +62,7 @@ namespace Jibril.Modules.Administration
         [Command("Kick", RunMode = RunMode.Async)]
         [RequireBotPermission(GuildPermission.KickMembers)]
         [RequireUserPermission(GuildPermission.KickMembers)]
+        [RequireRole(339371670311796736)]
         public async Task KickAsync(SocketGuildUser user, [Remainder] string reason)
         {
             if (user == null) throw new ArgumentException("You must mention a user");
@@ -75,6 +79,7 @@ namespace Jibril.Modules.Administration
         [Command("mute", RunMode = RunMode.Async)]
         [Alias("Mute", "m")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
         public async Task Mute(SocketGuildUser user)
         {
             if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
@@ -161,6 +166,7 @@ namespace Jibril.Modules.Administration
         [Command("unmute", RunMode = RunMode.Async)]
         [Alias("Unmute", "unm")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
         public async Task Unmute(SocketGuildUser user)
         {
             try

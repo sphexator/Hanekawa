@@ -18,6 +18,7 @@ namespace Jibril.Modules.Suggestion
     {
         [Command("suggest", RunMode = RunMode.Async)]
         [Alias("Suggest")]
+        [RequireRole(341622220050792449)]
         [RequiredChannel(339383206669320192)]
         public async Task ServerSuggestiong([Remainder] string content = null)
         {

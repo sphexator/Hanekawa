@@ -15,13 +15,15 @@ using System.Threading.Tasks;
 
 namespace Jibril.Services.Automate.PicDump
 {
-    public class PictureSpam : InteractiveBase
+    public class PictureSpam
     {
         private readonly DiscordSocketClient _discord;
+        private IServiceProvider _provider;
 
-        public PictureSpam(DiscordSocketClient discord)
+        public PictureSpam(IServiceProvider provider, DiscordSocketClient discord)
         {
             _discord = discord;
+            _provider = provider;
         }
 
         public Task DownloadFiles()

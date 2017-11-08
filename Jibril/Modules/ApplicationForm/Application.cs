@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Jibril.Data.Variables;
+using Jibril.Preconditions;
 
 namespace Jibril.Modules.ApplicationForm
 {
@@ -15,6 +16,7 @@ namespace Jibril.Modules.ApplicationForm
     {
         [Command("apply", RunMode = RunMode.Async)]
         [RequireOwner]
+        [Ratelimit(1, 60, Measure.Minutes, false, true)]
         [RequireContext(ContextType.DM)]
         [Priority(0)]
         public async Task ApplicationProcess()

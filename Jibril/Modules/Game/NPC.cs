@@ -49,6 +49,7 @@ namespace Jibril.Modules.Game
         }
 
         [Command("attack", RunMode = RunMode.Async)]
+        [Ratelimit(1, 5, Measure.Seconds, false, false)]
         [RequiredChannel(346429281314013184)]
         public async Task AttackTarget()
         {
