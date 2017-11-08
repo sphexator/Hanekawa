@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Addons.Preconditions" Version="1.0.0-rc" />
     <PackageReference Include="Discord.Net" Version="2.0.0-alpha-build-00846" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-alpha-build-00846" />
     <PackageReference Include="Discord.Net.Core" Version="2.0.0-alpha-build-00846" />
@@ -52,12 +51,6 @@
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
     <None Update="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\database.sqlite">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\fleet.sqlite">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Game\Enemy\BattleshipReClass.png">
@@ -205,9 +198,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Welcome\Template\6.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\warn.sqlite">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

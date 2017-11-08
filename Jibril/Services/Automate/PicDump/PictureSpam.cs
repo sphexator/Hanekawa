@@ -1,4 +1,6 @@
-﻿using Discord.WebSocket;
+﻿using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -13,19 +15,42 @@ using System.Threading.Tasks;
 
 namespace Jibril.Services.Automate.PicDump
 {
-    public class PictureSpam
+    public class PictureSpam : InteractiveBase
     {
-        public static void DownloadFiles()
+        private readonly DiscordSocketClient _discord;
+
+        public PictureSpam(DiscordSocketClient discord)
         {
-            // Connect to Google
-            var service = AuthenticateOauth(@"client_secret.json", "test");
-            //List the files with the word 'make' in the name.
-            var files = List.ListFiles(service);
-            foreach (var item in files.Files)
+            discord = _discord;
+        }
+
+        public Task DownloadFiles()
+        {
+            var _ = Task.Run(async () =>
             {
-                // download each file
-                DownloadFile(service, item, string.Format(@"Data\{0}", item.Name));
-            }
+                // Connect to Google
+                var service = AuthenticateOauth(@"client_secret.json", "test");
+                //List the files with the word 'make' in the name.
+                var files = List.ListFiles(service);
+                foreach (var item in files.Files)
+                {
+                    // download each file
+                    DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
+                }
+                var guild = _discord.GetGuild(339370914724446208);
+                DirectoryInfo Pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
+                foreach (FileInfo file in Pictures.GetFiles())
+                {
+                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
+                    await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
+                    await Task.Delay(2500);
+                }
+                foreach (FileInfo file in Pictures.GetFiles())
+                {
+                    file.Delete();
+                }
+            });
+            return Task.CompletedTask;
         }
 
         public static DriveService AuthenticateOauth(string clientSecretJson, string userName)

@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Addons.Preconditions;
 using Jibril.Preconditions;
 using System;
 using System.Collections.Generic;
@@ -19,7 +18,6 @@ namespace Jibril.Modules.Game
         [Command("search", RunMode = RunMode.Async)]
         [Alias("find", "radar")]
         [RequiredChannel(346429281314013184)]
-        [Ratelimit(12, 1, Measure.Minutes, false, false)]
         public async Task FindNPC()
         {
             try
@@ -52,7 +50,6 @@ namespace Jibril.Modules.Game
 
         [Command("attack", RunMode = RunMode.Async)]
         [RequiredChannel(346429281314013184)]
-        [Ratelimit(12, 1, Measure.Minutes, false, false)]
         public async Task AttackTarget()
         {
             var user = Context.User;

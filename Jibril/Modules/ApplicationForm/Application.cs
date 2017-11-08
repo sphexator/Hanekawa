@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
-using Discord.Addons.Preconditions;
 using Jibril.Data.Variables;
 
 namespace Jibril.Modules.ApplicationForm
@@ -16,7 +15,6 @@ namespace Jibril.Modules.ApplicationForm
     {
         [Command("apply", RunMode = RunMode.Async)]
         [RequireOwner]
-        [Ratelimit(1, 60, Measure.Minutes, false, true)]
         [RequireContext(ContextType.DM)]
         [Priority(0)]
         public async Task ApplicationProcess()

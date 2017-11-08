@@ -18,9 +18,9 @@ namespace Jibril.Preconditions
             _requiredChannel = requiredChannel;
         }
 
-        public async override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public async override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var baseResult = await base.CheckPermissions(context, command, services);
+            var baseResult = await base.CheckPermissionsAsync(context, command, services);
             if (baseResult.IsSuccess && ((IGuildChannel)context.Channel).Id == _requiredChannel)
             {
                 return PreconditionResult.FromSuccess();

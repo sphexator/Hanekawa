@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Addons.Preconditions;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Modules.Administration.Services;

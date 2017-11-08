@@ -13,6 +13,7 @@ using Jibril.Services.Level;
 using Jibril.Services.Welcome;
 using Jibril.Services.Reaction;
 using Jibril.Services.AutoModerator;
+using Jibril.Services.Automate.PicDump;
 
 namespace Jibril
 {
@@ -38,6 +39,7 @@ namespace Jibril
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
+            services.GetRequiredService<PictureSpam>();
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -55,6 +57,7 @@ namespace Jibril
                 .AddSingleton<WelcomeService>()
                 .AddSingleton<ReactionService>()
                 .AddSingleton<ModerationService>()
+                .AddSingleton<PictureSpam>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)

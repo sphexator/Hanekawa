@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Addons.Preconditions;
 using Jibril.Preconditions;
 using System;
 using System.Collections.Generic;

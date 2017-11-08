@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Addons.Preconditions;
 using Discord.Commands;
 using Jibril.Data.Variables;
 using Jibril.Modules.Gambling.Services;
@@ -17,7 +16,6 @@ namespace Jibril.Modules.Gambling
     public class Bet : ModuleBase<SocketCommandContext>
     {
         [Command("bet")]
-        [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
         public async Task HardBet(int amount)
         {
@@ -67,7 +65,6 @@ namespace Jibril.Modules.Gambling
         }
 
         [Command("roll")]
-        [Ratelimit(12, 1, Measure.Minutes, false, false)]
         [RequiredChannel(339383206669320192)]
         public async Task BetRoll(int amount)
         {
