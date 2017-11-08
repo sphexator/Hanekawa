@@ -21,7 +21,7 @@ namespace Jibril.Services.Automate.PicDump
 
         public PictureSpam(DiscordSocketClient discord)
         {
-            discord = _discord;
+            _discord = discord;
         }
 
         public Task DownloadFiles()
