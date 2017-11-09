@@ -6,7 +6,7 @@ namespace Jibril.Data.Variables
 {
     public class Classes
     {
-        public int level { get; set; }
-        public string shipClass { get; set; }
+        public int Level { get; set; }
+        public string ShipClass { get; set; }
     }
 }
