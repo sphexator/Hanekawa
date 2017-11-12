@@ -58,7 +58,7 @@ namespace Jibril.Services.Reaction
 
                                 var hour = $"{arg1.Value.Timestamp.DateTime.ToString("HH")}";
                                 var minute = $"{arg1.Value.Timestamp.DateTime.ToString("mm")}";
-                                var formattedDate = string.Format(new DateTimeFormatProvider(), $"{DateTime.Now}");
+                                var formattedDate = string.Format(new DateTimeFormatProvider(), $"{arg1.Value.Timestamp.DateTime}");
                                 author.IconUrl = arg1.Value.Author.GetAvatarUrl();
                                 author.Name = arg1.Value.Author.Username;
                                 footer.Text = $"{formattedDate} at {hour}:{minute}";
@@ -91,7 +91,6 @@ namespace Jibril.Services.Reaction
                 if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265)
                 {
                     var msgid = arg1.Id.ToString();
-                    var chid = arg2.Id.ToString();
                     var reactionData = ReactionDb.ReactionData(msgid); // Need to create Db file
                     if (reactionData == null) return;
                     if (reactionData != null)
