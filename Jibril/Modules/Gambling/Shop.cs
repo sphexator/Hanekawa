@@ -90,6 +90,8 @@ namespace Jibril.Modules.Gambling
         public async Task Buy(int item)
         {
             var user = Context.User;
+            CheckInventoryExistence(user);
+
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             var shoplist = GambleDB.Shoplist().ToList();
 
@@ -115,6 +117,8 @@ namespace Jibril.Modules.Gambling
         public async Task EventBuy(int item)
         {
             var user = Context.User;
+            CheckInventoryExistence(user);
+
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             var shoplist = GambleDB.EventShopList().ToList();
 
@@ -141,6 +145,7 @@ namespace Jibril.Modules.Gambling
         public async Task CreateRole([Remainder]string name)
         {
             var user = Context.User as IGuildUser;
+
             var inventory = GambleDB.Inventory(user).FirstOrDefault();
             var roleStatus = GambleDB.CheckRoleStatus(user).FirstOrDefault();
             if (inventory.CustomRole > 0 && roleStatus != "yes")
@@ -157,6 +162,18 @@ namespace Jibril.Modules.Gambling
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Username}: You need to buy a role or you've already bought a role", Colours.FailColour);
                 await ReplyAsync("", false, embed.Build());
             }
+        }
+
+
+        private static void CheckInventoryExistence(IUser user)
+        {
+            var inventory = GambleDB.Inventory(user);
+            if (inventory == null)
+            {
+                GambleDB.CreateInventory(user);
+                return;
+            }
+            else return;
         }
     }
 }

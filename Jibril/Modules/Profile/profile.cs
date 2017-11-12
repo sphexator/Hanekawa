@@ -20,6 +20,7 @@ namespace Jibril.Modules.Profile
         public async Task PostProfile()
         {
             var user = Context.User;
+            DbRequirement(user);
 
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var gameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
@@ -37,6 +38,8 @@ namespace Jibril.Modules.Profile
         [RequiredChannel(339383206669320192)]
         public async Task PostProfile(SocketUser user)
         {
+            DbRequirement(user);
+
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var gameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
 
@@ -47,6 +50,15 @@ namespace Jibril.Modules.Profile
 
             await Context.Channel.SendFileAsync(finalizeBG);
             RemoveImage.RemoveSavedProfile();
+        }
+
+        private static void DbRequirement(SocketUser user)
+        {
+            var check = GameDatabase.GameCheckExistingUser(user);
+            if(check == null)
+            {
+                GameDatabase.AddNPCDefault(user, 100);
+            }
         }
     }
 }
