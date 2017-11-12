@@ -1,14 +1,6 @@
 ﻿using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Services;
-using Jibril.Services.Common;
 using Jibril.Services.Level.Lists;
-using SixLabors.ImageSharp;
-using SixLabors.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Jibril.Modules.Profile.Services
 {

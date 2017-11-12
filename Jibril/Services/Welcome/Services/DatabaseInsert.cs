@@ -1,9 +1,6 @@
 ﻿using Discord;
 using Jibril.Modules.Gambling.Services;
 using Jibril.Modules.Game.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Jibril.Services.Welcome.Services
 {
@@ -17,9 +14,7 @@ namespace Jibril.Services.Welcome.Services
                 DatabaseService.EnterUser(user);
                 GameDatabase.CreateGameDBEntry(user);
                 GambleDB.CreateInventory(user);
-                return;
             }
-            else return;
         }
     }
 }

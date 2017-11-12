@@ -1,12 +1,28 @@
-﻿using Google.Apis.Drive.v3;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using Google.Apis.Drive.v3;
+using Google.Apis.Drive.v3.Data;
 
 namespace Jibril.Services.Automate.PicDump
 {
     public class List
     {
+        public static FileList ListFiles(DriveService service, FilesListOptionalParms optional = null)
+        {
+            try
+            {
+                if (service == null)
+                    throw new ArgumentNullException("service");
+
+                var request = service.Files.List();
+                request = (FilesResource.ListRequest) SampleHelpers.ApplyOptionalParms(request, optional);
+                return request.Execute();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Request Files.List failed.", ex);
+            }
+        }
+
         public class FilesListOptionalParms
         {
             public string Corpus { get; set; }
@@ -19,26 +35,8 @@ namespace Jibril.Services.Automate.PicDump
             public string QuotaUser { get; set; }
             public string UserIp { get; set; }
         }
-
-        public static Google.Apis.Drive.v3.Data.FileList ListFiles(DriveService service, FilesListOptionalParms optional = null)
-        {
-            try
-            {
-                if (service == null)
-                    throw new ArgumentNullException("service");
-
-                var request = service.Files.List();
-                request = (FilesResource.ListRequest)SampleHelpers.ApplyOptionalParms(request, optional);
-                return request.Execute();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Request Files.List failed.", ex);
-            }
-        }
-
-
     }
+
     public static class SampleHelpers
     {
         public static object ApplyOptionalParms(object request, object optional)
@@ -46,11 +44,11 @@ namespace Jibril.Services.Automate.PicDump
             if (optional == null)
                 return request;
 
-            System.Reflection.PropertyInfo[] optionalProperties = (optional.GetType()).GetProperties();
+            var optionalProperties = optional.GetType().GetProperties();
 
-            foreach (System.Reflection.PropertyInfo property in optionalProperties)
+            foreach (var property in optionalProperties)
             {
-                System.Reflection.PropertyInfo piShared = (request.GetType()).GetProperty(property.Name);
+                var piShared = request.GetType().GetProperty(property.Name);
                 if (property.GetValue(optional, null) != null)
                     piShared.SetValue(request, property.GetValue(optional, null), null);
             }

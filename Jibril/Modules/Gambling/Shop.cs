@@ -1,15 +1,12 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Jibril.Data.Variables;
 using Jibril.Modules.Gambling.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Modules.Gambling
 {
@@ -23,24 +20,22 @@ namespace Jibril.Modules.Gambling
             var user = Context.User;
             var inventoryCheck = GambleDB.Inventory(user).FirstOrDefault();
             if (inventoryCheck == null)
-            {
                 GambleDB.CreateInventory(user);
-            }
             var inventory = GambleDB.Inventory(user).FirstOrDefault();
 
-            string[] items = { "Repair Kit", "Damage Boost", "Shield", "Custom Role" };
-            EmbedBuilder embed = new EmbedBuilder();
-            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            string[] items = {"Repair Kit", "Damage Boost", "Shield", "Custom Role"};
+            var embed = new EmbedBuilder();
+            var author = new EmbedAuthorBuilder();
 
             author.WithIconUrl(user.GetAvatarUrl());
             author.WithName(user.Username);
             embed.WithAuthor(author);
             embed.WithColor(new Color(Colours.DefaultColour));
             embed.Description = $"" +
-                $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
-                $"{items[1].PadRight(15)}   {inventory.Dmgboost}\n" +
-                $"{items[2].PadRight(25)}   {inventory.Shield}\n" +
-                $"{items[3].PadRight(17)}   {inventory.CustomRole}";
+                                $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
+                                $"{items[1].PadRight(15)}   {inventory.Dmgboost}\n" +
+                                $"{items[2].PadRight(25)}   {inventory.Shield}\n" +
+                                $"{items[3].PadRight(17)}   {inventory.CustomRole}";
             await ReplyAsync($"", false, embed.Build());
         }
 
@@ -66,7 +61,7 @@ namespace Jibril.Modules.Gambling
 
         [Command("eventshop", RunMode = RunMode.Async)]
         [Alias("eshop")]
-        [RequiredChannel((339383206669320192))]
+        [RequiredChannel(339383206669320192)]
         public async Task EventShop()
         {
             var shoplist = GambleDB.EventShopList().ToList();
@@ -101,12 +96,14 @@ namespace Jibril.Modules.Gambling
                 GambleDB.BuyItem(user, shoplist[item].Item);
                 GambleDB.RemoveCredit(user, shoplist[item].Price);
 
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed(
+                    $"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OKColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else if (userdata.Tokens < shoplist[item].Price)
             {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough money for that.", Colours.FailColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough money for that.",
+                    Colours.FailColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
@@ -129,12 +126,15 @@ namespace Jibril.Modules.Gambling
                 GambleDB.BuyItem(user, shoplist[item].Item);
                 GambleDB.RemoveEventTokens(user, shoplist[item].Price);
                 GambleDB.ChangeShopStockAmount();
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} bought {shoplist[item].Item} for {shoplist[item].Price} tokens", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed(
+                    $"{user.Username} bought {shoplist[item].Item} for {shoplist[item].Price} tokens",
+                    Colours.OKColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else if (userdata.Event_tokens < shoplist[item].Price)
             {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough for that.", Colours.FailColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough for that.",
+                    Colours.FailColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
@@ -142,7 +142,7 @@ namespace Jibril.Modules.Gambling
         [Command("createrole", RunMode = RunMode.Async)]
         [Alias("cr", "crole")]
         [RequiredChannel(339383206669320192)]
-        public async Task CreateRole([Remainder]string name)
+        public async Task CreateRole([Remainder] string name)
         {
             var user = Context.User as IGuildUser;
 
@@ -159,7 +159,8 @@ namespace Jibril.Modules.Gambling
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username}: You need to buy a role or you've already bought a role", Colours.FailColour);
+                var embed = EmbedGenerator.DefaultEmbed(
+                    $"{user.Username}: You need to buy a role or you've already bought a role", Colours.FailColour);
                 await ReplyAsync("", false, embed.Build());
             }
         }
@@ -169,11 +170,9 @@ namespace Jibril.Modules.Gambling
         {
             var inventory = GambleDB.Inventory(user);
             if (inventory == null)
-            {
                 GambleDB.CreateInventory(user);
+            else
                 return;
-            }
-            else return;
         }
     }
 }

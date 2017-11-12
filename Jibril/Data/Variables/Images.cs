@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Data.Variables
+﻿namespace Jibril.Data.Variables
 {
     public static class Images
     {
-        public static string[] Welcome = new string[]
+        public static string[] Welcome =
         {
             "Data/Images/Welcome/Template/1.png",
             "Data/Images/Welcome/Template/2.png",
@@ -16,7 +12,7 @@ namespace Jibril.Data.Variables
             "Data/Images/Welcome/Template/6.png"
         };
 
-        public static string[] Profile = new string[]
+        public static string[] Profile =
         {
             "Data/Images/Profile/Backgrounds/1.jpg",
             "Data/Images/Profile/Backgrounds/2.jpg",

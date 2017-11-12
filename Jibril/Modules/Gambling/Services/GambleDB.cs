@@ -1,27 +1,26 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using Discord;
 using Jibril.Data.Variables;
 using Jibril.Modules.Gambling.Lists;
 using Jibril.Services.Level.Lists;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
 
 namespace Jibril.Modules.Gambling.Services
 {
     public class GambleDB
     {
-        private string _table { get; set; }
-        string server = DbInfo.server;
-        string database = DbInfo.DbNorm;
-        string username = DbInfo.username;
-        string password = DbInfo.password;
-        Boolean POOLING = false;
-        private MySqlConnection dbConnection;
+        private readonly string database = DbInfo.DbNorm;
+        private readonly MySqlConnection dbConnection;
+        private readonly string password = DbInfo.password;
+        private readonly bool POOLING = false;
+        private readonly string server = DbInfo.server;
+        private readonly string username = DbInfo.username;
 
         public GambleDB(string table)
         {
             _table = table;
-            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            var stringBuilder = new MySqlConnectionStringBuilder
             {
                 Server = server,
                 UserID = username,
@@ -34,22 +33,22 @@ namespace Jibril.Modules.Gambling.Services
             dbConnection = new MySqlConnection(connectionString);
             dbConnection.Open();
         }
+
+        private string _table { get; }
+
         public MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
-            {
                 return null;
-            }
-            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
+
         public void CloseConnection()
         {
             if (dbConnection != null)
-            {
                 dbConnection.Close();
-            }
         }
 
 
@@ -59,7 +58,6 @@ namespace Jibril.Modules.Gambling.Services
             var str = $"UPDATE exp SET event_tokens = event_tokens + '{credit}' WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void AddCredit(IUser user, int credit)
@@ -68,7 +66,6 @@ namespace Jibril.Modules.Gambling.Services
             var str = $"UPDATE exp SET tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void RemoveCredit(IUser user, int credit)
@@ -77,7 +74,6 @@ namespace Jibril.Modules.Gambling.Services
             var str = $"UPDATE exp SET tokens = tokens - '{credit}' WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void RemoveEventTokens(IUser user, int price)
@@ -86,7 +82,6 @@ namespace Jibril.Modules.Gambling.Services
             var str = $"UPDATE exp SET event_tokens = event_tokens - '{price}' WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static List<UserData> GetLeaderBoard()
@@ -98,23 +93,22 @@ namespace Jibril.Modules.Gambling.Services
 
             while (reader.Read())
             {
-
-                var userId = (string)reader["user_id"];
-                var userName = (string)reader["username"];
-                var currentTokens = (uint)reader["tokens"];
-                var event_tokens = (uint)reader["event_tokens"];
-                var level = (int)reader["level"];
-                var exp = (int)reader["xp"];
-                var totalExp = (int)reader["total_xp"];
-                var daily = (DateTime)reader["daily"];
-                var cooldown = (DateTime)reader["cooldown"];
-                var voice_timer = (DateTime)reader["voice_timer"];
-                var fleetName = (string)reader["fleetName"];
-                var shipClass = (string)reader["shipClass"];
-                var profilepic = (string)reader["shipclass"];
-                var gameCD = (DateTime)reader["game_cooldown"];
-                var gambleCD = (DateTime)reader["gambling_cooldown"];
-                var hasrole = (string)reader["hasrole"];
+                var userId = (string) reader["user_id"];
+                var userName = (string) reader["username"];
+                var currentTokens = (uint) reader["tokens"];
+                var event_tokens = (uint) reader["event_tokens"];
+                var level = (int) reader["level"];
+                var exp = (int) reader["xp"];
+                var totalExp = (int) reader["total_xp"];
+                var daily = (DateTime) reader["daily"];
+                var cooldown = (DateTime) reader["cooldown"];
+                var voice_timer = (DateTime) reader["voice_timer"];
+                var fleetName = (string) reader["fleetName"];
+                var shipClass = (string) reader["shipClass"];
+                var profilepic = (string) reader["shipclass"];
+                var gameCD = (DateTime) reader["game_cooldown"];
+                var gambleCD = (DateTime) reader["gambling_cooldown"];
+                var hasrole = (string) reader["hasrole"];
 
                 result.Add(new UserData
                 {
@@ -139,7 +133,6 @@ namespace Jibril.Modules.Gambling.Services
 
             database.CloseConnection();
             return result;
-
         }
 
         // Shop items
@@ -153,9 +146,9 @@ namespace Jibril.Modules.Gambling.Services
 
             while (reader.Read())
             {
-                var id = (int)reader["id"];
-                var Item = (string)reader["item"];
-                var price = (int)reader["price"];
+                var id = (int) reader["id"];
+                var Item = (string) reader["item"];
+                var price = (int) reader["price"];
 
                 result.Add(new ShopList
                 {
@@ -176,10 +169,10 @@ namespace Jibril.Modules.Gambling.Services
 
             while (reader.Read())
             {
-                var id = (int)reader["id"];
-                var item = (string)reader["item"];
-                var price = (int)reader["price"];
-                var stock = (int)reader["stock"];
+                var id = (int) reader["id"];
+                var item = (string) reader["item"];
+                var price = (int) reader["price"];
+                var stock = (int) reader["stock"];
 
                 result.Add(new EventShopList
                 {
@@ -197,10 +190,9 @@ namespace Jibril.Modules.Gambling.Services
         public static void BuyItem(IUser user, string itemName)
         {
             var database = new GambleDB("hanekawa");
-            var str = ($"UPDATE inventory SET {itemName} = {itemName} + '1' WHERE user_ID = '{user.Id}'");
+            var str = $"UPDATE inventory SET {itemName} = {itemName} + '1' WHERE user_ID = '{user.Id}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void ChangeShopStockAmount()
@@ -209,20 +201,19 @@ namespace Jibril.Modules.Gambling.Services
             var str = $"UPDATE eventshop SET stock = stock - '1'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         //Change Role Stuff
-        public static List<String> CheckRoleStatus(IUser user)
+        public static List<string> CheckRoleStatus(IUser user)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new GambleDB("hanekawa");
-            var str = ($"SELECT hasrole FROM exp WHERE user_id = {user.Id}");
+            var str = $"SELECT hasrole FROM exp WHERE user_id = {user.Id}";
             var tableName = database.FireCommand(str);
 
             while (tableName.Read())
             {
-                var roleStatus = (string)tableName["hasrole"];
+                var roleStatus = (string) tableName["hasrole"];
                 result.Add(roleStatus);
             }
 
@@ -233,30 +224,27 @@ namespace Jibril.Modules.Gambling.Services
         public static void UpdateRoleStatus(IUser user)
         {
             var database = new GambleDB("hanekawa");
-            var str = ($"UPDATE exp SET hasrole = 'yes' WHERE user_id = '{user.Id}'");
+            var str = $"UPDATE exp SET hasrole = 'yes' WHERE user_id = '{user.Id}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         // Use items
         public static void UseItem(IUser user, string itemName)
         {
             var database = new GambleDB("hanekawa");
-            var str = ($"UPDATE inventory SET {itemName} = {itemName} - '1' WHERE user_ID = '{user.Id}'");
+            var str = $"UPDATE inventory SET {itemName} = {itemName} - '1' WHERE user_ID = '{user.Id}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         // Inventory stuff
         public static void CreateInventory(IUser user)
         {
             var database = new GambleDB("hanekawa");
-            var str = ($"INSERT INTO inventory (user_id) VALUES ('{user.Id}')");
+            var str = $"INSERT INTO inventory (user_id) VALUES ('{user.Id}')";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static List<InventoryList> Inventory(IUser user)
@@ -268,10 +256,10 @@ namespace Jibril.Modules.Gambling.Services
 
             while (reader.Read())
             {
-                var kit = (int)reader["RepairKit"];
-                var dmg = (int)reader["DamageBoost"];
-                var shield = (int)reader["Shield"];
-                var customRole = (int)reader["CustomRole"];
+                var kit = (int) reader["RepairKit"];
+                var dmg = (int) reader["DamageBoost"];
+                var shield = (int) reader["Shield"];
+                var customRole = (int) reader["CustomRole"];
 
                 result.Add(new InventoryList
                 {

@@ -1,11 +1,8 @@
-﻿using Discord;
+﻿using System.Linq;
+using Discord;
 using Jibril.Data.Variables;
 using Jibril.Services;
 using Jibril.Services.Level.Lists;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Jibril.Modules.Game.Services
 {
@@ -15,13 +12,13 @@ namespace Jibril.Modules.Game.Services
         {
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var EnemyData = GameDatabase.Enemy(gameStatus.Enemyid).FirstOrDefault();
-            EmbedBuilder embed = new EmbedBuilder();
+            var embed = new EmbedBuilder();
             embed.WithColor(new Color(Colour));
             embed.WithImageUrl($"https://i.imgur.com/{EnemyData.ImagePath}.png");
 
-            EmbedFieldBuilder fieldClass = new EmbedFieldBuilder();
-            EmbedFieldBuilder fieldHealth = new EmbedFieldBuilder();
-            EmbedFieldBuilder fieldLevel = new EmbedFieldBuilder();
+            var fieldClass = new EmbedFieldBuilder();
+            var fieldHealth = new EmbedFieldBuilder();
+            var fieldLevel = new EmbedFieldBuilder();
 
             fieldClass.WithIsInline(true);
             fieldClass.WithName("Class");
@@ -44,16 +41,17 @@ namespace Jibril.Modules.Game.Services
             return embed;
         }
 
-        public static EmbedBuilder CombatStart(IUser user,uint Colour, int enemy, int enemyHealth, UserData userData, EnemyId enemyName)
+        public static EmbedBuilder CombatStart(IUser user, uint Colour, int enemy, int enemyHealth, UserData userData,
+            EnemyId enemyName)
         {
-            EmbedBuilder embed = new EmbedBuilder();
+            var embed = new EmbedBuilder();
             embed.WithColor(new Color(Colour));
             //embed.WithTitle(enemyName.FirstOrDefault().enemyName);
             embed.WithImageUrl($"http://i.imgur.com/{enemyName.ImagePath}.png");
 
-            EmbedFieldBuilder fieldClass = new EmbedFieldBuilder();
-            EmbedFieldBuilder fieldHealth = new EmbedFieldBuilder();
-            EmbedFieldBuilder fieldLevel = new EmbedFieldBuilder();
+            var fieldClass = new EmbedFieldBuilder();
+            var fieldHealth = new EmbedFieldBuilder();
+            var fieldLevel = new EmbedFieldBuilder();
 
             var GetGameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
             fieldClass.WithIsInline(true);
@@ -79,12 +77,13 @@ namespace Jibril.Modules.Game.Services
             return embed;
         }
 
-        public static EmbedBuilder CombatResponseMessage(EnemyId enemyData, uint Colour, string Content, string Usr, string Enemy)
+        public static EmbedBuilder CombatResponseMessage(EnemyId enemyData, uint Colour, string Content, string Usr,
+            string Enemy)
         {
-            EmbedBuilder embed = new EmbedBuilder();
-            EmbedAuthorBuilder authorBuilder = new EmbedAuthorBuilder();
-            EmbedFieldBuilder userHealth = new EmbedFieldBuilder();
-            EmbedFieldBuilder enemyHealth = new EmbedFieldBuilder();
+            var embed = new EmbedBuilder();
+            var authorBuilder = new EmbedAuthorBuilder();
+            var userHealth = new EmbedFieldBuilder();
+            var enemyHealth = new EmbedFieldBuilder();
 
             authorBuilder.WithName($"{enemyData.EnemyName}");
             authorBuilder.WithIconUrl($"http://i.imgur.com/{enemyData.ImagePath}.png");

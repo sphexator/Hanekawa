@@ -1,16 +1,13 @@
-﻿using Discord;
-using Discord.Commands;
-using Jibril.Preconditions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using System.Linq;
-using Jibril.Modules.Game.Services;
-using Jibril.Services;
+using Discord;
+using Discord.Commands;
 using Jibril.Data.Variables;
-using Jibril.Services.Common;
 using Jibril.Modules.Gambling.Services;
+using Jibril.Modules.Game.Services;
+using Jibril.Preconditions;
+using Jibril.Services;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Game
 {
@@ -27,7 +24,8 @@ namespace Jibril.Modules.Game
             {
                 if (userdata.Tokens < 100)
                 {
-                    var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough money to repair (Cost: $100)", Colours.DefaultColour);
+                    var embed = EmbedGenerator.DefaultEmbed(
+                        $"{user.Username} - You don't have enough money to repair (Cost: $100)", Colours.DefaultColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
@@ -35,13 +33,15 @@ namespace Jibril.Modules.Game
                     GambleDB.RemoveCredit(user, 100);
                     GameDatabase.Repair(user);
 
-                    var embed = EmbedGenerator.DefaultEmbed($"{user.Username} paid $100 and got repaired back to full HP", Colours.DefaultColour);
+                    var embed = EmbedGenerator.DefaultEmbed(
+                        $"{user.Username} paid $100 and got repaired back to full HP", Colours.DefaultColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You're either not damaged or in combat", Colours.DefaultColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You're either not damaged or in combat",
+                    Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
@@ -53,28 +53,25 @@ namespace Jibril.Modules.Game
             var user = Context.User;
             var inventoryCheck = GambleDB.Inventory(user).FirstOrDefault();
             if (inventoryCheck == null)
-            {
                 GambleDB.CreateInventory(user);
-            }
             var inventory = GambleDB.Inventory(user).FirstOrDefault();
             if (inventory.Repairkit > 0)
             {
                 GambleDB.UseItem(user, "RepairKit");
                 GameDatabase.Repair(user);
 
-                EmbedBuilder embed = new EmbedBuilder();
+                var embed = new EmbedBuilder();
                 embed.WithColor(new Color(0x4d006d));
                 embed.Description = $"{user.Username} used a repair kit.";
                 await ReplyAsync("", false, embed.Build());
             }
             else if (inventory.Repairkit <= 0)
             {
-                EmbedBuilder embed = new EmbedBuilder();
+                var embed = new EmbedBuilder();
                 embed.WithColor(new Color(211, 47, 47));
                 embed.Description = $"{user.Username} - You do not have any repair kits on you";
                 await ReplyAsync("", false, embed.Build());
             }
-
         }
     }
 }

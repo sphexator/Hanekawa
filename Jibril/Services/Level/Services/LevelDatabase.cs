@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Discord;
+using Jibril.Data.Variables;
 using Jibril.Services.Level.Lists;
 using MySql.Data.MySqlClient;
-using Jibril.Data.Variables;
 
 namespace Jibril.Services.Level.Services
 {
     public class LevelDatabase
     {
-        private string _table { get; set; }
-        string server = DbInfo.server;
-        string database = DbInfo.DbNorm;
-        string username = DbInfo.username;
-        string password = DbInfo.password;
-        Boolean POOLING = false;
-        private MySqlConnection dbConnection;
+        private readonly string database = DbInfo.DbNorm;
+        private readonly MySqlConnection dbConnection;
+        private readonly string password = DbInfo.password;
+        private readonly bool POOLING = false;
+        private readonly string server = DbInfo.server;
+        private readonly string username = DbInfo.username;
 
         public LevelDatabase(string table)
         {
             try
             {
                 _table = table;
-                MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+                var stringBuilder = new MySqlConnectionStringBuilder
                 {
                     Server = server,
                     UserID = username,
@@ -41,22 +39,22 @@ namespace Jibril.Services.Level.Services
                 Console.WriteLine(e);
             }
         }
+
+        private string _table { get; }
+
         public MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
-            {
                 return null;
-            }
-            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
+
         public void CloseConnection()
         {
             if (dbConnection != null)
-            {
                 dbConnection.Close();
-            }
         }
 
         public static void AddExperience(IUser user, int exp, int credit)
@@ -64,10 +62,10 @@ namespace Jibril.Services.Level.Services
             try
             {
                 var database = new LevelDatabase("hanekawa");
-                var str = $"UPDATE exp SET xp = xp + '{exp}', total_xp = total_xp + '{exp}', tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
+                var str =
+                    $"UPDATE exp SET xp = xp + '{exp}', total_xp = total_xp + '{exp}', tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
                 var reader = database.FireCommand(str);
                 database.CloseConnection();
-                return;
             }
             catch (Exception e)
             {
@@ -81,7 +79,6 @@ namespace Jibril.Services.Level.Services
             var str = $"UPDATE exp SET level = level + 1, xp = 1 WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void ChangeCooldown(IUser user)
@@ -90,7 +87,6 @@ namespace Jibril.Services.Level.Services
             var str = $"UPDATE exp SET cooldown = curtime() WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void ChangeDaily(IUser user)
@@ -99,7 +95,6 @@ namespace Jibril.Services.Level.Services
             var strings = string.Format($"UPDATE exp SET daily = curtime() WHERE user_id = '{user.Id}'");
             var reader = database.FireCommand(strings);
             database.CloseConnection();
-            return;
         }
 
         public static void StartVoiceCounter(IUser user)
@@ -108,7 +103,6 @@ namespace Jibril.Services.Level.Services
             var str = $"UPDATE exp SET voice_timer = curtime() WHERE user_id = '{user.Id}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static List<UserData> GetLeaderBoard()
@@ -120,22 +114,22 @@ namespace Jibril.Services.Level.Services
 
             while (reader.Read())
             {
-                var userId = (string)reader["user_id"];
-                var userName = (string)reader["username"];
-                var currentTokens = (uint)reader["tokens"];
-                var event_tokens = (uint)reader["event_tokens"];
-                var level = (int)reader["level"];
-                var exp = (int)reader["xp"];
-                var totalExp = (int)reader["total_xp"];
-                var daily = (DateTime)reader["daily"];
-                var cooldown = (DateTime)reader["cooldown"];
-                var voice_timer = (DateTime)reader["voice_timer"];
-                var fleetName = (string)reader["fleetName"];
-                var shipClass = (string)reader["shipClass"];
-                var profilepic = (string)reader["shipclass"];
-                var gameCD = (DateTime)reader["game_cooldown"];
-                var gambleCD = (DateTime)reader["gambling_cooldown"];
-                var hasrole = (string)reader["hasrole"];
+                var userId = (string) reader["user_id"];
+                var userName = (string) reader["username"];
+                var currentTokens = (uint) reader["tokens"];
+                var event_tokens = (uint) reader["event_tokens"];
+                var level = (int) reader["level"];
+                var exp = (int) reader["xp"];
+                var totalExp = (int) reader["total_xp"];
+                var daily = (DateTime) reader["daily"];
+                var cooldown = (DateTime) reader["cooldown"];
+                var voice_timer = (DateTime) reader["voice_timer"];
+                var fleetName = (string) reader["fleetName"];
+                var shipClass = (string) reader["shipClass"];
+                var profilepic = (string) reader["shipclass"];
+                var gameCD = (DateTime) reader["game_cooldown"];
+                var gambleCD = (DateTime) reader["gambling_cooldown"];
+                var hasrole = (string) reader["hasrole"];
 
                 result.Add(new UserData
                 {

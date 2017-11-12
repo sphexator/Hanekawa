@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Data.Variables
+﻿namespace Jibril.Data.Variables
 {
     public class Enemies
     {
-        public static int[] EnemyID = new int[]
+        public static int[] EnemyID =
         {
             //Regular enemies
             1,

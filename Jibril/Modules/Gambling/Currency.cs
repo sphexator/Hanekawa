@@ -1,15 +1,12 @@
-﻿using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Preconditions;
-using Discord;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Services;
-using System.Linq;
-using Jibril.Services.Common;
+using Discord;
+using Discord.Commands;
 using Jibril.Data.Variables;
 using Jibril.Modules.Gambling.Services;
+using Jibril.Preconditions;
+using Jibril.Services;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Gambling
 {
@@ -23,7 +20,8 @@ namespace Jibril.Modules.Gambling
             var user = Context.User;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
-                $"Event Tokens: {userData.Event_tokens}", user.Mention, Colours.DefaultColour, user);
+                                                   $"Event Tokens: {userData.Event_tokens}", user.Mention,
+                Colours.DefaultColour, user);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -34,7 +32,8 @@ namespace Jibril.Modules.Gambling
         {
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
-                $"Event Tokens: {userData.Event_tokens}", user.Mention, Colours.DefaultColour, user);
+                                                   $"Event Tokens: {userData.Event_tokens}", user.Mention,
+                Colours.DefaultColour, user);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -42,7 +41,7 @@ namespace Jibril.Modules.Gambling
         [RequiredChannel(339383206669320192)]
         public async Task Richest()
         {
-            EmbedBuilder embed = new EmbedBuilder();
+            var embed = new EmbedBuilder();
             embed.WithColor(new Color(Colours.DefaultColour));
             embed.Title = "Leaderboard";
             var result = GambleDB.GetLeaderBoard().ToList();

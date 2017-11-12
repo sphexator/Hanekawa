@@ -1,11 +1,9 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Services.Reaction
 {
@@ -23,14 +21,16 @@ namespace Jibril.Services.Reaction
             _discord.ReactionRemoved += _discord_ReactionRemoved;
         }
 
-        private Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
+            SocketReaction arg3)
         {
             var _ = Task.Run(async () =>
             {
                 try
                 {
                     var channel = arg2 as ITextChannel;
-                    if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265 && arg2.Id != 365479361207468032 && channel.IsNsfw == false)
+                    if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265 && arg2.Id != 365479361207468032 &&
+                        channel.IsNsfw == false)
                     {
                         var msgid = arg1.Id.ToString();
                         var chid = arg2.Id.ToString();
@@ -44,17 +44,15 @@ namespace Jibril.Services.Reaction
                             {
                                 ReactionDb.ReactionMsgPosted(msgid);
                                 var content = arg3.Message.Value.Content;
-                                EmbedBuilder embed = new EmbedBuilder();
-                                EmbedAuthorBuilder author = new EmbedAuthorBuilder();
-                                EmbedFooterBuilder footer = new EmbedFooterBuilder();
+                                var embed = new EmbedBuilder();
+                                var author = new EmbedAuthorBuilder();
+                                var footer = new EmbedFooterBuilder();
 
                                 if (arg1.Value.Attachments != null)
                                 {
                                     var file = arg1.Value.Attachments.Select(x => x.Url).ToString();
-                                    if (_AttachmentUrl(file) == true)
-                                    {
+                                    if (_AttachmentUrl(file))
                                         embed.ImageUrl = file;
-                                    }
                                 }
 
                                 var month = $"{arg1.Value.Timestamp.DateTime.ToString("MMMM")}";
@@ -74,21 +72,21 @@ namespace Jibril.Services.Reaction
                                 var guild = _discord.GetGuild(339370914724446208);
                                 var msgch = guild.GetChannel(365479361207468032) as ITextChannel;
 
-                                await msgch.SendMessageAsync($"<:OwO:357977235510263808> {channel.Mention} ID:{arg1.Id}", false, embed.Build());
+                                await msgch.SendMessageAsync(
+                                    $"<:OwO:357977235510263808> {channel.Mention} ID:{arg1.Id}", false, embed.Build());
                             }
                         }
                     }
                 }
                 catch
                 {
-
                 }
             });
             return Task.CompletedTask;
-
         }
 
-        private Task _discord_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private Task _discord_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
+            SocketReaction arg3)
         {
             var _ = Task.Run(() =>
             {
@@ -99,21 +97,19 @@ namespace Jibril.Services.Reaction
                     var reactionData = ReactionDb.ReactionData(msgid); // Need to create Db file
                     if (reactionData == null) return;
                     if (reactionData != null)
-                    {
                         ReactionDb.RemoveReaction(msgid);
-                    }
                 }
             });
             return Task.CompletedTask;
         }
 
-        private static Boolean _AttachmentUrl(string url)
+        private static bool _AttachmentUrl(string url)
         {
-            if (url.EndsWith(".png") == true) return true;
-            if (url.EndsWith(".jpeg") == true) return true;
-            if (url.EndsWith(".jpg") == true) return true;
-            if (url.EndsWith(".gif") == true) return true;
-            else return false;
+            if (url.EndsWith(".png")) return true;
+            if (url.EndsWith(".jpeg")) return true;
+            if (url.EndsWith(".jpg")) return true;
+            if (url.EndsWith(".gif")) return true;
+            return false;
         }
     }
 }

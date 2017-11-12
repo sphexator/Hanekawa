@@ -1,15 +1,14 @@
-﻿using Jibril.Services.Level.Services;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 using System.Linq;
-using Discord.WebSocket;
+using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
+using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
 {
     public class LevelingService
     {
-        public DiscordSocketClient _client { get; }
         private IServiceProvider _provider;
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
@@ -20,6 +19,8 @@ namespace Jibril.Services.Level
             _client.MessageReceived += GiveExp;
             _client.UserVoiceStateUpdated += VoiceExp;
         }
+
+        public DiscordSocketClient _client { get; }
 
         private Task GiveExp(SocketMessage msg)
         {
@@ -34,17 +35,18 @@ namespace Jibril.Services.Level
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
-                DateTime cooldown = Convert.ToDateTime(userData.Cooldown);
+                var cooldown = Convert.ToDateTime(userData.Cooldown);
                 var levelupReq = Calculate.CalculateNextLevel(userData.Level);
                 var cooldownCheck = Cooldown.ExperienceCooldown(cooldown);
-                if (cooldownCheck == true && user.IsBot != true)
+                if (cooldownCheck && user.IsBot != true)
                 {
                     LevelDatabase.ChangeCooldown(user);
                     LevelDatabase.AddExperience(user, exp, credit);
-                    Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
-                    if ((userData.Xp + exp) >= levelupReq)
+                    Console.WriteLine(
+                        $"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
+                    if (userData.Xp + exp >= levelupReq)
                     {
-                        var remainingExp = (userData.Xp + exp) - userData.Xp;
+                        var remainingExp = userData.Xp + exp - userData.Xp;
                         LevelDatabase.Levelup(user, remainingExp);
                         await LevelRoles.AssignNewRole(user, userData.Level);
                     }
@@ -65,19 +67,16 @@ namespace Jibril.Services.Level
                     var CheckUser = DatabaseService.CheckUser(gusr);
                     if (CheckUser == null) DatabaseService.EnterUser(gusr);
                     if (newVc != null && oldVc == null)
-                    {
                         LevelDatabase.StartVoiceCounter(gusr);
-                    }
                     if (oldVc != null && newVc == null)
                     {
                         var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
-                        DateTime cooldown = Convert.ToDateTime(userInfo.Voice_timer);
+                        var cooldown = Convert.ToDateTime(userInfo.Voice_timer);
                         Calculate.VECC(gusr, cooldown);
                     }
                 }
                 catch
                 {
-
                 }
             });
             return Task.CompletedTask;

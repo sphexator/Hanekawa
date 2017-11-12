@@ -1,19 +1,17 @@
-﻿using Jibril.Services.Level.Lists;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Jibril.Data.Variables;
-using Discord;
-using Discord.WebSocket;
-using Jibril.Modules.Game.Services;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Jibril.Data.Variables;
+using Jibril.Modules.Game.Services;
+using Jibril.Services.Level.Lists;
 
 namespace Jibril.Services.Level.Services
 {
     public class LevelRoles
     {
-        public async static Task AssignNewRole(IGuildUser user, int lvl)
+        public static async Task AssignNewRole(IGuildUser user, int lvl)
         {
             var levelup = GetNewRole(user, lvl).FirstOrDefault();
             var guild = user.Guild;
@@ -52,7 +50,9 @@ namespace Jibril.Services.Level.Services
                 }
             }
         }
-        ///List<RoleLevelResponse>
+
+        /// List
+        /// <RoleLevelResponse>
         public static List<RoleLevelResponse> GetNewRole(IUser user, int lvl)
         {
             var level = lvl + 1;
@@ -74,13 +74,13 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Light Cruiser
-            else if (level == 5)
+            if (level == 5)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.LC;
                 var roleLoss = "0";
                 var Message = $"Reporting from command HQ.\n" +
-                            $"You've been promoted to {ClassNames.LC}!";
+                              $"You've been promoted to {ClassNames.LC}!";
                 GameDatabase.UpdateClass(user, ClassNames.LC);
 
                 result.Add(new RoleLevelResponse
@@ -92,13 +92,13 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Heavy Cruiser
-            else if (level == 10)
+            if (level == 10)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.HC;
                 var roleLoss = ClassNames.LC;
                 var Message = $"Reporting from command HQ.\n" +
-                            $"You've been promoted to {ClassNames.HC}!";
+                              $"You've been promoted to {ClassNames.HC}!";
                 GameDatabase.UpdateClass(user, ClassNames.HC);
 
                 result.Add(new RoleLevelResponse
@@ -110,13 +110,13 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Destroyer
-            else if (level == 20)
+            if (level == 20)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.DD;
                 var roleLoss = ClassNames.HC;
                 var Message = $"Reporting from command HQ.\n" +
-                            $"You've been promoted to {ClassNames.DD}!";
+                              $"You've been promoted to {ClassNames.DD}!";
                 GameDatabase.UpdateClass(user, ClassNames.DD);
 
                 result.Add(new RoleLevelResponse
@@ -128,13 +128,13 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             //Aircraft
-            else if (level == 30)
+            if (level == 30)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.AC;
                 var roleLoss = ClassNames.DD;
                 var Message = $"Reporting from command HQ.\n" +
-                            $"You've been promoted to {ClassNames.AC}!";
+                              $"You've been promoted to {ClassNames.AC}!";
                 GameDatabase.UpdateClass(user, ClassNames.AC);
 
                 result.Add(new RoleLevelResponse
@@ -146,13 +146,13 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Battleship
-            else if (level == 40)
+            if (level == 40)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.BB;
                 var roleLoss = ClassNames.AC;
                 var Message = $"Reporting from command HQ.\n" +
-                            $"You've been promoted to {ClassNames.BB}!";
+                              $"You've been promoted to {ClassNames.BB}!";
                 GameDatabase.UpdateClass(user, ClassNames.BB);
 
                 result.Add(new RoleLevelResponse
@@ -163,8 +163,7 @@ namespace Jibril.Services.Level.Services
                 });
                 return result;
             }
-            else return null;
+            return null;
         }
     }
-
 }

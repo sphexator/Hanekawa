@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Data.Variables
+﻿namespace Jibril.Data.Variables
 {
     public static class Colours
     {

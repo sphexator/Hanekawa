@@ -1,7 +1,5 @@
-﻿using Discord;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using Discord;
 
 namespace Jibril.Services.Common
 {
@@ -9,7 +7,7 @@ namespace Jibril.Services.Common
     {
         public static EmbedBuilder DefaultEmbed(string content, uint color)
         {
-            EmbedBuilder embed = new EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Color = new Color(color),
                 Description = content
@@ -20,13 +18,13 @@ namespace Jibril.Services.Common
 
         public static EmbedBuilder FooterEmbed(string content, string footcont, uint color, IUser user)
         {
-            EmbedBuilder embed = new EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Color = new Color(color),
                 Description = content
             };
 
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+            var footer = new EmbedFooterBuilder();
             footer.WithText(footcont);
             footer.WithIconUrl(user.GetAvatarUrl());
 
@@ -37,13 +35,13 @@ namespace Jibril.Services.Common
 
         public static EmbedBuilder AuthorEmbed(string content, string authContent, uint color, IUser user)
         {
-            EmbedBuilder embed = new EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Color = new Color(color),
                 Description = content
             };
 
-            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            var author = new EmbedAuthorBuilder();
             author.WithIconUrl(user.GetAvatarUrl());
             author.WithName(user.Username);
 
@@ -54,17 +52,17 @@ namespace Jibril.Services.Common
 
         public static EmbedBuilder FullEmbed(string content, uint color, IUser user)
         {
-            EmbedBuilder embed = new EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Color = new Color(color),
                 Description = content
             };
 
-            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            var author = new EmbedAuthorBuilder();
             author.WithIconUrl(user.GetAvatarUrl());
             author.WithName(user.Username);
 
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+            var footer = new EmbedFooterBuilder();
             footer.WithText($"{DateTime.Now}");
 
             embed.WithAuthor(author);

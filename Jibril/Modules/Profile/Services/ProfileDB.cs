@@ -1,24 +1,22 @@
 ﻿using Discord;
-using System;
-using MySql.Data.MySqlClient;
 using Jibril.Data.Variables;
+using MySql.Data.MySqlClient;
 
 namespace Jibril.Modules.Profile.Services
 {
     public class ProfileDB
     {
-        private string _table { get; set; }
-        string server = DbInfo.server;
-        string database = DbInfo.DbNorm;
-        string username = DbInfo.username;
-        string password = DbInfo.password;
-        Boolean POOLING = false;
-        private MySqlConnection dbConnection;
+        private readonly string database = DbInfo.DbNorm;
+        private readonly MySqlConnection dbConnection;
+        private readonly string password = DbInfo.password;
+        private readonly bool POOLING = false;
+        private readonly string server = DbInfo.server;
+        private readonly string username = DbInfo.username;
 
         public ProfileDB(string table)
         {
             _table = table;
-            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            var stringBuilder = new MySqlConnectionStringBuilder
             {
                 Server = server,
                 UserID = username,
@@ -31,22 +29,22 @@ namespace Jibril.Modules.Profile.Services
             dbConnection = new MySqlConnection(connectionString);
             dbConnection.Open();
         }
+
+        private string _table { get; }
+
         public MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
-            {
                 return null;
-            }
-            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
+
         public void CloseConnection()
         {
             if (dbConnection != null)
-            {
                 dbConnection.Close();
-            }
         }
 
         public static void AddProfileURL(IUser user, string url)
@@ -55,7 +53,6 @@ namespace Jibril.Modules.Profile.Services
             var str = $"UPDATE exp SET profilepic = '{url}' WHERE user_id = {user.Id}";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void RemoveProfileURL(IUser user)
@@ -64,7 +61,6 @@ namespace Jibril.Modules.Profile.Services
             var str = $"UPDATE exp SET profilepic = 'o' WHERE user_id = {user.Id}";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
     }
 }

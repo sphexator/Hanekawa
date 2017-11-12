@@ -1,14 +1,11 @@
-﻿using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Preconditions;
 
 namespace Jibril.Modules.Administration
 {
@@ -20,7 +17,6 @@ namespace Jibril.Modules.Administration
         {
             var channel = Context.Channel.Id.ToString();
             if (channel == "339380254097539072" || channel == "339383206669320192")
-            {
                 try
                 {
                     var user = Context.User as SocketGuildUser;
@@ -34,30 +30,31 @@ namespace Jibril.Modules.Administration
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Assigned lewd role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
-                    else if (roleCheck == true)
+                    else if (roleCheck)
                     {
                         await Context.Message.DeleteAsync().ConfigureAwait(false);
                         await user.RemoveRoleAsync(lewdRole).ConfigureAwait(false);
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Removed lewd role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
                 }
                 catch
                 {
                     await ReplyAndDeleteAsync(":Thinking:", false, null, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                 }
-            }
         }
+
         [Command("extreme")]
         public async Task AssignExtreme()
         {
             var channel = Context.Channel.Id.ToString();
             if (channel == "339380254097539072" || channel == "339383206669320192")
-            {
                 try
                 {
                     var user = Context.User as SocketGuildUser;
@@ -71,23 +68,24 @@ namespace Jibril.Modules.Administration
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Assigned extreme-nsfw role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
-                    else if (roleCheck == true)
+                    else if (roleCheck)
                     {
                         await Context.Message.DeleteAsync();
                         await user.RemoveRoleAsync(extremelewdRole);
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Removed extreme-nsfw role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
                 }
                 catch
                 {
                     await Context.Channel.SendMessageAsync("Walla").ConfigureAwait(false);
                 }
-            }
         }
 
         [Command("picdump")]
@@ -96,7 +94,6 @@ namespace Jibril.Modules.Administration
         {
             var channel = Context.Channel.Id.ToString();
             if (channel == "339380254097539072" || channel == "339383206669320192")
-            {
                 try
                 {
                     var user = Context.User as SocketGuildUser;
@@ -110,23 +107,24 @@ namespace Jibril.Modules.Administration
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Assigned picdump role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
-                    else if (roleCheck == true)
+                    else if (roleCheck)
                     {
                         await Context.Message.DeleteAsync();
                         await user.RemoveRoleAsync(picdump);
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Removed picdump role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
                 }
                 catch
                 {
                     await Context.Channel.SendMessageAsync("Walla").ConfigureAwait(false);
                 }
-            }
         }
 
         [Command("japanese")]
@@ -134,7 +132,6 @@ namespace Jibril.Modules.Administration
         {
             var channel = Context.Channel.Id.ToString();
             if (channel == "339380254097539072" || channel == "339383206669320192")
-            {
                 try
                 {
                     var user = Context.User as SocketGuildUser;
@@ -148,23 +145,24 @@ namespace Jibril.Modules.Administration
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Assigned Japanese role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
-                    else if (roleCheck == true)
+                    else if (roleCheck)
                     {
                         await Context.Message.DeleteAsync();
                         await user.RemoveRoleAsync(japanese);
                         var embed = new EmbedBuilder();
                         embed.WithColor(new Color(Colours.DefaultColour));
                         embed.Description = "Removed Japanese role";
-                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
+                            .ConfigureAwait(false);
                     }
                 }
                 catch
                 {
                     // Ignore
                 }
-            }
         }
     }
 }

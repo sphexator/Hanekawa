@@ -1,31 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord.Commands;
 using Discord;
+using Discord.Commands;
 
 namespace Jibril.Preconditions
 {
-    /// <summary> Sets how often a user is allowed to use this command
-    /// or any command in this module. </summary>
-    /// <remarks>This is backed by an in-memory collection
-    /// and will not persist with restarts.</remarks>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    /// <summary>
+    ///     Sets how often a user is allowed to use this command
+    ///     or any command in this module.
+    /// </summary>
+    /// <remarks>
+    ///     This is backed by an in-memory collection
+    ///     and will not persist with restarts.
+    /// </remarks>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false)]
     public sealed class RatelimitAttribute : PreconditionAttribute
     {
         private readonly uint _invokeLimit;
-        private readonly bool _noLimitInDMs;
-        private readonly bool _noLimitForAdmins;
         private readonly TimeSpan _invokeLimitPeriod;
         private readonly Dictionary<ulong, CommandTimeout> _invokeTracker = new Dictionary<ulong, CommandTimeout>();
+        private readonly bool _noLimitForAdmins;
+        private readonly bool _noLimitInDMs;
 
         /// <summary> Sets how often a user is allowed to use this command. </summary>
         /// <param name="times">The number of times a user may use the command within a certain period.</param>
         /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
-        /// <param name="measure">The scale in which the <paramref name="period"/> parameter should be measured.</param>
+        /// <param name="measure">The scale in which the <paramref name="period" /> parameter should be measured.</param>
         /// <param name="noLimitInDMs">Set whether or not there is no limit to the command in DMs. Defaults to false.</param>
-        /// <param name="noLimitForAdmins">Set whether or not there is no limit to the command for server admins. Defaults to false.</param>
-        public RatelimitAttribute(uint times, double period, Measure measure, bool noLimitInDMs = false, bool noLimitForAdmins = false)
+        /// <param name="noLimitForAdmins">
+        ///     Set whether or not there is no limit to the command for server admins. Defaults to
+        ///     false.
+        /// </param>
+        public RatelimitAttribute(uint times, double period, Measure measure, bool noLimitInDMs = false,
+            bool noLimitForAdmins = false)
         {
             _invokeLimit = times;
             _noLimitInDMs = noLimitInDMs;
@@ -53,7 +61,10 @@ namespace Jibril.Preconditions
         /// <param name="times">The number of times a user may use the command within a certain period.</param>
         /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
         /// <param name="noLimitInDMs">Set whether or not there is no limit to the command in DMs. Defaults to false.</param>
-        /// <param name="noLimitForAdmins">Set whether or not there is no limit to the command for server admins. Defaults to false.</param>
+        /// <param name="noLimitForAdmins">
+        ///     Set whether or not there is no limit to the command for server admins. Defaults to
+        ///     false.
+        /// </param>
         public RatelimitAttribute(uint times, TimeSpan period, bool noLimitInDMs = false, bool noLimitForAdmins = false)
         {
             _invokeLimit = times;
@@ -63,7 +74,8 @@ namespace Jibril.Preconditions
         }
 
         /// <inheritdoc />
-        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
+            IServiceProvider services)
         {
             if (_noLimitInDMs && context.Channel is IPrivateChannel)
                 return Task.FromResult(PreconditionResult.FromSuccess());
@@ -72,9 +84,10 @@ namespace Jibril.Preconditions
                 return Task.FromResult(PreconditionResult.FromSuccess());
 
             var now = DateTime.UtcNow;
-            var timeout = (_invokeTracker.TryGetValue(context.User.Id, out var t)
-                && ((now - t.FirstInvoke) < _invokeLimitPeriod))
-                    ? t : new CommandTimeout(now);
+            var timeout = _invokeTracker.TryGetValue(context.User.Id, out var t)
+                          && now - t.FirstInvoke < _invokeLimitPeriod
+                ? t
+                : new CommandTimeout(now);
 
             timeout.TimesInvoked++;
 
@@ -83,21 +96,18 @@ namespace Jibril.Preconditions
                 _invokeTracker[context.User.Id] = timeout;
                 return Task.FromResult(PreconditionResult.FromSuccess());
             }
-            else
-            {
-                return Task.FromResult(PreconditionResult.FromError("You are currently in Timeout."));
-            }
+            return Task.FromResult(PreconditionResult.FromError("You are currently in Timeout."));
         }
 
         private class CommandTimeout
         {
-            public uint TimesInvoked { get; set; }
-            public DateTime FirstInvoke { get; }
-
             public CommandTimeout(DateTime timeStarted)
             {
                 FirstInvoke = timeStarted;
             }
+
+            public uint TimesInvoked { get; set; }
+            public DateTime FirstInvoke { get; }
         }
     }
 

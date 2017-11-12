@@ -1,15 +1,12 @@
-﻿using Discord.Commands;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Modules.Game.Services;
 using Jibril.Modules.Profile.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Modules.Profile
 {
@@ -55,10 +52,8 @@ namespace Jibril.Modules.Profile
         private static void DbRequirement(SocketUser user)
         {
             var check = GameDatabase.GameCheckExistingUser(user);
-            if(check == null)
-            {
+            if (check == null)
                 GameDatabase.AddNPCDefault(user, 100);
-            }
         }
     }
 }

@@ -1,26 +1,24 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using Discord;
 using Jibril.Data.Variables;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Jibril.Modules.Suggestion.Services
 {
     public class SuggestionDB
     {
-        private string _table { get; set; }
-        string server = DbInfo.server;
-        string database = DbInfo.DbNorm;
-        string username = DbInfo.username;
-        string password = DbInfo.password;
-        Boolean POOLING = false;
-        private MySqlConnection dbConnection;
+        private readonly string database = DbInfo.DbNorm;
+        private readonly MySqlConnection dbConnection;
+        private readonly string password = DbInfo.password;
+        private readonly bool POOLING = false;
+        private readonly string server = DbInfo.server;
+        private readonly string username = DbInfo.username;
 
         public SuggestionDB(string table)
         {
             _table = table;
-            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            var stringBuilder = new MySqlConnectionStringBuilder
             {
                 Server = server,
                 UserID = username,
@@ -33,22 +31,22 @@ namespace Jibril.Modules.Suggestion.Services
             dbConnection = new MySqlConnection(connectionString);
             dbConnection.Open();
         }
+
+        private string _table { get; }
+
         public MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
-            {
                 return null;
-            }
-            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
+
         public void CloseConnection()
         {
             if (dbConnection != null)
-            {
                 dbConnection.Close();
-            }
         }
 
 
@@ -58,7 +56,6 @@ namespace Jibril.Modules.Suggestion.Services
             var str = $"INSERT INTO suggestion (user_id, date) VALUES ('{user.Id}', '{now}')";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static List<int> GetSuggestionID(DateTime time)
@@ -70,7 +67,7 @@ namespace Jibril.Modules.Suggestion.Services
 
             while (reader.Read())
             {
-                var suggestNr = (int)reader["id"];
+                var suggestNr = (int) reader["id"];
                 result.Add(suggestNr);
             }
             database.CloseConnection();
@@ -83,7 +80,6 @@ namespace Jibril.Modules.Suggestion.Services
             var str = $"UPDATE suggestion SET msgid = '{msgid}' WHERE id = '{id}'";
             var tablename = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void RespondSuggestion(uint casenr, string response, IUser user)
@@ -92,19 +88,18 @@ namespace Jibril.Modules.Suggestion.Services
             var str = $"UPDATE suggestion SET responduser = '{user.Id}', response = '{response}' WHERE id = '{casenr}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
-        public static List<String> SuggestionMessage(uint casenr)
+        public static List<string> SuggestionMessage(uint casenr)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new SuggestionDB("hanekawa");
-            var str = ($"SELECT * FROM suggestion WHERE id = '{casenr}'");
+            var str = $"SELECT * FROM suggestion WHERE id = '{casenr}'";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
             {
-                var msgid = (string)reader["msgid"];
+                var msgid = (string) reader["msgid"];
 
                 result.Add(msgid);
             }

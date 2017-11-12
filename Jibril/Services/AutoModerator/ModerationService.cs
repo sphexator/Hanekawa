@@ -1,14 +1,12 @@
-﻿using Discord.WebSocket;
-using Discord;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Jibril.Extensions;
-using Jibril.Data.Variables;
+﻿using System;
 using System.Linq;
-using Jibril.Services.Common;
+using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Jibril.Data.Variables;
+using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
+using Jibril.Services.Common;
 
 namespace Jibril.Services.AutoModerator
 {
@@ -37,8 +35,7 @@ namespace Jibril.Services.AutoModerator
                     var staffCheck = user.GuildPermissions.ManageMessages;
                     if (staffCheck != true)
                     {
-                        if (rawMessage.Content.IsDiscordInvite() == true)
-                        {
+                        if (rawMessage.Content.IsDiscordInvite())
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -55,8 +52,9 @@ namespace Jibril.Services.AutoModerator
                                 var ch = guild.GetTextChannel(339381104534355970);
 
                                 var content = $"🔇 *Gagged* \n" +
-                                $"User: {user.Mention}. (**{user.Id}**)";
-                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                                              $"User: {user.Mention}. (**{user.Id}**)";
+                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}",
+                                    Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
                                     x.Name = "Moderator";
@@ -78,13 +76,11 @@ namespace Jibril.Services.AutoModerator
 
                                 await ch.SendMessageAsync("", false, embed.Build());
                             }
-                            catch(Exception e)
+                            catch (Exception e)
                             {
                                 Console.WriteLine(e);
                             }
-                        }
-                        if (rawMessage.Content.IsScamLink() == true)
-                        {
+                        if (rawMessage.Content.IsScamLink())
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -101,8 +97,9 @@ namespace Jibril.Services.AutoModerator
                                 var ch = guild.GetTextChannel(339381104534355970);
 
                                 var content = $"🔇 *Gagged* \n" +
-                                $"User: {user.Mention}. (**{user.Id}**)";
-                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                                              $"User: {user.Mention}. (**{user.Id}**)";
+                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}",
+                                    Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
                                     x.Name = "Moderator";
@@ -128,9 +125,7 @@ namespace Jibril.Services.AutoModerator
                             {
                                 Console.WriteLine(e);
                             }
-                        }
                         if (rawMessage.Content.Length >= 1500)
-                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -147,8 +142,9 @@ namespace Jibril.Services.AutoModerator
                                 var ch = guild.GetTextChannel(339381104534355970);
 
                                 var content = $"🔇 *Gagged* \n" +
-                                $"User: {user.Mention}. (**{user.Id}**)";
-                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                                              $"User: {user.Mention}. (**{user.Id}**)";
+                                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}",
+                                    Colours.FailColour, user);
                                 embed.AddField(x =>
                                 {
                                     x.Name = "Moderator";
@@ -170,16 +166,14 @@ namespace Jibril.Services.AutoModerator
 
                                 await ch.SendMessageAsync("", false, embed.Build());
                             }
-                            catch(Exception e)
+                            catch (Exception e)
                             {
                                 Console.WriteLine(e);
                             }
-                        }
                     }
                 }
                 catch
                 {
-
                 }
             });
             return Task.CompletedTask;

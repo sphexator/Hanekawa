@@ -1,14 +1,11 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
@@ -33,9 +30,9 @@ namespace Jibril.Modules.Administration
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
-                        $"\n" +
-                        $"Staff: {Context.User}\n" +
-                        $"Reason: N/A").ConfigureAwait(false);
+                                              $"\n" +
+                                              $"Staff: {Context.User}\n" +
+                                              $"Reason: N/A").ConfigureAwait(false);
                 }
                 else
                 {
@@ -45,9 +42,9 @@ namespace Jibril.Modules.Administration
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
-                        $"\n" +
-                        $"Staff: {Context.User}\n" +
-                        $"Reason: {reason}").ConfigureAwait(false);
+                                              $"\n" +
+                                              $"Staff: {Context.User}\n" +
+                                              $"Reason: {reason}").ConfigureAwait(false);
                 }
             }
             else
@@ -58,7 +55,7 @@ namespace Jibril.Modules.Administration
                     WarningDB.AddWarn(user, Context.User, "No reason provided");
                     AdminDb.AddWarn(user);
                     await Context.Message.DeleteAsync();
-                    if ((result.Warnings++) == 3)
+                    if (result.Warnings++ == 3)
                     {
                         var muteRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                         await user.AddRoleAsync(muteRole).ConfigureAwait(false);
@@ -67,7 +64,8 @@ namespace Jibril.Modules.Administration
                         var content = $"{Context.User} warned {user}.";
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-                        await dm.SendMessageAsync($"You've been warned on KanColle! & threshold for mute has been met.\n" +
+                        await dm.SendMessageAsync(
+                            $"You've been warned on KanColle! & threshold for mute has been met.\n" +
                             $"\n" +
                             $"Staff: {Context.User}\n" +
                             $"Reason: N/A").ConfigureAwait(false);
@@ -78,9 +76,9 @@ namespace Jibril.Modules.Administration
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
-                            $"\n" +
-                            $"Staff: {Context.User}\n" +
-                            $"Reason: N/A").ConfigureAwait(false);
+                                                  $"\n" +
+                                                  $"Staff: {Context.User}\n" +
+                                                  $"Reason: N/A").ConfigureAwait(false);
                     }
                 }
                 else
@@ -97,9 +95,9 @@ namespace Jibril.Modules.Administration
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
-                            $"\n" +
-                            $"Staff: {Context.User}\n" +
-                            $"Reason: {reason}").ConfigureAwait(false);
+                                                  $"\n" +
+                                                  $"Staff: {Context.User}\n" +
+                                                  $"Reason: {reason}").ConfigureAwait(false);
                     }
                     else
                     {
@@ -107,9 +105,9 @@ namespace Jibril.Modules.Administration
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
-                            $"\n" +
-                            $"Staff: {Context.User}\n" +
-                            $"Reason: {reason}").ConfigureAwait(false);
+                                                  $"\n" +
+                                                  $"Staff: {Context.User}\n" +
+                                                  $"Reason: {reason}").ConfigureAwait(false);
                     }
                 }
             }
@@ -123,8 +121,8 @@ namespace Jibril.Modules.Administration
             if (result != null)
             {
                 var list = WarningDB.WarnList(user).ToList();
-                EmbedBuilder embed = new EmbedBuilder();
-                EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+                var embed = new EmbedBuilder();
+                var author = new EmbedAuthorBuilder();
 
                 author.WithIconUrl(user.GetAvatarUrl());
                 author.WithName(user.Username);
@@ -150,8 +148,8 @@ namespace Jibril.Modules.Administration
                     {
                         y.Name = $"Warn: {warn}";
                         y.Value = $"<@!{c.Staff_id}>\n" +
-                        $"{c.Message}\n" +
-                        $"{c.Date}";
+                                  $"{c.Message}\n" +
+                                  $"{c.Date}";
                         y.IsInline = false;
                     });
                 }

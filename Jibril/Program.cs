@@ -1,28 +1,31 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Discord.Addons.Interactive;
 using Jibril.Services;
-using Jibril.Services.Logging;
-using Jibril.Services.Level;
-using Jibril.Services.Welcome;
-using Jibril.Services.Reaction;
-using Jibril.Services.AutoModerator;
 using Jibril.Services.Automate.PicDump;
+using Jibril.Services.AutoModerator;
+using Jibril.Services.Level;
+using Jibril.Services.Logging;
+using Jibril.Services.Reaction;
+using Jibril.Services.Welcome;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jibril
 {
     public class Program
     {
-        static void Main(string[] args)
-            => new Program().MainASync().GetAwaiter().GetResult();
         private DiscordSocketClient _client;
         private IConfiguration _config;
+
+        private static void Main(string[] args)
+        {
+            new Program().MainASync().GetAwaiter().GetResult();
+        }
 
         public async Task MainASync()
         {

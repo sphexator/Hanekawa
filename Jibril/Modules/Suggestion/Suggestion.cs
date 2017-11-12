@@ -1,16 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Suggestion.Services;
-using Jibril.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Jibril.Preconditions;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Suggestion
 {
@@ -29,7 +26,7 @@ namespace Jibril.Modules.Suggestion
             await Context.Message.DeleteAsync();
 
             var time = DateTime.Now;
-            var guild = Context.Guild as SocketGuild;
+            var guild = Context.Guild;
             var sc = guild.GetTextChannel(342519715215835136);
 
             await Task.Delay(100);
@@ -38,9 +35,9 @@ namespace Jibril.Modules.Suggestion
             var suggestionNr = SuggestionDB.GetSuggestionID(time);
 
 
-            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
-            EmbedBuilder embed = new EmbedBuilder
+            var author = new EmbedAuthorBuilder();
+            var footer = new EmbedFooterBuilder();
+            var embed = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
                 Description = $"{content}"
@@ -48,10 +45,8 @@ namespace Jibril.Modules.Suggestion
             if (Context.Message.Attachments != null)
             {
                 var file = Context.Message.Attachments.Select(x => x.Url).ToString();
-                if (_AttachmentUrl(file) == true)
-                {
+                if (_AttachmentUrl(file))
                     embed.ImageUrl = file;
-                }
             }
             author.WithIconUrl(Context.User.GetAvatarUrl());
             author.WithName(Context.User.Username);
@@ -81,18 +76,18 @@ namespace Jibril.Modules.Suggestion
         [Command("denyrequest", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task DenyRequest(uint casenr, [Remainder]string reason = null)
+        public async Task DenyRequest(uint casenr, [Remainder] string reason = null)
         {
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
-            ulong msgID = Convert.ToUInt64(msgIDString[0]);
-            var guild = Context.Guild as SocketGuild;
+            var msgID = Convert.ToUInt64(msgIDString[0]);
+            var guild = Context.Guild;
             var ch = guild.GetChannel(342519715215835136) as ITextChannel;
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
 
-            EmbedBuilder updEmbed = new EmbedBuilder();
-            EmbedAuthorBuilder updAuthor = new EmbedAuthorBuilder();
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+            var updEmbed = new EmbedBuilder();
+            var updAuthor = new EmbedAuthorBuilder();
+            var footer = new EmbedFooterBuilder();
 
             updEmbed.Color = new Color(Colours.FailColour);
             updEmbed.Description = oldMsg.Description;
@@ -101,13 +96,9 @@ namespace Jibril.Modules.Suggestion
             {
                 x.Name = $"{Context.User.Username}";
                 if (reason == null)
-                {
                     x.Value = "No reason provided";
-                }
                 else
-                {
                     x.Value = $"{reason}";
-                }
                 x.IsInline = false;
             });
 
@@ -128,15 +119,15 @@ namespace Jibril.Modules.Suggestion
         public async Task ApproveRequest(uint casenr, [Remainder] string reason = null)
         {
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
-            ulong msgID = Convert.ToUInt64(msgIDString[0]);
-            var guild = Context.Guild as SocketGuild;
+            var msgID = Convert.ToUInt64(msgIDString[0]);
+            var guild = Context.Guild;
             var ch = guild.GetChannel(342519715215835136) as ITextChannel;
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
 
-            EmbedBuilder updEmbed = new EmbedBuilder();
-            EmbedAuthorBuilder updAuthor = new EmbedAuthorBuilder();
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+            var updEmbed = new EmbedBuilder();
+            var updAuthor = new EmbedAuthorBuilder();
+            var footer = new EmbedFooterBuilder();
 
             updEmbed.Color = new Color(Colours.OKColour);
             updEmbed.Description = oldMsg.Description;
@@ -145,13 +136,9 @@ namespace Jibril.Modules.Suggestion
             {
                 x.Name = $"{Context.User.Username}";
                 if (reason == null)
-                {
                     x.Value = "No reason provided";
-                }
                 else
-                {
                     x.Value = $"{reason}";
-                }
                 x.IsInline = false;
             });
 
@@ -167,13 +154,13 @@ namespace Jibril.Modules.Suggestion
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
         }
 
-        private static Boolean _AttachmentUrl(string url)
+        private static bool _AttachmentUrl(string url)
         {
-            if (url.EndsWith(".png") == true)   return true;
-            if (url.EndsWith(".jpeg") == true)  return true;
-            if (url.EndsWith(".jpg") == true)   return true;
-            if (url.EndsWith(".gif") == true)   return true;
-            else return false;
+            if (url.EndsWith(".png")) return true;
+            if (url.EndsWith(".jpeg")) return true;
+            if (url.EndsWith(".jpg")) return true;
+            if (url.EndsWith(".gif")) return true;
+            return false;
         }
     }
 }

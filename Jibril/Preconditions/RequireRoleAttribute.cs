@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
 using Discord;
+using Discord.Commands;
 
 namespace Jibril.Preconditions
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class RequireRoleAttribute : RequireContextAttribute
     {
         private readonly ulong _requiredRole;
@@ -17,17 +16,13 @@ namespace Jibril.Preconditions
             _requiredRole = requiredRole;
         }
 
-        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
+            CommandInfo command, IServiceProvider services)
         {
             var baseResult = await base.CheckPermissionsAsync(context, command, services);
-            if (baseResult.IsSuccess && ((IGuildUser)context.User).RoleIds.Contains(_requiredRole))
-            {
+            if (baseResult.IsSuccess && ((IGuildUser) context.User).RoleIds.Contains(_requiredRole))
                 return PreconditionResult.FromSuccess();
-            }
-            else
-            {
-                return baseResult;
-            }
+            return baseResult;
         }
     }
 }

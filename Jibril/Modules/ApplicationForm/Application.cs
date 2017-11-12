@@ -1,14 +1,12 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
 using Jibril.Data.Variables;
 using Jibril.Preconditions;
+using Jibril.Services;
 
 namespace Jibril.Modules.ApplicationForm
 {
@@ -25,43 +23,43 @@ namespace Jibril.Modules.ApplicationForm
             if (userData.Level >= 10)
             {
                 await ReplyAsync("Application process started.\n" +
-                                    "Required userdata collected." +
-                                    "\n" +
-                                    "\n" +
-                                    "Keep in mind, when you answer the questions, you need to keep them all in one(1) message." +
-                                    "\n" +
-                                    "\n" +
-                                    "Question 1/5 \n" +
-                                    "How old are you?");
+                                 "Required userdata collected." +
+                                 "\n" +
+                                 "\n" +
+                                 "Keep in mind, when you answer the questions, you need to keep them all in one(1) message." +
+                                 "\n" +
+                                 "\n" +
+                                 "Question 1/5 \n" +
+                                 "How old are you?");
                 var age = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                 if (age != null)
                 {
                     await ReplyAsync("Question 2/5 \n" +
-                                        "Which of the following positions are you applying for (mention multiple if applying for multiple): \n" +
-                                        "1. Moderator. \n" +
-                                        "2. Event. \n" +
-                                        "3. Art / Design.");
+                                     "Which of the following positions are you applying for (mention multiple if applying for multiple): \n" +
+                                     "1. Moderator. \n" +
+                                     "2. Event. \n" +
+                                     "3. Art / Design.");
                     var position = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                     if (position != null)
                     {
                         await ReplyAsync("Question 3/5\n" +
-                                            "Region and/or timezone?");
+                                         "Region and/or timezone?");
                         var region = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                         if (region != null)
                         {
                             await ReplyAsync("Question 4/5 \n" +
-                                                "Tell us briefly about yourself.");
+                                             "Tell us briefly about yourself.");
                             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                             if (response != null)
                             {
                                 await ReplyAsync("Question 5/5 \n" +
-                                                    "Do you have any previous experience or portofolio for design (not needed)?\n" +
-                                                    "\n" +
-                                                    "Prioritize experience on discord but name any you got");
+                                                 "Do you have any previous experience or portofolio for design (not needed)?\n" +
+                                                 "\n" +
+                                                 "Prioritize experience on discord but name any you got");
                                 var experience = await NextMessageAsync(true, true, TimeSpan.FromMinutes(15));
 
                                 var totalMessageCount = $"**Age:** {age}\n" +
@@ -78,9 +76,9 @@ namespace Jibril.Modules.ApplicationForm
 
                                 if (experience != null && totalMessageCount.Length <= 2000)
                                 {
-                                    EmbedBuilder embed = new EmbedBuilder();
-                                    EmbedAuthorBuilder author = new EmbedAuthorBuilder();
-                                    EmbedFooterBuilder footer = new EmbedFooterBuilder();
+                                    var embed = new EmbedBuilder();
+                                    var author = new EmbedAuthorBuilder();
+                                    var footer = new EmbedFooterBuilder();
 
                                     author.IconUrl = Context.User.GetAvatarUrl();
                                     author.Name = $"{Context.User.Username}#{Context.User.Discriminator}";

@@ -1,25 +1,21 @@
-﻿using Discord.WebSocket;
-using Jibril.Services;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using System;
-using System.Collections.Generic;
-using SixLabors.Primitives;
-using System.Text;
-using System.Linq;
+﻿using System;
+using Discord.WebSocket;
+using Jibril.Data.Variables;
 using Jibril.Modules.Game.Services;
 using Jibril.Services.Level.Lists;
-using Jibril.Data.Variables;
-using SixLabors.Shapes;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.PixelFormats;
 using Jibril.Services.Level.Services;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.Primitives;
+using SixLabors.Shapes;
 
 namespace Jibril.Modules.Profile.Services
 {
     public static class ApplyText
     {
-        public static string ApplyTextToProfile(string filepath, SocketUser user, string randomString, UserData userData, GameStatus gameData)
+        public static string ApplyTextToProfile(string filepath, SocketUser user, string randomString,
+            UserData userData, GameStatus gameData)
         {
             var finalPath = $"Data/Images/Profile/Cache/{randomString}Final.png";
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
@@ -33,47 +29,46 @@ namespace Jibril.Modules.Profile.Services
             var gdclassFont = GoodFont(shipFont, $"{userData.ShipClass}", 5, 88, 16);
             var NameFont = GoodFont(nameFont, $"{user.Username}", 5, 170, 30);
 
-            using (Image<Rgba32> img = Image.Load(filepath))
+            using (var img = Image.Load(filepath))
             {
                 // Paths
-                PathBuilder usernamePath = new PathBuilder();
-                PathBuilder levelPath = new PathBuilder();
-                PathBuilder expPath = new PathBuilder();
-                PathBuilder totalexpPath = new PathBuilder();
-                PathBuilder creditPath = new PathBuilder();
-                PathBuilder healthPath = new PathBuilder();
-                PathBuilder damagePath = new PathBuilder();
-                PathBuilder npckillPath = new PathBuilder();
-                PathBuilder fleetPath = new PathBuilder();
-                PathBuilder CommanderPath = new PathBuilder();
-                PathBuilder missionPath = new PathBuilder();
+                var usernamePath = new PathBuilder();
+                var levelPath = new PathBuilder();
+                var expPath = new PathBuilder();
+                var totalexpPath = new PathBuilder();
+                var creditPath = new PathBuilder();
+                var healthPath = new PathBuilder();
+                var damagePath = new PathBuilder();
+                var npckillPath = new PathBuilder();
+                var fleetPath = new PathBuilder();
+                var CommanderPath = new PathBuilder();
+                var missionPath = new PathBuilder();
 
-                usernamePath.AddLine((new Point(114, 105)), (new Point(284, 105)));
-                levelPath.AddLine((new Point(114, 132)), (new Point(284, 132)));
-                expPath.AddLine((new Point(114, 144)), (new Point(284, 144)));
-                totalexpPath.AddLine((new Point(114, 156)), (new Point(284, 156)));
-                creditPath.AddLine((new Point(114, 168)), (new Point(284, 168)));
+                usernamePath.AddLine(new Point(114, 105), new Point(284, 105));
+                levelPath.AddLine(new Point(114, 132), new Point(284, 132));
+                expPath.AddLine(new Point(114, 144), new Point(284, 144));
+                totalexpPath.AddLine(new Point(114, 156), new Point(284, 156));
+                creditPath.AddLine(new Point(114, 168), new Point(284, 168));
 
-                healthPath.AddLine((new Point(114, 191)), (new Point(284, 191)));
-                damagePath.AddLine((new Point(114, 201)), (new Point(284, 201)));
-                npckillPath.AddLine((new Point(114, 211)), (new Point(284, 211)));
-                fleetPath.AddLine((new Point(114, 221)), (new Point(284, 221)));
-                CommanderPath.AddLine((new Point(114, 231)), (new Point(284, 231)));
-                missionPath.AddLine((new Point(114, 241)), (new Point(284, 241)));
+                healthPath.AddLine(new Point(114, 191), new Point(284, 191));
+                damagePath.AddLine(new Point(114, 201), new Point(284, 201));
+                npckillPath.AddLine(new Point(114, 211), new Point(284, 211));
+                fleetPath.AddLine(new Point(114, 221), new Point(284, 221));
+                CommanderPath.AddLine(new Point(114, 231), new Point(284, 231));
+                missionPath.AddLine(new Point(114, 241), new Point(284, 241));
 
 
-
-                IPath username = usernamePath.Build();
-                IPath level = levelPath.Build();
-                IPath exp = expPath.Build();
-                IPath totalexp = totalexpPath.Build();
-                IPath credit = creditPath.Build();
-                IPath health = healthPath.Build();
-                IPath damage = damagePath.Build();
-                IPath npckill = npckillPath.Build();
-                IPath fleet = fleetPath.Build();
-                IPath commander = CommanderPath.Build();
-                IPath mission = missionPath.Build();
+                var username = usernamePath.Build();
+                var level = levelPath.Build();
+                var exp = expPath.Build();
+                var totalexp = totalexpPath.Build();
+                var credit = creditPath.Build();
+                var health = healthPath.Build();
+                var damage = damagePath.Build();
+                var npckill = npckillPath.Build();
+                var fleet = fleetPath.Build();
+                var commander = CommanderPath.Build();
+                var mission = missionPath.Build();
 
                 var levelstr = "LEVEL";
                 var expstr = "EXP";
@@ -88,196 +83,197 @@ namespace Jibril.Modules.Profile.Services
 
 
                 img.Mutate(x => x
-                // User info
-                // Username area
-                .DrawText($"{user.Username}", NameFont, Rgba32.Black, username, new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = username.Length
-                })
+                    // User info
+                    // Username area
+                    .DrawText($"{user.Username}", NameFont, Rgba32.Black, username, new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = username.Length
+                    })
 
-                // Level area
-                .Draw(Rgba32.DarkGray, 1, level)
-                .DrawText(levelstr, statFont, Rgba32.Black, (new Point(114, 120)), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = level.Length
-                })
+                    // Level area
+                    .Draw(Rgba32.DarkGray, 1, level)
+                    .DrawText(levelstr, statFont, Rgba32.Black, new Point(114, 120), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = level.Length
+                    })
 
-                // Level Value
-                .DrawText(userData.Level.ToString(), statFont, Rgba32.Black, new Point(284, 120), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    // Level Value
+                    .DrawText(userData.Level.ToString(), statFont, Rgba32.Black, new Point(284, 120),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                //Exp area
-                .Draw(Rgba32.DarkGray, 1, exp)
-                .DrawText(expstr, statFont, Rgba32.Black, new Point(114, 132), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = exp.Length
-                })
+                    //Exp area
+                    .Draw(Rgba32.DarkGray, 1, exp)
+                    .DrawText(expstr, statFont, Rgba32.Black, new Point(114, 132), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = exp.Length
+                    })
 
-                //Exp Value
-                .DrawText($"{userData.Xp}/{xpToLevelUp}", statFont, Rgba32.Black, new Point(284, 132), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    //Exp Value
+                    .DrawText($"{userData.Xp}/{xpToLevelUp}", statFont, Rgba32.Black, new Point(284, 132),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                //Total exp area
-                .Draw(Rgba32.DarkGray, 1, totalexp)
-                .DrawText(totalexpstr, statFont, Rgba32.Black, new Point(114, 144), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = totalexp.Length
-                })
+                    //Total exp area
+                    .Draw(Rgba32.DarkGray, 1, totalexp)
+                    .DrawText(totalexpstr, statFont, Rgba32.Black, new Point(114, 144), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = totalexp.Length
+                    })
+                    .DrawText($"{userData.Total_xp}", statFont, Rgba32.Black, new Point(284, 144),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                .DrawText($"{userData.Total_xp}", statFont, Rgba32.Black, new Point(284, 144), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    // Credit area
+                    .Draw(Rgba32.DarkGray, 1, credit)
+                    .DrawText(creditstr, statFont, Rgba32.Black, new Point(114, 156), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = credit.Length
+                    })
+                    .DrawText($"{userData.Tokens}", statFont, Rgba32.Black, new Point(284, 156),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                // Credit area
-                .Draw(Rgba32.DarkGray, 1, credit)
-                .DrawText(creditstr, statFont, Rgba32.Black, new Point(114, 156), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = credit.Length
-                })
+                    // Game info
+                    // Health area
+                    .Draw(Rgba32.DarkGray, 1, health)
+                    .DrawText(healthstr, classFont, Rgba32.Black, new Point(114, 180), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = health.Length
+                    })
+                    .DrawText($"{gameData.Health - gameData.Damagetaken}/{gameData.Health}", classFont, Rgba32.Black,
+                        new Point(284, 180), new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                .DrawText($"{userData.Tokens}", statFont, Rgba32.Black, new Point(284, 156), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    // Damage area
+                    .Draw(Rgba32.DarkGray, 1, damage)
+                    .DrawText(damagestr, classFont, Rgba32.Black, new Point(114, 190), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = damage.Length
+                    })
+                    .DrawText($"{ap}", classFont, Rgba32.Black, new Point(284, 190), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Antialias = true,
+                        ApplyKerning = true
+                    })
 
+                    // NPC kills area
+                    .Draw(Rgba32.DarkGray, 1, npckill)
+                    .DrawText(npckillstr, classFont, Rgba32.Black, new Point(114, 200), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = npckill.Length
+                    })
+                    .DrawText($"{gameData.KillAmount}", classFont, Rgba32.Black, new Point(284, 200),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                // Game info
-                // Health area
-                .Draw(Rgba32.DarkGray, 1, health)
-                .DrawText(healthstr, classFont, Rgba32.Black, new Point(114, 180), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = health.Length
-                })
+                    // Fleet area
+                    .Draw(Rgba32.DarkGray, 1, fleet)
+                    .DrawText(fleetstr, classFont, Rgba32.Black, new Point(114, 210), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = fleet.Length
+                    })
+                    .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 210),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                .DrawText($"{gameData.Health - gameData.Damagetaken}/{gameData.Health}", classFont, Rgba32.Black, new Point(284, 180), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    // Commander area
+                    .Draw(Rgba32.DarkGray, 1, commander)
+                    .DrawText(commanderstr, classFont, Rgba32.Black, new Point(114, 220), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = commander.Length
+                    })
+                    .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 220),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
 
-                // Damage area
-                .Draw(Rgba32.DarkGray, 1, damage)
-                .DrawText(damagestr, classFont, Rgba32.Black, new Point(114, 190), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = damage.Length
-                })
-
-                .DrawText($"{ap}", classFont, Rgba32.Black, new Point(284, 190), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
-
-                // NPC kills area
-                .Draw(Rgba32.DarkGray, 1, npckill)
-                .DrawText(npckillstr, classFont, Rgba32.Black, new Point(114, 200), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = npckill.Length
-                })
-
-                .DrawText($"{gameData.KillAmount}", classFont, Rgba32.Black, new Point(284, 200), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
-
-                // Fleet area
-                .Draw(Rgba32.DarkGray, 1, fleet)
-                .DrawText(fleetstr, classFont, Rgba32.Black, new Point(114, 210), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = fleet.Length
-                })
-
-                .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 210), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
-
-                // Commander area
-                .Draw(Rgba32.DarkGray, 1, commander)
-                .DrawText(commanderstr, classFont, Rgba32.Black, new Point(114, 220), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = commander.Length
-                })
-
-                .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 220), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
-
-                // Mission Completed area
-                .Draw(Rgba32.DarkGray, 1, mission)
-                .DrawText(missionstr, classFont, Rgba32.Black, new Point(114, 230), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    Antialias = true,
-                    ApplyKerning = true,
-                    WrapTextWidth = mission.Length
-                })
-                .DrawText($"0", classFont, Rgba32.Black, new Point(284, 230), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
-                // Ship Class Text
-                .DrawText($"{userData.ShipClass}", gdclassFont, Rgba32.Black, new PointF(50, 280), new TextGraphicsOptions(true)
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Antialias = true,
-                    ApplyKerning = true
-                })
+                    // Mission Completed area
+                    .Draw(Rgba32.DarkGray, 1, mission)
+                    .DrawText(missionstr, classFont, Rgba32.Black, new Point(114, 230), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = mission.Length
+                    })
+                    .DrawText($"0", classFont, Rgba32.Black, new Point(284, 230), new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Antialias = true,
+                        ApplyKerning = true
+                    })
+                    // Ship Class Text
+                    .DrawText($"{userData.ShipClass}", gdclassFont, Rgba32.Black, new PointF(50, 280),
+                        new TextGraphicsOptions(true)
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Antialias = true,
+                            ApplyKerning = true
+                        })
                 );
                 img.Save(finalPath);
                 return finalPath;
@@ -286,14 +282,14 @@ namespace Jibril.Modules.Profile.Services
 
         public static Font GoodFont(Font font, string text, float padding, int Width, int Height)
         {
-            float targetWidth = Width - (padding * 2);
-            float targetHeight = Height - (padding * 2);
+            var targetWidth = Width - padding * 2;
+            var targetHeight = Height - padding * 2;
 
-            SizeF size = TextMeasurer.Measure(text, new RendererOptions(font));
+            var size = TextMeasurer.Measure(text, new RendererOptions(font));
 
-            float scalingFactor = Math.Min(Width / size.Width, Height / size.Height);
+            var scalingFactor = Math.Min(Width / size.Width, Height / size.Height);
 
-            Font scaledFont = new Font(font, scalingFactor * font.Size);
+            var scaledFont = new Font(font, scalingFactor * font.Size);
 
             return scaledFont;
         }

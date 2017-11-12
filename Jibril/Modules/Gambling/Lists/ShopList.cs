@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Modules.Gambling.Lists
+﻿namespace Jibril.Modules.Gambling.Lists
 {
     public class ShopList
     {
@@ -10,6 +6,7 @@ namespace Jibril.Modules.Gambling.Lists
         public string Item { get; set; }
         public int Price { get; set; }
     }
+
     public class EventShopList
     {
         public int Id { get; set; }

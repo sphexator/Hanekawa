@@ -1,8 +1,7 @@
-﻿using Discord;
-using Jibril.Modules.Administration.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Discord;
+using Jibril.Modules.Administration.Services;
 
 namespace Jibril.Services.Common
 {
@@ -19,7 +18,6 @@ namespace Jibril.Services.Common
         public static void UpdateCase(string msgid, int id)
         {
             AdminDb.UpdateActionCase(msgid, id);
-            return;
         }
     }
 }

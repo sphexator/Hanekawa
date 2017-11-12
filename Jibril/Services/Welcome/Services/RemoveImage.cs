@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace Jibril.Services.Welcome.Services
 {
@@ -9,16 +6,12 @@ namespace Jibril.Services.Welcome.Services
     {
         public static void WelcomeFileDelete()
         {
-            DirectoryInfo banner = new DirectoryInfo(@"Data\Images\Welcome\Cache\Banner\");
-            DirectoryInfo pfp = new DirectoryInfo(@"Data\Images\Welcome\Cache\Avatar\");
-            foreach (FileInfo file in banner.GetFiles())
-            {
+            var banner = new DirectoryInfo(@"Data\Images\Welcome\Cache\Banner\");
+            var pfp = new DirectoryInfo(@"Data\Images\Welcome\Cache\Avatar\");
+            foreach (var file in banner.GetFiles())
                 file.Delete();
-            }
-            foreach(FileInfo file in pfp.GetFiles())
-            {
+            foreach (var file in pfp.GetFiles())
                 file.Delete();
-            }
         }
     }
 }

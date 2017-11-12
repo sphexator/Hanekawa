@@ -1,26 +1,24 @@
-﻿using Jibril.Data.Variables;
+﻿using System.Collections.Generic;
+using Jibril.Data.Variables;
 using Jibril.Services.Reaction.List;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Jibril.Services.Reaction
 {
     public class ReactionDb
     {
-        private string _table { get; set; }
-        string server = DbInfo.server;
-        string database = DbInfo.DbNorm;
-        string username = DbInfo.username;
-        string password = DbInfo.password;
-        Boolean POOLING = false;
-        private MySqlConnection dbConnection;
+        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
+        private readonly string database = DbInfo.DbNorm;
+        private readonly MySqlConnection dbConnection;
+        private readonly string password = DbInfo.password;
+        private readonly bool POOLING = false;
+        private readonly string server = DbInfo.server;
+        private readonly string username = DbInfo.username;
 
         public ReactionDb(string table)
         {
             _table = table;
-            MySqlConnectionStringBuilder stringBuilder = new MySqlConnectionStringBuilder
+            var stringBuilder = new MySqlConnectionStringBuilder
             {
                 Server = server,
                 UserID = username,
@@ -33,26 +31,23 @@ namespace Jibril.Services.Reaction
             dbConnection = new MySqlConnection(connectionString);
             dbConnection.Open();
         }
+
+        private string _table { get; }
+
         public MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
-            {
                 return null;
-            }
-            MySqlCommand command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
+
         public void CloseConnection()
         {
             if (dbConnection != null)
-            {
                 dbConnection.Close();
-            }
         }
-
-
-        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
 
         public static void InsertReactionMessage(string msgid, string channelid, int counter)
         {
@@ -60,7 +55,6 @@ namespace Jibril.Services.Reaction
             var str = $"INSERT INTO reaction (msgid, chid, counter) VALUES ('{msgid}', '{channelid}', '{counter}')";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static List<ReactionList> ReactionData(string msgid)
@@ -71,10 +65,10 @@ namespace Jibril.Services.Reaction
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var messageid = (string)reader["msgid"];
-                var chid = (string)reader["chid"];
-                var counter = (int)reader["counter"];
-                var sent = (string)reader["sent"];
+                var messageid = (string) reader["msgid"];
+                var chid = (string) reader["chid"];
+                var counter = (int) reader["counter"];
+                var sent = (string) reader["sent"];
 
                 result.Add(new ReactionList
                 {
@@ -86,7 +80,6 @@ namespace Jibril.Services.Reaction
             }
             database.CloseConnection();
             return result;
-
         }
 
         public static void AddReaction(string msgid)
@@ -95,8 +88,6 @@ namespace Jibril.Services.Reaction
             var str = $"UPDATE reaction SET counter = counter + '1' WHERE msgid = '{msgid}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
-            
         }
 
         public static void RemoveReaction(string msgid)
@@ -105,7 +96,6 @@ namespace Jibril.Services.Reaction
             var str = $"UPDATE reaction SET counter = counter - '1' WHERE msgid = '{msgid}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
 
         public static void ReactionMsgPosted(string msgid)
@@ -114,7 +104,6 @@ namespace Jibril.Services.Reaction
             var str = $"UPDATE reaction SET sent = 'yes' WHERE msgid = '{msgid}'";
             var reader = database.FireCommand(str);
             database.CloseConnection();
-            return;
         }
     }
 }

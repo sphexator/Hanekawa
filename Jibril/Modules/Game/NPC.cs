@@ -1,14 +1,10 @@
-﻿using Discord;
-using Discord.Commands;
-using Jibril.Preconditions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using System.Linq;
-using Jibril.Modules.Game.Services;
-using Jibril.Services;
+using Discord.Commands;
 using Jibril.Data.Variables;
+using Jibril.Modules.Game.Services;
+using Jibril.Preconditions;
+using Jibril.Services;
 using Jibril.Services.Common;
 
 namespace Jibril.Modules.Game
@@ -34,7 +30,8 @@ namespace Jibril.Modules.Game
                 if (GameStatus.Combatstatus == 1)
                 {
                     var embed = CombatResponse.Combat(user, Colours.OKColour, GameStatus);
-                    await ReplyAsync($"{user.Username}, You're already in a fight, use !attack to fight the enemy", false, embed.Build());
+                    await ReplyAsync($"{user.Username}, You're already in a fight, use !attack to fight the enemy",
+                        false, embed.Build());
                 }
                 else
                 {
@@ -44,7 +41,6 @@ namespace Jibril.Modules.Game
             }
             catch
             {
-
             }
         }
 
@@ -64,7 +60,8 @@ namespace Jibril.Modules.Game
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} is currently not in a fight.", Colours.DefaultColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} is currently not in a fight.",
+                    Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
@@ -77,7 +74,8 @@ namespace Jibril.Modules.Game
             var user = Context.User;
             var gamedata = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
             var health = gamedata.Health - gamedata.Damagetaken;
-            var embed = EmbedGenerator.AuthorEmbed($"Health: {health}/{gamedata.Health}", $"{user.Mention}", Colours.DefaultColour, user);
+            var embed = EmbedGenerator.AuthorEmbed($"Health: {health}/{gamedata.Health}", $"{user.Mention}",
+                Colours.DefaultColour, user);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -90,14 +88,14 @@ namespace Jibril.Modules.Game
             try
             {
                 GameDatabase.FinishedNPCFight(user);
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} has fleed from combat", Colours.DefaultColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} has fleed from combat",
+                    Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             catch
             {
                 await ReplyAsync(":thinking:").ConfigureAwait(false);
             }
-
         }
     }
 }

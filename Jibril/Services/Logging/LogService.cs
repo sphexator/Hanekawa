@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Services.Common;
 using Jibril.Data.Variables;
-using Discord.Rest;
 using Jibril.Modules.Administration.Services;
+using Jibril.Services.Common;
+using Microsoft.Extensions.Logging;
 
 namespace Jibril.Services.Logging
 {
     public class LogService
     {
-        private readonly DiscordSocketClient _discord;
         private readonly CommandService _commands;
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger _discordLogger;
         private readonly ILogger _commandsLogger;
+        private readonly DiscordSocketClient _discord;
+        private readonly ILogger _discordLogger;
+        private readonly ILoggerFactory _loggerFactory;
 
         public LogService(DiscordSocketClient discord, CommandService commands, ILoggerFactory loggerFactory)
         {
@@ -42,25 +40,25 @@ namespace Jibril.Services.Logging
 
         private Task UserJoined(SocketGuildUser user)
         {
-            var _ =  Task.Run(async () =>
-           {
-               var content = $"" +
-               $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
-               $"Account created: {user.CreatedAt}";
-               var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OKColour, user);
-               var channel = user.Guild.GetTextChannel(339380907146477579);
-               await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
-           });
+            var _ = Task.Run(async () =>
+            {
+                var content = $"" +
+                              $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
+                              $"Account created: {user.CreatedAt}";
+                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OKColour, user);
+                var channel = user.Guild.GetTextChannel(339380907146477579);
+                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+            });
             return Task.CompletedTask;
         }
 
         private Task UserLeft(SocketGuildUser user)
         {
-            var _ =  Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 var content = $"" +
-                $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
-                $"Username: {user.Username}#{user.Discriminator}";
+                              $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
+                              $"Username: {user.Username}#{user.Discriminator}";
                 var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.FailColour, user);
                 var channel = user.Guild.GetTextChannel(339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -79,7 +77,7 @@ namespace Jibril.Services.Logging
                     var caseId = AdminDb.GetActionCaseID(time);
 
                     var content = $"❌ *bent* \n" +
-                    $"User: {user.Mention}. (**{user.Id}**)";
+                                  $"User: {user.Mention}. (**{user.Id}**)";
                     var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseId[0]}", Colours.FailColour, user);
                     embed.AddField(x =>
                     {
@@ -97,7 +95,7 @@ namespace Jibril.Services.Logging
                     var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseId[0]);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
@@ -113,7 +111,7 @@ namespace Jibril.Services.Logging
                 {
                     var caseid = CaseNumberGenerator.InsertCaseID(user);
                     var content = $"✔ *unbent* \n" +
-                    $"user: {user.Mention} (**{user.Id}**)";
+                                  $"user: {user.Mention} (**{user.Id}**)";
                     var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.OKColour, user);
                     embed.AddField(x =>
                     {
@@ -131,7 +129,7 @@ namespace Jibril.Services.Logging
                     var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
@@ -141,7 +139,7 @@ namespace Jibril.Services.Logging
 
         private Task MessageDeleted(Cacheable<IMessage, ulong> optMsg, ISocketMessageChannel ch)
         {
-            var _ =  Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 try
                 {
@@ -152,20 +150,20 @@ namespace Jibril.Services.Logging
                     var channel = ch as ITextChannel;
                     if (channel == null)
                         return;
-                    ITextChannel logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
-                    var user = msg.Author as IUser;
+                    var logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
+                    var user = msg.Author;
                     if (user.IsBot != true)
                     {
-                        EmbedBuilder embed = new EmbedBuilder
+                        var embed = new EmbedBuilder
                         {
                             Color = new Color(Colours.DefaultColour)
                         };
-                        EmbedFooterBuilder footer = new EmbedFooterBuilder();
+                        var footer = new EmbedFooterBuilder();
                         embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
                         embed.AddField(efb =>
                         {
                             efb.Name = $"Content:";
-                            efb.Value = ($"{msg.Content}");
+                            efb.Value = $"{msg.Content}";
                             efb.IsInline = false;
                         });
                         footer.WithText($"{DateTime.UtcNow}");
@@ -184,27 +182,28 @@ namespace Jibril.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg, ISocketMessageChannel channel)
+        private Task MessageUpdated(Cacheable<IMessage, ulong> oldMsg, SocketMessage newMsg,
+            ISocketMessageChannel channel)
         {
-            var _ =  Task.Run(async () =>
+            var _ = Task.Run(async () =>
             {
                 try
                 {
                     var msg = (oldMsg.HasValue ? oldMsg.Value : null) as IUserMessage;
                     var chtx = channel as ITextChannel;
-                    var user = msg.Author as IUser;
-                    ITextChannel logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
+                    var user = msg.Author;
+                    var logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
 
                     if (msg == null) return;
                     if (newMsg == null) return;
                     if (chtx == null) return;
                     if (user.IsBot != true && oldMsg.Value.Content != newMsg.Content)
                     {
-                        EmbedBuilder embed = new EmbedBuilder
+                        var embed = new EmbedBuilder
                         {
                             Color = new Color(Colours.DefaultColour)
                         };
-                        EmbedFooterBuilder footer = new EmbedFooterBuilder();
+                        var footer = new EmbedFooterBuilder();
                         embed.WithDescription($"{msg.Author.Mention} updated a message in {chtx.Mention}");
                         embed.AddField(y =>
                         {
@@ -239,7 +238,7 @@ namespace Jibril.Services.Logging
             factory.AddConsole();
             return factory;
         }
-        
+
         private Task LogDiscord(LogMessage message)
         {
             _discordLogger.Log(
@@ -263,6 +262,8 @@ namespace Jibril.Services.Logging
         }
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
-            => (LogLevel)(Math.Abs((int)severity - 5));
+        {
+            return (LogLevel) Math.Abs((int) severity - 5);
+        }
     }
 }

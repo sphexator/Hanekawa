@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Services.Reaction.List
+﻿namespace Jibril.Services.Reaction.List
 {
     public class ReactionList
     {

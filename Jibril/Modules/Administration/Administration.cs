@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,10 +10,6 @@ using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
@@ -27,13 +27,15 @@ namespace Jibril.Modules.Administration
                 var channel = Context.Channel as ITextChannel;
                 var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).Flatten();
                 await channel.DeleteMessagesAsync(messagesToDelete);
-                var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!", Colours.OKColour);
-                var guild = Context.Guild as SocketGuild;
+                var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!",
+                    Colours.OKColour);
+                var guild = Context.Guild;
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed("you cannot delete more than 1000 messages", Colours.FailColour);
+                var embed = EmbedGenerator.DefaultEmbed("you cannot delete more than 1000 messages",
+                    Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             }
         }
@@ -45,15 +47,19 @@ namespace Jibril.Modules.Administration
         public async Task BanAsync(SocketGuildUser user = null, [Remainder] string reason = "No Reason provided")
         {
             if (user == null) throw new ArgumentException("You must mention a user");
-            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
+            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                Context.Guild.Roles.Select(r => r.Position).Max())
             {
-                var failEmbed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you can't ban someone with same or higher role then you.", Colours.FailColour);
+                var failEmbed = EmbedGenerator.DefaultEmbed(
+                    $"{Context.User.Mention}, you can't ban someone with same or higher role then you.",
+                    Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
                 return;
             }
 
-            var guild = Context.Guild as SocketGuild;
-            var embed = EmbedGenerator.DefaultEmbed($"Banned {user.Mention} from {Context.Guild.Name}", Colours.OKColour);
+            var guild = Context.Guild;
+            var embed = EmbedGenerator.DefaultEmbed($"Banned {user.Mention} from {Context.Guild.Name}",
+                Colours.OKColour);
 
             await guild.AddBanAsync(user, 7, $"{Context.User} - {reason}").ConfigureAwait(false);
             await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
@@ -66,13 +72,17 @@ namespace Jibril.Modules.Administration
         public async Task KickAsync(SocketGuildUser user, [Remainder] string reason)
         {
             if (user == null) throw new ArgumentException("You must mention a user");
-            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
+            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                Context.Guild.Roles.Select(r => r.Position).Max())
             {
-                var failEmbed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you can't kick someone with same or higher role then you.", Colours.FailColour);
+                var failEmbed = EmbedGenerator.DefaultEmbed(
+                    $"{Context.User.Mention}, you can't kick someone with same or higher role then you.",
+                    Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
                 return;
             }
-            var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}", Colours.OKColour);
+            var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
+                Colours.OKColour);
             await user.KickAsync().ConfigureAwait(false);
         }
 
@@ -82,9 +92,12 @@ namespace Jibril.Modules.Administration
         [RequireRole(339371670311796736)]
         public async Task Mute(SocketGuildUser user)
         {
-            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
+            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                Context.Guild.Roles.Select(r => r.Position).Max())
             {
-                var failEmbed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you can't mute someone with same or higher role then you.", Colours.FailColour);
+                var failEmbed = EmbedGenerator.DefaultEmbed(
+                    $"{Context.User.Mention}, you can't mute someone with same or higher role then you.",
+                    Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
                 return;
             }
@@ -103,15 +116,14 @@ namespace Jibril.Modules.Administration
             {
                 IMessage[] msgs;
                 IMessage lastMessage = null;
-                msgs = (await Context.Channel.GetMessagesAsync(50).Flatten()).Where(m => m.Author.Id == user.Id).Take(50).ToArray();
+                msgs = (await Context.Channel.GetMessagesAsync(50).Flatten()).Where(m => m.Author.Id == user.Id)
+                    .Take(50).ToArray();
                 lastMessage = msgs[msgs.Length - 1];
 
                 var bulkDeletable = new List<IMessage>();
                 foreach (var x in msgs)
-                {
                     bulkDeletable.Add(x);
-                }
-                bulkDeletable.Add(Context.Message as IMessage);
+                bulkDeletable.Add(Context.Message);
 
                 var channel = Context.Channel as ITextChannel;
                 await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
@@ -121,7 +133,7 @@ namespace Jibril.Modules.Administration
                 var caseid = AdminDb.GetActionCaseID(time);
 
                 var content = $"🔇 *Gagged* \n" +
-                $"User: {user.Mention}. (**{user.Id}**)";
+                              $"User: {user.Mention}. (**{user.Id}**)";
                 var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
                 embed.AddField(x =>
                 {
@@ -142,7 +154,6 @@ namespace Jibril.Modules.Administration
             }
             catch
             {
-
             }
         }
 
@@ -171,10 +182,13 @@ namespace Jibril.Modules.Administration
         {
             try
             {
-                if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
+                if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                    Context.Guild.Roles.Select(r => r.Position).Max())
                 {
                     // Error message
-                    var failEmbed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you can't unmute someone with same or higher role then you.", Colours.FailColour);
+                    var failEmbed = EmbedGenerator.DefaultEmbed(
+                        $"{Context.User.Mention}, you can't unmute someone with same or higher role then you.",
+                        Colours.FailColour);
                     await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
                     return;
                 }

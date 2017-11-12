@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace Jibril.Modules.Profile.Services
 {
@@ -9,11 +6,9 @@ namespace Jibril.Modules.Profile.Services
     {
         public static void RemoveSavedProfile()
         {
-            DirectoryInfo banner = new DirectoryInfo(@"Data\Images\Profile\Cache\");
-            foreach (FileInfo file in banner.GetFiles())
-            {
+            var banner = new DirectoryInfo(@"Data\Images\Profile\Cache\");
+            foreach (var file in banner.GetFiles())
                 file.Delete();
-            }        
         }
     }
 }

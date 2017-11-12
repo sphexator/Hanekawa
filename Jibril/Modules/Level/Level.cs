@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System.Threading.Tasks;
-using System.Linq;
-using Jibril.Services.Level.Services;
-using Jibril.Services;
 using Jibril.Data.Variables;
-using Jibril.Preconditions;
 using Jibril.Modules.Gambling.Services;
+using Jibril.Preconditions;
+using Jibril.Services;
+using Jibril.Services.Level.Services;
 
 namespace Jibril.Modules.Level
 {
@@ -25,23 +23,23 @@ namespace Jibril.Modules.Level
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var thumbnailurl = user.GetAvatarUrl();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
-            var auth = new EmbedAuthorBuilder()
+            var auth = new EmbedAuthorBuilder
             {
                 Name = user.Username,
-                IconUrl = thumbnailurl,
+                IconUrl = thumbnailurl
             };
-            var embed = new EmbedBuilder()
+            var embed = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
                 Author = auth
             };
 
-            EmbedFieldBuilder EmbedField = new EmbedFieldBuilder();
+            var EmbedField = new EmbedFieldBuilder();
             EmbedField.WithIsInline(true);
             EmbedField.WithName("Level");
             EmbedField.WithValue($"{userData.Level}");
 
-            EmbedFieldBuilder EmbedField2 = new EmbedFieldBuilder();
+            var EmbedField2 = new EmbedFieldBuilder();
             EmbedField2.WithIsInline(true);
             EmbedField2.WithName("Exp");
             EmbedField2.WithValue($"{userData.Xp}/{xpToLevelUp}");
@@ -61,23 +59,23 @@ namespace Jibril.Modules.Level
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
             var thumbnailurl = user.GetAvatarUrl();
 
-            var auth = new EmbedAuthorBuilder()
+            var auth = new EmbedAuthorBuilder
             {
                 Name = user.Username,
-                IconUrl = thumbnailurl,
+                IconUrl = thumbnailurl
             };
-            var embed = new EmbedBuilder()
+            var embed = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
                 Author = auth
             };
 
-            EmbedFieldBuilder EmbedField = new EmbedFieldBuilder();
+            var EmbedField = new EmbedFieldBuilder();
             EmbedField.WithIsInline(true);
             EmbedField.WithName("Level");
             EmbedField.WithValue($"{userData.Level}");
 
-            EmbedFieldBuilder EmbedField2 = new EmbedFieldBuilder();
+            var EmbedField2 = new EmbedFieldBuilder();
             EmbedField2.WithIsInline(true);
             EmbedField2.WithName("Exp");
             EmbedField2.WithValue($"{userData.Xp}/{xpToLevelUp}");
@@ -93,7 +91,7 @@ namespace Jibril.Modules.Level
         [RequiredChannel(339383206669320192)]
         public async Task Leaderboard()
         {
-            EmbedBuilder embed = new EmbedBuilder();
+            var embed = new EmbedBuilder();
             embed.WithColor(new Color(Colours.DefaultColour));
             embed.Title = "Leaderboard";
             var result = LevelDatabase.GetLeaderBoard().ToList();
@@ -120,24 +118,26 @@ namespace Jibril.Modules.Level
             if (result.Count() <= 0) DatabaseService.EnterUser(user);
             var userData = DatabaseService.UserData(user).FirstOrDefault();
 
-            DateTime now = DateTime.Now;
-            DateTime daily = userData.Daily;
-            int difference = DateTime.Compare(daily, now);
+            var now = DateTime.Now;
+            var daily = userData.Daily;
+            var difference = DateTime.Compare(daily, now);
 
-            if ((userData.Daily.ToString() == "0001-01-01 00:00:00") || (daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0))
+            if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0)
             {
                 LevelDatabase.ChangeDaily(user);
-                if ((userData.Daily.ToString() == "0001-01-01 00:00:00") || (daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0))
+                if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                    daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0)
                 {
-                    int tokens = 200;
+                    var tokens = 200;
                     GambleDB.AddCredit(user, tokens);
                     await ReplyAsync($"You received your daily ${tokens}!");
                 }
             }
             else
             {
-                TimeSpan diff = now - daily;
-                TimeSpan di = new TimeSpan(23 - diff.Hours, 60 - diff.Minutes, 60 - diff.Seconds);
+                var diff = now - daily;
+                var di = new TimeSpan(23 - diff.Hours, 60 - diff.Minutes, 60 - diff.Seconds);
 
                 await ReplyAsync($"Your credits refresh in {di}!");
             }

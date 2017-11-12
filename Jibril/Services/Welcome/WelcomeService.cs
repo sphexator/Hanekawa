@@ -1,14 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
-using Jibril.Modules.Gambling.Services;
-using Jibril.Modules.Game.Services;
 using Jibril.Services.Common;
 using Jibril.Services.Welcome.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jibril.Services.Welcome
 {
@@ -29,13 +23,13 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
-                if(user.IsBot != true)
+                if (user.IsBot != true)
                 {
                     DatabaseInsert.InserToDb(user);
                     var randomString = RandomStringGenerator.StringGenerator();
                     var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);
                     var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad, randomString);
-                    var imgstr = image.ToString();
+                    var imgstr = image;
                     var guild = _discord.GetGuild(339370914724446208);
                     var channel = guild.GetTextChannel(339371997802790913);
                     await channel.SendFileAsync(imgstr, "");

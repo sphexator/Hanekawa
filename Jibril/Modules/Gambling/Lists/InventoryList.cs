@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Modules.Gambling.Lists
+﻿namespace Jibril.Modules.Gambling.Lists
 {
     public class InventoryList
     {
