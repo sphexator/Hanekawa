@@ -22,6 +22,7 @@ namespace Jibril.Modules.Gambling
         {
             var user = Context.User;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
+            var bet = BetAdjust.Adjust(amount);
             if (amount <= 0)
             {
                 var embed = EmbedGenerator.DefaultEmbed($"{Context.User.Mention}, you don't have enough credit", Colours.FailColour);
@@ -29,14 +30,12 @@ namespace Jibril.Modules.Gambling
                 return;
             }
 
-            if (userData.Tokens < amount)
+            if (userData.Tokens < bet)
             {
                 var embed = EmbedGenerator.DefaultEmbed($":thinking: {user.Mention} don't have enough money for that kind of bet.", Colours.FailColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 return;
             }
-
-            var bet = BetAdjust.Adjust(amount);
 
             if (userData.Tokens >= bet)
             {
@@ -50,7 +49,8 @@ namespace Jibril.Modules.Gambling
                 {
                     int award = bet * 5;
                     GambleDB.AddCredit(user, award);
-                    var embed = EmbedGenerator.DefaultEmbed($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n", Colours.OKColour);
+                    var embed = EmbedGenerator.DefaultEmbed($"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n" +
+                        $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OKColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
