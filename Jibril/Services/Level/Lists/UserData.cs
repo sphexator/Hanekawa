@@ -14,6 +14,7 @@ namespace Jibril.Services.Level.Lists
         public DateTime Daily { get; set; }
         public DateTime Cooldown { get; set; }
         public DateTime Voice_timer { get; set; }
+        public DateTime JoinDateTime { get; set; }
         public string FleetName { get; set; }
         public string ShipClass { get; set; }
         public string Profilepic { get; set; }

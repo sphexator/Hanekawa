@@ -25,6 +25,9 @@ namespace Jibril.Services.Welcome
             {
                 if (user.IsBot != true)
                 {
+                    var checkCd = WelcomeCooldown.WelcCd(user);
+                    if (checkCd == false) return;
+
                     DatabaseInsert.InserToDb(user);
                     var randomString = RandomStringGenerator.StringGenerator();
                     var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);

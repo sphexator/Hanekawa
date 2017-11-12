@@ -16,7 +16,7 @@ namespace Jibril.Services
         private readonly string server = DbInfo.server;
         private readonly string username = DbInfo.username;
 
-        public DatabaseService(string table)
+        private DatabaseService(string table)
         {
             _table = table;
             var stringBuilder = new MySqlConnectionStringBuilder
@@ -35,7 +35,7 @@ namespace Jibril.Services
 
         private string _table { get; }
 
-        public MySqlDataReader FireCommand(string query)
+        private MySqlDataReader FireCommand(string query)
         {
             if (dbConnection == null)
                 return null;
@@ -44,7 +44,7 @@ namespace Jibril.Services
             return mySqlReader;
         }
 
-        public void CloseConnection()
+        private void CloseConnection()
         {
             if (dbConnection != null)
                 dbConnection.Close();
@@ -69,8 +69,17 @@ namespace Jibril.Services
         {
             var database = new DatabaseService("hanekawa");
             var str =
-                $"INSERT INTO exp (user_id, username, tokens, level, xp ) VALUES ('{user.Id}', 'username', '0', '1', '1')";
+                $"INSERT INTO exp (user_id, username, tokens, level, xp, joindate) VALUES ('{user.Id}', 'username', '0', '1', '1', curtime())";
             var exec = database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void UserJoinedDate(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str =
+                $"UPDATE exp SET joindate = curtime() WHERE user_id = '{user.Id}'";
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -92,6 +101,7 @@ namespace Jibril.Services
                 var daily = (DateTime) exec["daily"];
                 var cooldown = (DateTime) exec["cooldown"];
                 var voice_timer = (DateTime) exec["voice_timer"];
+                var joinDate = (DateTime) exec["joindate"];
                 var fleetName = (string) exec["fleetName"];
                 var shipClass = (string) exec["shipClass"];
                 var profilepic = (string) exec["profilepic"];
@@ -111,6 +121,7 @@ namespace Jibril.Services
                     Daily = daily,
                     Cooldown = cooldown,
                     Voice_timer = voice_timer,
+                    JoinDateTime = joinDate,
                     FleetName = fleetName,
                     ShipClass = shipClass,
                     Profilepic = profilepic,
