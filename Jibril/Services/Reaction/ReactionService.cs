@@ -58,7 +58,7 @@ namespace Jibril.Services.Reaction
 
                                 var hour = $"{arg1.Value.Timestamp.DateTime.ToString("HH")}";
                                 var minute = $"{arg1.Value.Timestamp.DateTime.ToString("mm")}";
-                                var formattedDate = string.Format(new DateTimeFormatProvider(), $"{arg1.Value.Timestamp.DateTime}");
+                                var formattedDate = string.Format(new DateTimeFormatProvider(), "{0}", arg1.Value.Timestamp.Date);
                                 author.IconUrl = arg1.Value.Author.GetAvatarUrl();
                                 author.Name = arg1.Value.Author.Username;
                                 footer.Text = $"{formattedDate} at {hour}:{minute}";

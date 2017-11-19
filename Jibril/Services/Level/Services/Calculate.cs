@@ -6,17 +6,17 @@ namespace Jibril.Services.Level.Services
 {
     public class Calculate
     {
+        public static int CalculateNextLevel(int currentLevel)
+        {
+            var calc = 3 * currentLevel * currentLevel + 150;
+            return calc;
+        }
+
         public static int ReturnXP(SocketMessage msg)
         {
             var xp = CalculateExperience(msg);
             var returnExp = xp * 2;
             return returnExp;
-        }
-
-        public static int CalculateNextLevel(int currentLevel)
-        {
-            var calc = 3 * currentLevel * currentLevel + 150;
-            return calc;
         }
 
         public static int ReturnCredit()
