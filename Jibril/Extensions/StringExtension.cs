@@ -10,7 +10,7 @@ namespace Jibril.Extensions
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex scamFilterSteam = new Regex(
-            @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|google\.com|snip\.li|pointsprizes\.com|paysafecards\.org).*?(\s|$)",
+            @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|google\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl).*?(\s|$)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Max Character string extension
