@@ -6,29 +6,32 @@ namespace Jibril.Services.Level.Services
 {
     public class Calculate
     {
+        // Calculate exp
         public static int CalculateNextLevel(int currentLevel)
         {
             var calc = 3 * currentLevel * currentLevel + 150;
             return calc;
         }
 
+        // Give reward
         public static int ReturnXP(SocketMessage msg)
         {
-            var xp = CalculateExperience(msg);
-            var returnExp = xp * 2;
+            var def = CalculateExperience(msg);
+            var returnExp = def * 1; //Modifier to exp gain
             return returnExp;
         }
 
         public static int ReturnCredit()
         {
-            var credit = CalculateCredit();
+            var def = CalculateCredit();
+            var credit = def * 1; //Modifier to credit gain
             return credit;
         }
 
-        //Voice Experience credit calculations = VECC
+        // Voice Experience credit calculations = VECC
         public static void VECC(IUser user, DateTime vcTimer)
         {
-            var calculateXp = CalculateVoiceExperience(vcTimer) * 2;
+            var calculateXp = CalculateVoiceExperience(vcTimer) * 1;
             var calculateCredit = CalculateVoiceCredit(vcTimer);
 
             if (calculateXp > 0)
@@ -39,10 +42,11 @@ namespace Jibril.Services.Level.Services
         {
             var rand = new Random();
             var xp = rand.Next(10, 20);
-            if (msg.Channel.Id == 339383206669320192 || msg.Channel.Id == 346429281314013184) return xp / 5;
+            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184)) return xp / 5;
             return xp;
         }
 
+        // Default Calculations of experience
         private static int CalculateCredit()
         {
             var rand = new Random();
@@ -58,8 +62,8 @@ namespace Jibril.Services.Level.Services
             var hours = int.Parse(diff.Hours.ToString());
             var minutes = int.Parse(diff.Minutes.ToString());
             var totalTime = hours * 60 + minutes;
-
             var calculateXp = totalTime * 2;
+
             return calculateXp;
         }
 

@@ -39,7 +39,7 @@ namespace Jibril
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
-            //services.GetRequiredService<WelcomeService>();
+            services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PictureSpam>();
