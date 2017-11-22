@@ -13,13 +13,14 @@ using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
-/*
+
 namespace Jibril.Modules.Fleet
 {
     public class Fleet : InteractiveBase
     {
-        [Command("createfleet")]
-        [Alias("cf")]
+        [Command("fleetcreate")]
+        [Alias("fc")]
+        [Summary("Creates a fleet")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task CreateFleet([Remainder] string name = null)
@@ -54,22 +55,23 @@ namespace Jibril.Modules.Fleet
                     Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, embed.Build());
             }
-
         }
 
-        [Command("add", RunMode = RunMode.Async)]
+        [Command("fleetadd", RunMode = RunMode.Async)]
+        [Alias("fa")]
         [Summary("Adds a member to your fleet")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task AddFleetMember(SocketUser member)
+        public async Task AddFleetMember(SocketGuildUser member)
         {
             Console.Write($"{Context.User} tried to add {member.Username} to a fleet");
 
             var user = Context.User;
-            if (member == null) return;
-            if (member.IsBot == true) return;
+            if (member.IsBot) return;
             var userFleetCheck = DbService.CheckFleetMemberStatus(user).FirstOrDefault();
             var memberFleetCheck = DbService.CheckFleetMemberStatus(member).FirstOrDefault();
+
+            if (memberFleetCheck != "o") await ReplyAsync($"{member.Username} is already in a fleet.");
             if (userFleetCheck != "o" && memberFleetCheck == "o")
             {
                 var rankCheck = FleetDB.RankCheck(user, userFleetCheck).FirstOrDefault();
@@ -88,21 +90,9 @@ namespace Jibril.Modules.Fleet
                         DbService.AddFleetMember(userFleetCheck);
                         await ReplyAsync($"{member.Username} was added to `{userFleetCheck}` by {user.Username}.");
                     }
-                    else
-                    {
-                        await ReplyAsync($"{user.Username} isn't a leader and cannot invite");
-                    }
                 }
-                else if (userFleetCheck == "o")
-                {
-                    return;
-                }
-                else if (memberFleetCheck != "o")
-                {
-                    await ReplyAsync($"{member.Username} is already in a fleet.");
-                }
+                else await ReplyAsync($"{user.Username} isn't a leader and cannot invite");
             }
         }
     }
 }
-*/
