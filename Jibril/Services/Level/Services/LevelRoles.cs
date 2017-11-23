@@ -171,7 +171,7 @@ namespace Jibril.Services.Level.Services
                 var roleLoss = ClassNames.BB;
                 var Message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
-                GameDatabase.UpdateClass(user, roleGain);
+                //GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -189,7 +189,7 @@ namespace Jibril.Services.Level.Services
                 var roleLoss = ClassNames.ACr;
                 var Message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
-                GameDatabase.UpdateClass(user, roleGain);
+                //GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -207,7 +207,7 @@ namespace Jibril.Services.Level.Services
                 var roleLoss = ClassNames.AB;
                 var Message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
-                GameDatabase.UpdateClass(user, roleGain);
+                //GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
