@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Extensions;
 using Jibril.Modules.Fleet.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
@@ -30,9 +25,10 @@ namespace Jibril.Modules.Fleet
             var auser = Context.User as IGuildUser;
             if (name == null) return;
             if (user == null) return;
-            var reqRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == ClassNames.BB); var rolecheck = auser.RoleIds.Contains(reqRole.Id);
+            var reqRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == ClassNames.BB);
+            var rolecheck = auser.RoleIds.Contains(reqRole.Id);
             var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (rolecheck == true && userFleetCheck == "o")
+            if (rolecheck && userFleetCheck == "o")
             {
                 var nameCheck = FleetDb.CheckFleetName(name).FirstOrDefault();
                 if (nameCheck == null && nameCheck != "o")
@@ -84,7 +80,8 @@ namespace Jibril.Modules.Fleet
                         $"Accept/Deny invite");
                     var response = await NextMessageAsync(new EnsureFromUserCriterion(member.Id));
 
-                    if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) || response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase))
+                    if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) ||
+                        response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase))
                     {
                         FleetNormDb.AddMember(member, userFleetCheck);
                         FleetDb.UpdateFleetProfile(member, userFleetCheck);
@@ -92,7 +89,10 @@ namespace Jibril.Modules.Fleet
                         await ReplyAsync($"{member.Username} was added to `{userFleetCheck}` by {user.Username}.");
                     }
                 }
-                else await ReplyAsync($"{user.Username} isn't a leader and cannot invite");
+                else
+                {
+                    await ReplyAsync($"{user.Username} isn't a leader and cannot invite");
+                }
             }
         }
 
@@ -108,12 +108,12 @@ namespace Jibril.Modules.Fleet
             var ufc = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
             var mfc = FleetDb.CheckFleetMemberStatus(member).FirstOrDefault();
             if (mfc == null || ufc == null) return;
-            if (mfc == "o") return;
-            if (ufc == "o") return;
+            if (mfc.Equals("o") || ufc.Equals("o")) return;
             if (mfc == ufc)
             {
                 var rc = FleetNormDb.RankCheck(user, ufc).FirstOrDefault();
-                if (rc == "leader")
+                if (rc == null) return;
+                if (rc.Equals("leader", StringComparison.InvariantCultureIgnoreCase))
                 {
                     FleetDb.UpdateFleetProfile(member, "o");
                     FleetNormDb.RemoveMember(member, mfc);
@@ -144,7 +144,8 @@ namespace Jibril.Modules.Fleet
         {
             var user = Context.User;
             var fleet = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (fleet == "o") return;
+            if (fleet == null) return;
+            if (fleet.Equals("o")) return;
             var confirmEmbed = EmbedGenerator.DefaultEmbed($"You sure you want to leave {fleet}?\n" +
                                                            $"\n" +
                                                            $"Yes/No", Colours.DefaultColour);
@@ -157,7 +158,7 @@ namespace Jibril.Modules.Fleet
                 FleetDb.RemoveFleetMemberCount(fleet);
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} successfully left {fleet}.",
                     Colours.OKColour);
-                await ReplyAsync($"", false, embed.Build());
+                await ReplyAsync("", false, embed.Build());
             }
             else
             {
