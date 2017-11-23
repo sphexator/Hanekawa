@@ -33,7 +33,7 @@ namespace Jibril.Services.Welcome
                     var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);
                     var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad, randomString);
                     var imgstr = image;
-                    var guild = _discord.GetGuild(339370914724446208);
+                    var guild = user.Guild;
                     var channel = guild.GetTextChannel(339371997802790913);
                     await channel.SendFileAsync(imgstr, "");
                     RemoveImage.WelcomeFileDelete();

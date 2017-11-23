@@ -58,7 +58,7 @@ namespace Jibril.Modules.Fleet
         [Alias("fa")]
         [Summary("Adds a member to your fleet")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AddFleetMember(SocketGuildUser member)
         {
             Console.Write($"{Context.User} tried to add {member.Username} to a fleet");

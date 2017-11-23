@@ -15,7 +15,7 @@ namespace Jibril.Modules.Profile
         [Command("Profile", RunMode = RunMode.Async)]
         [Summary("Displays your server profile")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task PostProfile()
         {
             var user = Context.User;
@@ -36,7 +36,7 @@ namespace Jibril.Modules.Profile
         [Command("Profile", RunMode = RunMode.Async)]
         [Summary("Displays your server profile")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task PostProfile(SocketUser user)
         {
             DbRequirement(user);

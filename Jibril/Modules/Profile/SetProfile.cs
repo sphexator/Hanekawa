@@ -18,7 +18,7 @@ namespace Jibril.Modules.Profile
         [Alias("setb", "sb")]
         [Summary("Sets a background for your profile")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task SetProfileURL(string url)
         {
             var user = Context.User;
@@ -44,7 +44,7 @@ namespace Jibril.Modules.Profile
         [Alias("remb", "rb")]
         [Summary("Removes background you've set for your profile")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task RemoveProfileURL(string url)
         {
             var user = Context.User;
