@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -27,7 +25,7 @@ namespace Jibril.Modules.Profile
             var pfp = ProfileDB.CheckProfilePicture(user).FirstOrDefault();
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             await Context.Message.DeleteAsync();
-
+            if (userdata == null) return;
             if (userdata.Tokens >= 5000)
             {
                 GambleDB.RemoveCredit(user, 5000);
