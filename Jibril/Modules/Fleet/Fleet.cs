@@ -137,6 +137,7 @@ namespace Jibril.Modules.Fleet
         }
 
         [Command("leave", RunMode = RunMode.Async)]
+        [Alias("fl")]
         [Summary("Leaves a fleet you're a part of")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 5, Measure.Seconds)]

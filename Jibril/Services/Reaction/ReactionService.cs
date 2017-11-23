@@ -69,7 +69,7 @@ namespace Jibril.Services.Reaction
 
                                 var guild = _discord.GetGuild(339370914724446208);
                                 var msgch = guild.GetChannel(365479361207468032) as ITextChannel;
-
+                                if (msgch == null) return;
                                 await msgch.SendMessageAsync(
                                     $"<:OwO:357977235510263808> {channel.Mention} ID:{arg1.Id}", false, embed.Build());
                             }
