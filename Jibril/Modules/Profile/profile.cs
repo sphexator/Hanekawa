@@ -13,7 +13,9 @@ namespace Jibril.Modules.Profile
     public class Profile : ModuleBase<SocketCommandContext>
     {
         [Command("Profile", RunMode = RunMode.Async)]
+        [Summary("Displays your server profile")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task PostProfile()
         {
             var user = Context.User;
@@ -32,7 +34,9 @@ namespace Jibril.Modules.Profile
         }
 
         [Command("Profile", RunMode = RunMode.Async)]
+        [Summary("Displays your server profile")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task PostProfile(SocketUser user)
         {
             DbRequirement(user);
@@ -43,9 +47,9 @@ namespace Jibril.Modules.Profile
             var randomString = RandomStringGenerator.StringGenerator();
             var avatar = await DetectBackground.AvatarGenerator(user, randomString);
             var background = await DetectBackground.GetBackground(user, randomString, userData, avatar);
-            var finalizeBG = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
+            var finalizeBg = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
 
-            await Context.Channel.SendFileAsync(finalizeBG);
+            await Context.Channel.SendFileAsync(finalizeBg);
             RemoveImage.RemoveSavedProfile();
         }
 
