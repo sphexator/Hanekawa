@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
+using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Modules.Fleet.Services;
 using Jibril.Modules.Game.Services;
 using Jibril.Services.Level.Lists;
 using Jibril.Services.Level.Services;
@@ -9,6 +12,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Jibril.Modules.Profile.Services
 {
@@ -80,6 +84,10 @@ namespace Jibril.Modules.Profile.Services
                 var fleetstr = "Fleet";
                 var commanderstr = "Commander";
                 var missionstr = "Missions completed";
+
+                //Dynamic variables
+                var fleetName = CheckFleetMembership(user);
+                var fleetCommander = GetFleetCommander(user, fleetName);
 
 
                 img.Mutate(x => x
@@ -225,7 +233,7 @@ namespace Jibril.Modules.Profile.Services
                         ApplyKerning = true,
                         WrapTextWidth = fleet.Length
                     })
-                    .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 210),
+                    .DrawText($"{fleetName}", classFont, Rgba32.Black, new Point(284, 210),
                         new TextGraphicsOptions(true)
                         {
                             HorizontalAlignment = HorizontalAlignment.Right,
@@ -242,7 +250,7 @@ namespace Jibril.Modules.Profile.Services
                         ApplyKerning = true,
                         WrapTextWidth = commander.Length
                     })
-                    .DrawText($"{userData.FleetName}", classFont, Rgba32.Black, new Point(284, 220),
+                    .DrawText($"{fleetCommander}", classFont, Rgba32.Black, new Point(284, 220),
                         new TextGraphicsOptions(true)
                         {
                             HorizontalAlignment = HorizontalAlignment.Right,
@@ -280,7 +288,7 @@ namespace Jibril.Modules.Profile.Services
             }
         }
 
-        public static Font GoodFont(Font font, string text, float padding, int Width, int Height)
+        private static Font GoodFont(Font font, string text, float padding, int Width, int Height)
         {
             var targetWidth = Width - padding * 2;
             var targetHeight = Height - padding * 2;
@@ -292,6 +300,22 @@ namespace Jibril.Modules.Profile.Services
             var scaledFont = new Font(font, scalingFactor * font.Size);
 
             return scaledFont;
+        }
+
+        private static string CheckFleetMembership(IUser user)
+        {
+            var fleetName = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            if (fleetName == null) return "N/A";
+            if (fleetName.Equals("o", StringComparison.InvariantCultureIgnoreCase)) return "N/A";
+            return fleetName;
+        }
+
+        private static string GetFleetCommander(IUser user, string fleet)
+        {
+            if (fleet.Equals("N/A", StringComparison.InvariantCultureIgnoreCase)) return "N/A";
+            var commander = FleetNormDb.GetLeader(user, fleet).ToString();
+            if (commander == null) return "N/A";
+            return commander;
         }
     }
 }
