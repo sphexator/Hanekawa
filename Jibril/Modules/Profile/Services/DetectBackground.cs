@@ -89,5 +89,22 @@ namespace Jibril.Modules.Profile.Services
                 return filePath;
             }
         }
+
+        public static async Task<string> PreviewBackgroundTask(SocketUser user, string randomString, UserData userData,
+            string avatar, string background)
+        {
+            var httpClient = new HttpClient();
+            HttpResponseMessage response = null;
+            response = await httpClient.GetAsync(background);
+            var inputStream = await response.Content.ReadAsStreamAsync();
+            using (var img = Image.Load(inputStream))
+            {
+                img.Mutate(x => x
+                    .Resize(300, 300));
+                img.Save(background);
+            }
+            var fbg = BuildBackground(user, background, randomString, userData, avatar);
+            return fbg;
+        }
     }
 }
