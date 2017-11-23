@@ -11,6 +11,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
+using Jibril.Modules.Fleet.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
 
@@ -30,16 +31,16 @@ namespace Jibril.Modules.Fleet
             if (name == null) return;
             if (user == null) return;
             var reqRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == ClassNames.BB); var rolecheck = auser.RoleIds.Contains(reqRole.Id);
-            var userFleetCheck = DbService.CheckFleetMemberStatus(user).FirstOrDefault();
+            var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
             if (rolecheck == true && userFleetCheck == "o")
             {
-                var nameCheck = DbService.CheckFleetName(name).FirstOrDefault();
+                var nameCheck = FleetDb.CheckFleetName(name).FirstOrDefault();
                 if (nameCheck == null && nameCheck != "o")
                 {
-                    FleetDB.CreateFleet(user, name);
-                    FleetDB.addLeader(user, name);
-                    DbService.AddFleet(name);
-                    DbService.UpdateFleetProfile(user, name);
+                    FleetNormDb.CreateFleet(user, name);
+                    FleetNormDb.AddLeader(user, name);
+                    FleetDb.AddFleet(name);
+                    FleetDb.UpdateFleetProfile(user, name);
                     await ReplyAsync($"{user.Username} successfully created a fleet called {name}");
                 }
                 else if (nameCheck != null)
@@ -68,13 +69,13 @@ namespace Jibril.Modules.Fleet
 
             var user = Context.User;
             if (member.IsBot) return;
-            var userFleetCheck = DbService.CheckFleetMemberStatus(user).FirstOrDefault();
-            var memberFleetCheck = DbService.CheckFleetMemberStatus(member).FirstOrDefault();
+            var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var memberFleetCheck = FleetDb.CheckFleetMemberStatus(member).FirstOrDefault();
 
             if (memberFleetCheck != "o") await ReplyAsync($"{member.Username} is already in a fleet.");
             if (userFleetCheck != "o" && memberFleetCheck == "o")
             {
-                var rankCheck = FleetDB.RankCheck(user, userFleetCheck).FirstOrDefault();
+                var rankCheck = FleetNormDb.RankCheck(user, userFleetCheck).FirstOrDefault();
                 if (rankCheck == "leader")
                 {
                     await ReplyAsync(
@@ -85,9 +86,9 @@ namespace Jibril.Modules.Fleet
 
                     if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) || response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        FleetDB.AddMember(member, userFleetCheck);
-                        DbService.UpdateFleetProfile(member, userFleetCheck);
-                        DbService.AddFleetMember(userFleetCheck);
+                        FleetNormDb.AddMember(member, userFleetCheck);
+                        FleetDb.UpdateFleetProfile(member, userFleetCheck);
+                        FleetDb.AddFleetMember(userFleetCheck);
                         await ReplyAsync($"{member.Username} was added to `{userFleetCheck}` by {user.Username}.");
                     }
                 }
