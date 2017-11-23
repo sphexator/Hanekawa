@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
+using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Game.Services;
 using Jibril.Services.Level.Lists;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Services.Level.Services
 {
@@ -60,9 +61,8 @@ namespace Jibril.Services.Level.Services
             // Ship Girl
             if (level == 2)
             {
-                //var classStuff = DbService.ClassSearch(2).FirstOrDefault();
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.shipgirl;
+                var roleGain = ClassNames.ship;
                 var roleLoss = "0";
                 var Message = "0";
                 result.Add(new RoleLevelResponse
@@ -80,8 +80,8 @@ namespace Jibril.Services.Level.Services
                 var roleGain = ClassNames.LC;
                 var roleLoss = "0";
                 var Message = $"Reporting from command HQ.\n" +
-                              $"You've been promoted to {ClassNames.LC}!";
-                GameDatabase.UpdateClass(user, ClassNames.LC);
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -98,8 +98,8 @@ namespace Jibril.Services.Level.Services
                 var roleGain = ClassNames.HC;
                 var roleLoss = ClassNames.LC;
                 var Message = $"Reporting from command HQ.\n" +
-                              $"You've been promoted to {ClassNames.HC}!";
-                GameDatabase.UpdateClass(user, ClassNames.HC);
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -116,8 +116,8 @@ namespace Jibril.Services.Level.Services
                 var roleGain = ClassNames.DD;
                 var roleLoss = ClassNames.HC;
                 var Message = $"Reporting from command HQ.\n" +
-                              $"You've been promoted to {ClassNames.DD}!";
-                GameDatabase.UpdateClass(user, ClassNames.DD);
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -134,8 +134,8 @@ namespace Jibril.Services.Level.Services
                 var roleGain = ClassNames.AC;
                 var roleLoss = ClassNames.DD;
                 var Message = $"Reporting from command HQ.\n" +
-                              $"You've been promoted to {ClassNames.AC}!";
-                GameDatabase.UpdateClass(user, ClassNames.AC);
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -152,8 +152,62 @@ namespace Jibril.Services.Level.Services
                 var roleGain = ClassNames.BB;
                 var roleLoss = ClassNames.AC;
                 var Message = $"Reporting from command HQ.\n" +
-                              $"You've been promoted to {ClassNames.BB}!";
-                GameDatabase.UpdateClass(user, ClassNames.BB);
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
+
+                result.Add(new RoleLevelResponse
+                {
+                    roleGain = roleGain,
+                    roleLoss = roleLoss,
+                    Message = Message
+                });
+                return result;
+            }
+            // Aviation Cruiser
+            if (level == 50)
+            {
+                var result = new List<RoleLevelResponse>();
+                var roleGain = ClassNames.ACr;
+                var roleLoss = ClassNames.BB;
+                var Message = $"Reporting from command HQ.\n" +
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
+
+                result.Add(new RoleLevelResponse
+                {
+                    roleGain = roleGain,
+                    roleLoss = roleLoss,
+                    Message = Message
+                });
+                return result;
+            }
+            // Aviation Battleship
+            if (level == 60)
+            {
+                var result = new List<RoleLevelResponse>();
+                var roleGain = ClassNames.AB;
+                var roleLoss = ClassNames.ACr;
+                var Message = $"Reporting from command HQ.\n" +
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
+
+                result.Add(new RoleLevelResponse
+                {
+                    roleGain = roleGain,
+                    roleLoss = roleLoss,
+                    Message = Message
+                });
+                return result;
+            }
+            // Training Cruiser
+            if (level == 70)
+            {
+                var result = new List<RoleLevelResponse>();
+                var roleGain = ClassNames.TC;
+                var roleLoss = ClassNames.AB;
+                var Message = $"Reporting from command HQ.\n" +
+                              $"You've been promoted to {roleGain}!";
+                GameDatabase.UpdateClass(user, roleGain);
 
                 result.Add(new RoleLevelResponse
                 {
@@ -165,5 +219,14 @@ namespace Jibril.Services.Level.Services
             }
             return null;
         }
+        /*
+        private static Boolean CheckUserRoles(SocketGuildUser user, ulong roleid)
+        {
+            var guild = user.Guild;
+            var role = guild.Roles.First(x => x.Id == roleid);
+            if (user.Roles.Contains(role) != true) return false;
+            return false;
+        }
+        */
     }
 }
