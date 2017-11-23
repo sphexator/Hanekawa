@@ -98,10 +98,18 @@ namespace Jibril.Modules.Fleet.Services
             database.CloseConnection();
         }
 
-        public static void AddFleetMember(string name)
+        public static void AddFleetMemberCount(string name)
         {
             var database = new FleetDb("hanekawa");
             var str = $"UPDATE fleet SET members = members + '1' WHERE name = '{name}'";
+            var tableName = database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void RemoveFleetMemberCount(string name)
+        {
+            var database = new FleetDb("hanekawa");
+            var str = $"UPDATE fleet SET members = members - '1' WHERE name = '{name}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
         }
