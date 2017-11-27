@@ -17,6 +17,7 @@ namespace Jibril.Modules.Level
         [Command("rank")]
         [Alias("Rank")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1,2, Measure.Seconds)]
         public async Task LevelChecker()
         {
             var user = Context.User as SocketGuildUser;
@@ -53,6 +54,7 @@ namespace Jibril.Modules.Level
         [Command("rank")]
         [Alias("Rank")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task LevelCheckerOther(SocketGuildUser user)
         {
             var userData = DatabaseService.UserData(user).FirstOrDefault();
@@ -89,6 +91,7 @@ namespace Jibril.Modules.Level
         [Alias("top")]
         [Remarks("Shows top10 on the leaderboard")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task Leaderboard()
         {
             var embed = new EmbedBuilder();
@@ -111,6 +114,7 @@ namespace Jibril.Modules.Level
 
         [Command("daily", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task Daily()
         {
             var user = Context.User;
