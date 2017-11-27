@@ -17,10 +17,9 @@ namespace Jibril.Modules.Suggestion
         [Alias("Suggest")]
         [RequireRole(341622220050792449)]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task ServerSuggestiong([Remainder] string content = null)
         {
-            var user = Context.User;
-            var alterID = Context.User as IGuildUser;
             var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OKColour);
             await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
             await Context.Message.DeleteAsync();
@@ -42,12 +41,8 @@ namespace Jibril.Modules.Suggestion
                 Color = new Color(Colours.DefaultColour),
                 Description = $"{content}"
             };
-            if (Context.Message.Attachments != null)
-            {
-                var file = Context.Message.Attachments.Select(x => x.Url).ToString();
-                if (_AttachmentUrl(file))
-                    embed.ImageUrl = file;
-            }
+            if (Context.Message.Attachments.ToString() == null) embed.ImageUrl = Context.Message.Attachments.ToString();
+
             author.WithIconUrl(Context.User.GetAvatarUrl());
             author.WithName(Context.User.Username);
 
@@ -92,6 +87,7 @@ namespace Jibril.Modules.Suggestion
             updEmbed.Color = new Color(Colours.FailColour);
             updEmbed.Description = oldMsg.Description;
             updEmbed.Title = oldMsg.Title;
+            updEmbed.ImageUrl = oldMsg.Image.Value.Url;
             updEmbed.AddField(x =>
             {
                 x.Name = $"{Context.User.Username}";
