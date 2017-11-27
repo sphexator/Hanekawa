@@ -21,6 +21,7 @@ namespace Jibril.Modules.Voice
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task MoveUser(SocketGuildUser user)
         {
+            if ((Context.User as IVoiceState) == null) return;
             var vcUsers = await (Context.User as IVoiceState).VoiceChannel.GetUsersAsync().ToList();
             var users = new List<UserData>();
             foreach (var vcu in vcUsers)
@@ -29,10 +30,10 @@ namespace Jibril.Modules.Voice
                 users.AddRange(dataUser);
             }
             var mu = users.OrderByDescending(x => x.Voice_timer).FirstOrDefault();
-            var mui = 
-            if (mu.UserId. == Context.User.Id)
+            var mui = Convert.ToUInt64(mu.UserId);
+            if (mui == Context.User.Id)
             {
-                
+                await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
             }
         }
     }
