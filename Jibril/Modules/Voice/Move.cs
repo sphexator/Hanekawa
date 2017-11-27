@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Preconditions;
 using System.Linq;
+using Google.Apis.Util;
 using Jibril.Services;
 using Jibril.Services.Level.Lists;
 
@@ -33,8 +34,15 @@ namespace Jibril.Modules.Voice
             var mui = Convert.ToUInt64(mu.UserId);
             if (mui == Context.User.Id)
             {
-                await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
-            }  
+                await ReplyAsync($"{Context.User.Mention} wants to move {user.Mention}, do you accept? (Y/N)");
+                var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id));
+                if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
+                    await ReplyAsync($"Moved {user.Username} to {Context.User.Username} voice channel");
+                }
+            }
+            else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.");
         }
     }
 }
