@@ -34,7 +34,7 @@ namespace Jibril.Modules.Voice
             if (mui == Context.User.Id)
             {
                 await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
-            }
+            } 
         }
     }
 }
