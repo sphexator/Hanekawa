@@ -13,7 +13,9 @@ namespace Jibril.Modules.Gambling
     public class Currency : ModuleBase<SocketCommandContext>
     {
         [Command("wallet")]
+        [Summary("Check user currency")]
         [Alias("balance", "money")]
+        [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel(339383206669320192)]
         public async Task Wallet()
         {
@@ -27,6 +29,7 @@ namespace Jibril.Modules.Gambling
 
         [Command("wallet")]
         [Alias("balance", "money")]
+        [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel(339383206669320192)]
         public async Task Wallet(IGuildUser user)
         {
@@ -38,7 +41,9 @@ namespace Jibril.Modules.Gambling
         }
 
         [Command("Richest")]
+        [Summary("Richest list")]
         [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task Richest()
         {
             var embed = new EmbedBuilder();
@@ -60,6 +65,7 @@ namespace Jibril.Modules.Gambling
         }
 
         [Command("give")]
+        [Summary("Rewards user with event tokens")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GiveCredit(int amount, IUser user)
         {

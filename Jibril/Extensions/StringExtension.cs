@@ -9,8 +9,8 @@ namespace Jibril.Extensions
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(?<id>([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex scamFilterSteam = new Regex(
-            @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|google\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl).*?(\s|$)",
+        private static readonly Regex scamFilter = new Regex(
+            @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|goo\.gl|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|google\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba).*?(\s|$)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Max Character string extension
@@ -26,7 +26,7 @@ namespace Jibril.Extensions
 
         public static bool IsScamLink(this string str)
         {
-            return scamFilterSteam.IsMatch(str);
+            return scamFilter.IsMatch(str);
         }
     }
 }
