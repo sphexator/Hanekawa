@@ -45,7 +45,7 @@ namespace Jibril.Modules.Level
             EmbedField2.WithName("Exp");
             EmbedField2.WithValue($"{userData.Xp}/{xpToLevelUp}");
 
-            embed.AddField(EmbedField);
+            embed.AddField(EmbedField); 
             embed.AddField(EmbedField2);
 
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
