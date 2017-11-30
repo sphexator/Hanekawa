@@ -146,5 +146,17 @@ namespace Jibril.Modules.Level
                 await ReplyAsync($"Your credits refresh in {di}!");
             }
         }
+
+        [Command("ping", RunMode = RunMode.Async)]
+        [RequiredChannel(1231231231)]
+        [RequireContext(ContextType.Guild)]
+        [RequireOwner]
+        [Ratelimit(1, 20, Measure.Hours)]
+        public async Task PingTask()
+        {
+            var msg = await ReplyAsync("@here");
+            await msg.DeleteAsync();
+        }
+
     }
 }
