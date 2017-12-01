@@ -29,9 +29,15 @@ namespace Jibril.Modules.Voice
                 var users = new List<UserData>();
                 foreach (var vcu in vcUsers)
                 {
-                    var dataUser = DatabaseService.UserData((vcu as IUser));
-                    users.AddRange(dataUser);
-                    await Task.Delay(100);
+                    try
+                    {
+                        var dataUser = DatabaseService.UserData((vcu as IUser));
+                        users.AddRange(dataUser);
+                    }
+                    catch (Exception a)
+                    {
+                        Console.Write(a);
+                    }
                 }
                 var mu = users.OrderByDescending(x => x.Voice_timer).FirstOrDefault();
                 var mui = Convert.ToUInt64(mu.UserId);
@@ -45,7 +51,7 @@ namespace Jibril.Modules.Voice
                         await ReplyAsync($"Moved {user.Username} to {Context.User.Username} voice channel");
                     }
                 }
-                else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.");
+                else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.").ConfigureAwait(false);
             }
             catch (Exception e)
             {

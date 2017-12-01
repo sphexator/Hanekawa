@@ -38,7 +38,7 @@ namespace Jibril.Modules.Level
             embed.AddField(level);
             embed.AddField(exp);
 
-            await ReplyAsync("", false, embed.Build());
+            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
         [Command("rank", RunMode = RunMode.Async)]
@@ -87,7 +87,7 @@ namespace Jibril.Modules.Level
                     y.IsInline = false;
                 });
             }
-            await ReplyAsync(" ", false, embed.Build()).ConfigureAwait(false);
+            await ReplyAsync(" ", false, embed.Build());
         }
 
         [Command("daily", RunMode = RunMode.Async)]
