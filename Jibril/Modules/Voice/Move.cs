@@ -24,11 +24,13 @@ namespace Jibril.Modules.Voice
             {
                 var vcUsers = await (Context.User as IVoiceState).VoiceChannel.GetUsersAsync().ToList();
                 var users = new List<UserData>();
-                foreach (var vcu in vcUsers)
+                for (var i = 0; i < vcUsers.Count; i++)
+                //for (var i = 0; i < 10; i++)
                 {
                     try
                     {
-                        var dataUser = DatabaseService.UserData((vcu as IUser));
+                        var dbuser = (vcUsers as IUser);
+                        var dataUser = DatabaseService.UserData((vcUsers[i] is IUser));
                         users.AddRange(dataUser);
                     }
                     catch (Exception a)

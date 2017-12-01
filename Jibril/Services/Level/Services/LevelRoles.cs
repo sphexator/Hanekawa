@@ -182,7 +182,7 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Aviation Battleship
-            if (level == 60)
+            if (level == 65)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.AB;
@@ -200,7 +200,7 @@ namespace Jibril.Services.Level.Services
                 return result;
             }
             // Training Cruiser
-            if (level == 70)
+            if (level == 80)
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.TC;
