@@ -16,28 +16,15 @@ namespace Jibril.Modules.Level
     public class Level : ModuleBase<SocketCommandContext>
     {
         [Command("rank")]
-        [Alias("Rank")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1,2, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task LevelChecker()
         {
             var user = Context.User as SocketGuildUser;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
-            var thumbnailurl = user.GetAvatarUrl();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
             var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
-            /*
-            var auth = new EmbedAuthorBuilder
-            {
-                Name = user.Username,
-                IconUrl = thumbnailurl
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.DefaultColour),
-                Author = auth
-            };
-            */
+
             var level = new EmbedFieldBuilder();
             level.WithIsInline(true);
             level.WithName("Level");
@@ -51,7 +38,7 @@ namespace Jibril.Modules.Level
             embed.AddField(level);
             embed.AddField(exp);
 
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            await ReplyAsync("", false, embed.Build());
         }
 
         [Command("rank", RunMode = RunMode.Async)]
@@ -61,20 +48,8 @@ namespace Jibril.Modules.Level
         {
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
-            var thumbnailurl = user.GetAvatarUrl();
             var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
-            /*
-            var auth = new EmbedAuthorBuilder
-            {
-                Name = user.Username,
-                IconUrl = thumbnailurl
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.DefaultColour),
-                Author = auth
-            };
-            */
+
             var level = new EmbedFieldBuilder();
             level.WithIsInline(true);
             level.WithName("Level");
