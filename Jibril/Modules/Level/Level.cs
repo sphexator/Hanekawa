@@ -8,6 +8,7 @@ using Jibril.Data.Variables;
 using Jibril.Modules.Gambling.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
+using Jibril.Services.Common;
 using Jibril.Services.Level.Services;
 
 namespace Jibril.Modules.Level
@@ -24,6 +25,8 @@ namespace Jibril.Modules.Level
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var thumbnailurl = user.GetAvatarUrl();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
+            var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
+            /*
             var auth = new EmbedAuthorBuilder
             {
                 Name = user.Username,
@@ -34,21 +37,21 @@ namespace Jibril.Modules.Level
                 Color = new Color(Colours.DefaultColour),
                 Author = auth
             };
+            */
+            var level = new EmbedFieldBuilder();
+            level.WithIsInline(true);
+            level.WithName("Level");
+            level.WithValue($"{userData.Level}");
 
-            var EmbedField = new EmbedFieldBuilder();
-            EmbedField.WithIsInline(true);
-            EmbedField.WithName("Level");
-            EmbedField.WithValue($"{userData.Level}");
+            var exp = new EmbedFieldBuilder();
+            exp.WithIsInline(true);
+            exp.WithName("Exp");
+            exp.WithValue($"{userData.Xp}/{xpToLevelUp}");
 
-            var EmbedField2 = new EmbedFieldBuilder();
-            EmbedField2.WithIsInline(true);
-            EmbedField2.WithName("Exp");
-            EmbedField2.WithValue($"{userData.Xp}/{xpToLevelUp}");
+            embed.AddField(level);
+            embed.AddField(exp);
 
-            embed.AddField(EmbedField); 
-            embed.AddField(EmbedField2);
-
-            await Context.Channel.SendMessageAsync(" ", false, embed.Build()).ConfigureAwait(false);
+            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
         [Command("rank", RunMode = RunMode.Async)]
@@ -59,7 +62,8 @@ namespace Jibril.Modules.Level
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
             var thumbnailurl = user.GetAvatarUrl();
-
+            var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
+            /*
             var auth = new EmbedAuthorBuilder
             {
                 Name = user.Username,
@@ -70,20 +74,20 @@ namespace Jibril.Modules.Level
                 Color = new Color(Colours.DefaultColour),
                 Author = auth
             };
+            */
+            var level = new EmbedFieldBuilder();
+            level.WithIsInline(true);
+            level.WithName("Level");
+            level.WithValue($"{userData.Level}");
 
-            var EmbedField = new EmbedFieldBuilder();
-            EmbedField.WithIsInline(true);
-            EmbedField.WithName("Level");
-            EmbedField.WithValue($"{userData.Level}");
+            var exp = new EmbedFieldBuilder();
+            exp.WithIsInline(true);
+            exp.WithName("Exp");
+            exp.WithValue($"{userData.Xp}/{xpToLevelUp}");
 
-            var EmbedField2 = new EmbedFieldBuilder();
-            EmbedField2.WithIsInline(true);
-            EmbedField2.WithName("Exp");
-            EmbedField2.WithValue($"{userData.Xp}/{xpToLevelUp}");
-
-            embed.AddField(EmbedField);
-            embed.AddField(EmbedField2);
-            await ReplyAsync(" ", false, embed.Build());
+            embed.AddField(level);
+            embed.AddField(exp);
+            await ReplyAsync("", false, embed.Build());
         }
 
         [Command("top10")]
