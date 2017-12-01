@@ -19,7 +19,6 @@ namespace Jibril.Modules.Voice
         [Command("move", RunMode = RunMode.Async)]
         [UserMustBeInVoice]
         [RequireContext(ContextType.Guild)]
-        [RequireRole(379324308436156416)]
         [RequireOwner]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task MoveUser(SocketGuildUser user)
