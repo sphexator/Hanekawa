@@ -48,11 +48,10 @@ namespace Jibril.Modules.Level
             embed.AddField(EmbedField); 
             embed.AddField(EmbedField2);
 
-            await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+            await Context.Channel.SendMessageAsync(" ", false, embed.Build()).ConfigureAwait(false);
         }
 
-        [Command("rank")]
-        [Alias("Rank")]
+        [Command("rank", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task LevelCheckerOther(SocketGuildUser user)
@@ -84,7 +83,7 @@ namespace Jibril.Modules.Level
 
             embed.AddField(EmbedField);
             embed.AddField(EmbedField2);
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            await ReplyAsync(" ", false, embed.Build());
         }
 
         [Command("top10")]
@@ -109,7 +108,7 @@ namespace Jibril.Modules.Level
                     y.IsInline = false;
                 });
             }
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            await ReplyAsync(" ", false, embed.Build()).ConfigureAwait(false);
         }
 
         [Command("daily", RunMode = RunMode.Async)]

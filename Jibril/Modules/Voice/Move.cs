@@ -31,6 +31,7 @@ namespace Jibril.Modules.Voice
                 {
                     var dataUser = DatabaseService.UserData((vcu as IUser));
                     users.AddRange(dataUser);
+                    await Task.Delay(100);
                 }
                 var mu = users.OrderByDescending(x => x.Voice_timer).FirstOrDefault();
                 var mui = Convert.ToUInt64(mu.UserId);
