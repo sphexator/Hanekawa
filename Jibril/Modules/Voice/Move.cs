@@ -17,9 +17,6 @@ namespace Jibril.Modules.Voice
     public class Move : InteractiveBase
     {
         [Command("move", RunMode = RunMode.Async)]
-        [UserMustBeInVoice]
-        [RequireContext(ContextType.Guild)]
-        [RequireOwner]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task MoveUser(SocketGuildUser user)
         {
@@ -51,7 +48,7 @@ namespace Jibril.Modules.Voice
                         await ReplyAsync($"Moved {user.Username} to {Context.User.Username} voice channel");
                     }
                 }
-                else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.").ConfigureAwait(false);
+                else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.");
             }
             catch (Exception e)
             {
