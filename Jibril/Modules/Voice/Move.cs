@@ -13,7 +13,7 @@ using Jibril.Services;
 using Jibril.Services.Level.Lists;
 
 namespace Jibril.Modules.Voice
-{
+{/*
     public class Move : InteractiveBase
     {
         [Command("move", RunMode = RunMode.Async)]
@@ -57,5 +57,5 @@ namespace Jibril.Modules.Voice
                 Console.WriteLine(e);
             }
         }
-    }
+    }*/
 }
