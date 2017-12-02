@@ -9,11 +9,13 @@ using Discord.WebSocket;
 using Jibril.Preconditions;
 using System.Linq;
 using Google.Apis.Util;
+using Jibril.Data.Variables;
 using Jibril.Services;
+using Jibril.Services.Common;
 using Jibril.Services.Level.Lists;
 
 namespace Jibril.Modules.Voice
-{/*
+{
     public class Move : InteractiveBase
     {
         [Command("move", RunMode = RunMode.Async)]
@@ -22,15 +24,14 @@ namespace Jibril.Modules.Voice
         {
             try
             {
-                var vcUsers = await (Context.User as IVoiceState).VoiceChannel.GetUsersAsync().ToList();
+                var vcUsers = await (Context.User as IVoiceState).VoiceChannel.GetUsersAsync().ToArray();
                 var users = new List<UserData>();
-                for (var i = 0; i < vcUsers.Count; i++)
-                //for (var i = 0; i < 10; i++)
+                for(var i=0; i < vcUsers.Length; i++)
                 {
                     try
                     {
-                        var dbuser = (vcUsers as IUser);
-                        var dataUser = DatabaseService.UserData((vcUsers[i] is IUser));
+                        var dbuser = vcUsers[i].FirstOrDefault();
+                        var dataUser = DatabaseService.UserData(dbuser);
                         users.AddRange(dataUser);
                     }
                     catch (Exception a)
@@ -38,24 +39,40 @@ namespace Jibril.Modules.Voice
                         Console.Write(a);
                     }
                 }
+
                 var mu = users.OrderByDescending(x => x.Voice_timer).FirstOrDefault();
                 var mui = Convert.ToUInt64(mu.UserId);
                 if (mui == Context.User.Id)
                 {
-                    await ReplyAsync($"{Context.User.Mention} wants to move {user.Mention}, do you accept? (Y/N)");
+                    var confirmEmbed = EmbedGenerator.DefaultEmbed(
+                        $"{Context.User.Mention} wants to move {user.Mention}, do you accept? (Y/N)", Colours.DefaultColour);
+                    await ReplyAsync("", false, confirmEmbed.Build());
                     var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id));
-                    if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
+                    if (response.Content.Equals("Y", StringComparison.OrdinalIgnoreCase))
                     {
                         await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
-                        await ReplyAsync($"Moved {user.Username} to {Context.User.Username} voice channel");
+                        var embed = EmbedGenerator.DefaultEmbed(
+                            $"Moved {user.Username} to {Context.User.Username} voice channel", Colours.OKColour);
+                        await ReplyAsync("", false, embed.Build());
+                    }
+                    else
+                    {
+                        var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} didn't respond in time.",
+                            Colours.FailColour);
+                        await ReplyAsync("", false, embed.Build());
                     }
                 }
-                else await ReplyAsync($"You cannot use this command. Ask <@{mui}> instead.");
+                else
+                {
+                    var embed = EmbedGenerator.DefaultEmbed($"You cannot use this command. Ask <@{mui}> instead.",
+                        Colours.FailColour);
+                    await ReplyAsync("",false, embed.Build());
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
         }
-    }*/
+    }
 }
