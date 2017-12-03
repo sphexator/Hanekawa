@@ -53,13 +53,13 @@ namespace Jibril.Modules.Suggestion
 
             try
             {
-                var suggestMsg = await sc.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                var suggestMsg = await sc.SendMessageAsync("", false, embed.Build());
                 SuggestionDB.UpdateSuggestion(suggestMsg.Id.ToString(), suggestionNr[0]);
 
                 await Task.Delay(260);
-                await suggestMsg.AddReactionAsync(new Emoji("👍")).ConfigureAwait(false);
+                await suggestMsg.AddReactionAsync(new Emoji("👍"));
                 await Task.Delay(260);
-                await suggestMsg.AddReactionAsync(new Emoji("👎")).ConfigureAwait(false);
+                await suggestMsg.AddReactionAsync(new Emoji("👎"));
             }
             catch (Exception e)
             {
