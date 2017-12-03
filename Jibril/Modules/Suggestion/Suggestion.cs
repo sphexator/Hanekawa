@@ -18,7 +18,7 @@ namespace Jibril.Modules.Suggestion
         [RequireRole(341622220050792449)]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task ServerSuggestiong([Remainder] string content = null)
+        public async Task ServerSuggestiong([Remainder] string content)
         {
             try
             {
