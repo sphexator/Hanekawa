@@ -13,7 +13,7 @@ namespace Jibril.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
-        [Command("suggest")]
+        [Command("suggest", RunMode = RunMode.Async)]
         [Alias("suggestion")]
         [RequireRole(341622220050792449)]
         [RequiredChannel(339383206669320192)]
@@ -76,7 +76,7 @@ namespace Jibril.Modules.Suggestion
             }
         }
 
-        [Command("denyrequest")]
+        [Command("denyrequest", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DenyRequest(uint casenr, [Remainder] string reason = null)
@@ -117,7 +117,7 @@ namespace Jibril.Modules.Suggestion
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
         }
 
-        [Command("approverequest")]
+        [Command("approverequest", RunMode = RunMode.Async)]
         [Alias("ar")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ApproveRequest(uint casenr, [Remainder] string reason = null)
