@@ -14,10 +14,10 @@ namespace Jibril.Modules.Suggestion
     public class Suggestion : ModuleBase<SocketCommandContext>
     {
         [Command("suggest")]
-        [Alias("Suggest")]
+        [Alias("suggestion")]
         //[RequireRole(341622220050792449)]
         //[RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        //[Ratelimit(1, 5, Measure.Seconds)]
         public async Task ServerSuggestiong([Remainder] string content)
         {
             try
