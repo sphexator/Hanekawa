@@ -22,15 +22,13 @@ namespace Jibril.Modules.Suggestion
         {
             try
             {
-
-
                 var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OKColour);
                 await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
                 await Context.Message.DeleteAsync();
 
                 var time = DateTime.Now;
                 var guild = Context.Guild;
-                var sc = guild.GetTextChannel(342519715215835136);
+                var sc = guild.TextChannels.First(x => x.Id == 342519715215835136);
 
                 await Task.Delay(100);
 

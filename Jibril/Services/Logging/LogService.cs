@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -46,7 +47,7 @@ namespace Jibril.Services.Logging
                               $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
                               $"Account created: {user.CreatedAt}";
                 var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OKColour, user);
-                var channel = user.Guild.GetTextChannel(339380907146477579);
+                var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
             return Task.CompletedTask;
@@ -60,7 +61,7 @@ namespace Jibril.Services.Logging
                               $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
                               $"Username: {user.Username}#{user.Discriminator}";
                 var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.FailColour, user);
-                var channel = user.Guild.GetTextChannel(339380907146477579);
+                var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
             return Task.CompletedTask;
@@ -91,7 +92,7 @@ namespace Jibril.Services.Logging
                         x.Value = "N/A";
                         x.IsInline = true;
                     });
-                    var log = guild.GetTextChannel(339381104534355970);
+                    var log = guild.TextChannels.First(x => x.Id == 339381104534355970);
                     var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseId[0]);
                 }
@@ -125,7 +126,7 @@ namespace Jibril.Services.Logging
                         x.Value = "N/A";
                         x.IsInline = true;
                     });
-                    var log = guild.GetTextChannel(339381104534355970);
+                    var log = guild.TextChannels.First(x => x.Id == 339381104534355970);
                     var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
                 }
@@ -169,8 +170,8 @@ namespace Jibril.Services.Logging
                         footer.WithText($"{DateTime.UtcNow}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
-                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                         await Task.Delay(2000);
+                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -221,8 +222,8 @@ namespace Jibril.Services.Logging
                         footer.WithText($"{DateTime.Now}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
-                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                         await Task.Delay(2000);
+                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
                 }
                 catch (Exception e)
