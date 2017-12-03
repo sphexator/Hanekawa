@@ -87,7 +87,7 @@ namespace Jibril.Modules.Profile.Services
 
                 //Dynamic variables
                 var fleetName = CheckFleetMembership(user);
-                var fleetCommander = GetFleetCommander(user, fleetName);
+                var fleetCommander = GetFleetCommander(user, fleetName).First().ToString();
 
 
                 img.Mutate(x => x

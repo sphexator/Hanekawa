@@ -11,12 +11,14 @@ namespace Jibril.Services.Welcome.Services
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             if (userdata == null) return true;
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow.Date;
             var Cooldown = userdata.JoinDateTime;
 
-            var diff = Cooldown.AddDays(1) - now;
+            var uc = user.CreatedAt.Date;
+
+            var diff = Cooldown.AddHours(24) - now;
             var x = Int32.Parse(diff.Seconds.ToString());
-            if ((Cooldown.ToString() == "0001-01-01 00:00:00") || x <= 0)
+            if ((Cooldown.ToString() == "0001-01-01 00:00:00") || x <= 0 || uc == now)
             {
                 return true;
             }
