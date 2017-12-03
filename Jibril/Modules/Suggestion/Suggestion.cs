@@ -11,19 +11,19 @@ using Jibril.Services.Common;
 
 namespace Jibril.Modules.Suggestion
 {
-    public class Suggestion : ModuleBase<SocketCommandContext>
+    public class Suggestion : InteractiveBase
     {
         [Command("suggest")]
         [Alias("suggestion")]
-        //[RequireRole(341622220050792449)]
-        //[RequiredChannel(339383206669320192)]
-        //[Ratelimit(1, 5, Measure.Seconds)]
+        [RequireRole(341622220050792449)]
+        [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task ServerSuggestiong([Remainder] string content)
         {
             try
             {
                 var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OKColour);
-                await ReplyAsync("", false, confirm.Build()/*, TimeSpan.FromSeconds(15)*/);
+                await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
                 await Context.Message.DeleteAsync();
 
                 var time = DateTime.Now;
