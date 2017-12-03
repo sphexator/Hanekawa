@@ -11,7 +11,6 @@
             "Data/Images/Welcome/Template/5.png",
             "Data/Images/Welcome/Template/6.png",
             "Data/Images/Welcome/Template/7.png",
-            "Data/Images/Welcome/Template/8.png",
             "Data/Images/Welcome/Template/9.png",
             "Data/Images/Welcome/Template/10.png"
         };
