@@ -11,7 +11,7 @@ using Jibril.Services.Common;
 
 namespace Jibril.Modules.Suggestion
 {
-    public class Suggestion : InteractiveBase
+    public class Suggestion : ModuleBase<SocketCommandContext>
     {
         [Command("suggest")]
         [Alias("Suggest")]
@@ -23,7 +23,7 @@ namespace Jibril.Modules.Suggestion
             try
             {
                 var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OKColour);
-                await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
+                await ReplyAsync("", false, confirm.Build()/*, TimeSpan.FromSeconds(15)*/);
                 await Context.Message.DeleteAsync();
 
                 var time = DateTime.Now;
