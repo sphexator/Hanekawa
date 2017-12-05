@@ -6,14 +6,14 @@ namespace Jibril.Services.AutoModerator.Perspective.Models
 {
     public class AnalyzeCommentRequest
     {
-        public Comment Comment { get; }
-        public RequestedAttributes RequestedAttributes { get; }
+        public Comment comment { get; }
+        public RequestedAttributes requestedAttributes { get; }
         public bool DoNotStore = true;
 
         public AnalyzeCommentRequest(string msg)
         {
-            Comment = new Comment(msg);
-            RequestedAttributes = new RequestedAttributes();
+            comment = new Comment(msg);
+            requestedAttributes = new RequestedAttributes();
         }
     }
 }
