@@ -29,7 +29,7 @@ namespace Jibril.Services.Level
                 var user = msg.Author as SocketGuildUser;
                 var guild = user.Guild.Id;
 
-                var CheckUser = DatabaseService.CheckUser(user);
+                var CheckUser = DatabaseService.CheckUser(user).FirstOrDefault();
                 if (CheckUser == null) DatabaseService.EnterUser(user);
 
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
@@ -64,7 +64,7 @@ namespace Jibril.Services.Level
                 var newVc = newState.VoiceChannel;
                 try
                 {
-                    var CheckUser = DatabaseService.CheckUser(gusr);
+                    var CheckUser = DatabaseService.CheckUser(gusr).FirstOrDefault();
                     if (CheckUser == null) DatabaseService.EnterUser(gusr);
                     if (newVc != null && oldVc == null)
                         LevelDatabase.StartVoiceCounter(gusr);
@@ -77,6 +77,7 @@ namespace Jibril.Services.Level
                 }
                 catch
                 {
+                    //Ignore
                 }
             });
             return Task.CompletedTask;

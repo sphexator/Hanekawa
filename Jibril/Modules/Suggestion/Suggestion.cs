@@ -79,14 +79,20 @@ namespace Jibril.Modules.Suggestion
         [Command("denyrequest", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task DenyRequest(uint casenr, [Remainder] string reason = null)
+        public async Task DenyRequest(uint casenr, [Remainder] string reason)
         {
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
             var msgID = Convert.ToUInt64(msgIDString[0]);
             var guild = Context.Guild;
-            var ch = guild.GetChannel(342519715215835136) as ITextChannel;
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
+
+            if (oldMsg == null)
+            {
+                Console.Write("updmsg is null");
+                return;
+            }
 
             var updEmbed = new EmbedBuilder();
             var updAuthor = new EmbedAuthorBuilder();
@@ -95,7 +101,7 @@ namespace Jibril.Modules.Suggestion
             updEmbed.Color = new Color(Colours.FailColour);
             updEmbed.Description = oldMsg.Description;
             updEmbed.Title = oldMsg.Title;
-            updEmbed.ImageUrl = oldMsg.Image.Value.Url;
+            if(oldMsg.Image.Value.Url != null) updEmbed.ImageUrl = oldMsg.Image.Value.Url;
             updEmbed.AddField(x =>
             {
                 x.Name = $"{Context.User.Username}";
@@ -120,14 +126,20 @@ namespace Jibril.Modules.Suggestion
         [Command("approverequest", RunMode = RunMode.Async)]
         [Alias("ar")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ApproveRequest(uint casenr, [Remainder] string reason = null)
+        public async Task ApproveRequest(uint casenr, [Remainder] string reason)
         {
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
             var msgID = Convert.ToUInt64(msgIDString[0]);
             var guild = Context.Guild;
-            var ch = guild.GetChannel(342519715215835136) as ITextChannel;
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
+
+            if (oldMsg == null)
+            {
+                Console.Write("updmsg is null");
+                return;
+            }
 
             var updEmbed = new EmbedBuilder();
             var updAuthor = new EmbedAuthorBuilder();
@@ -156,15 +168,6 @@ namespace Jibril.Modules.Suggestion
 
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
-        }
-
-        private static bool _AttachmentUrl(string url)
-        {
-            if (url.EndsWith(".png")) return true;
-            if (url.EndsWith(".jpeg")) return true;
-            if (url.EndsWith(".jpg")) return true;
-            if (url.EndsWith(".gif")) return true;
-            return false;
         }
     }
 }

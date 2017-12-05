@@ -163,11 +163,11 @@ namespace Jibril.Services.Logging
                         embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
                         embed.AddField(efb =>
                         {
-                            efb.Name = $"Content:";
+                            efb.Name = "Content:";
                             efb.Value = $"{msg.Content}";
                             efb.IsInline = false;
                         });
-                        footer.WithText($"{DateTime.UtcNow}");
+                        footer.WithText($"{DateTime.UtcNow} - msg ID: {msg.Id}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);
@@ -218,8 +218,7 @@ namespace Jibril.Services.Logging
                             x.Value = $"{msg.Content}";
                             x.IsInline = false;
                         });
-
-                        footer.WithText($"{DateTime.Now}");
+                        footer.WithText($"{DateTime.UtcNow} - msg ID: {msg.Id}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);

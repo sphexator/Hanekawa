@@ -16,9 +16,10 @@ namespace Jibril.Services.Welcome.Services
 
             var uc = user.CreatedAt.Date;
 
+            var difference = DateTime.Compare(Cooldown, now);
             var diff = Cooldown.AddHours(24) - now;
             var x = Int32.Parse(diff.Seconds.ToString());
-            if ((Cooldown.ToString() == "0001-01-01 00:00:00") || x <= 0 || uc == now)
+            if ((Cooldown.ToString() == "0001-01-01 00:00:00") || difference <= 0 || uc == now)
             {
                 return true;
             }
