@@ -21,7 +21,7 @@ namespace Jibril.Services.AutoModerator
             _provider = provider;
 
             _discord.MessageReceived += _discord_MessageReceived;
-            //_discord.MessageReceived += PerspectiveApi;
+            _discord.MessageReceived += PerspectiveApi;
         }
 
         private Task _discord_MessageReceived(SocketMessage rawMessage)
@@ -179,17 +179,15 @@ namespace Jibril.Services.AutoModerator
             });
             return Task.CompletedTask;
         }
-        /*
-private Task PerspectiveApi(SocketMessage msg)
-{
+        private Task PerspectiveApi(SocketMessage msg)
+        {
 
-var _ = Task.Run(async () =>
-{
-    var content = msg.Content;
-    var request = 
-});
-return Task.CompletedTask;
+            var _ = Task.Run(async () =>
+            {
+                var content = msg.Content;
+                var request = 
+            });
+            return Task.CompletedTask;
+        }
     }
-    */
-}
 }
