@@ -8,6 +8,7 @@ namespace Jibril.Services.AutoModerator.Perspective.Models
     {
         public Comment Comment { get; }
         public RequestedAttributes RequestedAttributes { get; }
+        public Boolean DoNotStore = true;
 
         public AnalyzeCommentRequest(string msg)
         {
