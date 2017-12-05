@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.2" />
     <PackageReference Include="MySql.Data" Version="8.0.9-dmr" />
     <PackageReference Include="MySql.Data.Entity" Version="7.0.7-m61" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1-beta1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0001" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
@@ -43,7 +44,7 @@
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />
     <Folder Include="Modules\Voice\Services\" />
-    <Folder Include="Services\AutoModerator\Services\" />
+    <Folder Include="Services\AutoModerator\Perspective\Services\" />
     <Folder Include="Services\Welcome\Lists\" />
   </ItemGroup>
 

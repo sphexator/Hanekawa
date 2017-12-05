@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
+using System.Text;
+using Newtonsoft.Json;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
+using Jibril.Services.AutoModerator.Perspective.Models;
 using Jibril.Services.Common;
 
 namespace Jibril.Services.AutoModerator
@@ -181,13 +185,30 @@ namespace Jibril.Services.AutoModerator
         }
         private Task PerspectiveApi(SocketMessage msg)
         {
-
             var _ = Task.Run(async () =>
             {
                 var content = msg.Content;
-                var request = 
+                var request = new AnalyzeCommentRequest(content);
+
+                var response = SendNudes(request);
+                var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
+                Console.Write($"{DateTime.Now} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
+
             });
             return Task.CompletedTask;
+        }
+
+        private AnalyzeCommentResponse SendNudes(AnalyzeCommentRequest request)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+                var response = client.PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={Token}", content).Result;
+                response.EnsureSuccessStatusCode();
+                var data = response.Content.ReadAsStringAsync().Result;
+                var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
+                return result;
+            }
         }
     }
 }
