@@ -212,8 +212,6 @@ namespace Jibril.Services.AutoModerator
             using (var client = new HttpClient())
             {
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-                var output = JsonConvert.SerializeObject(request);
-                Console.WriteLine(output);
                 var response = client.PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={Token.key}", content).Result;
                 response.EnsureSuccessStatusCode();
                 var data = response.Content.ReadAsStringAsync().Result;
