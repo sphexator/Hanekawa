@@ -101,7 +101,6 @@ namespace Jibril.Modules.Suggestion
             updEmbed.Color = new Color(Colours.FailColour);
             updEmbed.Description = oldMsg.Description;
             updEmbed.Title = oldMsg.Title;
-            if(oldMsg.Image.Value.Url != null) updEmbed.ImageUrl = oldMsg.Image.Value.Url;
             updEmbed.AddField(x =>
             {
                 x.Name = $"{Context.User.Username}";
