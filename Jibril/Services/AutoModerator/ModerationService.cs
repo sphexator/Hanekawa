@@ -25,7 +25,7 @@ namespace Jibril.Services.AutoModerator
             _provider = provider;
 
             _discord.MessageReceived += _discord_MessageReceived;
-            _discord.MessageReceived += PerspectiveApi;
+            //_discord.MessageReceived += PerspectiveApi;
         }
 
         private Task _discord_MessageReceived(SocketMessage rawMessage)
