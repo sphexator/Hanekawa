@@ -179,15 +179,17 @@ namespace Jibril.Services.AutoModerator
             });
             return Task.CompletedTask;
         }
+        /*
+private Task PerspectiveApi(SocketMessage msg)
+{
 
-        private Task PerspectiveApi(SocketMessage msg)
-        {
-            var _ = Task.Run(async () =>
-            {
-                var content = msg.Content;
-                var request = 
-            });
-            return Task.CompletedTask;
-        }
+var _ = Task.Run(async () =>
+{
+    var content = msg.Content;
+    var request = 
+});
+return Task.CompletedTask;
     }
+    */
+}
 }
