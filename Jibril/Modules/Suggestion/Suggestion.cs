@@ -84,7 +84,7 @@ namespace Jibril.Modules.Suggestion
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
             var msgID = Convert.ToUInt64(msgIDString[0]);
             var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136) as ITextChannel;
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
 
@@ -131,7 +131,7 @@ namespace Jibril.Modules.Suggestion
             var msgIDString = SuggestionDB.SuggestionMessage(casenr);
             var msgID = Convert.ToUInt64(msgIDString[0]);
             var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136) as ITextChannel;
             var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
 
