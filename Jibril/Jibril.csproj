@@ -43,6 +43,7 @@
     <Folder Include="Modules\ApplicationForm\Services\" />
     <Folder Include="Modules\Game\Services\Stats\" />
     <Folder Include="Modules\Voice\Services\" />
+    <Folder Include="Services\AutoModerator\Services\" />
     <Folder Include="Services\Welcome\Lists\" />
   </ItemGroup>
 
