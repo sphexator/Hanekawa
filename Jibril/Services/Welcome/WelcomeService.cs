@@ -41,13 +41,5 @@ namespace Jibril.Services.Welcome
             });
             return Task.CompletedTask;
         }
-        /*
-        private static Boolean UserAge(SocketGuildUser user)
-        {
-            var ct = user.CreatedAt.Date;
-            var currentDate = DateTime.Now.Date;
-
-        }'
-        */
     }
 }
