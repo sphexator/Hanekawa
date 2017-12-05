@@ -187,7 +187,7 @@ namespace Jibril.Services.AutoModerator
         {
             var _ = Task.Run(() =>
             {
-                if (msg.Author.IsBot) return;
+                if (msg.Author.IsBot != true) return;
                 var content = msg.Content;
                 var request = new AnalyzeCommentRequest(content);
 
