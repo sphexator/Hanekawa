@@ -187,13 +187,22 @@ namespace Jibril.Services.AutoModerator
         {
             var _ = Task.Run(() =>
             {
-                if (msg.Author.IsBot != true) return;
-                var content = msg.Content;
-                var request = new AnalyzeCommentRequest(content);
+                if (!(msg is SocketUserMessage message)) return;
+                if (message.Source != MessageSource.User) return;
+                try
+                {
+                    var content = msg.Content;
+                    var request = new AnalyzeCommentRequest(content);
 
-                var response = SendNudes(request);
-                var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
-                Console.WriteLine($"{DateTime.Now} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
+                    var response = SendNudes(request);
+                    var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
+                    Console.WriteLine(
+                        $"{DateTime.Now} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             });
             return Task.CompletedTask;
         }
