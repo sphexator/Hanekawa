@@ -43,7 +43,7 @@ namespace Jibril.Services.Level
                     LevelDatabase.ChangeCooldown(user);
                     LevelDatabase.AddExperience(user, exp, credit);
                     Console.WriteLine(
-                        $"{DateTime.Now.Hour}:{DateTime.Now.Minute} | LEVEL SERVICE   |   {msg.Author.Username} Recieved {exp} exp");
+                        $"{DateTime.Now.ToLongTimeString()} | LEVEL SERVICE | Awarded {exp} exp to {msg.Author.Username}");
                     if (userData.Xp + exp >= levelupReq)
                     {
                         var remainingExp = userData.Xp + exp - userData.Xp;
