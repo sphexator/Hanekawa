@@ -185,7 +185,7 @@ namespace Jibril.Services.AutoModerator
         }
         private Task PerspectiveApi(SocketMessage msg)
         {
-            var _ = Task.Run(async () =>
+            var _ = Task.Run(() =>
             {
                 var content = msg.Content;
                 var request = new AnalyzeCommentRequest(content);
@@ -193,7 +193,6 @@ namespace Jibril.Services.AutoModerator
                 var response = SendNudes(request);
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                 Console.Write($"{DateTime.Now} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
-
             });
             return Task.CompletedTask;
         }
@@ -203,7 +202,7 @@ namespace Jibril.Services.AutoModerator
             using (var client = new HttpClient())
             {
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-                var response = client.PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={Token}", content).Result;
+                var response = client.PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={Token.key}", content).Result;
                 response.EnsureSuccessStatusCode();
                 var data = response.Content.ReadAsStringAsync().Result;
                 var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
