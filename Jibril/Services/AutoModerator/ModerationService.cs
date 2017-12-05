@@ -197,7 +197,7 @@ namespace Jibril.Services.AutoModerator
                     var response = SendNudes(request);
                     var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                     Console.WriteLine(
-                        $"{DateTime.Now} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
+                        $"{DateTime.Now.ToLongTimeString()} | TOXICITY SERVICE | {msg.Author.Id} | {msg.Author.Username} | Toxicity score:{score}");
                 }
                 catch (Exception e)
                 {
