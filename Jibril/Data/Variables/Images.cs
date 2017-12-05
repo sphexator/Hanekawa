@@ -12,7 +12,12 @@
             "Data/Images/Welcome/Template/6.png",
             "Data/Images/Welcome/Template/7.png",
             "Data/Images/Welcome/Template/9.png",
-            "Data/Images/Welcome/Template/10.png"
+            "Data/Images/Welcome/Template/10.png",
+            "Data/Images/Welcome/Template/11.png",
+            "Data/Images/Welcome/Template/12.png",
+            "Data/Images/Welcome/Template/13.png",
+            "Data/Images/Welcome/Template/14.png",
+            "Data/Images/Welcome/Template/15.png"
         };
 
         public static string[] Profile =
