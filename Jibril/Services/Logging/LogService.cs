@@ -39,11 +39,11 @@ namespace Jibril.Services.Logging
             _discord.MessageUpdated += MessageUpdated;
         }
 
-        private Task Post(EmbedBuilder embed, ITextChannel ch = null)
+        private Task Post(EmbedBuilder embed, SocketTextChannel ch = null)
         {
             var _ = Task.Run(async () =>
             {
-
+                await ch.SendMessageAsync("", false, embed.Build());
             });
             return Task.CompletedTask;
         }
