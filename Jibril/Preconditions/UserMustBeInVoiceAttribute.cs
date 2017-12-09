@@ -20,7 +20,7 @@ namespace Jibril.Preconditions
             return (await context.Guild.GetVoiceChannelsAsync()).Any(v => v.Id == current)
                 ? PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.")
                 : PreconditionResult.FromSuccess();
-                */
+            */
         }
     }
 }

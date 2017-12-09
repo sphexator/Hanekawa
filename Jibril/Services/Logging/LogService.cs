@@ -260,6 +260,11 @@ namespace Jibril.Services.Logging
 
         private Task LogCommand(LogMessage message)
         {
+            // Return an error message for async commands
+            if (message.Exception is CommandException command)
+            {
+                Console.WriteLine($"Error: {command.Message}");
+            }
             _commandsLogger.Log(
                 LogLevelFromSeverity(message.Severity),
                 0,
