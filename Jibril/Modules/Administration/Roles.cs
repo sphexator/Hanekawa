@@ -21,7 +21,7 @@ namespace Jibril.Modules.Administration
                 {
                     var user = Context.User as SocketGuildUser;
                     var altUser = Context.User as IGuildUser;
-                    var lewdRole = Context.Guild.GetRole(339711429211062273);
+                    var lewdRole = Context.Guild.Roles.First(x => x.Id == 339711429211062273);
                     var roleCheck = altUser.RoleIds.Contains(lewdRole.Id);
                     if (roleCheck == false)
                     {

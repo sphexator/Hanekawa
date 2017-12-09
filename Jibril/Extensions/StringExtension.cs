@@ -6,7 +6,7 @@ namespace Jibril.Extensions
     {
         // Filter detection
         private static readonly Regex filterRegex =
-            new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(?<id>([\w]{16}|(?:[\w]+-?){3})))",
+            new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex scamFilter = new Regex(

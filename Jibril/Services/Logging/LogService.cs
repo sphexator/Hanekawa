@@ -39,6 +39,15 @@ namespace Jibril.Services.Logging
             _discord.MessageUpdated += MessageUpdated;
         }
 
+        private Task Post(EmbedBuilder embed, ITextChannel ch = null)
+        {
+            var _ = Task.Run(async () =>
+            {
+
+            });
+            return Task.CompletedTask;
+        }
+
         private Task UserJoined(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
@@ -76,7 +85,6 @@ namespace Jibril.Services.Logging
                     var time = DateTime.Now;
                     AdminDb.AddActionCase(user, time);
                     var caseId = AdminDb.GetActionCaseID(time);
-
                     var content = $"❌ *bent* \n" +
                                   $"User: {user.Mention}. (**{user.Id}**)";
                     var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseId[0]}", Colours.FailColour, user);
