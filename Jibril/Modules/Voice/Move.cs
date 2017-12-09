@@ -18,7 +18,6 @@ namespace Jibril.Modules.Voice
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         [UserMustBeInVoice]
-        [RequireContext(ContextType.Guild)]
         public async Task MoveUser(IGuildUser user)
         {
             try
@@ -35,7 +34,7 @@ namespace Jibril.Modules.Voice
                     }
                     catch (Exception a)
                     {
-                        Console.Write(a);
+                        Console.Write(a.Message);
                     }
                 }
 
