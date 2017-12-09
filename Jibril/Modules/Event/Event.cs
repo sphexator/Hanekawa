@@ -8,7 +8,7 @@ using Jibril.Preconditions;
 
 namespace Jibril.Modules.Event
 {
-    public class Event : InteractiveBase
+    public class Event : ModuleBase<SocketCommandContext>
     {
         [Command("ping")]
         [RequiredChannel(346429829316476928)]

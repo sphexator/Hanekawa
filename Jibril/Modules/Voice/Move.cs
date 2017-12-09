@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Preconditions;
 using System.Linq;
+using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Services;
 using Jibril.Services.Common;
@@ -18,7 +19,7 @@ namespace Jibril.Modules.Voice
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         [UserMustBeInVoice]
-        public async Task MoveUser(IGuildUser user)
+        public async Task MoveUser(SocketGuildUser user)
         {
             try
             {
@@ -48,7 +49,7 @@ namespace Jibril.Modules.Voice
                     var confirmEmbed = EmbedGenerator.DefaultEmbed(
                         $"{Context.User.Mention} wants to move {user.Mention}, do you accept? (Y/N)", Colours.DefaultColour);
                     await ReplyAsync("", false, confirmEmbed.Build());
-                    var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id));
+                    var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(20));
                     if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if ((Context.User as IVoiceState) == null) return;

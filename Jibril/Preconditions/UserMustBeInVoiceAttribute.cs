@@ -13,10 +13,14 @@ namespace Jibril.Preconditions
         /// <inheritdoc />
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            var current = (context.User as IVoiceState)?.VoiceChannel?.Id;
-            return (await context.Guild.GetVoiceChannelsAsync()).Any(v => v.Id != current)
+            if((context.User as IVoiceState) == null) return PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.");
+            return PreconditionResult.FromSuccess();
+            /*
+            var current = (context.User as IVoiceState) == null;
+            return (await context.Guild.GetVoiceChannelsAsync()).Any(v => v.Id == current)
                 ? PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.")
                 : PreconditionResult.FromSuccess();
+                */
         }
     }
 }
