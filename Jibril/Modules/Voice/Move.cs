@@ -28,9 +28,12 @@ namespace Jibril.Modules.Voice
                 {
                     try
                     {
-                        var dbuser = vcUsers[i].FirstOrDefault();
-                        var dataUser = DatabaseService.UserData(dbuser);
-                        users.AddRange(dataUser);
+                        if (vcUsers[i].First().IsBot != true && vcUsers[i].First() != null)
+                        {
+                            var dbuser = vcUsers[i].First();
+                            var dataUser = DatabaseService.UserData(dbuser);
+                            users.AddRange(dataUser);
+                        }
                     }
                     catch (Exception a)
                     {
