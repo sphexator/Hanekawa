@@ -37,7 +37,7 @@ namespace Jibril.Modules.Voice
                         Console.Write(a.Message);
                     }
                 }
-
+                 
                 var mu = users.OrderByDescending(x => x.Voice_timer).First();
                 var mui = Convert.ToUInt64(mu.UserId);
                 if (mui == Context.User.Id)
