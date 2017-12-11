@@ -33,6 +33,7 @@
     <PackageReference Include="MySql.Data" Version="8.0.9-dmr" />
     <PackageReference Include="MySql.Data.Entity" Version="7.0.7-m61" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1-beta1" />
+    <PackageReference Include="Quartz" Version="3.0.0-beta1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0001" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0001" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />

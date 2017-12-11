@@ -4,53 +4,72 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 using Discord.WebSocket;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Quartz;
 using File = Google.Apis.Drive.v3.Data.File;
 
 namespace Jibril.Services.Automate.PicDump
 {
-    public class PictureSpam
+    public class PostPictures : IJob
     {
         private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
+        private IServiceProvider _service;
+        private readonly IJobExecutionContext _context;
 
-        public PictureSpam(IServiceProvider provider, DiscordSocketClient discord)
+        public PostPictures(DiscordSocketClient discord, IServiceProvider service)
         {
             _discord = discord;
-            _provider = provider;
+            _service = service;
+            Execute(_context);
         }
 
-        public Task DownloadFiles()
+        public Task Execute(IJobExecutionContext context)
+        {
+            Post();
+            return Task.CompletedTask;
+        }
+
+        private Task Post()
         {
             var _ = Task.Run(async () =>
             {
-                // Connect to Google
-                var service = AuthenticateOauth(@"client_secret.json", "test");
-                //List the files with the word 'make' in the name.
-                var files = List.ListFiles(service);
-                foreach (var item in files.Files)
-                    // download each file
-                    DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
-                var guild = _discord.GetGuild(339370914724446208);
-                var Pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
-                foreach (var file in Pictures.GetFiles())
+                try
                 {
-                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
-                    await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
-                    await Task.Delay(2500);
+                    // Connect to Google
+                    var service = AuthenticateOauth(@"client_secret.json", "test");
+                    //List the files with the word 'make' in the name.
+                    var files = List.ListFiles(service);
+                    foreach (var item in files.Files)
+                        // download each file
+                        DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
+                    var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
+                    var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
+                    foreach (var file in pictures.GetFiles())
+                    {
+                        var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
+                        await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
+                        await Task.Delay(2500);
+                    }
+                    foreach (var file in pictures.GetFiles())
+                        file.Delete();
                 }
-                foreach (var file in Pictures.GetFiles())
-                    file.Delete();
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+
             });
             return Task.CompletedTask;
         }
 
-        public static DriveService AuthenticateOauth(string clientSecretJson, string userName)
+        private static DriveService AuthenticateOauth(string clientSecretJson, string userName)
         {
             try
             {
@@ -108,21 +127,21 @@ namespace Jibril.Services.Automate.PicDump
                 switch (progress.Status)
                 {
                     case DownloadStatus.Downloading:
-                    {
-                        Console.WriteLine(progress.BytesDownloaded);
-                        break;
-                    }
+                        {
+                            Console.WriteLine(progress.BytesDownloaded);
+                            break;
+                        }
                     case DownloadStatus.Completed:
-                    {
-                        Console.WriteLine("Download complete.");
-                        SaveStream(stream, saveTo);
-                        break;
-                    }
+                        {
+                            Console.WriteLine("Download complete.");
+                            SaveStream(stream, saveTo);
+                            break;
+                        }
                     case DownloadStatus.Failed:
-                    {
-                        Console.WriteLine("Download failed.");
-                        break;
-                    }
+                        {
+                            Console.WriteLine("Download failed.");
+                            break;
+                        }
                 }
             };
             request.Download(stream);

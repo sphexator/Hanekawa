@@ -35,7 +35,6 @@ namespace Jibril.Services
 
             var argPos = 0;
             if (!message.HasCharPrefix('!', ref argPos)) return;
-
             var context = new SocketCommandContext(_discord, message);
             var result = await _commands.ExecuteAsync(context, argPos, _provider);
         }

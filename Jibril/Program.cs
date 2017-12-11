@@ -1,11 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services;
+using Jibril.Services.Automate;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.AutoModerator;
 using Jibril.Services.Level;
@@ -42,7 +46,8 @@ namespace Jibril
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
-            services.GetRequiredService<PictureSpam>();
+            services.GetRequiredService<PostPictures>();
+            services.GetRequiredService<JobScheduler>();
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -60,11 +65,12 @@ namespace Jibril
                 .AddSingleton<WelcomeService>()
                 .AddSingleton<ReactionService>()
                 .AddSingleton<ModerationService>()
-                .AddSingleton<PictureSpam>()
+                .AddSingleton<PostPictures>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
                 .AddSingleton<InteractiveService>()
+                .AddSingleton<JobScheduler>()
                 .BuildServiceProvider();
         }
 
