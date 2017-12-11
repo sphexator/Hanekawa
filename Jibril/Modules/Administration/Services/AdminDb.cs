@@ -167,6 +167,43 @@ namespace Jibril.Modules.Administration.Services
             return result;
         }
 
+        // Adding bans + timestamp
+        public static void AddBan(IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddDays(7)}', '1')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void UpdateBan(IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date}', unbanDate = {DateTime.Now.Date.AddDays(7)}, counter = counter + '1' WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void UpdateBanPerm(IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(3)}', counter = counter + '1' WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static List<ulong> GetBannedUsers()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM banlog WHERE date = '{DateTime.Now.Date}'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var user = (ulong) reader["user_id"];
+                result.Add(user);
+            }
+            database.CloseConnection();
+            return result;
+        }
+
         // ----------------- Get text from db----------------- //
 
         public static List<string> GetRules(string guildid)
