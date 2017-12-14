@@ -35,18 +35,18 @@ namespace Jibril.Services.Automate
                     .Build();
 
                 // Trigger the job to run now, and then repeat every 10 seconds
-                /*
+                
                 ITrigger trigger = TriggerBuilder.Create()
                     .WithIdentity("trigger1", "group1")
                     .WithCronSchedule("0 0 18 ? * SAT")
                     .Build();
-                    */
-                
+                    
+                /*
                 ITrigger trigger = TriggerBuilder.Create()
                     .WithIdentity("trigger1", "group1")
                     .StartNow()
                     .Build();
-                
+                */
                 // Tell quartz to schedule the job using our trigger
                 await scheduler.ScheduleJob(job, trigger);
 

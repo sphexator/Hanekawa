@@ -54,10 +54,10 @@ namespace Jibril.Services.Automate.PicDump
                         // download each file
                         DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
 
-                    var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
+                    var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
 
-                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
-                    var ech = guild.Channels.First(x => x.Id == 390885767985233920) as SocketTextChannel;
+                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
+                    var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
 
                     var amount = files.Files.Count;
                     var eventMsg = DefaultEmbed(amount);
