@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -12,6 +14,8 @@ using Google.Apis.Download;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
+using Jibril.Data.Variables;
+using Jibril.Modules.Administration.List;
 using Quartz;
 using File = Google.Apis.Drive.v3.Data.File;
 
@@ -49,14 +53,40 @@ namespace Jibril.Services.Automate.PicDump
                     foreach (var item in files.Files)
                         // download each file
                         DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
+
                     var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
+
+                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
+                    var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
+
+                    var amount = files.Files.Count;
+                    var eventMsg = DefaultEmbed(amount);
+                    var updEMsg = UpdateEmbed(eventMsg, amount);
+
+                    var emsg = await ech.SendMessageAsync("", false, eventMsg.Build());
+
                     var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
                     foreach (var file in pictures.GetFiles())
                     {
-                        var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
-                        await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
-                        await Task.Delay(2500);
+                        try
+                        {
+                            await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
+                            await Task.Delay(5000);
+                        }
+                        catch
+                        {
+                            // Ignore
+                        }
                     }
+
+                    var startPath = @"Data\Images\PictureSpam\Start";
+                    var zipPath = @"Data\Images\PictureSpam\result.zip";
+                    ZipFile.CreateFromDirectory(startPath, zipPath);
+                    var finalMsg = await ch.SendFileAsync(zipPath, "");
+                    await finalMsg.PinAsync();
+                    await Task.Delay(250);
+                    await emsg.ModifyAsync(m => m.Embed = updEMsg.Build());
+
                     foreach (var file in pictures.GetFiles())
                         file.Delete();
                 }
@@ -153,6 +183,58 @@ namespace Jibril.Services.Automate.PicDump
             {
                 stream.WriteTo(file);
             }
+        }
+
+        private static EmbedBuilder DefaultEmbed(int amount)
+        {
+            var content = $"Picture dump event \n" +
+                          $"These pictures are both NSFW & SFW. A zip file with all pics will be linked at the end. \n" +
+                          $"\n" +
+                          $"To gain access to the picture dump channel, head to #roles and do !picdump";
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.DefaultColour),
+                Description = content
+            };
+            var status = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Status",
+                Value = "In progress"
+            };
+            var picAmount = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Amount",
+                Value = $"{amount}"
+            };
+            embed.AddField(status);
+            embed.AddField(picAmount);
+            return embed;
+        }
+
+        private static EmbedBuilder UpdateEmbed(EmbedBuilder embed, int amount)
+        {
+            var updEmbed = new EmbedBuilder
+            {
+                Color = embed.Color,
+                Description = embed.Description
+            };
+            var status = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Status",
+                Value = "Done"
+            };
+            var picAmount = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Amount",
+                Value = $"{amount}"
+            };
+            embed.AddField(status);
+            embed.AddField(picAmount);
+            return updEmbed;
         }
     }
 }
