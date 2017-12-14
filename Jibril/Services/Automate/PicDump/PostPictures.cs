@@ -57,7 +57,7 @@ namespace Jibril.Services.Automate.PicDump
                     var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
 
                     var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
-                    var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
+                    var ech = guild.Channels.First(x => x.Id == 390885767985233920) as SocketTextChannel;
 
                     var amount = files.Files.Count;
                     var eventMsg = DefaultEmbed(amount);
@@ -78,11 +78,9 @@ namespace Jibril.Services.Automate.PicDump
                             // Ignore
                         }
                     }
-
-                    var startPath = @"Data\Images\PictureSpam\Start";
-                    var zipPath = @"Data\Images\PictureSpam\result.zip";
-                    ZipFile.CreateFromDirectory(startPath, zipPath);
-                    var finalMsg = await ch.SendFileAsync(zipPath, "");
+                    await CompressFiles();
+                    await Task.Delay(500);
+                    var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
                     await finalMsg.PinAsync();
                     await Task.Delay(250);
                     await emsg.ModifyAsync(m => m.Embed = updEMsg.Build());
@@ -232,9 +230,21 @@ namespace Jibril.Services.Automate.PicDump
                 Name = "Amount",
                 Value = $"{amount}"
             };
-            embed.AddField(status);
-            embed.AddField(picAmount);
+            updEmbed.AddField(status);
+            updEmbed.AddField(picAmount);
             return updEmbed;
+        }
+
+        private Task CompressFiles()
+        {
+            var _ = Task.Run(async () =>
+            {
+                var startPath = @"Data\Images\PictureSpam\Start";
+                var zipPath = @"Data\Images\PictureSpam\result.zip";
+                ZipFile.CreateFromDirectory(startPath, zipPath);
+                await Task.Delay(500);
+            });
+            return Task.CompletedTask;
         }
     }
 }
