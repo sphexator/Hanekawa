@@ -28,7 +28,7 @@ namespace Jibril.Services.Automate.PicDump
         {
             this._discord = discord;
             this._service = service;
-            Execute(_context);
+            //Execute(_context);
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -90,10 +90,17 @@ namespace Jibril.Services.Automate.PicDump
                         {
                             // Ignore
                         }
-                    await CompressFiles();
-                    await Task.Delay(500);
-                    var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
-                    await finalMsg.PinAsync();
+                    try
+                    {
+                        await CompressFiles();
+                        await Task.Delay((1000 * 60) * 5);
+                        var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
+                        await finalMsg.PinAsync();
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
                     await Task.Delay(250);
                     await emsg.ModifyAsync(m => m.Embed = updEMsg.Build());
 
