@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
 using Discord.WebSocket;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Download;
@@ -15,7 +13,6 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Jibril.Data.Variables;
-using Jibril.Modules.Administration.List;
 using Quartz;
 using File = Google.Apis.Drive.v3.Data.File;
 
@@ -23,14 +20,14 @@ namespace Jibril.Services.Automate.PicDump
 {
     public class PostPictures : IJob
     {
+        private readonly IJobExecutionContext _context;
         private readonly DiscordSocketClient _discord;
         private IServiceProvider _service;
-        private readonly IJobExecutionContext _context;
 
-        public PostPictures(DiscordSocketClient discord, IServiceProvider service)
+        public PostPictures(DiscordSocketClient discord, IServiceProvider service, JobScheduler scheduler)
         {
-            _discord = discord;
-            _service = service;
+            this._discord = discord;
+            this._service = service;
             Execute(_context);
         }
 
@@ -49,25 +46,41 @@ namespace Jibril.Services.Automate.PicDump
                     // Connect to Google
                     var service = AuthenticateOauth(@"client_secret.json", "test");
                     //List the files with the word 'make' in the name.
-                    var files = List.ListFiles(service);
+                    var files = List.ListFiles(service, new List.FilesListOptionalParms
+                    {
+                        PageSize = 1000,
+                    });
                     foreach (var item in files.Files)
                         // download each file
                         DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
+                    Console.WriteLine(files.Files.Count);
+                    if (files.NextPageToken != null)
+                    {
+                        var Nextfiles = List.ListFiles(service, new List.FilesListOptionalParms
+                        {
+                            PageSize = 1000,
+                            PageToken = files.NextPageToken
+                        });
+                        Console.WriteLine(Nextfiles.Files.Count);
+                        foreach (var item2 in Nextfiles.Files)
+                            DownloadFile(service, item2, string.Format(@"Data\Images\PictureSpam\{0}", item2.Name));
+                    }
 
                     var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
-
+                    //Picdump
                     var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
+                    //Event channel
                     var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
 
-                    var amount = files.Files.Count;
+                    var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
+                    var amount = pictures.GetFiles().Length;
                     var eventMsg = DefaultEmbed(amount);
                     var updEMsg = UpdateEmbed(eventMsg, amount);
 
                     var emsg = await ech.SendMessageAsync("", false, eventMsg.Build());
 
-                    var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
+
                     foreach (var file in pictures.GetFiles())
-                    {
                         try
                         {
                             await ch.SendFileAsync(@"Data\Images\PictureSpam\" + file.Name, "");
@@ -77,7 +90,6 @@ namespace Jibril.Services.Automate.PicDump
                         {
                             // Ignore
                         }
-                    }
                     await CompressFiles();
                     await Task.Delay(500);
                     var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
@@ -87,12 +99,12 @@ namespace Jibril.Services.Automate.PicDump
 
                     foreach (var file in pictures.GetFiles())
                         file.Delete();
+
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
                 }
-
             });
             return Task.CompletedTask;
         }
@@ -239,7 +251,7 @@ namespace Jibril.Services.Automate.PicDump
         {
             var _ = Task.Run(async () =>
             {
-                var startPath = @"Data\Images\PictureSpam\Start";
+                var startPath = @"Data\Images\PictureSpam\";
                 var zipPath = @"Data\Images\PictureSpam\result.zip";
                 ZipFile.CreateFromDirectory(startPath, zipPath);
                 await Task.Delay(500);

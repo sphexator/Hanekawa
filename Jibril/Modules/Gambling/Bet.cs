@@ -89,16 +89,16 @@ namespace Jibril.Modules.Gambling
                     var award = cward * 5;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed(
-                        $"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n" +
+                        $"Congratulations {user.Mention}!, You made a total of ${award} off ${amount}!\n" +
                         $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OKColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
                 {
-                    var betlost = Convert.ToInt32(bet);
+                    var betlost = Convert.ToInt32(amount);
                     GambleDB.RemoveCredit(user, betlost);
                     var embed = EmbedGenerator.DefaultEmbed(
-                        $"Sorry **{user.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
+                        $"Sorry **{user.Mention}**, You rolled **{userRoll}** and lost ${amount}\n " +
                         $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.FailColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }

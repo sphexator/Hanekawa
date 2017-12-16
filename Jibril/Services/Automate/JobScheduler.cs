@@ -14,47 +14,37 @@ namespace Jibril.Services.Automate
 {
     public class JobScheduler
     {
+        private IServiceProvider _service;
+        public JobScheduler(IServiceProvider service)
+        {
+            this._service = service;
+            SchedulerTask().ConfigureAwait(false);
+        }
         public static async Task SchedulerTask()
         {
             try
             {
-                // Grab the Scheduler instance from the Factory
                 NameValueCollection props = new NameValueCollection
                 {
                     { "quartz.serializer.type", "binary" }
                 };
-                StdSchedulerFactory factory = new StdSchedulerFactory(props);
-                IScheduler scheduler = await factory.GetScheduler();
+                var factory = new StdSchedulerFactory(props);
+                var scheduler = await factory.GetScheduler();
 
-                // and start it off
                 await scheduler.Start();
 
-                // define the job and tie it to our HelloJob class
-                IJobDetail job = JobBuilder.Create<PostPictures>()
+                var job = JobBuilder.Create<PostPictures>()
                     .WithIdentity("job1", "group1")
                     .Build();
-
-                // Trigger the job to run now, and then repeat every 10 seconds
                 
-                ITrigger trigger = TriggerBuilder.Create()
+                var trigger = TriggerBuilder.Create()
                     .WithIdentity("trigger1", "group1")
-                    .WithCronSchedule("0 0 18 ? * SAT")
+                    //.StartNow()
+                    .WithSchedule(CronScheduleBuilder.AtHourAndMinuteOnGivenDaysOfWeek(18, 15, DayOfWeek.Saturday))
+                    //.WithCronSchedule("0 5 18 ? * SAT")
                     .Build();
-                    
-                /*
-                ITrigger trigger = TriggerBuilder.Create()
-                    .WithIdentity("trigger1", "group1")
-                    .StartNow()
-                    .Build();
-                */
-                // Tell quartz to schedule the job using our trigger
+
                 await scheduler.ScheduleJob(job, trigger);
-
-                // some sleep to show what's happening
-                await Task.Delay(TimeSpan.FromSeconds(60));
-
-                // and last shut down the scheduler when you are ready to close your program
-                await scheduler.Shutdown();
             }
             catch (SchedulerException se)
             {
@@ -62,7 +52,6 @@ namespace Jibril.Services.Automate
             }
         }
 
-        // simple log provider to get something to the console
         private class ConsoleLogProvider : ILogProvider
         {
             public Logger GetLogger(string name)

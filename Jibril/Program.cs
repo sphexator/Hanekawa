@@ -46,8 +46,8 @@ namespace Jibril
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
-            services.GetRequiredService<PostPictures>();
             services.GetRequiredService<JobScheduler>();
+            services.GetRequiredService<PostPictures>();
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -65,12 +65,12 @@ namespace Jibril
                 .AddSingleton<WelcomeService>()
                 .AddSingleton<ReactionService>()
                 .AddSingleton<ModerationService>()
+                .AddSingleton<JobScheduler>()
                 .AddSingleton<PostPictures>()
                 .AddLogging()
                 .AddSingleton<LogService>()
                 .AddSingleton(_config)
                 .AddSingleton<InteractiveService>()
-                .AddSingleton<JobScheduler>()
                 .BuildServiceProvider();
         }
 
