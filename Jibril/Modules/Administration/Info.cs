@@ -14,7 +14,7 @@ namespace Jibril.Modules.Administration
     {
         [Command("ginfo", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireOwner]
         public async Task PostRules()
         {
             var guildid = Context.Guild.ToString();
@@ -24,39 +24,52 @@ namespace Jibril.Modules.Administration
             var rng = new Random();
 
             var adminRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Admiral") as IRole;
-            var ModRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Secretary") as IRole;
-            var TrialRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Assistant Secretary") as IRole;
+            if (adminRole == null) throw new ArgumentNullException(nameof(adminRole));
+            var modRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Secretary") as IRole;
+            if (modRole == null) throw new ArgumentNullException(nameof(modRole));
+            var trialRole = Context.Guild.Roles.FirstOrDefault(x => x.Name == "Assistant Secretary") as IRole;
+            if (trialRole == null) throw new ArgumentNullException(nameof(trialRole));
 
             var guild = Context.Guild as IGuild;
             var usrs = (await guild.GetUsersAsync()).ToArray();
 
             var admins = usrs.Where(x => x.RoleIds.Contains(adminRole.Id)).ToArray();
-            var Mod = usrs.Where(x => x.RoleIds.Contains(ModRole.Id)).ToArray();
-            var Trial = usrs.Where(x => x.RoleIds.Contains(TrialRole.Id)).ToArray();
+            var mod = usrs.Where(x => x.RoleIds.Contains(modRole.Id)).ToArray();
+            var trial = usrs.Where(x => x.RoleIds.Contains(trialRole.Id)).ToArray();
 
-            var Adminstaff = string.Join("\n ", admins
+            var adminstaffmen = string.Join("\n ", admins.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
-
-            var ModStaff = string.Join("\n ", Mod
+            var modStaffmen = string.Join($"\n ", mod.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
-
-            var TrialStaff = string.Join("\n ", Trial
+            var trialStaffmen = string.Join("\n ", trial.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
-
-            var embed = EmbedGenerator.DefaultEmbed($"Staff: \n" +
-                                                    $"{Adminstaff}\n" +
-                                                    $"\n" +
-                                                    $"{ModStaff}\n" +
-                                                    $"\n" +
-                                                    $"{TrialStaff}" +
-                                                    $"\n"
+            var levelRoles = $"__**Staff:**__ \n" +
+                             $"{adminstaffmen}\n" +
+                             $"\n" +
+                             $"{modStaffmen}\n" +
+                             $"{trialStaffmen}" +
+                             $"\n" +
+                             $"\n" +
+                             $"__**Level roles & requirement:**__\n" +
+                             $"Level 2 = Ship \n" +
+                             $"Level 5 = Light Cruiser \n" +
+                             $"Level 10 = Heavy Cruiser \n" +
+                             $"Level 20 = Destroyer \n" +
+                             $"Level 30 = Aircraft Carrier \n" +
+                             $"Level 40 = Battleship \n" +
+                             $"Level 50 = Aviation Cruiser \n" +
+                             $"Level 65 = Aviation Battleship \n" +
+                             $"Level 80 = Training Cruiser";
+            var embed = EmbedGenerator.DefaultEmbed(levelRoles
                 , Colours.DefaultColour);
-
             // image
+            await Context.Channel.SendFileAsync(@"Data/Images/Info/RULES.png");
             await ReplyAsync(rule[0]);
             // Image
-            await ReplyAsync(faq[0]);
-            await ReplyAsync("", false, embed.Build());
+            await Context.Channel.SendFileAsync(@"Data/Images/Info/FAQ.png");
+            await ReplyAsync(faq[0], false, embed.Build());
+            await ReplyAsync("https://discord.gg/9tq4xNT");
+            await Context.Message.DeleteAsync();
         }
     }
 }
