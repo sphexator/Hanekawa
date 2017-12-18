@@ -37,11 +37,11 @@ namespace Jibril.Modules.Administration
             var mod = usrs.Where(x => x.RoleIds.Contains(modRole.Id)).ToArray();
             var trial = usrs.Where(x => x.RoleIds.Contains(trialRole.Id)).ToArray();
 
-            var adminstaffmen = string.Join("\n ", admins.Select(x => x.Mention)
+            var adminstaffmen = string.Join("\n", admins.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
-            var modStaffmen = string.Join($"\n ", mod.Select(x => x.Mention)
+            var modStaffmen = string.Join($"\n", mod.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
-            var trialStaffmen = string.Join("\n ", trial.Select(x => x.Mention)
+            var trialStaffmen = string.Join("\n", trial.Select(x => x.Mention)
                 .OrderBy(x => rng.Next()).Take(50));
             var levelRoles = $"__**Staff:**__ \n" +
                              $"{adminstaffmen}\n" +
@@ -60,15 +60,15 @@ namespace Jibril.Modules.Administration
                              $"Level 50 = Aviation Cruiser \n" +
                              $"Level 65 = Aviation Battleship \n" +
                              $"Level 80 = Training Cruiser";
-            var embed = EmbedGenerator.DefaultEmbed(levelRoles
-                , Colours.DefaultColour);
             // image
             await Context.Channel.SendFileAsync(@"Data/Images/Info/RULES.png");
             await ReplyAsync(rule[0]);
             // Image
             await Context.Channel.SendFileAsync(@"Data/Images/Info/FAQ.png");
-            await ReplyAsync(faq[0], false, embed.Build());
-            await ReplyAsync("https://discord.gg/9tq4xNT");
+            await ReplyAsync(faq[0]);
+            await ReplyAsync($"{levelRoles}\n" +
+                             $"\n" +
+                             $"https://discord.gg/9tq4xNT");
             await Context.Message.DeleteAsync();
         }
     }
