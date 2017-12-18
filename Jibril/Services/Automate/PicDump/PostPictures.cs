@@ -26,8 +26,8 @@ namespace Jibril.Services.Automate.PicDump
 
         public PostPictures(DiscordSocketClient discord, IServiceProvider service, JobScheduler scheduler)
         {
-            this._discord = discord;
-            this._service = service;
+            _discord = discord;
+            _service = service;
             //Execute(_context);
         }
 
@@ -48,7 +48,7 @@ namespace Jibril.Services.Automate.PicDump
                     //List the files with the word 'make' in the name.
                     var files = List.ListFiles(service, new List.FilesListOptionalParms
                     {
-                        PageSize = 1000,
+                        PageSize = 1000
                     });
                     foreach (var item in files.Files)
                         // download each file
@@ -93,7 +93,7 @@ namespace Jibril.Services.Automate.PicDump
                     try
                     {
                         await CompressFiles();
-                        await Task.Delay((1000 * 60) * 5);
+                        await Task.Delay(1000 * 60 * 5);
                         var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
                         await finalMsg.PinAsync();
                     }
@@ -106,7 +106,6 @@ namespace Jibril.Services.Automate.PicDump
 
                     foreach (var file in pictures.GetFiles())
                         file.Delete();
-
                 }
                 catch (Exception e)
                 {
@@ -174,21 +173,21 @@ namespace Jibril.Services.Automate.PicDump
                 switch (progress.Status)
                 {
                     case DownloadStatus.Downloading:
-                        {
-                            Console.WriteLine(progress.BytesDownloaded);
-                            break;
-                        }
+                    {
+                        Console.WriteLine(progress.BytesDownloaded);
+                        break;
+                    }
                     case DownloadStatus.Completed:
-                        {
-                            Console.WriteLine("Download complete.");
-                            SaveStream(stream, saveTo);
-                            break;
-                        }
+                    {
+                        Console.WriteLine("Download complete.");
+                        SaveStream(stream, saveTo);
+                        break;
+                    }
                     case DownloadStatus.Failed:
-                        {
-                            Console.WriteLine("Download failed.");
-                            break;
-                        }
+                    {
+                        Console.WriteLine("Download failed.");
+                        break;
+                    }
                 }
             };
             request.Download(stream);
