@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -8,6 +10,7 @@ using Discord.WebSocket;
 using Jibril.Services;
 using Jibril.Services.Automate;
 using Jibril.Services.Automate.PicDump;
+using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
@@ -15,6 +18,10 @@ using Jibril.Services.Reaction;
 using Jibril.Services.Welcome;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 
 namespace Jibril
 {
@@ -32,7 +39,7 @@ namespace Jibril
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                MessageCacheSize = 100                
+                MessageCacheSize = 100
             });
             _config = BuildConfig();
 
@@ -44,7 +51,12 @@ namespace Jibril
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<JobScheduler>();
-            //services.GetRequiredService<PostPictures>();
+            services.GetRequiredService<PostPictures>();
+
+            var scheduler = services.GetService<IScheduler>();
+
+            QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
+            //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 5 18 ? * SAT");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -54,21 +66,24 @@ namespace Jibril
 
         private IServiceProvider ConfigureServices()
         {
-            return new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton<CommandService>()
-                .AddSingleton<CommandHandlingService>()
-                .AddSingleton<LevelingService>()
-                .AddSingleton<WelcomeService>()
-                .AddSingleton<ReactionService>()
-                .AddSingleton<ModerationService>()
-                .AddSingleton<JobScheduler>()
-                .AddSingleton<PostPictures>()
-                .AddLogging()
-                .AddSingleton<LogService>()
-                .AddSingleton(_config)
-                .AddSingleton<InteractiveService>()
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.UseQuartz(typeof(PostPictures));
+            services.AddSingleton(_client);
+            services.AddSingleton<CommandService>();
+            services.AddSingleton<CommandHandlingService>();
+            services.AddSingleton<LevelingService>();
+            services.AddSingleton<WelcomeService>();
+            services.AddSingleton<ReactionService>();
+            services.AddSingleton<ModerationService>();
+            services.AddSingleton<JobScheduler>();
+            services.AddSingleton<PostPictures>();
+            services.AddLogging();
+            services.AddSingleton<LogService>();
+            services.AddSingleton(_config);
+            services.AddSingleton<InteractiveService>();
+            services.AddSingleton<QuartzJonFactory>();
+            services.AddSingleton<IJobFactory, QuartzJonFactory>();
+            return services.BuildServiceProvider();
         }
 
         private IConfiguration BuildConfig()

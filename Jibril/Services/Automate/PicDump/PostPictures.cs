@@ -20,15 +20,13 @@ namespace Jibril.Services.Automate.PicDump
 {
     public class PostPictures : IJob
     {
-        private readonly IJobExecutionContext _context;
         private readonly DiscordSocketClient _discord;
         private IServiceProvider _service;
 
-        public PostPictures(DiscordSocketClient discord, IServiceProvider service, JobScheduler scheduler)
+        public PostPictures(DiscordSocketClient discord, IServiceProvider service)
         {
             _discord = discord;
             _service = service;
-            //Execute(_context);
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -48,29 +46,30 @@ namespace Jibril.Services.Automate.PicDump
                     //List the files with the word 'make' in the name.
                     var files = List.ListFiles(service, new List.FilesListOptionalParms
                     {
-                        PageSize = 1000
+                        PageSize = 5
                     });
                     foreach (var item in files.Files)
                         // download each file
                         DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
                     Console.WriteLine(files.Files.Count);
+                    /*
                     if (files.NextPageToken != null)
                     {
                         var Nextfiles = List.ListFiles(service, new List.FilesListOptionalParms
                         {
-                            PageSize = 1000,
+                            PageSize = 10,
                             PageToken = files.NextPageToken
                         });
                         Console.WriteLine(Nextfiles.Files.Count);
                         foreach (var item2 in Nextfiles.Files)
                             DownloadFile(service, item2, string.Format(@"Data\Images\PictureSpam\{0}", item2.Name));
                     }
-
-                    var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
+                    */
+                    var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
                     //Picdump
-                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
+                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
                     //Event channel
-                    var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
+                    var ech = guild.Channels.First(x => x.Id == 390885767985233920) as SocketTextChannel;
 
                     var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
                     var amount = pictures.GetFiles().Length;
