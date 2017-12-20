@@ -37,6 +37,7 @@ namespace Jibril.Services.AutoModerator
                 try
                 {
                     var user = rawMessage.Author as SocketGuildUser;
+                    if (user == null) return;
                     var staffCheck = user.GuildPermissions.ManageMessages;
                     if (staffCheck != true)
                     {
