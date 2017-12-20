@@ -14,7 +14,7 @@ namespace Jibril.Extensions
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex GoogleLink = new Regex(@"(?:goo\.gl|google\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        // https://gift.steamchristmas.com
+
         // Max Character string extension
         public static string Truncate(this string value, int maxChars)
         {
@@ -29,6 +29,11 @@ namespace Jibril.Extensions
         public static bool IsScamLink(this string str)
         {
             return scamFilter.IsMatch(str);
+        }
+
+        public static bool IsGoogleLink(this string str)
+        {
+            return GoogleLink.IsMatch(str);
         }
     }
 }
