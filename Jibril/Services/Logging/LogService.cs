@@ -82,6 +82,7 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
+                    ApplyBanScheduler(user);
                     var time = DateTime.Now;
                     AdminDb.AddActionCase(user, time);
                     var caseId = AdminDb.GetActionCaseID(time);
@@ -277,6 +278,13 @@ namespace Jibril.Services.Logging
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
             return (LogLevel) Math.Abs((int) severity - 5);
+        }
+
+        private static void ApplyBanScheduler(IUser user)
+        {
+            var banCheck = AdminDb.CheckBanList(user);
+            if (banCheck == null) AdminDb.AddBan(user);
+            else AdminDb.UpdateBanPerm(user);
         }
     }
 }

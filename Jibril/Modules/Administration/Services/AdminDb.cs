@@ -199,10 +199,19 @@ namespace Jibril.Modules.Administration.Services
         public static void UpdateBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(3)}', counter = counter + '1' WHERE user_id = {user.Id}";
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
+        public static void AdminBanPerm(IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}' WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static List<ulong> GetBannedUsers()
         {
             var result = new List<ulong>();
