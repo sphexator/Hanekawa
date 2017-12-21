@@ -133,5 +133,56 @@ namespace Jibril.Services
             database.CloseConnection();
             return result;
         }
+
+        public static List<UserData> UserData(ulong Id)
+        {
+            var result = new List<UserData>();
+            var database = new DatabaseService("hanekawa");
+            var str = $"SELECT * FROM exp WHERE user_id = '{Id}'";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var userId = (string)exec["user_id"];
+                var userName = (string)exec["username"];
+                var currentTokens = (uint)exec["tokens"];
+                var event_tokens = (uint)exec["event_tokens"];
+                var level = (int)exec["level"];
+                var exp = (int)exec["xp"];
+                var totalExp = (int)exec["total_xp"];
+                var daily = (DateTime)exec["daily"];
+                var cooldown = (DateTime)exec["cooldown"];
+                var voice_timer = (DateTime)exec["voice_timer"];
+                var joinDate = (DateTime)exec["joindate"];
+                var fleetName = (string)exec["fleetName"];
+                var shipClass = (string)exec["shipClass"];
+                var profilepic = (string)exec["profilepic"];
+                var gameCD = (DateTime)exec["game_cooldown"];
+                var gambleCD = (DateTime)exec["gambling_cooldown"];
+                var hasrole = (string)exec["hasrole"];
+
+                result.Add(new UserData
+                {
+                    UserId = userId,
+                    Username = userName,
+                    Tokens = currentTokens,
+                    Event_tokens = event_tokens,
+                    Level = level,
+                    Xp = exp,
+                    Total_xp = totalExp,
+                    Daily = daily,
+                    Cooldown = cooldown,
+                    Voice_timer = voice_timer,
+                    JoinDateTime = joinDate,
+                    FleetName = fleetName,
+                    ShipClass = shipClass,
+                    Profilepic = profilepic,
+                    GameCD = gameCD,
+                    BetCD = gambleCD,
+                    Hasrole = hasrole
+                });
+            }
+            database.CloseConnection();
+            return result;
+        }
     }
 }

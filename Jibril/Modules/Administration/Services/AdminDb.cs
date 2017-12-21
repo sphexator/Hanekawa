@@ -167,6 +167,28 @@ namespace Jibril.Modules.Administration.Services
             return result;
         }
 
+        public static List<ActionCase> ActionCaseList(uint casenr)
+        {
+            var result = new List<ActionCase>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM modlog WHERE id = '{casenr}'";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var userid = (string) reader["user_id"];
+                var msgid = (string) reader["msgid"];
+
+                result.Add(new ActionCase
+                {
+                    User_id = userid,
+                    Msgid = msgid
+                });
+            }
+            database.CloseConnection();
+            return result;
+        }
+
         // Adding bans + timestamp
         public static List<ulong> CheckBanList(IUser user)
         {

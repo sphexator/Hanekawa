@@ -2,20 +2,23 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Modules.Administration.Services;
+using Jibril.Services;
 
 namespace Jibril.Modules.Administration
 {
-    public class ActionReason : ModuleBase<SocketCommandContext>
+    public class ActionReason : InteractiveBase
     {
         [Command("reason", RunMode = RunMode.Async)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ApplyReason(uint id, [Remainder] string reason)
         {
-            var msgIdStr = AdminDb.ActionCaseMessage(id);
-            var msgId = Convert.ToUInt64(msgIdStr[0]);
+            var msgIdStr = AdminDb.ActionCaseList(id);
+            var msgId = Convert.ToUInt64(msgIdStr[0].Msgid);
+            var usrId = Convert.ToUInt64(msgIdStr[0].User_id);
             var ch = Context.Guild.Channels.FirstOrDefault(x => x.Id == 339381104534355970) as ITextChannel;
             var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
@@ -47,6 +50,7 @@ namespace Jibril.Modules.Administration
 
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+
         }
     }
 }
