@@ -47,9 +47,19 @@ namespace Jibril.Modules.Administration
             footer.WithIconUrl(oldMsg.Footer.Value.IconUrl);
 
             updEmbed.WithFooter(footer);
-
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+            var userdata = DatabaseService.UserData(usrId).FirstOrDefault();
+            if (userdata?.Level > 10 && userdata.Level < 25)
+            {
+                await ReplyAsync("Is this a perm. ban? (Y/N)");
+                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
+                if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    AdminDb.UpdateBanPerm(usrId);
+                    await response.DeleteAsync();
+                }
+            }
 
         }
     }

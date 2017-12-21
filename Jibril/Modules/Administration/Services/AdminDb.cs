@@ -236,12 +236,29 @@ namespace Jibril.Modules.Administration.Services
             database.FireCommand(str);
             database.CloseConnection();
         }
+        /// <summary> Updates banlog, sets user to be unbanned in 2 months. </summary>
+        public static void UpdateBanPerm(ulong user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
 
         /// <summary> Admin manual update banlog, sets user to be unbanned in 2 months. </summary>
         public static void AdminBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
             var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}' WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        /// <summary> Admin manual update banlog, sets user to be unbanned in 2 months. </summary>
+        public static void AdminBanPerm(ulong user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}' WHERE user_id = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
