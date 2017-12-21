@@ -19,36 +19,41 @@ namespace Jibril.Modules.Administration
             var msgIdStr = AdminDb.ActionCaseList(id);
             var msgId = Convert.ToUInt64(msgIdStr[0].Msgid);
             var usrId = Convert.ToUInt64(msgIdStr[0].User_id);
-            var ch = Context.Guild.Channels.FirstOrDefault(x => x.Id == 339381104534355970) as ITextChannel;
-            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
-            var oldMsg = updMsg.Embeds.FirstOrDefault();
-
-            var updEmbed = new EmbedBuilder();
-            var footer = new EmbedFooterBuilder();
-
-            updEmbed.Color = oldMsg.Color;
-            updEmbed.Description = oldMsg.Description;
-            updEmbed.AddField(x =>
+            if (Context.Guild.Channels.FirstOrDefault(x => x.Id == 339381104534355970) is ITextChannel ch)
             {
-                x.Name = "Moderator";
-                x.Value = $"{Context.User.Username}";
-                x.IsInline = true;
-            });
-            updEmbed.AddField(x =>
-            {
-                x.Name = "Reason";
-                if (reason != null)
-                    x.Value = $"{reason}";
-                else
-                    x.Value = "No Reason Provided";
-                x.IsInline = true;
-            });
-            footer.WithText(oldMsg.Footer.Value.Text);
-            footer.WithIconUrl(oldMsg.Footer.Value.IconUrl);
+                var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
+                var oldMsg = updMsg?.Embeds.FirstOrDefault();
 
-            updEmbed.WithFooter(footer);
-            await Context.Message.DeleteAsync();
-            await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+                var updEmbed = new EmbedBuilder();
+                var footer = new EmbedFooterBuilder();
+
+                if (oldMsg != null)
+                {
+                    updEmbed.Color = oldMsg.Color;
+                    updEmbed.Description = oldMsg.Description;
+                    updEmbed.AddField(x =>
+                    {
+                        x.Name = "Moderator";
+                        x.Value = $"{Context.User.Username}";
+                        x.IsInline = true;
+                    });
+                    updEmbed.AddField(x =>
+                    {
+                        x.Name = "Reason";
+                        x.Value = reason != null ? $"{reason}" : "No Reason Provided";
+                        x.IsInline = true;
+                    });
+                    if (oldMsg.Footer != null)
+                    {
+                        footer.WithText(oldMsg.Footer.Value.Text);
+                        footer.WithIconUrl(oldMsg.Footer.Value.IconUrl);
+                    }
+                }
+
+                updEmbed.WithFooter(footer);
+                await Context.Message.DeleteAsync();
+                if (updMsg != null) await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+            }
             var userdata = DatabaseService.UserData(usrId).FirstOrDefault();
             if (userdata?.Level > 10 && userdata.Level < 25)
             {
@@ -60,7 +65,6 @@ namespace Jibril.Modules.Administration
                     await response.DeleteAsync();
                 }
             }
-
         }
     }
 }
