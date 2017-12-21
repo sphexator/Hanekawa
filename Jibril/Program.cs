@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services;
-using Jibril.Services.Automate;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
@@ -18,9 +15,7 @@ using Jibril.Services.Reaction;
 using Jibril.Services.Welcome;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
-using Quartz.Impl;
 using Quartz.Spi;
 
 namespace Jibril
@@ -50,13 +45,12 @@ namespace Jibril
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
-            services.GetRequiredService<JobScheduler>();
             services.GetRequiredService<PostPictures>();
 
             var scheduler = services.GetService<IScheduler>();
 
-            QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
-            //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 5 18 ? * SAT");
+            //QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
+            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 5 18 ? * SAT");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -75,7 +69,6 @@ namespace Jibril
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
-            services.AddSingleton<JobScheduler>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();
             services.AddSingleton<LogService>();

@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
-using Quartz.Impl;
-using Quartz.Spi;
 
 namespace Jibril.Services.Automate.Service
 {
@@ -32,6 +25,7 @@ namespace Jibril.Services.Automate.Service
 
             scheduler.ScheduleJob(job, trigger);
         }
+
         public static void StartCronJob<TJob>(IScheduler scheduler, string cron)
             where TJob : IJob
         {
@@ -49,5 +43,4 @@ namespace Jibril.Services.Automate.Service
             scheduler.ScheduleJob(job, trigger);
         }
     }
-
 }

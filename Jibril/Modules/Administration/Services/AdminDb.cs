@@ -168,6 +168,20 @@ namespace Jibril.Modules.Administration.Services
         }
 
         // Adding bans + timestamp
+        public static List<ulong> CheckBanList(IUser user)
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM banlog WHERE user_id = {user.Id}";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var userid = (ulong)reader["user_id"];
+                result.Add(userid);
+            }
+            database.CloseConnection();
+            return result;
+        }
         public static void AddBan(IUser user)
         {
             var database = new AdminDb("hanekawa");

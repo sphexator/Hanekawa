@@ -46,13 +46,13 @@ namespace Jibril.Services.Automate.PicDump
                     //List the files with the word 'make' in the name.
                     var files = List.ListFiles(service, new List.FilesListOptionalParms
                     {
-                        PageSize = 5
+                        PageSize = 1000
                     });
                     foreach (var item in files.Files)
                         // download each file
                         DownloadFile(service, item, string.Format(@"Data\Images\PictureSpam\{0}", item.Name));
                     Console.WriteLine(files.Files.Count);
-                    /*
+
                     if (files.NextPageToken != null)
                     {
                         var Nextfiles = List.ListFiles(service, new List.FilesListOptionalParms
@@ -64,7 +64,7 @@ namespace Jibril.Services.Automate.PicDump
                         foreach (var item2 in Nextfiles.Files)
                             DownloadFile(service, item2, string.Format(@"Data\Images\PictureSpam\{0}", item2.Name));
                     }
-                    */
+
                     var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
                     //Picdump
                     var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
@@ -91,8 +91,8 @@ namespace Jibril.Services.Automate.PicDump
                         }
                     try
                     {
-                        await CompressFiles();
-                        await Task.Delay(1000 * 60 * 5);
+                        CompressFiles();
+                        await Task.Delay(2000);
                         var finalMsg = await ch.SendFileAsync(@"Data\Images\PictureSpam\result.zip", "");
                         await finalMsg.PinAsync();
                     }
@@ -172,21 +172,21 @@ namespace Jibril.Services.Automate.PicDump
                 switch (progress.Status)
                 {
                     case DownloadStatus.Downloading:
-                    {
-                        Console.WriteLine(progress.BytesDownloaded);
-                        break;
-                    }
+                        {
+                            Console.WriteLine(progress.BytesDownloaded);
+                            break;
+                        }
                     case DownloadStatus.Completed:
-                    {
-                        Console.WriteLine("Download complete.");
-                        SaveStream(stream, saveTo);
-                        break;
-                    }
+                        {
+                            Console.WriteLine("Download complete.");
+                            SaveStream(stream, saveTo);
+                            break;
+                        }
                     case DownloadStatus.Failed:
-                    {
-                        Console.WriteLine("Download failed.");
-                        break;
-                    }
+                        {
+                            Console.WriteLine("Download failed.");
+                            break;
+                        }
                 }
             };
             request.Download(stream);
@@ -252,16 +252,11 @@ namespace Jibril.Services.Automate.PicDump
             return updEmbed;
         }
 
-        private Task CompressFiles()
+        private void CompressFiles()
         {
-            var _ = Task.Run(async () =>
-            {
-                var startPath = @"Data\Images\PictureSpam\";
-                var zipPath = @"Data\Images\PictureSpam\result.zip";
-                ZipFile.CreateFromDirectory(startPath, zipPath);
-                await Task.Delay(500);
-            });
-            return Task.CompletedTask;
+            var startPath = @"Data\Images\PictureSpam\";
+            var zipPath = @"Data\Images\PictureSpam\result.zip";
+            ZipFile.CreateFromDirectory(startPath, zipPath);
         }
     }
 }

@@ -98,6 +98,7 @@ namespace Jibril.Services.AutoModerator
                                 var reason = "Character count >= 1500";
                                 var msg = "Too Long Didn't Read.";
                                 var embed = AutoModResponse(user, reason, msg);
+                                embed.ThumbnailUrl = "http://i0.kym-cdn.com/photos/images/original/000/834/934/f64.gif";
 
                                 await ch.SendMessageAsync("", false, embed.Build());
                             }
