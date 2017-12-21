@@ -282,9 +282,28 @@ namespace Jibril.Services.Logging
 
         private static void ApplyBanScheduler(IUser user)
         {
-            var banCheck = AdminDb.CheckBanList(user);
-            if (banCheck == null) AdminDb.AddBan(user);
-            else AdminDb.UpdateBanPerm(user);
+            var userdata = DatabaseService.UserData(user).FirstOrDefault();
+            if (userdata?.Level < 10)
+            {
+                var banCheck = AdminDb.CheckBanList(user);
+                if (banCheck == null)
+                {
+                    AdminDb.AddBanPerm(user);
+                }
+                else AdminDb.UpdateBanPerm(user);
+            }
+            if (userdata?.Level > 10 && userdata.Level < 25)
+            {
+                var banCheck = AdminDb.CheckBanList(user);
+                if (banCheck == null) AdminDb.AddBan(user);
+                else AdminDb.UpdateBanPerm(user);
+            }
+            if (userdata?.Level > 30)
+            {
+                var banCheck = AdminDb.CheckBanList(user);
+                if (banCheck == null) AdminDb.AddBan(user);
+                else AdminDb.UpdateBan(user);
+            }
         }
     }
 }

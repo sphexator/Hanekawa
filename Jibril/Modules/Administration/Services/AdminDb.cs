@@ -182,6 +182,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
             return result;
         }
+        /// <summary> Adds user to banlog, unbans in 7 days. </summary>
         public static void AddBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
@@ -189,6 +190,15 @@ namespace Jibril.Modules.Administration.Services
             database.FireCommand(str);
             database.CloseConnection();
         }
+        /// <summary> Adds user to banlog, unbans in 2 months. </summary>
+        public static void AddBanPerm(IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddMonths(2)}', '1')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        /// <summary> Updates banlog, sets user to be unbanned in 7 days. </summary>
         public static void UpdateBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
@@ -196,6 +206,7 @@ namespace Jibril.Modules.Administration.Services
             database.FireCommand(str);
             database.CloseConnection();
         }
+        /// <summary> Updates banlog, sets user to be unbanned in 2 months. </summary>
         public static void UpdateBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
@@ -204,6 +215,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
         }
 
+        /// <summary> Admin manual update banlog, sets user to be unbanned in 2 months. </summary>
         public static void AdminBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
@@ -212,6 +224,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
         }
 
+        /// <summary> Gets users set to be unbanned today </summary>
         public static List<ulong> GetBannedUsers()
         {
             var result = new List<ulong>();
