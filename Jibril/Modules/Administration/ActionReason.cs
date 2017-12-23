@@ -26,7 +26,6 @@ namespace Jibril.Modules.Administration
 
                 var updEmbed = new EmbedBuilder();
                 var footer = new EmbedFooterBuilder();
-
                 if (oldMsg != null)
                 {
                     updEmbed.Color = oldMsg.Color;

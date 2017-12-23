@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services;
+using Jibril.Services.Automate.Ban;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
@@ -51,6 +52,7 @@ namespace Jibril
 
             //QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
             QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 5 18 ? * SAT");
+            //QuartzServicesUtilities.StartCronJob<BanScheduler>(scheduler, "0 0 14 1/1 * ? *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
