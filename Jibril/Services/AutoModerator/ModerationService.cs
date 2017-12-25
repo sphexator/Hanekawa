@@ -154,7 +154,7 @@ namespace Jibril.Services.AutoModerator
                 return result;
             }
         }
-
+         
         private EmbedBuilder AutoModResponse(IUser user, string reason, string message)
         {
             var time = DateTime.Now;
