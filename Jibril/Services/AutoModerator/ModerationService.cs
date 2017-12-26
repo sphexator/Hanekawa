@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -11,6 +12,7 @@ using Jibril.Modules.Administration.Services;
 using Jibril.Services.AutoModerator.Perspective.Models;
 using Jibril.Services.Common;
 using Newtonsoft.Json;
+using Quartz.Util;
 
 namespace Jibril.Services.AutoModerator
 {
@@ -124,7 +126,11 @@ namespace Jibril.Services.AutoModerator
                 try
                 {
                     var content = msg.Content;
-                    var request = new AnalyzeCommentRequest(content);
+                    var regex = new Regex("((:)([a-z]).*?(:))|((<@)([0-9]).*?(>))|((<@!)([0-9]).*?(>))",
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    var filter = regex.Replace(content, "");
+                    if (filter.IsNullOrWhiteSpace()) return;
+                    var request = new AnalyzeCommentRequest(filter);
 
                     var response = SendNudes(request);
                     var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
@@ -133,7 +139,7 @@ namespace Jibril.Services.AutoModerator
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine(e.Message);
                 }
             });
             return Task.CompletedTask;
