@@ -5,6 +5,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
+using Jibril.Services;
 using Jibril.Services.Common;
 
 namespace Jibril.Modules.Administration
@@ -123,7 +124,7 @@ namespace Jibril.Modules.Administration
                 var list = WarningDB.WarnList(user).ToList();
                 var embed = new EmbedBuilder();
                 var author = new EmbedAuthorBuilder();
-
+                var userdata = DatabaseService.UserData(user).FirstOrDefault();
                 author.WithIconUrl(user.GetAvatarUrl());
                 author.WithName(user.Username);
                 embed.WithAuthor(author);
@@ -140,18 +141,30 @@ namespace Jibril.Modules.Administration
                     y.Value = $"{result.Total_warnings}";
                     y.IsInline = true;
                 });
-                for (var i = 0; i < result.Warnings; i++)
+                embed.AddField(y =>
                 {
-                    var c = list[i];
-                    var warn = i + 1;
-                    embed.AddField(y =>
+                    y.Name = "Toxicity value";
+                    y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
+                    y.IsInline = true;
+                });
+
+                foreach (var wable in list)
+                {
+                    try
                     {
-                        y.Name = $"Warn: {warn}";
-                        y.Value = $"<@!{c.Staff_id}>\n" +
-                                  $"{c.Message}\n" +
-                                  $"{c.Date}";
-                        y.IsInline = false;
-                    });
+                        embed.AddField(y =>
+                        {
+                            y.Name = $"Staff: <@!{wable.Staff_id}>";
+                            y.Value = $"{wable.Message}\n" +
+                                      $"{wable.Date}";
+                            y.IsInline = false;
+                            ;
+                        });
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
                 }
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
