@@ -118,35 +118,46 @@ namespace Jibril.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task WarnLog(SocketGuildUser user)
         {
+            var embed = WarnLogEmbed(user);
+            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+        }
+
+        private static EmbedBuilder WarnLogEmbed(IUser user)
+        {
             var result = AdminDb.GetWarnings(user).FirstOrDefault();
-            if (result != null)
+            var list = WarningDB.WarnList(user);
+            var userdata = DatabaseService.UserData(user).FirstOrDefault();
+
+            var author = new EmbedAuthorBuilder
             {
-                var list = WarningDB.WarnList(user).ToList();
-                var embed = new EmbedBuilder();
-                var author = new EmbedAuthorBuilder();
-                var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                author.WithIconUrl(user.GetAvatarUrl());
-                author.WithName(user.Username);
-                embed.WithAuthor(author);
-                embed.WithColor(new Color(Colours.DefaultColour));
-                embed.AddField(y =>
-                {
-                    y.Name = "Warnings";
-                    y.Value = $"{result.Warnings}";
-                    y.IsInline = true;
-                });
-                embed.AddField(y =>
-                {
-                    y.Name = "Total warnings";
-                    y.Value = $"{result.Total_warnings}";
-                    y.IsInline = true;
-                });
-                embed.AddField(y =>
-                {
-                    y.Name = "Toxicity value";
-                    y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
-                    y.IsInline = true;
-                });
+                IconUrl = user.GetAvatarUrl(),
+                Name = user.Username
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.DefaultColour),
+                Author = author
+            };
+            embed.AddField(y =>
+            {
+                y.Name = "Warnings";
+                y.Value = result == null ? "0" : $"{result.Warnings}";
+                y.IsInline = true;
+            });
+            embed.AddField(y =>
+            {
+                y.Name = "Total warnings";
+                y.Value = result == null ? "0" : $"{result.Total_warnings}";
+                y.IsInline = true;
+            });
+            embed.AddField(y =>
+            {
+                y.Name = "Toxicity value";
+                y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
+                y.IsInline = true;
+            });
+            if (result == null) return embed;
+            {
                 var i = 1;
                 foreach (var wable in list)
                     try
@@ -166,9 +177,9 @@ namespace Jibril.Modules.Administration
                     {
                         // Ignore
                     }
-
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
+            return embed;
         }
+
     }
 }

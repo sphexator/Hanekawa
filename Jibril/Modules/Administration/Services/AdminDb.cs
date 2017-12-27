@@ -413,27 +413,34 @@ namespace Jibril.Modules.Administration.Services
 
         public static List<WarnList> WarnList(IUser user)
         {
-            var result = new List<WarnList>();
-            var database = new WarningDB("senjougahara");
-            var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id DESC LIMIT 5";
-            var tableName = database.FireCommand(str);
-
-            while (tableName.Read())
+            try
             {
-                var staff_id = (string) tableName["staff_id"];
-                var message = (string) tableName["message"];
-                var date = (DateTime) tableName["warndate"];
+                var result = new List<WarnList>();
+                var database = new WarningDB("senjougahara");
+                var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id DESC LIMIT 5";
+                var tableName = database.FireCommand(str);
 
-                result.Add(new WarnList
+                while (tableName.Read())
                 {
-                    Staff_id = staff_id,
-                    Message = message,
-                    Date = date
-                });
-            }
+                    var staff_id = (string) tableName["staff_id"];
+                    var message = (string) tableName["message"];
+                    var date = (DateTime) tableName["warndate"];
 
-            database.CloseConnection();
-            return result;
+                    result.Add(new WarnList
+                    {
+                        Staff_id = staff_id,
+                        Message = message,
+                        Date = date
+                    });
+                }
+
+                database.CloseConnection();
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
