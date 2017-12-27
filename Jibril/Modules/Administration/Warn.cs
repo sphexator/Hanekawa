@@ -147,19 +147,21 @@ namespace Jibril.Modules.Administration
                     y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
                     y.IsInline = true;
                 });
-
+                var i = 1;
                 foreach (var wable in list)
                 {
                     try
                     {
+                        var nr = i;
                         embed.AddField(y =>
                         {
-                            y.Name = $"Staff: <@!{wable.Staff_id}>";
-                            y.Value = $"{wable.Message}\n" +
+                            y.Name = $"Warn: {nr}";
+                            y.Value = $"<@!{wable.Staff_id}>\n" +
+                                      $"{wable.Message}\n" +
                                       $"{wable.Date}";
                             y.IsInline = false;
-                            ;
                         });
+                        i++;
                     }
                     catch
                     {
