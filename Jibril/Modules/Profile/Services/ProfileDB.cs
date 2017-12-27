@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Discord;
 using Jibril.Data.Variables;
 using MySql.Data.MySqlClient;
@@ -65,18 +64,19 @@ namespace Jibril.Modules.Profile.Services
             database.CloseConnection();
         }
 
-        public static List<String> CheckProfilePicture(IUser user)
+        public static List<string> CheckProfilePicture(IUser user)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new ProfileDB("hanekawa");
             var str = $"SELECT * FROM exp WHERE user_id = '{user.Id}'";
             var tableName = database.FireCommand(str);
 
             while (tableName.Read())
             {
-                var profilePicture = (string)tableName["profilepic"];
+                var profilePicture = (string) tableName["profilepic"];
                 result.Add(profilePicture);
             }
+
             database.CloseConnection();
             return result;
         }

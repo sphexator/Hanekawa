@@ -53,6 +53,7 @@ namespace Jibril.Modules.Administration
                 await Context.Message.DeleteAsync();
                 if (updMsg != null) await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
             }
+
             var userdata = DatabaseService.UserData(usrId).FirstOrDefault();
             if (userdata?.Level > 10 && userdata.Level < 25)
             {

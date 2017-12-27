@@ -4,9 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
-using Jibril.Services.Common;
 
 namespace Jibril.Modules.Administration
 {

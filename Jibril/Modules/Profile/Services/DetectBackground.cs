@@ -30,6 +30,7 @@ namespace Jibril.Modules.Profile.Services
                         .Resize(300, 300));
                     img.Save(background);
                 }
+
                 var fbg = BuildBackground(user, background, randomString, userData, avatar);
                 return fbg;
             }
@@ -42,6 +43,7 @@ namespace Jibril.Modules.Profile.Services
                 {
                     img.Save(background);
                 }
+
                 var fbg = BuildBackground(user, background, randomString, userData, avatar);
                 return fbg;
             }
@@ -82,6 +84,7 @@ namespace Jibril.Modules.Profile.Services
                 response = await httpclient.GetAsync(
                     "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png");
             }
+
             var inputStream = await response.Content.ReadAsStreamAsync();
             using (var img = Image.Load(inputStream))
             {
@@ -103,6 +106,7 @@ namespace Jibril.Modules.Profile.Services
                     .Resize(300, 300));
                 img.Save(background);
             }
+
             var fbg = BuildBackground(user, background, randomString, userData, avatar);
             return fbg;
         }

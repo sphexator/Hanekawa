@@ -26,6 +26,7 @@ namespace Jibril.Modules.Game
                     var userHealth = BaseStats.HealthPoint(userData.Level, userData.ShipClass);
                     GameDatabase.AddNPCDefault(user, userHealth);
                 }
+
                 var GameStatus = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
                 if (GameStatus.Combatstatus == 1)
                 {

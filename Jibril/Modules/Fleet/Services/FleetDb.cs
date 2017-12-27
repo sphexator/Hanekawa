@@ -1,9 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using Discord;
 using Jibril.Data.Variables;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Jibril.Modules.Fleet.Services
 {
@@ -50,34 +49,36 @@ namespace Jibril.Modules.Fleet.Services
                 dbConnection.Close();
         }
 
-        public static List<String> CheckFleetName(string name)
+        public static List<string> CheckFleetName(string name)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new FleetDb("hanekawa");
             var str = $"SELECT * FROM fleet WHERE name = '{name}'";
             var tableName = database.FireCommand(str);
 
             while (tableName.Read())
             {
-                var fleetName = (string)tableName["name"];
+                var fleetName = (string) tableName["name"];
                 result.Add(fleetName);
             }
+
             database.CloseConnection();
             return result;
         }
 
-        public static List<String> CheckFleetMemberStatus(IUser user)
+        public static List<string> CheckFleetMemberStatus(IUser user)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new FleetDb("hanekawa");
             var str = $"SELECT * FROM exp WHERE user_id = {user.Id}";
             var tableName = database.FireCommand(str);
 
             while (tableName.Read())
             {
-                var fleetName = (string)tableName["fleetName"];
+                var fleetName = (string) tableName["fleetName"];
                 result.Add(fleetName);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -123,12 +124,12 @@ namespace Jibril.Modules.Fleet.Services
 
             while (tableName.Read())
             {
-                var user_id = (string)tableName["user_id"];
-                var rank = (string)tableName["rank"];
-                var joined = (DateTime)tableName["joined"];
-                var exp = (int)tableName["exp"];
-                var level = (int)tableName["level"];
-                var totalexp = (int)tableName["totalexp"];
+                var user_id = (string) tableName["user_id"];
+                var rank = (string) tableName["rank"];
+                var joined = (DateTime) tableName["joined"];
+                var exp = (int) tableName["exp"];
+                var level = (int) tableName["level"];
+                var totalexp = (int) tableName["totalexp"];
 
                 result.Add(new FleetList
                 {
@@ -137,6 +138,7 @@ namespace Jibril.Modules.Fleet.Services
                     Totalexp = totalexp
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -188,15 +190,15 @@ namespace Jibril.Modules.Fleet.Services
         public static void CreateFleet(IUser user, string name)
         {
             var database = new FleetNormDb("oshino");
-            var str = ($"CREATE TABLE `oshino`.`{name}` (" +
-                $"`id` INT NOT NULL AUTO_INCREMENT," +
-                $"`user_id` VARCHAR(99) NULL," +
-                $"`rank` VARCHAR(99) NULL," +
-                $"`joined` DATETIME NULL," +
-                $"`exp` INT(11) NULL DEFAULT '0'," +
-                $"`level` INT(11) NULL DEFAULT '1'," +
-                $"`totalexp` INT(11) NULL DEFAULT '0'," +
-                $"PRIMARY KEY(`id`)); ");
+            var str = $"CREATE TABLE `oshino`.`{name}` (" +
+                      $"`id` INT NOT NULL AUTO_INCREMENT," +
+                      $"`user_id` VARCHAR(99) NULL," +
+                      $"`rank` VARCHAR(99) NULL," +
+                      $"`joined` DATETIME NULL," +
+                      $"`exp` INT(11) NULL DEFAULT '0'," +
+                      $"`level` INT(11) NULL DEFAULT '1'," +
+                      $"`totalexp` INT(11) NULL DEFAULT '0'," +
+                      $"PRIMARY KEY(`id`)); ";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
         }
@@ -204,22 +206,24 @@ namespace Jibril.Modules.Fleet.Services
         public static void AddLeader(IUser user, string name)
         {
             var database = new FleetNormDb("oshino");
-            var str2 = $"INSERT INTO `oshino`.`{name}` (user_id, rank, joined ) VALUES ('{user.Id}', 'leader', curtime())";
+            var str2 =
+                $"INSERT INTO `oshino`.`{name}` (user_id, rank, joined ) VALUES ('{user.Id}', 'leader', curtime())";
             var tableName2 = database.FireCommand(str2);
             database.CloseConnection();
         }
-        public static List<String> GetLeader(IUser user, string name)
+
+        public static List<string> GetLeader(IUser user, string name)
         {
             try
             {
-                var result = new List<String>();
+                var result = new List<string>();
                 var database = new FleetNormDb("oshino");
                 var str = $"SELECT * FROM `oshino`.`{name}` WHERE id = '1'";
                 var tableName = database.FireCommand(str);
 
                 while (tableName.Read())
                 {
-                    var userid = (string)tableName["user_id"];
+                    var userid = (string) tableName["user_id"];
                     result.Add(userid);
                 }
 
@@ -228,14 +232,14 @@ namespace Jibril.Modules.Fleet.Services
             }
             catch
             {
-                var result = new List<String>();
+                var result = new List<string>();
                 return result;
             }
         }
 
-        public static List<String> RankCheck(IUser user, string name)
+        public static List<string> RankCheck(IUser user, string name)
         {
-            var result = new List<String>();
+            var result = new List<string>();
             var database = new FleetNormDb("oshino");
             //var str = $"SELECT * FROM exp WHERE user_id = {user.Id}";
             var str = $"SELECT * FROM `oshino`.`{name}` WHERE user_id = {user.Id}";
@@ -243,15 +247,18 @@ namespace Jibril.Modules.Fleet.Services
 
             while (tableName.Read())
             {
-                var rank = (string)tableName["rank"];
+                var rank = (string) tableName["rank"];
                 result.Add(rank);
             }
+
             return result;
         }
+
         public static void AddMember(IUser user, string name)
         {
             var database = new FleetNormDb("oshino");
-            var str = $"INSERT INTO `oshino`.`{name}` (user_id, rank, joined ) VALUES ('{user.Id}', 'member', curtime())";
+            var str =
+                $"INSERT INTO `oshino`.`{name}` (user_id, rank, joined ) VALUES ('{user.Id}', 'member', curtime())";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
         }

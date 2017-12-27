@@ -103,6 +103,7 @@ namespace Jibril.Modules.Administration.Services
                     Total_warnings = total_warnings
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -130,6 +131,7 @@ namespace Jibril.Modules.Administration.Services
                 var suggestNr = (int) reader["id"];
                 result.Add(suggestNr);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -163,6 +165,7 @@ namespace Jibril.Modules.Administration.Services
 
                 result.Add(msgid);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -185,6 +188,7 @@ namespace Jibril.Modules.Administration.Services
                     Msgid = msgid
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -198,49 +202,60 @@ namespace Jibril.Modules.Administration.Services
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var userid = (ulong)reader["user_id"];
+                var userid = (ulong) reader["user_id"];
                 result.Add(userid);
             }
+
             database.CloseConnection();
             return result;
         }
+
         /// <summary> Adds user to banlog, unbans in 7 days. </summary>
         public static void AddBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddDays(7)}', '1')";
+            var str =
+                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddDays(7)}', '1')";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         /// <summary> Adds user to banlog, unbans in 2 months. </summary>
         public static void AddBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddMonths(2)}', '1')";
+            var str =
+                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddMonths(2)}', '1')";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         /// <summary> Updates banlog, sets user to be unbanned in 7 days. </summary>
         public static void UpdateBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date}', unbanDate = {DateTime.Now.Date.AddDays(7)}, counter = counter + '1' WHERE user_id = {user.Id}";
+            var str =
+                $"UPDATE banlog SET date = '{DateTime.Now.Date}', unbanDate = {DateTime.Now.Date.AddDays(7)}, counter = counter + '1' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         /// <summary> Updates banlog, sets user to be unbanned in 2 months. </summary>
         public static void UpdateBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user.Id}";
+            var str =
+                $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         /// <summary> Updates banlog, sets user to be unbanned in 2 months. </summary>
         public static void UpdateBanPerm(ulong user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user}";
+            var str =
+                $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -275,6 +290,7 @@ namespace Jibril.Modules.Administration.Services
                 var user = (ulong) reader["user_id"];
                 result.Add(user);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -284,7 +300,8 @@ namespace Jibril.Modules.Administration.Services
         public static void AddToxicityValue(double tvalue, double newAvg, IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET toxicityvalue = '{tvalue}', toxicitymsgcount = toxicitymsgcount + 1, toxicityavg = '{newAvg}' WHERE user_id = {user.Id}";
+            var str =
+                $"UPDATE exp SET toxicityvalue = '{tvalue}', toxicitymsgcount = toxicitymsgcount + 1, toxicityavg = '{newAvg}' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -304,6 +321,7 @@ namespace Jibril.Modules.Administration.Services
 
                 result.Add(rules);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -321,6 +339,7 @@ namespace Jibril.Modules.Administration.Services
 
                 result.Add(rules);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -412,6 +431,7 @@ namespace Jibril.Modules.Administration.Services
                     Date = date
                 });
             }
+
             database.CloseConnection();
             return result;
         }

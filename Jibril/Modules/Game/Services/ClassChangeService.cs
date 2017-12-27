@@ -27,26 +27,31 @@ namespace Jibril.Modules.Game.Services
                 var Shipclass = ClassNames.shipgirl;
                 return Shipclass;
             }
+
             if (level >= 5 && level < 10)
             {
                 var Shipclass = ClassNames.LC;
                 return Shipclass;
             }
+
             if (level >= 10 && level < 20)
             {
                 var Shipclass = ClassNames.HC;
                 return Shipclass;
             }
+
             if (level >= 20 && level < 30)
             {
                 var Shipclass = ClassNames.DD;
                 return Shipclass;
             }
+
             if (level >= 30 && level < 40)
             {
                 var Shipclass = ClassNames.AC;
                 return Shipclass;
             }
+
             if (level >= 40)
             {
                 var Shipclass = ClassNames.BB;
@@ -66,26 +71,31 @@ namespace Jibril.Modules.Game.Services
                 var Classes = 0;
                 return Classes;
             }
+
             if (level >= 5 && level < 10)
             {
                 var Classes = 1;
                 return Classes;
             }
+
             if (level >= 10 && level < 20)
             {
                 var Classes = 2;
                 return Classes;
             }
+
             if (level >= 20 && level < 30)
             {
                 var Classes = 3;
                 return Classes;
             }
+
             if (level >= 30 && level < 40)
             {
                 var Classes = 4;
                 return Classes;
             }
+
             if (level >= 40)
             {
                 var Classes = 5;

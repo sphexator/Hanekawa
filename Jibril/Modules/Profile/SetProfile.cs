@@ -35,7 +35,8 @@ namespace Jibril.Modules.Profile
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed("You don't have enough money to change background", Colours.FailColour);
+                var embed = EmbedGenerator.DefaultEmbed("You don't have enough money to change background",
+                    Colours.FailColour);
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10));
             }
         }

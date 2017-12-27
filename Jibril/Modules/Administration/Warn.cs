@@ -149,7 +149,6 @@ namespace Jibril.Modules.Administration
                 });
                 var i = 1;
                 foreach (var wable in list)
-                {
                     try
                     {
                         var nr = i;
@@ -167,7 +166,7 @@ namespace Jibril.Modules.Administration
                     {
                         // Ignore
                     }
-                }
+
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }

@@ -28,6 +28,7 @@ namespace Jibril.Modules.Game.Services
                     enemyData);
                 return embed;
             }
+
             if (chance >= 95 && userData.Level >= 40)
             {
                 var enemy = rand.Next(21, 26);
@@ -43,6 +44,7 @@ namespace Jibril.Modules.Game.Services
                     enemyData);
                 return embed;
             }
+
             var Embed = EmbedGenerator.DefaultEmbed($"{user.Username} searched throughout the sea and found no enemy",
                 Colours.DefaultColour);
             return Embed;

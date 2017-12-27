@@ -157,6 +157,7 @@ namespace Jibril.Modules.Gambling.Services
                     Price = price
                 });
             }
+
             return result;
         }
 
@@ -182,6 +183,7 @@ namespace Jibril.Modules.Gambling.Services
                     Stock = stock
                 });
             }
+
             database.CloseConnection();
             return result;
         }

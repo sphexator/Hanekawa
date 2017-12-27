@@ -61,6 +61,7 @@ namespace Jibril.Modules.Gambling
                     y.IsInline = false;
                 });
             }
+
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 

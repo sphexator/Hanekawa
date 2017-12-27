@@ -6,7 +6,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services;
-using Jibril.Services.Automate.Ban;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;

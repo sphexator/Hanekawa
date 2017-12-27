@@ -27,6 +27,7 @@ namespace Jibril.Modules.Game.Services
                 var damageTaken = 0;
                 return damageTaken;
             }
+
             var damage = DamagePoint(level);
             return damage;
         }

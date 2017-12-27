@@ -70,6 +70,7 @@ namespace Jibril.Modules.Suggestion.Services
                 var suggestNr = (int) reader["id"];
                 result.Add(suggestNr);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -103,6 +104,7 @@ namespace Jibril.Modules.Suggestion.Services
 
                 result.Add(msgid);
             }
+
             database.CloseConnection();
             return result;
         }

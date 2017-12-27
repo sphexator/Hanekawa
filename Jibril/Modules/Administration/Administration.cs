@@ -81,6 +81,7 @@ namespace Jibril.Modules.Administration
                 await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
                 return;
             }
+
             var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
                 Colours.OKColour);
             await user.KickAsync().ConfigureAwait(false);
@@ -112,6 +113,7 @@ namespace Jibril.Modules.Administration
             {
                 // Didn't find role
             }
+
             try
             {
                 IMessage[] msgs;

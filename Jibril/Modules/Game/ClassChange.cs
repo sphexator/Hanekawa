@@ -39,6 +39,7 @@ namespace Jibril.Modules.Game
                                 y.IsInline = false;
                             });
                         }
+
                         await ReplyAsync($"{user.Username} - Which class would you want to switch to?\n" +
                                          $"Respond with name provided.", false, embed.Build()).ConfigureAwait(false);
                         var response = await NextMessageAsync().ConfigureAwait(false);

@@ -61,6 +61,7 @@ namespace Jibril.Modules.Game.Services
 
                 result.Add(userId);
             }
+
             return result;
         }
 
@@ -137,6 +138,7 @@ namespace Jibril.Modules.Game.Services
                     KillAmount = killAmount
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -171,6 +173,7 @@ namespace Jibril.Modules.Game.Services
                     CurrenyGain = currencyGain
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -250,6 +253,7 @@ namespace Jibril.Modules.Game.Services
                     ShipClass = classes
                 });
             }
+
             database.CloseConnection();
             return result;
         }

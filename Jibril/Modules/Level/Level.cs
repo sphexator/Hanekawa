@@ -87,6 +87,7 @@ namespace Jibril.Modules.Level
                     y.IsInline = false;
                 });
             }
+
             await ReplyAsync(" ", false, embed.Build());
         }
 

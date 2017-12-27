@@ -56,6 +56,7 @@ namespace Jibril.Modules.Gambling
                     y.IsInline = true;
                 });
             }
+
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -77,6 +78,7 @@ namespace Jibril.Modules.Gambling
                     y.IsInline = true;
                 });
             }
+
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 

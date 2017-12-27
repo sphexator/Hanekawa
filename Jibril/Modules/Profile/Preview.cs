@@ -16,7 +16,7 @@ namespace Jibril.Modules.Profile
         [Summary("Displays your server profile")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        public async Task PostProfile([Remainder]string bg = null)
+        public async Task PostProfile([Remainder] string bg = null)
         {
             var user = Context.User;
             DbRequirement(user);
