@@ -127,11 +127,17 @@ namespace Jibril.Services.AutoModerator
                 try
                 {
                     var content = msg.Content;
-                    var regex = new Regex("((:)([a-z]).*?(:))|((<@)([0-9]).*?(>))|((<@!)([0-9]).*?(>))",
+                    var emote = new Regex("((:)([a-z]).*?(:))",
                         RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    var filter = regex.Replace(content, "");
-                    if (filter.IsNullOrWhiteSpace()) return;
-                    var request = new AnalyzeCommentRequest(filter);
+                    var emoteLeftover = new Regex("((<)([0-9]).*?(>))",
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    var mention = new Regex("((<@)([0-9]).*?(>))|((<@!)([0-9]).*?(>))",
+                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    var emoteFilter = emote.Replace(content, "");
+                    var emoteFilterv2 = emoteLeftover.Replace(emoteFilter, "");
+                    var mentionFilter = mention.Replace(emoteFilterv2, "");
+                    if (mentionFilter.IsNullOrWhiteSpace()) return;
+                    var request = new AnalyzeCommentRequest(mentionFilter);
 
                     var response = SendNudes(request);
                     var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
