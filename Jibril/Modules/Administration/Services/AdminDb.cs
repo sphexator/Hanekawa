@@ -279,6 +279,16 @@ namespace Jibril.Modules.Administration.Services
             return result;
         }
 
+        // ----------------- Perspective API ----------------- //
+
+        public static void AddToxicityValue(double tvalue, double newAvg, IUser user)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET toxicityvalue = '{tvalue}', toxicitymsgcount = toxicitymsgcount + 1, toxicityavg = '{newAvg}' WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         // ----------------- Get text from db----------------- //
 
         public static List<string> GetRules(string guildid)

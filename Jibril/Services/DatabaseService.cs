@@ -46,8 +46,7 @@ namespace Jibril.Services
 
         private void CloseConnection()
         {
-            if (dbConnection != null)
-                dbConnection.Close();
+            dbConnection?.Close();
         }
 
         public static List<string> CheckUser(IUser user)
@@ -108,6 +107,9 @@ namespace Jibril.Services
                 var gameCD = (DateTime) exec["game_cooldown"];
                 var gambleCD = (DateTime) exec["gambling_cooldown"];
                 var hasrole = (string) exec["hasrole"];
+                var toxicityvalue = (double) exec["toxicityvalue"];
+                var toxicitymsgcount = (int) exec["toxicitymsgcount"];
+                var toxicityavg = (double) exec["toxicityavg"];
 
                 result.Add(new UserData
                 {
@@ -127,7 +129,10 @@ namespace Jibril.Services
                     Profilepic = profilepic,
                     GameCD = gameCD,
                     BetCD = gambleCD,
-                    Hasrole = hasrole
+                    Hasrole = hasrole,
+                    Toxicityvalue = toxicityvalue,
+                    Toxicitymsgcount = toxicitymsgcount,
+                    Toxicityavg = toxicityavg
                 });
             }
             database.CloseConnection();

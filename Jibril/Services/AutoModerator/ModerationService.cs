@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -27,7 +28,7 @@ namespace Jibril.Services.AutoModerator
             _provider = provider;
 
             _discord.MessageReceived += _discord_MessageReceived;
-            //_discord.MessageReceived += PerspectiveApi;
+            _discord.MessageReceived += PerspectiveApi;
         }
 
         private Task _discord_MessageReceived(SocketMessage rawMessage)
@@ -134,6 +135,8 @@ namespace Jibril.Services.AutoModerator
 
                     var response = SendNudes(request);
                     var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
+                    var analyze = CalculateNudeScore(score, msg.Author).FirstOrDefault();
+                    AdminDb.AddToxicityValue(analyze.ToxicityValue, analyze.Toxicityavg, msg.Author);
                     Console.WriteLine(
                         $"{DateTime.Now.ToLongTimeString()} | TOXICITY SERVICE | {msg.Author.Id} | Toxicity score:{score} | {msg.Author.Username}");
                 }
@@ -159,6 +162,23 @@ namespace Jibril.Services.AutoModerator
                 var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
                 return result;
             }
+        }
+
+        private List<ToxicityList> CalculateNudeScore(double score, IUser user)
+        {
+            var userdata = DatabaseService.UserData(user).FirstOrDefault();
+            var calculate = userdata.Toxicityvalue + score;
+            var avg = calculate / (userdata.Toxicitymsgcount + 1);
+            var result = new List<ToxicityList>
+            {
+                new ToxicityList
+                {
+                    ToxicityValue = calculate,
+                    Toxicitymsgcount = userdata.Toxicitymsgcount + 1,
+                    Toxicityavg = avg
+                }
+            };
+            return result;
         }
          
         private EmbedBuilder AutoModResponse(IUser user, string reason, string message)
@@ -191,5 +211,12 @@ namespace Jibril.Services.AutoModerator
 
             return embed;
         }
+    }
+
+    public class ToxicityList
+    {
+        public double ToxicityValue { get; set; }
+        public int Toxicitymsgcount { get; set; }
+        public double Toxicityavg { get; set; }
     }
 }

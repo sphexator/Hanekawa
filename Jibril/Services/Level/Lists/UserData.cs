@@ -21,5 +21,8 @@ namespace Jibril.Services.Level.Lists
         public DateTime GameCD { get; set; }
         public DateTime BetCD { get; set; }
         public string Hasrole { get; set; }
+        public double Toxicityvalue { get; set; }
+        public int Toxicitymsgcount { get; set; }
+        public double Toxicityavg { get; set; }
     }
 }
