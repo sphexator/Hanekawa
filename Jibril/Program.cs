@@ -50,7 +50,7 @@ namespace Jibril
             var scheduler = services.GetService<IScheduler>();
 
             //QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
-            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 7 50 ? * SAT");
+            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 50 20 ? * SAT");
             //QuartzServicesUtilities.StartCronJob<BanScheduler>(scheduler, "0 0 14 1/1 * ? *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
