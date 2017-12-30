@@ -65,11 +65,11 @@ namespace Jibril.Services.Automate.PicDump
                             DownloadFile(service, item2, string.Format(@"Data\Images\PictureSpam\{0}", item2.Name));
                     }
 
-                    var guild = _discord.Guilds.First(x => x.Id == 200265036596379648);
+                    var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
                     //Picdump
-                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 382890182724157441) as SocketTextChannel;
+                    var ch = guild.Channels.FirstOrDefault(x => x.Id == 355757410134261760) as SocketTextChannel;
                     //Event channel
-                    var ech = guild.Channels.First(x => x.Id == 390885767985233920) as SocketTextChannel;
+                    var ech = guild.Channels.First(x => x.Id == 346429829316476928) as SocketTextChannel;
 
                     var pictures = new DirectoryInfo(@"Data\Images\PictureSpam\");
                     var amount = pictures.GetFiles().Length;
