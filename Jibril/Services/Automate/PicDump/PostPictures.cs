@@ -57,7 +57,7 @@ namespace Jibril.Services.Automate.PicDump
                     {
                         var Nextfiles = List.ListFiles(service, new List.FilesListOptionalParms
                         {
-                            PageSize = 10,
+                            PageSize = 1000,
                             PageToken = files.NextPageToken
                         });
                         Console.WriteLine(Nextfiles.Files.Count);
