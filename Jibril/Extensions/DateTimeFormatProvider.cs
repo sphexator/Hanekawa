@@ -29,10 +29,7 @@ namespace Jibril.Extensions
 
         public object GetFormat(Type formatType)
         {
-            if (formatType == typeof(ICustomFormatter))
-                return this;
-
-            return null;
+            return formatType == typeof(ICustomFormatter) ? this : null;
         }
     }
 }
