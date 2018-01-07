@@ -98,7 +98,7 @@ namespace Jibril.Modules.Level
         {
             var user = Context.User;
             var result = DatabaseService.CheckUser(user);
-            if (result.Count() <= 0) DatabaseService.EnterUser(user);
+            if (!result.Any()) DatabaseService.EnterUser(user);
             var userData = DatabaseService.UserData(user).FirstOrDefault();
 
             var now = DateTime.Now;
@@ -106,11 +106,11 @@ namespace Jibril.Modules.Level
             var difference = DateTime.Compare(daily, now);
 
             if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
-                daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0)
+                daily.AddDays(1) <= now && difference < 0 || difference >= 0)
             {
                 LevelDatabase.ChangeDaily(user);
                 if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
-                    daily.DayOfYear < now.DayOfYear && difference < 0 || difference >= 0)
+                    daily.AddDays(1) <= now && difference <= 0 || difference >= 0)
                 {
                     var tokens = 200;
                     GambleDB.AddCredit(user, tokens);
@@ -124,17 +124,6 @@ namespace Jibril.Modules.Level
 
                 await ReplyAsync($"Your credits refresh in {di}!");
             }
-        }
-
-        [Command("ping", RunMode = RunMode.Async)]
-        [RequiredChannel(1231231231)]
-        [RequireContext(ContextType.Guild)]
-        [RequireOwner]
-        [Ratelimit(1, 20, Measure.Hours)]
-        public async Task PingTask()
-        {
-            var msg = await ReplyAsync("@here");
-            await msg.DeleteAsync();
         }
     }
 }
