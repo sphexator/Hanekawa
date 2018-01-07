@@ -7,6 +7,7 @@ using Discord;
 using Discord.Commands;
 using Humanizer;
 using Jibril.Data.Variables;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Help
 {
@@ -51,6 +52,16 @@ namespace Jibril.Modules.Help
             embed.AddField(creator);
             embed.AddField(about);
             embed.AddField(uptime);
+            await ReplyAsync("", false, embed.Build());
+        }
+
+        [Command("uptime")]
+        [Summary("Display uptime of bot")]
+        public async Task UptimeTask()
+        {
+            var currentProcess = Process.GetCurrentProcess();
+            var embed = EmbedGenerator.DefaultEmbed($"{(DateTime.Now - currentProcess.StartTime).Humanize()}",
+                Colours.DefaultColour);
             await ReplyAsync("", false, embed.Build());
         }
     }
