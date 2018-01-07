@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Humanizer;
 using Jibril.Data.Variables;
@@ -11,7 +12,7 @@ using Jibril.Services.Common;
 
 namespace Jibril.Modules.Help
 {
-    public class Info : ModuleBase<SocketCommandContext>
+    public class Info : InteractiveBase
     {
         [Command("info")]
         [Summary("General info about the bot")]
@@ -62,7 +63,7 @@ namespace Jibril.Modules.Help
             var currentProcess = Process.GetCurrentProcess();
             var embed = EmbedGenerator.DefaultEmbed($"{(DateTime.Now - currentProcess.StartTime).Humanize()}",
                 Colours.DefaultColour);
-            await ReplyAsync("", false, embed.Build());
+            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(20));
         }
     }
 }
