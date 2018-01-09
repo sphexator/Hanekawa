@@ -156,6 +156,7 @@ namespace Jibril.Modules.Administration
             }
             catch
             {
+                // ignored
             }
         }
 
