@@ -343,6 +343,55 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
             return result;
         }
+
+        // Mute stuff
+        public static List<MuteRoleConfig> GetMuteRole()
+        {
+            var result = new List<MuteRoleConfig>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM muteconfig";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var guildid = (ulong) reader["guilid"];
+                var muterole = (string) reader["muterole"];
+
+                result.Add(new MuteRoleConfig
+                {
+                    GuildId = guildid,
+                    MuteRole = muterole
+                });
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+
+        public static List<MutedUsers> GetMutedUsers()
+        {
+            var result = new List<MutedUsers>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM muteconfig";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var guildid = (ulong)reader["guilid"];
+                var userId = (ulong)reader["user_id"];
+                var time = (DateTime) reader["time"];
+
+                result.Add(new MutedUsers
+                {
+                    Guildid = guildid,
+                    Userid = userId,
+                    Timer = time
+                });
+            }
+
+            database.CloseConnection();
+            return result;
+        }
     }
 
     public class WarningDB
@@ -442,5 +491,18 @@ namespace Jibril.Modules.Administration.Services
                 return null;
             }
         }
+    }
+
+    public class MuteRoleConfig
+    {
+        public ulong GuildId { get; set; }
+        public string MuteRole { get; set; }
+    }
+
+    public class MutedUsers
+    {
+        public ulong Guildid { get; set; }
+        public ulong Userid { get; set; }
+        public DateTime Timer { get; set; }
     }
 }
