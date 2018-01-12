@@ -29,6 +29,24 @@ namespace Jibril.Services.AutoModerator
 
             _discord.MessageReceived += _discord_MessageReceived;
             _discord.MessageReceived += PerspectiveApi;
+            _discord.GuildMemberUpdated += _discord_GuildMemberUpdated;
+        }
+
+        private Task _discord_GuildMemberUpdated(SocketGuildUser arg1, SocketGuildUser arg2)
+        {
+            var _ = Task.Run(async () =>
+            {
+                if (arg1.Id == 215684776416247809 || arg2.Id == 215684776416247809)
+                {
+                    var staffRole = arg1.Guild.Roles.First(x => x.Name == "Staff");
+                    var modRole = arg1.Guild.Roles.First(x => x.Name == "Secretary");
+                    var trialRole = arg1.Guild.Roles.First(x => x.Name == "Assistant Secretary");
+                    if (arg2.Roles.Contains(staffRole)) await arg2.RemoveRoleAsync(staffRole);
+                    if (arg2.Roles.Contains(modRole)) await arg2.RemoveRoleAsync(modRole);
+                    if (arg2.Roles.Contains(trialRole)) await arg2.RemoveRoleAsync(trialRole);
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private Task _discord_MessageReceived(SocketMessage rawMessage)
@@ -186,7 +204,7 @@ namespace Jibril.Services.AutoModerator
             };
             return result;
         }
-         
+
         private EmbedBuilder AutoModResponse(IUser user, string reason, string message)
         {
             var time = DateTime.Now;
