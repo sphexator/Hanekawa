@@ -5,6 +5,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Modules.Administration.Services;
 using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
@@ -46,6 +47,7 @@ namespace Jibril
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
+            services.GetRequiredService<TimedMuteService>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -70,6 +72,7 @@ namespace Jibril
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
+            services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();
             services.AddSingleton<LogService>();

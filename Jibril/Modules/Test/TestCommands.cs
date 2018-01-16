@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 
@@ -14,6 +15,19 @@ namespace Jibril.Modules.Test
             var role = Context.Guild.Roles.First(x => x.Name == name);
             if (role == null) return;
             await ReplyAsync($"{role.Name} - {role.Id}");
+        }
+
+        [Command("test")]
+        [RequireOwner]
+        public async Task TestCommandTask()
+        {
+            var msg = await ReplyAsync("Test message");
+            Emote.TryParse("<:yes:402675768334876674>", out var yesEmote);
+            Emote.TryParse("<:no:402675767814914049>", out var noEmote);
+            IEmote IemoteYes = yesEmote;
+            IEmote IemoteNo = noEmote;
+            await msg.AddReactionAsync(IemoteYes);
+            await msg.AddReactionAsync(IemoteNo);
         }
     }
 }

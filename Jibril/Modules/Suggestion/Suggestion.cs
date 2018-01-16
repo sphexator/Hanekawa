@@ -59,10 +59,14 @@ namespace Jibril.Modules.Suggestion
                     var suggestMsg = await sc.SendMessageAsync("", false, embed.Build());
                     SuggestionDB.UpdateSuggestion(suggestMsg.Id.ToString(), suggestionNr[0]);
 
+                    Emote.TryParse("<:yes:401458712805638144>", out var yesEmote);
+                    Emote.TryParse("<:no:401458713195708416>", out var noEmote);
+                    IEmote iemoteYes = yesEmote;
+                    IEmote iemoteNo = noEmote;
                     await Task.Delay(260);
-                    await suggestMsg.AddReactionAsync(new Emoji("👍"));
+                    await suggestMsg.AddReactionAsync(iemoteYes);
                     await Task.Delay(260);
-                    await suggestMsg.AddReactionAsync(new Emoji("👎"));
+                    await suggestMsg.AddReactionAsync(iemoteNo);
                 }
                 catch (Exception e)
                 {

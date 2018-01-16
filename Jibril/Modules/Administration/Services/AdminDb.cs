@@ -59,7 +59,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var userId = (string) reader["user_id"];
+                var userId = (string)reader["user_id"];
                 result.Add(userId);
             }
 
@@ -94,8 +94,8 @@ namespace Jibril.Modules.Administration.Services
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var warnings = (int) reader["warnings"];
-                var total_warnings = (int) reader["total_warnings"];
+                var warnings = (int)reader["warnings"];
+                var total_warnings = (int)reader["total_warnings"];
 
                 result.Add(new WarnAmount
                 {
@@ -128,7 +128,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var suggestNr = (int) reader["id"];
+                var suggestNr = (int)reader["id"];
                 result.Add(suggestNr);
             }
 
@@ -161,7 +161,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var msgid = (string) reader["msgid"];
+                var msgid = (string)reader["msgid"];
 
                 result.Add(msgid);
             }
@@ -179,8 +179,8 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var userid = (string) reader["user_id"];
-                var msgid = (string) reader["msgid"];
+                var userid = (string)reader["user_id"];
+                var msgid = (string)reader["msgid"];
 
                 result.Add(new ActionCase
                 {
@@ -202,7 +202,7 @@ namespace Jibril.Modules.Administration.Services
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var userid = (ulong) reader["user_id"];
+                var userid = (ulong)reader["user_id"];
                 result.Add(userid);
             }
 
@@ -214,8 +214,10 @@ namespace Jibril.Modules.Administration.Services
         public static void AddBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
+            var today = DateTime.UtcNow.ToString("yyyy-MM-dd H:mm:ss");
+            var unban = DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-dd H:mm:ss");
             var str =
-                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddDays(7)}', '1')";
+                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{today}', '{unban}', '1')";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -224,8 +226,10 @@ namespace Jibril.Modules.Administration.Services
         public static void AddBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
+            var today = DateTime.UtcNow.ToString("yyyy-MM-dd H:mm:ss");
+            var unban = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd H:mm:ss");
             var str =
-                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{DateTime.Today}', '{DateTime.Today.AddMonths(2)}', '1')";
+                $"INSERT INTO banlog (user_id, date, unbanDate, counter) VALUES ('{user.Id}', '{today}', '{unban}', '1')";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -234,8 +238,9 @@ namespace Jibril.Modules.Administration.Services
         public static void UpdateBan(IUser user)
         {
             var database = new AdminDb("hanekawa");
+            var unban = DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-dd H:mm:ss");
             var str =
-                $"UPDATE banlog SET date = '{DateTime.Now.Date}', unbanDate = {DateTime.Now.Date.AddDays(7)}, counter = counter + '1' WHERE user_id = {user.Id}";
+                $"UPDATE banlog SET date = '{DateTime.Now.Date}', unbanDate = {unban}, counter = counter + '1' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -244,8 +249,10 @@ namespace Jibril.Modules.Administration.Services
         public static void UpdateBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
+            var today = DateTime.UtcNow.ToString("yyyy-MM-dd H:mm:ss");
+            var unban = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd H:mm:ss");
             var str =
-                $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user.Id}";
+                $"UPDATE banlog SET date = '{unban}', counter = counter + '1' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -254,8 +261,9 @@ namespace Jibril.Modules.Administration.Services
         public static void UpdateBanPerm(ulong user)
         {
             var database = new AdminDb("hanekawa");
+            var unban = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd H:mm:ss");
             var str =
-                $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}', counter = counter + '1' WHERE user_id = {user}";
+                $"UPDATE banlog SET date = '{unban}', counter = counter + '1' WHERE user_id = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -264,7 +272,8 @@ namespace Jibril.Modules.Administration.Services
         public static void AdminBanPerm(IUser user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}' WHERE user_id = {user.Id}";
+            var unban = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd H:mm:ss");
+            var str = $"UPDATE banlog SET date = '{unban}' WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -273,7 +282,8 @@ namespace Jibril.Modules.Administration.Services
         public static void AdminBanPerm(ulong user)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE banlog SET date = '{DateTime.Now.Date.AddMonths(2)}' WHERE user_id = {user}";
+            var unban = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd H:mm:ss");
+            var str = $"UPDATE banlog SET date = '{unban}' WHERE user_id = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -287,7 +297,7 @@ namespace Jibril.Modules.Administration.Services
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var user = (ulong) reader["user_id"];
+                var user = (ulong)reader["user_id"];
                 result.Add(user);
             }
 
@@ -317,7 +327,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var rules = (string) reader["rules"];
+                var rules = (string)reader["rules"];
 
                 result.Add(rules);
             }
@@ -335,7 +345,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var rules = (string) reader["faq"];
+                var rules = (string)reader["faq"];
 
                 result.Add(rules);
             }
@@ -354,8 +364,8 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var guildid = (ulong) reader["guilid"];
-                var muterole = (string) reader["muterole"];
+                var guildid = (ulong)reader["guilid"];
+                var muterole = (string)reader["muterole"];
 
                 result.Add(new MuteRoleConfig
                 {
@@ -379,7 +389,7 @@ namespace Jibril.Modules.Administration.Services
             {
                 var guildid = (ulong)reader["guilid"];
                 var userId = (ulong)reader["user_id"];
-                var time = (DateTime) reader["time"];
+                var time = (DateTime)reader["time"];
 
                 result.Add(new MutedUsers
                 {
@@ -391,6 +401,69 @@ namespace Jibril.Modules.Administration.Services
 
             database.CloseConnection();
             return result;
+        }
+
+        public static List<ulong> GetMutedUsersids()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM mute";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var userId = (ulong)reader["user_id"];
+                result.Add(userId);
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+
+        public static List<ulong> GetMutedUsersid(ulong userid)
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM mute WHERE user_id = {userid}";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var userId = (ulong)reader["user_id"];
+                result.Add(userId);
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+
+        public static void AddTimedMute(ulong guildid, ulong userId, DateTime timer)
+        {
+            var database = new AdminDb("hanekawa");
+            var unmuteNow = timer.ToString("yyyy-MM-dd H:mm:ss");
+            var str =
+                $"INSERT INTO mute (guildid, user_id, time) VALUES ('{guildid}', '{userId}', '{unmuteNow}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void AddTimedMute(ulong guildid, ulong userId)
+        {
+            var database = new AdminDb("hanekawa");
+            var date = DateTime.UtcNow + TimeSpan.FromMinutes(1440);
+            var unmuteNow = date.ToString("yyyy-MM-dd H:mm:ss");
+            var str =
+                $"INSERT INTO mute (guildid, user_id, time) VALUES ('{guildid}', '{userId}', '{unmuteNow}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void RemoveTimedMute(ulong guildid, ulong userId)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"DELETE FROM mute WHERE user_id = '{userId}'";
+            database.FireCommand(str);
+            database.CloseConnection();
         }
     }
 
@@ -471,9 +544,9 @@ namespace Jibril.Modules.Administration.Services
 
                 while (tableName.Read())
                 {
-                    var staff_id = (string) tableName["staff_id"];
-                    var message = (string) tableName["message"];
-                    var date = (DateTime) tableName["warndate"];
+                    var staff_id = (string)tableName["staff_id"];
+                    var message = (string)tableName["message"];
+                    var date = (DateTime)tableName["warndate"];
 
                     result.Add(new WarnList
                     {
@@ -492,7 +565,6 @@ namespace Jibril.Modules.Administration.Services
             }
         }
     }
-
     public class MuteRoleConfig
     {
         public ulong GuildId { get; set; }

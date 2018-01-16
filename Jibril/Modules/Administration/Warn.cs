@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
@@ -10,7 +12,7 @@ using Jibril.Services.Common;
 
 namespace Jibril.Modules.Administration
 {
-    public class Warn : ModuleBase<SocketCommandContext>
+    public class Warn : InteractiveBase
     {
         [Command("warn")]
         [Alias("warning", "w")]
@@ -29,7 +31,7 @@ namespace Jibril.Modules.Administration
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                    await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                               $"\n" +
                                               $"Staff: {Context.User}\n" +
@@ -41,7 +43,7 @@ namespace Jibril.Modules.Administration
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                    await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                               $"\n" +
                                               $"Staff: {Context.User}\n" +
@@ -64,7 +66,7 @@ namespace Jibril.Modules.Administration
 
                         var content = $"{Context.User} warned {user}.";
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                        await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync(
                             $"You've been warned on KanColle! & threshold for mute has been met.\n" +
                             $"\n" +
@@ -75,7 +77,7 @@ namespace Jibril.Modules.Administration
                     {
                         var content = $"{Context.User} warned {user}.";
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                        await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +
                                                   $"Staff: {Context.User}\n" +
@@ -94,7 +96,7 @@ namespace Jibril.Modules.Administration
                         await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                         var content = $"{Context.User} warned {user}.";
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                        await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +
                                                   $"Staff: {Context.User}\n" +
@@ -104,7 +106,7 @@ namespace Jibril.Modules.Administration
                     {
                         var content = $"{Context.User} warned {user}.";
                         var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
-                        await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +
                                                   $"Staff: {Context.User}\n" +

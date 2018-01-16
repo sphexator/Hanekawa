@@ -28,7 +28,7 @@ namespace Jibril.Services.Welcome.Services
                 var path = pathBuilder.Build();
 
                 var avatar = Image.Load(avatarToLoad);
-                var font = SystemFonts.CreateFont("Times New Roman", 34, FontStyle.Regular);
+                var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
                 var text = user.Username;
 
                 img.Mutate(ctx => ctx

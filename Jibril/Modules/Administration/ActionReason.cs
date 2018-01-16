@@ -5,7 +5,6 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Modules.Administration.Services;
-using Jibril.Services;
 
 namespace Jibril.Modules.Administration
 {
@@ -18,7 +17,6 @@ namespace Jibril.Modules.Administration
         {
             var msgIdStr = AdminDb.ActionCaseList(id);
             var msgId = Convert.ToUInt64(msgIdStr[0].Msgid);
-            var usrId = Convert.ToUInt64(msgIdStr[0].User_id);
             if (Context.Guild.Channels.FirstOrDefault(x => x.Id == 339381104534355970) is ITextChannel ch)
             {
                 var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
@@ -52,18 +50,6 @@ namespace Jibril.Modules.Administration
                 updEmbed.WithFooter(footer);
                 await Context.Message.DeleteAsync();
                 if (updMsg != null) await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
-            }
-
-            var userdata = DatabaseService.UserData(usrId).FirstOrDefault();
-            if (userdata?.Level > 10 && userdata.Level < 25)
-            {
-                await ReplyAsync("Is this a perm. ban? (Y/N)");
-                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-                if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    AdminDb.UpdateBanPerm(usrId);
-                    await response.DeleteAsync();
-                }
             }
         }
     }

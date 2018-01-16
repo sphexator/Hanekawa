@@ -15,6 +15,13 @@ namespace Jibril.Modules.Administration
 {
     public class Administration : InteractiveBase
     {
+        private readonly TimedMuteService _muteService;
+
+        public Administration(TimedMuteService muteService)
+        {
+            _muteService = muteService;
+        }
+
         [Command("prune", RunMode = RunMode.Async)]
         [Alias("Prune")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
@@ -61,8 +68,8 @@ namespace Jibril.Modules.Administration
             var embed = EmbedGenerator.DefaultEmbed($"Banned {user.Mention} from {Context.Guild.Name}",
                 Colours.OKColour);
 
-            await guild.AddBanAsync(user, 7, $"{Context.User} - {reason}").ConfigureAwait(false);
-            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
+            await guild.AddBanAsync(user, 7, $"{Context.User}").ConfigureAwait(false);
+            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
         }
 
         [Command("Kick", RunMode = RunMode.Async)]
@@ -84,9 +91,74 @@ namespace Jibril.Modules.Administration
 
             var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
                 Colours.OKColour);
+            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             await user.KickAsync().ConfigureAwait(false);
         }
 
+        [Command("mute", RunMode = RunMode.Async)]
+        [Alias("m")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
+        public async Task DefaultMute(SocketGuildUser user)
+        {
+            try
+            {
+                await _muteService.TimedMute(user, TimeSpan.FromMinutes(1440));
+                await Context.Message.DeleteAsync();
+                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
+                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        [Command("mute", RunMode = RunMode.Async)]
+        [Alias("m")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
+        public async Task TimedMute(int minutes, SocketGuildUser user)
+        {
+            if (minutes < 1 || minutes > 1440) return;
+            try
+            {
+                await _muteService.TimedMute(user, TimeSpan.FromMinutes(minutes));
+                await Context.Message.DeleteAsync();
+                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
+                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+
+                var time = DateTime.Now;
+                AdminDb.AddActionCase(user, time);
+                var caseid = AdminDb.GetActionCaseID(time);
+
+                var content = $"🔇 *Gagged* \n" +
+                              $"User: {user.Mention}. (**{user.Id}**)";
+                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = $"{Context.User.Username}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
+
+                var log = Context.Guild.GetChannel(339381104534355970) as ITextChannel;
+                var msg = await log.SendMessageAsync("", false, embed.Build());
+                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        /*
         [Command("mute", RunMode = RunMode.Async)]
         [Alias("Mute", "m")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -160,23 +232,6 @@ namespace Jibril.Modules.Administration
             }
         }
 
-        /*
-        [Command("mute", RunMode = RunMode.Async)]
-        [Alias("Mute", "m")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task TimedMute(int minutes, SocketGuildUser user)
-        {
-            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= (Context.Guild).Roles.Select(r => r.Position).Max()))
-            {
-                await user.AddRoleAsync(Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute"));
-                await user.ModifyAsync(x => x.Mute = true);
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} has been muted for {minutes} minutes.", Colours.OKColour);
-                await ReplyAsync("", false, embed.Build());
-            }
-        }
-        */
-
         [Command("unmute", RunMode = RunMode.Async)]
         [Alias("Unmute", "unm")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -207,5 +262,6 @@ namespace Jibril.Modules.Administration
                 // Ignore
             }
         }
+        */
     }
 }
