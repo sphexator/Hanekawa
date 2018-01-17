@@ -22,34 +22,58 @@ namespace Jibril.Modules.Administration
                 var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
                 var oldMsg = updMsg?.Embeds.FirstOrDefault();
 
-                var updEmbed = new EmbedBuilder();
-                var footer = new EmbedFooterBuilder();
                 if (oldMsg != null)
                 {
-                    updEmbed.Color = oldMsg.Color;
-                    updEmbed.Description = oldMsg.Description;
+                    var author = new EmbedAuthorBuilder
+                    {
+                        Name = oldMsg.Author?.Name,
+                        Url = oldMsg.Author?.IconUrl
+                    };
+                    var footer = new EmbedFooterBuilder
+                    {
+                        Text = oldMsg.Footer?.Text
+                    };
+                    var updEmbed = new EmbedBuilder
+                    {
+                        Author = author,
+                        Footer = footer,
+                        Color = oldMsg.Color,
+                    };
+                    var userField = oldMsg.Fields.FirstOrDefault(x => x.Name == "User");
+                    var length = oldMsg.Fields.First(x => x.Name == "Length");
+                    updEmbed.AddField(x =>
+                    {
+                        x.Name = userField.Name;
+                        x.Value = userField.Value;
+                        x.IsInline = userField.Inline;
+                    });
                     updEmbed.AddField(x =>
                     {
                         x.Name = "Moderator";
                         x.Value = $"{Context.User.Username}";
                         x.IsInline = true;
                     });
+                    try
+                    {
+                        {
+                            updEmbed.AddField(x =>
+                            {
+                                x.Name = length.Name;
+                                x.Value = length.Value;
+                                x.IsInline = length.Inline;
+                            });
+                        }
+                    }
+                    catch {/*ignore*/}
                     updEmbed.AddField(x =>
                     {
                         x.Name = "Reason";
                         x.Value = reason != null ? $"{reason}" : "No Reason Provided";
                         x.IsInline = true;
                     });
-                    if (oldMsg.Footer != null)
-                    {
-                        footer.WithText(oldMsg.Footer.Value.Text);
-                        footer.WithIconUrl(oldMsg.Footer.Value.IconUrl);
-                    }
+                    await Context.Message.DeleteAsync();
+                    await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
                 }
-
-                updEmbed.WithFooter(footer);
-                await Context.Message.DeleteAsync();
-                if (updMsg != null) await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
             }
         }
     }
