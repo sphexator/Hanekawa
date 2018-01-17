@@ -54,7 +54,7 @@ namespace Jibril.Modules.Administration.Services
                 StartUnmuteTimer(x.Userid, after);
             }
 
-            _client.UserJoined += Client_UserJoined;
+            //_client.UserJoined += Client_UserJoined;
         }
         private Task Client_UserJoined(IGuildUser usr)
         {
@@ -63,7 +63,7 @@ namespace Jibril.Modules.Administration.Services
                 var muted = AdminDb.GetMutedUsersid(usr.Id);
 
                 if (muted == null) return Task.CompletedTask;
-                var _ = Task.Run(() => MuteUser(usr).ConfigureAwait(false));
+                //var _ = Task.Run(() => MuteUser(usr).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
