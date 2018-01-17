@@ -33,7 +33,7 @@ namespace Jibril.Modules.Administration.Services
         private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
 
         private readonly DiscordSocketClient _client;
-        public const ulong GuildId = 200265036596379648;
+        public const ulong GuildId = 339370914724446208;
 
         public TimedMuteService(DiscordSocketClient client)
         {
