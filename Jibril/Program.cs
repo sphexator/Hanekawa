@@ -47,7 +47,7 @@ namespace Jibril
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
-            //services.GetRequiredService<TimedMuteService>();
+            services.GetRequiredService<TimedMuteService>();
 
             var scheduler = services.GetService<IScheduler>();
 
