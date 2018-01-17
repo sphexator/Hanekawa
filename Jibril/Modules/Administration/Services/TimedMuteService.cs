@@ -102,11 +102,11 @@ namespace Jibril.Modules.Administration.Services
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = user.GetAvatarUrl(),
-                Name = $"{ActionType.Ungagged}|{user.Username}#{user.DiscriminatorValue}"
+                Name = $"{ActionType.Ungagged} | {user.Username}#{user.DiscriminatorValue}"
             };
             var footer = new EmbedFooterBuilder
             {
-                Text = $"ID:{user.Id}|{DateTime.UtcNow.Humanize()}"
+                Text = $"ID:{user.Id} | {DateTime.UtcNow}"
             };
             var embed = new EmbedBuilder
             {

@@ -210,11 +210,11 @@ namespace Jibril.Modules.Administration
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = mutedUser.GetAvatarUrl(),
-                Name = $"Case {caseid[0]}|{ActionType.Gagged}|{mutedUser.Username}#{mutedUser.DiscriminatorValue}"
+                Name = $"Case {caseid[0]} | {ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
             };
             var footer = new EmbedFooterBuilder
             {
-                Text = $"ID:{mutedUser.Id}|{DateTime.UtcNow.Humanize()}"
+                Text = $"ID:{mutedUser.Id} | {DateTime.UtcNow}"
             };
             var embed = new EmbedBuilder
             {

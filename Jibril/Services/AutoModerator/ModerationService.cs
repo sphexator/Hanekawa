@@ -197,11 +197,11 @@ namespace Jibril.Services.AutoModerator
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = user.GetAvatarUrl(),
-                Name = $"Case {caseid[0]}|{ActionType.Gagged}|{user.Username}#{user.DiscriminatorValue}"
+                Name = $"Case {caseid[0]} | {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
             };
             var footer = new EmbedFooterBuilder
             {
-                Text = $"ID:{user.Id}|{DateTime.UtcNow.Humanize()}"
+                Text = $"ID:{user.Id} | {DateTime.UtcNow}"
             };
             var embed = new EmbedBuilder
             {
