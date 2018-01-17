@@ -7,11 +7,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
 using Jibril.Services.AutoModerator.Perspective.Models;
-using Jibril.Services.Common;
+using Jibril.Services.Logging;
 using Newtonsoft.Json;
 using Quartz.Util;
 
@@ -187,34 +188,63 @@ namespace Jibril.Services.AutoModerator
             return result;
         }
 
-        private EmbedBuilder AutoModResponse(IUser user, string reason, string message)
+        private static EmbedBuilder AutoModResponse(IUser user, string reason, string message, string length = null)
         {
             var time = DateTime.Now;
             AdminDb.AddActionCase(user, time);
             var caseid = AdminDb.GetActionCaseID(time);
-            var content = $"🔇 *Gagged* \n" +
-                          $"User: {user.Mention}. ({user.Username} | **{user.Id}**)";
-            var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}",
-                Colours.FailColour, user);
+
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = user.GetAvatarUrl(),
+                Name = $"Case {caseid[0]}|{ActionType.Gagged}|{user.Username}#{user.DiscriminatorValue}"
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = $"ID:{user.Id}|{DateTime.UtcNow.Humanize()}"
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.FailColour),
+                Author = author,
+                Footer = footer
+            };
+            embed.AddField(x =>
+            {
+                x.Name = "User";
+                x.Value = $"{user.Mention}";
+                x.IsInline = true;
+            });
             embed.AddField(x =>
             {
                 x.Name = "Moderator";
-                x.Value = "Auto Moderator";
+                x.Value = $"Auto Moderator";
                 x.IsInline = true;
             });
+            if (length != null)
+            {
+                embed.AddField(x =>
+                {
+                    x.Name = "Length";
+                    x.Value = $"{length}";
+                    x.IsInline = true;
+                });
+            }
             embed.AddField(x =>
             {
                 x.Name = "Reason";
                 x.Value = $"{reason}";
                 x.IsInline = true;
             });
-            embed.AddField(x =>
+            if (message.Length < 1000)
             {
-                x.Name = "Message";
-                x.Value = $"{message}";
-                x.IsInline = false;
-            });
-
+                embed.AddField(x =>
+                {
+                    x.Name = "Message";
+                    x.Value = $"{message}";
+                    x.IsInline = false;
+                });
+            }
             return embed;
         }
     }

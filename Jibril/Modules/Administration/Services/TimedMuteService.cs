@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Common.Collections;
 using Jibril.Data.Variables;
 using Jibril.Services.Common;
+using Jibril.Services.Logging;
 
 namespace Jibril.Modules.Administration.Services
 {
@@ -89,7 +91,7 @@ namespace Jibril.Modules.Administration.Services
         public async Task UnmuteUser(IGuildUser usr, MuteType type = MuteType.All)
         {
             StopUnmuteTimer(usr.Id);
-            try { await usr.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch { }
+            try { await usr.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch { /*ignore*/ }
             try { await usr.RemoveRoleAsync(await GetMuteRole(usr.Guild)).ConfigureAwait(false); } catch { /*ignore*/ }
             AdminDb.RemoveTimedMute(GuildId, usr.Id);
             UserUnmuted(usr, MuteType.All);
@@ -97,10 +99,27 @@ namespace Jibril.Modules.Administration.Services
 
         public async Task LogUnmute(SocketGuild guild, IGuildUser user)
         {
-            var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
-            var content = "🔊 *Ungagged* \n" +
-                          $"User: {user.Mention}. (**{user.Id}**)";
-            var embed = EmbedGenerator.FooterEmbed(content, $"", Colours.OKColour, user);
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = user.GetAvatarUrl(),
+                Name = $"{ActionType.Ungagged}|{user.Username}#{user.DiscriminatorValue}"
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = $"ID:{user.Id}|{DateTime.UtcNow.Humanize()}"
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.OKColour),
+                Author = author,
+                Footer = footer
+            };
+            embed.AddField(x =>
+            {
+                x.Name = "User";
+                x.Value = $"{user.Mention}";
+                x.IsInline = true;
+            });
             var log = guild.GetTextChannel(339381104534355970);
             await log.SendMessageAsync("", false, embed.Build());
         }

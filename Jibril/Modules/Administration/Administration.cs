@@ -6,10 +6,12 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
+using Jibril.Services.Logging;
 
 namespace Jibril.Modules.Administration
 {
@@ -107,6 +109,8 @@ namespace Jibril.Modules.Administration
                 await Context.Message.DeleteAsync();
                 var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
                 await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+
+                await MuteLogResponse(Context.Guild, Context.User, user);
             }
             catch (Exception e)
             {
@@ -127,43 +131,32 @@ namespace Jibril.Modules.Administration
                 await Context.Message.DeleteAsync();
                 var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
                 await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
-
-                var time = DateTime.Now;
-                AdminDb.AddActionCase(user, time);
-                var caseid = AdminDb.GetActionCaseID(time);
-
-                var content = $"🔇 *Gagged* \n" +
-                              $"User: {user.Mention}. (**{user.Id}**)";
-                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
-                embed.AddField(x =>
-                {
-                    x.Name = "Moderator";
-                    x.Value = $"{Context.User.Username}";
-                    x.IsInline = true;
-                });
-                embed.AddField(x =>
-                {
-                    x.Name = "Reason";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-
-                var log = Context.Guild.GetChannel(339381104534355970) as ITextChannel;
-                var msg = await log.SendMessageAsync("", false, embed.Build());
-                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                
+                await MuteLogResponse(Context.Guild, Context.User, user, minutes);
             }
             catch(Exception e)
             {
                 Console.WriteLine(e);
             }
         }
-
-        /*
-        [Command("mute", RunMode = RunMode.Async)]
-        [Alias("Mute", "m")]
+        [Command("unmute", RunMode = RunMode.Async)]
+        [Alias("Unmute", "unm")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireRole(339371670311796736)]
-        public async Task Mute(SocketGuildUser user)
+        public async Task Unmute(SocketGuildUser user)
+        {
+            await _muteService.UnmuteUser(user);
+            await Context.Message.DeleteAsync();
+
+            var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OKColour);
+            await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+        }
+        
+        [Command("softban", RunMode = RunMode.Async)]
+        [Alias("sb")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireRole(339371670311796736)]
+        public async Task Softban(SocketGuildUser user)
         {
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
                 Context.Guild.Roles.Select(r => r.Position).Max())
@@ -201,30 +194,6 @@ namespace Jibril.Modules.Administration
 
                 var channel = Context.Channel as ITextChannel;
                 await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
-
-                var time = DateTime.Now;
-                AdminDb.AddActionCase(user, time);
-                var caseid = AdminDb.GetActionCaseID(time);
-
-                var content = $"🔇 *Gagged* \n" +
-                              $"User: {user.Mention}. (**{user.Id}**)";
-                var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.FailColour, user);
-                embed.AddField(x =>
-                {
-                    x.Name = "Moderator";
-                    x.Value = $"{Context.User.Username}";
-                    x.IsInline = true;
-                });
-                embed.AddField(x =>
-                {
-                    x.Name = "Reason";
-                    x.Value = "N/A";
-                    x.IsInline = true;
-                });
-
-                var log = Context.Guild.GetChannel(339381104534355970) as ITextChannel;
-                var msg = await log.SendMessageAsync("", false, embed.Build());
-                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
             }
             catch
             {
@@ -232,36 +201,55 @@ namespace Jibril.Modules.Administration
             }
         }
 
-        [Command("unmute", RunMode = RunMode.Async)]
-        [Alias("Unmute", "unm")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task Unmute(SocketGuildUser user)
+        private async Task MuteLogResponse(SocketGuild guild, IUser user, IUser mutedUser, int length = 1440)
         {
-            try
-            {
-                if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
-                    Context.Guild.Roles.Select(r => r.Position).Max())
-                {
-                    // Error message
-                    var failEmbed = EmbedGenerator.DefaultEmbed(
-                        $"{Context.User.Mention}, you can't unmute someone with same or higher role then you.",
-                        Colours.FailColour);
-                    await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
-                    return;
-                }
+            var time = DateTime.Now;
+            AdminDb.AddActionCase(user, time);
+            var caseid = AdminDb.GetActionCaseID(time);
 
-                await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
-                var muteRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute");
-                await user.RemoveRoleAsync(muteRole);
-                var embed = EmbedGenerator.DefaultEmbed($"unmuted from {user.Mention}.", Colours.OKColour);
-                await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15));
-            }
-            catch
+            var author = new EmbedAuthorBuilder
             {
-                // Ignore
-            }
+                IconUrl = mutedUser.GetAvatarUrl(),
+                Name = $"Case {caseid[0]}|{ActionType.Gagged}|{mutedUser.Username}#{mutedUser.DiscriminatorValue}"
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = $"ID:{mutedUser.Id}|{DateTime.UtcNow.Humanize()}"
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.FailColour),
+                Author = author,
+                Footer = footer
+            };
+            embed.AddField(x =>
+            {
+                x.Name = "User";
+                x.Value = $"{mutedUser.Mention}";
+                x.IsInline = true;
+            });
+            embed.AddField(x =>
+            {
+                x.Name = "Moderator";
+                x.Value = $"{Context.User.Username}";
+                x.IsInline = true;
+            });
+            embed.AddField(x =>
+            {
+                x.Name = "Length";
+                x.Value = $"{length}";
+                x.IsInline = true;
+            });
+            embed.AddField(x =>
+            {
+                x.Name = "Reason";
+                x.Value = "N/A";
+                x.IsInline = true;
+            });
+
+            var log = guild.GetTextChannel(339381104534355970);
+            var msg = await log.SendMessageAsync("", false, embed.Build());
+            CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
         }
-        */
     }
 }

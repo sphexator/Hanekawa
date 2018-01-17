@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Services.Common;
@@ -37,15 +38,6 @@ namespace Jibril.Services.Logging
             _discord.UserLeft += UserLeft;
             _discord.MessageDeleted += MessageDeleted;
             _discord.MessageUpdated += MessageUpdated;
-        }
-
-        private Task Post(EmbedBuilder embed, SocketTextChannel ch = null)
-        {
-            var _ = Task.Run(async () =>
-            {
-                await ch.SendMessageAsync("", false, embed.Build());
-            });
-            return Task.CompletedTask;
         }
 
         private Task UserJoined(SocketGuildUser user)
@@ -83,27 +75,7 @@ namespace Jibril.Services.Logging
                 try
                 {
                     ApplyBanScheduler(user);
-                    var time = DateTime.Now;
-                    AdminDb.AddActionCase(user, time);
-                    var caseId = AdminDb.GetActionCaseID(time);
-                    var content = $"❌ *bent* \n" +
-                                  $"User: {user.Mention}. (**{user.Id}**)";
-                    var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseId[0]}", Colours.FailColour, user);
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Moderator";
-                        x.Value = "N/A";
-                        x.IsInline = true;
-                    });
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Reason";
-                        x.Value = "N/A";
-                        x.IsInline = true;
-                    });
-                    var log = guild.TextChannels.First(x => x.Id == 339381104534355970);
-                    var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
-                    CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseId[0]);
+                    await LogEmbedBuilder(guild, user, ActionType.Bent, Colours.FailColour);
                 }
                 catch (Exception e)
                 {
@@ -119,25 +91,7 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
-                    var caseid = CaseNumberGenerator.InsertCaseID(user);
-                    var content = $"✔ *unbent* \n" +
-                                  $"user: {user.Mention} (**{user.Id}**)";
-                    var embed = EmbedGenerator.FooterEmbed(content, $"CASE ID: {caseid[0]}", Colours.OKColour, user);
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Moderator";
-                        x.Value = "N/A";
-                        x.IsInline = true;
-                    });
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Reason";
-                        x.Value = "N/A";
-                        x.IsInline = true;
-                    });
-                    var log = guild.TextChannels.First(x => x.Id == 339381104534355970);
-                    var msg = await log.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
-                    CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                    await LogEmbedBuilder(guild, user, ActionType.UnBent, Colours.OKColour);
                 }
                 catch (Exception e)
                 {
@@ -153,12 +107,10 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
-                    var msg = (optMsg.HasValue ? optMsg.Value : null) as IUserMessage;
-                    if (msg == null)
+                    if (!((optMsg.HasValue ? optMsg.Value : null) is IUserMessage msg))
                         return;
 
-                    var channel = ch as ITextChannel;
-                    if (channel == null)
+                    if (!(ch is ITextChannel channel))
                         return;
                     var logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
                     var user = msg.Author;
@@ -173,10 +125,10 @@ namespace Jibril.Services.Logging
                         embed.AddField(efb =>
                         {
                             efb.Name = "Content:";
-                            efb.Value = $"{msg.Content}";
+                            efb.Value = $"{msg.Content.Truncate(1000)}";
                             efb.IsInline = false;
                         });
-                        footer.WithText($"{DateTime.UtcNow} - msg ID: {msg.Id}");
+                        footer.WithText($"{DateTime.UtcNow.Humanize()} - msg ID: {msg.Id}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);
@@ -224,10 +176,10 @@ namespace Jibril.Services.Logging
                         embed.AddField(x =>
                         {
                             x.Name = "Old Message:";
-                            x.Value = $"{msg.Content}";
+                            x.Value = $"{msg.Content.Truncate(1000)}";
                             x.IsInline = false;
                         });
-                        footer.WithText($"{DateTime.UtcNow} - msg ID: {msg.Id}");
+                        footer.WithText($"{DateTime.UtcNow.Humanize()} - msg ID: {msg.Id}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);
@@ -305,5 +257,58 @@ namespace Jibril.Services.Logging
                 else AdminDb.UpdateBan(user);
             }
         }
+
+        private async Task LogEmbedBuilder(SocketGuild guild, IUser user, string actionType, uint colour, int length = 1440)
+        {
+            var time = DateTime.Now;
+            AdminDb.AddActionCase(user, time);
+            var caseid = AdminDb.GetActionCaseID(time);
+
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = user.GetAvatarUrl(),
+                Name = $"Case {caseid[0]}|{actionType}|{user.Username}#{user.DiscriminatorValue}"
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = $"ID:{user.Id}|{DateTime.UtcNow.Humanize()}"
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(colour),
+                Author = author,
+                Footer = footer
+            };
+            embed.AddField(x =>
+            {
+                x.Name = "User";
+                x.Value = $"{user.Mention}";
+                x.IsInline = true;
+            });
+            embed.AddField(x =>
+            {
+                x.Name = "Moderator";
+                x.Value = $"N/A";
+                x.IsInline = true;
+            });
+            embed.AddField(x =>
+            {
+                x.Name = "Reason";
+                x.Value = "N/A";
+                x.IsInline = true;
+            });
+
+            var log = guild.GetTextChannel(339381104534355970);
+            var msg = await log.SendMessageAsync("", false, embed.Build());
+            CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+        }
+    }
+
+    public static class ActionType
+    {
+        public const string Gagged = "🔇Gagged";
+        public const string Ungagged = "🔊UnGagged";
+        public const string Bent = "❌*Bent*";
+        public const string UnBent = "✔*UnBent*";
     }
 }
