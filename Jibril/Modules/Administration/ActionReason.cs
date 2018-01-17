@@ -40,7 +40,6 @@ namespace Jibril.Modules.Administration
                         Color = oldMsg.Color,
                     };
                     var userField = oldMsg.Fields.FirstOrDefault(x => x.Name == "User");
-                    var length = oldMsg.Fields.First(x => x.Name == "Length");
                     updEmbed.AddField(x =>
                     {
                         x.Name = userField.Name;
@@ -55,14 +54,14 @@ namespace Jibril.Modules.Administration
                     });
                     try
                     {
+                        var length = oldMsg.Fields.First(x => x.Name == "Length");
+                        updEmbed.AddField(x =>
                         {
-                            updEmbed.AddField(x =>
-                            {
-                                x.Name = length.Name;
-                                x.Value = length.Value;
-                                x.IsInline = length.Inline;
-                            });
-                        }
+                            x.Name = length.Name;
+                            x.Value = length.Value;
+                            x.IsInline = length.Inline;
+                        });
+
                     }
                     catch {/*ignore*/}
                     updEmbed.AddField(x =>

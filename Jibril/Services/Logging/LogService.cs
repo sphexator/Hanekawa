@@ -308,7 +308,7 @@ namespace Jibril.Services.Logging
     {
         public const string Gagged = "🔇Gagged";
         public const string Ungagged = "🔊UnGagged";
-        public const string Bent = "❌*Bent*";
-        public const string UnBent = "✔*UnBent*";
+        public const string Bent = "❌Bent";
+        public const string UnBent = "✔UnBent";
     }
 }
