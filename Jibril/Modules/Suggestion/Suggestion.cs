@@ -83,14 +83,14 @@ namespace Jibril.Modules.Suggestion
         [Command("denyrequest", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task DenyRequest(uint casenr, [Remainder] string reason)
+        public async Task DenyRequest(uint casenr, [Remainder] string reason = null)
         {
-            var msgIDString = SuggestionDB.SuggestionMessage(casenr);
-            var msgID = Convert.ToUInt64(msgIDString[0]);
+            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
+            var msgId = Convert.ToUInt64(msgIdString[0]);
             var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136) as ITextChannel;
-            var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
-            var oldMsg = updMsg.Embeds.FirstOrDefault();
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
+            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
+            var oldMsg = updMsg?.Embeds.FirstOrDefault();
 
             if (oldMsg == null)
             {
@@ -98,30 +98,30 @@ namespace Jibril.Modules.Suggestion
                 return;
             }
 
-            var updEmbed = new EmbedBuilder();
-            var updAuthor = new EmbedAuthorBuilder();
-            var footer = new EmbedFooterBuilder();
-
-            updEmbed.Color = new Color(Colours.FailColour);
-            updEmbed.Description = oldMsg.Description;
-            updEmbed.Title = oldMsg.Title;
+            var updAuthor = new EmbedAuthorBuilder
+            {
+                IconUrl = oldMsg.Author?.IconUrl,
+                Name = oldMsg.Author?.Name
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = oldMsg.Footer?.Text
+            };
+            var updEmbed = new EmbedBuilder
+            {
+                Color = new Color(Colours.FailColour),
+                Description = oldMsg.Description,
+                Title = oldMsg.Title,
+                Author = updAuthor,
+                Footer = footer
+            };
             updEmbed.AddField(x =>
             {
                 x.Name = $"{Context.User.Username}";
-                if (reason == null)
-                    x.Value = "No reason provided";
-                else
-                    x.Value = $"{reason}";
+                x.Value = reason == null ? "No reason provided" : $"{reason}";
                 x.IsInline = false;
             });
 
-            updAuthor.WithIconUrl(oldMsg.Author.Value.IconUrl);
-            updAuthor.WithName(oldMsg.Author.Value.Name);
-
-            footer.WithText(oldMsg.Footer.Value.Text);
-
-            updEmbed.WithAuthor(updAuthor);
-            updEmbed.WithFooter(footer);
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
         }
@@ -129,13 +129,13 @@ namespace Jibril.Modules.Suggestion
         [Command("approverequest", RunMode = RunMode.Async)]
         [Alias("ar")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ApproveRequest(uint casenr, [Remainder] string reason)
+        public async Task ApproveRequest(uint casenr, [Remainder] string reason = null)
         {
-            var msgIDString = SuggestionDB.SuggestionMessage(casenr);
-            var msgID = Convert.ToUInt64(msgIDString[0]);
+            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
+            var msgId = Convert.ToUInt64(msgIdString[0]);
             var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136) as ITextChannel;
-            var updMsg = await ch.GetMessageAsync(msgID) as IUserMessage;
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
+            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
             var oldMsg = updMsg.Embeds.FirstOrDefault();
 
             if (oldMsg == null)
@@ -144,31 +144,75 @@ namespace Jibril.Modules.Suggestion
                 return;
             }
 
-            var updEmbed = new EmbedBuilder();
-            var updAuthor = new EmbedAuthorBuilder();
-            var footer = new EmbedFooterBuilder();
-
-            updEmbed.Color = new Color(Colours.OKColour);
-            updEmbed.Description = oldMsg.Description;
-            updEmbed.Title = oldMsg.Title;
+            var updAuthor = new EmbedAuthorBuilder
+            {
+                IconUrl = oldMsg.Author?.IconUrl,
+                Name = oldMsg.Author?.Name
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = oldMsg.Footer?.Text
+            };
+            var updEmbed = new EmbedBuilder
+            {
+                Color = new Color(Colours.FailColour),
+                Description = oldMsg.Description,
+                Title = oldMsg.Title,
+                Author = updAuthor,
+                Footer = footer
+            };
             updEmbed.AddField(x =>
             {
                 x.Name = $"{Context.User.Username}";
-                if (reason == null)
-                    x.Value = "No reason provided";
-                else
-                    x.Value = $"{reason}";
+                x.Value = reason == null ? "No reason provided" : $"{reason}";
                 x.IsInline = false;
             });
 
-            updAuthor.WithIconUrl(oldMsg.Author.Value.IconUrl);
-            updAuthor.WithName(oldMsg.Author.Value.Name);
+            await Context.Message.DeleteAsync();
+            await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+        }
 
-            footer.WithText(oldMsg.Footer.Value.Text);
+        [Command("reviewRequest", RunMode = RunMode.Async)]
+        [Alias("rr")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ReviewRequest(uint casenr, [Remainder] string reason = null)
+        {
+            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
+            var msgId = Convert.ToUInt64(msgIdString[0]);
+            var guild = Context.Guild;
+            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
+            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
+            var oldMsg = updMsg?.Embeds.FirstOrDefault();
 
-            updEmbed.WithAuthor(updAuthor);
-            updEmbed.WithFooter(footer);
+            if (oldMsg == null)
+            {
+                Console.Write("updmsg is null");
+                return;
+            }
 
+            var updAuthor = new EmbedAuthorBuilder
+            {
+                IconUrl = oldMsg.Author?.IconUrl,
+                Name = oldMsg.Author?.Name
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = oldMsg.Footer?.Text
+            };
+            var updEmbed = new EmbedBuilder
+            {
+                Color = new Color(Colours.FailColour),
+                Description = oldMsg.Description,
+                Title = oldMsg.Title,
+                Author = updAuthor,
+                Footer = footer
+            };
+            updEmbed.AddField(x =>
+            {
+                x.Name = $"{Context.User.Username}";
+                x.Value = reason == null ? "Under review." : $"{reason}";
+                x.IsInline = false;
+            });
             await Context.Message.DeleteAsync();
             await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
         }
