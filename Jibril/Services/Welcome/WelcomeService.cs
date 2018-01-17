@@ -35,7 +35,7 @@ namespace Jibril.Services.Welcome
                     var imgstr = image;
                     var guild = user.Guild;
                     var channel = guild.GetTextChannel(339371997802790913);
-                    await channel.SendFileAsync(imgstr, "");
+                    await channel.SendFileAsync(imgstr, $"Welcome {user.Mention} to KanColle! Check out #rules and get a colour role at #roles");
                     RemoveImage.WelcomeFileDelete();
                 }
             });
