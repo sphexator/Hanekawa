@@ -20,9 +20,9 @@ namespace Jibril.Modules.Audio
             var client = await channel.ConnectAsync();
 
             var output = CreateStream(url).StandardOutput.BaseStream;
-            var stream = client.CreatePCMStream(AudioApplication.Music, 128 * 1024);
-            await output.CopyToAsync(stream);
-            await stream.FlushAsync().ConfigureAwait(false);
+            var stream = client.CreatePCMStream(AudioApplication.Music);
+            output.CopyToAsync(stream);
+            stream.FlushAsync().ConfigureAwait(false);
         }
 
         private static Process CreateStream(string url)
@@ -32,7 +32,7 @@ namespace Jibril.Modules.Audio
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/C youtube-dl.exe -o - {url} | ffmpeg -i pipe:0 -ac 2 -f s16le -af volume=0.5 -ar 48000 pipe:1",
+                    Arguments = $"/C youtube-dl.exe -o - {url} | ffmpeg -i pipe:0 -ac 2 -f s16le -af {"volume=0.5"} -ar 48000 pipe:1",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
