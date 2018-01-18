@@ -119,7 +119,7 @@ namespace Jibril.Modules.Fleet
                     FleetNormDb.RemoveMember(member, mfc);
                     FleetDb.RemoveFleetMemberCount(mfc);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} has removed {member} from {mfc}",
-                        Colours.OKColour);
+                        Colours.OkColour);
                     await ReplyAsync("", false, embed.Build());
                 }
                 else
@@ -158,7 +158,7 @@ namespace Jibril.Modules.Fleet
                 FleetNormDb.RemoveMember(user, fleet);
                 FleetDb.RemoveFleetMemberCount(fleet);
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} successfully left {fleet}.",
-                    Colours.OKColour);
+                    Colours.OkColour);
                 await ReplyAsync("", false, embed.Build());
             }
             else

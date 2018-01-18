@@ -37,7 +37,7 @@ namespace Jibril.Modules.Administration
                 var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).Flatten();
                 await channel.DeleteMessagesAsync(messagesToDelete);
                 var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!",
-                    Colours.OKColour);
+                    Colours.OkColour);
                 var guild = Context.Guild;
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             }
@@ -68,7 +68,7 @@ namespace Jibril.Modules.Administration
 
             var guild = Context.Guild;
             var embed = EmbedGenerator.DefaultEmbed($"Banned {user.Mention} from {Context.Guild.Name}",
-                Colours.OKColour);
+                Colours.OkColour);
 
             await guild.AddBanAsync(user, 7, $"{Context.User}").ConfigureAwait(false);
             await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
@@ -92,7 +92,7 @@ namespace Jibril.Modules.Administration
             }
 
             var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
-                Colours.OKColour);
+                Colours.OkColour);
             await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             await user.KickAsync().ConfigureAwait(false);
         }
@@ -107,7 +107,7 @@ namespace Jibril.Modules.Administration
             {
                 await _muteService.TimedMute(user, TimeSpan.FromMinutes(1440));
                 await Context.Message.DeleteAsync();
-                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
+                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
                 await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
 
                 await MuteLogResponse(Context.Guild, Context.User, user);
@@ -129,7 +129,7 @@ namespace Jibril.Modules.Administration
             {
                 await _muteService.TimedMute(user, TimeSpan.FromMinutes(minutes));
                 await Context.Message.DeleteAsync();
-                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OKColour);
+                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
                 await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
                 
                 await MuteLogResponse(Context.Guild, Context.User, user, minutes);
@@ -148,7 +148,7 @@ namespace Jibril.Modules.Administration
             await _muteService.UnmuteUser(user);
             await Context.Message.DeleteAsync();
 
-            var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OKColour);
+            var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OkColour);
             await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
         }
         

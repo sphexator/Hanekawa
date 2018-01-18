@@ -382,7 +382,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var result = new List<MutedUsers>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM muteconfig";
+            var str = $"SELECT * FROM mute";
             var reader = database.FireCommand(str);
 
             while (reader.Read())

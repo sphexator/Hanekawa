@@ -55,7 +55,7 @@ namespace Jibril.Modules.Voice
                         if (Context.User as IVoiceState == null) return;
                         await user.ModifyAsync(x => x.ChannelId = (Context.User as IVoiceState).VoiceChannel.Id);
                         var embed = EmbedGenerator.DefaultEmbed(
-                            $"Moved {user.Username} to {Context.User.Username} voice channel", Colours.OKColour);
+                            $"Moved {user.Username} to {Context.User.Username} voice channel", Colours.OkColour);
                         await ReplyAsync("", false, embed.Build());
                     }
                     else

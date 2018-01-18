@@ -110,7 +110,7 @@ namespace Jibril.Modules.Administration.Services
             };
             var embed = new EmbedBuilder
             {
-                Color = new Color(Colours.OKColour),
+                Color = new Color(Colours.OkColour),
                 Author = author,
                 Footer = footer
             };

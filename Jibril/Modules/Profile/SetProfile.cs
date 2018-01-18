@@ -30,7 +30,7 @@ namespace Jibril.Modules.Profile
             {
                 GambleDB.RemoveCredit(user, 5000);
                 ProfileDB.AddProfileURL(user, url);
-                var embed = EmbedGenerator.DefaultEmbed("Purchased and applied background", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed("Purchased and applied background", Colours.OkColour);
                 await ReplyAndDeleteAsync($"", false, embed.Build(), TimeSpan.FromSeconds(10));
             }
             else
@@ -55,7 +55,7 @@ namespace Jibril.Modules.Profile
             if (pfp != "o")
             {
                 ProfileDB.RemoveProfileURL(user);
-                var embed = EmbedGenerator.DefaultEmbed("Removed background", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed("Removed background", Colours.OkColour);
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10));
             }
             else

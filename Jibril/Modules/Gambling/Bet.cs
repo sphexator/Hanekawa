@@ -50,7 +50,7 @@ namespace Jibril.Modules.Gambling
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed(
                         $"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n" +
-                        $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OKColour);
+                        $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OkColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
@@ -90,7 +90,7 @@ namespace Jibril.Modules.Gambling
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed(
                         $"Congratulations {user.Mention}!, You made a total of ${award} off ${amount}!\n" +
-                        $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OKColour);
+                        $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OkColour);
                     await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
@@ -132,7 +132,7 @@ namespace Jibril.Modules.Gambling
                     var award = bet * 2;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
-                        Colours.OKColour);
+                        Colours.OkColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else if (rolled >= 50)
@@ -140,7 +140,7 @@ namespace Jibril.Modules.Gambling
                     var award = bet;
                     GambleDB.AddCredit(user, award);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
-                        Colours.OKColour);
+                        Colours.OkColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
@@ -177,7 +177,7 @@ namespace Jibril.Modules.Gambling
                     var cward = Convert.ToInt32(amount);
                     GambleDB.AddCredit(user, cward);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
-                        Colours.OKColour);
+                        Colours.OkColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else if (rolled >= 50)
@@ -186,7 +186,7 @@ namespace Jibril.Modules.Gambling
                     var cward = Convert.ToInt32(amount);
                     GambleDB.AddCredit(user, cward);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
-                        Colours.OKColour);
+                        Colours.OkColour);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else

@@ -30,7 +30,7 @@ namespace Jibril.Modules.Administration
                     WarningDB.AddWarn(user, Context.User, "No Reason Provided");
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
-                    var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                    var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                     await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                               $"\n" +
@@ -42,7 +42,7 @@ namespace Jibril.Modules.Administration
                     WarningDB.AddWarn(user, Context.User, reason.Replace("'", ""));
                     await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
-                    var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                    var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                     await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                     await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                               $"\n" +
@@ -65,7 +65,7 @@ namespace Jibril.Modules.Administration
                         await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
 
                         var content = $"{Context.User} warned {user}.";
-                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync(
                             $"You've been warned on KanColle! & threshold for mute has been met.\n" +
@@ -76,7 +76,7 @@ namespace Jibril.Modules.Administration
                     else
                     {
                         var content = $"{Context.User} warned {user}.";
-                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +
@@ -95,7 +95,7 @@ namespace Jibril.Modules.Administration
                         await user.AddRoleAsync(muteRole).ConfigureAwait(false);
                         await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                         var content = $"{Context.User} warned {user}.";
-                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +
@@ -105,7 +105,7 @@ namespace Jibril.Modules.Administration
                     else
                     {
                         var content = $"{Context.User} warned {user}.";
-                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OKColour);
+                        var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                         await dm.SendMessageAsync($"You've been warned on KanColle!\n" +
                                                   $"\n" +

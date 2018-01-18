@@ -22,7 +22,7 @@ namespace Jibril.Modules.Suggestion
         {
             try
             {
-                var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OKColour);
+                var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OkColour);
                 await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
                 await Context.Message.DeleteAsync();
 
@@ -201,7 +201,7 @@ namespace Jibril.Modules.Suggestion
             };
             var updEmbed = new EmbedBuilder
             {
-                Color = new Color(Colours.FailColour),
+                Color = new Color(Colours.ReviewColour),
                 Description = oldMsg.Description,
                 Title = oldMsg.Title,
                 Author = updAuthor,

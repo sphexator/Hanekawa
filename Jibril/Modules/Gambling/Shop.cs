@@ -99,7 +99,7 @@ namespace Jibril.Modules.Gambling
                 GambleDB.RemoveCredit(user, shoplist[item].Price);
 
                 var embed = EmbedGenerator.DefaultEmbed(
-                    $"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OKColour);
+                    $"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OkColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else if (userdata.Tokens < shoplist[item].Price)
@@ -130,7 +130,7 @@ namespace Jibril.Modules.Gambling
                 GambleDB.ChangeShopStockAmount();
                 var embed = EmbedGenerator.DefaultEmbed(
                     $"{user.Username} bought {shoplist[item].Item} for {shoplist[item].Price} tokens",
-                    Colours.OKColour);
+                    Colours.OkColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
             else if (userdata.Event_tokens < shoplist[item].Price)
@@ -156,7 +156,7 @@ namespace Jibril.Modules.Gambling
                 GambleDB.UpdateRoleStatus(user);
                 var role = await Context.Guild.CreateRoleAsync($"{name}", GuildPermissions.None);
                 await user.AddRoleAsync(role);
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} created role {name}", Colours.OKColour);
+                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} created role {name}", Colours.OkColour);
                 await ReplyAsync("", false, embed.Build());
             }
             else

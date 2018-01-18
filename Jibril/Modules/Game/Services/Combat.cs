@@ -58,7 +58,7 @@ namespace Jibril.Modules.Game.Services
                 var content = $"**{user.Username}** hit and killed **{enemyData.EnemyName}** for **{userDamage}**\n" +
                               $"\n" +
                               $"**{user.Username}** received **{enemyData.ExpGain}** experience and **${enemyData.CurrenyGain}** for killing **{enemyData.EnemyName}**";
-                var embed = CombatResponse.CombatResponseMessage(enemyData, Colours.OKColour, content, userTotalHp,
+                var embed = CombatResponse.CombatResponseMessage(enemyData, Colours.OkColour, content, userTotalHp,
                     enemyTotalHp);
                 // Killed enemy
                 GameDatabase.FightOver(enemyData.ExpGain, enemyData.CurrenyGain, user);

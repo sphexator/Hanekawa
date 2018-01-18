@@ -30,7 +30,7 @@ namespace Jibril.Modules.Game
                 var GameStatus = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
                 if (GameStatus.Combatstatus == 1)
                 {
-                    var embed = CombatResponse.Combat(user, Colours.OKColour, GameStatus);
+                    var embed = CombatResponse.Combat(user, Colours.OkColour, GameStatus);
                     await ReplyAsync($"{user.Username}, You're already in a fight, use !attack to fight the enemy",
                         false, embed.Build());
                 }

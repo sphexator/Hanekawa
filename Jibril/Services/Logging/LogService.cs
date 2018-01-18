@@ -47,7 +47,7 @@ namespace Jibril.Services.Logging
                 var content = $"" +
                               $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
                               $"Account created: {user.CreatedAt}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OKColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OkColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -91,7 +91,7 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
-                    await LogEmbedBuilder(guild, user, ActionType.UnBent, Colours.OKColour);
+                    await LogEmbedBuilder(guild, user, ActionType.UnBent, Colours.OkColour);
                 }
                 catch (Exception e)
                 {
