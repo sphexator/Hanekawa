@@ -59,8 +59,8 @@ namespace Jibril.Modules.Suggestion
                     var suggestMsg = await sc.SendMessageAsync("", false, embed.Build());
                     SuggestionDB.UpdateSuggestion(suggestMsg.Id.ToString(), suggestionNr[0]);
 
-                    Emote.TryParse("<:yes:401458712805638144>", out var yesEmote);
-                    Emote.TryParse("<:no:401458713195708416>", out var noEmote);
+                    Emote.TryParse("<:1yes:403870491749777411>", out var yesEmote);
+                    Emote.TryParse("<:2no:403870492206825472>", out var noEmote);
                     IEmote iemoteYes = yesEmote;
                     IEmote iemoteNo = noEmote;
                     await Task.Delay(260);
