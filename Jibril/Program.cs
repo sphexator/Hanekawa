@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Modules.Administration.Services;
+using Jibril.Modules.Audio.Service;
 using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
@@ -68,6 +69,7 @@ namespace Jibril
             services.AddSingleton(_client);
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
+            services.AddSingleton<AudioService>();
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();

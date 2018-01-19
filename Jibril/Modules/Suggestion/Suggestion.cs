@@ -155,7 +155,7 @@ namespace Jibril.Modules.Suggestion
             };
             var updEmbed = new EmbedBuilder
             {
-                Color = new Color(Colours.FailColour),
+                Color = new Color(Colours.OkColour),
                 Description = oldMsg.Description,
                 Title = oldMsg.Title,
                 Author = updAuthor,
