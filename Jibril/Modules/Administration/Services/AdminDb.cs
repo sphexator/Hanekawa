@@ -387,7 +387,7 @@ namespace Jibril.Modules.Administration.Services
 
             while (reader.Read())
             {
-                var guildid = (ulong)reader["guilid"];
+                var guildid = (ulong)reader["guildid"];
                 var userId = (ulong)reader["user_id"];
                 var time = (DateTime)reader["time"];
 
