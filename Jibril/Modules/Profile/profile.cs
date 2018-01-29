@@ -27,9 +27,9 @@ namespace Jibril.Modules.Profile
             var randomString = RandomStringGenerator.StringGenerator();
             var avatar = await DetectBackground.AvatarGenerator(user, randomString);
             var background = await DetectBackground.GetBackground(user, randomString, userData, avatar);
-            var finalizeBG = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
+            var finalizeBg = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
 
-            await Context.Channel.SendFileAsync(finalizeBG);
+            await Context.Channel.SendFileAsync(finalizeBg);
             RemoveImage.RemoveSavedProfile();
         }
 

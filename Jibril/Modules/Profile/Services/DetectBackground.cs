@@ -11,18 +11,17 @@ using SixLabors.Primitives;
 
 namespace Jibril.Modules.Profile.Services
 {
-    public class DetectBackground
+    public static class DetectBackground
     {
         public static async Task<string> GetBackground(SocketUser user, string randomString, UserData userData,
             string avatar)
         {
             var checkBackground = DatabaseService.UserData(user).FirstOrDefault();
             var background = $"Data/Images/Profile/Cache/{randomString}background.png";
-            if (checkBackground.Profilepic != "o")
+            try
             {
                 var httpClient = new HttpClient();
-                HttpResponseMessage response = null;
-                response = await httpClient.GetAsync(checkBackground.Profilepic);
+                var response = await httpClient.GetAsync(checkBackground.Profilepic);
                 var inputStream = await response.Content.ReadAsStreamAsync();
                 using (var img = Image.Load(inputStream))
                 {
@@ -30,11 +29,10 @@ namespace Jibril.Modules.Profile.Services
                         .Resize(300, 300));
                     img.Save(background);
                 }
-
                 var fbg = BuildBackground(user, background, randomString, userData, avatar);
                 return fbg;
             }
-            else
+            catch
             {
                 var rand = new Random();
                 var randomImage = rand.Next(Images.Profile.Length);
@@ -43,25 +41,24 @@ namespace Jibril.Modules.Profile.Services
                 {
                     img.Save(background);
                 }
-
                 var fbg = BuildBackground(user, background, randomString, userData, avatar);
                 return fbg;
             }
         }
-
-        public static string BuildBackground(SocketUser user, string background, string randomString, UserData userData,
+        private static string BuildBackground(SocketUser user, string background, string randomString,
+            UserData userData,
             string aviS)
         {
-            var tmptPath = $"Data/Images/Profile/Template/profile.png";
+            const string tmptPath = "Data/Images/Profile/Template/profile.png";
             var classPath = $"Data/Images/Profile/ShipClass/{userData.ShipClass}.png";
             var avi = Image.Load(aviS);
-            var Shipclass = Image.Load(classPath);
-            var Template = Image.Load(tmptPath);
+            var shipclass = Image.Load(classPath);
+            var template = Image.Load(tmptPath);
             using (var img = Image.Load(background))
             {
                 img.Mutate(x => x
-                    .DrawImage(Template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
-                    .DrawImage(Shipclass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default)
+                    .DrawImage(template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
+                    .DrawImage(shipclass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default)
                     .DrawImage(avi, new Size(86, 86), new Point(7, 87), GraphicsOptions.Default)
                 );
                 img.Save(background);
@@ -73,7 +70,7 @@ namespace Jibril.Modules.Profile.Services
         {
             var filePath = $"Data/Images/Profile/Cache/{randomString}avi.png";
             var httpclient = new HttpClient();
-            HttpResponseMessage response = null;
+            HttpResponseMessage response;
 
             try
             {
@@ -84,7 +81,6 @@ namespace Jibril.Modules.Profile.Services
                 response = await httpclient.GetAsync(
                     "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png");
             }
-
             var inputStream = await response.Content.ReadAsStreamAsync();
             using (var img = Image.Load(inputStream))
             {
