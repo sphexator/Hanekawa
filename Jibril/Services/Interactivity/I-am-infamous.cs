@@ -48,12 +48,20 @@ namespace Jibril.Services.Interactivity
 
         private async Task Demote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, SocketRole role)
         {
-            foreach (var x in mvps) await x.RemoveRoleAsync(role);
+            foreach (var x in mvps)
+            {
+                await x.RemoveRoleAsync(role);
+                await Task.Delay(1000);
+            }
         }
 
         private async Task Promote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, SocketRole role)
         {
-            foreach (var x in mvps) await x.AddRoleAsync(role);
+            foreach (var x in mvps)
+            {
+                await x.AddRoleAsync(role);
+                await Task.Delay(1000);
+            }
         }
 
         private Task MessageCounter(SocketMessage msg)
