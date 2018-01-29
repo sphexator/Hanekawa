@@ -6,7 +6,7 @@ using Discord;
 using Discord.WebSocket;
 using Quartz;
 
-namespace Jibril.Services.Interactivity
+namespace Jibril.Services.Level
 {
     public class I_am_infamous : IJob
     {

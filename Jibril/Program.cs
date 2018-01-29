@@ -11,7 +11,6 @@ using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
-using Jibril.Services.Interactivity;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
 using Jibril.Services.Reaction;
