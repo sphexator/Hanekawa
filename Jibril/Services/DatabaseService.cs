@@ -82,6 +82,16 @@ namespace Jibril.Services
             database.CloseConnection();
         }
 
+        //MVP Counter
+        public static void AddMessageCounter(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str =
+                $"UPDATE exp SET mvpCounter = mvpCounter + 1 WHERE user_id = '{user.Id}'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static List<UserData> UserData(IUser user)
         {
             var result = new List<UserData>();
