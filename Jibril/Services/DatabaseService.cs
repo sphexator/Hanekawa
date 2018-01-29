@@ -92,6 +92,24 @@ namespace Jibril.Services
             database.CloseConnection();
         }
 
+        public static List<ulong> GetActiveUsers()
+        {
+            var database = new DatabaseService("hanekawa");
+            var result = new List<ulong>();
+            var str = "SELECT * FROM exp ORDER BY mvpCounter DESC LIMIT 5";
+            var reader = database.FireCommand(str);
+
+            while (reader.Read())
+            {
+                var userId = (string)reader["user_id"];
+                var userIdConvert = uint.Parse(userId);
+
+                result.Add(userIdConvert);
+            }
+            database.CloseConnection();
+            return result;
+        }
+
         public static List<UserData> UserData(IUser user)
         {
             var result = new List<UserData>();

@@ -11,6 +11,7 @@ using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
+using Jibril.Services.Interactivity;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
 using Jibril.Services.Reaction;
@@ -49,6 +50,7 @@ namespace Jibril
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
+            services.GetRequiredService<I_am_infamous>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -74,6 +76,7 @@ namespace Jibril
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
+            services.AddSingleton<I_am_infamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();
