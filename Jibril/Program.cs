@@ -13,6 +13,7 @@ using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
+using Jibril.Services.Loot;
 using Jibril.Services.Reaction;
 using Jibril.Services.Welcome;
 using Microsoft.Extensions.Configuration;
@@ -50,6 +51,7 @@ namespace Jibril
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
             services.GetRequiredService<I_am_infamous>();
+            services.GetRequiredService<LootCrates>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -74,6 +76,7 @@ namespace Jibril
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
+            services.AddSingleton<LootCrates>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<I_am_infamous>();
             services.AddSingleton<TimedMuteService>();
