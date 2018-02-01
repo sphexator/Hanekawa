@@ -16,6 +16,7 @@ namespace Jibril.Services.Loot
             _discord = discord;
 
             _discord.MessageReceived += CrateTrigger;
+            _discord.ReactionAdded += CrateClaimer;
         }
 
         private Task CrateTrigger(SocketMessage msg)
@@ -31,6 +32,16 @@ namespace Jibril.Services.Loot
                 {
 
                 }
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction reaction)
+        {
+            var _ = Task.Run(() =>
+            {
+                if (msg.Value.Author.IsBot != true) return;
+
             });
             return Task.CompletedTask;
         }
