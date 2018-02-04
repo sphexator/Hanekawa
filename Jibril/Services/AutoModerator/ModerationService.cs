@@ -45,6 +45,7 @@ namespace Jibril.Services.AutoModerator
                     if (staffCheck != true)
                     {
                         if (rawMessage.Content.IsDiscordInvite())
+                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -67,10 +68,13 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-
+                        }
                         if (rawMessage.Content.IsGoogleLink())
+                        {
                             await rawMessage.DeleteAsync();
+                        }
                         if (rawMessage.Content.IsScamLink())
+                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -94,8 +98,9 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-
+                        }
                         if (rawMessage.Content.Length >= 1500)
+                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -117,10 +122,12 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-
+                        }
                         var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
                         if (userdata.Level <= 3 && rawMessage.Content.IsUrl())
+                        {
                             await rawMessage.DeleteAsync();
+                        }
                     }
                 }
                 catch
