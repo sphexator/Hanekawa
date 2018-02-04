@@ -123,11 +123,13 @@ namespace Jibril.Services.AutoModerator
                                 return;
                             }
                         }
+                        /*
                         var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
                         if (userdata.Level <= 3 && rawMessage.Content.IsUrl())
                         {
                             await rawMessage.DeleteAsync();
                         }
+                        */
                     }
                 }
                 catch
