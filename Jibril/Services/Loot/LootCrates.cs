@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -11,9 +8,9 @@ namespace Jibril.Services.Loot
 {
     public class LootCrates
     {
-        private readonly DiscordSocketClient _client;
         private readonly List<ulong> _crateMessage = new List<ulong>();
         private readonly List<ulong> _lootChannels = new List<ulong>();
+        private readonly DiscordSocketClient _client;
 
         public LootCrates(DiscordSocketClient client)
         {
@@ -35,7 +32,7 @@ namespace Jibril.Services.Loot
                 var rand = new Random();
                 var chance = rand.Next(0, 1000);
                 Console.Write(chance);
-                if (chance < 200)
+                if (chance < 300)
                 {
                     var ch = message.Channel as SocketGuildChannel;
                     var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(

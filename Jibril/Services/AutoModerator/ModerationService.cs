@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -7,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
@@ -28,11 +28,11 @@ namespace Jibril.Services.AutoModerator
             _discord = discord;
             _provider = provider;
 
-            _discord.MessageReceived += _discord_MessageReceived;
+            _discord.MessageReceived += Filter;
             _discord.MessageReceived += PerspectiveApi;
         }
 
-        private Task _discord_MessageReceived(SocketMessage rawMessage)
+        private Task Filter(SocketMessage rawMessage)
         {
             var _ = Task.Run(async () =>
             {
@@ -40,8 +40,7 @@ namespace Jibril.Services.AutoModerator
                 if (message.Source != MessageSource.User) return;
                 try
                 {
-                    var user = rawMessage.Author as SocketGuildUser;
-                    if (user == null) return;
+                    if (!(rawMessage.Author is SocketGuildUser user)) return;
                     var staffCheck = user.GuildPermissions.ManageMessages;
                     if (staffCheck != true)
                     {
@@ -61,11 +60,14 @@ namespace Jibril.Services.AutoModerator
                                 var embed = AutoModResponse(user, reason, msg);
 
                                 await ch.SendMessageAsync("", false, embed.Build());
+                                return;
                             }
                             catch (Exception e)
                             {
                                 Console.WriteLine(e);
+                                return;
                             }
+
                         if (rawMessage.Content.IsGoogleLink())
                             await rawMessage.DeleteAsync();
                         if (rawMessage.Content.IsScamLink())
@@ -85,11 +87,14 @@ namespace Jibril.Services.AutoModerator
                                 var embed = AutoModResponse(user, reason, msg);
 
                                 await ch.SendMessageAsync("", false, embed.Build());
+                                return;
                             }
                             catch (Exception e)
                             {
                                 Console.WriteLine(e);
+                                return;
                             }
+
                         if (rawMessage.Content.Length >= 1500)
                             try
                             {
@@ -105,15 +110,22 @@ namespace Jibril.Services.AutoModerator
                                 embed.ThumbnailUrl = "http://i0.kym-cdn.com/photos/images/original/000/834/934/f64.gif";
 
                                 await ch.SendMessageAsync("", false, embed.Build());
+                                return;
                             }
                             catch (Exception e)
                             {
                                 Console.WriteLine(e);
+                                return;
                             }
+
+                        var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
+                        if (userdata.Level <= 3 && rawMessage.Content.IsUrl())
+                            await rawMessage.DeleteAsync();
                     }
                 }
                 catch
                 {
+                    // ignored
                 }
             });
             return Task.CompletedTask;
@@ -222,14 +234,12 @@ namespace Jibril.Services.AutoModerator
                 x.IsInline = true;
             });
             if (length != null)
-            {
                 embed.AddField(x =>
                 {
                     x.Name = "Length";
                     x.Value = $"{length}";
                     x.IsInline = true;
                 });
-            }
             embed.AddField(x =>
             {
                 x.Name = "Reason";
@@ -237,14 +247,12 @@ namespace Jibril.Services.AutoModerator
                 x.IsInline = true;
             });
             if (message.Length < 1000)
-            {
                 embed.AddField(x =>
                 {
                     x.Name = "Message";
                     x.Value = $"{message}";
                     x.IsInline = false;
                 });
-            }
             return embed;
         }
     }

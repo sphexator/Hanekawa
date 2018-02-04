@@ -50,8 +50,8 @@ namespace Jibril
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
-            services.GetRequiredService<I_am_infamous>();
-            services.GetRequiredService<LootCrates>();
+            //services.GetRequiredService<I_am_infamous>();
+            //services.GetRequiredService<LootCrates>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -76,9 +76,9 @@ namespace Jibril
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
-            services.AddSingleton<LootCrates>();
             services.AddSingleton<ModerationService>();
-            services.AddSingleton<I_am_infamous>();
+            //services.AddSingleton<LootCrates>();
+            //services.AddSingleton<I_am_infamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();
