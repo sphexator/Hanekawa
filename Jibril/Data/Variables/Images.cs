@@ -17,7 +17,16 @@
             "Data/Images/Welcome/Template/12.png",
             "Data/Images/Welcome/Template/13.png",
             "Data/Images/Welcome/Template/14.png",
-            "Data/Images/Welcome/Template/15.png"
+            "Data/Images/Welcome/Template/15.png",
+            "Data/Images/Welcome/Template/16.png",
+            "Data/Images/Welcome/Template/17.png",
+            "Data/Images/Welcome/Template/18.png",
+            "Data/Images/Welcome/Template/19.png",
+            "Data/Images/Welcome/Template/20.png",
+            "Data/Images/Welcome/Template/21.png",
+            "Data/Images/Welcome/Template/22.png",
+            "Data/Images/Welcome/Template/23.png",
+            "Data/Images/Welcome/Template/24.png"
         };
 
         public static string[] Profile =
