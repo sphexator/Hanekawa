@@ -12,7 +12,9 @@ namespace Jibril.Services.Loot
     public class LootCrates
     {
         private readonly List<ulong> _crateMessage = new List<ulong>();
+        private readonly List<ulong> _sCMessage = new List<ulong>();
         private readonly List<ulong> _lootChannels = new List<ulong>();
+
         private List<CooldownUser> _users = new List<CooldownUser>();
         private readonly DiscordSocketClient _client;
 
@@ -34,6 +36,7 @@ namespace Jibril.Services.Loot
             {
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
+                if (!_lootChannels.Contains(msg.Channel.Id)) return;
                 var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
                 if (cd == false) return;
 
@@ -53,27 +56,51 @@ namespace Jibril.Services.Loot
             return Task.CompletedTask;
         }
 
+        public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
+        {
+            var triggerMsg = await ch.SendMessageAsync(
+                $"{user.Mention} has spawned a crate! \nClick the reaction on this message to claim it");
+            Emote.TryParse("<:roosip:362610653766221834>", out var emote);
+            IEmote iemoteYes = emote;
+            await triggerMsg.AddReactionAsync(iemoteYes);
+            _sCMessage.Add(triggerMsg.Id);
+        }
+
         private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction reaction)
         {
             var _ = Task.Run(async () =>
             {
                 if (msg.Value.Author.IsBot != true) return;
-                if (!_crateMessage.Contains(msg.Id)) return;
+                if (!_crateMessage.Contains(msg.Id) || !_sCMessage.Contains(msg.Id)) return;
                 if (reaction.User.Value.IsBot) return;
-                if (!_lootChannels.Contains(msg.Value.Channel.Id)) return;
                 if (reaction.Emote.Name != "roosip") return;
                 Console.WriteLine("Reaction passed");
                 try
                 {
-                    var message = await msg.GetOrDownloadAsync();
-                    await message.DeleteAsync();
-                    var user = reaction.User.Value;
-                    var rand = new Random();
-                    var reward = rand.Next(15, 150);
-                    var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
-                    LevelDatabase.AddExperience(user, reward, reward);
-                    await Task.Delay(5000);
-                    await triggermsg.DeleteAsync();
+                    if(_crateMessage.Contains(msg.Id))
+                    {
+                        var message = await msg.GetOrDownloadAsync();
+                        await message.DeleteAsync();
+                        var user = reaction.User.Value;
+                        var rand = new Random();
+                        var reward = rand.Next(15, 150);
+                        var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
+                        LevelDatabase.AddExperience(user, reward, reward);
+                        await Task.Delay(5000);
+                        await triggermsg.DeleteAsync();
+                    }
+                    else
+                    {
+                        var message = await msg.GetOrDownloadAsync();
+                        await message.DeleteAsync();
+                        var user = reaction.User.Value;
+                        var rand = new Random();
+                        var reward = rand.Next(150, 250);
+                        var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
+                        LevelDatabase.AddExperience(user, reward, reward);
+                        await Task.Delay(5000);
+                        await triggermsg.DeleteAsync();
+                    }
                 }
                 catch
                 {
