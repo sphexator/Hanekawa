@@ -103,6 +103,13 @@ namespace Jibril.Modules.Level
                 await ReplyAsync("", false, failres.Build());
                 return;
             }
+            if (userData?.Level < 20)
+            {
+                var failres = EmbedGenerator.DefaultEmbed("Not hight enough level to give people credit.", Colours.FailColour);
+                await ReplyAsync("", false, failres.Build());
+                return;
+            }
+
             var embed = EmbedGenerator.DefaultEmbed(
                 $"{Context.User.Username} has given {user.Username} {amount} credit", Colours.DefaultColour);
             await ReplyAsync("", false, embed.Build());
