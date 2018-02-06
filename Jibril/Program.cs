@@ -50,14 +50,13 @@ namespace Jibril
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
-            //services.GetRequiredService<I_am_infamous>();
-            //services.GetRequiredService<LootCrates>();
+            services.GetRequiredService<I_am_infamous>();
+            services.GetRequiredService<LootCrates>();
 
             var scheduler = services.GetService<IScheduler>();
 
-            //QuartzServicesUtilities.StartSimpleJob<PostPictures>(scheduler, TimeSpan.FromDays(1));
-            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 50 21 ? * SAT");
-            //QuartzServicesUtilities.StartCronJob<BanScheduler>(scheduler, "0 0 14 1/1 * ? *");
+            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
+            QuartzServicesUtilities.StartCronJob<I_am_infamous>(scheduler, "0 0 13 ? * MON *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -69,6 +68,7 @@ namespace Jibril
         {
             var services = new ServiceCollection();
             services.UseQuartz(typeof(PostPictures));
+            services.UseQuartz(typeof(I_am_infamous));
             services.AddSingleton(_client);
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
@@ -77,8 +77,8 @@ namespace Jibril
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
-            //services.AddSingleton<LootCrates>();
-            //services.AddSingleton<I_am_infamous>();
+            services.AddSingleton<LootCrates>();
+            services.AddSingleton<I_am_infamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();

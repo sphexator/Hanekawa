@@ -91,6 +91,23 @@ namespace Jibril.Modules.Level
             await ReplyAsync(" ", false, embed.Build());
         }
 
+        [Command("give", RunMode = RunMode.Async)]
+        [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task GiveCredit(int amount, IGuildUser user)
+        {
+            var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
+            if (userData?.Tokens < amount)
+            {
+                var failres = EmbedGenerator.DefaultEmbed("Not enough credit to give.", Colours.FailColour);
+                await ReplyAsync("", false, failres.Build());
+                return;
+            }
+            var embed = EmbedGenerator.DefaultEmbed(
+                $"{Context.User.Username} has given {user.Username} {amount} credit", Colours.DefaultColour);
+            await ReplyAsync("", false, embed.Build());
+        }
+
         [Command("daily", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 2, Measure.Seconds)]
@@ -114,6 +131,42 @@ namespace Jibril.Modules.Level
                 {
                     var tokens = 200;
                     GambleDB.AddCredit(user, tokens);
+                    await ReplyAsync($"You received your daily ${tokens}!");
+                }
+            }
+            else
+            {
+                var diff = now - daily;
+                var di = new TimeSpan(23 - diff.Hours, 60 - diff.Minutes, 60 - diff.Seconds);
+
+                await ReplyAsync($"Your credits refresh in {di}!");
+            }
+        }
+
+        [Command("daily", RunMode = RunMode.Async)]
+        [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task Daily(IGuildUser rewardUser)
+        {
+            var user = Context.User;
+            var result = DatabaseService.CheckUser(user);
+            if (!result.Any()) DatabaseService.EnterUser(user);
+            var userData = DatabaseService.UserData(user).FirstOrDefault();
+
+            var now = DateTime.Now;
+            var daily = userData.Daily;
+            var difference = DateTime.Compare(daily, now);
+
+            if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                daily.AddDays(1) <= now && difference < 0 || difference >= 0)
+            {
+                LevelDatabase.ChangeDaily(user);
+                if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                    daily.AddDays(1) <= now && difference <= 0 || difference >= 0)
+                {
+                    var rand = new Random();
+                    var tokens = rand.Next(200, 400);
+                    GambleDB.AddCredit(rewardUser, tokens);
                     await ReplyAsync($"You received your daily ${tokens}!");
                 }
             }

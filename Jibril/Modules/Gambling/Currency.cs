@@ -65,7 +65,7 @@ namespace Jibril.Modules.Gambling
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
-        [Command("give")]
+        [Command("reward")]
         [Summary("Rewards user with event tokens")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GiveCredit(int amount, IUser user)

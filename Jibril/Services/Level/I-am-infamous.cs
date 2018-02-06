@@ -11,12 +11,20 @@ namespace Jibril.Services.Level
     public class I_am_infamous : IJob
     {
         private readonly DiscordSocketClient _client;
-        private List<CooldownUser> _users = new List<CooldownUser>(); 
+        private List<CooldownUser> _users = new List<CooldownUser>();
+        private List<ulong> _channels = new List<ulong>();
         public I_am_infamous(DiscordSocketClient client)
         {
             _client = client;
 
             _client.MessageReceived += MessageCounter;
+
+            _channels.Add(339371997802790913); //General
+            _channels.Add(351861569530888202); //Tea-room
+            _channels.Add(341904875363500032); //Gaming
+            _channels.Add(353306001858101248); //Anime
+            _channels.Add(382920381985456129); //tech
+            _channels.Add(353306043373322252); //music
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -29,8 +37,8 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                var guild = _client.Guilds.FirstOrDefault(x => x.Id == 200265036596379648);
-                var role = guild?.Roles.FirstOrDefault(x => x.Name == "Wolfy");
+                var guild = _client.Guilds.FirstOrDefault(x => x.Id == 339370914724446208);
+                var role = guild?.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
                 var oldMvps = role?.Members;
                 var ma = DatabaseService.GetActiveUsers();
                 var newMvps = new List<SocketGuildUser>();
@@ -39,28 +47,42 @@ namespace Jibril.Services.Level
                     var user = guild?.GetUser(x);
                     newMvps.Add(user);
                 }
-
                 await Demote(oldMvps, guild, role);
                 await Promote(newMvps, guild, role);
+                DatabaseService.ResetMessageCounter();
             });
             return Task.CompletedTask;
         }
 
-        private async Task Demote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, SocketRole role)
+        private static async Task Demote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, IRole role)
         {
             foreach (var x in mvps)
             {
-                await x.RemoveRoleAsync(role);
-                await Task.Delay(1000);
+                try
+                {
+                    await x.RemoveRoleAsync(role);
+                    await Task.Delay(1000);
+                }
+                catch
+                {
+                    //Ignore
+                }
             }
         }
 
-        private async Task Promote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, SocketRole role)
+        private static async Task Promote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, IRole role)
         {
             foreach (var x in mvps)
             {
-                await x.AddRoleAsync(role);
-                await Task.Delay(1000);
+                try
+                {
+                    await x.AddRoleAsync(role);
+                    await Task.Delay(1000);
+                }
+                catch
+                {
+                    //Ignore
+                }
             }
         }
 
@@ -70,9 +92,10 @@ namespace Jibril.Services.Level
             {
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
+                if (!_channels.Contains(msg.Channel.Id)) return;
                 var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
                 if (cd == false) return;
-                Console.WriteLine($"{DateTime.UtcNow.Second} - Didn't return");
+                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
                 DatabaseService.AddMessageCounter(msg.Author);
             });
             return Task.CompletedTask;
@@ -83,13 +106,10 @@ namespace Jibril.Services.Level
             var tempUser = _users.FirstOrDefault(x => x.User == usr);
             if (tempUser != null)// check to see if you have handled a request in the past from this user.
             {
-                if ((DateTime.Now - tempUser.LastRequest).TotalSeconds >= 60) // checks if more than 30 seconds have passed between the last requests send by the user
-                {
-                    _users.Find(x => x.User == usr).LastRequest = DateTime.Now; // update their last request time to now.
-                    return true;
-                }
+                if (!((DateTime.Now - tempUser.LastRequest).TotalSeconds >= 60)) return false;
+                _users.Find(x => x.User == usr).LastRequest = DateTime.Now; // update their last request time to now.
+                return true;
 
-                return false;
             }
 
             var newUser = new CooldownUser
