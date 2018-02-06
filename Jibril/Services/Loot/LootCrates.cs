@@ -28,6 +28,8 @@ namespace Jibril.Services.Loot
             _lootChannels.Add(351861569530888202); //Tea-room
             _lootChannels.Add(341904875363500032); //Gaming
             _lootChannels.Add(353306001858101248); //Anime
+
+            _lootChannels.Add(404633037884620802); //Test channel
         }
 
         private Task CrateTrigger(SocketMessage msg)
@@ -39,18 +41,24 @@ namespace Jibril.Services.Loot
                 if (!_lootChannels.Contains(msg.Channel.Id)) return;
                 var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
                 if (cd == false) return;
-
-                var rand = new Random();
-                var chance = rand.Next(0, 10000);
-                if (chance < 200)
+                try
                 {
-                    var ch = message.Channel as SocketGuildChannel;
-                    var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
-                        "A drop event has been triggered \nClick the reaction on this message to claim it");
-                    Emote.TryParse("<:roosip:362610653766221834>", out var emote);
-                    IEmote iemoteYes = emote;
-                    await triggerMsg.AddReactionAsync(iemoteYes);
-                    _crateMessage.Add(triggerMsg.Id);
+                    var rand = new Random();
+                    var chance = rand.Next(0, 10000);
+                    if (chance < 200)
+                    {
+                        var ch = message.Channel as SocketGuildChannel;
+                        var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
+                            "A drop event has been triggered \nClick the reaction on this message to claim it");
+                        _crateMessage.Add(triggerMsg.Id);
+                        Emote.TryParse("<:roosip:362610653766221834>", out var emote);
+                        IEmote iemoteYes = emote;
+                        await triggerMsg.AddReactionAsync(iemoteYes);
+                    }
+                }
+                catch
+                {
+                    //ignore
                 }
             });
             return Task.CompletedTask;
@@ -58,12 +66,19 @@ namespace Jibril.Services.Loot
 
         public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
         {
-            var triggerMsg = await ch.SendMessageAsync(
-                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
-            Emote.TryParse("<:roosip:362610653766221834>", out var emote);
-            IEmote iemoteYes = emote;
-            await triggerMsg.AddReactionAsync(iemoteYes);
-            _sCMessage.Add(triggerMsg.Id);
+            try
+            {
+                var triggerMsg = await ch.SendMessageAsync(
+                    $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
+                _sCMessage.Add(triggerMsg.Id);
+                Emote.TryParse("<:roosip:362610653766221834>", out var emote);
+                IEmote iemoteYes = emote;
+                await triggerMsg.AddReactionAsync(iemoteYes);
+            }
+            catch
+            {
+                //ignore
+            }
         }
 
         private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction reaction)
@@ -71,7 +86,6 @@ namespace Jibril.Services.Loot
             var _ = Task.Run(async () =>
             {
                 if (msg.Value.Author.IsBot != true) return;
-                if (!_crateMessage.Contains(msg.Id) || !_sCMessage.Contains(msg.Id)) return;
                 if (reaction.User.Value.IsBot) return;
                 if (reaction.Emote.Name != "roosip") return;
                 Console.WriteLine("Reaction passed");
@@ -89,7 +103,7 @@ namespace Jibril.Services.Loot
                         await Task.Delay(5000);
                         await triggermsg.DeleteAsync();
                     }
-                    else
+                    if(_sCMessage.Contains(msg.Id))
                     {
                         var message = await msg.GetOrDownloadAsync();
                         await message.DeleteAsync();
