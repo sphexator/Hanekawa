@@ -109,7 +109,8 @@ namespace Jibril.Modules.Level
                 await ReplyAsync("", false, failres.Build());
                 return;
             }
-
+            GambleDB.RemoveCredit(Context.User, amount);
+            GambleDB.AddCredit(user, amount);
             var embed = EmbedGenerator.DefaultEmbed(
                 $"{Context.User.Username} has given {user.Username} {amount} credit", Colours.DefaultColour);
             await ReplyAsync("", false, embed.Build());
