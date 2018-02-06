@@ -59,7 +59,7 @@ namespace Jibril.Services.Loot
         public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
         {
             var triggerMsg = await ch.SendMessageAsync(
-                $"{user.Mention} has spawned a crate! \nClick the reaction on this message to claim it");
+                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
             Emote.TryParse("<:roosip:362610653766221834>", out var emote);
             IEmote iemoteYes = emote;
             await triggerMsg.AddReactionAsync(iemoteYes);
