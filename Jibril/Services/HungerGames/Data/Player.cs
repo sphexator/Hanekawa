@@ -23,4 +23,16 @@ namespace Jibril.Services.HungerGames.Data
         public int Axe { get; set; }
         public int Trap { get; set; }
     }
+
+    public class Consumables
+    {
+        public int Beans { get; set; }
+        public int Pasta { get; set; }
+        public int Fish { get; set; }
+        public int Ramen { get; set; }
+        public int Coke { get; set; }
+        public int Water { get; set; }
+        public int MountainDew { get; set; }
+        public int Redbull { get; set; }
+    }
 }
