@@ -15,6 +15,6 @@ namespace Jibril.Services.HungerGames
             _client = client;
         }
 
-
+         
     }
 }
