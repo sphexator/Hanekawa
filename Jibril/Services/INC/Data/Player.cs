@@ -24,6 +24,8 @@ namespace Jibril.Services.HungerGames.Data
     }
     public class Consumables
     {
+        public int TotalFood { get; set; }
+        public int TotalDrink { get; set; }
         public int Beans { get; set; }
         public int Pasta { get; set; }
         public int Fish { get; set; }
