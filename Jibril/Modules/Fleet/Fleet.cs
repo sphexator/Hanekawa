@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Fleet.Services;
 using Jibril.Preconditions;
+using Jibril.Services;
 using Jibril.Services.Common;
 
 namespace Jibril.Modules.Fleet
@@ -25,10 +26,9 @@ namespace Jibril.Modules.Fleet
             var auser = Context.User as IGuildUser;
             if (name == null) return;
             if (user == null) return;
-            var reqRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == ClassNames.BB);
-            var rolecheck = auser.RoleIds.Contains(reqRole.Id);
+            var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
             var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (rolecheck && userFleetCheck == "o")
+            if (userData.Level >= 40 && userFleetCheck == "o")
             {
                 var nameCheck = FleetDb.CheckFleetName(name).FirstOrDefault();
                 if (nameCheck == null && nameCheck != "o")

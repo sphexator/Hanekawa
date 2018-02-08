@@ -186,5 +186,39 @@ namespace Jibril.Modules.Level
                 await ReplyAsync($"Your credits refresh in {di}!");
             }
         }
+
+        [Command("rep", RunMode = RunMode.Async)]
+        [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task Rep(IGuildUser user)
+        {
+            if (user == Context.User) return;
+
+            var result = DatabaseService.CheckUser(user);
+            if (!result.Any()) DatabaseService.EnterUser(user);
+            var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
+
+            var now = DateTime.Now;
+            var daily = userData.Daily;
+            var difference = DateTime.Compare(daily, now);
+
+            if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                daily.AddDays(1) <= now && difference < 0 || difference >= 0)
+            {
+                LevelDatabase.ChangeDaily(user);
+                if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                    daily.AddDays(1) <= now && difference <= 0 || difference >= 0)
+                {
+                    GambleDB.AddRep(user);
+                    await ReplyAsync($"{Context.User.Mention} gave a reputation point to {user.Mention}!");
+                }
+            }
+            else
+            {
+                var diff = now - daily;
+                var di = new TimeSpan(23 - diff.Hours, 60 - diff.Minutes, 60 - diff.Seconds);
+                await ReplyAsync($"You can reward another rep in {di}!");
+            }
+        }
     }
 }

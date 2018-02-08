@@ -51,12 +51,19 @@ namespace Jibril.Modules.Gambling.Services
                 dbConnection.Close();
         }
 
+        public static void AddRep(IUser user)
+        {
+            var database = new GambleDB("hanekawa");
+            var str = $"UPDATE exp SET rep = rep + 1 WHERE user_id = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
 
         public static void AddEventCredit(IUser user, int credit)
         {
             var database = new GambleDB("hanekawa");
             var str = $"UPDATE exp SET event_tokens = event_tokens + '{credit}' WHERE user_id = '{user.Id}'";
-            var reader = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -64,7 +71,7 @@ namespace Jibril.Modules.Gambling.Services
         {
             var database = new GambleDB("hanekawa");
             var str = $"UPDATE exp SET tokens = tokens + '{credit}' WHERE user_id = '{user.Id}'";
-            var reader = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 

@@ -24,5 +24,7 @@ namespace Jibril.Services.Level.Lists
         public double Toxicityvalue { get; set; }
         public int Toxicitymsgcount { get; set; }
         public double Toxicityavg { get; set; }
+        public int rep { get; set; }
+        public DateTime repcd { get; set; }
     }
 }

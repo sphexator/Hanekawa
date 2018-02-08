@@ -144,6 +144,8 @@ namespace Jibril.Services
                 var toxicityvalue = (double) exec["toxicityvalue"];
                 var toxicitymsgcount = (int) exec["toxicitymsgcount"];
                 var toxicityavg = (double) exec["toxicityavg"];
+                var rep = (int) exec["rep"];
+                var repcd = (DateTime) exec["repcd"];
 
                 result.Add(new UserData
                 {
@@ -166,7 +168,9 @@ namespace Jibril.Services
                     Hasrole = hasrole,
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
-                    Toxicityavg = toxicityavg
+                    Toxicityavg = toxicityavg,
+                    rep = rep,
+                    repcd = repcd
                 });
             }
             database.CloseConnection();
