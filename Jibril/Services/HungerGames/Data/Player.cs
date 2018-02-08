@@ -13,7 +13,6 @@ namespace Jibril.Services.HungerGames.Data
         public int Sleep { get; set; }
         public bool Status { get; set; }
     }
-
     public class Weapons
     {
         public int Pistol { get; set; }
@@ -23,7 +22,6 @@ namespace Jibril.Services.HungerGames.Data
         public int Axe { get; set; }
         public int Trap { get; set; }
     }
-
     public class Consumables
     {
         public int Beans { get; set; }
@@ -34,5 +32,27 @@ namespace Jibril.Services.HungerGames.Data
         public int Water { get; set; }
         public int MountainDew { get; set; }
         public int Redbull { get; set; }
+        public int Bandages { get; set; }
+    }
+
+    public class Pistol
+    {
+        public int Damage = 60;
+    }
+    public class Bow
+    {
+        public int Damage = 30;
+    }
+    public class Axe
+    {
+        public int Damage = 40;
+    }
+    public class Trap
+    {
+        public int Damage = 60;
+    }
+    public class Fist
+    {
+        public int Damage = 15;
     }
 }
