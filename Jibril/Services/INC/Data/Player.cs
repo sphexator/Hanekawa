@@ -41,18 +41,18 @@ namespace Jibril.Services.HungerGames.Data
     }
     public class Bow
     {
-        public int Damage = 30;
+        public const int Damage = 30;
     }
     public class Axe
     {
-        public int Damage = 40;
+        public const int Damage = 40;
     }
     public class Trap
     {
-        public int Damage = 60;
+        public const int Damage = 60;
     }
     public class Fist
     {
-        public int Damage = 15;
+        public const int Damage = 15;
     }
 }
