@@ -169,8 +169,8 @@ namespace Jibril.Services
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
                     Toxicityavg = toxicityavg,
-                    rep = rep,
-                    repcd = repcd
+                    Rep = rep,
+                    Repcd = repcd
                 });
             }
             database.CloseConnection();

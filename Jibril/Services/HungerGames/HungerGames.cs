@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Quartz;
 
@@ -15,17 +16,37 @@ namespace Jibril.Services.HungerGames
         public HungerGames(DiscordSocketClient client)
         {
             _client = client;
-        }
 
+            _client.ReactionAdded += AddParticipants;
+        }
 
         public Task Execute(IJobExecutionContext context)
         {
             throw new NotImplementedException();
         }
 
-        public static async Task EventStart()
+        public Task EventStart()
         {
+            var _ = Task.Run(async() =>
+            {
+                var guild = _client.GetGuild(339370914724446208);
+                var ch = guild.GetTextChannel(346429829316476928);
+                var msg = await ch.SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
+                Emote.TryParse("<:rooree:362610653120299009>", out var emote);
+                IEmote iemoteYes = emote;
+                await msg.AddReactionAsync(iemoteYes);
+                _eventStartMsg.Add(msg.Id);
+            });
+            return Task.CompletedTask;
+        }
 
+        private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
+        {
+            var _ = Task.Run(async () =>
+            {
+
+            });
+            return Task.CompletedTask;
         }
     }
 }
