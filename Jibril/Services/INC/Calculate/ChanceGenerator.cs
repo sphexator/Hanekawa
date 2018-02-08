@@ -7,51 +7,92 @@ namespace Jibril.Services.INC.Calculate
 {
     public class ChanceGenerator
     {
-        public const int Loot = 400;
-        public const int Kill = 100;
-        public const int Idle = 200;
-        public const int Meet = 100;
-        public const int Hack = 50;
-        public const int Die = 0;
-        public const int Sleep = 0;
-        public const int Eat = 0;
+        private const int Loot = 400;
+        private const int Kill = 100;
+        private const int Idle = 200;
+        private const int Meet = 100;
+        private const int Hack = 50;
+        private const int Die = 1;
+        private const int Sleep = 1;
+        private const int Eat = 1;
 
-        public static void ChanceDeterminator(Player player, Weapons weapons, Consumables consumables)
+        public static string EventDeterminator(Player player, Weapons weapons, Consumables consumables)
         {
+            var loot = LootChance(player, weapons, consumables);
+            var kill = KillChance(player, weapons, consumables);
+            var idle = IdleChance(player, weapons, consumables);
+            var meet = MeetChance(player, weapons, consumables);
+            var hack = HackChance(player, weapons, consumables);
+            var die = DieChance(player, weapons, consumables);
+            var sleep = SleepChance(player, weapons, consumables);
+            var eat = EatChance(player, weapons, consumables);
 
+            var result = loot + kill + idle + meet + hack + die + sleep + eat;
+            var rand = new Random();
+            var generator = rand.Next(1, result);
+            if (generator <= loot) return "loot";
+            if (generator <= loot + kill) return "kill";
+            if (generator <= loot + kill + idle) return "idle";
+            if (generator <= loot + kill + idle + meet) return "meet";
+            if (generator <= loot + kill + idle + meet + hack) return "hack";
+            if (generator <= loot + kill + idle + meet + hack + die) return "die";
+            if (generator <= loot + kill + idle + meet + hack + die + sleep) return "sleep";
+            return generator <= loot + kill + idle + meet + hack + die + sleep + eat ? "eat" : null;
         }
 
-        public static int LootChance(Player player, Weapons weapons, Consumables consumables)
+        private static int LootChance(Player player, Weapons weapons, Consumables consumables)
         {
-
+            if (consumables.TotalDrink == 0) return Loot + 400;
+            if (consumables.TotalFood == 0) return Loot + 400;
+            if (consumables.TotalDrink > 0 || consumables.TotalFood > 0 || weapons.TotalWeapons > 1) return Loot - 200;
+            return Loot;
         }
-        public static int KillChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int KillChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            if ((consumables.TotalDrink == 0 || consumables.TotalFood == 0))
+                return 50;
+            if (weapons.TotalWeapons >= 2 || (consumables.TotalDrink > 0 || consumables.TotalFood > 0))
+                return Kill + 300;
+            return Kill;
         }
-        public static int IdleChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int SleepChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            if (player.Sleep >= 90) return Sleep + 1000;
+            if (player.Sleep >= 75) return Sleep + 750;
+            if (player.Sleep >= 50) return Sleep + 500;
+
+            return Sleep;
         }
-        public static int MeetChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int EatChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            if (player.Hunger >= 90 || consumables.TotalFood > 0) return Eat + 1000;
+            if (player.Hunger >= 75 || consumables.TotalFood > 0) return Eat + 700;
+            if (player.Hunger >= 50 || consumables.TotalFood > 0) return Eat + 400;
+            if (player.Hunger >= 20 || consumables.TotalFood > 0) return Eat + 200;
+            return Eat;
         }
-        public static int HackChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int IdleChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            return Idle;
         }
-        public static int SleepChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int MeetChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            return Meet;
         }
-        public static int EarChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int HackChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            return Hack;
         }
-        public static int DieChance(Player player, Weapons weapons, Consumables consumables)
-        {
 
+        private static int DieChance(Player player, Weapons weapons, Consumables consumables)
+        {
+            return Die;
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Jibril.Services.HungerGames.Data
     }
     public class Weapons
     {
+        public int TotalWeapons { get; set; }
         public int Pistol { get; set; }
         public int Bullets { get; set; }
         public int Bow { get; set; }
