@@ -13,4 +13,14 @@ namespace Jibril.Services.HungerGames.Data
         public int Sleep { get; set; }
         public bool Status { get; set; }
     }
+
+    public class Weapons
+    {
+        public int Pistol { get; set; }
+        public int Bullets { get; set; }
+        public int Bow { get; set; }
+        public int Arrows { get; set; }
+        public int Axe { get; set; }
+        public int Trap { get; set; }
+    }
 }
