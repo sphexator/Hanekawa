@@ -44,7 +44,12 @@ namespace Jibril.Services.HungerGames
         {
             var _ = Task.Run(async () =>
             {
-
+                if (!_eventStartMsg.Contains(msg.Id)) return;
+                if (msg.Value.Author.IsBot != true) return;
+                if (react.User.Value.IsBot) return;
+                if (react.Emote.Name != "rooree") return;
+                
+                // TODO: Add user to database as they react and return if they're already there
             });
             return Task.CompletedTask;
         }

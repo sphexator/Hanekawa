@@ -37,7 +37,7 @@ namespace Jibril.Services.HungerGames.Data
 
     public class Pistol
     {
-        public int Damage = 60;
+        public const int Damage = 60;
     }
     public class Bow
     {
