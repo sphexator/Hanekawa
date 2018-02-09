@@ -19,6 +19,6 @@ namespace Jibril.Services.INC.Events.Types
             "frozen in time",
             "Standing still, looking at a tree",
             "Wonders if its possible to do ninjutsu"
-        };
+        }; 
     }
 }
