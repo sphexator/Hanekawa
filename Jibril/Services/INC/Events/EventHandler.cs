@@ -9,9 +9,9 @@ namespace Jibril.Services.INC.Events
 {
     public class EventHandler
     {
-        public static void EventManager(Player player, Weapons weapons, Consumables consumables)
+        public static void EventManager(Profile profile)
         {
-            var evt = ChanceGenerator.EventDeterminator(player, weapons, consumables);
+            var evt = ChanceGenerator.EventDeterminator(profile);
             if (evt == ChanceGenerator.LootName)
             {
 

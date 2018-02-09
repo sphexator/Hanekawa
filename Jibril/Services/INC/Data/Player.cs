@@ -1,6 +1,12 @@
 ﻿namespace Jibril.Services.INC.Data
 {
-    public class Player
+    public class Profile
+    {
+        public Player Player { get; set; }
+        public Weapons Weapons { get; set; }
+        public Consumables Consumables { get; set; }
+    }
+    public abstract class Player
     {
         public int Health { get; set; }
         public int Stamina { get; set; }
