@@ -196,6 +196,7 @@ namespace Jibril.Services.AutoModerator
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    Console.WriteLine("Toxicity failed");
                 }
             });
             return Task.CompletedTask;
