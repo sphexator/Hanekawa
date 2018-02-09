@@ -30,14 +30,14 @@ namespace Jibril.Services.INC.Calculate
             var result = loot + kill + idle + meet + hack + die + sleep + eat;
             var rand = new Random();
             var generator = rand.Next(1, result);
-            if (generator <= loot) return "loot";
-            if (generator <= loot + kill) return "kill";
-            if (generator <= loot + kill + idle) return "idle";
-            if (generator <= loot + kill + idle + meet) return "meet";
-            if (generator <= loot + kill + idle + meet + hack) return "hack";
-            if (generator <= loot + kill + idle + meet + hack + die) return "die";
-            if (generator <= loot + kill + idle + meet + hack + die + sleep) return "sleep";
-            return generator <= loot + kill + idle + meet + hack + die + sleep + eat ? "eat" : null;
+            if (generator <= loot) return LootName;
+            if (generator <= loot + kill) return KillName;
+            if (generator <= loot + kill + idle) return IdleName;
+            if (generator <= loot + kill + idle + meet) return MeetName;
+            if (generator <= loot + kill + idle + meet + hack) return HackName;
+            if (generator <= loot + kill + idle + meet + hack + die) return DieName;
+            if (generator <= loot + kill + idle + meet + hack + die + sleep) return SleepName;
+            return generator <= loot + kill + idle + meet + hack + die + sleep + eat ? EatName : null;
         }
 
         private static int LootChance(Player player, Weapons weapons, Consumables consumables)
@@ -94,5 +94,14 @@ namespace Jibril.Services.INC.Calculate
         {
             return Die;
         }
+
+        public const string LootName = "Loot";
+        public const string KillName = "Kill";
+        public const string IdleName = "Idle";
+        public const string MeetName = "Meet";
+        public const string HackName = "Hack";
+        public const string DieName = "Die";
+        public const string SleepName = "Sleep";
+        public const string EatName = "Eat";
     }
 }
