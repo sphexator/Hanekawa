@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Jibril.Services.HungerGames.Data;
+using Jibril.Services.INC.Data;
 
 namespace Jibril.Services.INC.Calculate
 {

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Jibril.Services.HungerGames.Data;
+using Jibril.Services.INC.Data;
 
 namespace Jibril.Services.INC.Calculate
 {
-    public class ChanceGenerator
+    public static class ChanceGenerator
     {
         private const int Loot = 400;
         private const int Kill = 100;
