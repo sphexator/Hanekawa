@@ -1,5 +1,4 @@
 ﻿using System;
-using Jibril.Services.HungerGames.Data;
 using Jibril.Services.INC.Data;
 
 namespace Jibril.Services.INC.Calculate
@@ -14,6 +13,15 @@ namespace Jibril.Services.INC.Calculate
         private const int Die = 1;
         private const int Sleep = 1;
         private const int Eat = 1;
+
+        public const string LootName = "Loot";
+        public const string KillName = "Kill";
+        public const string IdleName = "Idle";
+        public const string MeetName = "Meet";
+        public const string HackName = "Hack";
+        public const string DieName = "Die";
+        public const string SleepName = "Sleep";
+        public const string EatName = "Eat";
 
         public static string EventDeterminator(Profile profile)
         {
@@ -43,15 +51,17 @@ namespace Jibril.Services.INC.Calculate
         {
             if (profile.Consumables.TotalDrink == 0) return Loot + 400;
             if (profile.Consumables.TotalFood == 0) return Loot + 400;
-            if (profile.Consumables.TotalDrink > 0 || profile.Consumables.TotalFood > 0 || profile.Weapons.TotalWeapons > 1) return Loot - 200;
+            if (profile.Consumables.TotalDrink > 0 || profile.Consumables.TotalFood > 0 ||
+                profile.Weapons.TotalWeapons > 1) return Loot - 200;
             return Loot;
         }
 
         private static int KillChance(Profile profile)
         {
-            if ((profile.Consumables.TotalDrink == 0 || profile.Consumables.TotalFood == 0))
+            if (profile.Consumables.TotalDrink == 0 || profile.Consumables.TotalFood == 0)
                 return 50;
-            if (profile.Weapons.TotalWeapons >= 2 || (profile.Consumables.TotalDrink > 0 || profile.Consumables.TotalFood > 0))
+            if (profile.Weapons.TotalWeapons >= 2 || profile.Consumables.TotalDrink > 0 ||
+                profile.Consumables.TotalFood > 0)
                 return Kill + 300;
             return Kill;
         }
@@ -93,14 +103,5 @@ namespace Jibril.Services.INC.Calculate
         {
             return Die;
         }
-
-        public const string LootName = "Loot";
-        public const string KillName = "Kill";
-        public const string IdleName = "Idle";
-        public const string MeetName = "Meet";
-        public const string HackName = "Hack";
-        public const string DieName = "Die";
-        public const string SleepName = "Sleep";
-        public const string EatName = "Eat";
     }
 }

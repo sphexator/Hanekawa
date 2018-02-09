@@ -86,7 +86,34 @@ namespace Jibril.Services.AutoModerator
                                 await user.AddRoleAsync(role);
                                 await user.ModifyAsync(x => x.Mute = true);
 
-                                var reason = "Scam/malicious link";
+                                const string reason = "Scam/malicious link";
+                                var msg = $"{rawMessage.Content}";
+                                var embed = AutoModResponse(user, reason, msg);
+
+                                await ch.SendMessageAsync("", false, embed.Build());
+                                return;
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                return;
+                            }
+                        }
+
+                        if (rawMessage.Content.IsPornLink() && ((ITextChannel) rawMessage.Channel).IsNsfw != true)
+                        {
+                            try
+                            {
+                                await rawMessage.DeleteAsync();
+
+                                var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
+                                var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
+
+                                var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
+                                await user.AddRoleAsync(role);
+                                await user.ModifyAsync(x => x.Mute = true);
+
+                                const string reason = "Porn link";
                                 var msg = $"{rawMessage.Content}";
                                 var embed = AutoModResponse(user, reason, msg);
 
@@ -109,18 +136,16 @@ namespace Jibril.Services.AutoModerator
                                 var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
                                 await user.AddRoleAsync(role);
                                 await user.ModifyAsync(x => x.Mute = true);
-                                var reason = "Character count >= 1500";
-                                var msg = "Too Long Didn't Read.";
+                                const string reason = "Character count >= 1500";
+                                const string msg = "Too Long Didn't Read.";
                                 var embed = AutoModResponse(user, reason, msg);
                                 embed.ThumbnailUrl = "http://i0.kym-cdn.com/photos/images/original/000/834/934/f64.gif";
 
                                 await ch.SendMessageAsync("", false, embed.Build());
-                                return;
                             }
                             catch (Exception e)
                             {
                                 Console.WriteLine(e);
-                                return;
                             }
                         }
                         /*
@@ -192,7 +217,7 @@ namespace Jibril.Services.AutoModerator
             }
         }
 
-        private List<ToxicityList> CalculateNudeScore(double score, IUser user)
+        private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
         {
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             var calculate = userdata.Toxicityvalue + score;

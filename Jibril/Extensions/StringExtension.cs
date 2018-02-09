@@ -5,21 +5,24 @@ namespace Jibril.Extensions
     public static class StringExtension
     {
         // Filter detection
-        private static readonly Regex filterRegex =
+        private static readonly Regex FilterRegex =
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex scamFilter = new Regex(
+        private static readonly Regex ScamFilter = new Regex(
             @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex URLFilter =
+        private static readonly Regex UrlFilter =
             new Regex(@"/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex GoogleLink = 
+        private static readonly Regex GoogleLink =
             new Regex(@"(?:goo\.gl|google\.com).*?(\s|$)",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex PornLink =
+            new Regex(@"(?:pornhub\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Max Character string extension
         public static string Truncate(this string value, int maxChars)
@@ -29,12 +32,12 @@ namespace Jibril.Extensions
 
         public static bool IsDiscordInvite(this string str)
         {
-            return filterRegex.IsMatch(str);
+            return FilterRegex.IsMatch(str);
         }
 
         public static bool IsScamLink(this string str)
         {
-            return scamFilter.IsMatch(str);
+            return ScamFilter.IsMatch(str);
         }
 
         public static bool IsGoogleLink(this string str)
@@ -42,9 +45,14 @@ namespace Jibril.Extensions
             return GoogleLink.IsMatch(str);
         }
 
+        public static bool IsPornLink(this string str)
+        {
+            return PornLink.IsMatch(str);
+        }
+
         public static bool IsUrl(this string str)
         {
-            return URLFilter.IsMatch(str);
+            return UrlFilter.IsMatch(str);
         }
     }
 }
