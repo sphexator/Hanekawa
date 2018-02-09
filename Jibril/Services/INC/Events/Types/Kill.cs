@@ -6,5 +6,6 @@ namespace Jibril.Services.INC.Events.Types
 {
     public class Kill
     {
+
     }
 }

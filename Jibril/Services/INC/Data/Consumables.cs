@@ -32,5 +32,7 @@
             "MountainDew",
             "Redbull"
         };
+
+        public static string Bandages = "Bandages";
     }
 }
