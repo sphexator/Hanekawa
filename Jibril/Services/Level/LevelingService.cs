@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Jibril.Services.Level.Lists;
 using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
@@ -34,15 +33,14 @@ namespace Jibril.Services.Level
             return Task.CompletedTask;
         }
 
-        private Task GiveExp(SocketMessage msg)
+        private static Task GiveExp(SocketMessage msg)
         {
             var _ = Task.Run(async () =>
             {
                 var user = msg.Author as SocketGuildUser;
-                var guild = user.Guild.Id;
 
-                var CheckUser = DatabaseService.CheckUser(user).FirstOrDefault();
-                if (CheckUser == null) DatabaseService.EnterUser(user);
+                var checkUser = DatabaseService.CheckUser(user).FirstOrDefault();
+                if (checkUser == null) DatabaseService.EnterUser(user);
 
                 var userData = DatabaseService.UserData(user).FirstOrDefault();
                 var exp = Calculate.ReturnXP(msg);
@@ -67,7 +65,7 @@ namespace Jibril.Services.Level
             return Task.CompletedTask;
         }
 
-        private Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
+        private static Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
         {
             var _ = Task.Run(() =>
             {
@@ -76,16 +74,14 @@ namespace Jibril.Services.Level
                 var newVc = newState.VoiceChannel;
                 try
                 {
-                    var CheckUser = DatabaseService.CheckUser(gusr).FirstOrDefault();
-                    if (CheckUser == null) DatabaseService.EnterUser(gusr);
+                    var checkUser = DatabaseService.CheckUser(gusr).FirstOrDefault();
+                    if (checkUser == null) DatabaseService.EnterUser(gusr);
                     if (newVc != null && oldVc == null)
                         LevelDatabase.StartVoiceCounter(gusr);
-                    if (oldVc != null && newVc == null)
-                    {
-                        var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
-                        var cooldown = Convert.ToDateTime(userInfo.Voice_timer);
-                        Calculate.VECC(gusr, cooldown);
-                    }
+                    if (oldVc == null || newVc != null) return;
+                    var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
+                    var cooldown = Convert.ToDateTime(userInfo.Voice_timer);
+                    Calculate.VECC(gusr, cooldown);
                 }
                 catch
                 {
