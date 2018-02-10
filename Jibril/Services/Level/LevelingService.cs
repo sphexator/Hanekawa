@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Services.Level.Lists;
 using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
@@ -13,14 +14,25 @@ namespace Jibril.Services.Level
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
         {
-            _client = discord;
+            var client = discord;
             _provider = provider;
 
-            _client.MessageReceived += GiveExp;
-            _client.UserVoiceStateUpdated += VoiceExp;
+            client.MessageReceived += GiveExp;
+            client.UserVoiceStateUpdated += VoiceExp;
+            client.UserJoined += GiveRolesBack;
         }
 
-        public DiscordSocketClient _client { get; }
+        private Task GiveRolesBack(SocketGuildUser usr)
+        {
+            var _ = Task.Run(async () =>
+            {
+                var userdata = DatabaseService.UserData(usr).FirstOrDefault();
+                if (userdata == null) return;
+                if (userdata.Level <= 2) return;
+
+            });
+            return Task.CompletedTask;
+        }
 
         private Task GiveExp(SocketMessage msg)
         {

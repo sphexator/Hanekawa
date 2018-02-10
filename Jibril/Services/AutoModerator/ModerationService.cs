@@ -56,7 +56,7 @@ namespace Jibril.Services.AutoModerator
                                 await user.AddRoleAsync(role);
                                 await user.ModifyAsync(x => x.Mute = true);
 
-                                var reason = "Discord invite link";
+                                const string reason = "Discord invite link";
                                 var msg = $"{rawMessage.Content}";
                                 var embed = AutoModResponse(user, reason, msg);
 
@@ -218,7 +218,7 @@ namespace Jibril.Services.AutoModerator
             }
         }
 
-        private List<ToxicityList> CalculateNudeScore(double score, IUser user)
+        private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
         {
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
             var calculate = userdata.Toxicityvalue + score;
