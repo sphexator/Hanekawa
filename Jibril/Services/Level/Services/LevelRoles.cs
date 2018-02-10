@@ -232,7 +232,7 @@ namespace Jibril.Services.Level.Services
         }
         */
 
-        public async Task AssignRoles(UserData userData, SocketGuildUser usr)
+        public static async Task AssignRoles(UserData userData, SocketGuildUser usr)
         {
             if (userData.Level >= 2 && userData.Level < 5)
                 await usr.AddRoleAsync(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.ship));

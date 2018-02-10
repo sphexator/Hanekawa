@@ -22,14 +22,14 @@ namespace Jibril.Services.Level
             client.UserJoined += GiveRolesBack;
         }
 
-        private Task GiveRolesBack(SocketGuildUser usr)
+        private static Task GiveRolesBack(SocketGuildUser usr)
         {
             var _ = Task.Run(async () =>
             {
                 var userdata = DatabaseService.UserData(usr).FirstOrDefault();
                 if (userdata == null) return;
                 if (userdata.Level <= 2) return;
-
+                await LevelRoles.AssignRoles(userdata, usr);
             });
             return Task.CompletedTask;
         }
