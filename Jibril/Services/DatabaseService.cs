@@ -9,44 +9,44 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
-        private readonly string database = DbInfo.DbNorm;
-        private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
-        private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string _database = DbInfo.DbNorm;
+        private readonly MySqlConnection _dbConnection;
+        private readonly string _password = DbInfo.password;
+        private const bool Pooling = false;
+        private readonly string _server = DbInfo.server;
+        private readonly string _username = DbInfo.username;
 
         private DatabaseService(string table)
         {
             _table = table;
             var stringBuilder = new MySqlConnectionStringBuilder
             {
-                Server = server,
-                UserID = username,
-                Password = password,
-                Database = database,
+                Server = _server,
+                UserID = _username,
+                Password = _password,
+                Database = _database,
                 SslMode = MySqlSslMode.None,
-                Pooling = POOLING
+                Pooling = Pooling
             };
             var connectionString = stringBuilder.ToString();
-            dbConnection = new MySqlConnection(connectionString);
-            dbConnection.Open();
+            _dbConnection = new MySqlConnection(connectionString);
+            _dbConnection.Open();
         }
 
         private string _table { get; }
 
         private MySqlDataReader FireCommand(string query)
         {
-            if (dbConnection == null)
+            if (_dbConnection == null)
                 return null;
-            var command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, _dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
 
         private void CloseConnection()
         {
-            dbConnection?.Close();
+            _dbConnection?.Close();
         }
 
         public static List<string> CheckUser(IUser user)

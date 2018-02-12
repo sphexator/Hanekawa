@@ -32,7 +32,7 @@
         public const int Damage = 15;
     }
 
-    public class WeaponNames
+    public static class WeaponNames
     {
         public static readonly string[] WeaponStrings =
         {

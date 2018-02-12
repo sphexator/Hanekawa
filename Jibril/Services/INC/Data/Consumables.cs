@@ -15,7 +15,7 @@
         public int Bandages { get; set; }
     }
 
-    public class ConsumableNames
+    public static class ConsumableNames
     {
         public static string[] Food =
         {
@@ -33,6 +33,6 @@
             "Redbull"
         };
 
-        public static string Bandages = "Bandages";
+        public const string Bandages = "Bandages";
     }
 }
