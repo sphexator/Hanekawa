@@ -97,6 +97,22 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static void ConsumeFood(ulong id, string item)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET totalfood = totalfood - 1, {item} = {item} - 1 WHERE userid = {id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void ConsumeDrink(ulong id, string item)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET totalfood = totaldrink - 1, {item} = {item} - 1 WHERE userid = {id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static void AddWeapon(ulong id, string item)
         {
             var database = new DatabaseHungerGame("hanekawa");
@@ -109,6 +125,14 @@ namespace Jibril.Services.INC.Database
         {
             var database = new DatabaseHungerGame("hanekawa");
             var str = $"UPDATE hungergame SET totalweapons = totalweapons + 1, {item} = {item} + 1, {ammotype} = {ammotype} + {ammo} WHERE userid = {id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void UseAmmo(ulong id, string item, string ammotype, int ammo)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET {ammotype} = {ammotype} - {ammo} WHERE userid = {id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
