@@ -73,6 +73,37 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static void Sleep(ulong userid)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET sleep = 100 WHERE userid = {userid}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void EatFood(ulong userid)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET hunger = 100 WHERE userid = {userid}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void EatSpecialFood(ulong userid, int buff)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET hunger = 100, stamina = stamina + '{buff}' WHERE userid = {userid}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void DrinkWater(ulong userid)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET thirst = 100 WHERE userid = {userid}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static void AddDamage(IUser user, int damage)
         {
             var database = new DatabaseHungerGame("hanekawa");
@@ -145,7 +176,7 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
-        public static IEnumerable<Player> GetPlayer(IUser user)
+        public static List<Player> GetPlayer()
         {
             var result = new List<Player>();
             var database = new DatabaseHungerGame("hanekawa");
@@ -183,7 +214,7 @@ namespace Jibril.Services.INC.Database
             return result;
         }
 
-        public static IEnumerable<Weapons> GetWeapons()
+        public static List<Weapons> GetWeapons()
         {
             var result = new List<Weapons>();
             var database = new DatabaseHungerGame("hanekawa");
@@ -215,7 +246,7 @@ namespace Jibril.Services.INC.Database
             return result;
         }
 
-        public static IEnumerable<Consumables> GetConsumables()
+        public static List<Consumables> GetConsumables()
         {
             var result = new List<Consumables>();
             var database = new DatabaseHungerGame("hanekawa");
@@ -248,6 +279,88 @@ namespace Jibril.Services.INC.Database
                     MountainDew = mountaindew,
                     Redbull = redbull,
                     Bandages = bandages
+                });
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+
+        public static IEnumerable<Profile> GetProfilEnumerable()
+        {
+            var result = new List<Profile>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "SELECT * FROM hungergame";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var id = (int)exec["id"];
+                var userId = (ulong)exec["userid"];
+                var health = (int)exec["health"];
+                var stamina = (int)exec["stamina"];
+                var damage = (int)exec["damage"];
+                var hunger = (int)exec["hunger"];
+                var thirst = (int)exec["thirst"];
+                var sleep = (int)exec["sleep"];
+                var status = (bool)exec["status"];
+                var bleeding = (bool)exec["bleeding"];
+                var totalfood = (int)exec["totalfood"];
+                var totaldrink = (int)exec["totaldrink"];
+                var beans = (int)exec["beans"];
+                var pasta = (int)exec["pasta"];
+                var fish = (int)exec["fish"];
+                var ramen = (int)exec["ramen"];
+                var coke = (int)exec["coke"];
+                var water = (int)exec["water"];
+                var mountaindew = (int)exec["mountaindew"];
+                var redbull = (int)exec["redbull"];
+                var bandages = (int)exec["bandages"];
+                var totalweapons = (int)exec["totalweapons"];
+                var pistol = (int)exec["pistol"];
+                var bullets = (int)exec["bullets"];
+                var bow = (int)exec["bow"];
+                var arrows = (int)exec["arrows"];
+                var axe = (int)exec["axe"];
+                var trap = (int)exec["trap"];
+                result.Add(new Profile
+                {
+                    Player = new Player
+                    {
+                        Id = id,
+                        UserId = userId,
+                        Health = health,
+                        Stamina = stamina,
+                        Damage = damage,
+                        Hunger = hunger,
+                        Thirst = thirst,
+                        Sleep = sleep,
+                        Status = status,
+                        Bleeding = bleeding
+                    },
+                    Weapons = new Weapons
+                    {
+                        TotalWeapons = totalweapons,
+                        Pistol = pistol,
+                        Bullets = bullets,
+                        Bow = bow,
+                        Arrows = arrows,
+                        Axe = axe,
+                        Trap = trap
+                    },
+                    Consumables = new Consumables
+                    {
+                        TotalFood = totalfood,
+                        TotalDrink = totaldrink,
+                        Beans = beans,
+                        Pasta = pasta,
+                        Fish = fish,
+                        Ramen = ramen,
+                        Coke = coke,
+                        Water = water,
+                        MountainDew = mountaindew,
+                        Redbull = redbull,
+                        Bandages = bandages
+                    }
                 });
             }
 

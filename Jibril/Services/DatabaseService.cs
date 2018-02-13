@@ -96,6 +96,8 @@ namespace Jibril.Services
         {
             var database = new DatabaseService("hanekawa");
             var str = $"UPDATE exp SET mvpCounter = '0'";
+            database.FireCommand(str);
+            database.CloseConnection();
         }
 
         public static List<ulong> GetActiveUsers()

@@ -37,7 +37,7 @@ namespace Jibril.Services.Automate.Service
 
             var trigger = TriggerBuilder.Create()
                 .WithIdentity($"{jobName}.trigger")
-                .WithSchedule(CronScheduleBuilder.AtHourAndMinuteOnGivenDaysOfWeek(18, 15, DayOfWeek.Saturday))
+                .WithSchedule(CronScheduleBuilder.CronSchedule(cron))
                 .Build();
 
             scheduler.ScheduleJob(job, trigger);

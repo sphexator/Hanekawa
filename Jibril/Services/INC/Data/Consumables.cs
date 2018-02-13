@@ -17,22 +17,22 @@
 
     public static class ConsumableNames
     {
-        public static string[] Food =
+        public static readonly string[] Food =
         {
-            "Beans",
-            "Pasta",
-            "Fish",
-            "Ramen"
+            "beans",
+            "pasta",
+            "fish",
+            "ramen"
         };
 
-        public static string[] Water =
+        public static readonly string[] Water =
         {
-            "Coke",
-            "Water",
-            "MountainDew",
-            "Redbull"
+            "coke",
+            "water",
+            "mountainDew",
+            "redbull"
         };
 
-        public const string Bandages = "Bandages";
+        public const string Bandages = "bandages";
     }
 }

@@ -6,6 +6,6 @@ namespace Jibril.Services.HungerGames.Data
 {
     public class Ramen
     {
-        public int StaminaGain = 30;
+        public static readonly int StaminaGain = 30;
     }
 }
