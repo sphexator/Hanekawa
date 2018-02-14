@@ -12,26 +12,33 @@ namespace Jibril.Services.INC.Events
             if (evt == ChanceGenerator.LootName)
             {
                 var response = Types.Loot.LootEvent();
+                return response;
             }
             else if (evt == ChanceGenerator.KillName)
             {
-                //Kill.KillEvent();
+                var response = Kill.KillEvent(profile); 
+                return response;
+
             }
             else if (evt == ChanceGenerator.IdleName)
             {
                 var response = Idle.IdleEvent();
+                return response;
             }
             else if (evt == ChanceGenerator.MeetName)
             {
                 var response = Meet.MeetEvent();
+                return response;
             }
             else if (evt == ChanceGenerator.HackName)
             {
                 var response = Hack.HackEvent(profile);
+                return response;
             }
             else if (evt == ChanceGenerator.DieName)
             {
                 var response = Die.DieEvent();
+                return response;
             }
             else if (evt == ChanceGenerator.SleepName)
             {
@@ -39,6 +46,7 @@ namespace Jibril.Services.INC.Events
             }
             else if (evt == ChanceGenerator.EatName)
             {
+                //var response = Sleep;
                 //TODO: Eat
             }
             else

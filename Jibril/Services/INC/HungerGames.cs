@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Quartz;
 
-namespace Jibril.Services.HungerGames
+namespace Jibril.Services.INC
 {
     public class HungerGames : IJob
     {
         private readonly DiscordSocketClient _client;
-        private readonly List<ulong> _eventStartMsg;
+
+        private List<ulong> _eventStartMsg;
+        private bool _activeEvent;
 
         public HungerGames(DiscordSocketClient client)
         {
             _client = client;
-
             _client.ReactionAdded += AddParticipants;
+
+            var guild = _client.GetGuild(339370914724446208);
+            var ch = guild.GetTextChannel(346429829316476928);
+            ch.GetMessagesAsync();
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -52,6 +56,18 @@ namespace Jibril.Services.HungerGames
                 // TODO: Add user to database as they react and return if they're already there
             });
             return Task.CompletedTask;
+        }
+
+        public static IUser GetUser(ulong id)
+        {
+            var user = GetUser(id);
+            return user;
+        }
+
+        public IUser AwaUser(ulong id)
+        {
+            var user = _client.GetUser(id);
+            return user;
         }
     }
 }

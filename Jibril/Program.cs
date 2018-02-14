@@ -37,7 +37,8 @@ namespace Jibril
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                MessageCacheSize = 1000
+                MessageCacheSize = 1000,
+                AlwaysDownloadUsers = true
             });
             _config = BuildConfig();
 

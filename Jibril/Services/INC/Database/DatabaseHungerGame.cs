@@ -60,6 +60,44 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static List<Player> GetUsers()
+        {
+            var result = new List<Player>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "SELECT * FROM hungergame WHERE status = '1'";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var id = (int)exec["id"];
+                var userId = (ulong)exec["userid"];
+                var health = (int)exec["health"];
+                var stamina = (int)exec["stamina"];
+                var damage = (int)exec["damage"];
+                var hunger = (int)exec["hunger"];
+                var thirst = (int)exec["thirst"];
+                var sleep = (int)exec["sleep"];
+                var status = (bool)exec["status"];
+                var bleeding = (bool)exec["bleeding"];
+
+                result.Add(new Player
+                {
+                    Id = id,
+                    UserId = userId,
+                    Health = health,
+                    Stamina = stamina,
+                    Damage = damage,
+                    Hunger = hunger,
+                    Thirst = thirst,
+                    Sleep = sleep,
+                    Status = status,
+                    Bleeding = bleeding
+                });
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+
         public static void Stagger(IUser user)
         {
             var database = new DatabaseHungerGame("hanekawa");
