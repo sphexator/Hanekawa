@@ -9,34 +9,32 @@ namespace Jibril.Services.INC.Events.Types
 {
     public class Eat
     {
-        public static string EatEvent(Player player, Consumables consumables)
+        public static string EatEvent(Profile profile)
         {
-            if (consumables.Fish > 0)
+            if (profile.Consumables.Fish > 0)
             {
-                DatabaseHungerGame.EatFood(player.UserId);
-                DatabaseHungerGame.ConsumeFood(player.UserId, ConsumableNames.Food[2]);
+                DatabaseHungerGame.EatFood(profile.Player.UserId);
+                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[2]);
                 return "Ate fish";
             }
-            if (consumables.Beans > 0)
+            if (profile.Consumables.Beans > 0)
             {
-                DatabaseHungerGame.EatFood(player.UserId);
-                DatabaseHungerGame.ConsumeFood(player.UserId, ConsumableNames.Food[0]);
+                DatabaseHungerGame.EatFood(profile.Player.UserId);
+                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[0]);
                 return "Ate Beans";
             }
-            if (consumables.Pasta > 0)
+            if (profile.Consumables.Pasta > 0)
             {
-                DatabaseHungerGame.EatFood(player.UserId);
-                DatabaseHungerGame.ConsumeFood(player.UserId, ConsumableNames.Food[1]);
+                DatabaseHungerGame.EatFood(profile.Player.UserId);
+                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[1]);
                 return "Ate Pasta";
             }
-            if (consumables.Ramen > 0)
-            {
-                DatabaseHungerGame.EatSpecialFood(player.UserId, Ramen.StaminaGain);
-                DatabaseHungerGame.ConsumeFood(player.UserId, ConsumableNames.Food[3]);
-                return "Ate Ramen";
-            }
 
-            return null;
+            if (profile.Consumables.Ramen <= 0) return null;
+            DatabaseHungerGame.EatSpecialFood(profile.Player.UserId, Ramen.StaminaGain);
+            DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[3]);
+            return "Ate Ramen";
+
         }
     }
 }

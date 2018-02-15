@@ -4,58 +4,57 @@ using Jibril.Services.INC.Events.Types;
 
 namespace Jibril.Services.INC.Events
 {
-    public class EventHandler
+    public static class EventHandler
     {
         public static string EventManager(Profile profile)
         {
             var evt = ChanceGenerator.EventDeterminator(profile);
-            if (evt == ChanceGenerator.LootName)
+            switch (evt)
             {
-                var response = Types.Loot.LootEvent();
-                return response;
-            }
-            else if (evt == ChanceGenerator.KillName)
-            {
-                var response = Kill.KillEvent(profile); 
-                return response;
-
-            }
-            else if (evt == ChanceGenerator.IdleName)
-            {
-                var response = Idle.IdleEvent();
-                return response;
-            }
-            else if (evt == ChanceGenerator.MeetName)
-            {
-                var response = Meet.MeetEvent();
-                return response;
-            }
-            else if (evt == ChanceGenerator.HackName)
-            {
-                var response = Hack.HackEvent(profile);
-                return response;
-            }
-            else if (evt == ChanceGenerator.DieName)
-            {
-                var response = Die.DieEvent();
-                return response;
-            }
-            else if (evt == ChanceGenerator.SleepName)
-            {
-                //TODO:Sleep
-            }
-            else if (evt == ChanceGenerator.EatName)
-            {
-                //var response = Sleep;
-                //TODO: Eat
-            }
-            else
-            {
-                var msg = Idle.IdleEvent();
-                return msg;
+                case ChanceGenerator.LootName:
+                {
+                    var response = Types.Loot.LootEvent();
+                    return response;
+                }
+                case ChanceGenerator.KillName:
+                {
+                    var response = Kill.KillEvent(profile); 
+                    return response;
+                }
+                case ChanceGenerator.IdleName:
+                {
+                    var response = Idle.IdleEvent();
+                    return response;
+                }
+                case ChanceGenerator.MeetName:
+                {
+                    var response = Meet.MeetEvent();
+                    return response;
+                }
+                case ChanceGenerator.HackName:
+                {
+                    var response = Hack.HackEvent(profile);
+                    return response;
+                }
+                case ChanceGenerator.DieName:
+                {
+                    var response = Die.DieEvent();
+                    return response;
+                }
+                case ChanceGenerator.SleepName:
+                {
+                    var response = Sleep.SleepEvent(profile);
+                    return response;
+                }
+                case ChanceGenerator.EatName:
+                {
+                    var response = Eat.EatEvent(profile);
+                    return response;
+                }
             }
 
-            return null;
+            var msg = Idle.IdleEvent();
+            return msg;
         }
     }
 }
