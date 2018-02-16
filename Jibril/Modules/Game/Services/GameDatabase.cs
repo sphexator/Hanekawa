@@ -7,45 +7,45 @@ namespace Jibril.Modules.Game.Services
 {
     public class GameDatabase
     {
-        private readonly string database = DbInfo.DbNorm;
-        private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
-        private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string _database = DbInfo.DbNorm;
+        private readonly MySqlConnection _dbConnection;
+        private readonly string _password = DbInfo.password;
+        private readonly bool _pooling = false;
+        private readonly string _server = DbInfo.server;
+        private readonly string _username = DbInfo.username;
 
         public GameDatabase(string table)
         {
             _table = table;
             var stringBuilder = new MySqlConnectionStringBuilder
             {
-                Server = server,
-                UserID = username,
-                Password = password,
-                Database = database,
+                Server = _server,
+                UserID = _username,
+                Password = _password,
+                Database = _database,
                 SslMode = MySqlSslMode.None,
-                Pooling = POOLING
+                Pooling = _pooling
             };
             var connectionString = stringBuilder.ToString();
-            dbConnection = new MySqlConnection(connectionString);
-            dbConnection.Open();
+            _dbConnection = new MySqlConnection(connectionString);
+            _dbConnection.Open();
         }
 
         private string _table { get; }
 
-        public MySqlDataReader FireCommand(string query)
+        private MySqlDataReader FireCommand(string query)
         {
-            if (dbConnection == null)
+            if (_dbConnection == null)
                 return null;
-            var command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, _dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
 
-        public void CloseConnection()
+        private void CloseConnection()
         {
-            if (dbConnection != null)
-                dbConnection.Close();
+            if (_dbConnection != null)
+                _dbConnection.Close();
         }
 
 
@@ -128,7 +128,7 @@ namespace Jibril.Modules.Game.Services
 
                 result.Add(new GameStatus
                 {
-                    UserID = UserID,
+                    UserId = UserID,
                     Health = health,
                     Damagetaken = damagetaken,
                     Combatstatus = combatstatus,
@@ -236,7 +236,7 @@ namespace Jibril.Modules.Game.Services
             database.CloseConnection();
         }
 
-        public static List<Classes> GetClasses()
+        public static IEnumerable<Classes> GetClasses()
         {
             var result = new List<Classes>();
             var database = new GameDatabase("hanekawa");

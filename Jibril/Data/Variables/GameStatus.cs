@@ -2,7 +2,7 @@
 {
     public class GameStatus
     {
-        public string UserID { get; set; }
+        public string UserId { get; set; }
         public int Health { get; set; }
         public int Damagetaken { get; set; }
         public int Combatstatus { get; set; }

@@ -116,19 +116,31 @@ namespace Jibril.Services.Logging
                     var user = msg.Author;
                     if (user.IsBot != true)
                     {
+                        var author = new EmbedAuthorBuilder
+                        {
+                            Name = $"{msg.Author.Username} deleted a message in {channel.Name}:"
+                        };
                         var embed = new EmbedBuilder
                         {
-                            Color = new Color(Colours.DefaultColour)
+                            Color = new Color(Colours.DefaultColour),
+                            Author = author
                         };
                         var footer = new EmbedFooterBuilder();
-                        embed.WithDescription($"{msg.Author.Mention} deleted a message in {channel.Mention}:");
-                        embed.AddField(efb =>
+                        embed.WithDescription($"Content\n" +
+                                              $"{msg.Content.Truncate(1900)}");
+                        try
                         {
-                            efb.Name = "Content:";
-                            efb.Value = $"{msg.Content.Truncate(1000)}";
-                            efb.IsInline = false;
-                        });
-                        footer.WithText($"{DateTime.UtcNow.Humanize()} - msg ID: {msg.Id}");
+                            if (optMsg.Value.Attachments.Count > 0)
+                            {
+                                var image = optMsg.Value.Attachments.First(x => x.Url != null).Url;
+                                embed.ImageUrl = image;
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                        footer.WithText($"{msg.CreatedAt} - msg ID: {msg.Id}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);
@@ -161,25 +173,30 @@ namespace Jibril.Services.Logging
                     if (chtx == null) return;
                     if (user.IsBot != true && oldMsg.Value.Content != newMsg.Content)
                     {
+                        var author = new EmbedAuthorBuilder
+                        {
+                            Name = $"{msg.Author.Mention} updated a message in {chtx.Mention}"
+                        };
                         var embed = new EmbedBuilder
                         {
-                            Color = new Color(Colours.DefaultColour)
+                            Color = new Color(Colours.DefaultColour),
+                            Author = author
                         };
                         var footer = new EmbedFooterBuilder();
-                        embed.WithDescription($"{msg.Author.Mention} updated a message in {chtx.Mention}");
+                        embed.WithDescription($" ");
                         embed.AddField(y =>
                         {
                             y.Name = "Updated Message:";
-                            y.Value = $"{newMsg.Content}";
+                            y.Value = $"{newMsg.Content.Truncate(800)}";
                             y.IsInline = false;
                         });
                         embed.AddField(x =>
                         {
                             x.Name = "Old Message:";
-                            x.Value = $"{msg.Content.Truncate(1000)}";
+                            x.Value = $"{msg.Content.Truncate(800)}";
                             x.IsInline = false;
                         });
-                        footer.WithText($"{DateTime.UtcNow.Humanize()} - msg ID: {msg.Id}");
+                        footer.WithText($"{oldMsg.Value.CreatedAt} - msg ID: {msg.Id}");
                         footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
                         await Task.Delay(2000);
@@ -229,7 +246,7 @@ namespace Jibril.Services.Logging
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel) Math.Abs((int) severity - 5);
+            return (LogLevel)Math.Abs((int)severity - 5);
         }
 
         private static void ApplyBanScheduler(IUser user)
@@ -250,7 +267,7 @@ namespace Jibril.Services.Logging
                 if (banCheck == null) AdminDb.AddBan(user);
                 else AdminDb.UpdateBanPerm(user);
             }
-            if (userdata?.Level > 30)
+            if (!(userdata?.Level > 30)) return;
             {
                 var banCheck = AdminDb.CheckBanList(user);
                 if (banCheck == null) AdminDb.AddBan(user);
