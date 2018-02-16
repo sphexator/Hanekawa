@@ -33,9 +33,19 @@ namespace Jibril.Services.INC
 
         public Task InitializeTask()
         {
-            var _ = Task.Run(async() =>
+            var _ = Task.Run(async () =>
             {
-
+                var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
+                                 $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
+                if (config.Live != true) await StartSignUp();
+                if (config.Live) await ContinueEvent();
+                var difference = DateTime.Compare(config.SignupDuration, DateTime.UtcNow);
+                if (config.Live != true && (config.SignupDuration.ToString() == "0001-01-01 00:00:00" ||
+                                            config.SignupDuration.AddDays(1) <= DateTime.UtcNow && difference < 0 ||
+                                            difference >= 0))
+                {
+                    await StartEvent();
+                }
             });
             return Task.CompletedTask;
         }
@@ -82,13 +92,7 @@ namespace Jibril.Services.INC
             return Task.CompletedTask;
         }
 
-        public static IUser GetUser(ulong id)
-        {
-            var user = GetUser(id);
-            return user;
-        }
-
-        private IUser AwaUser(ulong id)
+        public IUser GetUser(ulong id)
         {
             var user = _client.GetUser(id);
             return user;

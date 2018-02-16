@@ -24,6 +24,7 @@ namespace Jibril.Services.INC.Events.Types
             if (profile.Weapons.Bow > 0 && profile.Weapons.Arrows > 0)
             {
                 var bowDamage = DamageOutput.BowDamage(profile.Player.Stamina, profile.Player.Bleeding);
+                //DatabaseHungerGame.AddDamage();
                 var response = $"Hits {trgt} with his axe inflicting {bowDamage} damage.";
                 return response;
             }
@@ -40,12 +41,12 @@ namespace Jibril.Services.INC.Events.Types
             return msg;
         }
 
-        private static IUser GetTarget()
+        private static ulong GetTarget()
         {
             var users = DatabaseHungerGame.GetUsers();
             var rand = new Random();
             var chosn = rand.Next(users.Count);
-            var user = HungerGames.GetUser(users[chosn].UserId);
+            var user = users[chosn].UserId;
             return user;
         }
     }

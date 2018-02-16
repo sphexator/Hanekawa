@@ -9,9 +9,6 @@ using Jibril.Services.Level.Lists;
 
 namespace Jibril.Services.INC.Database
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public class DatabaseHungerGame
     {
         private readonly string _database = DbInfo.DbNorm;
@@ -61,6 +58,57 @@ namespace Jibril.Services.INC.Database
                 $"INSERT INTO hungergame (userid) VALUES ('{user.Id}')";
             database.FireCommand(str);
             database.CloseConnection();
+        }
+
+        public static void GameStart()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "UPDATE hungergameconfig SET live = 1, round = 1 WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void GameEnd()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "UPDATE hungergameconfig SET live = 0, round = 0 WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void GameRoundIncrease()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "UPDATE hungergameconfig SET round = round + 1 WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+
+        public static List<Config> GetConfig()
+        {
+            var result = new List<Config>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "SELECT * FROM hungergameconfig WHERE guildid = '339370914724446208'";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var guildid = (ulong) exec["guild"];
+                var live = (bool) exec["live"];
+                var round = (int) exec["round"];
+                var signnupDuration = (DateTime) exec["signupDuration"];
+
+                result.Add(new Config
+                {
+                    GuildId = guildid,
+                    Live = live,
+                    Round = round,
+                    SignupDuration = signnupDuration
+                });
+            }
+
+            database.CloseConnection();
+            return result;
         }
 
         public static List<Player> GetUsers()
