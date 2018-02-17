@@ -11,6 +11,7 @@
     {
         public int Id { get; set; }
         public ulong UserId { get; set; }
+        public string Name { get; set; }
         public int Health { get; set; }
         public int Stamina { get; set; }
         public int Damage { get; set; }

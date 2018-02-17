@@ -121,6 +121,7 @@ namespace Jibril.Services.INC.Database
             {
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
+                var name = (string) exec["username"];
                 var health = (int)exec["health"];
                 var stamina = (int)exec["stamina"];
                 var damage = (int)exec["damage"];
@@ -134,6 +135,7 @@ namespace Jibril.Services.INC.Database
                 {
                     Id = id,
                     UserId = userId,
+                    Name = name,
                     Health = health,
                     Stamina = stamina,
                     Damage = damage,
@@ -235,6 +237,14 @@ namespace Jibril.Services.INC.Database
         {
             var database = new DatabaseHungerGame("hanekawa");
             var str = $"UPDATE hungergame SET damageTaken = damageTaken - '{damage}' WHERE userid = {user.Id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void AddDamage(ulong user, int damage)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET damageTaken = damageTaken - '{damage}' WHERE userid = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
