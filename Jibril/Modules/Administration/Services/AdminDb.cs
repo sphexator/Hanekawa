@@ -318,41 +318,138 @@ namespace Jibril.Modules.Administration.Services
 
         // ----------------- Get text from db----------------- //
 
-        public static List<string> GetRules(string guildid)
+        public static string GetRules()
         {
-            var result = new List<string>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM guildinfo WHERE guild = '{guildid}'";
+            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
             var reader = database.FireCommand(str);
-
-            while (reader.Read())
-            {
-                var rules = (string)reader["rules"];
-
-                result.Add(rules);
-            }
-
+            var rules = (string)reader["rules"];
             database.CloseConnection();
-            return result;
+            return rules;
+        }
+        public static string Getfaq()
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (string)reader["faq"];
+            database.CloseConnection();
+            return rules;
+        }
+        public static string GetfaqTwo()
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (string)reader["faq2"];
+            database.CloseConnection();
+            return rules;
+        }
+        // Set Message text
+        public static void SetRules(string text)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET rules = '{text}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetFaqOne(string text)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET faq = '{text}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetFaqTwo(string text)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET faq2 = '{text}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        // Store message IDs
+        public static void SetRulesMsgId(ulong id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET rulesmsgid = '{id}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetFaqOneMsgId(ulong id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET faqmsgid = '{id}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetFaqTwoMsgId(ulong id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET faq2msgid = '{id}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetStaffMsgId(ulong id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET staffmsgid = '{id}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        public static void SetLevelInviteMsgId(ulong id)
+        {
+            var database = new AdminDb("hanekawa");
+            var str = $"UPDATE exp SET LevelInviteMsgId = '{id}' WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        // Get message IDs
+        public static ulong GetRulesMsgId()
+        {
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (ulong)reader["rulesmsgid"];
+            database.CloseConnection();
+            return rules;
+        }
+        public static ulong GetFaqOneMsgId()
+        {
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (ulong)reader["faqmsgid"];
+            database.CloseConnection();
+            return rules;
+        }
+        public static ulong GetFaqTwoMsgId()
+        {
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (ulong)reader["faq2msgid"];
+            database.CloseConnection();
+            return rules;
+        }
+        public static ulong GetStaffMsgId()
+        {
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (ulong)reader["staffmsgid"];
+            database.CloseConnection();
+            return rules;
+        }
+        public static ulong GetLevelInviteMsgId()
+        {
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            var rules = (ulong)reader["LevelInviteMsgId"];
+            database.CloseConnection();
+            return rules;
         }
 
-        public static List<string> Getfaq(string guildid)
-        {
-            var result = new List<string>();
-            var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM guildinfo WHERE guild = '{guildid}'";
-            var reader = database.FireCommand(str);
-
-            while (reader.Read())
-            {
-                var rules = (string)reader["faq"];
-
-                result.Add(rules);
-            }
-
-            database.CloseConnection();
-            return result;
-        }
 
         // Mute stuff
         public static List<MuteRoleConfig> GetMuteRole()

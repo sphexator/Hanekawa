@@ -66,6 +66,7 @@ namespace Jibril.Modules.Gambling
         }
 
         [Command("reward")]
+        [Alias("award")]
         [Summary("Rewards user with event tokens")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task GiveCredit(int amount, IUser user)

@@ -25,6 +25,8 @@ namespace Jibril.Services.Level
             _channels.Add(353306001858101248); //Anime
             _channels.Add(382920381985456129); //tech
             _channels.Add(353306043373322252); //music
+
+            _channels.Add(404633037884620802); //Test channel
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -47,14 +49,14 @@ namespace Jibril.Services.Level
                     var user = guild?.GetUser(x);
                     newMvps.Add(user);
                 }
-                await Demote(oldMvps, guild, role);
-                await Promote(newMvps, guild, role);
+                await Demote(oldMvps, role);
+                await Promote(newMvps, role);
                 DatabaseService.ResetMessageCounter();
             });
             return Task.CompletedTask;
         }
 
-        private static async Task Demote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, IRole role)
+        private static async Task Demote(IEnumerable<SocketGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
             {
@@ -70,7 +72,7 @@ namespace Jibril.Services.Level
             }
         }
 
-        private static async Task Promote(IEnumerable<SocketGuildUser> mvps, SocketGuild guild, IRole role)
+        private static async Task Promote(IEnumerable<SocketGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
             {

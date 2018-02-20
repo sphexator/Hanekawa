@@ -41,7 +41,7 @@ namespace Jibril.Services.INC
                 if (config.Live) await ContinueEvent();
                 var difference = DateTime.Compare(config.SignupDuration, DateTime.UtcNow);
                 if (config.Live != true && (config.SignupDuration.ToString() == "0001-01-01 00:00:00" ||
-                                            config.SignupDuration.AddDays(1) <= DateTime.UtcNow && difference < 0 ||
+                                            config.SignupDuration.AddHours(23) <= DateTime.UtcNow && difference < 0 ||
                                             difference >= 0))
                 {
                     await StartEvent();
