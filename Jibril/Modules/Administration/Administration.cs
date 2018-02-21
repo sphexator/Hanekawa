@@ -56,8 +56,7 @@ namespace Jibril.Modules.Administration
         public async Task BanAsync(SocketGuildUser user = null, [Remainder] string reason = "No Reason provided")
         {
             if (user == null) throw new ArgumentException("You must mention a user");
-            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
-                Context.Guild.Roles.Select(r => r.Position).Max())
+            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= ((SocketGuildUser)Context.User).Roles.Select(r => r.Position).Max()))
             {
                 var failEmbed = EmbedGenerator.DefaultEmbed(
                     $"{Context.User.Mention}, you can't ban someone with same or higher role then you.",
