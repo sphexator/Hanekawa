@@ -17,7 +17,7 @@ namespace Jibril.Modules.Administration
         {
             AdminDb.SetRules(rules);
             var msgid = AdminDb.GetRulesMsgId();
-            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid) as IUserMessage;
+            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid[0]) as IUserMessage;
             await msg.ModifyAsync(x => x.Content = rules);
             await ReplyAsync("Successfully updated rules");
         }
@@ -29,7 +29,7 @@ namespace Jibril.Modules.Administration
         {
             AdminDb.SetFaqOne(faq);
             var msgid = AdminDb.GetFaqOneMsgId();
-            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid) as IUserMessage;
+            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid[0]) as IUserMessage;
             await msg.ModifyAsync(x => x.Content = faq);
             await ReplyAsync("Successfully updated FAQ one");
         }
@@ -40,10 +40,48 @@ namespace Jibril.Modules.Administration
         public async Task SetFaqTwo([Remainder] string faq)
         {
             AdminDb.SetFaqTwo(faq);
-            var msgid = AdminDb.GetFaqOneMsgId();
-            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid) as IUserMessage;
+            var msgid = AdminDb.GetFaqTwoMsgId();
+            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid[0]) as IUserMessage;
             await msg.ModifyAsync(x => x.Content = faq);
             await ReplyAsync("Successfully updated FAQ Two");
+        }
+
+        [Command("updstaff")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task UpdateStaffList()
+        {
+            var rng = new Random();
+            var msgid = AdminDb.GetStaffMsgId();
+            if (!(Context.Guild.Roles.FirstOrDefault(x => x.Name == "Admiral") is IRole adminRole)) throw new ArgumentNullException(nameof(adminRole));
+            if (!(Context.Guild.Roles.FirstOrDefault(x => x.Name == "Secretary") is IRole modRole)) throw new ArgumentNullException(nameof(modRole));
+            if (!(Context.Guild.Roles.FirstOrDefault(x => x.Name == "Assistant Secretary") is IRole trialRole)) throw new ArgumentNullException(nameof(trialRole));
+
+            var guild = Context.Guild as IGuild;
+            var usrs = (await guild.GetUsersAsync()).ToArray();
+
+            var admins = usrs.Where(x => x.RoleIds.Contains(adminRole.Id)).ToArray();
+            var mod = usrs.Where(x => x.RoleIds.Contains(modRole.Id)).ToArray();
+            var trial = usrs.Where(x => x.RoleIds.Contains(trialRole.Id)).ToArray();
+
+            var adminstaffmen = string.Join("\n", admins.Select(x => x.Mention)
+                .OrderBy(x => rng.Next()).Take(50));
+            var modStaffmen = string.Join($"\n", mod.Select(x => x.Mention)
+                .OrderBy(x => rng.Next()).Take(50));
+            var trialStaffmen = string.Join("\n", trial.Select(x => x.Mention)
+                .OrderBy(x => rng.Next()).Take(50));
+
+            var content = $"__**Staff:**__\n" +
+                          $"{adminstaffmen}\n" +
+                          $"\n" +
+                          $"{modStaffmen}\n" +
+                          $"{trialStaffmen}";
+
+            var ch = await guild.GetTextChannelAsync(339370914724446208);
+            var msg = await ch.GetMessageAsync(msgid[0]) as IUserMessage;
+
+            await msg.ModifyAsync(x => x.Content = content);
+
         }
 
         [Command("updinvite")]
@@ -57,7 +95,7 @@ namespace Jibril.Modules.Administration
             var content = $"{LevelRoles}\n" +
                           $"\n" +
                           $"{invite.Url}";
-            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid) as IUserMessage;
+            var msg = await Context.Guild.GetTextChannel(339370914724446208).GetMessageAsync(msgid[0]) as IUserMessage;
             await msg.ModifyAsync(x => x.Content = content);
         }
 
@@ -96,11 +134,11 @@ namespace Jibril.Modules.Administration
                            $"{trialStaffmen}";
             // image
             await Context.Channel.SendFileAsync(@"Data/Images/Info/RULES.png");
-            var ruleMsg = await ReplyAsync(rule);
+            var ruleMsg = await ReplyAsync(rule[0]);
             // Image
             await Context.Channel.SendFileAsync(@"Data/Images/Info/FAQ.png");
-            var faqMsg1 = await ReplyAsync(faq);
-            var faqMsg2 = await ReplyAsync(faq2);
+            var faqMsg1 = await ReplyAsync(faq[0]);
+            var faqMsg2 = await ReplyAsync(faq2[0]);
             var staffMsg = await ReplyAsync(staffmsg);
             var levelInvite = await ReplyAsync($"{LevelRoles}\n" +
                              "\n" +

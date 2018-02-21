@@ -318,145 +318,187 @@ namespace Jibril.Modules.Administration.Services
 
         // ----------------- Get text from db----------------- //
 
-        public static string GetRules()
+        public static List<string> GetRules()
         {
+            var result = new List<string>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
             var reader = database.FireCommand(str);
-            var rules = (string)reader["rules"];
+            while (reader.Read())
+            {
+                var rules = (string)reader["rules"];
+                result.Add(rules);
+            }
             database.CloseConnection();
-            return rules;
+            return result;
         }
-        public static string Getfaq()
+        public static List<string> Getfaq()
         {
+            var result = new List<string>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
             var reader = database.FireCommand(str);
-            var rules = (string)reader["faq"];
+            while (reader.Read())
+            {
+                var rules = (string)reader["faq"];
+                result.Add(rules);
+            }
             database.CloseConnection();
-            return rules;
+            return result;
         }
-        public static string GetfaqTwo()
+        public static List<string> GetfaqTwo()
         {
+            var result = new List<string>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
             var reader = database.FireCommand(str);
-            var rules = (string)reader["faq2"];
+            while (reader.Read())
+            {
+                var rules = (string)reader["faq2"];
+                result.Add(rules);
+            }
             database.CloseConnection();
-            return rules;
+            return result;
         }
+
         // Set Message text
         public static void SetRules(string text)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET rules = '{text}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET rules = '{text}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetFaqOne(string text)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET faq = '{text}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET faq = '{text}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetFaqTwo(string text)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET faq2 = '{text}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET faq2 = '{text}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         // Store message IDs
         public static void SetRulesMsgId(ulong id)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET rulesmsgid = '{id}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET rulesmsgid = '{id}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetFaqOneMsgId(ulong id)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET faqmsgid = '{id}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET faqmsgid = '{id}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetFaqTwoMsgId(ulong id)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET faq2msgid = '{id}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET faq2msgid = '{id}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetStaffMsgId(ulong id)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET staffmsgid = '{id}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET staffmsgid = '{id}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void SetLevelInviteMsgId(ulong id)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE exp SET LevelInviteMsgId = '{id}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET LevelInviteMsgId = '{id}' WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
-        // Get message IDs
-        public static ulong GetRulesMsgId()
-        {
-            var database = new AdminDb("hanekawa");
-            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
-            var reader = database.FireCommand(str);
-            var rules = (ulong)reader["rulesmsgid"];
-            database.CloseConnection();
-            return rules;
-        }
-        public static ulong GetFaqOneMsgId()
-        {
-            var database = new AdminDb("hanekawa");
-            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
-            var reader = database.FireCommand(str);
-            var rules = (ulong)reader["faqmsgid"];
-            database.CloseConnection();
-            return rules;
-        }
-        public static ulong GetFaqTwoMsgId()
-        {
-            var database = new AdminDb("hanekawa");
-            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
-            var reader = database.FireCommand(str);
-            var rules = (ulong)reader["faq2msgid"];
-            database.CloseConnection();
-            return rules;
-        }
-        public static ulong GetStaffMsgId()
-        {
-            var database = new AdminDb("hanekawa");
-            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
-            var reader = database.FireCommand(str);
-            var rules = (ulong)reader["staffmsgid"];
-            database.CloseConnection();
-            return rules;
-        }
-        public static ulong GetLevelInviteMsgId()
-        {
-            var database = new AdminDb("hanekawa");
-            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
-            var reader = database.FireCommand(str);
-            var rules = (ulong)reader["LevelInviteMsgId"];
-            database.CloseConnection();
-            return rules;
-        }
 
+        // Get message IDs
+        public static List<ulong> GetRulesMsgId()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var rules = (ulong)reader["rulesmsgid"];
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
+        public static List<ulong> GetFaqOneMsgId()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var rules = (ulong)reader["faqmsgid"];
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
+        public static List<ulong> GetFaqTwoMsgId()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var rules = (ulong)reader["faq2msgid"];
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
+        public static List<ulong> GetStaffMsgId()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var rules = (ulong)reader["staffmsgid"];
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
+        public static List<ulong> GetLevelInviteMsgId()
+        {
+            var result = new List<ulong>();
+            var database = new AdminDb("hanekawa");
+            const string str = "SELECT * FROM guildinfo WHERE guild = '339370914724446208'";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var rules = (ulong)reader["LevelInviteMsgId"];
+                result.Add(rules);
+            }
+            database.CloseConnection();
+            return result;
+        }
 
         // Mute stuff
         public static List<MuteRoleConfig> GetMuteRole()
         {
             var result = new List<MuteRoleConfig>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM muteconfig";
+            const string str = "SELECT * FROM muteconfig";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
@@ -479,7 +521,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var result = new List<MutedUsers>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM mute";
+            const string str = "SELECT * FROM mute";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
@@ -504,7 +546,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var result = new List<ulong>();
             var database = new AdminDb("hanekawa");
-            var str = $"SELECT * FROM mute";
+            const string str = "SELECT * FROM mute";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
@@ -612,12 +654,12 @@ namespace Jibril.Modules.Administration.Services
         {
             var database = new WarningDB("senjougahara");
             var str = $"CREATE TABLE `senjougahara`.`{user.Id}` (" +
-                      $"`id` INT(11) NOT NULL AUTO_INCREMENT," +
-                      $"`staff_id` VARCHAR(45) NULL DEFAULT NULL," +
-                      $"`message` LONGTEXT NULL DEFAULT NULL," +
-                      $"`warndate` DATETIME NULL DEFAULT '0001-01-01 00:00:00'," +
-                      $"PRIMARY KEY(`id`));";
-            var tableName = database.FireCommand(str);
+                      "`id` INT(11) NOT NULL AUTO_INCREMENT," +
+                      "`staff_id` VARCHAR(45) NULL DEFAULT NULL," +
+                      "`message` LONGTEXT NULL DEFAULT NULL," +
+                      "`warndate` DATETIME NULL DEFAULT '0001-01-01 00:00:00'," +
+                      "PRIMARY KEY(`id`));";
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -626,7 +668,7 @@ namespace Jibril.Modules.Administration.Services
             var database = new WarningDB("senjougahara");
             var addWarnNumb =
                 $"INSERT INTO `senjougahara`.`{user.Id}` (staff_id, message, warndate ) VALUES ('{staff.Id}', '{msg}', curtime())";
-            var tableName = database.FireCommand(addWarnNumb);
+            database.FireCommand(addWarnNumb);
             database.CloseConnection();
         }
 
@@ -641,13 +683,13 @@ namespace Jibril.Modules.Administration.Services
 
                 while (tableName.Read())
                 {
-                    var staff_id = (string)tableName["staff_id"];
+                    var staffId = (string)tableName["staff_id"];
                     var message = (string)tableName["message"];
                     var date = (DateTime)tableName["warndate"];
 
                     result.Add(new WarnList
                     {
-                        Staff_id = staff_id,
+                        Staff_id = staffId,
                         Message = message,
                         Date = date
                     });

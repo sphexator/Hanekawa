@@ -118,7 +118,7 @@ namespace Jibril.Services.Logging
                     {
                         var author = new EmbedAuthorBuilder
                         {
-                            Name = $"{msg.Author.Username} deleted a message in {channel.Name}:"
+                            Name = "Message deleted"
                         };
                         var embed = new EmbedBuilder
                         {
@@ -126,8 +126,19 @@ namespace Jibril.Services.Logging
                             Author = author
                         };
                         var footer = new EmbedFooterBuilder();
-                        embed.WithDescription($"Content\n" +
-                                              $"{msg.Content.Truncate(1900)}");
+                        if (optMsg.HasValue)
+                        {
+                            embed.WithDescription(
+                                $"{optMsg.Value.Author.Mention} deleted a message in {channel.Mention}\n" +
+                                $"{msg.Content.Truncate(1800)}");
+                        }
+                        else
+                        {
+                            var getMsg = await ch.GetMessageAsync(optMsg.Id);
+                            embed.WithDescription($"{getMsg.Author.Mention} deleted a message in {channel.Mention}\n" +
+                                                  $"{getMsg.Content.Truncate(1800)}");
+                        }
+
                         try
                         {
                             if (optMsg.Value.Attachments.Count > 0)
@@ -136,10 +147,11 @@ namespace Jibril.Services.Logging
                                 embed.ImageUrl = image;
                             }
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
                             Console.WriteLine(e.Message);
                         }
+
                         footer.WithText($"{msg.CreatedAt} - msg ID: {msg.Id}");
                         footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
                         embed.WithFooter(footer);
@@ -175,7 +187,7 @@ namespace Jibril.Services.Logging
                     {
                         var author = new EmbedAuthorBuilder
                         {
-                            Name = $"{msg.Author.Mention} updated a message in {chtx.Mention}"
+                            Name = "Message Updated"
                         };
                         var embed = new EmbedBuilder
                         {
@@ -183,17 +195,17 @@ namespace Jibril.Services.Logging
                             Author = author
                         };
                         var footer = new EmbedFooterBuilder();
-                        embed.WithDescription($" ");
+                        embed.WithDescription($"{newMsg.Author.Mention} updated a message in {chtx.Mention}");
                         embed.AddField(y =>
                         {
                             y.Name = "Updated Message:";
-                            y.Value = $"{newMsg.Content.Truncate(800)}";
+                            y.Value = $"{newMsg.Content.Truncate(900)}";
                             y.IsInline = false;
                         });
                         embed.AddField(x =>
                         {
                             x.Name = "Old Message:";
-                            x.Value = $"{msg.Content.Truncate(800)}";
+                            x.Value = $"{msg.Content.Truncate(900)}";
                             x.IsInline = false;
                         });
                         footer.WithText($"{oldMsg.Value.CreatedAt} - msg ID: {msg.Id}");
@@ -231,10 +243,7 @@ namespace Jibril.Services.Logging
         private Task LogCommand(LogMessage message)
         {
             // Return an error message for async commands
-            if (message.Exception is CommandException command)
-            {
-                Console.WriteLine($"Error: {command.Message}");
-            }
+            if (message.Exception is CommandException command) Console.WriteLine($"Error: {command.Message}");
             _commandsLogger.Log(
                 LogLevelFromSeverity(message.Severity),
                 0,
@@ -246,7 +255,7 @@ namespace Jibril.Services.Logging
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel)Math.Abs((int)severity - 5);
+            return (LogLevel) Math.Abs((int) severity - 5);
         }
 
         private static void ApplyBanScheduler(IUser user)
@@ -256,17 +265,17 @@ namespace Jibril.Services.Logging
             {
                 var banCheck = AdminDb.CheckBanList(user);
                 if (banCheck == null)
-                {
                     AdminDb.AddBanPerm(user);
-                }
                 else AdminDb.UpdateBanPerm(user);
             }
+
             if (userdata?.Level > 10 && userdata.Level < 25)
             {
                 var banCheck = AdminDb.CheckBanList(user);
                 if (banCheck == null) AdminDb.AddBan(user);
                 else AdminDb.UpdateBanPerm(user);
             }
+
             if (!(userdata?.Level > 30)) return;
             {
                 var banCheck = AdminDb.CheckBanList(user);
@@ -275,7 +284,8 @@ namespace Jibril.Services.Logging
             }
         }
 
-        private async Task LogEmbedBuilder(SocketGuild guild, IUser user, string actionType, uint colour, int length = 1440)
+        private async Task LogEmbedBuilder(SocketGuild guild, IUser user, string actionType, uint colour,
+            int length = 1440)
         {
             var time = DateTime.Now;
             AdminDb.AddActionCase(user, time);
