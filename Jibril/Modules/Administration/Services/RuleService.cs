@@ -16,7 +16,7 @@ namespace Jibril.Modules.Administration.Services
         {
             _client = client;
 
-            _client.GuildMemberUpdated += UpdateStaff;
+            //_client.GuildMemberUpdated += UpdateStaff;
         }
 
         private Task UpdateStaff(SocketGuildUser oldUser, SocketGuildUser newUser)
