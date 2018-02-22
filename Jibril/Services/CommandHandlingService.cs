@@ -25,7 +25,7 @@ namespace Jibril.Services
         public async Task InitializeAsync(IServiceProvider provider)
         {
             _provider = provider;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         }
 
         private async Task MessageRecieved(SocketMessage rawMessage)
