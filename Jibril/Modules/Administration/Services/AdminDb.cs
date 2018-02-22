@@ -372,7 +372,7 @@ namespace Jibril.Modules.Administration.Services
         public static void SetFaqOne(string text)
         {
             var database = new AdminDb("hanekawa");
-            var str = $"UPDATE guildinfo SET faq = '{text}' WHERE guild = '339370914724446208'";
+            var str = $"UPDATE guildinfo SET faq = '{text}' WHERE guild = '339370914724446208";
             database.FireCommand(str);
             database.CloseConnection();
         }

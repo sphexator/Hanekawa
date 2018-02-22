@@ -34,7 +34,7 @@ namespace Jibril.Modules.Administration
             if (x <= 2000)
             {
                 var channel = Context.Channel as ITextChannel;
-                var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).Flatten();
+                var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync();
                 await channel.DeleteMessagesAsync(messagesToDelete);
                 var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!",
                     Colours.OkColour);
@@ -182,7 +182,7 @@ namespace Jibril.Modules.Administration
             {
                 IMessage[] msgs;
                 IMessage lastMessage = null;
-                msgs = (await Context.Channel.GetMessagesAsync(50).Flatten()).Where(m => m.Author.Id == user.Id)
+                msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
                     .Take(50).ToArray();
                 lastMessage = msgs[msgs.Length - 1];
 
