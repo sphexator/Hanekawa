@@ -70,6 +70,7 @@ namespace Jibril.Modules.Gambling
         [Ratelimit(1, 2, Measure.Seconds, false, false)]
         public async Task HardBet(string bet)
         {
+            if (!(bet.Equals("all", StringComparison.InvariantCultureIgnoreCase))) return;
             var user = Context.User;
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             if (userData == null) return;
