@@ -12,7 +12,7 @@ namespace Jibril.Modules.Marriage
 {
     public class Marriage : InteractiveBase
     {
-        [Command("waifu")]
+        [Command("waifu", RunMode = RunMode.Async)]
         [Alias("husbando")]
         [Summary("Ask someone to be your waifu or husbando")]
         public async Task ClaimWaifu(IGuildUser user)
@@ -30,14 +30,14 @@ namespace Jibril.Modules.Marriage
                 await ReplyAsync($"{Context.User.Mention}, {user.Username} is already taken to {chchUserData.ClaimName}");
                 return;
             }
-            await ReplyAsync($"{user.Mention}, do you take {Context.User.Mention} as your waifu/husbando? (Yes/No)");
-            var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id));
+            await ReplyAsync($"{Context.User.Mention} asks you to be his waifu/husbando. Would you share your life with him/her until the end ? (Yes/No)");
+            var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromMinutes(2));
             if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) ||
                 response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase) ||
                 response.Content.Equals("y", StringComparison.InvariantCultureIgnoreCase))
             {
                 //TODO: Add User to DB with claim username
-                await ReplyAsync($"{Context.User.Mention} has claimed {user.Mention} as her/his waifu/husbando!");
+                await ReplyAsync($"I declare now {user.Mention} and {Context.User.Mention} as waifu and husbando!");
             }
             else if (response == null)
             {

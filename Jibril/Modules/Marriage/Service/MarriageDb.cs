@@ -86,6 +86,32 @@ namespace Jibril.Modules.Marriage.Service
             database.CloseConnection();
             return result;
         }
+
+        public static List<MarriageDbVariables> GetMarriageData()
+        {
+            var result = new List<MarriageDbVariables>();
+            var database = new MarriageDb();
+            const string str = "SELECT * FROM waifu";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var user = (ulong)exec["user"];
+                var name = (string)exec["name"];
+                var claim = (ulong)exec["claim"];
+                var claimname = (string)exec["claimname"];
+                var timer = (DateTime)exec["timer"];
+                result.Add(new MarriageDbVariables
+                {
+                    Userid = user,
+                    Name = name,
+                    Claim = claim,
+                    ClaimName = claimname,
+                    Timer = timer
+                });
+            }
+            database.CloseConnection();
+            return result;
+        }
     }
     public class MarriageDbVariables
     {
