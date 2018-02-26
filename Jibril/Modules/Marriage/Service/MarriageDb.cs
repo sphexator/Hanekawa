@@ -61,33 +61,35 @@ namespace Jibril.Modules.Marriage.Service
             return result;
         }
 
-        public static List<MarriageDbVariables> MarriageData(IUser usr)
+        public static IEnumerable<MarriageDbVariables> MarriageData(ulong usr)
         {
             var result = new List<MarriageDbVariables>();
             var database = new MarriageDb();
-            var str = $"SELECT * FROM waifu WHERE user = '{usr.Id}'";
+            var str = $"SELECT * FROM waifu WHERE user = '{usr}'";
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
                 var user = (ulong)exec["user"];
-                var name = (string) exec["name"];
-                var claim = (ulong) exec["claim"];
-                var claimname = (string) exec["claimname"];
-                var timer = (DateTime) exec["timer"];
+                var name = (string)exec["name"];
+                var claim = (ulong)exec["claim"];
+                var claimname = (string)exec["claimname"];
+                var timer = (DateTime)exec["timer"];
+                var rank = (int)exec["rank"];
                 result.Add(new MarriageDbVariables
                 {
                     Userid = user,
                     Name = name,
                     Claim = claim,
                     ClaimName = claimname,
-                    Timer = timer
+                    Timer = timer,
+                    Rank = rank
                 });
             }
             database.CloseConnection();
             return result;
         }
 
-        public static List<MarriageDbVariables> GetMarriageData()
+        public static IEnumerable<MarriageDbVariables> GetMarriageData()
         {
             var result = new List<MarriageDbVariables>();
             var database = new MarriageDb();
@@ -100,13 +102,15 @@ namespace Jibril.Modules.Marriage.Service
                 var claim = (ulong)exec["claim"];
                 var claimname = (string)exec["claimname"];
                 var timer = (DateTime)exec["timer"];
+                var rank = (int) exec["rank"];
                 result.Add(new MarriageDbVariables
                 {
                     Userid = user,
                     Name = name,
                     Claim = claim,
                     ClaimName = claimname,
-                    Timer = timer
+                    Timer = timer,
+                    Rank = rank
                 });
             }
             database.CloseConnection();
@@ -120,5 +124,6 @@ namespace Jibril.Modules.Marriage.Service
         public ulong Claim { get; set; }
         public string ClaimName { get; set; }
         public DateTime Timer { get; set; }
+        public int Rank { get; set; }
     }
 }

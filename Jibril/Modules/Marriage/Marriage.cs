@@ -17,8 +17,8 @@ namespace Jibril.Modules.Marriage
         [Summary("Ask someone to be your waifu or husbando")]
         public async Task ClaimWaifu(IGuildUser user)
         {
-            var chchData = MarriageDb.MarriageData(Context.User).FirstOrDefault();
-            var chchUserData = MarriageDb.MarriageData(user).FirstOrDefault();
+            var chchData = MarriageDb.MarriageData(Context.User.Id).FirstOrDefault();
+            var chchUserData = MarriageDb.MarriageData(user.Id).FirstOrDefault();
             //TODO: Create response depending on which one is already taken
             if (chchData != null)
             {

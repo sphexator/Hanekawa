@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
+using Discord;
 using Discord.WebSocket;
+using Jibril.Modules.Administration.Services;
 
 namespace Jibril.Modules.Marriage.Service
 {
@@ -36,13 +39,17 @@ namespace Jibril.Modules.Marriage.Service
         {
             var waifuTimer = WaifuTimer.GetOrAdd(GuildId, new ConcurrentDictionary<ulong, Timer>());
 
-            var toAdd = new Timer(async _ =>
+            var toAdd = new Timer(_ =>
             {
+                var user = MarriageDb.MarriageData(userId).FirstOrDefault();
                 try
                 {
+                    if (user != null && user.Rank == 2)
+                    {
 
+                    }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     //Ignore
                 }
@@ -53,6 +60,15 @@ namespace Jibril.Modules.Marriage.Service
                 old.Change(Timeout.Infinite, Timeout.Infinite);
                 return toAdd;
             });
+        }
+
+        private void AddWaifu(IGuildUser user, IGuildUser claimUser)
+        {
+            var after = TimeSpan.FromDays(7);
+            var waifuUpgradeAt = DateTime.UtcNow + after;
+
+            StartWaifuTimer(user.Id, after);
+            StartWaifuTimer(claimUser.Id, after);
         }
     }
 }
