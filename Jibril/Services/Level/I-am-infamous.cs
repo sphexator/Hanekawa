@@ -39,11 +39,11 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                var guild = _client.Guilds.FirstOrDefault(x => x.Id == 339370914724446208);
-                var role = guild?.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
+                var guild = _client.GetGuild(339370914724446208);
+                var role = guild.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
                 var oldMvps = role?.Members;
                 var ma = DatabaseService.GetActiveUsers();
-                var newMvps = new List<SocketGuildUser>();
+                var newMvps = new List<IGuildUser>();
                 foreach (var x in ma)
                 {
                     var user = guild?.GetUser(x);
@@ -56,7 +56,7 @@ namespace Jibril.Services.Level
             return Task.CompletedTask;
         }
 
-        private static async Task Demote(IEnumerable<SocketGuildUser> mvps, IRole role)
+        private static async Task Demote(IEnumerable<IGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
             {
@@ -72,7 +72,7 @@ namespace Jibril.Services.Level
             }
         }
 
-        private static async Task Promote(IEnumerable<SocketGuildUser> mvps, IRole role)
+        private static async Task Promote(IEnumerable<IGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
             {

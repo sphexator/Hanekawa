@@ -110,7 +110,7 @@ namespace Jibril.Services
             while (reader.Read())
             {
                 var userId = (string)reader["user_id"];
-                var userIdConvert = uint.Parse(userId);
+                var userIdConvert = ulong.Parse(userId);
 
                 result.Add(userIdConvert);
             }
