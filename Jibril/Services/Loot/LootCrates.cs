@@ -47,17 +47,17 @@ namespace Jibril.Services.Loot
                     var chance = rand.Next(0, 10000);
                     if (chance < 200)
                     {
-                    var ch = message.Channel as SocketGuildChannel;
-                    var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
-                        "A drop event has been triggered \nClick the reaction on this message to claim it");
-                    var emotes = ReturnEmotes();
-                    var rng = new Random();
-                    foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
-                    {
-                        await Task.Delay(1000);
-                        if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
-                        await triggerMsg.AddReactionAsync(x);
-                    }
+                        var ch = message.Channel as SocketGuildChannel;
+                        var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
+                            "A drop event has been triggered \nClick the reaction on this message to claim it");
+                        var emotes = ReturnEmotes();
+                        var rng = new Random();
+                        foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
+                        {
+                            await Task.Delay(1000);
+                            if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
+                            await triggerMsg.AddReactionAsync(x);
+                        }
                     }
                 }
                 catch
