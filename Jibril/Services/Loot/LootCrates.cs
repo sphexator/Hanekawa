@@ -50,10 +50,10 @@ namespace Jibril.Services.Loot
                         var ch = message.Channel as SocketGuildChannel;
                         var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
                             "A drop event has been triggered \nClick the reaction on this message to claim it");
-                        _crateMessage.Add(triggerMsg.Id);
                         Emote.TryParse("<:roosip:362610653766221834>", out var emote);
                         IEmote iemoteYes = emote;
                         await triggerMsg.AddReactionAsync(iemoteYes);
+                        _crateMessage.Add(triggerMsg.Id);
                     }
                 }
                 catch
