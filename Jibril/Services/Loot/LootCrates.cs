@@ -45,8 +45,8 @@ namespace Jibril.Services.Loot
                 {
                     var rand = new Random();
                     var chance = rand.Next(0, 10000);
-                    //if (chance < 200)
-                    //{
+                    if (chance < 200)
+                    {
                     var ch = message.Channel as SocketGuildChannel;
                     var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
                         "A drop event has been triggered \nClick the reaction on this message to claim it");
@@ -58,7 +58,7 @@ namespace Jibril.Services.Loot
                         if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
                         await triggerMsg.AddReactionAsync(x);
                     }
-                    //}
+                    }
                 }
                 catch
                 {
