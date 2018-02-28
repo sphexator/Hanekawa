@@ -47,13 +47,17 @@ namespace Jibril.Services.Loot
                     var chance = rand.Next(0, 10000);
                     if (chance < 200)
                     {
-                        var ch = message.Channel as SocketGuildChannel;
-                        var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
-                            "A drop event has been triggered \nClick the reaction on this message to claim it");
-                        _crateMessage.Add(triggerMsg.Id);
-                        Emote.TryParse("<:roosip:362610653766221834>", out var emote);
-                        IEmote iemoteYes = emote;
-                        await triggerMsg.AddReactionAsync(iemoteYes);
+                    var ch = message.Channel as SocketGuildChannel;
+                    var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
+                        "A drop event has been triggered \nClick the reaction on this message to claim it");
+                    var emotes = ReturnEmotes();
+                    var rng = new Random();
+                    foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
+                    {
+                        await Task.Delay(1000);
+                        if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
+                        await triggerMsg.AddReactionAsync(x);
+                    }
                     }
                 }
                 catch
@@ -70,10 +74,14 @@ namespace Jibril.Services.Loot
             {
                 var triggerMsg = await ch.SendMessageAsync(
                     $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
-                _sCMessage.Add(triggerMsg.Id);
-                Emote.TryParse("<:roosip:362610653766221834>", out var emote);
-                IEmote iemoteYes = emote;
-                await triggerMsg.AddReactionAsync(iemoteYes);
+                var emotes = ReturnEmotes();
+                var rng = new Random();
+                foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
+                {
+                    await Task.Delay(1000);
+                    if (x.Name == "roosip") _sCMessage.Add(triggerMsg.Id);
+                    await triggerMsg.AddReactionAsync(x);
+                }
             }
             catch
             {
@@ -91,7 +99,7 @@ namespace Jibril.Services.Loot
                 Console.WriteLine("Reaction passed");
                 try
                 {
-                    if(_crateMessage.Contains(msg.Id))
+                    if (_crateMessage.Contains(msg.Id))
                     {
                         var message = await msg.GetOrDownloadAsync();
                         await message.DeleteAsync();
@@ -103,7 +111,7 @@ namespace Jibril.Services.Loot
                         await Task.Delay(5000);
                         await triggermsg.DeleteAsync();
                     }
-                    if(_sCMessage.Contains(msg.Id))
+                    if (_sCMessage.Contains(msg.Id))
                     {
                         var message = await msg.GetOrDownloadAsync();
                         await message.DeleteAsync();
@@ -122,6 +130,32 @@ namespace Jibril.Services.Loot
                 }
             });
             return Task.CompletedTask;
+        }
+
+        private IEnumerable<IEmote> ReturnEmotes()
+        {
+            var emotes = new List<IEmote>();
+            /*
+            Emote.TryParse("<:think:406524339303743490>", out var rooWhine);
+            Emote.TryParse("<:zulul:382923660174032906>", out var rooduck);
+            Emote.TryParse("<:vanilla2:244676862897291264>", out var awau);
+            Emote.TryParse("<:roosip:418322874097729547>", out var keyEmote);
+             */
+            Emote.TryParse("<:rooWhine:362610653690593281>", out var rooWhine);
+            Emote.TryParse("<:rooduck:362610654227726336>", out var rooduck);
+            Emote.TryParse("<:awau:356542620551348235>", out var awau);
+            Emote.TryParse("<:roosip:362610653766221834>", out var keyEmote);
+
+            IEmote awauEmote = awau;
+            IEmote rooduckEmote = rooduck;
+            IEmote rooWhinEmote = rooWhine;
+            IEmote iemoteYes = keyEmote;
+            emotes.Add(awauEmote);
+            emotes.Add(rooduckEmote);
+            emotes.Add(rooWhinEmote);
+            emotes.Add(iemoteYes);
+
+            return emotes;
         }
 
         private bool CheckCooldownAsync(SocketGuildUser usr)
