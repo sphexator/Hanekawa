@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Modules.Administration.Services;
@@ -35,6 +36,23 @@ namespace Jibril.Modules.Marriage.Service
             }
         }
 
+        public void AddWaifu(IGuildUser user, IGuildUser claimUser)
+        {
+            var after = TimeSpan.FromDays(7);
+            var waifuUpgradeAt = DateTime.UtcNow + after;
+            MarriageDb.EnterUser(user, claimUser, waifuUpgradeAt);
+            MarriageDb.EnterUser(claimUser, user, waifuUpgradeAt);
+            StartWaifuTimer(user.Id, after);
+            StartWaifuTimer(claimUser.Id, after);
+        }
+
+        public void RemoveWaifu(IGuildUser user)
+        {
+            RemoveWaifuTimer(user.Id);
+            var waifu = MarriageDb.MarriageData(user.Id).FirstOrDefault();
+            RemoveWaifuFromDb(user.Id, waifu.Claim);
+        }
+
         private void StartWaifuTimer(ulong userId, TimeSpan after)
         {
             var waifuTimer = WaifuTimer.GetOrAdd(GuildId, new ConcurrentDictionary<ulong, Timer>());
@@ -53,7 +71,7 @@ namespace Jibril.Modules.Marriage.Service
                 {
                     //Ignore
                 }
-            });
+            }, null, after, Timeout.InfiniteTimeSpan);
 
             waifuTimer.AddOrUpdate(userId, (key) => toAdd, (key, old) =>
             {
@@ -62,13 +80,19 @@ namespace Jibril.Modules.Marriage.Service
             });
         }
 
-        private void AddWaifu(IGuildUser user, IGuildUser claimUser)
+        private void RemoveWaifuTimer(ulong userid)
         {
-            var after = TimeSpan.FromDays(7);
-            var waifuUpgradeAt = DateTime.UtcNow + after;
+            if (!WaifuTimer.TryGetValue(GuildId, out ConcurrentDictionary<ulong, Timer> waifu)) return;
 
-            StartWaifuTimer(user.Id, after);
-            StartWaifuTimer(claimUser.Id, after);
+            if (waifu.TryRemove(userid, out Timer removed))
+            {
+                removed.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+        }
+
+        private void RemoveWaifuFromDb(ulong user, ulong claimUser)
+        {
+            MarriageDb.RemoveWaifu(user, claimUser);
         }
     }
 }

@@ -196,10 +196,10 @@ namespace Jibril.Modules.Gambling.Services
         }
 
 
-        public static void BuyItem(IUser user, string itemName)
+        public static void BuyItem(IUser user, string itemName, int amount)
         {
             var database = new GambleDB("hanekawa");
-            var str = $"UPDATE inventory SET {itemName} = {itemName} + '1' WHERE user_ID = '{user.Id}'";
+            var str = $"UPDATE inventory SET {itemName} = {itemName} + '{amount}' WHERE user_ID = '{user.Id}'";
             var tableName = database.FireCommand(str);
             database.CloseConnection();
         }
@@ -269,13 +269,15 @@ namespace Jibril.Modules.Gambling.Services
                 var dmg = (int) reader["DamageBoost"];
                 var shield = (int) reader["Shield"];
                 var customRole = (int) reader["CustomRole"];
+                var gift = (int) reader["gift"];
 
                 result.Add(new InventoryList
                 {
                     Repairkit = kit,
                     Dmgboost = dmg,
                     Shield = shield,
-                    CustomRole = customRole
+                    CustomRole = customRole,
+                    Gift = gift
                 });
             }
 

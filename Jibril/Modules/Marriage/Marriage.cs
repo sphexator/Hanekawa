@@ -1,19 +1,22 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Modules.Fleet.Services;
 using Jibril.Modules.Marriage.Service;
-using Jibril.Preconditions;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Marriage
 {
     public class Marriage : InteractiveBase
     {
-        [Command("waifu", RunMode = RunMode.Async)]
-        [Alias("husbando")]
+        private readonly MarriageService _marriageService;
+        public Marriage(MarriageService marriageService)
+        {
+            _marriageService = marriageService;
+        }
+
+        [Command("marry", RunMode = RunMode.Async)]
         [Summary("Ask someone to be your waifu or husbando")]
         public async Task ClaimWaifu(IGuildUser user)
         {
@@ -36,16 +39,29 @@ namespace Jibril.Modules.Marriage
                 response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase) ||
                 response.Content.Equals("y", StringComparison.InvariantCultureIgnoreCase))
             {
-                //TODO: Add User to DB with claim username
+                _marriageService.AddWaifu((Context.User as IGuildUser), user);
                 await ReplyAsync($"I declare now {user.Mention} and {Context.User.Mention} as waifu and husbando!");
             }
-            else if (response == null)
-            {
+        }
 
+        [Command("divorce", RunMode = RunMode.Async)]
+        [Summary("Divorce your waifu/husbando")]
+        public async Task Divorce()
+        {
+            var data = MarriageDb.MarriageData(Context.User.Id).FirstOrDefault();
+            if (data == null)
+            {
+                await ReplyAsync($"{Context.User.Username}, you're currently not married");
+                return;
             }
-            else
+            await ReplyAsync($"You sure you want to divorce {data.ClaimName}?");
+            var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+            if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) ||
+                response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase) ||
+                response.Content.Equals("y", StringComparison.InvariantCultureIgnoreCase))
             {
-
+                _marriageService.RemoveWaifu(Context.User as IGuildUser);
+                await ReplyAsync($"{Context.User.Mention} has divorced <@{data.Claim}>");
             }
         }
     }

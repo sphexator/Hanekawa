@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Discord;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using MySql.Data.MySqlClient;
 
 namespace Jibril.Modules.Marriage.Service
@@ -45,20 +47,24 @@ namespace Jibril.Modules.Marriage.Service
             _dbConnection?.Close();
         }
 
-        public static List<string> CheckUser(IUser user)
+        public static void EnterUser(IUser user, IUser claimUser, DateTime timer)
         {
-            var result = new List<string>();
             var database = new MarriageDb();
-            var str = $"SELECT * FROM waifu WHERE user = '{user.Id}'";
-            var exec = database.FireCommand(str);
-            while (exec.Read())
-            {
-                var userId = (string)exec["user_id"];
-
-                result.Add(userId);
-            }
+            var username = user.Username.RemoveSpecialCharacters();
+            var claimUsername = claimUser.Username.RemoveSpecialCharacters();
+            var str = $"INSERT INTO waifu (user, name, claim, claimname, timer, rank) VALUES ('{user.Id}', '{username}', '{claimUser.Id}', '{claimUsername}', '{timer}', '1'";
+            database.FireCommand(str);
             database.CloseConnection();
-            return result;
+        }
+
+        public static void RemoveWaifu(ulong user, ulong claimUser)
+        {
+            var database = new MarriageDb();
+            var execOne = $"DELETE FROM waifu WHERE user = '{user}'";
+            var execTwo = $"DELETE FROM waifu WHERE user = '{claimUser}'";
+            database.FireCommand(execOne);
+            database.FireCommand(execTwo);
+            database.CloseConnection();
         }
 
         public static IEnumerable<MarriageDbVariables> MarriageData(ulong usr)

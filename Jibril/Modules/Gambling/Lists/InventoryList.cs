@@ -6,5 +6,6 @@
         public int Dmgboost { get; set; }
         public int Shield { get; set; }
         public int CustomRole { get; set; }
+        public int Gift { get; set; }
     }
 }
