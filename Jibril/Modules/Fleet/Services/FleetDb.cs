@@ -10,10 +10,10 @@ namespace Jibril.Modules.Fleet.Services
     {
         private readonly string database = DbInfo.DbNorm;
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
+        private readonly string password = DbInfo.Password;
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string server = DbInfo.Server;
+        private readonly string username = DbInfo.Username;
 
         public FleetDb(string table)
         {
@@ -148,10 +148,10 @@ namespace Jibril.Modules.Fleet.Services
     {
         private readonly string database = DbInfo.DbFleet;
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
+        private readonly string password = DbInfo.Password;
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string server = DbInfo.Server;
+        private readonly string username = DbInfo.Username;
 
         public FleetNormDb(string table)
         {

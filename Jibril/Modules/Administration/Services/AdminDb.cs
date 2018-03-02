@@ -11,10 +11,10 @@ namespace Jibril.Modules.Administration.Services
     {
         private readonly string database = DbInfo.DbNorm;
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
+        private readonly string password = DbInfo.Password;
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string server = DbInfo.Server;
+        private readonly string username = DbInfo.Username;
 
         public AdminDb(string table)
         {
@@ -610,10 +610,10 @@ namespace Jibril.Modules.Administration.Services
     {
         private readonly string database = DbInfo.DbWarn;
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
+        private readonly string password = DbInfo.Password;
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string server = DbInfo.Server;
+        private readonly string username = DbInfo.Username;
 
         public WarningDB(string table)
         {

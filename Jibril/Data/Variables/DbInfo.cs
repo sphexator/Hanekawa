@@ -1,18 +1,27 @@
-﻿namespace Jibril.Data.Variables
+﻿using Microsoft.Extensions.Configuration;
+
+namespace Jibril.Data.Variables
 {
     public class DbInfo
     {
-        public static string server = "192.168.10.143";
+        public static string Server { get; private set; }
+        public static string Username { get; private set; }
+        public static string Password { get; private set; }
 
-        public static string username = "admin";
-        public static string password = "jevel123";
-        /*
-        public static string server = "localhost";
-        public static string username = "root";
-        public static string password = "1234";
-        */
-        public static string DbNorm = "hanekawa";
-        public static string DbFleet = "oshino";
-        public static string DbWarn = "senjougahara";
+        public static string DbNorm { get; private set; }
+        public static string DbFleet { get; private set; }
+        public static string DbWarn { get; private set; }
+
+        public DbInfo(IConfiguration config)
+        {
+            var config1 = config;
+
+            Server = config1["dbServer"];
+            Username = config1["dbUsername"];
+            Password = config1["dbPassword"];
+            DbNorm = config1["dbNorm"];
+            DbFleet = config1["dbFleet"];
+            DbWarn = config1["dbWarn"];
+        }
     }
 }
