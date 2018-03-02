@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
+using Jibril.Modules.Marriage.Service;
 using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
@@ -55,6 +56,7 @@ namespace Jibril
             services.GetRequiredService<TimedMuteService>();
             services.GetRequiredService<I_am_infamous>();
             services.GetRequiredService<LootCrates>();
+            services.GetRequiredService<MarriageService>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -73,6 +75,7 @@ namespace Jibril
             services.UseQuartz(typeof(PostPictures));
             services.UseQuartz(typeof(I_am_infamous));
             services.AddSingleton(_client);
+            services.AddSingleton<MarriageService>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<AudioService>();

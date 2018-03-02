@@ -17,26 +17,20 @@ namespace Jibril.Modules.Gambling
         [RequiredChannel(339383206669320192)]
         public async Task UserInventory()
         {
-            var user = Context.User;
-            var inventoryCheck = GambleDB.Inventory(user).FirstOrDefault();
+            var inventoryCheck = GambleDB.Inventory(Context.User).FirstOrDefault();
             if (inventoryCheck == null)
-                GambleDB.CreateInventory(user);
-            var inventory = GambleDB.Inventory(user).FirstOrDefault();
+                GambleDB.CreateInventory(Context.User);
+            var inventory = GambleDB.Inventory(Context.User).FirstOrDefault();
 
-            string[] items = {"Repair Kit", "Damage Boost", "Shield", "Custom Role"};
-            var embed = new EmbedBuilder();
-            var author = new EmbedAuthorBuilder();
-
-            author.WithIconUrl(user.GetAvatarUrl());
-            author.WithName(user.Username);
-            embed.WithAuthor(author);
-            embed.WithColor(new Color(Colours.DefaultColour));
-            embed.Description = $"" +
-                                $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
-                                $"{items[1].PadRight(15)}   {inventory.Dmgboost}\n" +
-                                $"{items[2].PadRight(25)}   {inventory.Shield}\n" +
-                                $"{items[3].PadRight(17)}   {inventory.CustomRole}";
-            await ReplyAsync($"", false, embed.Build());
+            string[] items = {"Repair Kit", "Damage Boost", "Shield", "Custom Role", "Gift"};
+            await ReplyAsync($"{Context.User.Username} Inventory:" +
+                             "```" +
+                             $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
+                             $"{items[1].PadRight(22)}   {inventory.Dmgboost}\n" +
+                             $"{items[2].PadRight(22)}   {inventory.Shield}\n" +
+                             $"{items[3].PadRight(22)}   {inventory.CustomRole}\n" +
+                             $"{items[4].PadRight(22)}   {inventory.Gift}\n" +
+                             "```");
         }
 
         [Command("shop", RunMode = RunMode.Async)]
@@ -46,7 +40,7 @@ namespace Jibril.Modules.Gambling
             var shoplist = GambleDB.Shoplist().ToList();
 
             var embed = EmbedGenerator.DefaultEmbed($"To buy, use !buy <number>", Colours.DefaultColour);
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 4; i++)
             {
                 var c = shoplist[i];
                 embed.AddField(y =>
@@ -84,7 +78,7 @@ namespace Jibril.Modules.Gambling
 
         [Command("buy", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
-        public async Task Buy(int item)
+        public async Task Buy(int item, [Remainder] int amount = 1)
         {
             var user = Context.User;
             CheckInventoryExistence(user);
@@ -93,10 +87,11 @@ namespace Jibril.Modules.Gambling
             var shoplist = GambleDB.Shoplist().ToList();
 
             if (shoplist[item] == null) return;
+            var cost = shoplist[item].Price * amount;
             if (userdata.Tokens >= shoplist[item].Price)
             {
-                GambleDB.BuyItem(user, shoplist[item].Item);
-                GambleDB.RemoveCredit(user, shoplist[item].Price);
+                GambleDB.BuyItem(user, shoplist[item].Item, amount);
+                GambleDB.RemoveCredit(user, cost);
 
                 var embed = EmbedGenerator.DefaultEmbed(
                     $"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OkColour);
@@ -125,7 +120,7 @@ namespace Jibril.Modules.Gambling
             if (item == 0 && shoplist[item].Stock == 0) return;
             if (userdata.Event_tokens >= shoplist[item].Price)
             {
-                GambleDB.BuyItem(user, shoplist[item].Item);
+                GambleDB.BuyItem(user, shoplist[item].Item, 1);
                 GambleDB.RemoveEventTokens(user, shoplist[item].Price);
                 GambleDB.ChangeShopStockAmount();
                 var embed = EmbedGenerator.DefaultEmbed(
