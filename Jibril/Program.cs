@@ -5,6 +5,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
 using Jibril.Services;
@@ -43,6 +44,7 @@ namespace Jibril
             _config = BuildConfig();
 
             var services = ConfigureServices();
+            services.GetRequiredService<DbInfo>();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
@@ -85,6 +87,7 @@ namespace Jibril
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);
+            services.AddSingleton<DbInfo>();
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<QuartzJonFactory>();
             services.AddSingleton<IJobFactory, QuartzJonFactory>();
