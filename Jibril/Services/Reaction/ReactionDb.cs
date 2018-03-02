@@ -7,46 +7,41 @@ namespace Jibril.Services.Reaction
 {
     public class ReactionDb
     {
-        public static string DB = @"Data Source = Data/database.sqlite;Version=3;Foreign Keys=ON;";
-        private readonly string database = DbInfo.DbNorm;
-        private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.password;
-        private readonly bool POOLING = false;
-        private readonly string server = DbInfo.server;
-        private readonly string username = DbInfo.username;
+        private readonly string _database = DbInfo.DbNorm;
+        private readonly MySqlConnection _dbConnection;
+        private readonly string _password = DbInfo.password;
+        private readonly string _server = DbInfo.server;
+        private readonly string _username = DbInfo.username;
 
         public ReactionDb(string table)
         {
-            _table = table;
             var stringBuilder = new MySqlConnectionStringBuilder
             {
-                Server = server,
-                UserID = username,
-                Password = password,
-                Database = database,
+                Server = _server,
+                UserID = _username,
+                Password = _password,
+                Database = _database,
                 SslMode = MySqlSslMode.None,
-                Pooling = POOLING
+                Pooling = false
             };
             var connectionString = stringBuilder.ToString();
-            dbConnection = new MySqlConnection(connectionString);
-            dbConnection.Open();
+            _dbConnection = new MySqlConnection(connectionString);
+            _dbConnection.Open();
         }
-
-        private string _table { get; }
 
         public MySqlDataReader FireCommand(string query)
         {
-            if (dbConnection == null)
+            if (_dbConnection == null)
                 return null;
-            var command = new MySqlCommand(query, dbConnection);
+            var command = new MySqlCommand(query, _dbConnection);
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
 
         public void CloseConnection()
         {
-            if (dbConnection != null)
-                dbConnection.Close();
+            if (_dbConnection != null)
+                _dbConnection.Close();
         }
 
         public static void InsertReactionMessage(string msgid, string channelid, int counter)
