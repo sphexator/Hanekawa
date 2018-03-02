@@ -13,6 +13,7 @@ using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
 using Jibril.Services.AutoModerator.Perspective.Models;
 using Jibril.Services.Logging;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Quartz.Util;
 
@@ -22,11 +23,13 @@ namespace Jibril.Services.AutoModerator
     {
         private readonly DiscordSocketClient _discord;
         private IServiceProvider _provider;
+        private readonly IConfiguration _config;
 
-        public ModerationService(DiscordSocketClient discord, IServiceProvider provider)
+        public ModerationService(DiscordSocketClient discord, IServiceProvider provider, IConfiguration config)
         {
             _discord = discord;
             _provider = provider;
+            _config = config;
 
             _discord.MessageReceived += Filter;
             _discord.MessageReceived += PerspectiveApi;
@@ -208,8 +211,9 @@ namespace Jibril.Services.AutoModerator
             {
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8,
                     "application/json");
+                var token = _config["perspective"];
                 var response = client
-                    .PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={Token.key}",
+                    .PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={token}",
                         content).Result;
                 response.EnsureSuccessStatusCode();
                 var data = response.Content.ReadAsStringAsync().Result;
