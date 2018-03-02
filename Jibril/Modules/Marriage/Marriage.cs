@@ -18,6 +18,7 @@ namespace Jibril.Modules.Marriage
 
         [Command("marry", RunMode = RunMode.Async)]
         [Summary("Ask someone to be your waifu or husbando")]
+        [RequireOwner]
         public async Task ClaimWaifu(IGuildUser user)
         {
             var chchData = MarriageDb.MarriageData(Context.User.Id).FirstOrDefault();
@@ -46,6 +47,7 @@ namespace Jibril.Modules.Marriage
 
         [Command("divorce", RunMode = RunMode.Async)]
         [Summary("Divorce your waifu/husbando")]
+        [RequireOwner]
         public async Task Divorce()
         {
             var data = MarriageDb.MarriageData(Context.User.Id).FirstOrDefault();
