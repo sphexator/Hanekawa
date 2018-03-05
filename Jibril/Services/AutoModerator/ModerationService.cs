@@ -33,6 +33,94 @@ namespace Jibril.Services.AutoModerator
 
             _discord.MessageReceived += Filter;
             _discord.MessageReceived += PerspectiveApi;
+            _discord.UserJoined += _discord_UserJoined;
+        }
+
+        private Task _discord_UserJoined(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var client = new HttpClient())
+                {
+                    var values = new Dictionary<string, string>
+                    {
+                        { "token", $"E7puJQIwyp" },
+                        { "userid", $"{user.Id}" },
+                        { "version", "3" }
+                    };
+
+                    var content = new FormUrlEncodedContent(values);
+                    var post = client.PostAsync("https://bans.discordlist.net/api", content).Result;
+                    post.EnsureSuccessStatusCode();
+                    var response = post.Content.ReadAsStringAsync().Result;
+                    if (response.ToLower() == "false") return;
+                    var embed = EmbedBuilder(response, user);
+                    await _discord.GetGuild(339370914724446208).GetTextChannel(339380827379204097)
+                        .SendMessageAsync("", false, embed.Build());
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static EmbedBuilder EmbedBuilder(string x, IGuildUser u)
+        {
+            var txt = FieldBuilders(x, u);
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = u.GetAvatarUrl(),
+                Name = u.Username
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = new Color(Colours.DefaultColour),
+                Title = "Suspicious user",
+                Fields = txt,
+                Author = author
+            };
+
+            return embed;
+        }
+
+        private static List<EmbedFieldBuilder> FieldBuilders(string xx, IGuildUser usr)
+        {
+            var x = FilterString(xx);
+            var fields = new List<EmbedFieldBuilder>();
+            var tag = new EmbedFieldBuilder
+            {
+                Name = "Name",
+                Value = usr.Mention,
+                IsInline = true
+            };
+            var id = new EmbedFieldBuilder
+            {
+                Name = "User ID",
+                Value = usr.Id,
+                IsInline = true
+            };
+            var reason = new EmbedFieldBuilder
+            {
+                Name = "Reason",
+                Value = $"{x[3]}",
+                IsInline = true
+            };
+            var proof = new EmbedFieldBuilder
+            {
+                Name = "Proof",
+                Value = $"{x[4]}",
+                IsInline = true
+            };
+            fields.Add(tag);
+            fields.Add(id);
+            fields.Add(reason);
+            fields.Add(proof);
+
+            return fields;
+        }
+
+        private static string[] FilterString(string x)
+        {
+            var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            return s;
         }
 
         private Task Filter(SocketMessage rawMessage)
