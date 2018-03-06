@@ -1,4 +1,5 @@
-﻿using Discord.Addons.Interactive;
+﻿using System;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Services;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Jibril.Modules.Report
         public async Task ReportGuild([Remainder] string text)
         {
             var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.Level <= 10) await ReplyAsync("You need to be level 10 or above to use the report system.");
+            if (userdata.Level <= 10) await ReplyAndDeleteAsync("You need to be level 10 or above to use the report system.", false, null, TimeSpan.FromSeconds(30));
 
             await ReplyAsync("Report sent.");
         }
@@ -23,7 +24,7 @@ namespace Jibril.Modules.Report
         public async Task ReportDm([Remainder] string text)
         {
             var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.Level <= 10) await ReplyAsync("You need to be level 10 or above to use the report system.");
+            if (userdata.Level <= 10) await ReplyAndDeleteAsync("You need to be level 10 or above to use the report system.", false, null, TimeSpan.FromSeconds(30));
 
             await ReplyAsync("Report sent.");
         }
