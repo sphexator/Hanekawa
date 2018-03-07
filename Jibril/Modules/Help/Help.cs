@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Data.Variables;
 using Jibril.Preconditions;
-using Microsoft.Extensions.Configuration;
 
 namespace Jibril.Modules.Help
 {
@@ -26,7 +22,7 @@ namespace Jibril.Modules.Help
         public async Task HelpAsync()
         {
             const string prefix = "!";
-            var builder = new EmbedBuilder()
+            var builder = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
                 Description = "These are the commands you can use"
@@ -43,14 +39,12 @@ namespace Jibril.Modules.Help
                 }
 
                 if (!string.IsNullOrWhiteSpace(description))
-                {
                     builder.AddField(x =>
                     {
                         x.Name = module.Name;
                         x.Value = description;
                         x.IsInline = false;
                     });
-                }
             }
 
             await ReplyAsync("", false, builder.Build());
@@ -68,7 +62,7 @@ namespace Jibril.Modules.Help
                 return;
             }
 
-            var builder = new EmbedBuilder()
+            var builder = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
                 Description = $"Here are some commands like **{command}**"
