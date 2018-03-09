@@ -10,6 +10,7 @@ using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
 using Jibril.Modules.Marriage.Service;
 using Jibril.Services;
+using Jibril.Services.Automate.Cleanup;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
@@ -53,6 +54,7 @@ namespace Jibril
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
+            services.GetRequiredService<CleanUp>();
             services.GetRequiredService<TimedMuteService>();
             services.GetRequiredService<I_am_infamous>();
             services.GetRequiredService<LootCrates>();
@@ -62,6 +64,7 @@ namespace Jibril
 
             QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
             QuartzServicesUtilities.StartCronJob<I_am_infamous>(scheduler, "0 0 13 ? * MON *");
+            QuartzServicesUtilities.StartCronJob<CleanUp>(scheduler, "0 0/15 * 1/1 * ? *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -74,6 +77,7 @@ namespace Jibril
             var services = new ServiceCollection();
             services.UseQuartz(typeof(PostPictures));
             services.UseQuartz(typeof(I_am_infamous));
+            services.UseQuartz(typeof(CleanUp));
             services.AddSingleton(_client);
             services.AddSingleton<MarriageService>();
             services.AddSingleton<CommandService>();
