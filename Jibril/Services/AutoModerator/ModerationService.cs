@@ -34,7 +34,7 @@ namespace Jibril.Services.AutoModerator
             _discord.MessageReceived += Filter;
             _discord.MessageReceived += PerspectiveApi;
         }
-
+        
         private Task Filter(SocketMessage rawMessage)
         {
             var _ = Task.Run(async () =>
@@ -225,7 +225,7 @@ namespace Jibril.Services.AutoModerator
                 return result;
             }
         }
-
+        
         private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
         {
             var userdata = DatabaseService.UserData(user).FirstOrDefault();

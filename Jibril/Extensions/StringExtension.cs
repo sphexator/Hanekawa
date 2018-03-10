@@ -17,7 +17,7 @@ namespace Jibril.Extensions
             }
             return sb.ToString();
         }
-
+        
 
         // Filter detection
         private static readonly Regex FilterRegex =
@@ -72,6 +72,10 @@ namespace Jibril.Extensions
         public static bool IsUrl(this string str)
         {
             return UrlFilter.IsMatch(str);
+        }
+        public static bool IsIpGrab(this string str)
+        {
+            return IpGrab.IsMatch(str);
         }
     }
 }
