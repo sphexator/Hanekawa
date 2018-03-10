@@ -76,6 +76,10 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                         }
+                        if (rawMessage.Content.IsIpGrab())
+                        {
+                            await rawMessage.DeleteAsync();
+                        }
                         if (rawMessage.Content.IsScamLink())
                         {
                             try

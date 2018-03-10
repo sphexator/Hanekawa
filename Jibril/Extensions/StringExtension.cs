@@ -39,6 +39,10 @@ namespace Jibril.Extensions
         private static readonly Regex PornLink =
             new Regex(@"(?:pornhub\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+                private static readonly Regex IpGrab =
+            new Regex(@"(?:youramonkey\.com|robtex\.com).*?(\s|$)", 
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         // Max Character string extension
         public static string Truncate(this string value, int maxChars)
         {
