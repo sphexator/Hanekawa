@@ -8,5 +8,6 @@ namespace Jibril.Services.INC.Data
         public bool Live { get; set; }
         public int Round { get; set; }
         public DateTime SignupDuration { get; set; }
+        public bool SignUpStage { get; set; }
     }
 }

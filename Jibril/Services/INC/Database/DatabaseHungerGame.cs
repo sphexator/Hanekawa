@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Discord;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using MySql.Data.MySqlClient;
 using Jibril.Services.INC.Data;
 using Jibril.Services.Level.Lists;
@@ -53,9 +54,18 @@ namespace Jibril.Services.INC.Database
 
         public static void EnterUser(IUser user)
         {
+            var name = user.Username.RemoveSpecialCharacters();
             var database = new DatabaseHungerGame("hanekawa");
             var str =
-                $"INSERT INTO hungergame (userid) VALUES ('{user.Id}')";
+                $"INSERT INTO hungergame (userid, name) VALUES ('{user.Id}', '{name}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void GameSignUpStart()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "UPDATE hungergameconfig SET signupstage = 1 WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -63,7 +73,7 @@ namespace Jibril.Services.INC.Database
         public static void GameStart()
         {
             var database = new DatabaseHungerGame("hanekawa");
-            const string str = "UPDATE hungergameconfig SET live = 1, round = 1 WHERE guild = '339370914724446208'";
+            const string str = "UPDATE hungergameconfig SET live = 1, round = 1, signupstage = 0 WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -84,7 +94,6 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
-
         public static List<Config> GetConfig()
         {
             var result = new List<Config>();
@@ -97,13 +106,15 @@ namespace Jibril.Services.INC.Database
                 var live = (bool) exec["live"];
                 var round = (int) exec["round"];
                 var signnupDuration = (DateTime) exec["signupDuration"];
+                var signUpStage = (bool) exec["signupstage"];
 
                 result.Add(new Config
                 {
                     GuildId = guildid,
                     Live = live,
                     Round = round,
-                    SignupDuration = signnupDuration
+                    SignupDuration = signnupDuration,
+                    SignUpStage = signUpStage
                 });
             }
 
@@ -323,6 +334,7 @@ namespace Jibril.Services.INC.Database
             {
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
+                var name = (string) exec["name"];
                 var health = (int)exec["health"];
                 var stamina = (int)exec["stamina"];
                 var damage = (int)exec["damage"];
@@ -355,6 +367,7 @@ namespace Jibril.Services.INC.Database
                     {
                         Id = id,
                         UserId = userId,
+                        Name = name,
                         Health = health,
                         Stamina = stamina,
                         Damage = damage,

@@ -15,15 +15,17 @@ namespace Jibril.Services.INC
 
         private List<ulong> _eventStartMsg;
         private bool _activeEvent;
+        private SocketGuild _guild;
+        private SocketTextChannel _ch;
 
         public HungerGames(DiscordSocketClient client)
         {
             _client = client;
             _client.ReactionAdded += AddParticipants;
 
-            var guild = _client.GetGuild(339370914724446208);
-            var ch = guild.GetTextChannel(346429829316476928);
-            ch.GetMessagesAsync();
+            _guild = _client.GetGuild(339370914724446208);
+            _ch = _guild.GetTextChannel(346429829316476928);
+            _ch.GetMessagesAsync();
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -37,21 +39,19 @@ namespace Jibril.Services.INC
             {
                 var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
                                  $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
+
                 if (config.Live != true) await StartSignUp();
-                if (config.Live) await ContinueEvent();
-                var difference = DateTime.Compare(config.SignupDuration, DateTime.UtcNow);
-                if (config.Live != true && (config.SignupDuration.ToString() == "0001-01-01 00:00:00" ||
-                                            config.SignupDuration.AddHours(23) <= DateTime.UtcNow && difference < 0 ||
-                                            difference >= 0))
-                {
-                    await StartEvent();
-                }
+                if (config.Live != true && config.SignUpStage &&
+                    config.SignupDuration.AddHours(23) > DateTime.UtcNow) return;
+                if (config.Live) await ContinueEvent();             
+                if (config.Live != true && config.SignupDuration.AddHours(23) <= DateTime.UtcNow) await StartEvent();
             });
             return Task.CompletedTask;
         }
 
         private async Task StartSignUp()
         {
+            DatabaseHungerGame.GameSignUpStart();
             var guild = _client.GetGuild(339370914724446208);
             var ch = guild.GetTextChannel(346429829316476928);
             var msg = await ch.SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
@@ -63,16 +63,42 @@ namespace Jibril.Services.INC
 
         private async Task StartEvent()
         {
+            DatabaseHungerGame.GameStart();
+            var users = DatabaseHungerGame.GetProfilEnumerable();
+            string names = null;
+            var row = 1;
+            int numb = 1;
+            foreach (var x in users)
+            {
+                if (numb == 1)
+                {
+                    names = string.Join("", x.Player.Name);
+                    numb++;
+                }
+                if (numb == 5 * row && numb != 1)
+                {
+                    names = string.Join($"\n", x.Player.Name);
+                    numb++;
+                    row++;
+                }
+                if (numb != 5 * row && numb != 1)
+                {
+                    names = string.Join($" - ", x.Player.Name);
+                    numb++;
+                }
+            }
+
+            await _ch.SendMessageAsync("Signup is closed and heres the following participants: \n" +
+                                       $"{names}");
+        }
+
+        private async Task ContinueEvent()
+        {
             var users = DatabaseHungerGame.GetProfilEnumerable();
             foreach (var x in users)
             {
                 var action = Events.EventHandler.EventManager(x);
             }
-        }
-
-        private async Task ContinueEvent()
-        {
-
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
@@ -87,15 +113,8 @@ namespace Jibril.Services.INC
                 var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
                 if (users.Count >= 50 && check != null) return;
                 DatabaseHungerGame.EnterUser(react.User.Value);
-                // TODO: Add user to database as they react and return if they're already there
             });
             return Task.CompletedTask;
-        }
-
-        public IUser GetUser(ulong id)
-        {
-            var user = _client.GetUser(id);
-            return user;
         }
     }
 }
