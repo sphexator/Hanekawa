@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Services.INC.Database;
+using Jibril.Services.INC.Generator;
 using Quartz;
+using SixLabors.ImageSharp;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Jibril.Services.INC
 {
@@ -95,15 +99,12 @@ namespace Jibril.Services.INC
         private async Task ContinueEvent()
         {
             var users = DatabaseHungerGame.GetProfilEnumerable();
-            foreach (var x in users)
-            {
-                var action = Events.EventHandler.EventManager(x);
-            }
+            var images = ImageGenerator.GenerateEventImage(users);
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
         {
-            var _ = Task.Run(() =>
+            var _ = Task.Run(async() =>
             {
                 if (!_eventStartMsg.Contains(msg.Id)) return;
                 if (msg.Value.Author.IsBot != true) return;
@@ -113,8 +114,32 @@ namespace Jibril.Services.INC
                 var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
                 if (users.Count >= 50 && check != null) return;
                 DatabaseHungerGame.EnterUser(react.User.Value);
+                await SaveAvatar(react.User.Value);
             });
             return Task.CompletedTask;
+        }
+
+        private async Task SaveAvatar(IUser user)
+        {
+            var filePath = $"Services/INC/Cache/Avatar/{user.Id}.png";
+            var httpclient = new HttpClient();
+            HttpResponseMessage response;
+
+            try
+            {
+                response = await httpclient.GetAsync(user.GetAvatarUrl());
+            }
+            catch
+            {
+                response = await httpclient.GetAsync(
+                    "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png");
+            }
+            var inputStream = await response.Content.ReadAsStreamAsync();
+            using (var img = Image.Load(inputStream))
+            {
+                img.Mutate(x => x.Resize(80, 80));
+                img.Save(filePath);
+            }
         }
     }
 }

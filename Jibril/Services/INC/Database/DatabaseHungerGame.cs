@@ -324,7 +324,7 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
-        public static IEnumerable<Profile> GetProfilEnumerable()
+        public static List<Profile> GetProfilEnumerable()
         {
             var result = new List<Profile>();
             var database = new DatabaseHungerGame("hanekawa");
