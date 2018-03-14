@@ -96,19 +96,15 @@ namespace Jibril.Services.INC
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(users);
             var output = new List<string>();
-            foreach (var x in users)
-            {
-                var action = EventHandler.EventManager(x);
-                if(action.IsNullOrWhiteSpace()) continue;
-                output.Add(action);
-            }
 
             foreach (var x in users)
             {
-                var eventOutput = Events.EventHandler.EventManager(x);
+                var eventOutput = EventHandler.EventManager(x);
+                if(eventOutput.IsNullOrWhiteSpace()) continue;
                 var content = $"{x.Player.Name}: {eventOutput}";
                 output.Add(content);
             }
+
             var response = string.Join("\n", output);
             await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
             foreach (var x in images)
