@@ -9,6 +9,7 @@ using Jibril.Modules.Event;
 using Jibril.Services.INC.Database;
 using Jibril.Services.INC.Generator;
 using Quartz;
+using Quartz.Util;
 using SixLabors.ImageSharp;
 using EventHandler = Jibril.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
@@ -98,9 +99,9 @@ namespace Jibril.Services.INC
             foreach (var x in users)
             {
                 var action = EventHandler.EventManager(x);
+                if(action.IsNullOrWhiteSpace()) continue;
                 output.Add(action);
             }
-            var response = string.Join("\n", output);
 
             foreach (var x in users)
             {
@@ -108,7 +109,7 @@ namespace Jibril.Services.INC
                 var content = $"{x.Player.Name}: {eventOutput}";
                 output.Add(content);
             }
-
+            var response = string.Join("\n", output);
             await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
             foreach (var x in images)
             {
