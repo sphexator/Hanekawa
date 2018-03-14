@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 *.json
+/Jibril/Services/INC/Cache/Avatar/111123736660324352.png

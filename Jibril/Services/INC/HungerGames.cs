@@ -5,10 +5,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Modules.Event;
 using Jibril.Services.INC.Database;
 using Jibril.Services.INC.Generator;
 using Quartz;
 using SixLabors.ImageSharp;
+using EventHandler = Jibril.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Jibril.Services.INC
@@ -16,20 +18,14 @@ namespace Jibril.Services.INC
     public class HungerGames : IJob
     {
         private readonly DiscordSocketClient _client;
-
-        private List<ulong> _eventStartMsg;
+        private readonly SocketTextChannel _ch;
+        private readonly List<ulong> _eventStartMsg;
         private bool _activeEvent;
-        private SocketGuild _guild;
-        private SocketTextChannel _ch;
 
         public HungerGames(DiscordSocketClient client)
         {
             _client = client;
             _client.ReactionAdded += AddParticipants;
-
-            _guild = _client.GetGuild(339370914724446208);
-            _ch = _guild.GetTextChannel(346429829316476928);
-            _ch.GetMessagesAsync();
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -53,25 +49,23 @@ namespace Jibril.Services.INC
             return Task.CompletedTask;
         }
 
-        private async Task StartSignUp()
+        public async Task StartSignUp()
         {
             DatabaseHungerGame.GameSignUpStart();
-            var guild = _client.GetGuild(339370914724446208);
-            var ch = guild.GetTextChannel(346429829316476928);
-            var msg = await ch.SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
+            var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
             Emote.TryParse("<:rooree:362610653120299009>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
             _eventStartMsg.Add(msg.Id);
         }
 
-        private async Task StartEvent()
+        public async Task StartEvent()
         {
             DatabaseHungerGame.GameStart();
             var users = DatabaseHungerGame.GetProfilEnumerable();
             string names = null;
             var row = 1;
-            int numb = 1;
+            var numb = 1;
             foreach (var x in users)
             {
                 if (numb == 1)
@@ -92,14 +86,34 @@ namespace Jibril.Services.INC
                 }
             }
 
-            await _ch.SendMessageAsync("Signup is closed and heres the following participants: \n" +
+            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("Signup is closed and heres the following participants: \n" +
                                        $"{names}");
         }
 
-        private async Task ContinueEvent()
+        public async Task ContinueEvent()
         {
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(users);
+            var output = new List<string>();
+            foreach (var x in users)
+            {
+                var action = EventHandler.EventManager(x);
+                output.Add(action);
+            }
+            var response = string.Join("\n", output);
+
+            foreach (var x in users)
+            {
+                var eventOutput = Events.EventHandler.EventManager(x);
+                var content = $"{x.Player.Name}: {eventOutput}";
+                output.Add(content);
+            }
+
+            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
+            foreach (var x in images)
+            {
+                await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendFileAsync(x, "");
+            }
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)

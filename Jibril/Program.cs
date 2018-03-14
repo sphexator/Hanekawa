@@ -13,6 +13,7 @@ using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
+using Jibril.Services.INC;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
 using Jibril.Services.Loot;
@@ -57,6 +58,7 @@ namespace Jibril
             services.GetRequiredService<I_am_infamous>();
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<MarriageService>();
+            services.GetRequiredService<HungerGames>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -85,6 +87,7 @@ namespace Jibril
             services.AddSingleton<ModerationService>();
             services.AddSingleton<LootCrates>();
             services.AddSingleton<I_am_infamous>();
+            services.AddSingleton<HungerGames>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();

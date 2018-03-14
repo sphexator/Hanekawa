@@ -132,7 +132,7 @@ namespace Jibril.Services.INC.Database
             {
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
-                var name = (string) exec["username"];
+                var name = (string) exec["name"];
                 var health = (int)exec["health"];
                 var stamina = (int)exec["stamina"];
                 var damage = (int)exec["damage"];
@@ -178,8 +178,14 @@ namespace Jibril.Services.INC.Database
                 var hunger = (int)exec["hunger"];
                 var thirst = (int)exec["thirst"];
                 var sleep = (int)exec["sleep"];
-                var status = (bool)exec["status"];
-                var bleeding = (bool)exec["bleeding"];
+                var status1 = (int)exec["status"];
+                var bleeding1 = (int)exec["bleeding"];
+
+                var status = false;
+                var bleeding = false;
+
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
 
                 result.Add(new Player
                 {
@@ -332,17 +338,20 @@ namespace Jibril.Services.INC.Database
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
+                var status = false;
+                var bleeding = false;
+
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
                 var name = (string) exec["name"];
                 var health = (int)exec["health"];
                 var stamina = (int)exec["stamina"];
-                var damage = (int)exec["damage"];
+                var damage = (int)exec["damageTaken"];
                 var hunger = (int)exec["hunger"];
                 var thirst = (int)exec["thirst"];
                 var sleep = (int)exec["sleep"];
-                var status = (bool)exec["status"];
-                var bleeding = (bool)exec["bleeding"];
+                var status1 = (int)exec["status"];
+                var bleeding1 = (int)exec["bleeding"];
                 var totalfood = (int)exec["totalfood"];
                 var totaldrink = (int)exec["totaldrink"];
                 var beans = (int)exec["beans"];
@@ -361,6 +370,10 @@ namespace Jibril.Services.INC.Database
                 var arrows = (int)exec["arrows"];
                 var axe = (int)exec["axe"];
                 var trap = (int)exec["trap"];
+
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
+
                 result.Add(new Profile
                 {
                     Player = new Player
