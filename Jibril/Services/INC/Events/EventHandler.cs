@@ -18,7 +18,7 @@ namespace Jibril.Services.INC.Events
                 }
                 case ChanceGenerator.KillName:
                 {
-                    var response = Kill.KillEvent(profile); 
+                    var response = Kill.KillEvent(profile);
                     return response;
                 }
                 case ChanceGenerator.IdleName:

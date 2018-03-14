@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Jibril.Modules.Event;
 using Jibril.Services.INC.Database;
 using Jibril.Services.INC.Generator;
 using Quartz;
@@ -18,8 +17,8 @@ namespace Jibril.Services.INC
 {
     public class HungerGames : IJob
     {
-        private readonly DiscordSocketClient _client;
         private readonly SocketTextChannel _ch;
+        private readonly DiscordSocketClient _client;
         private readonly List<ulong> _eventStartMsg;
         private bool _activeEvent;
 
@@ -44,7 +43,7 @@ namespace Jibril.Services.INC
                 if (config.Live != true) await StartSignUp();
                 if (config.Live != true && config.SignUpStage &&
                     config.SignupDuration.AddHours(23) > DateTime.UtcNow) return;
-                if (config.Live) await ContinueEvent();             
+                if (config.Live) await ContinueEvent();
                 if (config.Live != true && config.SignupDuration.AddHours(23) <= DateTime.UtcNow) await StartEvent();
             });
             return Task.CompletedTask;
@@ -53,7 +52,8 @@ namespace Jibril.Services.INC
         public async Task StartSignUp()
         {
             DatabaseHungerGame.GameSignUpStart();
-            var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
+            var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
+                "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
             Emote.TryParse("<:rooree:362610653120299009>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
@@ -74,12 +74,14 @@ namespace Jibril.Services.INC
                     names = string.Join("", x.Player.Name);
                     numb++;
                 }
+
                 if (numb == 5 * row && numb != 1)
                 {
                     names = string.Join($"\n", x.Player.Name);
                     numb++;
                     row++;
                 }
+
                 if (numb != 5 * row && numb != 1)
                 {
                     names = string.Join($" - ", x.Player.Name);
@@ -87,8 +89,9 @@ namespace Jibril.Services.INC
                 }
             }
 
-            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("Signup is closed and heres the following participants: \n" +
-                                       $"{names}");
+            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
+                "Signup is closed and heres the following participants: \n" +
+                $"{names}");
         }
 
         public async Task ContinueEvent()
@@ -100,7 +103,7 @@ namespace Jibril.Services.INC
             foreach (var x in users)
             {
                 var eventOutput = EventHandler.EventManager(x);
-                if(eventOutput.IsNullOrWhiteSpace()) continue;
+                if (eventOutput.IsNullOrWhiteSpace()) continue;
                 var content = $"{x.Player.Name}: {eventOutput}";
                 output.Add(content);
             }
@@ -108,14 +111,12 @@ namespace Jibril.Services.INC
             var response = string.Join("\n", output);
             await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
             foreach (var x in images)
-            {
                 await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendFileAsync(x, "");
-            }
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
         {
-            var _ = Task.Run(async() =>
+            var _ = Task.Run(async () =>
             {
                 if (!_eventStartMsg.Contains(msg.Id)) return;
                 if (msg.Value.Author.IsBot != true) return;
@@ -145,6 +146,7 @@ namespace Jibril.Services.INC
                 response = await httpclient.GetAsync(
                     "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png");
             }
+
             var inputStream = await response.Content.ReadAsStreamAsync();
             using (var img = Image.Load(inputStream))
             {

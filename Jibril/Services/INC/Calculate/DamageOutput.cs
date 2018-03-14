@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Services.HungerGames.Data;
 using Jibril.Services.INC.Data;
 
 namespace Jibril.Services.INC.Calculate
@@ -15,7 +12,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next((Pistol.Damage - 20), Pistol.Damage);
+            var damage = rand.Next(Pistol.Damage - 20, Pistol.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;
@@ -28,7 +25,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next((Bow.Damage - 20), Bow.Damage);
+            var damage = rand.Next(Bow.Damage - 20, Bow.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;
@@ -41,7 +38,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next((Axe.Damage - 20), Axe.Damage);
+            var damage = rand.Next(Axe.Damage - 20, Axe.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;
@@ -54,7 +51,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next((Trap.Damage - 20), Trap.Damage);
+            var damage = rand.Next(Trap.Damage - 20, Trap.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;
@@ -67,7 +64,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next((Fist.Damage - 20), Fist.Damage);
+            var damage = rand.Next(Fist.Damage - 20, Fist.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;

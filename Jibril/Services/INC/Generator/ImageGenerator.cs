@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Jibril.Services.INC.Data;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Brushes;
 using SixLabors.Primitives;
-using System.Collections.Generic;
 
 namespace Jibril.Services.INC.Generator
 {
@@ -33,11 +33,12 @@ namespace Jibril.Services.INC.Generator
                             .Resize(80, 80)
                             .DrawImage(death, new Size(80, 80), new Point(0, 0), GraphicsOptions.Default));
                     }
+
                     img.Mutate(a => a
-                        .DrawImage(avi, new Size(80, 80), new Point(20 + (108 * width), 6 + (111 * height)),
+                        .DrawImage(avi, new Size(80, 80), new Point(20 + 108 * width, 6 + 111 * height),
                             GraphicsOptions.Default)
-                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(r: 30, g: 30, b: 30)), points)
-                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(r: 0, g: 255, b: 0)), hpBar));
+                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points)
+                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
                     width++;
                     row++;
                     if (row != 5) continue;
@@ -46,10 +47,12 @@ namespace Jibril.Services.INC.Generator
                     width = 0;
                     seat++;
                 }
+
                 img.Mutate(x => x.Resize(300, 300));
                 img.Save("Services/INC/Cache/Avatar/Banner.png");
                 result.Add("Services/INC/Cache/Avatar/Banner.png");
             }
+
             return result;
         }
 
@@ -61,13 +64,13 @@ namespace Jibril.Services.INC.Generator
             const int h1 = 86;
             const int h2 = 101;
 
-            var point1 = new PointF(w1 + (seat * 108), h1 + (row * 111));
-            var point2 = new PointF(w2 + (seat * 108), h1 + (row * 111));
+            var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
+            var point2 = new PointF(w2 + seat * 108, h1 + row * 111);
 
-            var point3 = new PointF(w2 + (seat * 108), h2 + (row * 111));
-            var point4 = new PointF(w1 + (seat * 108), h2 + (row * 111));
+            var point3 = new PointF(w2 + seat * 108, h2 + row * 111);
+            var point4 = new PointF(w1 + seat * 108, h2 + row * 111);
 
-            var result = new List<PointF> { point1, point2, point3, point4 }.ToArray();
+            var result = new List<PointF> {point1, point2, point3, point4}.ToArray();
             return result;
         }
 
@@ -79,13 +82,13 @@ namespace Jibril.Services.INC.Generator
             const int h1 = 86 - 1;
             const int h2 = 101 - 1;
 
-            var point1 = new PointF(w1 + (seat * 108), h1 + (row * 111));
-            var point2 = new PointF(w2 + (seat * 108) - damage, h1 + (row * 111));
+            var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
+            var point2 = new PointF(w2 + seat * 108 - damage, h1 + row * 111);
 
-            var point3 = new PointF(w2 + (seat * 108) - damage, h2 + (row * 111));
-            var point4 = new PointF(w1 + (seat * 108), h2 + (row * 111));
+            var point3 = new PointF(w2 + seat * 108 - damage, h2 + row * 111);
+            var point4 = new PointF(w1 + seat * 108, h2 + row * 111);
 
-            var result = new List<PointF> { point1, point2, point3, point4 }.ToArray();
+            var result = new List<PointF> {point1, point2, point3, point4}.ToArray();
             return result;
         }
 

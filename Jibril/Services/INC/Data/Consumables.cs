@@ -17,6 +17,8 @@
 
     public static class ConsumableNames
     {
+        public const string Bandages = "bandages";
+
         public static readonly string[] Food =
         {
             "beans",
@@ -32,7 +34,5 @@
             "mountainDew",
             "redbull"
         };
-
-        public const string Bandages = "bandages";
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Services.HungerGames.Data
+﻿namespace Jibril.Services.HungerGames.Data
 {
     public class Ramen
     {

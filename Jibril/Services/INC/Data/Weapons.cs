@@ -15,18 +15,22 @@
     {
         public const int Damage = 60;
     }
+
     public static class Bow
     {
         public const int Damage = 30;
     }
+
     public static class Axe
     {
         public const int Damage = 40;
     }
+
     public static class Trap
     {
         public const int Damage = 60;
     }
+
     public static class Fist
     {
         public const int Damage = 15;
