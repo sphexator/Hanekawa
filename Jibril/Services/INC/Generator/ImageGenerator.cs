@@ -24,7 +24,7 @@ namespace Jibril.Services.INC.Generator
                     var points = GetBorderPointers(seat, row);
                     var aviPath = $"Services/INC/Cache/Avatar/{x.Player.UserId}.png";
                     var avi = Image.Load(aviPath);
-                    if(x.Player.Status == false)
+                    if (x.Player.Status == false)
                     {
                         var death = Image.Load("Services/INC/Cache/Avatar/DeathIndicator.png");
                         avi.Mutate(y => y
