@@ -99,15 +99,16 @@ namespace Jibril.Services.INC
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(users);
             var output = new List<string>();
-
-            foreach (var x in users)
+            var newUsers = DatabaseHungerGame.GetProfilEnumerable();
+            foreach (var x in newUsers)
             {
+                if (x.Player.Status == false) continue;
                 var eventOutput = EventHandler.EventManager(x);
                 if (eventOutput.IsNullOrWhiteSpace()) continue;
                 var content = $"{x.Player.Name}: {eventOutput}";
                 output.Add(content);
+                DatabaseHungerGame.Stagger(x.Player.UserId);
             }
-
             var response = string.Join("\n", output);
             await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
             foreach (var x in images)
@@ -123,8 +124,9 @@ namespace Jibril.Services.INC
                 if (react.User.Value.IsBot) return;
                 if (react.Emote.Name != "rooree") return;
                 var users = DatabaseHungerGame.GetUsers();
+                if (users.Count >= 25) return;
                 var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
-                if (users.Count >= 50 && check != null) return;
+                if (check != null) return;
                 DatabaseHungerGame.EnterUser(react.User.Value);
                 await SaveAvatar(react.User.Value);
             });

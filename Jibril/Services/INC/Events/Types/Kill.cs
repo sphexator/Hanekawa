@@ -20,7 +20,7 @@ namespace Jibril.Services.INC.Events.Types
             {
                 var pistolDamage = DamageOutput.PistolDamage(profile.Player.Stamina, profile.Player.Bleeding);
                 DatabaseHungerGame.AddDamage(trgt.Userid, pistolDamage);
-                var response = $"Hits {trgt.Name} with his axe inflicting {pistolDamage} damage.";
+                var response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
                 return response;
             }
 
@@ -28,7 +28,7 @@ namespace Jibril.Services.INC.Events.Types
             {
                 var bowDamage = DamageOutput.BowDamage(profile.Player.Stamina, profile.Player.Bleeding);
                 DatabaseHungerGame.AddDamage(trgt.Userid, bowDamage);
-                var response = $"Hits {trgt.Name} with his axe inflicting {bowDamage} damage.";
+                var response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
                 return response;
             }
 
@@ -42,7 +42,7 @@ namespace Jibril.Services.INC.Events.Types
 
             var fistDamage = DamageOutput.FistDamage(profile.Player.Stamina, profile.Player.Bleeding);
             DatabaseHungerGame.AddDamage(trgt.Userid, fistDamage);
-            var msg = $"Hits {trgt.Name} with his axe inflicting {fistDamage} damage.";
+            var msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
             return msg;
         }
 

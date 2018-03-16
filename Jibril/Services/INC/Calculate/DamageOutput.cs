@@ -64,7 +64,7 @@ namespace Jibril.Services.INC.Calculate
             var rand = new Random();
             var chance = rand.Next(0, 100);
             if (!(chance <= hitChance)) return 0;
-            var damage = rand.Next(Fist.Damage - 20, Fist.Damage);
+            var damage = rand.Next(Fist.Damage - 10, Fist.Damage);
             var critChance = CriticalDamage();
             if (critChance) damage = damage + rand.Next(10, 20);
             return damage;
