@@ -154,7 +154,7 @@ namespace Jibril.Modules.Administration
             });
             embed.AddField(y =>
             {
-                y.Name = "Toxicity value";
+                y.Name = $"Toxicity value [msg:{userdata.Toxicitymsgcount}]";
                 y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
                 y.IsInline = true;
             });
