@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Jibril.Services;
+using Jibril.Services.Level;
 
 namespace Jibril.Modules.Test
 {
@@ -21,13 +24,18 @@ namespace Jibril.Modules.Test
         [RequireOwner]
         public async Task TestCommandTask()
         {
-            var msg = await ReplyAsync("Test message");
-            Emote.TryParse("<:yes:402675768334876674>", out var yesEmote);
-            Emote.TryParse("<:no:402675767814914049>", out var noEmote);
-            IEmote iemoteYes = yesEmote;
-            IEmote iemoteNo = noEmote;
-            await msg.AddReactionAsync(iemoteYes);
-            await msg.AddReactionAsync(iemoteNo);
+            var role = Context.Client.GetGuild(200265036596379648).Roles.FirstOrDefault(x => x.Name == "Kai Ni");
+            var oldMvps = role?.Members;
+            var ma = DatabaseService.GetActiveUsers();
+            var newMvps = new List<IGuildUser>();
+            foreach (var x in ma)
+            {
+                var user = Context.Guild.GetUser(x);
+                newMvps.Add(user);
+            }
+
+            var embed = I_am_infamous.MVPMessage(oldMvps, oldMvps);
+            await ReplyAsync("", false, embed.Build());
         }
     }
 }

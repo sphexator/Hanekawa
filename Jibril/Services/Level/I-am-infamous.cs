@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Data.Variables;
 using Quartz;
 
 namespace Jibril.Services.Level
@@ -49,6 +50,17 @@ namespace Jibril.Services.Level
                     var user = guild?.GetUser(x);
                     newMvps.Add(user);
                 }
+
+                try
+                {
+                    var embed = MVPMessage(newMvps, oldMvps);
+                    await guild.GetTextChannel(391917443297312778).SendMessageAsync("", false, embed.Build());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Couldn't send new kai ni message");
+                }
+
                 await Demote(oldMvps, role);
                 await Promote(newMvps, role);
                 DatabaseService.ResetMessageCounter();
@@ -86,6 +98,37 @@ namespace Jibril.Services.Level
                     //Ignore
                 }
             }
+        }
+
+        public static EmbedBuilder MVPMessage(IEnumerable<IGuildUser> newMvps, IEnumerable<IGuildUser> oldMvps)
+        {
+            var outputp1 = new List<string>();
+            var outputp2 = new List<string>();
+            var response = new List<string>();
+            foreach (var x in oldMvps)
+            {
+                var s = $"{x.Mention}";
+                outputp1.Add(s);
+            }
+            foreach (var y in newMvps)
+            {
+                var a = $"{y.Mention}";
+                outputp2.Add(a);
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                var content = $"{outputp1[i]} => {outputp2[i]} ";
+                response.Add(content);
+            }
+
+            var desc = string.Join("\n", response);
+            var embed = new EmbedBuilder
+            {
+                Title = "Kai Ni Update!",
+                Color = new Color(Colours.DefaultColour),
+                Description = desc
+            };
+            return embed;
         }
 
         private Task MessageCounter(SocketMessage msg)
