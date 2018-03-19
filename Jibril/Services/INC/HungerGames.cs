@@ -53,7 +53,7 @@ namespace Jibril.Services.INC
         {
             DatabaseHungerGame.GameSignUpStart();
             var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
-                "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
+                "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 25 users will be fighting for their life, on the quest to obtain ....");
             Emote.TryParse("<:rooree:362610653120299009>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
