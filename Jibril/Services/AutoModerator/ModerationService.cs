@@ -125,7 +125,7 @@ namespace Jibril.Services.AutoModerator
             var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
             return s;
         }
-
+        
         private Task Filter(SocketMessage rawMessage)
         {
             var _ = Task.Run(async () =>
@@ -164,6 +164,10 @@ namespace Jibril.Services.AutoModerator
                             }
                         }
                         if (rawMessage.Content.IsGoogleLink())
+                        {
+                            await rawMessage.DeleteAsync();
+                        }
+                        if (rawMessage.Content.IsIpGrab())
                         {
                             await rawMessage.DeleteAsync();
                         }
@@ -311,7 +315,7 @@ namespace Jibril.Services.AutoModerator
                 return result;
             }
         }
-
+        
         private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
         {
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
