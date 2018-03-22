@@ -5,6 +5,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Services;
@@ -124,21 +125,39 @@ namespace Jibril.Modules.Administration
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
-        private static EmbedBuilder WarnLogEmbed(IUser user)
+        private static EmbedBuilder WarnLogEmbed(IGuildUser user)
         {
             var result = AdminDb.GetWarnings(user).FirstOrDefault();
             var list = WarningDB.WarnList(user);
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
 
+            var content = $"**>User Information**\n" +
+                          $"Status: {user.Status}\n" +
+                          $"Game: {user.Activity}\n" +
+                          $"Created: {user.CreatedAt.Humanize()}({user.CreatedAt})\n" +
+                          $"\n" +
+                          $"**>Member Information**\n" +
+                          $"Joined: {user.JoinedAt.Value.Date.Humanize()}({user.JoinedAt})\n" +
+                          $"Roles: \n" +
+                          $"\n" +
+                          $"**>Activity**\n" +
+                          $"Last Message: \n" +
+                          $"First Message:\n" +
+                          $"\n" +
+                          $"**>Voice**\n" +
+                          $"Sessions:\n" +
+                          $"Time:";
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = user.GetAvatarUrl(),
-                Name = user.Username
+                Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Mention})"
             };
             var embed = new EmbedBuilder
             {
                 Color = new Color(Colours.DefaultColour),
-                Author = author
+                Author = author,
+                Description = content,
+                ThumbnailUrl = user.GetAvatarUrl()
             };
             embed.AddField(y =>
             {
