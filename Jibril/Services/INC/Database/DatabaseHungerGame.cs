@@ -60,12 +60,57 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static void EnterUser(ulong id, string name)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str =
+                $"INSERT INTO hungergame (userid, name) VALUES ('{id}', '{name}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+
         public static void GameSignUpStart()
         {
             var database = new DatabaseHungerGame("hanekawa");
             const string str = "UPDATE hungergameconfig SET signupstage = 1 WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
+        }
+
+        public static List<ulong> GetTotalUsers()
+        {
+            var result = new List<ulong>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "SELECT * FROM hungergame";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var userid = (ulong) exec["userid"];
+
+                result.Add(userid);
+            }
+            return result;
+        }
+
+        public static List<DefaultUsersHg> GetDefaultUsers()
+        {
+            var result = new List<DefaultUsersHg>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "select * FROM hungergamedefault";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var userid = (ulong) exec["userid"];
+                var name = (string) exec["name"];
+                result.Add(new DefaultUsersHg
+                {
+                    Name = name,
+                    Userid = userid
+                });
+            }
+
+            return result;
         }
 
         public static void GameStart()
@@ -428,5 +473,11 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
             return result;
         }
+    }
+
+    public class DefaultUsersHg
+    {
+        public ulong Userid { get; set; }
+        public string Name { get; set; }
     }
 }

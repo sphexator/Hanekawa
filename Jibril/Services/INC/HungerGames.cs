@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -62,6 +63,8 @@ namespace Jibril.Services.INC
 
         public async Task StartEvent()
         {
+            var totalUsers = DatabaseHungerGame.GetTotalUsers();
+            AddDefaultCharacters(totalUsers);
             DatabaseHungerGame.GameStart();
             var users = DatabaseHungerGame.GetProfilEnumerable();
             string names = null;
@@ -131,6 +134,23 @@ namespace Jibril.Services.INC
                 await SaveAvatar(react.User.Value);
             });
             return Task.CompletedTask;
+        }
+
+        private static void AddDefaultCharacters(ICollection result)
+        {
+            if (result.Count >= 25) return;
+            var remaining = 25 - result.Count;
+            var rng = new Random();
+            var users = DatabaseHungerGame.GetDefaultUsers();
+            for (var i = 0; i < remaining; i++)
+            {
+                var toAdd = rng.Next(1, users.Count);
+                using (var img = Image.Load())
+                {
+
+                }
+                DatabaseHungerGame.EnterUser(users[toAdd].Userid, users[toAdd].Name);
+            }
         }
 
         private async Task SaveAvatar(IUser user)
