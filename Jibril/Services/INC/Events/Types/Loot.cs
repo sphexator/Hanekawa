@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using Jibril.Services.INC.Data;
+using Jibril.Services.INC.Database;
 
 namespace Jibril.Services.INC.Events.Types
 {
     public class Loot
     {
-        public static string LootEvent()
+        public static string LootEvent(Profile profile)
         {
             var rand = new Random();
             const int pool = FoodAndWater + Weapons + Bandages;
@@ -20,9 +21,11 @@ namespace Jibril.Services.INC.Events.Types
                 switch (toGive)
                 {
                     case 1:
-                        toReturn = "Give Water";
+                        DatabaseHungerGame.AddDrink(profile.Player.UserId, ConsumableNames.Water[2]);
+                        toReturn = "Obtained Water";
                         break;
                     case 2:
+                        DatabaseHungerGame.AddFood(profile.Player.UserId, ConsumableNames.Food[2]);
                         toReturn = "Obtained Food";
                         break;
                     case 3:
@@ -35,7 +38,8 @@ namespace Jibril.Services.INC.Events.Types
             }
             if (result <= FoodAndWater + Bandages)
             {
-                return ConsumableNames.Bandages;
+                DatabaseHungerGame.AddDrink(profile.Player.UserId, ConsumableNames.Bandages);
+                return $"Obtained {ConsumableNames.Bandages}";                
                 //TODO: implement add bandages DB
             }
 
@@ -44,20 +48,30 @@ namespace Jibril.Services.INC.Events.Types
             var weapon = rand.Next(0, 100);
             if (weapon <= 50)
             {
-                return WeaponNames.WeaponStrings[1];
+                DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[1], "arrows", 10);
+                return $"Obtained {WeaponNames.WeaponStrings[1]}";
+                
                 //Add Bow
             }
             if (weapon <= 50 + 30)
             {
-                return WeaponNames.WeaponStrings[2];
+                DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[2]);
+                return $"Obtained {WeaponNames.WeaponStrings[2]}";
                 //Add Axe
             }
             if (weapon <= 50 + 30 + 15)
             {
-                return WeaponNames.WeaponStrings[3];
+                DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[3], "bullets", 10);
+                return $"Obtained {WeaponNames.WeaponStrings[3]}";
                 //Add pistol
             }
-            return weapon <= 50 + 30 + 15 + 15 ? WeaponNames.WeaponStrings[4] : WeaponNames.WeaponStrings[1];
+
+            if (weapon <= 50 + 30 + 15 + 15)
+            {
+                return $"Obtained {WeaponNames.WeaponStrings[4]}";
+            }
+            DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[1], "arrows", 10);
+            return $"Obtained {WeaponNames.WeaponStrings[1]}";
 
             //TODO: implement add weapon to DB
         }

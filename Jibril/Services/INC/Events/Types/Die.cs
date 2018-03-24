@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Jibril.Services.INC.Data;
+using Jibril.Services.INC.Database;
 
 namespace Jibril.Services.INC.Events.Types
 {
     public class Die
     {
-        public static string DieEvent()
+        public static string DieEvent(Profile profile)
         {
             var rand = new Random();
             var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
+            DatabaseHungerGame.DieEvent(profile.Player.UserId);
             return response;
         }
 

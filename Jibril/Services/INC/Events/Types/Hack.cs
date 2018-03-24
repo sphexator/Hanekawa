@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Discord.WebSocket;
 using Jibril.Services.INC.Data;
+using Jibril.Services.INC.Database;
 
 namespace Jibril.Services.INC.Events.Types
 {
