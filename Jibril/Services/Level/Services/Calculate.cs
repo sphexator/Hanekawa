@@ -17,14 +17,14 @@ namespace Jibril.Services.Level.Services
         public static int ReturnXP(SocketMessage msg)
         {
             var def = CalculateExperience(msg);
-            var returnExp = def * 2; //Modifier to exp gain
+            var returnExp = def * 1; //Modifier to exp gain
             return returnExp;
         }
 
         public static int ReturnCredit()
         {
             var def = CalculateCredit();
-            var credit = def * 2; //Modifier to credit gain
+            var credit = def * 1; //Modifier to credit gain
             return credit;
         }
 
