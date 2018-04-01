@@ -55,7 +55,7 @@ namespace Jibril.Services.Loot
                         foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
                         {
                             await Task.Delay(1000);
-                            if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
+                            if (x.Name == "realsip") _crateMessage.Add(triggerMsg.Id);
                             await triggerMsg.AddReactionAsync(x);
                         }
                     }
@@ -79,7 +79,7 @@ namespace Jibril.Services.Loot
                 foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
                 {
                     await Task.Delay(1000);
-                    if (x.Name == "roosip") _sCMessage.Add(triggerMsg.Id);
+                    if (x.Name == "realsip") _sCMessage.Add(triggerMsg.Id);
                     await triggerMsg.AddReactionAsync(x);
                 }
             }
