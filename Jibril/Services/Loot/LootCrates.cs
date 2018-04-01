@@ -95,7 +95,7 @@ namespace Jibril.Services.Loot
             {
                 if (msg.Value.Author.IsBot != true) return;
                 if (reaction.User.Value.IsBot) return;
-                if (reaction.Emote.Name != "roosip") return;
+                if (reaction.Emote.Name != "realsip") return;
                 Console.WriteLine("Reaction passed");
                 try
                 {
