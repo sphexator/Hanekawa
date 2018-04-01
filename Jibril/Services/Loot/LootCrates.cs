@@ -95,7 +95,7 @@ namespace Jibril.Services.Loot
             {
                 if (msg.Value.Author.IsBot != true) return;
                 if (reaction.User.Value.IsBot) return;
-                if (reaction.Emote.Name != "roosip") return;
+                if (reaction.Emote.Name != "realsip") return;
                 Console.WriteLine("Reaction passed");
                 try
                 {
@@ -141,11 +141,25 @@ namespace Jibril.Services.Loot
             Emote.TryParse("<:vanilla2:244676862897291264>", out var awau);
             Emote.TryParse("<:roosip:418322874097729547>", out var keyEmote);
              */
+
+            /*
+             Real ones
             Emote.TryParse("<:rooWhine:362610653690593281>", out var rooWhine);
             Emote.TryParse("<:rooduck:362610654227726336>", out var rooduck);
             Emote.TryParse("<:awau:356542620551348235>", out var awau);
             Emote.TryParse("<:roosip:362610653766221834>", out var keyEmote);
+            */
+            Emote.TryParse("<:realsip:429809346222882836>", out var real);
+            Emote.TryParse("<:8:429809346680061952>", out var sip1);
+            Emote.TryParse("<:7:429809346667610112>", out var sip2);
+            Emote.TryParse("<:6:429809346633793546>", out var sip3);
+            Emote.TryParse("<:5:429809346575073280>", out var sip4);
+            Emote.TryParse("<:4:429809346348843009>", out var sip5);
+            Emote.TryParse("<:3:429809346344648706>", out var sip6);
+            Emote.TryParse("<:2:429809346222882818>", out var sip7);
+            Emote.TryParse("<:1:429809345912373259>", out var sip8);
 
+            /*
             IEmote awauEmote = awau;
             IEmote rooduckEmote = rooduck;
             IEmote rooWhinEmote = rooWhine;
@@ -154,6 +168,26 @@ namespace Jibril.Services.Loot
             emotes.Add(rooduckEmote);
             emotes.Add(rooWhinEmote);
             emotes.Add(iemoteYes);
+            */
+            IEmote realEmote = real;
+            IEmote fake1Emote = sip1;
+            IEmote fake2Emote = sip2;
+            IEmote fake3Emote = sip3;
+            IEmote fake4Emote = sip4;
+            IEmote fake5Emote = sip5;
+            IEmote fake6Emote = sip6;
+            IEmote fake7Emote = sip7;
+            IEmote fake8Emote = sip8;
+            emotes.Add(realEmote);
+            emotes.Add(fake1Emote);
+            emotes.Add(fake2Emote);
+            emotes.Add(fake3Emote);
+            emotes.Add(fake4Emote);
+            emotes.Add(fake5Emote);
+            emotes.Add(fake6Emote);
+            emotes.Add(fake7Emote);
+            emotes.Add(fake8Emote);
+
 
             return emotes;
         }
