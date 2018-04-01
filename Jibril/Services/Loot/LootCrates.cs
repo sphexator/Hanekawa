@@ -76,7 +76,7 @@ namespace Jibril.Services.Loot
                     $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
                 var emotes = ReturnEmotes();
                 var rng = new Random();
-                foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
+                foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
                 {
                     await Task.Delay(1000);
                     if (x.Name == "roosip") _sCMessage.Add(triggerMsg.Id);
