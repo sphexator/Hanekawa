@@ -52,7 +52,7 @@ namespace Jibril.Services.Loot
                             "A drop event has been triggered \nClick the roosip reaction on this message to claim it");
                         var emotes = ReturnEmotes();
                         var rng = new Random();
-                        foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
+                        foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
                         {
                             await Task.Delay(1000);
                             if (x.Name == "roosip") _crateMessage.Add(triggerMsg.Id);
