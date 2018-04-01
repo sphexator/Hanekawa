@@ -54,7 +54,7 @@ namespace Jibril.Services.Level
                 try
                 {
                     var embed = MVPMessage(newMvps, oldMvps);
-                    await guild.GetTextChannel(391917443297312778).SendMessageAsync("", false, embed.Build());
+                    await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
                 }
                 catch (Exception e)
                 {

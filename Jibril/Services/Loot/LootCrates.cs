@@ -49,7 +49,7 @@ namespace Jibril.Services.Loot
                     {
                         var ch = message.Channel as SocketGuildChannel;
                         var triggerMsg = await (ch as SocketTextChannel)?.SendMessageAsync(
-                            "A drop event has been triggered \nClick the reaction on this message to claim it");
+                            "A drop event has been triggered \nClick the roosip reaction on this message to claim it");
                         var emotes = ReturnEmotes();
                         var rng = new Random();
                         foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
