@@ -68,11 +68,11 @@ namespace Jibril.Services.INC
             DatabaseHungerGame.GameStart();
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var names =
-                $"{users[1].Player.Name} - {users[2].Player.Name} - {users[3].Player.Name} - {users[4].Player.Name} - {users[5].Player.Name}\n" +
-                $"{users[6].Player.Name} - {users[7].Player.Name} - {users[8].Player.Name} - {users[9].Player.Name} - {users[10].Player.Name}\n" +
-                $"{users[11].Player.Name} - {users[12].Player.Name} - {users[13].Player.Name} - {users[14].Player.Name} - {users[15].Player.Name}\n" +
-                $"{users[16].Player.Name} - {users[17].Player.Name} - {users[18].Player.Name} - {users[19].Player.Name} - {users[20].Player.Name}\n" +
-                $"{users[21].Player.Name} - {users[21].Player.Name} - {users[22].Player.Name} - {users[24].Player.Name} - {users[15].Player.Name}\n";
+                $"{users[0].Player.Name} - {users[1].Player.Name} - {users[2].Player.Name} - {users[3].Player.Name} - {users[4].Player.Name}\n" +
+                $"{users[6].Player.Name} - {users[7].Player.Name} - {users[7].Player.Name} - {users[8].Player.Name} - {users[9].Player.Name}\n" +
+                $"{users[10].Player.Name} - {users[11].Player.Name} - {users[12].Player.Name} - {users[13].Player.Name} - {users[14].Player.Name}\n" +
+                $"{users[15].Player.Name} - {users[16].Player.Name} - {users[17].Player.Name} - {users[18].Player.Name} - {users[19].Player.Name}\n" +
+                $"{users[20].Player.Name} - {users[21].Player.Name} - {users[22].Player.Name} - {users[23].Player.Name} - {users[24].Player.Name}\n";
             await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
                 "Signup is closed and heres the following participants: \n" +
                 $"{names}");
@@ -81,20 +81,27 @@ namespace Jibril.Services.INC
         public async Task ContinueEvent()
         {
             var users = DatabaseHungerGame.GetProfilEnumerable();
-            var images = ImageGenerator.GenerateEventImage(users);
             var output = new List<string>();
-            var newUsers = DatabaseHungerGame.GetProfilEnumerable();
-            foreach (var x in newUsers)
+            foreach (var x in users)
             {
                 if (x.Player.Status == false) continue;
+                var userCheck = DatabaseHungerGame.CheckExistingUser(x.Player.UserId).FirstOrDefault();
+                if (userCheck.Status == false) continue;
                 var eventOutput = EventHandler.EventManager(x);
                 if (eventOutput.IsNullOrWhiteSpace()) continue;
-                var content = $"{x.Player.Name}: {eventOutput}";
+                var content = $"{x.Player.Name.PadRight(20)} {eventOutput}";
                 output.Add(content);
                 DatabaseHungerGame.Stagger(x.Player.UserId);
             }
+
+            var newUsers = DatabaseHungerGame.GetProfilEnumerable();
+            var images = ImageGenerator.GenerateEventImage(newUsers);
+
             var response = string.Join("\n", output);
-            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(response);
+            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("Log\n" +
+                                                                                                           "```" +
+                                                                                                           $"{response}\n" +
+                                                                                                           $"```");
             foreach (var x in images)
                 await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendFileAsync(x, "");
         }
@@ -120,18 +127,19 @@ namespace Jibril.Services.INC
         private static void AddDefaultCharacters(ICollection result)
         {
             if (result.Count >= 25) return;
-            var remaining = 25 - result.Count;
+            var remaining = 26 - result.Count;
             var rng = new Random();
             var users = DatabaseHungerGame.GetDefaultUsers();
             for (var i = 1; i < remaining; i++)
             {
-                var toAdd = rng.Next(1, users.Count);
+                var toAdd = rng.Next(users.Count);
                 var filePath = $"Services/INC/Cache/DefaultAvatar/{toAdd}.png";
                 using (var img = Image.Load(filePath))
                 {
                     img.Mutate(x => x.Resize(80, 80));
                     img.Save($"Services/INC/Cache/Avatar/{users[toAdd].Userid}.png");
                 }
+
                 DatabaseHungerGame.EnterUser(users[toAdd].Userid, users[toAdd].Name);
             }
         }

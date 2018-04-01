@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -24,22 +25,45 @@ namespace Jibril.Modules.Test
             await ReplyAsync($"{role.Name} - {role.Id}");
         }
 
-        [Command("sign")]
+        [Command("sign", RunMode = RunMode.Async)]
         public async Task SignTask()
         {
-            await _hg.StartSignUp();
+            try
+            {
+                await _hg.StartSignUp();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
         }
 
-        [Command("start")]
+        [Command("start", RunMode = RunMode.Async)]
         public async Task StartTask()
         {
-            await _hg.StartEvent();
+            try
+            {
+                await _hg.StartEvent();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
         }
 
-        [Command("continue")]
+        [Command("continue", RunMode = RunMode.Async)]
         public async Task ContinueTask()
         {
-            await _hg.ContinueEvent();
+            try
+            {
+                await _hg.ContinueEvent();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         [Command("test")]

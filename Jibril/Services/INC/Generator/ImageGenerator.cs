@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Jibril.Services.INC.Data;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Brushes;
 using SixLabors.Primitives;
+using SixLabors.Shapes;
 
 namespace Jibril.Services.INC.Generator
 {
@@ -33,12 +36,22 @@ namespace Jibril.Services.INC.Generator
                             .Resize(80, 80)
                             .DrawImage(death, new Size(80, 80), new Point(0, 0), GraphicsOptions.Default));
                     }
-
                     img.Mutate(a => a
                         .DrawImage(avi, new Size(80, 80), new Point(20 + 108 * width, 6 + 111 * height),
                             GraphicsOptions.Default)
-                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points)
-                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
+                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points));
+                    if (x.Player.Status)
+                    {
+                        img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
+                    }
+
+                    var path = GetHealthTextLocation(seat, row);
+                    var font = SystemFonts.CreateFont("Times New Roman", 18, FontStyle.Regular);
+                    var hp = $"{x.Player.Health - x.Player.Damage} / 100";
+                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path, new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    }));
                     width++;
                     row++;
                     if (row != 5) continue;
@@ -47,8 +60,7 @@ namespace Jibril.Services.INC.Generator
                     width = 0;
                     seat++;
                 }
-
-                img.Mutate(x => x.Resize(300, 300));
+                img.Mutate(x => x.Resize(400, 400));
                 img.Save("Services/INC/Cache/Avatar/Banner.png");
                 result.Add("Services/INC/Cache/Avatar/Banner.png");
             }
@@ -77,10 +89,10 @@ namespace Jibril.Services.INC.Generator
         private static PointF[] GetHeathBar(int seat, int row, int damage)
         {
             //Size of box
-            const int w1 = 10 - 1;
-            const int w2 = 110 - 1;
-            const int h1 = 86 - 1;
-            const int h2 = 101 - 1;
+            const int w1 = 10 + 3;
+            const int w2 = 110 - 3;
+            const int h1 = 86 + 3;
+            const int h2 = 101 - 3;
 
             var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
             var point2 = new PointF(w2 + seat * 108 - damage, h1 + row * 111);
@@ -90,6 +102,20 @@ namespace Jibril.Services.INC.Generator
 
             var result = new List<PointF> {point1, point2, point3, point4}.ToArray();
             return result;
+        }
+
+        private static IPath GetHealthTextLocation(int seat, int row)
+        {
+            const int w1 = 10;
+            const int w2 = 110;
+            const int h1 = 86;
+
+            var pathBuilder = new PathBuilder();
+            var point1 = new PointF(w1 + seat * 108, h1 + row * 111 + 7);
+            var point2 = new PointF(w2 + seat * 108, h1 + row * 111 + 7);
+
+            pathBuilder.AddLine(point1, point2);
+            return pathBuilder.Build();
         }
 
         private static int GetImageHeight(IReadOnlyCollection<Profile> profile)

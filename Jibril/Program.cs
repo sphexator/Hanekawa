@@ -70,7 +70,7 @@ namespace Jibril
 
             await Task.Delay(-1);
         }
-
+        
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();

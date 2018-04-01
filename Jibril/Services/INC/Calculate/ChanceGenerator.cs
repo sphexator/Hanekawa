@@ -9,7 +9,7 @@ namespace Jibril.Services.INC.Calculate
         private const int Kill = 100;
         private const int Idle = 200;
         private const int Meet = 100;
-        private const int Hack = 50;
+        private const int Hack = 25;
         private const int Die = 1;
         private const int Sleep = 1;
         private const int Eat = 1;
@@ -60,9 +60,13 @@ namespace Jibril.Services.INC.Calculate
         {
             if (profile.Consumables.TotalDrink == 0 || profile.Consumables.TotalFood == 0)
                 return 50;
+            if (profile.Weapons.TotalWeapons >= 1 || profile.Consumables.TotalDrink > 0 ||
+                profile.Consumables.TotalFood > 0)
+                return Kill + 500;
             if (profile.Weapons.TotalWeapons >= 2 || profile.Consumables.TotalDrink > 0 ||
                 profile.Consumables.TotalFood > 0)
-                return Kill + 300;
+                return Kill + 1000;
+
             return Kill;
         }
 

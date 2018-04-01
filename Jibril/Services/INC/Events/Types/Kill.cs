@@ -19,30 +19,66 @@ namespace Jibril.Services.INC.Events.Types
             if (profile.Weapons.Pistol > 0 && profile.Weapons.Bullets > 0)
             {
                 var pistolDamage = DamageOutput.PistolDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                DatabaseHungerGame.AddDamage(trgt.Userid, pistolDamage);
-                var response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
+                string response;
+                if (pistolDamage + trgt.Damage >= 100)
+                {
+                    DatabaseHungerGame.DieEvent(trgt.Userid);
+                    response = $"Kills {trgt.Name} with his bow inflicting {pistolDamage} damage.";
+                }
+                else
+                {
+                    DatabaseHungerGame.AddDamage(trgt.Userid, pistolDamage);
+                    response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
+                }
                 return response;
             }
-
+            
             if (profile.Weapons.Bow > 0 && profile.Weapons.Arrows > 0)
             {
                 var bowDamage = DamageOutput.BowDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                DatabaseHungerGame.AddDamage(trgt.Userid, bowDamage);
-                var response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
+                string response;
+                if (bowDamage + trgt.Damage >= 100)
+                {
+                    DatabaseHungerGame.DieEvent(trgt.Userid);
+                    response = $"Kills {trgt.Name} with his bow inflicting {bowDamage} damage.";
+                }
+                else
+                {
+                    DatabaseHungerGame.AddDamage(trgt.Userid, bowDamage);
+                    response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
+                }
                 return response;
             }
 
             if (profile.Weapons.Axe > 0)
             {
                 var axeDamage = DamageOutput.AxeDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                DatabaseHungerGame.AddDamage(trgt.Userid, axeDamage);
-                var response = $"Hits {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                string response;
+                if(axeDamage + trgt.Damage >= 100)
+                {
+                    DatabaseHungerGame.DieEvent(trgt.Userid);
+                    response = $"Kills {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                }
+                else
+                {
+                    DatabaseHungerGame.AddDamage(trgt.Userid, axeDamage);
+                    response = $"Hits {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                }
                 return response;
             }
 
             var fistDamage = DamageOutput.FistDamage(profile.Player.Stamina, profile.Player.Bleeding);
-            DatabaseHungerGame.AddDamage(trgt.Userid, fistDamage);
-            var msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
+            string msg;
+            if(fistDamage + trgt.Damage >= 100)
+            {
+                DatabaseHungerGame.DieEvent(trgt.Userid);
+                msg = $"Kills {trgt.Name} with his fists inflicting {fistDamage} damage.";
+            }
+            else
+            {
+                DatabaseHungerGame.AddDamage(trgt.Userid, fistDamage);
+                msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
+            }
             return msg;
         }
 
@@ -57,7 +93,8 @@ namespace Jibril.Services.INC.Events.Types
                 new KillTarget
                 {
                     Userid = user.UserId,
-                    Name = user.Name
+                    Name = user.Name,
+                    Damage = user.Damage
                 }
             };
             return result;
@@ -68,6 +105,7 @@ namespace Jibril.Services.INC.Events.Types
     {
         public string Name { get; set; }
         public ulong Userid { get; set; }
+        public int Damage { get; set; }
 
         internal object ThrowIfNull()
         {

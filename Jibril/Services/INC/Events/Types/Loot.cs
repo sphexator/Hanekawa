@@ -29,28 +29,26 @@ namespace Jibril.Services.INC.Events.Types
                         toReturn = "Obtained Food";
                         break;
                     case 3:
+                        DatabaseHungerGame.AddFood(profile.Player.UserId, ConsumableNames.Food[2]);
+                        DatabaseHungerGame.AddDrink(profile.Player.UserId, ConsumableNames.Water[2]);
                         toReturn = "Obtained Water and Food";
                         break;
                 }
                 return toReturn;
 
-                //TODO: implement add water and food to DB
             }
             if (result <= FoodAndWater + Bandages)
             {
-                DatabaseHungerGame.AddDrink(profile.Player.UserId, ConsumableNames.Bandages);
+                DatabaseHungerGame.AddBandages(profile.Player.UserId, ConsumableNames.Bandages);
                 return $"Obtained {ConsumableNames.Bandages}";                
-                //TODO: implement add bandages DB
             }
 
             if (result > FoodAndWater + Bandages + Weapons) return WeaponNames.WeaponStrings[1];
-            var looted = new List<LootReturn>();
             var weapon = rand.Next(0, 100);
             if (weapon <= 50)
             {
                 DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[1], "arrows", 10);
-                return $"Obtained {WeaponNames.WeaponStrings[1]}";
-                
+                return $"Obtained {WeaponNames.WeaponStrings[1]}";                
                 //Add Bow
             }
             if (weapon <= 50 + 30)
@@ -63,17 +61,16 @@ namespace Jibril.Services.INC.Events.Types
             {
                 DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[3], "bullets", 10);
                 return $"Obtained {WeaponNames.WeaponStrings[3]}";
-                //Add pistol
+                //Add Pistol
             }
 
             if (weapon <= 50 + 30 + 15 + 15)
             {
                 return $"Obtained {WeaponNames.WeaponStrings[4]}";
+                //Add Trap
             }
             DatabaseHungerGame.AddWeapon(profile.Player.UserId, WeaponNames.WeaponStrings[1], "arrows", 10);
             return $"Obtained {WeaponNames.WeaponStrings[1]}";
-
-            //TODO: implement add weapon to DB
         }
 
         private static int IsFood()
@@ -86,10 +83,5 @@ namespace Jibril.Services.INC.Events.Types
         private const int FoodAndWater = 100;
         private const int Weapons = 15;
         private const int Bandages = 50;
-    }
-    public abstract class LootReturn
-    {
-        public string Name { get; set; }
-        public int Amount { get; set; }
     }
 }
