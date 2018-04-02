@@ -9,10 +9,10 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
+        private const bool Pooling = false;
         private readonly string _database = DbInfo.DbNorm;
         private readonly MySqlConnection _dbConnection;
         private readonly string _password = DbInfo.Password;
-        private const bool Pooling = false;
         private readonly string _server = DbInfo.Server;
         private readonly string _username = DbInfo.Username;
 
@@ -61,6 +61,7 @@ namespace Jibril.Services
 
                 result.Add(userId);
             }
+
             return result;
         }
 
@@ -69,7 +70,7 @@ namespace Jibril.Services
             var database = new DatabaseService("hanekawa");
             var str =
                 $"INSERT INTO exp (user_id, username, tokens, level, xp, joindate) VALUES ('{user.Id}', 'username', '0', '1', '1', curtime())";
-            var exec = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -95,7 +96,15 @@ namespace Jibril.Services
         public static void ResetMessageCounter()
         {
             var database = new DatabaseService("hanekawa");
-            var str = $"UPDATE exp SET mvpCounter = '0'";
+            var str = $"UPDATE exp SET mvpCounter = '0', mvpimmunity = '0'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void SetNewMVP(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"UPDATE exp SET mvpimmunity = '1' WHERE user_id = '{user.Id}'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -104,16 +113,17 @@ namespace Jibril.Services
         {
             var database = new DatabaseService("hanekawa");
             var result = new List<ulong>();
-            var str = "SELECT * FROM exp ORDER BY mvpCounter DESC LIMIT 5";
+            const string str = "SELECT * FROM exp WHERE mvpimmunity = 0 ORDER BY mvpCounter DESC LIMIT 5";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
             {
-                var userId = (string)reader["user_id"];
+                var userId = (string) reader["user_id"];
                 var userIdConvert = ulong.Parse(userId);
 
                 result.Add(userIdConvert);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -175,6 +185,7 @@ namespace Jibril.Services
                     Repcd = repcd
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -187,23 +198,23 @@ namespace Jibril.Services
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var userId = (string)exec["user_id"];
-                var userName = (string)exec["username"];
-                var currentTokens = (uint)exec["tokens"];
-                var event_tokens = (uint)exec["event_tokens"];
-                var level = (int)exec["level"];
-                var exp = (int)exec["xp"];
-                var totalExp = (int)exec["total_xp"];
-                var daily = (DateTime)exec["daily"];
-                var cooldown = (DateTime)exec["cooldown"];
-                var voice_timer = (DateTime)exec["voice_timer"];
-                var joinDate = (DateTime)exec["joindate"];
-                var fleetName = (string)exec["fleetName"];
-                var shipClass = (string)exec["shipClass"];
-                var profilepic = (string)exec["profilepic"];
-                var gameCD = (DateTime)exec["game_cooldown"];
-                var gambleCD = (DateTime)exec["gambling_cooldown"];
-                var hasrole = (string)exec["hasrole"];
+                var userId = (string) exec["user_id"];
+                var userName = (string) exec["username"];
+                var currentTokens = (uint) exec["tokens"];
+                var event_tokens = (uint) exec["event_tokens"];
+                var level = (int) exec["level"];
+                var exp = (int) exec["xp"];
+                var totalExp = (int) exec["total_xp"];
+                var daily = (DateTime) exec["daily"];
+                var cooldown = (DateTime) exec["cooldown"];
+                var voice_timer = (DateTime) exec["voice_timer"];
+                var joinDate = (DateTime) exec["joindate"];
+                var fleetName = (string) exec["fleetName"];
+                var shipClass = (string) exec["shipClass"];
+                var profilepic = (string) exec["profilepic"];
+                var gameCD = (DateTime) exec["game_cooldown"];
+                var gambleCD = (DateTime) exec["gambling_cooldown"];
+                var hasrole = (string) exec["hasrole"];
 
                 result.Add(new UserData
                 {
@@ -226,6 +237,7 @@ namespace Jibril.Services
                     Hasrole = hasrole
                 });
             }
+
             database.CloseConnection();
             return result;
         }

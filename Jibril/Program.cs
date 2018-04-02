@@ -35,7 +35,7 @@ namespace Jibril
             new Program().MainASync().GetAwaiter().GetResult();
         }
 
-        public async Task MainASync()
+        private async Task MainASync()
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
