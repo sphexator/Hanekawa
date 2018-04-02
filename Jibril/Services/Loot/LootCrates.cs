@@ -52,7 +52,7 @@ namespace Jibril.Services.Loot
                             "A drop event has been triggered \nClick the roosip reaction on this message to claim it");
                         var emotes = ReturnEmotes();
                         var rng = new Random();
-                        foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
+                        foreach (var x in emotes.OrderBy(x => rng.Next()).Take(4))
                         {
                             await Task.Delay(1000);
                             if (x.Name == "realsip") _crateMessage.Add(triggerMsg.Id);
@@ -135,58 +135,20 @@ namespace Jibril.Services.Loot
         private IEnumerable<IEmote> ReturnEmotes()
         {
             var emotes = new List<IEmote>();
-            /*
-            Emote.TryParse("<:think:406524339303743490>", out var rooWhine);
-            Emote.TryParse("<:zulul:382923660174032906>", out var rooduck);
-            Emote.TryParse("<:vanilla2:244676862897291264>", out var awau);
-            Emote.TryParse("<:roosip:418322874097729547>", out var keyEmote);
-             */
-
-            /*
-             Real ones
-            Emote.TryParse("<:rooWhine:362610653690593281>", out var rooWhine);
-            Emote.TryParse("<:rooduck:362610654227726336>", out var rooduck);
-            Emote.TryParse("<:awau:356542620551348235>", out var awau);
-            Emote.TryParse("<:roosip:362610653766221834>", out var keyEmote);
-            */
             Emote.TryParse("<:realsip:429809346222882836>", out var real);
-            Emote.TryParse("<:8:429809346680061952>", out var sip1);
-            Emote.TryParse("<:7:429809346667610112>", out var sip2);
-            Emote.TryParse("<:6:429809346633793546>", out var sip3);
-            Emote.TryParse("<:5:429809346575073280>", out var sip4);
-            Emote.TryParse("<:4:429809346348843009>", out var sip5);
-            Emote.TryParse("<:3:429809346344648706>", out var sip6);
-            Emote.TryParse("<:2:429809346222882818>", out var sip7);
-            Emote.TryParse("<:1:429809345912373259>", out var sip8);
+            Emote.TryParse("<:sip:430207651998334977>", out var sip1);
+            Emote.TryParse("<:roowut:430207652061118465>", out var sip2);
+            Emote.TryParse("<:rooWhine:430207965153460254>", out var sip3);
 
-            /*
-            IEmote awauEmote = awau;
-            IEmote rooduckEmote = rooduck;
-            IEmote rooWhinEmote = rooWhine;
-            IEmote iemoteYes = keyEmote;
-            emotes.Add(awauEmote);
-            emotes.Add(rooduckEmote);
-            emotes.Add(rooWhinEmote);
-            emotes.Add(iemoteYes);
-            */
             IEmote realEmote = real;
             IEmote fake1Emote = sip1;
             IEmote fake2Emote = sip2;
             IEmote fake3Emote = sip3;
-            IEmote fake4Emote = sip4;
-            IEmote fake5Emote = sip5;
-            IEmote fake6Emote = sip6;
-            IEmote fake7Emote = sip7;
-            IEmote fake8Emote = sip8;
+
             emotes.Add(realEmote);
             emotes.Add(fake1Emote);
             emotes.Add(fake2Emote);
             emotes.Add(fake3Emote);
-            emotes.Add(fake4Emote);
-            emotes.Add(fake5Emote);
-            emotes.Add(fake6Emote);
-            emotes.Add(fake7Emote);
-            emotes.Add(fake8Emote);
 
             return emotes;
         }
