@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Quartz;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Services.Level
 {
-    public class I_am_infamous : IJob
+    public class AmInfamous : IJob
     {
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _channels = new List<ulong>();
         private readonly List<CooldownUser> _users = new List<CooldownUser>();
 
-        public I_am_infamous(DiscordSocketClient client)
+        public AmInfamous(DiscordSocketClient client)
         {
             _client = client;
 
@@ -54,10 +54,10 @@ namespace Jibril.Services.Level
 
                 try
                 {
-                    var embed = MVPMessage(newMvps, oldMvps);
+                    var embed = MvpMessage(newMvps, oldMvps);
                     await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Console.WriteLine("Couldn't send new kai ni message");
                 }
@@ -65,7 +65,7 @@ namespace Jibril.Services.Level
                 await Demote(oldMvps, role);
                 await Promote(newMvps, role);
                 DatabaseService.ResetMessageCounter();
-                foreach (var x in newMvps) DatabaseService.SetNewMVP(x);
+                foreach (var x in newMvps) DatabaseService.SetNewMvp(x);
             });
             return Task.CompletedTask;
         }
@@ -98,7 +98,7 @@ namespace Jibril.Services.Level
                 }
         }
 
-        public static EmbedBuilder MVPMessage(IEnumerable<IGuildUser> newMvps, IEnumerable<IGuildUser> oldMvps)
+        public static EmbedBuilder MvpMessage(IEnumerable<IGuildUser> newMvps, IEnumerable<IGuildUser> oldMvps)
         {
             var outputp1 = new List<string>();
             var outputp2 = new List<string>();

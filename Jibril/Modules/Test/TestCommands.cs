@@ -34,7 +34,7 @@ namespace Jibril.Modules.Test
                 newMvps.Add(user);
             }
 
-            var embed = I_am_infamous.MVPMessage(oldMvps, oldMvps);
+            var embed = AmInfamous.MvpMessage(oldMvps, oldMvps);
             await ReplyAsync("", false, embed.Build());
         }
     }

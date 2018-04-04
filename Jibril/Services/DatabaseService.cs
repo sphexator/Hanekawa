@@ -101,7 +101,7 @@ namespace Jibril.Services
             database.CloseConnection();
         }
 
-        public static void SetNewMVP(IUser user)
+        public static void SetNewMvp(IUser user)
         {
             var database = new DatabaseService("hanekawa");
             var str = $"UPDATE exp SET mvpimmunity = '1' WHERE user_id = '{user.Id}'";
