@@ -30,7 +30,7 @@ namespace Jibril
         private DiscordSocketClient _client;
         private IConfiguration _config;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             new Program().MainASync().GetAwaiter().GetResult();
         }
