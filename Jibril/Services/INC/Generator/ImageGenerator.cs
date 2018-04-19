@@ -1,21 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using Jibril.Services.INC.Data;
+﻿using Jibril.Services.INC.Data;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Brushes;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Jibril.Services.INC.Generator
 {
     public class ImageGenerator
     {
-        public static IEnumerable<string> GenerateEventImage(List<Profile> profile)
+        public static Stream GenerateEventImage(List<Profile> profile)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
-            var result = new List<string>();
+            var result = new MemoryStream();
             var width = 0;
             var height = 0;
             var seat = 0;
@@ -24,8 +25,8 @@ namespace Jibril.Services.INC.Generator
             {
                 foreach (var x in profile)
                 {
-                    var points = GetBorderPointers(seat, row);
-                    var hpBar = GetHeathBar(seat, row, x.Player.Damage);
+                    var points = GetBorderPointers(width, height);
+                    var hpBar = GetHeathBar(width, height, x.Player.Damage);
                     var aviPath = $"Services/INC/Cache/Avatar/{x.Player.UserId}.png";
                     var avi = Image.Load(aviPath);
                     if (x.Player.Status == false)
@@ -36,6 +37,7 @@ namespace Jibril.Services.INC.Generator
                             .Resize(80, 80)
                             .DrawImage(death, new Size(80, 80), new Point(0, 0), GraphicsOptions.Default));
                     }
+
                     img.Mutate(a => a
                         .DrawImage(avi, new Size(80, 80), new Point(20 + 108 * width, 6 + 111 * height),
                             GraphicsOptions.Default)
@@ -45,13 +47,10 @@ namespace Jibril.Services.INC.Generator
                         img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
                     }
 
-                    var path = GetHealthTextLocation(seat, row);
-                    var font = SystemFonts.CreateFont("Times New Roman", 18, FontStyle.Regular);
-                    var hp = $"{x.Player.Health - x.Player.Damage} / 100";
-                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path, new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    }));
+                    var path = GetHealthTextLocation(width, height);
+                    var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
+                    var hp = $"       {x.Player.Health - x.Player.Damage} / 100";
+                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
                     width++;
                     row++;
                     if (row != 5) continue;
@@ -61,10 +60,8 @@ namespace Jibril.Services.INC.Generator
                     seat++;
                 }
                 img.Mutate(x => x.Resize(400, 400));
-                img.Save("Services/INC/Cache/Avatar/Banner.png");
-                result.Add("Services/INC/Cache/Avatar/Banner.png");
+                img.Save(result, new PngEncoder());
             }
-
             return result;
         }
 

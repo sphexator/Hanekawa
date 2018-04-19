@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace Jibril.Services.INC
         {
             _client = client;
             _client.ReactionAdded += AddParticipants;
+            Directory.CreateDirectory("Services/INC/Cache/Avatar/");
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -93,17 +95,22 @@ namespace Jibril.Services.INC
                 output.Add(content);
                 DatabaseHungerGame.Stagger(x.Player.UserId);
             }
-
+            var ch = _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937);
             var newUsers = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(newUsers);
 
             var response = string.Join("\n", output);
-            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync("Log\n" +
+            await ch.SendMessageAsync("Log\n" +
                                                                                                            "```" +
                                                                                                            $"{response}\n" +
                                                                                                            $"```");
-            foreach (var x in images)
-                await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendFileAsync(x, "");
+            images.Seek(0, SeekOrigin.Begin);
+            await ch.SendFileAsync(images, "banner.png", null);
+            var remaining = DatabaseHungerGame.GetUsers();
+            if (remaining.Count == 1)
+            {
+
+            }
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
@@ -127,20 +134,17 @@ namespace Jibril.Services.INC
         private static void AddDefaultCharacters(ICollection result)
         {
             if (result.Count >= 25) return;
-            var remaining = 26 - result.Count;
-            var rng = new Random();
+            var remaining = 25 - result.Count;
             var users = DatabaseHungerGame.GetDefaultUsers();
-            for (var i = 1; i < remaining; i++)
+            for (var i = 0; i < remaining; i++)
             {
-                var toAdd = rng.Next(users.Count);
-                var filePath = $"Services/INC/Cache/DefaultAvatar/{toAdd}.png";
+                var filePath = $"Services/INC/Cache/DefaultAvatar/{i}.png";
                 using (var img = Image.Load(filePath))
                 {
                     img.Mutate(x => x.Resize(80, 80));
-                    img.Save($"Services/INC/Cache/Avatar/{users[toAdd].Userid}.png");
+                    img.Save($"Services/INC/Cache/Avatar/{users[i].Userid}.png");
                 }
-
-                DatabaseHungerGame.EnterUser(users[toAdd].Userid, users[toAdd].Name);
+                DatabaseHungerGame.EnterUser(users[i].Userid, users[i].Name);
             }
         }
 

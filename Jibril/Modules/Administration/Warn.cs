@@ -19,6 +19,7 @@ namespace Jibril.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task WarnUser(SocketGuildUser user, [Remainder] string reason = null)
         {
+            await Context.Message.DeleteAsync();
             var userCheck = AdminDb.CheckExistingUserWarn(user);
             var dm = await user.GetOrCreateDMChannelAsync();
             if (userCheck.Count <= 0 && user.IsBot != true)
@@ -28,7 +29,6 @@ namespace Jibril.Modules.Administration
                 if (reason == null)
                 {
                     WarningDB.AddWarn(user, Context.User, "No Reason Provided");
-                    await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                     await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
@@ -40,7 +40,6 @@ namespace Jibril.Modules.Administration
                 else
                 {
                     WarningDB.AddWarn(user, Context.User, reason.Replace("'", ""));
-                    await Context.Message.DeleteAsync().ConfigureAwait(false);
                     var content = $"{Context.User} warned {user}.";
                     var embed = EmbedGenerator.DefaultEmbed(content, Colours.OkColour);
                     await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
@@ -56,8 +55,7 @@ namespace Jibril.Modules.Administration
                 if (reason == null)
                 {
                     WarningDB.AddWarn(user, Context.User, "No reason provided");
-                    AdminDb.AddWarn(user);
-                    await Context.Message.DeleteAsync();
+                    AdminDb.AddWarn(user);;
                     if (result.Warnings++ == 3)
                     {
                         var muteRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute");
@@ -88,7 +86,6 @@ namespace Jibril.Modules.Administration
                 {
                     WarningDB.AddWarn(user, Context.User, reason.Replace("'", ""));
                     AdminDb.AddWarn(user);
-                    await Context.Message.DeleteAsync();
                     if (result.Warnings++ == 3)
                     {
                         var muteRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute");

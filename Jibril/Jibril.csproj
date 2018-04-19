@@ -26,13 +26,13 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00892" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00892" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00892" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00892" />
+    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00921" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00921" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00921" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00921" />
     <PackageReference Include="Discord.Net.Rpc" Version="2.0.0-beta-00860" />
-    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00892" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00892" />
+    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00921" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00921" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.32.2.1142" />
     <PackageReference Include="Humanizer" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
@@ -216,7 +216,16 @@
     <None Update="Data\Images\Welcome\Template\6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Services\INC\Cache\DefaultAvatar\0.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Services\INC\Cache\DefaultAvatar\0.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Services\INC\Cache\DefaultAvatar\1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Services\INC\Cache\DefaultAvatar\1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Services\INC\Cache\DefaultAvatar\10.png">

@@ -678,7 +678,7 @@ namespace Jibril.Modules.Administration.Services
             {
                 var result = new List<WarnList>();
                 var database = new WarningDB("senjougahara");
-                var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id DESC LIMIT 5";
+                var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id";
                 var tableName = database.FireCommand(str);
 
                 while (tableName.Read())
