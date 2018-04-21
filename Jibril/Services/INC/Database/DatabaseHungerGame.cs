@@ -73,7 +73,7 @@ namespace Jibril.Services.INC.Database
         public static void GameSignUpStart()
         {
             var database = new DatabaseHungerGame("hanekawa");
-            const string str = "UPDATE hungergameconfig SET signupstage = 1 WHERE guild = '339370914724446208'";
+            const string str = "UPDATE hungergameconfig SET signupstage = 1, signupDuration = curtime() WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -142,19 +142,23 @@ namespace Jibril.Services.INC.Database
         {
             var result = new List<Config>();
             var database = new DatabaseHungerGame("hanekawa");
-            const string str = "SELECT * FROM hungergameconfig WHERE guildid = '339370914724446208'";
+            const string str = "SELECT * FROM hungergameconfig WHERE guild = '339370914724446208'";
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
                 var guildid = (ulong) exec["guild"];
-                var live = (bool) exec["live"];
+                var msgid = (ulong) exec["msgId"];
+                var live1 = (sbyte) exec["live"];
                 var round = (int) exec["round"];
                 var signnupDuration = (DateTime) exec["signupDuration"];
-                var signUpStage = (bool) exec["signupstage"];
+                var signUpStage1 = (sbyte) exec["signupstage"];
 
+                var live = live1 == 1;
+                var signUpStage = signUpStage1 == 1;
                 result.Add(new Config
                 {
                     GuildId = guildid,
+                    MsgId = msgid,
                     Live = live,
                     Round = round,
                     SignupDuration = signnupDuration,
@@ -164,6 +168,14 @@ namespace Jibril.Services.INC.Database
 
             database.CloseConnection();
             return result;
+        }
+
+        public static void StoreMsgId(ulong id)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergameconfig SET msgId = {id} WHERE guildid = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
         }
 
         public static List<Player> GetUsers()

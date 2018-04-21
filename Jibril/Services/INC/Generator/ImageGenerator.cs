@@ -31,7 +31,7 @@ namespace Jibril.Services.INC.Generator
                     var avi = Image.Load(aviPath);
                     if (x.Player.Status == false)
                     {
-                        var death = Image.Load("Services/INC/Cache/Avatar/DeathIndicator.png");
+                        var death = Image.Load("Services/INC/Cache/DefaultAvatar/DeathIndicator.png");
                         avi.Mutate(y => y
                             .BlackWhite()
                             .Resize(80, 80)

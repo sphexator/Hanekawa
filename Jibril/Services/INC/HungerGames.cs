@@ -7,8 +7,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Modules.Gambling.Services;
 using Jibril.Services.INC.Database;
 using Jibril.Services.INC.Generator;
+using Jibril.Services.Level.Services;
 using Quartz;
 using Quartz.Util;
 using SixLabors.ImageSharp;
@@ -29,25 +31,39 @@ namespace Jibril.Services.INC
             _client = client;
             _client.ReactionAdded += AddParticipants;
             Directory.CreateDirectory("Services/INC/Cache/Avatar/");
+            
+            var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
+                             $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
+            _activeEvent = config.Live;
+            var fuckingBullShit = new List<ulong> {config.MsgId};
+            _eventStartMsg = fuckingBullShit;
         }
 
         public Task Execute(IJobExecutionContext context)
         {
-            throw new NotImplementedException();
+            try
+            {
+                InitializeTask();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return Task.CompletedTask;
         }
 
-        public Task InitializeTask()
+        private Task InitializeTask()
         {
             var _ = Task.Run(async () =>
             {
                 var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
                                  $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
 
-                if (config.Live != true) await StartSignUp();
+                if (config.Live != true && config.SignUpStage == false) await StartSignUp();
                 if (config.Live != true && config.SignUpStage &&
-                    config.SignupDuration.AddHours(23) > DateTime.UtcNow) return;
+                    config.SignupDuration.AddMinutes(1) > DateTime.Now) return;
                 if (config.Live) await ContinueEvent();
-                if (config.Live != true && config.SignupDuration.AddHours(23) <= DateTime.UtcNow) await StartEvent();
+                if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent();
             });
             return Task.CompletedTask;
         }
@@ -57,10 +73,11 @@ namespace Jibril.Services.INC
             DatabaseHungerGame.GameSignUpStart();
             var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
                 "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 25 users will be fighting for their life, on the quest to obtain ....");
-            Emote.TryParse("<:rooree:362610653120299009>", out var emote);
+            Emote.TryParse("<:rooree:430207965140877322>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
             _eventStartMsg.Add(msg.Id);
+            DatabaseHungerGame.StoreMsgId(msg.Id);
         }
 
         public async Task StartEvent()
@@ -84,6 +101,7 @@ namespace Jibril.Services.INC
         {
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var output = new List<string>();
+            var ch = _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937);
             foreach (var x in users)
             {
                 if (x.Player.Status == false) continue;
@@ -95,36 +113,46 @@ namespace Jibril.Services.INC
                 output.Add(content);
                 DatabaseHungerGame.Stagger(x.Player.UserId);
             }
-            var ch = _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937);
+            var response = string.Join("\n", output);
+
             var newUsers = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(newUsers);
-
-            var response = string.Join("\n", output);
-            await ch.SendMessageAsync("Log\n" +
-                                                                                                           "```" +
-                                                                                                           $"{response}\n" +
-                                                                                                           $"```");
             images.Seek(0, SeekOrigin.Begin);
+            await ch.SendMessageAsync($"Log\n```{response}\n```");
             await ch.SendFileAsync(images, "banner.png", null);
+
             var remaining = DatabaseHungerGame.GetUsers();
             if (remaining.Count == 1)
             {
-
+                if (remaining.FirstOrDefault().UserId > 24)
+                {
+                    var user = _client.GetUser(remaining.FirstOrDefault().UserId);
+                    LevelDatabase.AddExperience(user, 1000, 1000);
+                    GambleDB.AddEventCredit(user, 1000);
+                    await ch.SendMessageAsync(
+                        $"{user.Mention} is the new HungerGame champion and rewarded 1000 credit, event credit and exp!");
+                }
+                else
+                {
+                    await ch.SendMessageAsync($"{remaining.FirstOrDefault().Name} is the new HungerGame champion!");
+                }
+                DatabaseHungerGame.GameEnd();
             }
+            else DatabaseHungerGame.GameRoundIncrease();
         }
-
+        
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
         {
             var _ = Task.Run(async () =>
             {
-                if (!_eventStartMsg.Contains(msg.Id)) return;
+                if (!_eventStartMsg.Contains(react.MessageId)) return;
                 if (msg.Value.Author.IsBot != true) return;
                 if (react.User.Value.IsBot) return;
                 if (react.Emote.Name != "rooree") return;
                 var users = DatabaseHungerGame.GetUsers();
                 if (users.Count >= 25) return;
                 var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
-                if (check != null) return;
+                if (check == null) return;
                 DatabaseHungerGame.EnterUser(react.User.Value);
                 await SaveAvatar(react.User.Value);
             });
@@ -144,6 +172,7 @@ namespace Jibril.Services.INC
                     img.Mutate(x => x.Resize(80, 80));
                     img.Save($"Services/INC/Cache/Avatar/{users[i].Userid}.png");
                 }
+
                 DatabaseHungerGame.EnterUser(users[i].Userid, users[i].Name);
             }
         }
@@ -170,6 +199,12 @@ namespace Jibril.Services.INC
                 img.Mutate(x => x.Resize(80, 80));
                 img.Save(filePath);
             }
+        }
+        private  static void ClearCache()
+        {
+            var cache = new DirectoryInfo("Services/INC/Cache/Avatar/");
+            foreach (var file in cache.GetFiles())
+                file.Delete();
         }
     }
 }

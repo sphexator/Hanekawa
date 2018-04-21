@@ -216,6 +216,9 @@
     <None Update="Data\Images\Welcome\Template\6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Services\INC\Cache\DefaultAvatar\DeathIndicator.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Services\INC\Cache\DefaultAvatar\0.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
