@@ -49,7 +49,7 @@ namespace Jibril
             services.GetRequiredService<DbInfo>();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
-            services.GetRequiredService<LevelingService>();
+            //services.GetRequiredService<LevelingService>();
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
             services.GetRequiredService<ModerationService>();
