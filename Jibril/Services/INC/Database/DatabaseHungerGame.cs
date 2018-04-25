@@ -190,7 +190,8 @@ namespace Jibril.Services.INC.Database
                 var userId = (ulong) exec["userid"];
                 var name = (string) exec["name"];
                 var health = (int) exec["health"];
-                var stamina = (int) exec["stamina"];
+                var stamina1 = (int) exec["stamina"];
+                var fatigue = (int) exec["fatigue"];
                 var damage = (int) exec["damageTaken"];
                 var hunger = (int) exec["hunger"];
                 var thirst = (int) exec["thirst"];
@@ -198,6 +199,7 @@ namespace Jibril.Services.INC.Database
                 var status1 = (int) exec["status"];
                 var bleeding1 = (int) exec["bleeding"];
 
+                var stamina = stamina1 - fatigue;
                 var status = false;
                 var bleeding = false;
 
@@ -235,7 +237,8 @@ namespace Jibril.Services.INC.Database
                 var id = (int) exec["id"];
                 var userId = (ulong) exec["userid"];
                 var health = (int) exec["health"];
-                var stamina = (int) exec["stamina"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
                 var damage = (int) exec["damageTaken"];
                 var hunger = (int) exec["hunger"];
                 var thirst = (int) exec["thirst"];
@@ -243,6 +246,7 @@ namespace Jibril.Services.INC.Database
                 var status1 = (int) exec["status"];
                 var bleeding1 = (int) exec["bleeding"];
 
+                var stamina = stamina1 - fatigue;
                 var status = false;
                 var bleeding = false;
 
@@ -278,7 +282,8 @@ namespace Jibril.Services.INC.Database
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
                 var health = (int)exec["health"];
-                var stamina = (int)exec["stamina"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
                 var damage = (int)exec["damageTaken"];
                 var hunger = (int)exec["hunger"];
                 var thirst = (int)exec["thirst"];
@@ -286,6 +291,7 @@ namespace Jibril.Services.INC.Database
                 var status1 = (int)exec["status"];
                 var bleeding1 = (int)exec["bleeding"];
 
+                var stamina = stamina1 - fatigue;
                 var status = false;
                 var bleeding = false;
 
@@ -315,12 +321,12 @@ namespace Jibril.Services.INC.Database
         {
             var database = new DatabaseHungerGame("hanekawa");
             var rand = new Random();
-            var stamina = rand.Next(15, 20);
+            var fatigue = rand.Next(10, 15);
             var hunger = rand.Next(5, 10);
             var thirst = rand.Next(10, 20);
             var sleep = rand.Next(20, 30);
             var str =
-                $"UPDATE hungergame SET stamina = stamina + '{stamina}', hunger = hunger + '{hunger}', sleep = sleep + '{sleep}', thirst = thirst + '{thirst}' WHERE userid = {user}";
+                $"UPDATE hungergame SET fatigue = fatigue + '{fatigue}', hunger = hunger + '{hunger}', sleep = sleep + '{sleep}', thirst = thirst + '{thirst}' WHERE userid = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -328,7 +334,7 @@ namespace Jibril.Services.INC.Database
         public static void Sleep(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET sleep = 0 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET sleep = 0, fatigue = 0 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -336,7 +342,7 @@ namespace Jibril.Services.INC.Database
         public static void EatFood(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET hunger = 0 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET hunger = 0, fatigue = fatigue - 25 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -344,7 +350,7 @@ namespace Jibril.Services.INC.Database
         public static void EatSpecialFood(ulong userid, int buff)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET hunger = 0, stamina = stamina + '{buff}' WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET hunger = 0, fatigue = fatigue + '{buff}' WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -352,7 +358,7 @@ namespace Jibril.Services.INC.Database
         public static void DrinkWater(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET thirst = 0 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET thirst = 0, fatigue = fatigue - 25 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -469,7 +475,8 @@ namespace Jibril.Services.INC.Database
                 var userId = (ulong) exec["userid"];
                 var name = (string) exec["name"];
                 var health = (int) exec["health"];
-                var stamina = (int) exec["stamina"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
                 var damage = (int) exec["damageTaken"];
                 var hunger = (int) exec["hunger"];
                 var thirst = (int) exec["thirst"];
@@ -495,6 +502,7 @@ namespace Jibril.Services.INC.Database
                 var axe = (int) exec["axe"];
                 var trap = (int) exec["trap"];
 
+                var stamina = stamina1 - fatigue;
                 if (status1 == 1) status = true;
                 if (bleeding1 == 1) bleeding = true;
 

@@ -13,27 +13,27 @@
 
     public static class Pistol
     {
-        public const int Damage = 60;
+        public const int Damage = 80;
     }
 
     public static class Bow
     {
-        public const int Damage = 30;
+        public const int Damage = 60;
     }
 
     public static class Axe
     {
-        public const int Damage = 40;
+        public const int Damage = 70;
     }
 
     public static class Trap
     {
-        public const int Damage = 60;
+        public const int Damage = 90;
     }
 
     public static class Fist
     {
-        public const int Damage = 15;
+        public const int Damage = 40;
     }
 
     public static class WeaponNames
