@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
 using Jibril.Services.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
