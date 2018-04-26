@@ -158,6 +158,8 @@ namespace Jibril.Services
                 var toxicityavg = (double) exec["toxicityavg"];
                 var rep = (int) exec["rep"];
                 var repcd = (DateTime) exec["repcd"];
+                var firstMsg = (DateTime) exec["firstmsg"];
+                var lastMsg = (DateTime) exec["lastmsg"];
 
                 result.Add(new UserData
                 {
@@ -182,7 +184,9 @@ namespace Jibril.Services
                     Toxicitymsgcount = toxicitymsgcount,
                     Toxicityavg = toxicityavg,
                     Rep = rep,
-                    Repcd = repcd
+                    Repcd = repcd,
+                    FirstMsg = firstMsg,
+                    LastMsg = lastMsg
                 });
             }
 
@@ -215,6 +219,13 @@ namespace Jibril.Services
                 var gameCD = (DateTime) exec["game_cooldown"];
                 var gambleCD = (DateTime) exec["gambling_cooldown"];
                 var hasrole = (string) exec["hasrole"];
+                var toxicityvalue = (double) exec["toxicityvalue"];
+                var toxicitymsgcount = (int) exec["toxicitymsgcount"];
+                var toxicityavg = (double) exec["toxicityavg"];
+                var rep = (int) exec["rep"];
+                var repcd = (DateTime) exec["repcd"];
+                var firstMsg = (DateTime) exec["firstmsg"];
+                var lastMsg = (DateTime) exec["lastmsg"];
 
                 result.Add(new UserData
                 {
@@ -234,12 +245,27 @@ namespace Jibril.Services
                     Profilepic = profilepic,
                     GameCD = gameCD,
                     BetCD = gambleCD,
-                    Hasrole = hasrole
+                    Hasrole = hasrole,
+                    Toxicityvalue = toxicityvalue,
+                    Toxicitymsgcount = toxicitymsgcount,
+                    Toxicityavg = toxicityavg,
+                    Rep = rep,
+                    Repcd = repcd,
+                    FirstMsg = firstMsg,
+                    LastMsg = lastMsg
                 });
             }
 
             database.CloseConnection();
             return result;
+        }
+
+        public static void AddFirstMessage(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"UPDATE exp SET firstmsg = curtime() WHERE user_id = '{user.Id}'";
+            database.FireCommand(str);
+            database.CloseConnection();
         }
     }
 }

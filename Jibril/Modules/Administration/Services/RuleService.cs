@@ -24,9 +24,9 @@ namespace Jibril.Modules.Administration.Services
             throw new NotImplementedException();
         }
 
-        public static async Task UpdateRules()
+        public static Task UpdateRules()
         {
-
+            throw new NotImplementedException();
         }
 
         public static async Task UpdateFAQ(IGuild guild)

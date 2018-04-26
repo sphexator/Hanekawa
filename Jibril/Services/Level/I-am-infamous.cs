@@ -57,9 +57,10 @@ namespace Jibril.Services.Level
                     var embed = MvpMessage(newMvps, oldMvps);
                     await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Console.WriteLine("Couldn't send new kai ni message");
+                    Console.WriteLine("Couldn't send new kai ni message\n" +
+                                      $"{e}");
                 }
 
                 await Demote(oldMvps, role);

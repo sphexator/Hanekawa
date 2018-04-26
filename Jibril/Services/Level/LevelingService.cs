@@ -48,7 +48,8 @@ namespace Jibril.Services.Level
                 var cd = CheckCooldown(user);
                 if (cd == false) return;
                 var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                var exp = Calculate.ReturnXP(msg); 
+                if(userdata.FirstMsg.ToString() == "1/1/0001 12:00:00 AM") DatabaseService.AddFirstMessage(user);
+                var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
                 var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
 
