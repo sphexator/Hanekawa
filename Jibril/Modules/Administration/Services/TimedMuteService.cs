@@ -56,6 +56,7 @@ namespace Jibril.Modules.Administration.Services
 
             //_client.UserJoined += Client_UserJoined;
         }
+
         private Task Client_UserJoined(IGuildUser usr)
         {
             try
