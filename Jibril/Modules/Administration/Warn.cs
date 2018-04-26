@@ -162,7 +162,7 @@ namespace Jibril.Modules.Administration
             }
 
             stream.Seek(0, SeekOrigin.Begin);
-            await Context.Channel.SendFileAsync(stream, "log.txt", $"Logs for {user.Mention}({user.Id}) with warnId {id}.");
+            await Context.Channel.SendFileAsync(stream, "log.txt", $"Logs for {user.Nickname ?? user.Username}({user.Id}) with warnId {id}.");
         }
 
         private static EmbedBuilder WarnLogEmbed(IGuildUser user, SocketCommandContext context, uint limit)
