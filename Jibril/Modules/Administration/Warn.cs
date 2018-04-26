@@ -160,7 +160,6 @@ namespace Jibril.Modules.Administration
         private static EmbedBuilder WarnLogEmbed(IGuildUser user, SocketCommandContext context, uint limit)
         {
             var result = AdminDb.GetWarnings(user).FirstOrDefault();
-            var list = WarningDB.WarnList(user, limit);
             var userdata = DatabaseService.UserData(user).FirstOrDefault();
 
             var roleList = new List<string>();
@@ -215,7 +214,9 @@ namespace Jibril.Modules.Administration
                 y.Value = userdata != null ? $"{userdata?.Toxicityavg}" : $"0";
                 y.IsInline = true;
             });
-            if (result == null) return embed;
+            if (limit == 0) return embed;
+            var list = WarningDB.WarnList(user, limit);
+            if (result == null ) return embed;
             {
                 foreach (var wable in list)
                     try
