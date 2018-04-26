@@ -9,10 +9,10 @@ namespace Jibril.Services
 {
     public class DatabaseService
     {
+        private const bool Pooling = false;
         private readonly string _database = DbInfo.DbNorm;
         private readonly MySqlConnection _dbConnection;
         private readonly string _password = DbInfo.Password;
-        private const bool Pooling = false;
         private readonly string _server = DbInfo.Server;
         private readonly string _username = DbInfo.Username;
 
@@ -57,10 +57,11 @@ namespace Jibril.Services
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var userId = (string)exec["user_id"];
+                var userId = (string) exec["user_id"];
 
                 result.Add(userId);
             }
+
             return result;
         }
 
@@ -109,11 +110,12 @@ namespace Jibril.Services
 
             while (reader.Read())
             {
-                var userId = (string)reader["user_id"];
+                var userId = (string) reader["user_id"];
                 var userIdConvert = ulong.Parse(userId);
 
                 result.Add(userIdConvert);
             }
+
             database.CloseConnection();
             return result;
         }
@@ -126,30 +128,30 @@ namespace Jibril.Services
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var userId = (string)exec["user_id"];
-                var userName = (string)exec["username"];
-                var currentTokens = (uint)exec["tokens"];
-                var event_tokens = (uint)exec["event_tokens"];
-                var level = (int)exec["level"];
-                var exp = (int)exec["xp"];
-                var totalExp = (int)exec["total_xp"];
-                var daily = (DateTime)exec["daily"];
-                var cooldown = (DateTime)exec["cooldown"];
-                var voice_timer = (DateTime)exec["voice_timer"];
-                var joinDate = (DateTime)exec["joindate"];
-                var fleetName = (string)exec["fleetName"];
-                var shipClass = (string)exec["shipClass"];
-                var profilepic = (string)exec["profilepic"];
-                var gameCD = (DateTime)exec["game_cooldown"];
-                var gambleCD = (DateTime)exec["gambling_cooldown"];
-                var hasrole = (string)exec["hasrole"];
-                var toxicityvalue = (double)exec["toxicityvalue"];
-                var toxicitymsgcount = (int)exec["toxicitymsgcount"];
-                var toxicityavg = (double)exec["toxicityavg"];
-                var rep = (int)exec["rep"];
-                var repcd = (DateTime)exec["repcd"];
-                var firstMsg = (DateTime)exec["firstmsg"];
-                var lastMsg = (DateTime)exec["lastmsg"];
+                var userId = (string) exec["user_id"];
+                var userName = (string) exec["username"];
+                var currentTokens = (uint) exec["tokens"];
+                var event_tokens = (uint) exec["event_tokens"];
+                var level = (int) exec["level"];
+                var exp = (int) exec["xp"];
+                var totalExp = (int) exec["total_xp"];
+                var daily = (DateTime) exec["daily"];
+                var cooldown = (DateTime) exec["cooldown"];
+                var voice_timer = (DateTime) exec["voice_timer"];
+                var joinDate = (DateTime) exec["joindate"];
+                var fleetName = (string) exec["fleetName"];
+                var shipClass = (string) exec["shipClass"];
+                var profilepic = (string) exec["profilepic"];
+                var gameCD = (DateTime) exec["game_cooldown"];
+                var gambleCD = (DateTime) exec["gambling_cooldown"];
+                var hasrole = (string) exec["hasrole"];
+                var toxicityvalue = (double) exec["toxicityvalue"];
+                var toxicitymsgcount = (int) exec["toxicitymsgcount"];
+                var toxicityavg = (double) exec["toxicityavg"];
+                var rep = (int) exec["rep"];
+                var repcd = (DateTime) exec["repcd"];
+                var firstMsg = (DateTime) exec["firstmsg"];
+                var lastMsg = (DateTime) exec["lastmsg"];
 
                 result.Add(new UserData
                 {
@@ -179,6 +181,7 @@ namespace Jibril.Services
                     LastMsg = lastMsg
                 });
             }
+
             database.CloseConnection();
             return result;
         }
@@ -191,30 +194,30 @@ namespace Jibril.Services
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var userId = (string)exec["user_id"];
-                var userName = (string)exec["username"];
-                var currentTokens = (uint)exec["tokens"];
-                var event_tokens = (uint)exec["event_tokens"];
-                var level = (int)exec["level"];
-                var exp = (int)exec["xp"];
-                var totalExp = (int)exec["total_xp"];
-                var daily = (DateTime)exec["daily"];
-                var cooldown = (DateTime)exec["cooldown"];
-                var voice_timer = (DateTime)exec["voice_timer"];
-                var joinDate = (DateTime)exec["joindate"];
-                var fleetName = (string)exec["fleetName"];
-                var shipClass = (string)exec["shipClass"];
-                var profilepic = (string)exec["profilepic"];
-                var gameCD = (DateTime)exec["game_cooldown"];
-                var gambleCD = (DateTime)exec["gambling_cooldown"];
-                var hasrole = (string)exec["hasrole"];
-                var toxicityvalue = (double)exec["toxicityvalue"];
-                var toxicitymsgcount = (int)exec["toxicitymsgcount"];
-                var toxicityavg = (double)exec["toxicityavg"];
-                var rep = (int)exec["rep"];
-                var repcd = (DateTime)exec["repcd"];
-                var firstMsg = (DateTime)exec["firstmsg"];
-                var lastMsg = (DateTime)exec["lastmsg"];
+                var userId = (string) exec["user_id"];
+                var userName = (string) exec["username"];
+                var currentTokens = (uint) exec["tokens"];
+                var event_tokens = (uint) exec["event_tokens"];
+                var level = (int) exec["level"];
+                var exp = (int) exec["xp"];
+                var totalExp = (int) exec["total_xp"];
+                var daily = (DateTime) exec["daily"];
+                var cooldown = (DateTime) exec["cooldown"];
+                var voice_timer = (DateTime) exec["voice_timer"];
+                var joinDate = (DateTime) exec["joindate"];
+                var fleetName = (string) exec["fleetName"];
+                var shipClass = (string) exec["shipClass"];
+                var profilepic = (string) exec["profilepic"];
+                var gameCD = (DateTime) exec["game_cooldown"];
+                var gambleCD = (DateTime) exec["gambling_cooldown"];
+                var hasrole = (string) exec["hasrole"];
+                var toxicityvalue = (double) exec["toxicityvalue"];
+                var toxicitymsgcount = (int) exec["toxicitymsgcount"];
+                var toxicityavg = (double) exec["toxicityavg"];
+                var rep = (int) exec["rep"];
+                var repcd = (DateTime) exec["repcd"];
+                var firstMsg = (DateTime) exec["firstmsg"];
+                var lastMsg = (DateTime) exec["lastmsg"];
 
                 result.Add(new UserData
                 {
@@ -244,6 +247,7 @@ namespace Jibril.Services
                     LastMsg = lastMsg
                 });
             }
+
             database.CloseConnection();
             return result;
         }
