@@ -134,7 +134,8 @@ namespace Jibril.Modules.Administration
         public async Task WarnLog(SocketGuildUser user)
         {
             var result = AdminDb.GetWarnings(user).FirstOrDefault();
-            var embed = WarnLogEmbed(user, Context, result.Warnings);
+            var warnNr = result?.Warnings ?? 0;
+            var embed = WarnLogEmbed(user, Context, warnNr);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -151,16 +152,7 @@ namespace Jibril.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task MsgLog(SocketGuildUser user, int id)
         {
-            var messages = AdminDb.GetMsgLogs(user, id);
-            var stream = new MemoryStream();
-            var tw = new StreamWriter(stream);
-
-            tw.WriteLine($"Logs for {user.Username}({user.Id})");
-            foreach (var x in messages)
-            {
-                tw.WriteLine($"{x.Date} - {x.Author}: {x.Message}");
-            }
-
+            var stream = GetMsgLog(user, id);
             stream.Seek(0, SeekOrigin.Begin);
             await Context.Channel.SendFileAsync(stream, "log.txt", $"Logs for {user.Nickname ?? user.Username}({user.Id}) with warnId {id}.");
         }
@@ -249,7 +241,6 @@ namespace Jibril.Modules.Administration
         {
             try
             {
-
                 var warnId = WarningDB.GetWarnId(user, datetimeString).FirstOrDefault();
                 foreach (var x in msgLog)
                 {
@@ -268,6 +259,20 @@ namespace Jibril.Modules.Administration
                 //ignore
             }
             return Task.CompletedTask;
+        }
+
+        private static MemoryStream GetMsgLog(IUser user, int id)
+        {
+            var messages = AdminDb.GetMsgLogs(user, id);
+            var stream = new MemoryStream();
+            var tw = new StreamWriter(stream);
+
+            tw.WriteLine($"Logs for {user.Username}({user.Id})");
+            foreach (var x in messages)
+            {
+                tw.WriteLine($"{x.Date} - {x.Author}: {x.Message}");
+            }
+            return stream;
         }
     }
 }
