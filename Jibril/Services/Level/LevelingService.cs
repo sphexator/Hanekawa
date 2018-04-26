@@ -48,7 +48,7 @@ namespace Jibril.Services.Level
                 var cd = CheckCooldown(user);
                 if (cd == false) return;
                 var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                if(userdata.FirstMsg.ToString() == "1/1/0001 12:00:00 AM") DatabaseService.AddFirstMessage(user);
+                if(userdata.FirstMsg.ToString("yyyy-MM-dd HH:mm") == "0001-01-01 00:00") DatabaseService.AddFirstMessage(user);
                 var exp = Calculate.ReturnXP(msg);
                 var credit = Calculate.ReturnCredit();
                 var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
@@ -62,34 +62,6 @@ namespace Jibril.Services.Level
                     LevelDatabase.Levelup(user, remainingExp);
                     await LevelRoles.AssignNewRole(user, userdata.Level);
                 }
-
-
-                /*
-                var user = msg.Author as SocketGuildUser;
-
-                var checkUser = DatabaseService.CheckUser(user).FirstOrDefault();
-                if (checkUser == null) DatabaseService.EnterUser(user);
-
-                var userData = DatabaseService.UserData(user).FirstOrDefault();
-                var exp = Calculate.ReturnXP(msg);
-                var credit = Calculate.ReturnCredit();
-                var cooldown = Convert.ToDateTime(userData.Cooldown);
-                var levelupReq = Calculate.CalculateNextLevel(userData.Level);
-                var cooldownCheck = Cooldown.ExperienceCooldown(cooldown);
-                if (cooldownCheck && user.IsBot != true)
-                {
-                    LevelDatabase.ChangeCooldown(user);
-                    LevelDatabase.AddExperience(user, exp, credit);
-                    Console.WriteLine(
-                        $"{DateTime.Now.ToLongTimeString()} | LEVEL SERVICE | Awarded {exp} exp to {msg.Author.Username}");
-                    if (userData.Xp + exp >= levelupReq)
-                    {
-                        var remainingExp = userData.Xp + exp - userData.Xp;
-                        LevelDatabase.Levelup(user, remainingExp);
-                        await LevelRoles.AssignNewRole(user, userData.Level);
-                    }
-                }
-                */
             });
             return Task.CompletedTask;
         }
