@@ -130,10 +130,10 @@ namespace Jibril.Modules.Administration
                 await Context.Message.DeleteAsync();
                 var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
                 await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
-                
+
                 await MuteLogResponse(Context.Guild, Context.User, user, minutes);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -150,7 +150,7 @@ namespace Jibril.Modules.Administration
             var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OkColour);
             await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
         }
-        
+
         [Command("softban", RunMode = RunMode.Async)]
         [Alias("sb")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -180,11 +180,8 @@ namespace Jibril.Modules.Administration
 
             try
             {
-                IMessage[] msgs;
-                IMessage lastMessage = null;
-                msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
+                var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
                     .Take(50).ToArray();
-                lastMessage = msgs[msgs.Length - 1];
 
                 var bulkDeletable = new List<IMessage>();
                 foreach (var x in msgs)

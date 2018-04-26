@@ -58,7 +58,8 @@ namespace Jibril.Services.Level
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Couldn't send new kai ni message");
+                    Console.WriteLine("Couldn't send new kai ni message\n" +
+                                      $"{e}");
                 }
 
                 await Demote(oldMvps, role);
