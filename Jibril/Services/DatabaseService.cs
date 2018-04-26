@@ -70,7 +70,7 @@ namespace Jibril.Services
             var database = new DatabaseService("hanekawa");
             var str =
                 $"INSERT INTO exp (user_id, username, tokens, level, xp, joindate) VALUES ('{user.Id}', 'username', '0', '1', '1', curtime())";
-            var exec = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -96,7 +96,15 @@ namespace Jibril.Services
         public static void ResetMessageCounter()
         {
             var database = new DatabaseService("hanekawa");
-            var str = $"UPDATE exp SET mvpCounter = '0'";
+            var str = $"UPDATE exp SET mvpCounter = '0', mvpimmunity = '0'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void SetNewMvp(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"UPDATE exp SET mvpimmunity = '1' WHERE user_id = '{user.Id}'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -105,7 +113,7 @@ namespace Jibril.Services
         {
             var database = new DatabaseService("hanekawa");
             var result = new List<ulong>();
-            var str = "SELECT * FROM exp ORDER BY mvpCounter DESC LIMIT 5";
+            const string str = "SELECT * FROM exp WHERE mvpimmunity = 0 ORDER BY mvpCounter DESC LIMIT 5";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
