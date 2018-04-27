@@ -14,13 +14,14 @@ namespace Jibril.Modules.Report.Service
             _client = client;
         }
 
-        private async Task SendReport(EmbedBuilder embed)
+        public async Task SendReport(IUser user, SocketCommandContext context, string content)
         {
+            var embed = CreateEmbedBuilder(user, context, content);
             var ch = _client.GetGuild(339370914724446208).GetTextChannel(439475837419388943);
             await ch.SendMessageAsync(null, false, embed.Build());
         }
 
-        private EmbedBuilder CreateEmbedBuilder(IUser user, SocketCommandContext context, string content)
+        private static EmbedBuilder CreateEmbedBuilder(IUser user, SocketCommandContext context, string content)
         {
             var author = new EmbedAuthorBuilder
             {
