@@ -32,7 +32,7 @@ namespace Jibril.Modules.Report.Service
             {
                 Author = author,
                 Color = new Color(Colours.DefaultColour),
-                Title = "Report",
+                Title = $"Report from {context.User.Username}",
                 Description = content,
                 Timestamp = context.Message.CreatedAt
             };
