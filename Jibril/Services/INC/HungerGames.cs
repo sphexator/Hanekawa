@@ -18,12 +18,15 @@ namespace Jibril.Services.INC
 
         public HungerGames(DiscordSocketClient client)
         {
+            throw new NotImplementedException();
+            /*
             _client = client;
             _client.ReactionAdded += AddParticipants;
 
             var guild = _client.GetGuild(339370914724446208);
             var ch = guild.GetTextChannel(346429829316476928);
             ch.GetMessagesAsync();
+            */
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -33,6 +36,8 @@ namespace Jibril.Services.INC
 
         public Task InitializeTask()
         {
+            throw new NotImplementedException();
+            /*
             var _ = Task.Run(async () =>
             {
                 var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
@@ -48,10 +53,13 @@ namespace Jibril.Services.INC
                 }
             });
             return Task.CompletedTask;
+            */
         }
 
-        private async Task StartSignUp()
+        private Task StartSignUp()
         {
+            throw new NotImplementedException();
+            /*
             var guild = _client.GetGuild(339370914724446208);
             var ch = guild.GetTextChannel(346429829316476928);
             var msg = await ch.SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
@@ -59,24 +67,30 @@ namespace Jibril.Services.INC
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
             _eventStartMsg.Add(msg.Id);
+            */
         }
 
-        private async Task StartEvent()
+        private Task StartEvent()
         {
+            throw new NotImplementedException();
+            /*
             var users = DatabaseHungerGame.GetProfilEnumerable();
             foreach (var x in users)
             {
                 var action = Events.EventHandler.EventManager(x);
             }
+            */
         }
 
-        private async Task ContinueEvent()
+        private Task ContinueEvent()
         {
-
+            throw new NotImplementedException();
         }
 
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
         {
+            throw new NotImplementedException();
+            /*
             var _ = Task.Run(() =>
             {
                 if (!_eventStartMsg.Contains(msg.Id)) return;
@@ -90,6 +104,7 @@ namespace Jibril.Services.INC
                 // TODO: Add user to database as they react and return if they're already there
             });
             return Task.CompletedTask;
+            */
         }
 
         public IUser GetUser(ulong id)

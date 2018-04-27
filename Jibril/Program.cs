@@ -30,12 +30,12 @@ namespace Jibril
         private DiscordSocketClient _client;
         private IConfiguration _config;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             new Program().MainASync().GetAwaiter().GetResult();
         }
 
-        public async Task MainASync()
+        private async Task MainASync()
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -54,14 +54,14 @@ namespace Jibril
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
-            services.GetRequiredService<I_am_infamous>();
+            services.GetRequiredService<AmInfamous>();
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<MarriageService>();
 
             var scheduler = services.GetService<IScheduler>();
 
-            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
-            QuartzServicesUtilities.StartCronJob<I_am_infamous>(scheduler, "0 0 13 ? * MON *");
+            //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
+            QuartzServicesUtilities.StartCronJob<AmInfamous>(scheduler, "0 0 13 ? * MON *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -73,7 +73,7 @@ namespace Jibril
         {
             var services = new ServiceCollection();
             services.UseQuartz(typeof(PostPictures));
-            services.UseQuartz(typeof(I_am_infamous));
+            services.UseQuartz(typeof(AmInfamous));
             services.AddSingleton(_client);
             services.AddSingleton<MarriageService>();
             services.AddSingleton<CommandService>();
@@ -84,7 +84,7 @@ namespace Jibril
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<LootCrates>();
-            services.AddSingleton<I_am_infamous>();
+            services.AddSingleton<AmInfamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();

@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
 using Jibril.Services.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
@@ -38,17 +37,15 @@ namespace Jibril.Modules.Administration
                 await channel.DeleteMessagesAsync(messagesToDelete);
                 var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!",
                     Colours.OkColour);
-                var guild = Context.Guild;
                 await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
             }
             else
             {
                 var embed = EmbedGenerator.DefaultEmbed("you cannot delete more than 1000 messages",
                     Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
+                await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
             }
         }
-
         [Command("Ban", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
@@ -56,6 +53,7 @@ namespace Jibril.Modules.Administration
         public async Task BanAsync(SocketGuildUser user = null, [Remainder] string reason = "No Reason provided")
         {
             if (user == null) throw new ArgumentException("You must mention a user");
+            await Context.Message.DeleteAsync();
             if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= ((SocketGuildUser)Context.User).Roles.Select(r => r.Position).Max()))
             {
                 var failEmbed = EmbedGenerator.DefaultEmbed(
@@ -70,9 +68,8 @@ namespace Jibril.Modules.Administration
                 Colours.OkColour);
 
             await guild.AddBanAsync(user, 7, $"{Context.User}").ConfigureAwait(false);
-            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
         }
-
         [Command("Kick", RunMode = RunMode.Async)]
         [RequireBotPermission(GuildPermission.KickMembers)]
         [RequireUserPermission(GuildPermission.KickMembers)]
@@ -80,6 +77,7 @@ namespace Jibril.Modules.Administration
         public async Task KickAsync(SocketGuildUser user, [Remainder] string reason)
         {
             if (user == null) throw new ArgumentException("You must mention a user");
+            await Context.Message.DeleteAsync();
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
                 Context.Guild.Roles.Select(r => r.Position).Max())
             {
@@ -89,13 +87,11 @@ namespace Jibril.Modules.Administration
                 await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
                 return;
             }
-
             var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
                 Colours.OkColour);
-            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
             await user.KickAsync().ConfigureAwait(false);
         }
-
         [Command("mute", RunMode = RunMode.Async)]
         [Alias("m")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -104,10 +100,10 @@ namespace Jibril.Modules.Administration
         {
             try
             {
-                await _muteService.TimedMute(user, TimeSpan.FromMinutes(1440));
                 await Context.Message.DeleteAsync();
+                await _muteService.TimedMute(user, TimeSpan.FromMinutes(1440));
                 var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
 
                 await MuteLogResponse(Context.Guild, Context.User, user);
             }
@@ -116,7 +112,6 @@ namespace Jibril.Modules.Administration
                 Console.WriteLine(e);
             }
         }
-
         [Command("mute", RunMode = RunMode.Async)]
         [Alias("m")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -126,14 +121,14 @@ namespace Jibril.Modules.Administration
             if (minutes < 1 || minutes > 1440) return;
             try
             {
-                await _muteService.TimedMute(user, TimeSpan.FromMinutes(minutes));
                 await Context.Message.DeleteAsync();
+                await _muteService.TimedMute(user, TimeSpan.FromMinutes(minutes));
                 var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
-                
+                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
+
                 await MuteLogResponse(Context.Guild, Context.User, user, minutes);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -144,13 +139,13 @@ namespace Jibril.Modules.Administration
         [RequireRole(339371670311796736)]
         public async Task Unmute(SocketGuildUser user)
         {
-            await _muteService.UnmuteUser(user);
             await Context.Message.DeleteAsync();
+            await _muteService.UnmuteUser(user);
 
             var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OkColour);
-            await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(10));
+            await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
         }
-        
+
         [Command("softban", RunMode = RunMode.Async)]
         [Alias("sb")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -180,11 +175,8 @@ namespace Jibril.Modules.Administration
 
             try
             {
-                IMessage[] msgs;
-                IMessage lastMessage = null;
-                msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
+                var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
                     .Take(50).ToArray();
-                lastMessage = msgs[msgs.Length - 1];
 
                 var bulkDeletable = new List<IMessage>();
                 foreach (var x in msgs)

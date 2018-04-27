@@ -5,6 +5,7 @@ using Jibril.Extensions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
 
@@ -24,8 +25,6 @@ namespace Jibril.Services.Welcome.Services
             {
                 var pathBuilder = new PathBuilder();
                 pathBuilder.AddLine(new Point(94, 57), new Point(390, 57));
-
-                var path = pathBuilder.Build();
 
                 var avatar = Image.Load(avatarToLoad);
                 var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
