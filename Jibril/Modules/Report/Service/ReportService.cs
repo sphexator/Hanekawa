@@ -26,13 +26,12 @@ namespace Jibril.Modules.Report.Service
         {
             var author = new EmbedAuthorBuilder
             {
-                Name = user.Username
+                Name = $"Report from {context.User.Username}"
             };
             var embed = new EmbedBuilder
             {
                 Author = author,
                 Color = new Color(Colours.DefaultColour),
-                Title = $"Report from {context.User.Username}",
                 Description = content,
                 Timestamp = context.Message.CreatedAt
             };
