@@ -16,7 +16,7 @@ namespace Jibril.Modules.Report
             var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
             if (userdata.Level <= 10) await ReplyAndDeleteAsync("You need to be level 10 or above to use the report system.", false, null, TimeSpan.FromSeconds(30));
 
-            await ReplyAsync("Report sent.");
+            await ReplyAndDeleteAsync("Report sent.", false, null, TimeSpan.FromSeconds(10));
         }
 
         [Command("report", RunMode = RunMode.Async)]
@@ -24,7 +24,7 @@ namespace Jibril.Modules.Report
         public async Task ReportDm([Remainder] string text)
         {
             var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.Level <= 10) await ReplyAndDeleteAsync("You need to be level 10 or above to use the report system.", false, null, TimeSpan.FromSeconds(30));
+            if (userdata.Level <= 10) await ReplyAsync("You need to be level 10 or above to use the report system.");
 
             await ReplyAsync("Report sent.");
         }
