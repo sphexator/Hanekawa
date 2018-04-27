@@ -139,19 +139,19 @@ namespace Jibril.Services
                 var userId = (string) exec["user_id"];
                 var userName = (string) exec["username"];
                 var currentTokens = (uint) exec["tokens"];
-                var event_tokens = (uint) exec["event_tokens"];
+                var eventTokens = (uint) exec["event_tokens"];
                 var level = (int) exec["level"];
                 var exp = (int) exec["xp"];
                 var totalExp = (int) exec["total_xp"];
                 var daily = (DateTime) exec["daily"];
                 var cooldown = (DateTime) exec["cooldown"];
-                var voice_timer = (DateTime) exec["voice_timer"];
+                var voiceTimer = (DateTime) exec["voice_timer"];
                 var joinDate = (DateTime) exec["joindate"];
                 var fleetName = (string) exec["fleetName"];
                 var shipClass = (string) exec["shipClass"];
                 var profilepic = (string) exec["profilepic"];
-                var gameCD = (DateTime) exec["game_cooldown"];
-                var gambleCD = (DateTime) exec["gambling_cooldown"];
+                var gameCd = (DateTime) exec["game_cooldown"];
+                var gambleCd = (DateTime) exec["gambling_cooldown"];
                 var hasrole = (string) exec["hasrole"];
                 var toxicityvalue = (double) exec["toxicityvalue"];
                 var toxicitymsgcount = (int) exec["toxicitymsgcount"];
@@ -166,19 +166,19 @@ namespace Jibril.Services
                     UserId = userId,
                     Username = userName,
                     Tokens = currentTokens,
-                    Event_tokens = event_tokens,
+                    Event_tokens = eventTokens,
                     Level = level,
                     Xp = exp,
                     Total_xp = totalExp,
                     Daily = daily,
                     Cooldown = cooldown,
-                    Voice_timer = voice_timer,
+                    Voice_timer = voiceTimer,
                     JoinDateTime = joinDate,
                     FleetName = fleetName,
                     ShipClass = shipClass,
                     Profilepic = profilepic,
-                    GameCD = gameCD,
-                    BetCD = gambleCD,
+                    GameCD = gameCd,
+                    BetCD = gambleCd,
                     Hasrole = hasrole,
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
@@ -194,30 +194,30 @@ namespace Jibril.Services
             return result;
         }
 
-        public static List<UserData> UserData(ulong Id)
+        public static List<UserData> UserData(ulong id)
         {
             var result = new List<UserData>();
             var database = new DatabaseService("hanekawa");
-            var str = $"SELECT * FROM exp WHERE user_id = '{Id}'";
+            var str = $"SELECT * FROM exp WHERE user_id = '{id}'";
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
                 var userId = (string) exec["user_id"];
                 var userName = (string) exec["username"];
                 var currentTokens = (uint) exec["tokens"];
-                var event_tokens = (uint) exec["event_tokens"];
+                var eventTokens = (uint) exec["event_tokens"];
                 var level = (int) exec["level"];
                 var exp = (int) exec["xp"];
                 var totalExp = (int) exec["total_xp"];
                 var daily = (DateTime) exec["daily"];
                 var cooldown = (DateTime) exec["cooldown"];
-                var voice_timer = (DateTime) exec["voice_timer"];
+                var voiceTimer = (DateTime) exec["voice_timer"];
                 var joinDate = (DateTime) exec["joindate"];
                 var fleetName = (string) exec["fleetName"];
                 var shipClass = (string) exec["shipClass"];
                 var profilepic = (string) exec["profilepic"];
-                var gameCD = (DateTime) exec["game_cooldown"];
-                var gambleCD = (DateTime) exec["gambling_cooldown"];
+                var gameCd = (DateTime) exec["game_cooldown"];
+                var gambleCd = (DateTime) exec["gambling_cooldown"];
                 var hasrole = (string) exec["hasrole"];
                 var toxicityvalue = (double) exec["toxicityvalue"];
                 var toxicitymsgcount = (int) exec["toxicitymsgcount"];
@@ -232,19 +232,19 @@ namespace Jibril.Services
                     UserId = userId,
                     Username = userName,
                     Tokens = currentTokens,
-                    Event_tokens = event_tokens,
+                    Event_tokens = eventTokens,
                     Level = level,
                     Xp = exp,
                     Total_xp = totalExp,
                     Daily = daily,
                     Cooldown = cooldown,
-                    Voice_timer = voice_timer,
+                    Voice_timer = voiceTimer,
                     JoinDateTime = joinDate,
                     FleetName = fleetName,
                     ShipClass = shipClass,
                     Profilepic = profilepic,
-                    GameCD = gameCD,
-                    BetCD = gambleCD,
+                    GameCD = gameCd,
+                    BetCD = gambleCd,
                     Hasrole = hasrole,
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
