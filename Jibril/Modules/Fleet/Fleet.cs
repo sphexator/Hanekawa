@@ -16,7 +16,7 @@ namespace Jibril.Modules.Fleet
     public class Fleet : InteractiveBase
     {
         [Command("fleetcreate")]
-        [Alias("fc")]
+        [Alias("fc", "createfleet", "clubcreate", "createclub")]
         [Summary("Creates a fleet")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 5, Measure.Seconds)]
