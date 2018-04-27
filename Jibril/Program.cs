@@ -9,6 +9,7 @@ using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
 using Jibril.Modules.Marriage.Service;
+using Jibril.Modules.Report.Service;
 using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
@@ -57,6 +58,7 @@ namespace Jibril
             services.GetRequiredService<AmInfamous>();
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<MarriageService>();
+            services.GetRequiredService<ReportService>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -76,6 +78,7 @@ namespace Jibril
             services.UseQuartz(typeof(AmInfamous));
             services.AddSingleton(_client);
             services.AddSingleton<MarriageService>();
+            services.AddSingleton<ReportService>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<AudioService>();
