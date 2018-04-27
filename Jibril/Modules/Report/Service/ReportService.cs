@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using System.Linq;
+using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -27,17 +28,17 @@ namespace Jibril.Modules.Report.Service
             {
                 Name = user.Username
             };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = $""
-            };
             var embed = new EmbedBuilder
             {
                 Author = author,
                 Color = new Color(Colours.DefaultColour),
                 Title = "Report",
-                Description = content
+                Description = content,
+                Timestamp = context.Message.CreatedAt
             };
+            if (context.Message.Attachments.Count <= 0) return embed;
+            var image = context.Message.Attachments.First(x => x.Url != null).Url;
+            embed.ImageUrl = image;
             return embed;
         }
     }
