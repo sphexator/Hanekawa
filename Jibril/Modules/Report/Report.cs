@@ -9,6 +9,7 @@ namespace Jibril.Modules.Report
 {
     public class Report : InteractiveBase
     {
+
         [Command("report", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         public async Task ReportGuild([Remainder] string text)
