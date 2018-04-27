@@ -26,7 +26,7 @@ namespace Jibril.Modules.Report.Service
         {
             var author = new EmbedAuthorBuilder
             {
-                Name = $"Report from {context.User.Username}"
+                Name = $"Report from {context.User.Username}#{context.User.DiscriminatorValue}({context.User.Id})"
             };
             var embed = new EmbedBuilder
             {
