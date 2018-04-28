@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -10,6 +7,9 @@ using Jibril.Modules.Fleet.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Fleet
 {

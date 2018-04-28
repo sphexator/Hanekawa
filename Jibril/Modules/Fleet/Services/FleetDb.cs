@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Jibril.Data.Variables;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Jibril.Modules.Fleet.Services
 {
@@ -32,7 +31,6 @@ namespace Jibril.Modules.Fleet.Services
             _dbConnection = new MySqlConnection(connectionString);
             _dbConnection.Open();
         }
-
         private MySqlDataReader FireCommand(string query)
         {
             if (_dbConnection == null)
@@ -41,12 +39,29 @@ namespace Jibril.Modules.Fleet.Services
             var mySqlReader = command.ExecuteReader();
             return mySqlReader;
         }
-
         private void CloseConnection()
         {
             _dbConnection?.Close();
         }
 
+        public static void AddClubMember(IUser user, int id, string clubName)
+        {
+            var database = new FleetDb("hanekawa");
+            var str = $"INSERT into fleet (userid, clubid, name, clubname, rank, joindate) VALUES ('{user.Id}', '{id}', '{user.Username}', '{clubName}', 3, curtime())";
+            var str2 = $"UPDATE fleetinfo SET members = members + 1";
+            database.FireCommand(str);
+            database.FireCommand(str2);
+            database.CloseConnection();
+        }
+        public static void RemoveClubMember(IUser user, int id)
+        {
+            var database = new FleetDb("hanekawa");
+            var str = $"DELETE FROM fleet WHERE userid = '{user.Id}' && clubid = '{id}'";
+            var str2 = $"UPDATE fleetinfo SET members = members - 1";
+            database.FireCommand(str);
+            database.FireCommand(str2);
+            database.CloseConnection();
+        }
         public static void Promote(IUser user)
         {
             var database = new FleetDb("hanekawa");
@@ -70,8 +85,7 @@ namespace Jibril.Modules.Fleet.Services
             database.FireCommand(str2);
             database.CloseConnection();
         }
-        //$"UPDATE exp SET joindate = curtime() WHERE user_id = '{user.Id}'";
-        public static IReadOnlyCollection<FleetUserInfo> UserFleetData(IUser user)
+        public static IReadOnlyCollection<FleetUserInfo> UserClubData(IUser user)
         {
             var result = new List<FleetUserInfo>();
             var database = new FleetDb("hanekawa");
@@ -99,8 +113,7 @@ namespace Jibril.Modules.Fleet.Services
             database.CloseConnection();
             return result;
         }
-
-        public static IReadOnlyCollection<FleetUserInfo> FleetData(string fleet)
+        public static IReadOnlyCollection<FleetUserInfo> ClubData(string fleet)
         {
             var result = new List<FleetUserInfo>();
             var database = new FleetDb("hanekawa");
@@ -128,8 +141,7 @@ namespace Jibril.Modules.Fleet.Services
             database.CloseConnection();
             return result;
         }
-
-        public static IReadOnlyCollection<FleetInfo> GetFleets()
+        public static IReadOnlyCollection<FleetInfo> GetClubs()
         {
             var result = new List<FleetInfo>();
             var database = new FleetDb("hanekawa");
@@ -155,8 +167,7 @@ namespace Jibril.Modules.Fleet.Services
             database.CloseConnection();
             return result;
         }
-
-        public static void CreateFleet(IUser user, string name)
+        public static void CreateClub(IUser user, string name)
         {
             var result = new List<FleetInfo>();
             var database = new FleetDb("hanekawa");
@@ -198,7 +209,6 @@ namespace Jibril.Modules.Fleet.Services
         public int Rank { get; set; }
         public DateTime JoinDateTime { get; set; }
     }
-
     public class FleetInfo
     {
         public int Id { get; set; }
