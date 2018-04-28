@@ -198,6 +198,10 @@ namespace Jibril.Modules.Fleet.Services
             database.FireCommand(str);
             database.CloseConnection();
         }
+        public static void CreatedChannel(IUser user)
+        {
+
+        }
     }
 
     public class FleetUserInfo
