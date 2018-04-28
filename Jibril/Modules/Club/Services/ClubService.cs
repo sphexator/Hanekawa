@@ -5,10 +5,10 @@ using Discord.WebSocket;
 
 namespace Jibril.Modules.Fleet.Services
 {
-    public class FleetService
+    public class ClubService
     {
         private readonly DiscordSocketClient _client;
-        public FleetService(DiscordSocketClient client)
+        public ClubService(DiscordSocketClient client)
         {
             _client = client;
         }
@@ -26,16 +26,16 @@ namespace Jibril.Modules.Fleet.Services
 
         public void Createfleet(IUser user, string name)
         {
-            FleetDb.CreateClub(user, name);
+            ClubDb.CreateClub(user, name);
         }
 
         public void Promote(IUser user)
         {
-            FleetDb.Promote(user);
+            ClubDb.Promote(user);
         }
         public void Demote(IUser user)
         {
-            FleetDb.Demote(user);
+            ClubDb.Demote(user);
         }
     }
 }

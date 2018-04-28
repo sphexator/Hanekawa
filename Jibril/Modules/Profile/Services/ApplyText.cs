@@ -285,7 +285,7 @@ namespace Jibril.Modules.Profile.Services
 
         private static string CheckFleetMembership(IUser user)
         {
-            var fleetName = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var fleetName = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
             if (fleetName == null) return "N/A";
             return fleetName.Equals("o", StringComparison.InvariantCultureIgnoreCase) ? "N/A" : fleetName;
         }

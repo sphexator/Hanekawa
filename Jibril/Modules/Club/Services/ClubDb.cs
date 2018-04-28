@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Jibril.Modules.Fleet.Services
 {
-    public class FleetDb
+    public class ClubDb
     {
         private readonly string _database = DbInfo.DbNorm;
         private readonly MySqlConnection _dbConnection;
@@ -16,7 +16,7 @@ namespace Jibril.Modules.Fleet.Services
         private readonly string _server = DbInfo.Server;
         private readonly string _username = DbInfo.Username;
 
-        private FleetDb(string table)
+        private ClubDb(string table)
         {
             var stringBuilder = new MySqlConnectionStringBuilder
             {
@@ -46,7 +46,7 @@ namespace Jibril.Modules.Fleet.Services
 
         public static void AddClubMember(IUser user, int id, string clubName)
         {
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"INSERT into fleet (userid, clubid, name, clubname, rank, joindate) VALUES ('{user.Id}', '{id}', '{user.Username}', '{clubName}', 3, curtime())";
             var str2 = $"UPDATE fleetinfo SET members = members + 1";
             database.FireCommand(str);
@@ -55,7 +55,7 @@ namespace Jibril.Modules.Fleet.Services
         }
         public static void RemoveClubMember(IUser user, int id)
         {
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"DELETE FROM fleet WHERE userid = '{user.Id}' && clubid = '{id}'";
             var str2 = $"UPDATE fleetinfo SET members = members - 1";
             database.FireCommand(str);
@@ -64,21 +64,21 @@ namespace Jibril.Modules.Fleet.Services
         }
         public static void Promote(IUser user)
         {
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"UPDATE fleet SET rank = rank - 1";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void Demote(IUser user)
         {
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"UPDATE fleet SET rank = rank + 1";
             database.FireCommand(str);
             database.CloseConnection();
         }
         public static void PromoteLeader(IUser user, int id)
         {
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str1 = $"UPDATE fleet SET rank = 1";
             var str2 = $"UPDATE fleetinfo SET leader = '{user.Id}' WHERE id = '{id}'";
             database.FireCommand(str1);
@@ -88,7 +88,7 @@ namespace Jibril.Modules.Fleet.Services
         public static IReadOnlyCollection<FleetUserInfo> UserClubData(IUser user)
         {
             var result = new List<FleetUserInfo>();
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"SELECT * FROM fleet WHERE userid = '{user.Id}'";
             var exec = database.FireCommand(str);
             while (exec.Read())
@@ -116,7 +116,7 @@ namespace Jibril.Modules.Fleet.Services
         public static IReadOnlyCollection<FleetUserInfo> ClubData(string fleet)
         {
             var result = new List<FleetUserInfo>();
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"SELECT * FROM fleet WHERE clubName = '{fleet}'";
             var exec = database.FireCommand(str);
             while (exec.Read())
@@ -144,7 +144,7 @@ namespace Jibril.Modules.Fleet.Services
         public static IReadOnlyCollection<FleetInfo> GetClubs()
         {
             var result = new List<FleetInfo>();
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str = $"SELECT * FROM fleetinfo";
             var exec = database.FireCommand(str);
             while (exec.Read())
@@ -170,7 +170,7 @@ namespace Jibril.Modules.Fleet.Services
         public static void CreateClub(IUser user, string name)
         {
             var result = new List<FleetInfo>();
-            var database = new FleetDb("hanekawa");
+            var database = new ClubDb("hanekawa");
             var str1 = $"INSERT into fleetinfo (clubname, creationdate, members, leader) VALUES ('{name}', 'curtime()', 1, '{user.Id}')";
             var str2 = $"SELECT * FROM fleetinfo WHERE leader = '{user.Id}'";
             database.FireCommand(str1);

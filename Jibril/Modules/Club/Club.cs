@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Jibril.Modules.Fleet
 {
-    public class Fleet : InteractiveBase
+    public class Club : InteractiveBase
     {
         [Command("fleetcreate")]
         [Alias("fc", "createfleet", "clubcreate", "createclub")]
@@ -26,16 +26,16 @@ namespace Jibril.Modules.Fleet
             if (name == null) return;
             if (user == null) return;
             var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
-            var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var userFleetCheck = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
             if (userData.Level >= 40 && userFleetCheck == "o")
             {
-                var nameCheck = FleetDb.CheckFleetName(name).FirstOrDefault();
+                var nameCheck = ClubDb.CheckFleetName(name).FirstOrDefault();
                 if (nameCheck == null && nameCheck != "o")
                 {
                     FleetNormDb.CreateFleet(user, name);
                     FleetNormDb.AddLeader(user, name);
-                    FleetDb.AddFleet(name);
-                    FleetDb.UpdateFleetProfile(user, name);
+                    ClubDb.AddFleet(name);
+                    ClubDb.UpdateFleetProfile(user, name);
                     await ReplyAsync($"{user.Username} successfully created a fleet called {name}");
                 }
                 else if (nameCheck != null)
@@ -64,8 +64,8 @@ namespace Jibril.Modules.Fleet
 
             var user = Context.User;
             if (member.IsBot) return;
-            var userFleetCheck = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            var memberFleetCheck = FleetDb.CheckFleetMemberStatus(member).FirstOrDefault();
+            var userFleetCheck = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var memberFleetCheck = ClubDb.CheckFleetMemberStatus(member).FirstOrDefault();
 
             if (memberFleetCheck != "o") await ReplyAsync($"{member.Username} is already in a fleet.");
             if (userFleetCheck != "o" && memberFleetCheck == "o")
@@ -83,8 +83,8 @@ namespace Jibril.Modules.Fleet
                         response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase))
                     {
                         FleetNormDb.AddMember(member, userFleetCheck);
-                        FleetDb.UpdateFleetProfile(member, userFleetCheck);
-                        FleetDb.AddFleetMemberCount(userFleetCheck);
+                        ClubDb.UpdateFleetProfile(member, userFleetCheck);
+                        ClubDb.AddFleetMemberCount(userFleetCheck);
                         await ReplyAsync($"{member.Username} was added to `{userFleetCheck}` by {user.Username}.");
                     }
                 }
@@ -104,8 +104,8 @@ namespace Jibril.Modules.Fleet
         {
             var user = Context.User;
             if (member.IsBot) return;
-            var ufc = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            var mfc = FleetDb.CheckFleetMemberStatus(member).FirstOrDefault();
+            var ufc = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var mfc = ClubDb.CheckFleetMemberStatus(member).FirstOrDefault();
             if (mfc == null || ufc == null) return;
             if (mfc.Equals("o") || ufc.Equals("o")) return;
             if (mfc == ufc)
@@ -114,9 +114,9 @@ namespace Jibril.Modules.Fleet
                 if (rc == null) return;
                 if (rc.Equals("leader", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    FleetDb.UpdateFleetProfile(member, "o");
+                    ClubDb.UpdateFleetProfile(member, "o");
                     FleetNormDb.RemoveMember(member, mfc);
-                    FleetDb.RemoveFleetMemberCount(mfc);
+                    ClubDb.RemoveFleetMemberCount(mfc);
                     var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} has removed {member} from {mfc}",
                         Colours.OkColour);
                     await ReplyAsync("", false, embed.Build());
@@ -143,7 +143,7 @@ namespace Jibril.Modules.Fleet
         public async Task LeaveFleet()
         {
             var user = Context.User;
-            var fleet = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
+            var fleet = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
             if (fleet == null) return;
             if (fleet.Equals("o")) return;
             var confirmEmbed = EmbedGenerator.DefaultEmbed($"You sure you want to leave {fleet}?\n" +
@@ -153,9 +153,9 @@ namespace Jibril.Modules.Fleet
             var response = await NextMessageAsync();
             if (response.Content.Equals("yes", StringComparison.InvariantCultureIgnoreCase))
             {
-                FleetDb.UpdateFleetProfile(user, "o");
+                ClubDb.UpdateFleetProfile(user, "o");
                 FleetNormDb.RemoveMember(user, fleet);
-                FleetDb.RemoveFleetMemberCount(fleet);
+                ClubDb.RemoveFleetMemberCount(fleet);
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} successfully left {fleet}.",
                     Colours.OkColour);
                 await ReplyAsync("", false, embed.Build());
