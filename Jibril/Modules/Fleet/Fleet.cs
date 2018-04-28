@@ -23,7 +23,6 @@ namespace Jibril.Modules.Fleet
         public async Task CreateFleet([Remainder] string name = null)
         {
             var user = Context.User;
-            var auser = Context.User as IGuildUser;
             if (name == null) return;
             if (user == null) return;
             var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
