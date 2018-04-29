@@ -1,170 +1,77 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Modules.Fleet.Services;
+using Jibril.Modules.Club.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Jibril.Modules.Fleet
+namespace Jibril.Modules.Club
 {
+    [Group("club")]
     public class Club : InteractiveBase
     {
-        [Command("fleetcreate")]
-        [Alias("fc", "createfleet", "clubcreate", "createclub")]
-        [Summary("Creates a fleet")]
-        [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task CreateFleet([Remainder] string name = null)
+        private readonly ClubService _service;
+
+        public Club(ClubService service)
         {
-            var user = Context.User;
-            if (name == null) return;
-            if (user == null) return;
-            var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
-            var userFleetCheck = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (userData.Level >= 40 && userFleetCheck == "o")
-            {
-                var nameCheck = ClubDb.CheckFleetName(name).FirstOrDefault();
-                if (nameCheck == null && nameCheck != "o")
-                {
-                    FleetNormDb.CreateFleet(user, name);
-                    FleetNormDb.AddLeader(user, name);
-                    ClubDb.AddFleet(name);
-                    ClubDb.UpdateFleetProfile(user, name);
-                    await ReplyAsync($"{user.Username} successfully created a fleet called {name}");
-                }
-                else if (nameCheck != null)
-                {
-                    var embed = EmbedGenerator.DefaultEmbed($"{name} is already in use.", Colours.FailColour);
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else
-            {
-                var embed = EmbedGenerator.DefaultEmbed(
-                    $"{user.Username} - You need to be of Battleship rank or not in a fleet inorder to create a fleet.",
-                    Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, embed.Build());
-            }
+            _service = service;
         }
 
-        [Command("fleetadd", RunMode = RunMode.Async)]
-        [Alias("fa")]
+        [Command("create")]
+        [Summary("Creates a fleet")]
+        [RequiredChannel(339383206669320192)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task CreateClub([Remainder] string name = null)
+        {
+            if (name == null) return;
+            var eligible = _service.CanCreateClub(Context.User as IGuildUser);
+            if (eligible != true) return;
+            _service.CreateClub(Context.User as IGuildUser, name);
+            await ReplyAsync($"{Context.User.Username} Successfully created club {name}");
+        }
+
+        [Command("add", RunMode = RunMode.Async)]
         [Summary("Adds a member to your fleet")]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        public async Task AddFleetMember(SocketGuildUser member)
+        public async Task AddClubMember(SocketGuildUser member)
         {
-            Console.Write($"{Context.User} tried to add {member.Username} to a fleet");
-
-            var user = Context.User;
-            if (member.IsBot) return;
-            var userFleetCheck = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            var memberFleetCheck = ClubDb.CheckFleetMemberStatus(member).FirstOrDefault();
-
-            if (memberFleetCheck != "o") await ReplyAsync($"{member.Username} is already in a fleet.");
-            if (userFleetCheck != "o" && memberFleetCheck == "o")
-            {
-                var rankCheck = FleetNormDb.RankCheck(user, userFleetCheck).FirstOrDefault();
-                if (rankCheck == "leader")
-                {
-                    await ReplyAsync(
-                        $"{member.Mention} has been invited to join `{userFleetCheck}` by {user.Username}\n" +
-                        $"\n" +
-                        $"Accept/Deny invite");
-                    var response = await NextMessageAsync(new EnsureFromUserCriterion(member.Id));
-
-                    if (response.Content.Equals("Accept", StringComparison.InvariantCultureIgnoreCase) ||
-                        response.Content.Equals("Yes", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        FleetNormDb.AddMember(member, userFleetCheck);
-                        ClubDb.UpdateFleetProfile(member, userFleetCheck);
-                        ClubDb.AddFleetMemberCount(userFleetCheck);
-                        await ReplyAsync($"{member.Username} was added to `{userFleetCheck}` by {user.Username}.");
-                    }
-                }
-                else
-                {
-                    await ReplyAsync($"{user.Username} isn't a leader and cannot invite");
-                }
-            }
+            await _service.AddClubMember(member, Context.User as IGuildUser);
+            //TODO Make AddClubMember return string of clubname as reference for reply.
+            await ReplyAsync($"Successfully added {member.Nickname ?? member.Username} to ...");
         }
 
         [Command("remove", RunMode = RunMode.Async)]
         [Alias("kick")]
         [Summary("Removes a user from your fleet")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task RemoveFleetMember(IUser member)
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task RemoveClubMember(IUser member)
         {
-            var user = Context.User;
-            if (member.IsBot) return;
-            var ufc = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            var mfc = ClubDb.CheckFleetMemberStatus(member).FirstOrDefault();
-            if (mfc == null || ufc == null) return;
-            if (mfc.Equals("o") || ufc.Equals("o")) return;
-            if (mfc == ufc)
-            {
-                var rc = FleetNormDb.RankCheck(user, ufc).FirstOrDefault();
-                if (rc == null) return;
-                if (rc.Equals("leader", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    ClubDb.UpdateFleetProfile(member, "o");
-                    FleetNormDb.RemoveMember(member, mfc);
-                    ClubDb.RemoveFleetMemberCount(mfc);
-                    var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} has removed {member} from {mfc}",
-                        Colours.OkColour);
-                    await ReplyAsync("", false, embed.Build());
-                }
-                else
-                {
-                    var embed = EmbedGenerator.DefaultEmbed($"You're not a leader, {user.Mention}.",
-                        Colours.FailColour);
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else
-            {
-                var embed = EmbedGenerator.DefaultEmbed("You're not in the same fleet", Colours.FailColour);
-                await ReplyAsync("", false, embed.Build());
-            }
+            //TODO Make RemoveClubMember return string of clubname as reference for reply.
         }
 
         [Command("leave", RunMode = RunMode.Async)]
-        [Alias("fl")]
         [Summary("Leaves a fleet you're a part of")]
         [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task LeaveFleet()
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task LeaveClub()
         {
-            var user = Context.User;
-            var fleet = ClubDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (fleet == null) return;
-            if (fleet.Equals("o")) return;
-            var confirmEmbed = EmbedGenerator.DefaultEmbed($"You sure you want to leave {fleet}?\n" +
-                                                           $"\n" +
-                                                           $"Yes/No", Colours.DefaultColour);
-            await ReplyAsync("", false, confirmEmbed.Build());
-            var response = await NextMessageAsync();
-            if (response.Content.Equals("yes", StringComparison.InvariantCultureIgnoreCase))
-            {
-                ClubDb.UpdateFleetProfile(user, "o");
-                FleetNormDb.RemoveMember(user, fleet);
-                ClubDb.RemoveFleetMemberCount(fleet);
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} successfully left {fleet}.",
-                    Colours.OkColour);
-                await ReplyAsync("", false, embed.Build());
-            }
-            else
-            {
-                var embed = EmbedGenerator.DefaultEmbed("rip", Colours.FailColour);
-                await ReplyAsync("", false, embed.Build());
-            }
+            //TODO Make RemoveClubMember return string of clubname as reference for reply.
+        }
+
+        [Command("disband", RunMode = RunMode.Async)]
+        [Summary("Disbands the club")]
+        [RequiredChannel(339383206669320192)]
+        public async Task DisbandClub()
+        {
+
         }
     }
 }

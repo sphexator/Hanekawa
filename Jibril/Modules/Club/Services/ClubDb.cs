@@ -1,11 +1,11 @@
-﻿using Discord;
-using Jibril.Data.Variables;
-using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Discord;
+using Jibril.Data.Variables;
+using MySql.Data.MySqlClient;
 
-namespace Jibril.Modules.Fleet.Services
+namespace Jibril.Modules.Club.Services
 {
     public class ClubDb
     {
@@ -197,6 +197,14 @@ namespace Jibril.Modules.Fleet.Services
             var str = $"INSERT into fleet (userid, clubid, name, clubname, rank, joindate) VALUES ('{user.Id}', '{info.Id}', '{user.Username}', '{name}', 1, curtime())";
             database.FireCommand(str);
             database.CloseConnection();
+        }
+        public static void DeleteClub(int id)
+        {
+            var database = new ClubDb("hanekawa");
+            var str1 = $"DELETE FROM fleetinfo WHERE id = '{id}";
+            var str2 = $"DELETE FROM fleet WHERE clubid = '{id}'";
+            database.FireCommand(str1);
+            database.FireCommand(str2);
         }
         public static void CreatedChannel(IUser user)
         {
