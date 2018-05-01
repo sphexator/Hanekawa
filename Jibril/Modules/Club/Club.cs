@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 using Jibril.Modules.Club.Services;
 using Jibril.Preconditions;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Jibril.Modules.Club
@@ -43,7 +42,11 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 1, Measure.Seconds)]
         public async Task AddClubMember(IGuildUser member)
         {
-            if (Context.User.Id == member.Id) return;
+            var elig = ClubService.IsClubMember(member);
+            if (Context.User.Id == member.Id || elig)
+            {
+                return;
+            }
 
             var eligible = ClubService.IsOfficer(Context.User as IGuildUser);
             if (eligible != true)

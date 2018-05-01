@@ -20,9 +20,29 @@ namespace Jibril.Modules.Club.Services
         public ClubService(DiscordSocketClient client)
         {
             _client = client;
+            _client.UserLeft += ClubCleanUp;
         }
 
-        public bool IsClubMember(IGuildUser user)
+        private Task ClubCleanUp(SocketGuildUser user)
+        {
+            //throw new System.NotImplementedException();
+            _ = Task.Run(() =>
+            {
+                var elig = IsClubMember(user);
+                var leader = IsLeader(user);
+                if (leader)
+                {
+                    //TODO: Transfer leadership to random officer or user, else delete club and channel if it has channel
+                }
+                if (elig)
+                {
+                    LeaveClub(user).Start();
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        public static bool IsClubMember(IGuildUser user)
         {
             var elig = ClubDb.UserClubData(user).FirstOrDefault();
             return elig != null;
