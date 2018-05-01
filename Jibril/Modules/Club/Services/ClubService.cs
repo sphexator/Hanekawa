@@ -42,29 +42,29 @@ namespace Jibril.Modules.Club.Services
             return Task.CompletedTask;
         }
 
-        public static bool IsClubMember(IGuildUser user)
+        public bool IsClubMember(IGuildUser user)
         {
             var elig = ClubDb.UserClubData(user).FirstOrDefault();
             return elig != null;
         }
-        public static bool CanCreateClub(IGuildUser user)
+        public bool CanCreateClub(IGuildUser user)
         {
             var elig = ClubDb.UserClubData(user).FirstOrDefault();
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             return elig == null && userData.Level >= 40;
         }
-        public static bool IsLeader(IGuildUser user)
+        public bool IsLeader(IGuildUser user)
         {
             var leader = GetClubLeader(user);
             return leader == user.Id;
         }
-        public static bool IsOfficer(IGuildUser user)
+        public bool IsOfficer(IGuildUser user)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             return club.Rank <= 2;
         }
 
-        public static void CreateClub(IGuildUser user, string name)
+        public void CreateClub(IGuildUser user, string name)
         {
             ClubDb.CreateClub(user, name);
         }
@@ -74,7 +74,7 @@ namespace Jibril.Modules.Club.Services
             ClubDb.DeleteClub(id);
         }
 
-        public static async Task<string> AddClubMember(IGuildUser user, IGuildUser leader)
+        public async Task<string> AddClubMember(IGuildUser user, IGuildUser leader)
         {
             var clubUserData = ClubDb.UserClubData(leader).FirstOrDefault();
             var clubData = ClubDb.GetClubs().FirstOrDefault(x => x.Id == clubUserData.ClubId);
@@ -85,7 +85,7 @@ namespace Jibril.Modules.Club.Services
             }
             return clubUserData.ClubName;
         }
-        public static async Task<string> RemoveClubMember(IGuildUser user, IGuildUser leader)
+        public async Task<string> RemoveClubMember(IGuildUser user, IGuildUser leader)
         {
             var clubUserData = ClubDb.UserClubData(leader).FirstOrDefault();
             var clubData = ClubDb.GetClubs().FirstOrDefault(x => x.Id == clubUserData.ClubId);
@@ -96,7 +96,7 @@ namespace Jibril.Modules.Club.Services
             }
             return clubUserData.ClubName;
         }
-        public static async Task<string> LeaveClub(IGuildUser user)
+        public async Task<string> LeaveClub(IGuildUser user)
         {
             var clubUserData = ClubDb.UserClubData(user).FirstOrDefault();
             var clubData = ClubDb.GetClubs().FirstOrDefault(x => x.Id == clubUserData.ClubId);
@@ -132,7 +132,7 @@ namespace Jibril.Modules.Club.Services
             await ch.DeleteAsync();
             await role.DeleteAsync();
         }
-        private static async Task<ICategoryChannel> GetorCreateClubCategory(IGuild guild)
+        private async Task<ICategoryChannel> GetorCreateClubCategory(IGuild guild)
         {
             var cts = await guild.GetCategoriesAsync();
             var ct = cts.FirstOrDefault(x => x.Name == "club");
@@ -140,32 +140,32 @@ namespace Jibril.Modules.Club.Services
             var club = await guild.CreateCategoryAsync("Club");
             return club;
         }
-        private static async Task AssignRole(IGuildUser user, IGuild guild, string name)
+        private async Task AssignRole(IGuildUser user, IGuild guild, string name)
         {
             var role = guild.Roles.FirstOrDefault(x => x.Name == name);
             await user.AddRoleAsync(role);
         }
-        private static async Task RemoveRole(IGuildUser user, IGuild guild, string name)
+        private async Task RemoveRole(IGuildUser user, IGuild guild, string name)
         {
             var role = guild.Roles.FirstOrDefault(x => x.Name == name);
             await user.RemoveRoleAsync(role);
         }
 
-        public static void Promote(IGuildUser user)
+        public void Promote(IGuildUser user)
         {
             var clubData = ClubDb.UserClubData(user).FirstOrDefault();
             if (clubData == null) return;
             if (clubData.Rank <= 2) return;
             ClubDb.Promote(user);
         }
-        public static void Demote(IGuildUser user)
+        public void Demote(IGuildUser user)
         {
             var clubData = ClubDb.UserClubData(user).FirstOrDefault();
             if (clubData == null) return;
             if (clubData.Rank >= 3) return;
             ClubDb.Demote(user);
         }
-        public static void PromoteLeader(IGuildUser user)
+        public void PromoteLeader(IGuildUser user)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             if (club.Rank != 2) return;
@@ -173,7 +173,7 @@ namespace Jibril.Modules.Club.Services
             ClubDb.PromoteLeader(user, clubId.Id);
         }
 
-        private static string GetClubName(IGuildUser user)
+        private string GetClubName(IGuildUser user)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             return club?.ClubName;
@@ -183,12 +183,12 @@ namespace Jibril.Modules.Club.Services
             var clubId = ClubDb.GetClubs().First(x => x.Id == id);
             return _client.GetUser(clubId.Leader) as IGuildUser;
         }
-        private static ulong GetClubLeader(IGuildUser id)
+        private ulong GetClubLeader(IGuildUser id)
         {
             var clubId = ClubDb.GetClubs().First(x => x.Leader == id.Id);
             return clubId.Leader;
         }
-        private static int GetClubId(IGuildUser user)
+        private int GetClubId(IGuildUser user)
         {
             var clubId = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
             return (int) clubId?.Id;

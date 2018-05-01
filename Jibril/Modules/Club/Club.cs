@@ -26,13 +26,13 @@ namespace Jibril.Modules.Club
         public async Task CreateClub([Remainder] string name = null)
         {
             if (name == null) return;
-            var eligible = ClubService.CanCreateClub(Context.User as IGuildUser);
+            var eligible = _service.CanCreateClub(Context.User as IGuildUser);
             if (eligible != true)
             {
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to create a club.");
                 return;
             }
-            ClubService.CreateClub(Context.User as IGuildUser, name);
+            _service.CreateClub(Context.User as IGuildUser, name);
             await ReplyAsync($"{Context.User.Username} Successfully created club {name}");
         }
 
@@ -42,13 +42,13 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 1, Measure.Seconds)]
         public async Task AddClubMember(IGuildUser member)
         {
-            var elig = ClubService.IsClubMember(member);
+            var elig = _service.IsClubMember(member);
             if (Context.User.Id == member.Id || elig)
             {
                 return;
             }
 
-            var eligible = ClubService.IsOfficer(Context.User as IGuildUser);
+            var eligible = _service.IsOfficer(Context.User as IGuildUser);
             if (eligible != true)
             {
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to add club members.");
@@ -61,7 +61,7 @@ namespace Jibril.Modules.Club
                 await NextMessageAsync(new EnsureFromUserCriterion(member.Id), TimeSpan.FromSeconds(60));
             if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
             {
-                var club = await ClubService.AddClubMember(member, Context.User as IGuildUser);
+                var club = await _service.AddClubMember(member, Context.User as IGuildUser);
                 await ReplyAsync($"Successfully added {member.Nickname ?? member.Username} to {club}");
             }
             else await ReplyAsync("User didn't reply in time or declined the invite.");
@@ -74,13 +74,20 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 1, Measure.Seconds)]
         public async Task RemoveClubMember(IGuildUser member)
         {
-            var eligible = ClubService.IsLeader(Context.User as IGuildUser);
+            if (member == Context.User) return;
+            var aUser = ClubDb.UserClubData(Context.User).FirstOrDefault();
+            var bUser = ClubDb.UserClubData(member).FirstOrDefault();
+            if (bUser == null) return;
+            if (aUser == null) return;
+            if (aUser.ClubId != bUser.ClubId) return;
+
+            var eligible = _service.IsLeader(Context.User as IGuildUser);
             if (eligible != true)
             {
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to kick club members.");
                 return;
             }
-            var club = await ClubService.RemoveClubMember(member, Context.User as IGuildUser);
+            var club = await _service.RemoveClubMember(member, Context.User as IGuildUser);
             await ReplyAsync($"Successfully removed {member.Nickname ?? member.Username} from {club}");
         }
 
@@ -90,7 +97,7 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task LeaveClub()
         {
-            var club = await ClubService.LeaveClub(Context.User as IGuildUser);
+            var club = await _service.LeaveClub(Context.User as IGuildUser);
             await ReplyAsync($"{Context.User.Username} left {club}");
         }
 
@@ -100,21 +107,22 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task Promote(IGuildUser user)
         {
+            if (user == Context.User) return;
             var aUser = ClubDb.UserClubData(Context.User).FirstOrDefault();
             var bUser = ClubDb.UserClubData(user).FirstOrDefault();
-            var elig = ClubService.IsLeader(Context.User as IGuildUser);
+            var elig = _service.IsLeader(Context.User as IGuildUser);
             if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank == 2)
             {
                 await ReplyAsync($"{Context.User.Username}, you sure you want to transfer leadership to {user.Nickname ?? user.Username}? (Y/N)");
                 var response = await NextMessageAsync();
                 if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    ClubService.PromoteLeader(user);
+                    _service.PromoteLeader(user);
                 }
             }
             if (elig && (aUser.ClubId == bUser.ClubId) && bUser.Rank > 2)
             {
-                ClubService.Promote(user);
+                _service.Promote(user);
                 await ReplyAsync($"{Context.User.Username} promoted {user.Nickname ?? user.Username} to rank 2");
                 return;
             }
@@ -128,12 +136,13 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task Demote(IGuildUser user)
         {
+            if (user == Context.User) return;
             var aUser = ClubDb.UserClubData(Context.User).FirstOrDefault();
             var bUser = ClubDb.UserClubData(user).FirstOrDefault();
-            var elig = ClubService.IsLeader(Context.User as IGuildUser);
+            var elig = _service.IsLeader(Context.User as IGuildUser);
             if (elig && (aUser.ClubId == bUser.ClubId) && bUser.Rank == 2)
             {
-                ClubService.Demote(user);
+                _service.Demote(user);
                 await ReplyAsync($"{Context.User.Username} demote {user.Nickname ?? user.Username} to rank 3");
                 return;
             }
