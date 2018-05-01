@@ -63,7 +63,7 @@ namespace Jibril.Modules.Club
             }
             else await ReplyAsync("User didn't reply in time or declined the invite.");
         }
-        
+
         [Command("remove", RunMode = RunMode.Async)]
         [Alias("kick")]
         [Summary("Removes a user from your club")]
@@ -100,6 +100,15 @@ namespace Jibril.Modules.Club
             var aUser = ClubDb.UserClubData(Context.User).FirstOrDefault();
             var bUser = ClubDb.UserClubData(user).FirstOrDefault();
             var elig = ClubService.IsLeader(Context.User as IGuildUser);
+            if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank == 2)
+            {
+                await ReplyAsync($"{Context.User.Username}, you sure you want to transfer leadership to {user.Nickname ?? user.Username}? (Y/N)");
+                var response = await NextMessageAsync();
+                if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    ClubService.PromoteLeader(user);
+                }
+            }
             if (elig && (aUser.ClubId == bUser.ClubId) && bUser.Rank > 2)
             {
                 ClubService.Promote(user);

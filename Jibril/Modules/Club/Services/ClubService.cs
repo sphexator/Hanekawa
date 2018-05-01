@@ -145,7 +145,7 @@ namespace Jibril.Modules.Club.Services
             if (clubData.Rank >= 3) return;
             ClubDb.Demote(user);
         }
-        public void PromoteLeader(IGuildUser user)
+        public static void PromoteLeader(IGuildUser user)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             if (club.Rank != 2) return;
@@ -168,7 +168,7 @@ namespace Jibril.Modules.Club.Services
             var clubId = ClubDb.GetClubs().First(x => x.Leader == id.Id);
             return clubId.Leader;
         }
-        private int GetClubId(IGuildUser user)
+        private static int GetClubId(IGuildUser user)
         {
             var clubId = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
             return (int) clubId?.Id;
