@@ -110,9 +110,12 @@ namespace Jibril.Modules.Club.Services
             return clubUserData.ClubName;
         }
 
-        public async Task CreateChannel(IGuildUser user, IGuild guild)
+        public async Task<string> CreateChannel(IGuildUser user, IGuild guild)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
+            var clubData = ClubDb.ClubData(club.ClubId);
+            var users = GetClubMembersData(clubData);
+            if (users.Count < 4) return "You do not have enough members of level 40 or higher";
 
             var ct = await GetorCreateClubCategory(guild);
             var ch = await guild.CreateTextChannelAsync(club.ClubName);
@@ -124,6 +127,7 @@ namespace Jibril.Modules.Club.Services
             await ch.AddPermissionOverwriteAsync(guild.EveryoneRole, DenyOverwrite);
             await ch.AddPermissionOverwriteAsync(user, LeaderOverwrite);
             ClubDb.ChannelCreated(GetClubId(user), role.Id, ch.Id);
+            return $"Successfully created channel for {club.ClubName}.";
         }
         public async Task DeleteChannel(IGuildUser user, IGuild guild)
         {
@@ -195,7 +199,7 @@ namespace Jibril.Modules.Club.Services
             return (int) clubId?.Id;
         }
 
-        public IReadOnlyCollection<UserData> GetClubMembersData(IEnumerable<FleetUserInfo> clubUser)
+        private IReadOnlyCollection<UserData> GetClubMembersData(IEnumerable<FleetUserInfo> clubUser)
         {
             return (from x in clubUser
                 select DatabaseService.UserData(x.UserId).FirstOrDefault()

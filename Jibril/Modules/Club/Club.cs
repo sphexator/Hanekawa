@@ -156,7 +156,10 @@ namespace Jibril.Modules.Club
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task ChannelCreation()
         {
-
+            var elig = _service.IsLeader(Context.User as IGuildUser);
+            if (elig == false) return;
+            var response = await _service.CreateChannel(Context.User as IGuildUser, Context.Guild);
+            await ReplyAsync(response);
         }
     }
 }
