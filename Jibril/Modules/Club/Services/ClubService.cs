@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Jibril.Services;
 using Jibril.Services.Level.Lists;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Club.Services
 {
@@ -114,19 +115,33 @@ namespace Jibril.Modules.Club.Services
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             var clubData = ClubDb.ClubData(club.ClubId);
-            var users = GetClubMembersData(clubData);
+            var users = GetClubUserDataLevel40(clubData);
             if (users.Count < 4) return "You do not have enough members of level 40 or higher";
-
+            var elig = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
+            if (elig.ChannelId != 0) return $"{user.Nickname ?? user.Username}, you already have a channel for {club.ClubName}";
             var ct = await GetorCreateClubCategory(guild);
             var ch = await guild.CreateTextChannelAsync(club.ClubName);
-            await ch.ModifyAsync(x => x.CategoryId = ct.CategoryId);
+            await ch.ModifyAsync(x => x.CategoryId = ct.Id);
 
             var role = await guild.CreateRoleAsync(club.ClubName, GuildPermissions.None);
-
             await ch.AddPermissionOverwriteAsync(role, AllowOverwrite);
             await ch.AddPermissionOverwriteAsync(guild.EveryoneRole, DenyOverwrite);
             await ch.AddPermissionOverwriteAsync(user, LeaderOverwrite);
             ClubDb.ChannelCreated(GetClubId(user), role.Id, ch.Id);
+
+            var members = GetClubUserData(clubData);
+            foreach (var x in members)
+            {
+                try
+                {
+                    var id = Convert.ToUInt64(x.UserId);
+                    await _client.GetGuild(200265036596379648).GetUser(id).AddRoleAsync(role);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
             return $"Successfully created channel for {club.ClubName}.";
         }
         public async Task DeleteChannel(IGuildUser user, IGuild guild)
@@ -140,7 +155,7 @@ namespace Jibril.Modules.Club.Services
         private async Task<ICategoryChannel> GetorCreateClubCategory(IGuild guild)
         {
             var cts = await guild.GetCategoriesAsync();
-            var ct = cts.FirstOrDefault(x => x.Name == "club");
+            var ct = cts.FirstOrDefault(x => x.Name == "Club");
             if (ct != null) return ct;
             var club = await guild.CreateCategoryAsync("Club");
             return club;
@@ -198,8 +213,7 @@ namespace Jibril.Modules.Club.Services
             var clubId = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
             return (int) clubId?.Id;
         }
-
-        private IReadOnlyCollection<UserData> GetClubMembersData(IEnumerable<FleetUserInfo> clubUser)
+        private IReadOnlyCollection<UserData> GetClubUserDataLevel40(IEnumerable<FleetUserInfo> clubUser)
         {
             return (from x in clubUser
                 select DatabaseService.UserData(x.UserId).FirstOrDefault()
@@ -232,6 +246,38 @@ namespace Jibril.Modules.Club.Services
                     FirstMsg = y.FirstMsg,
                     LastMsg = y.LastMsg
                 }).ToList();
+        }
+        private IReadOnlyCollection<UserData> GetClubUserData(IEnumerable<FleetUserInfo> clubUser)
+        {
+            return clubUser.Select(x => DatabaseService.UserData(x.UserId).FirstOrDefault())
+                .Select(y => new UserData
+                {
+                    UserId = y.UserId,
+                    Username = y.Username,
+                    Tokens = y.Tokens,
+                    Event_tokens = y.Event_tokens,
+                    Level = y.Level,
+                    Xp = y.Xp,
+                    Total_xp = y.Total_xp,
+                    Daily = y.Daily,
+                    Cooldown = y.Cooldown,
+                    Voice_timer = y.Voice_timer,
+                    JoinDateTime = y.JoinDateTime,
+                    FleetName = y.FleetName,
+                    ShipClass = y.ShipClass,
+                    Profilepic = y.Profilepic,
+                    GameCD = y.GameCD,
+                    BetCD = y.BetCD,
+                    Hasrole = y.Hasrole,
+                    Toxicityvalue = y.Toxicityvalue,
+                    Toxicitymsgcount = y.Toxicitymsgcount,
+                    Toxicityavg = y.Toxicityavg,
+                    Rep = y.Rep,
+                    Repcd = y.Repcd,
+                    FirstMsg = y.FirstMsg,
+                    LastMsg = y.LastMsg
+                })
+                .ToList();
         }
     }
 }
