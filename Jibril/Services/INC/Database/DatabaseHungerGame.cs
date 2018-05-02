@@ -130,6 +130,14 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static void ClearTable()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "truncate table hungergame";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static void GameRoundIncrease()
         {
             var database = new DatabaseHungerGame("hanekawa");

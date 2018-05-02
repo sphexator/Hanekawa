@@ -136,7 +136,7 @@ namespace Jibril.Services.INC
                 {
                     await ch.SendMessageAsync($"{remaining.FirstOrDefault().Name} is the new HungerGame champion!");
                 }
-                DatabaseHungerGame.GameEnd();
+                EndGame();
             }
             else DatabaseHungerGame.GameRoundIncrease();
         }
@@ -205,6 +205,13 @@ namespace Jibril.Services.INC
             var cache = new DirectoryInfo("Services/INC/Cache/Avatar/");
             foreach (var file in cache.GetFiles())
                 file.Delete();
+        }
+
+        private static void EndGame()
+        {
+            ClearCache();
+            DatabaseHungerGame.GameEnd();
+            DatabaseHungerGame.ClearTable();
         }
     }
 }
