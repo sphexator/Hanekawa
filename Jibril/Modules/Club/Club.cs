@@ -1,19 +1,22 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Jibril.Modules.Club.Services;
-using Jibril.Preconditions;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Jibril.Data.Variables;
+using Jibril.Modules.Club.Services;
+using Jibril.Preconditions;
+using Jibril.Services.Common;
 
 namespace Jibril.Modules.Club
 {
     [Group("club")]
     public class Club : InteractiveBase
     {
-        private readonly ClubService _service;
         private const ulong ChannelId = 426964780570640386;
+        private readonly ClubService _service;
+
         public Club(ClubService service)
         {
             _service = service;
@@ -32,6 +35,7 @@ namespace Jibril.Modules.Club
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to create a club.");
                 return;
             }
+
             _service.CreateClub(Context.User as IGuildUser, name);
             await ReplyAsync($"{Context.User.Username} Successfully created club {name}");
         }
@@ -43,15 +47,13 @@ namespace Jibril.Modules.Club
         public async Task AddClubMember(IGuildUser member)
         {
             var elig = _service.IsClubMember(member);
-            if (Context.User.Id == member.Id || elig)
-            {
-                return;
-            }
+            if (Context.User.Id == member.Id || elig) return;
 
             var eligible = _service.IsOfficer(Context.User as IGuildUser);
             if (eligible != true)
             {
-                await ReplyAsync($"{Context.User.Username}, you do not have the required permission to add club members.");
+                await ReplyAsync(
+                    $"{Context.User.Username}, you do not have the required permission to add club members.");
                 return;
             }
 
@@ -64,7 +66,10 @@ namespace Jibril.Modules.Club
                 var club = await _service.AddClubMember(member, Context.User as IGuildUser);
                 await ReplyAsync($"Successfully added {member.Nickname ?? member.Username} to {club}");
             }
-            else await ReplyAsync("User didn't reply in time or declined the invite.");
+            else
+            {
+                await ReplyAsync("User didn't reply in time or declined the invite.");
+            }
         }
 
         [Command("remove", RunMode = RunMode.Async)]
@@ -84,9 +89,11 @@ namespace Jibril.Modules.Club
             var eligible = _service.IsLeader(Context.User as IGuildUser);
             if (eligible != true)
             {
-                await ReplyAsync($"{Context.User.Username}, you do not have the required permission to kick club members.");
+                await ReplyAsync(
+                    $"{Context.User.Username}, you do not have the required permission to kick club members.");
                 return;
             }
+
             var club = await _service.RemoveClubMember(member, Context.User as IGuildUser);
             await ReplyAsync($"Successfully removed {member.Nickname ?? member.Username} from {club}");
         }
@@ -113,14 +120,14 @@ namespace Jibril.Modules.Club
             var elig = _service.IsLeader(Context.User as IGuildUser);
             if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank == 2)
             {
-                await ReplyAsync($"{Context.User.Username}, you sure you want to transfer leadership to {user.Nickname ?? user.Username}? (Y/N)");
+                await ReplyAsync(
+                    $"{Context.User.Username}, you sure you want to transfer leadership to {user.Nickname ?? user.Username}? (Y/N)");
                 var response = await NextMessageAsync();
                 if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
-                {
                     _service.PromoteLeader(user);
-                }
             }
-            if (elig && (aUser.ClubId == bUser.ClubId) && bUser.Rank > 2)
+
+            if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank > 2)
             {
                 _service.Promote(user);
                 await ReplyAsync($"{Context.User.Username} promoted {user.Nickname ?? user.Username} to rank 2");
@@ -140,7 +147,7 @@ namespace Jibril.Modules.Club
             var aUser = ClubDb.UserClubData(Context.User).FirstOrDefault();
             var bUser = ClubDb.UserClubData(user).FirstOrDefault();
             var elig = _service.IsLeader(Context.User as IGuildUser);
-            if (elig && (aUser.ClubId == bUser.ClubId) && bUser.Rank == 2)
+            if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank == 2)
             {
                 _service.Demote(user);
                 await ReplyAsync($"{Context.User.Username} demote {user.Nickname ?? user.Username} to rank 3");
@@ -160,6 +167,39 @@ namespace Jibril.Modules.Club
             if (elig == false) return;
             var response = await _service.CreateChannel(Context.User as IGuildUser, Context.Guild);
             await ReplyAsync(response);
+        }
+
+        [Command("list", RunMode = RunMode.Async)]
+        [Alias("clubs")]
+        [Summary("Creates a channel and role for the club")]
+        [RequiredChannel(ChannelId)]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task Clubs()
+        {
+            var clubs = ClubDb.GetClubs();
+            var pages = (from x in clubs
+                let leader = Context.Guild.GetUser(x.Leader)
+                select $"**{x.Name}({x.Id})**\n" + $"Members: {x.Members}\n" +
+                       $"Leader: {leader.Nickname ?? leader.Username}").ToList();
+
+            await PagedReplyAsync(pages);
+        }
+
+        [Command("club", RunMode = RunMode.Async)]
+        [Alias("clubs")]
+        [Summary("Creates a channel and role for the club")]
+        [RequiredChannel(ChannelId)]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task ClubTask(int id)
+        {
+            var clubs = ClubDb.GetClubs().FirstOrDefault(x => x.Id == id);
+            if (clubs == null) return;
+            var leader = Context.Guild.GetUser(clubs.Leader);
+            var embed = EmbedGenerator.DefaultEmbed($"**{clubs.Name}({clubs.Id}**\n" +
+                                                    $"Members: {clubs.Members}\n" +
+                                                    $"Leader: {leader}", Colours.DefaultColour);
+
+            await ReplyAsync(null, false, embed.Build());
         }
     }
 }
