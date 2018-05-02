@@ -179,7 +179,7 @@ namespace Jibril.Modules.Club
             var clubs = ClubDb.GetClubs();
             var pages = (from x in clubs
                 let leader = Context.Guild.GetUser(x.Leader)
-                select $"**{x.Name}({x.Id})**\n" + $"Members: {x.Members}\n" +
+                select $"**{x.Name} (id:{x.Id})**\n" + $"Members: {x.Members}\n" +
                        $"Leader: {leader.Mention}").ToList();
 
             await PagedReplyAsync(pages);
@@ -195,7 +195,7 @@ namespace Jibril.Modules.Club
             var clubs = ClubDb.GetClubs().FirstOrDefault(x => x.Id == id);
             if (clubs == null) return;
             var leader = Context.Guild.GetUser(clubs.Leader);
-            var embed = EmbedGenerator.DefaultEmbed($"**{clubs.Name}({clubs.Id}**\n" +
+            var embed = EmbedGenerator.DefaultEmbed($"**{clubs.Name} (id:{clubs.Id})**\n" +
                                                     $"Members: {clubs.Members}\n" +
                                                     $"Leader: {leader.Mention}", Colours.DefaultColour);
 
