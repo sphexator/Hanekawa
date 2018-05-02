@@ -11,6 +11,7 @@ namespace Jibril.Modules.Club.Services
 {
     public class ClubService
     {
+        private const ulong GuildId = 339370914724446208;
         private static readonly OverwritePermissions DenyOverwrite =
             new OverwritePermissions(readMessages: PermValue.Deny);
         private static readonly OverwritePermissions AllowOverwrite =
@@ -135,7 +136,7 @@ namespace Jibril.Modules.Club.Services
                 try
                 {
                     var id = Convert.ToUInt64(x.UserId);
-                    await _client.GetGuild(200265036596379648).GetUser(id).AddRoleAsync(role);
+                    await _client.GetGuild(GuildId).GetUser(id).AddRoleAsync(role);
                 }
                 catch
                 {

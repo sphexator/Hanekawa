@@ -14,7 +14,7 @@ namespace Jibril.Modules.Club
     [Group("club")]
     public class Club : InteractiveBase
     {
-        private const ulong ChannelId = 426964780570640386;
+        private const ulong ChannelId = 339383206669320192;
         private readonly ClubService _service;
 
         public Club(ClubService service)
