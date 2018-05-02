@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Services;
+using Jibril.Services.Level.Lists;
 
 namespace Jibril.Modules.Club.Services
 {
@@ -26,7 +28,7 @@ namespace Jibril.Modules.Club.Services
         private Task ClubCleanUp(SocketGuildUser user)
         {
             //throw new System.NotImplementedException();
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
                 var elig = IsClubMember(user);
                 var leader = IsLeader(user);
@@ -36,7 +38,7 @@ namespace Jibril.Modules.Club.Services
                 }
                 if (elig)
                 {
-                    LeaveClub(user).Start();
+                    await LeaveClub(user);
                 }
             });
             return Task.CompletedTask;
@@ -110,14 +112,13 @@ namespace Jibril.Modules.Club.Services
 
         public async Task CreateChannel(IGuildUser user, IGuild guild)
         {
-            var clubName = GetClubName(user);
-            if (clubName == null) return;
+            var club = ClubDb.UserClubData(user).FirstOrDefault();
 
             var ct = await GetorCreateClubCategory(guild);
-            var ch = await guild.CreateTextChannelAsync(clubName);
+            var ch = await guild.CreateTextChannelAsync(club.ClubName);
             await ch.ModifyAsync(x => x.CategoryId = ct.CategoryId);
 
-            var role = await guild.CreateRoleAsync(clubName, GuildPermissions.None);
+            var role = await guild.CreateRoleAsync(club.ClubName, GuildPermissions.None);
 
             await ch.AddPermissionOverwriteAsync(role, AllowOverwrite);
             await ch.AddPermissionOverwriteAsync(guild.EveryoneRole, DenyOverwrite);
@@ -192,6 +193,41 @@ namespace Jibril.Modules.Club.Services
         {
             var clubId = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
             return (int) clubId?.Id;
+        }
+
+        public IReadOnlyCollection<UserData> GetClubMembersData(IEnumerable<FleetUserInfo> clubUser)
+        {
+            return (from x in clubUser
+                select DatabaseService.UserData(x.UserId).FirstOrDefault()
+                into y
+                where y.Level >= 40
+                select new UserData
+                {
+                    UserId = y.UserId,
+                    Username = y.Username,
+                    Tokens = y.Tokens,
+                    Event_tokens = y.Event_tokens,
+                    Level = y.Level,
+                    Xp = y.Xp,
+                    Total_xp = y.Total_xp,
+                    Daily = y.Daily,
+                    Cooldown = y.Cooldown,
+                    Voice_timer = y.Voice_timer,
+                    JoinDateTime = y.JoinDateTime,
+                    FleetName = y.FleetName,
+                    ShipClass = y.ShipClass,
+                    Profilepic = y.Profilepic,
+                    GameCD = y.GameCD,
+                    BetCD = y.BetCD,
+                    Hasrole = y.Hasrole,
+                    Toxicityvalue = y.Toxicityvalue,
+                    Toxicitymsgcount = y.Toxicitymsgcount,
+                    Toxicityavg = y.Toxicityavg,
+                    Rep = y.Rep,
+                    Repcd = y.Repcd,
+                    FirstMsg = y.FirstMsg,
+                    LastMsg = y.LastMsg
+                }).ToList();
         }
     }
 }

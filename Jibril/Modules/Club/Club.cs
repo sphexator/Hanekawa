@@ -149,5 +149,14 @@ namespace Jibril.Modules.Club
 
             await ReplyAsync("Can't demote a user thats not in the same club or already rank 2");
         }
+
+        [Command("channel", RunMode = RunMode.Async)]
+        [Summary("Creates a channel and role for the club")]
+        [RequiredChannel(ChannelId)]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task ChannelCreation()
+        {
+
+        }
     }
 }

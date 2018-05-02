@@ -144,11 +144,11 @@ namespace Jibril.Modules.Club.Services
             database.CloseConnection();
             return result;
         }
-        public static IReadOnlyCollection<FleetUserInfo> ClubData(string fleet)
+        public static IReadOnlyCollection<FleetUserInfo> ClubData(int id)
         {
             var result = new List<FleetUserInfo>();
             var database = new ClubDb("hanekawa");
-            var str = $"SELECT * FROM fleet WHERE clubName = '{fleet}'";
+            var str = $"SELECT * FROM fleet WHERE clubid = '{id}'";
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
