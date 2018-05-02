@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
+using Jibril.Modules.Club.Services;
 using Jibril.Modules.Marriage.Service;
 using Jibril.Modules.Report.Service;
 using Jibril.Services;
@@ -59,6 +60,7 @@ namespace Jibril
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<MarriageService>();
             services.GetRequiredService<ReportService>();
+            services.GetRequiredService<ClubService>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -79,6 +81,7 @@ namespace Jibril
             services.AddSingleton(_client);
             services.AddSingleton<MarriageService>();
             services.AddSingleton<ReportService>();
+            services.AddSingleton<ClubService>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<AudioService>();

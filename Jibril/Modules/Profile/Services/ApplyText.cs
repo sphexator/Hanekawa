@@ -3,7 +3,7 @@ using System.Linq;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Modules.Fleet.Services;
+using Jibril.Modules.Club.Services;
 using Jibril.Modules.Game.Services;
 using Jibril.Services.Level.Lists;
 using Jibril.Services.Level.Services;
@@ -285,16 +285,15 @@ namespace Jibril.Modules.Profile.Services
 
         private static string CheckFleetMembership(IUser user)
         {
-            var fleetName = FleetDb.CheckFleetMemberStatus(user).FirstOrDefault();
-            if (fleetName == null) return "N/A";
-            return fleetName.Equals("o", StringComparison.InvariantCultureIgnoreCase) ? "N/A" : fleetName;
+            var ClubName = ClubDb.UserClubData(user).FirstOrDefault();
+            return ClubName == null ? "N/A" : ClubName.ClubName;
         }
 
         private static string GetFleetCommander(IUser user, string fleet)
         {
             if (fleet.Equals("N/A", StringComparison.InvariantCultureIgnoreCase)) return "N/A";
-            var commander = FleetNormDb.GetLeader(user, fleet).ToString();
-            return commander ?? "N/A";
+            var commander = ClubDb.GetClubs().FirstOrDefault(x => x.Name == fleet);
+            return commander?.Name ?? "N/A";
         }
     }
 }
