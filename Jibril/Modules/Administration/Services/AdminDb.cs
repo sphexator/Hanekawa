@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Discord;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using Jibril.Modules.Administration.List;
 using MySql.Data.MySqlClient;
 
@@ -67,12 +68,52 @@ namespace Jibril.Modules.Administration.Services
             return result;
         }
 
+        public static void AddMsgLog(IMessage msg, int id)
+        {
+            var database = new AdminDb("hanekawa");
+            var msgString = msg.Content.RemoveSpecialCharacters();
+            var username = msg.Author.Username.RemoveSpecialCharacters();
+            var str = $"INSERT INTO warnmsglog (id, userid, msgid, author, msg, datetime) " +
+                      $"VALUES " +
+                      $"('{id}', '{msg.Author.Id}', '{msg.Id}', '{username}', '{msgString}', '{msg.Timestamp.DateTime:yyyy-MM-dd HH:mm}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static List<MsgLog> GetMsgLogs(IUser user, int dbId)
+        {
+            var result = new List<MsgLog>();
+            var database = new AdminDb("hanekawa");
+            var str = $"SELECT * FROM warnmsglog WHERE id = {dbId} && userid = {user.Id}";
+            var reader = database.FireCommand(str);
+            while (reader.Read())
+            {
+                var id = (int)reader["id"];
+                var userid = (ulong)reader["userid"];
+                var msgid = (ulong)reader["msgid"];
+                var author = (string)reader["author"];
+                var msg = (string)reader["msg"];
+                var date = (DateTime)reader["datetime"];
+
+                result.Add(new MsgLog
+                {
+                    Id = id,
+                    UserId = userid,
+                    MsgId = msgid,
+                    Author = author,
+                    Message = msg,
+                    Date = date
+                });
+            }
+            return result;
+        }
+
         public static void AddWarn(IUser user)
         {
             var database = new AdminDb("hanekawa");
             var str =
                 $"UPDATE warnings SET warnings = warnings + '1', total_warnings = total_warnings + '1' WHERE user_id = '{user.Id}'";
-            var tableName = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -80,7 +121,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var database = new AdminDb("hanekawa");
             var str = $"INSERT INTO warnings (user_id, warnings, total_warnings) VALUES ('{user.Id}', '1', '1')";
-            var tableName = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -94,13 +135,13 @@ namespace Jibril.Modules.Administration.Services
             var reader = database.FireCommand(str);
             while (reader.Read())
             {
-                var warnings = (int)reader["warnings"];
-                var total_warnings = (int)reader["total_warnings"];
+                var warnings = (uint)reader["warnings"];
+                var total_warnings = (uint)reader["total_warnings"];
 
                 result.Add(new WarnAmount
                 {
                     Warnings = warnings,
-                    Total_warnings = total_warnings
+                    TotalWarnings = total_warnings
                 });
             }
 
@@ -115,7 +156,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var database = new AdminDb("hanekawa");
             var str = $"INSERT INTO modlog (user_id, date) VALUES ('{user.Id}', '{now}')";
-            var tableName = database.FireCommand(str);
+            database.FireCommand(str);
             database.CloseConnection();
         }
 
@@ -311,7 +352,7 @@ namespace Jibril.Modules.Administration.Services
         {
             var database = new AdminDb("hanekawa");
             var str =
-                $"UPDATE exp SET toxicityvalue = '{tvalue}', toxicitymsgcount = toxicitymsgcount + 1, toxicityavg = '{newAvg}' WHERE user_id = {user.Id}";
+                $"UPDATE exp SET toxicityvalue = '{tvalue}', toxicitymsgcount = toxicitymsgcount + 1, toxicityavg = '{newAvg}', lastmsg = curtime() WHERE user_id = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -663,33 +704,60 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
         }
 
-        public static void AddWarn(IUser user, IUser staff, string msg)
+        public static List<WarnList> GetWarnId(IUser user, string dateTime)
+        {
+            var result = new List<WarnList>();
+            var database = new WarningDB("senjougahara");
+            var str = $"SELECT * FROM `senjougahara`.`{user.Id}` WHERE warndate = '{dateTime}'";
+            var read = database.FireCommand(str);
+            while (read.Read())
+            {
+                var id = (int)read["id"];
+                var staffId = (string)read["staff_id"];
+                var message = (string)read["message"];
+                var date = (DateTime)read["warndate"];
+
+                result.Add(new WarnList
+                {
+                    Id = id,
+                    StaffId = staffId,
+                    Message = message,
+                    Date = date
+                });
+            }
+            database.CloseConnection();
+            return result;
+        }
+
+        public static void AddWarn(IUser user, IUser staff, string msg, string date)
         {
             var database = new WarningDB("senjougahara");
             var addWarnNumb =
-                $"INSERT INTO `senjougahara`.`{user.Id}` (staff_id, message, warndate ) VALUES ('{staff.Id}', '{msg}', curtime())";
+                $"INSERT INTO `senjougahara`.`{user.Id}` (staff_id, message, warndate ) VALUES ('{staff.Id}', '{msg}', '{date}')";
             database.FireCommand(addWarnNumb);
             database.CloseConnection();
         }
 
-        public static List<WarnList> WarnList(IUser user)
+        public static List<WarnList> WarnList(IUser user, uint limit)
         {
             try
             {
                 var result = new List<WarnList>();
                 var database = new WarningDB("senjougahara");
-                var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id";
+                var str = $"SELECT * FROM `senjougahara`.`{user.Id}` ORDER BY id DESC LIMIT {limit}";
                 var tableName = database.FireCommand(str);
 
                 while (tableName.Read())
                 {
+                    var id = (int)tableName["id"];
                     var staffId = (string)tableName["staff_id"];
                     var message = (string)tableName["message"];
                     var date = (DateTime)tableName["warndate"];
 
                     result.Add(new WarnList
                     {
-                        Staff_id = staffId,
+                        Id = id,
+                        StaffId = staffId,
                         Message = message,
                         Date = date
                     });
@@ -704,12 +772,14 @@ namespace Jibril.Modules.Administration.Services
             }
         }
     }
+
+
+
     public class MuteRoleConfig
     {
         public ulong GuildId { get; set; }
         public string MuteRole { get; set; }
     }
-
     public class MutedUsers
     {
         public ulong Guildid { get; set; }

@@ -8,7 +8,9 @@ using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
+using Jibril.Modules.Club.Services;
 using Jibril.Modules.Marriage.Service;
+using Jibril.Modules.Report.Service;
 using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
@@ -31,12 +33,12 @@ namespace Jibril
         private DiscordSocketClient _client;
         private IConfiguration _config;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             new Program().MainASync().GetAwaiter().GetResult();
         }
 
-        public async Task MainASync()
+        private async Task MainASync()
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -55,14 +57,16 @@ namespace Jibril
             services.GetRequiredService<ModerationService>();
             services.GetRequiredService<PostPictures>();
             services.GetRequiredService<TimedMuteService>();
-            services.GetRequiredService<I_am_infamous>();
+            services.GetRequiredService<AmInfamous>();
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<MarriageService>();
+            services.GetRequiredService<ReportService>();
+            services.GetRequiredService<ClubService>();
             services.GetRequiredService<HungerGames>();
 
             var scheduler = services.GetService<IScheduler>();
 
-            QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
+            //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
             QuartzServicesUtilities.StartCronJob<I_am_infamous>(scheduler, "0 0 13 ? * MON *");
             QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0/1 * 1/1 * ? *");
 
@@ -76,9 +80,11 @@ namespace Jibril
         {
             var services = new ServiceCollection();
             services.UseQuartz(typeof(PostPictures));
-            services.UseQuartz(typeof(I_am_infamous));
+            services.UseQuartz(typeof(AmInfamous));
             services.AddSingleton(_client);
             services.AddSingleton<MarriageService>();
+            services.AddSingleton<ReportService>();
+            services.AddSingleton<ClubService>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<AudioService>();
@@ -87,8 +93,8 @@ namespace Jibril
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<LootCrates>();
-            services.AddSingleton<I_am_infamous>();
             services.AddSingleton<HungerGames>();
+            services.AddSingleton<AmInfamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();
             services.AddLogging();
