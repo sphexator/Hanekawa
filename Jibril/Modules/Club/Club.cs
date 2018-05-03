@@ -171,7 +171,7 @@ namespace Jibril.Modules.Club
 
         [Command("list", RunMode = RunMode.Async)]
         [Alias("clubs")]
-        [Summary("Creates a channel and role for the club")]
+        [Summary("Paginates all clubs")]
         [RequiredChannel(ChannelId)]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task Clubs()
@@ -185,9 +185,9 @@ namespace Jibril.Modules.Club
             await PagedReplyAsync(pages);
         }
 
-        [Command("club", RunMode = RunMode.Async)]
+        [Command("check", RunMode = RunMode.Async)]
         [Alias("clubs")]
-        [Summary("Creates a channel and role for the club")]
+        [Summary("Checks specific club information")]
         [RequiredChannel(ChannelId)]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task ClubTask(int id)
