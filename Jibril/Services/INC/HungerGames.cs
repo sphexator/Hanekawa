@@ -1,10 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Modules.Gambling.Services;
@@ -14,6 +7,13 @@ using Jibril.Services.Level.Services;
 using Quartz;
 using Quartz.Util;
 using SixLabors.ImageSharp;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using EventHandler = Jibril.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 
