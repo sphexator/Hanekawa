@@ -67,7 +67,7 @@ namespace Jibril
             var scheduler = services.GetService<IScheduler>();
 
             //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
-            QuartzServicesUtilities.StartCronJob<I_am_infamous>(scheduler, "0 0 13 ? * MON *");
+            QuartzServicesUtilities.StartCronJob<AmInfamous>(scheduler, "0 0 13 ? * MON *");
             QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0/1 * 1/1 * ? *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);

@@ -1,10 +1,13 @@
-
-using System.Linq;
-using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Jibril.Services;
 using Jibril.Services.INC;
+using Jibril.Services.Level;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Test
 {
@@ -26,6 +29,7 @@ namespace Jibril.Modules.Test
         }
 
         [Command("sign", RunMode = RunMode.Async)]
+        [RequireOwner]
         public async Task SignTask()
         {
             try
@@ -40,6 +44,7 @@ namespace Jibril.Modules.Test
         }
 
         [Command("start", RunMode = RunMode.Async)]
+        [RequireOwner]
         public async Task StartTask()
         {
             try
@@ -54,6 +59,7 @@ namespace Jibril.Modules.Test
         }
 
         [Command("continue", RunMode = RunMode.Async)]
+        [RequireOwner]
         public async Task ContinueTask()
         {
             try
