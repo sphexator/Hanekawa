@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
@@ -80,7 +81,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
         }
 
-        public static List<MsgLog> GetMsgLogs(IUser user, int dbId)
+        public static IEnumerable<MsgLog> GetMsgLogs(IUser user, int dbId)
         {
             var result = new List<MsgLog>();
             var database = new AdminDb("hanekawa");

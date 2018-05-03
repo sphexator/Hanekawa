@@ -25,9 +25,9 @@ namespace Jibril.Services.INC
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _eventStartMsg;
         private bool _activeEvent;
-        private const ulong Guild = 200265036596379648;
-        private const ulong EventChannel = 404633092867751937;
-        private const ulong OutPutChannel = 404633092867751937;
+        private const ulong Guild = 339370914724446208;
+        private const ulong EventChannel = 346429829316476928;
+        private const ulong OutPutChannel = 441322970485620756;
 
         public HungerGames(DiscordSocketClient client)
         {
@@ -64,7 +64,7 @@ namespace Jibril.Services.INC
 
                 if (config.Live != true && config.SignUpStage == false) await StartSignUp().ConfigureAwait(false);
                 if (config.Live != true && config.SignUpStage &&
-                    config.SignupDuration.AddMinutes(1) > DateTime.Now) return;
+                    config.SignupDuration.AddHours(23) > DateTime.Now) return;
                 if (config.Live) await ContinueEvent().ConfigureAwait(false);
                 if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent().ConfigureAwait(false);
             });

@@ -152,7 +152,7 @@ namespace Jibril.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task MsgLog(SocketGuildUser user, int id)
         {
-            var stream = GetMsgLog(user, id);
+            var stream = GetMsgLogAsync(user, id);
             stream.Seek(0, SeekOrigin.Begin);
             await Context.Channel.SendFileAsync(stream, "log.txt", $"Logs for {user.Nickname ?? user.Username}({user.Id}) with warnId {id}.");
         }
@@ -262,7 +262,7 @@ namespace Jibril.Modules.Administration
             return Task.CompletedTask;
         }
 
-        private static MemoryStream GetMsgLog(IUser user, int id)
+        private static MemoryStream GetMsgLogAsync(IUser user, int id)
         {
             var messages = AdminDb.GetMsgLogs(user, id);
             var stream = new MemoryStream();
