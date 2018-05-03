@@ -59,11 +59,11 @@ namespace Jibril.Services.INC
                 var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
                                  $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
 
-                if (config.Live != true && config.SignUpStage == false) await StartSignUp();
+                if (config.Live != true && config.SignUpStage == false) await StartSignUp().ConfigureAwait(false);
                 if (config.Live != true && config.SignUpStage &&
                     config.SignupDuration.AddMinutes(1) > DateTime.Now) return;
-                if (config.Live) await ContinueEvent();
-                if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent();
+                if (config.Live) await ContinueEvent().ConfigureAwait(false);
+                if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent().ConfigureAwait(false);
             });
             return Task.CompletedTask;
         }
@@ -118,8 +118,7 @@ namespace Jibril.Services.INC
             var newUsers = DatabaseHungerGame.GetProfilEnumerable();
             var images = ImageGenerator.GenerateEventImage(newUsers);
             images.Seek(0, SeekOrigin.Begin);
-            await ch.SendMessageAsync($"Log\n```{response}\n```");
-            await ch.SendFileAsync(images, "banner.png", null);
+            await ch.SendFileAsync(images, "banner.png", $"Action Log\n```{response}\n```");
 
             var remaining = DatabaseHungerGame.GetUsers();
             if (remaining.Count == 1)
@@ -206,7 +205,6 @@ namespace Jibril.Services.INC
             foreach (var file in cache.GetFiles())
                 file.Delete();
         }
-
         private static void EndGame()
         {
             ClearCache();
