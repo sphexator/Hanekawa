@@ -25,6 +25,9 @@ namespace Jibril.Services.INC
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _eventStartMsg;
         private bool _activeEvent;
+        private const ulong Guild = 200265036596379648;
+        private const ulong EventChannel = 404633092867751937;
+        private const ulong OutPutChannel = 404633092867751937;
 
         public HungerGames(DiscordSocketClient client)
         {
@@ -71,7 +74,7 @@ namespace Jibril.Services.INC
         public async Task StartSignUp()
         {
             DatabaseHungerGame.GameSignUpStart();
-            var msg = await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
+            var msg = await _client.GetGuild(Guild).GetTextChannel(EventChannel).SendMessageAsync(
                 "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 25 users will be fighting for their life, on the quest to obtain ....");
             Emote.TryParse("<:rooree:430207965140877322>", out var emote);
             IEmote iemoteYes = emote;
@@ -92,7 +95,7 @@ namespace Jibril.Services.INC
                 $"{users[10].Player.Name} - {users[11].Player.Name} - {users[12].Player.Name} - {users[13].Player.Name} - {users[14].Player.Name}\n" +
                 $"{users[15].Player.Name} - {users[16].Player.Name} - {users[17].Player.Name} - {users[18].Player.Name} - {users[19].Player.Name}\n" +
                 $"{users[20].Player.Name} - {users[21].Player.Name} - {users[22].Player.Name} - {users[23].Player.Name} - {users[24].Player.Name}\n";
-            await _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937).SendMessageAsync(
+            await _client.GetGuild(Guild).GetTextChannel(EventChannel).SendMessageAsync(
                 "Signup is closed and heres the following participants: \n" +
                 $"{names}");
         }
@@ -101,7 +104,7 @@ namespace Jibril.Services.INC
         {
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var output = new List<string>();
-            var ch = _client.GetGuild(200265036596379648).GetTextChannel(404633092867751937);
+            var ch = _client.GetGuild(Guild).GetTextChannel(OutPutChannel);
             foreach (var x in users)
             {
                 if (x.Player.Status == false) continue;
@@ -123,17 +126,18 @@ namespace Jibril.Services.INC
             var remaining = DatabaseHungerGame.GetUsers();
             if (remaining.Count == 1)
             {
+                var chFinish = _client.GetGuild(Guild).GetTextChannel(EventChannel);
                 if (remaining.FirstOrDefault().UserId > 24)
                 {
                     var user = _client.GetUser(remaining.FirstOrDefault().UserId);
                     LevelDatabase.AddExperience(user, 1000, 1000);
                     GambleDB.AddEventCredit(user, 1000);
-                    await ch.SendMessageAsync(
+                    await chFinish.SendMessageAsync(
                         $"{user.Mention} is the new HungerGame champion and rewarded 1000 credit, event credit and exp!");
                 }
                 else
                 {
-                    await ch.SendMessageAsync($"{remaining.FirstOrDefault().Name} is the new HungerGame champion!");
+                    await chFinish.SendMessageAsync($"{remaining.FirstOrDefault().Name} is the new HungerGame champion!");
                 }
                 EndGame();
             }
