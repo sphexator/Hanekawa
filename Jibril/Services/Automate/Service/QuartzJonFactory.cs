@@ -18,7 +18,7 @@ namespace Jibril.Services.Automate.Service
         {
             _services = services;
         }
-
+        
         public IJob NewJob(TriggerFiredBundle bundle, IScheduler scheduler)
         {
             var jobDetail = bundle.JobDetail;

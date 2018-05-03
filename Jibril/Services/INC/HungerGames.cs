@@ -1,116 +1,219 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Modules.Gambling.Services;
 using Jibril.Services.INC.Database;
+using Jibril.Services.INC.Generator;
+using Jibril.Services.Level.Services;
 using Quartz;
+using Quartz.Util;
+using SixLabors.ImageSharp;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using EventHandler = Jibril.Services.INC.Events.EventHandler;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Jibril.Services.INC
 {
     public class HungerGames : IJob
     {
+        private readonly SocketTextChannel _ch;
         private readonly DiscordSocketClient _client;
-
-        private List<ulong> _eventStartMsg;
+        private readonly List<ulong> _eventStartMsg;
         private bool _activeEvent;
+        private const ulong Guild = 200265036596379648;
+        private const ulong EventChannel = 404633092867751937;
+        private const ulong OutPutChannel = 404633092867751937;
 
         public HungerGames(DiscordSocketClient client)
         {
-            throw new NotImplementedException();
-            /*
             _client = client;
             _client.ReactionAdded += AddParticipants;
-
-            var guild = _client.GetGuild(339370914724446208);
-            var ch = guild.GetTextChannel(346429829316476928);
-            ch.GetMessagesAsync();
-            */
+            Directory.CreateDirectory("Services/INC/Cache/Avatar/");
+            
+            var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
+                             $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
+            _activeEvent = config.Live;
+            var fuckingBullShit = new List<ulong> {config.MsgId};
+            _eventStartMsg = fuckingBullShit;
         }
 
         public Task Execute(IJobExecutionContext context)
         {
-            throw new NotImplementedException();
+            try
+            {
+                InitializeTask();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return Task.CompletedTask;
         }
 
-        public Task InitializeTask()
+        private Task InitializeTask()
         {
-            throw new NotImplementedException();
-            /*
             var _ = Task.Run(async () =>
             {
                 var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
                                  $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
-                if (config.Live != true) await StartSignUp();
-                if (config.Live) await ContinueEvent();
-                var difference = DateTime.Compare(config.SignupDuration, DateTime.UtcNow);
-                if (config.Live != true && (config.SignupDuration.ToString() == "0001-01-01 00:00:00" ||
-                                            config.SignupDuration.AddHours(23) <= DateTime.UtcNow && difference < 0 ||
-                                            difference >= 0))
-                {
-                    await StartEvent();
-                }
+
+                if (config.Live != true && config.SignUpStage == false) await StartSignUp().ConfigureAwait(false);
+                if (config.Live != true && config.SignUpStage &&
+                    config.SignupDuration.AddMinutes(1) > DateTime.Now) return;
+                if (config.Live) await ContinueEvent().ConfigureAwait(false);
+                if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent().ConfigureAwait(false);
             });
             return Task.CompletedTask;
-            */
         }
 
-        private Task StartSignUp()
+        public async Task StartSignUp()
         {
-            throw new NotImplementedException();
-            /*
-            var guild = _client.GetGuild(339370914724446208);
-            var ch = guild.GetTextChannel(346429829316476928);
-            var msg = await ch.SendMessageAsync("New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 50 users will be fighting for their life, on the quest to obtain ....");
-            Emote.TryParse("<:rooree:362610653120299009>", out var emote);
+            DatabaseHungerGame.GameSignUpStart();
+            var msg = await _client.GetGuild(Guild).GetTextChannel(EventChannel).SendMessageAsync(
+                "New HUNGER GAME event has started!\n\nTo enter, react to this message. \nThe first 25 users will be fighting for their life, on the quest to obtain ....");
+            Emote.TryParse("<:rooree:430207965140877322>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
             _eventStartMsg.Add(msg.Id);
-            */
+            DatabaseHungerGame.StoreMsgId(msg.Id);
         }
 
-        private Task StartEvent()
+        public async Task StartEvent()
         {
-            throw new NotImplementedException();
-            /*
+            var totalUsers = DatabaseHungerGame.GetTotalUsers();
+            AddDefaultCharacters(totalUsers);
+            DatabaseHungerGame.GameStart();
             var users = DatabaseHungerGame.GetProfilEnumerable();
+            var names =
+                $"{users[0].Player.Name} - {users[1].Player.Name} - {users[2].Player.Name} - {users[3].Player.Name} - {users[4].Player.Name}\n" +
+                $"{users[6].Player.Name} - {users[7].Player.Name} - {users[7].Player.Name} - {users[8].Player.Name} - {users[9].Player.Name}\n" +
+                $"{users[10].Player.Name} - {users[11].Player.Name} - {users[12].Player.Name} - {users[13].Player.Name} - {users[14].Player.Name}\n" +
+                $"{users[15].Player.Name} - {users[16].Player.Name} - {users[17].Player.Name} - {users[18].Player.Name} - {users[19].Player.Name}\n" +
+                $"{users[20].Player.Name} - {users[21].Player.Name} - {users[22].Player.Name} - {users[23].Player.Name} - {users[24].Player.Name}\n";
+            await _client.GetGuild(Guild).GetTextChannel(EventChannel).SendMessageAsync(
+                "Signup is closed and heres the following participants: \n" +
+                $"{names}");
+        }
+
+        public async Task ContinueEvent()
+        {
+            var users = DatabaseHungerGame.GetProfilEnumerable();
+            var output = new List<string>();
+            var ch = _client.GetGuild(Guild).GetTextChannel(OutPutChannel);
             foreach (var x in users)
             {
-                var action = Events.EventHandler.EventManager(x);
+                if (x.Player.Status == false) continue;
+                var userCheck = DatabaseHungerGame.CheckExistingUser(x.Player.UserId).FirstOrDefault();
+                if (userCheck.Status == false) continue;
+                var eventOutput = EventHandler.EventManager(x);
+                if (eventOutput.IsNullOrWhiteSpace()) continue;
+                var content = $"{x.Player.Name.PadRight(20)} {eventOutput}";
+                output.Add(content);
+                DatabaseHungerGame.Stagger(x.Player.UserId);
             }
-            */
-        }
+            var response = string.Join("\n", output);
 
-        private Task ContinueEvent()
-        {
-            throw new NotImplementedException();
-        }
+            var newUsers = DatabaseHungerGame.GetProfilEnumerable();
+            var images = ImageGenerator.GenerateEventImage(newUsers);
+            images.Seek(0, SeekOrigin.Begin);
+            await ch.SendFileAsync(images, "banner.png", $"Action Log\n```{response}\n```");
 
+            var remaining = DatabaseHungerGame.GetUsers();
+            if (remaining.Count == 1)
+            {
+                var chFinish = _client.GetGuild(Guild).GetTextChannel(EventChannel);
+                if (remaining.FirstOrDefault().UserId > 24)
+                {
+                    var user = _client.GetUser(remaining.FirstOrDefault().UserId);
+                    LevelDatabase.AddExperience(user, 1000, 1000);
+                    GambleDB.AddEventCredit(user, 1000);
+                    await chFinish.SendMessageAsync(
+                        $"{user.Mention} is the new HungerGame champion and rewarded 1000 credit, event credit and exp!");
+                }
+                else
+                {
+                    await chFinish.SendMessageAsync($"{remaining.FirstOrDefault().Name} is the new HungerGame champion!");
+                }
+                EndGame();
+            }
+            else DatabaseHungerGame.GameRoundIncrease();
+        }
+        
         private Task AddParticipants(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel ch, SocketReaction react)
         {
-            throw new NotImplementedException();
-            /*
-            var _ = Task.Run(() =>
+            var _ = Task.Run(async () =>
             {
-                if (!_eventStartMsg.Contains(msg.Id)) return;
+                if (!_eventStartMsg.Contains(react.MessageId)) return;
                 if (msg.Value.Author.IsBot != true) return;
                 if (react.User.Value.IsBot) return;
                 if (react.Emote.Name != "rooree") return;
                 var users = DatabaseHungerGame.GetUsers();
+                if (users.Count >= 25) return;
                 var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
-                if (users.Count >= 50 && check != null) return;
+                if (check == null) return;
                 DatabaseHungerGame.EnterUser(react.User.Value);
-                // TODO: Add user to database as they react and return if they're already there
+                await SaveAvatar(react.User.Value);
             });
             return Task.CompletedTask;
-            */
         }
 
-        public IUser GetUser(ulong id)
+        private static void AddDefaultCharacters(ICollection result)
         {
-            var user = _client.GetUser(id);
-            return user;
+            if (result.Count >= 25) return;
+            var remaining = 25 - result.Count;
+            var users = DatabaseHungerGame.GetDefaultUsers();
+            for (var i = 0; i < remaining; i++)
+            {
+                var filePath = $"Services/INC/Cache/DefaultAvatar/{i}.png";
+                using (var img = Image.Load(filePath))
+                {
+                    img.Mutate(x => x.Resize(80, 80));
+                    img.Save($"Services/INC/Cache/Avatar/{users[i].Userid}.png");
+                }
+
+                DatabaseHungerGame.EnterUser(users[i].Userid, users[i].Name);
+            }
+        }
+
+        private async Task SaveAvatar(IUser user)
+        {
+            var filePath = $"Services/INC/Cache/Avatar/{user.Id}.png";
+            var httpclient = new HttpClient();
+            HttpResponseMessage response;
+
+            try
+            {
+                response = await httpclient.GetAsync(user.GetAvatarUrl());
+            }
+            catch
+            {
+                response = await httpclient.GetAsync(
+                    "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png");
+            }
+
+            var inputStream = await response.Content.ReadAsStreamAsync();
+            using (var img = Image.Load(inputStream))
+            {
+                img.Mutate(x => x.Resize(80, 80));
+                img.Save(filePath);
+            }
+        }
+        private  static void ClearCache()
+        {
+            var cache = new DirectoryInfo("Services/INC/Cache/Avatar/");
+            foreach (var file in cache.GetFiles())
+                file.Delete();
+        }
+        private static void EndGame()
+        {
+            ClearCache();
+            DatabaseHungerGame.GameEnd();
+            DatabaseHungerGame.ClearTable();
         }
     }
 }

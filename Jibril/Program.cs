@@ -15,6 +15,7 @@ using Jibril.Services;
 using Jibril.Services.Automate.PicDump;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
+using Jibril.Services.INC;
 using Jibril.Services.Level;
 using Jibril.Services.Logging;
 using Jibril.Services.Loot;
@@ -61,18 +62,20 @@ namespace Jibril
             services.GetRequiredService<MarriageService>();
             services.GetRequiredService<ReportService>();
             services.GetRequiredService<ClubService>();
+            services.GetRequiredService<HungerGames>();
 
             var scheduler = services.GetService<IScheduler>();
 
             //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
             QuartzServicesUtilities.StartCronJob<AmInfamous>(scheduler, "0 0 13 ? * MON *");
+            QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0/1 * 1/1 * ? *");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
 
             await Task.Delay(-1);
         }
-
+        
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
@@ -90,6 +93,7 @@ namespace Jibril
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<LootCrates>();
+            services.AddSingleton<HungerGames>();
             services.AddSingleton<AmInfamous>();
             services.AddSingleton<TimedMuteService>();
             services.AddSingleton<PostPictures>();

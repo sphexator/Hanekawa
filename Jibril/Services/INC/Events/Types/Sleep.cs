@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Services.INC.Data;
+﻿using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Database;
 
 namespace Jibril.Services.INC.Events.Types

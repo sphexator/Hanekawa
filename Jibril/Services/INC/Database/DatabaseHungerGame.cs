@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Discord;
 using Jibril.Data.Variables;
-using MySql.Data.MySqlClient;
+using Jibril.Extensions;
 using Jibril.Services.INC.Data;
-using Jibril.Services.Level.Lists;
+using MySql.Data.MySqlClient;
 
 namespace Jibril.Services.INC.Database
 {
     public class DatabaseHungerGame
     {
+        private const bool Pooling = false;
         private readonly string _database = DbInfo.DbNorm;
         private readonly MySqlConnection _dbConnection;
         private readonly string _password = DbInfo.Password;
-        private const bool Pooling = false;
         private readonly string _server = DbInfo.Server;
         private readonly string _username = DbInfo.Username;
 
@@ -53,17 +52,72 @@ namespace Jibril.Services.INC.Database
 
         public static void EnterUser(IUser user)
         {
+            var name = user.Username.RemoveSpecialCharacters();
             var database = new DatabaseHungerGame("hanekawa");
             var str =
-                $"INSERT INTO hungergame (userid) VALUES ('{user.Id}')";
+                $"INSERT INTO hungergame (userid, name) VALUES ('{user.Id}', '{name}')";
             database.FireCommand(str);
             database.CloseConnection();
+        }
+
+        public static void EnterUser(ulong id, string name)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str =
+                $"INSERT INTO hungergame (userid, name) VALUES ('{id}', '{name}')";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+
+        public static void GameSignUpStart()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "UPDATE hungergameconfig SET signupstage = 1, signupDuration = curtime() WHERE guild = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static List<ulong> GetTotalUsers()
+        {
+            var result = new List<ulong>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "SELECT * FROM hungergame";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var userid = (ulong) exec["userid"];
+
+                result.Add(userid);
+            }
+            return result;
+        }
+
+        public static List<DefaultUsersHg> GetDefaultUsers()
+        {
+            var result = new List<DefaultUsersHg>();
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "select * FROM hungergamedefault";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
+                var userid = (ulong) exec["userid"];
+                var name = (string) exec["name"];
+                result.Add(new DefaultUsersHg
+                {
+                    Name = name,
+                    Userid = userid
+                });
+            }
+
+            return result;
         }
 
         public static void GameStart()
         {
             var database = new DatabaseHungerGame("hanekawa");
-            const string str = "UPDATE hungergameconfig SET live = 1, round = 1 WHERE guild = '339370914724446208'";
+            const string str =
+                "UPDATE hungergameconfig SET live = 1, round = 1, signupstage = 0 WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -76,6 +130,14 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
+        public static void ClearTable()
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            const string str = "truncate table hungergame";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static void GameRoundIncrease()
         {
             var database = new DatabaseHungerGame("hanekawa");
@@ -84,31 +146,44 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
         }
 
-
         public static List<Config> GetConfig()
         {
             var result = new List<Config>();
             var database = new DatabaseHungerGame("hanekawa");
-            const string str = "SELECT * FROM hungergameconfig WHERE guildid = '339370914724446208'";
+            const string str = "SELECT * FROM hungergameconfig WHERE guild = '339370914724446208'";
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
                 var guildid = (ulong) exec["guild"];
-                var live = (bool) exec["live"];
+                var msgid = (ulong) exec["msgId"];
+                var live1 = (sbyte) exec["live"];
                 var round = (int) exec["round"];
                 var signnupDuration = (DateTime) exec["signupDuration"];
+                var signUpStage1 = (sbyte) exec["signupstage"];
 
+                var live = live1 == 1;
+                var signUpStage = signUpStage1 == 1;
                 result.Add(new Config
                 {
                     GuildId = guildid,
+                    MsgId = msgid,
                     Live = live,
                     Round = round,
-                    SignupDuration = signnupDuration
+                    SignupDuration = signnupDuration,
+                    SignUpStage = signUpStage
                 });
             }
 
             database.CloseConnection();
             return result;
+        }
+
+        public static void StoreMsgId(ulong id)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergameconfig SET msgId = {id} WHERE guildid = '339370914724446208'";
+            database.FireCommand(str);
+            database.CloseConnection();
         }
 
         public static List<Player> GetUsers()
@@ -119,17 +194,25 @@ namespace Jibril.Services.INC.Database
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var id = (int)exec["id"];
-                var userId = (ulong)exec["userid"];
-                var name = (string) exec["username"];
-                var health = (int)exec["health"];
-                var stamina = (int)exec["stamina"];
-                var damage = (int)exec["damage"];
-                var hunger = (int)exec["hunger"];
-                var thirst = (int)exec["thirst"];
-                var sleep = (int)exec["sleep"];
-                var status = (bool)exec["status"];
-                var bleeding = (bool)exec["bleeding"];
+                var id = (int) exec["id"];
+                var userId = (ulong) exec["userid"];
+                var name = (string) exec["name"];
+                var health = (int) exec["health"];
+                var stamina1 = (int) exec["stamina"];
+                var fatigue = (int) exec["fatigue"];
+                var damage = (int) exec["damageTaken"];
+                var hunger = (int) exec["hunger"];
+                var thirst = (int) exec["thirst"];
+                var sleep = (int) exec["sleep"];
+                var status1 = (int) exec["status"];
+                var bleeding1 = (int) exec["bleeding"];
+
+                var stamina = stamina1 - fatigue;
+                var status = false;
+                var bleeding = false;
+
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
 
                 result.Add(new Player
                 {
@@ -159,16 +242,69 @@ namespace Jibril.Services.INC.Database
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
+                var id = (int) exec["id"];
+                var userId = (ulong) exec["userid"];
+                var health = (int) exec["health"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
+                var damage = (int) exec["damageTaken"];
+                var hunger = (int) exec["hunger"];
+                var thirst = (int) exec["thirst"];
+                var sleep = (int) exec["sleep"];
+                var status1 = (int) exec["status"];
+                var bleeding1 = (int) exec["bleeding"];
+
+                var stamina = stamina1 - fatigue;
+                var status = false;
+                var bleeding = false;
+
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
+
+                result.Add(new Player
+                {
+                    Id = id,
+                    UserId = userId,
+                    Health = health,
+                    Stamina = stamina,
+                    Damage = damage,
+                    Hunger = hunger,
+                    Thirst = thirst,
+                    Sleep = sleep,
+                    Status = status,
+                    Bleeding = bleeding
+                });
+            }
+
+            database.CloseConnection();
+            return result;
+        }
+        public static List<Player> CheckExistingUser(ulong Id)
+        {
+            var result = new List<Player>();
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"SELECT * FROM hungergame WHERE userid = '{Id}'";
+            var exec = database.FireCommand(str);
+            while (exec.Read())
+            {
                 var id = (int)exec["id"];
                 var userId = (ulong)exec["userid"];
                 var health = (int)exec["health"];
-                var stamina = (int)exec["stamina"];
-                var damage = (int)exec["damage"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
+                var damage = (int)exec["damageTaken"];
                 var hunger = (int)exec["hunger"];
                 var thirst = (int)exec["thirst"];
                 var sleep = (int)exec["sleep"];
-                var status = (bool)exec["status"];
-                var bleeding = (bool)exec["bleeding"];
+                var status1 = (int)exec["status"];
+                var bleeding1 = (int)exec["bleeding"];
+
+                var stamina = stamina1 - fatigue;
+                var status = false;
+                var bleeding = false;
+
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
 
                 result.Add(new Player
                 {
@@ -189,15 +325,16 @@ namespace Jibril.Services.INC.Database
             return result;
         }
 
-        public static void Stagger(IUser user)
+        public static void Stagger(ulong user)
         {
             var database = new DatabaseHungerGame("hanekawa");
             var rand = new Random();
-            var stamina = rand.Next(15, 20);
+            var fatigue = rand.Next(10, 15);
             var hunger = rand.Next(5, 10);
             var thirst = rand.Next(10, 20);
             var sleep = rand.Next(20, 30);
-            var str = $"UPDATE hungergame SET stamina = stamina + '{stamina}', hunger = hunger - '{hunger}', sleep = sleep - '{sleep}', thirst = thirst - '{thirst}' WHERE userid = {user.Id}";
+            var str =
+                $"UPDATE hungergame SET fatigue = fatigue + '{fatigue}', hunger = hunger + '{hunger}', sleep = sleep + '{sleep}', thirst = thirst + '{thirst}' WHERE userid = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -205,7 +342,7 @@ namespace Jibril.Services.INC.Database
         public static void Sleep(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET sleep = 100 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET sleep = 0, fatigue = 0 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -213,14 +350,15 @@ namespace Jibril.Services.INC.Database
         public static void EatFood(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET hunger = 100 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET hunger = 0, fatigue = fatigue - 25 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
+
         public static void EatSpecialFood(ulong userid, int buff)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET hunger = 100, stamina = stamina + '{buff}' WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET hunger = 0, fatigue = fatigue + '{buff}' WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -228,7 +366,7 @@ namespace Jibril.Services.INC.Database
         public static void DrinkWater(ulong userid)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET thirst = 100 WHERE userid = {userid}";
+            var str = $"UPDATE hungergame SET thirst = 0, fatigue = fatigue - 25 WHERE userid = {userid}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -236,7 +374,7 @@ namespace Jibril.Services.INC.Database
         public static void AddDamage(IUser user, int damage)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET damageTaken = damageTaken - '{damage}' WHERE userid = {user.Id}";
+            var str = $"UPDATE hungergame SET damageTaken = damageTaken + '{damage}' WHERE userid = {user.Id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -244,7 +382,7 @@ namespace Jibril.Services.INC.Database
         public static void AddDamage(ulong user, int damage)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET damageTaken = damageTaken - '{damage}' WHERE userid = {user}";
+            var str = $"UPDATE hungergame SET damageTaken = damageTaken + '{damage}' WHERE userid = {user}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -260,7 +398,15 @@ namespace Jibril.Services.INC.Database
         public static void AddDrink(ulong id, string item)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET totalfood = totaldrink + 1, {item} = {item} + 1 WHERE userid = {id}";
+            var str = $"UPDATE hungergame SET totaldrink = totaldrink + 1, {item} = {item} + 1 WHERE userid = {id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void AddBandages(ulong id, string item)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET {item} = {item} + 1 WHERE userid = {id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -292,7 +438,16 @@ namespace Jibril.Services.INC.Database
         public static void AddWeapon(ulong id, string item, string ammotype, int ammo)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET totalweapons = totalweapons + 1, {item} = {item} + 1, {ammotype} = {ammotype} + {ammo} WHERE userid = {id}";
+            var str =
+                $"UPDATE hungergame SET totalweapons = totalweapons + 1, {item} = {item} + 1, {ammotype} = {ammotype} + {ammo} WHERE userid = {id}";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void AddEverything(ulong id)
+        {
+            var database = new DatabaseHungerGame("hanekawa");
+            var str = $"UPDATE hungergame SET totalweapons = totalweapons + 3, bow = bow + 1, axe = axe + 1, pistol = pistol + 1, bandages = bandages + 1, redbull = redbull + 1, mountaindew = mountaindew + 1, water = water + 1, coke = coke + 1, ramen = ramen + 1, fish = fish + 1, pasta = pasta + 1, beans = beans + 1, totaldrink = totaldrink + 4, totalfood = totalfood + 4 WHERE userid = '{id}'";
             database.FireCommand(str);
             database.CloseConnection();
         }
@@ -308,12 +463,12 @@ namespace Jibril.Services.INC.Database
         public static void DieEvent(ulong id)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergame SET status = '0' WHERE userid = {id}";
+            var str = $"UPDATE hungergame SET status = '0', damageTaken = '100' WHERE userid = {id}";
             database.FireCommand(str);
             database.CloseConnection();
         }
 
-        public static IEnumerable<Profile> GetProfilEnumerable()
+        public static List<Profile> GetProfilEnumerable()
         {
             var result = new List<Profile>();
             var database = new DatabaseHungerGame("hanekawa");
@@ -321,40 +476,51 @@ namespace Jibril.Services.INC.Database
             var exec = database.FireCommand(str);
             while (exec.Read())
             {
-                var id = (int)exec["id"];
-                var userId = (ulong)exec["userid"];
-                var health = (int)exec["health"];
-                var stamina = (int)exec["stamina"];
-                var damage = (int)exec["damage"];
-                var hunger = (int)exec["hunger"];
-                var thirst = (int)exec["thirst"];
-                var sleep = (int)exec["sleep"];
-                var status = (bool)exec["status"];
-                var bleeding = (bool)exec["bleeding"];
-                var totalfood = (int)exec["totalfood"];
-                var totaldrink = (int)exec["totaldrink"];
-                var beans = (int)exec["beans"];
-                var pasta = (int)exec["pasta"];
-                var fish = (int)exec["fish"];
-                var ramen = (int)exec["ramen"];
-                var coke = (int)exec["coke"];
-                var water = (int)exec["water"];
-                var mountaindew = (int)exec["mountaindew"];
-                var redbull = (int)exec["redbull"];
-                var bandages = (int)exec["bandages"];
-                var totalweapons = (int)exec["totalweapons"];
-                var pistol = (int)exec["pistol"];
-                var bullets = (int)exec["bullets"];
-                var bow = (int)exec["bow"];
-                var arrows = (int)exec["arrows"];
-                var axe = (int)exec["axe"];
-                var trap = (int)exec["trap"];
+                var status = false;
+                var bleeding = false;
+
+                var id = (int) exec["id"];
+                var userId = (ulong) exec["userid"];
+                var name = (string) exec["name"];
+                var health = (int) exec["health"];
+                var stamina1 = (int)exec["stamina"];
+                var fatigue = (int)exec["fatigue"];
+                var damage = (int) exec["damageTaken"];
+                var hunger = (int) exec["hunger"];
+                var thirst = (int) exec["thirst"];
+                var sleep = (int) exec["sleep"];
+                var status1 = (int) exec["status"];
+                var bleeding1 = (int) exec["bleeding"];
+                var totalfood = (int) exec["totalfood"];
+                var totaldrink = (int) exec["totaldrink"];
+                var beans = (int) exec["beans"];
+                var pasta = (int) exec["pasta"];
+                var fish = (int) exec["fish"];
+                var ramen = (int) exec["ramen"];
+                var coke = (int) exec["coke"];
+                var water = (int) exec["water"];
+                var mountaindew = (int) exec["mountaindew"];
+                var redbull = (int) exec["redbull"];
+                var bandages = (int) exec["bandages"];
+                var totalweapons = (int) exec["totalweapons"];
+                var pistol = (int) exec["pistol"];
+                var bullets = (int) exec["bullets"];
+                var bow = (int) exec["bow"];
+                var arrows = (int) exec["arrows"];
+                var axe = (int) exec["axe"];
+                var trap = (int) exec["trap"];
+
+                var stamina = stamina1 - fatigue;
+                if (status1 == 1) status = true;
+                if (bleeding1 == 1) bleeding = true;
+
                 result.Add(new Profile
                 {
                     Player = new Player
                     {
                         Id = id,
                         UserId = userId,
+                        Name = name,
                         Health = health,
                         Stamina = stamina,
                         Damage = damage,
@@ -394,118 +560,11 @@ namespace Jibril.Services.INC.Database
             database.CloseConnection();
             return result;
         }
+    }
 
-        // Left over code thats commented out as its not meant to be used
-        /*
-        public static List<Player> GetPlayer()
-        {
-            var result = new List<Player>();
-            var database = new DatabaseHungerGame("hanekawa");
-            const string str = "SELECT * FROM hungergame";
-            var exec = database.FireCommand(str);
-            while (exec.Read())
-            {
-                var id = (int) exec["id"];
-                var userId = (ulong) exec["userid"];
-                var health = (int) exec["health"];
-                var stamina = (int) exec["stamina"];
-                var damage = (int) exec["damage"];
-                var hunger = (int) exec["hunger"];
-                var thirst = (int) exec["thirst"];
-                var sleep = (int) exec["sleep"];
-                var status = (bool) exec["status"];
-                var bleeding = (bool) exec["bleeding"];
-
-                result.Add(new Player
-                {
-                    Id = id,
-                    UserId = userId,
-                    Health = health,
-                    Stamina = stamina,
-                    Damage = damage,
-                    Hunger = hunger,
-                    Thirst = thirst,
-                    Sleep = sleep,
-                    Status = status,
-                    Bleeding = bleeding
-                });
-            }
-
-            database.CloseConnection();
-            return result;
-        }
-
-        public static List<Weapons> GetWeapons()
-        {
-            var result = new List<Weapons>();
-            var database = new DatabaseHungerGame("hanekawa");
-            const string str = "SELECT * FROM hungergame";
-            var exec = database.FireCommand(str);
-            while (exec.Read())
-            {
-                var totalweapons = (int)exec["totalweapons"];
-                var pistol = (int)exec["pistol"];
-                var bullets = (int)exec["bullets"];
-                var bow = (int)exec["bow"];
-                var arrows = (int)exec["arrows"];
-                var axe = (int)exec["axe"];
-                var trap = (int)exec["trap"];
-
-                result.Add(new Weapons
-                {
-                    TotalWeapons = totalweapons,
-                    Pistol = pistol,
-                    Bullets = bullets,
-                    Bow = bow,
-                    Arrows = arrows,
-                    Axe = axe,
-                    Trap = trap
-                });
-            }
-
-            database.CloseConnection();
-            return result;
-        }
-
-        public static List<Consumables> GetConsumables()
-        {
-            var result = new List<Consumables>();
-            var database = new DatabaseHungerGame("hanekawa");
-            const string str = "SELECT * FROM hungergame";
-            var exec = database.FireCommand(str);
-            while (exec.Read())
-            {
-                var totalfood = (int)exec["totalfood"];
-                var totaldrink = (int)exec["totaldrink"];
-                var beans = (int)exec["beans"];
-                var pasta = (int)exec["pasta"];
-                var fish = (int)exec["fish"];
-                var ramen = (int)exec["ramen"];
-                var coke = (int)exec["coke"];
-                var water = (int)exec["water"];
-                var mountaindew = (int)exec["mountaindew"];
-                var redbull = (int)exec["redbull"];
-                var bandages = (int)exec["bandages"];
-
-                result.Add(new Consumables
-                {
-                    TotalFood = totalfood,
-                    TotalDrink = totaldrink,
-                    Beans = beans,
-                    Pasta = pasta,
-                    Fish = fish,
-                    Ramen = ramen,
-                    Coke = coke,
-                    Water = water,
-                    MountainDew = mountaindew,
-                    Redbull = redbull,
-                    Bandages = bandages
-                });
-            }
-
-            database.CloseConnection();
-            return result;
-        }
-         */
+    public class DefaultUsersHg
+    {
+        public ulong Userid { get; set; }
+        public string Name { get; set; }
     }
 }

@@ -13,12 +13,12 @@ namespace Jibril.Services.INC.Events
             {
                 case ChanceGenerator.LootName:
                 {
-                    var response = Types.Loot.LootEvent();
+                    var response = Types.Loot.LootEvent(profile);
                     return response;
                 }
                 case ChanceGenerator.KillName:
                 {
-                    var response = Kill.KillEvent(profile); 
+                    var response = Kill.KillEvent(profile);
                     return response;
                 }
                 case ChanceGenerator.IdleName:
@@ -38,7 +38,7 @@ namespace Jibril.Services.INC.Events
                 }
                 case ChanceGenerator.DieName:
                 {
-                    var response = Die.DieEvent();
+                    var response = Die.DieEvent(profile);
                     return response;
                 }
                 case ChanceGenerator.SleepName:

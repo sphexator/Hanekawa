@@ -31,7 +31,7 @@ namespace Jibril.Services.AutoModerator
             _discord = discord;
             _provider = provider;
             _config = config;
-
+          
             PerspectiveToken = _config["perspective"];
 
             _discord.MessageReceived += Filter;
