@@ -53,7 +53,7 @@ namespace Jibril.Modules.Club.Services
         private static void AddMember(IUser user, int id, string clubName)
         {
             var database = new ClubDb("hanekawa");
-            var str = $"INSERT into fleet (userid, clubid, name, clubname, rank, joindate) VALUES ('{user.Id}', '{id}', '{user.Username}', '{clubName}', 3, curtime())";
+            var str = $"INSERT into fleet (userid, clubid, name, clubname, rank, joindate) VALUES ('{user.Id}', '{id}', '{user.Username.RemoveSpecialCharacters()}', '{clubName}', 3, curtime())";
             database.FireCommand(str);
             database.CloseConnection();
         }
