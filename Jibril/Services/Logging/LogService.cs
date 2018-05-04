@@ -74,7 +74,7 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
-                    ApplyBanScheduler(user);
+                    //ApplyBanScheduler(user);
                     await LogEmbedBuilder(guild, user, ActionType.Bent, Colours.FailColour);
                 }
                 catch (Exception e)
