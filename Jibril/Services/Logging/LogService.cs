@@ -243,7 +243,15 @@ namespace Jibril.Services.Logging
         private Task LogCommand(LogMessage message)
         {
             // Return an error message for async commands
-            if (message.Exception is CommandException command) Console.WriteLine($"Error: {command.Message}");
+            if (message.Exception is CommandException command)
+            {
+                Console.WriteLine($"Error: {command.Message}");
+                var _ = command.Context.Channel.SendMessageAsync("Something went wrong ...");
+                _ = command.Context.Client.GetApplicationInfoAsync().Result.Owner
+                    .SendMessageAsync($"Error: {command.Message}");
+            }
+
+
             _commandsLogger.Log(
                 LogLevelFromSeverity(message.Severity),
                 0,
