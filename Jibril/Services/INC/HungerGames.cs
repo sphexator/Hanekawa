@@ -91,7 +91,7 @@ namespace Jibril.Services.INC
             var users = DatabaseHungerGame.GetProfilEnumerable();
             var names =
                 $"{users[0].Player.Name} - {users[1].Player.Name} - {users[2].Player.Name} - {users[3].Player.Name} - {users[4].Player.Name}\n" +
-                $"{users[6].Player.Name} - {users[7].Player.Name} - {users[7].Player.Name} - {users[8].Player.Name} - {users[9].Player.Name}\n" +
+                $"{users[5].Player.Name} - {users[6].Player.Name} - {users[7].Player.Name} - {users[8].Player.Name} - {users[9].Player.Name}\n" +
                 $"{users[10].Player.Name} - {users[11].Player.Name} - {users[12].Player.Name} - {users[13].Player.Name} - {users[14].Player.Name}\n" +
                 $"{users[15].Player.Name} - {users[16].Player.Name} - {users[17].Player.Name} - {users[18].Player.Name} - {users[19].Player.Name}\n" +
                 $"{users[20].Player.Name} - {users[21].Player.Name} - {users[22].Player.Name} - {users[23].Player.Name} - {users[24].Player.Name}\n";
