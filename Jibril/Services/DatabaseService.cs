@@ -109,11 +109,27 @@ namespace Jibril.Services
             database.CloseConnection();
         }
 
+        public static void SetMvPIgnore(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"UPDATE exp SET mvpignore = '1' WHERE user_id = '{user.Id}'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
+        public static void RemoveMvPIgnore(IUser user)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"UPDATE exp SET mvpignore = '0' WHERE user_id = '{user.Id}'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+
         public static List<ulong> GetActiveUsers()
         {
             var database = new DatabaseService("hanekawa");
             var result = new List<ulong>();
-            const string str = "SELECT * FROM exp WHERE mvpimmunity = 0 ORDER BY mvpCounter DESC LIMIT 5";
+            const string str = "SELECT * FROM exp WHERE mvpimmunity = '0' && mvpignore = '0' ORDER BY mvpCounter DESC LIMIT 5";
             var reader = database.FireCommand(str);
 
             while (reader.Read())
@@ -156,6 +172,9 @@ namespace Jibril.Services
                 var toxicityvalue = (double) exec["toxicityvalue"];
                 var toxicitymsgcount = (int) exec["toxicitymsgcount"];
                 var toxicityavg = (double) exec["toxicityavg"];
+                var mvpCounter = (int) exec["mvpCounter"];
+                var mvpImmunity = (int) exec["mvpimmunity"];
+                var mvpIgnore = (int) exec["mvpignore"];
                 var rep = (int) exec["rep"];
                 var repcd = (DateTime) exec["repcd"];
                 var firstMsg = (DateTime) exec["firstmsg"];
@@ -183,6 +202,9 @@ namespace Jibril.Services
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
                     Toxicityavg = toxicityavg,
+                    MvPCounter = mvpCounter,
+                    MvPImmunity = mvpImmunity,
+                    MvPIgnore = mvpIgnore,
                     Rep = rep,
                     Repcd = repcd,
                     FirstMsg = firstMsg,
@@ -222,6 +244,9 @@ namespace Jibril.Services
                 var toxicityvalue = (double) exec["toxicityvalue"];
                 var toxicitymsgcount = (int) exec["toxicitymsgcount"];
                 var toxicityavg = (double) exec["toxicityavg"];
+                var mvpCounter = (int)exec["mvpCounter"];
+                var mvpImmunity = (int)exec["mvpimmunity"];
+                var mvpIgnore = (int)exec["mvpignore"];
                 var rep = (int) exec["rep"];
                 var repcd = (DateTime) exec["repcd"];
                 var firstMsg = (DateTime) exec["firstmsg"];
@@ -249,6 +274,9 @@ namespace Jibril.Services
                     Toxicityvalue = toxicityvalue,
                     Toxicitymsgcount = toxicitymsgcount,
                     Toxicityavg = toxicityavg,
+                    MvPCounter = mvpCounter,
+                    MvPImmunity = mvpImmunity,
+                    MvPIgnore = mvpIgnore,
                     Rep = rep,
                     Repcd = repcd,
                     FirstMsg = firstMsg,

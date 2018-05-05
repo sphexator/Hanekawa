@@ -25,6 +25,9 @@ namespace Jibril.Services.Level.Lists
         public int Toxicitymsgcount { get; set; }
         public double Toxicityavg { get; set; }
         public int Rep { get; set; }
+        public int MvPCounter { get; set; }
+        public int MvPImmunity { get; set; }
+        public int MvPIgnore { get; set; }
         public DateTime Repcd { get; set; }
         public DateTime FirstMsg { get; set; }
         public DateTime LastMsg { get; set; }

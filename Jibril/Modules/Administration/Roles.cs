@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Services;
 
 namespace Jibril.Modules.Administration
 {
@@ -163,6 +164,23 @@ namespace Jibril.Modules.Administration
                 {
                     // Ignore
                 }
+        }
+
+        [Command("mvp")]
+        public async Task MvPToggle()
+        {
+            await Context.Message.DeleteAsync();
+            var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
+            if (userdata.MvPIgnore == 0)
+            {
+                DatabaseService.SetMvPIgnore(Context.User);
+                await ReplyAndDeleteAsync($"{Context.User.Username} has opted out of Kai Ni", false, null, TimeSpan.FromSeconds(5));
+            }
+            if (userdata.MvPIgnore == 1)
+            {
+                DatabaseService.RemoveMvPIgnore(Context.User);
+                await ReplyAndDeleteAsync($"{Context.User.Username} has opted in to Kai Ni", false, null, TimeSpan.FromSeconds(5));
+            }
         }
     }
 }

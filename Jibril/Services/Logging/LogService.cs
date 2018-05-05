@@ -246,9 +246,9 @@ namespace Jibril.Services.Logging
             if (message.Exception is CommandException command)
             {
                 Console.WriteLine($"Error: {command.Message}");
-                var _ = command.Context.Channel.SendMessageAsync("Something went wrong ...");
-                _ = command.Context.Client.GetApplicationInfoAsync().Result.Owner
-                    .SendMessageAsync($"Error: {command.Message}");
+                var _ = command.Context.Client.GetApplicationInfoAsync().Result.Owner
+                    .SendMessageAsync($"Error: {command.Message}\n" +
+                                      $"{command.StackTrace}");
             }
 
 
