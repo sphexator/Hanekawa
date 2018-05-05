@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Preconditions;
 using Jibril.Services;
 
 namespace Jibril.Modules.Administration
@@ -166,7 +167,8 @@ namespace Jibril.Modules.Administration
                 }
         }
 
-        [Command("mvp")]
+        [Command("mvp", RunMode = RunMode.Async)]
+        [RequiredChannel(339383206669320192)]
         public async Task MvPToggle()
         {
             await Context.Message.DeleteAsync();
