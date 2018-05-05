@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Modules.Club.Services;
 using Jibril.Preconditions;
@@ -172,16 +174,36 @@ namespace Jibril.Modules.Club
         [Command("list", RunMode = RunMode.Async)]
         [Alias("clubs")]
         [Summary("Paginates all clubs")]
-        [RequiredChannel(ChannelId)]
+        //[RequiredChannel(ChannelId)]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task Clubs()
         {
             var clubs = ClubDb.GetClubs();
-            var pages = (from x in clubs
-                let leader = Context.Guild.GetUser(x.Leader)
-                select $"**{x.Name} (id:{x.Id})**\n" + $"Members: {x.Members}\n" +
-                       $"Leader: {leader.Mention}").ToList();
+            var pages = new List<string>();
+            for (var i = 0; i < clubs.Count;)
+            {
+                string club = null;
+                for (var j = 0; j < 5; j++)
+                {
+                    if(i == clubs.Count) continue;
+                    var leader = GetClubLeaderUser(clubs[i].Leader, Context);
+                    club += $"**{clubs[i].Name} (id:{clubs[i].Id})**\n" +
+                            $"Members: {clubs[i].Members}\n";
+                    if (leader != null)
+                    {
+                        club += $"Leader: {leader.Mention}\n" +
+                                $"\n";
+                    }
+                    else
+                    {
+                        club += $"Leader: N/A\n" +
+                            $"\n";
+                    }
 
+                    i++;
+                }
+                pages.Add(club);
+            }
             await PagedReplyAsync(pages);
         }
 
@@ -200,6 +222,11 @@ namespace Jibril.Modules.Club
                                                     $"Leader: {leader.Mention}", Colours.DefaultColour);
 
             await ReplyAsync(null, false, embed.Build());
+        }
+
+        private SocketGuildUser GetClubLeaderUser(ulong id, SocketCommandContext context)
+        {
+            return context.Guild.GetUser(id);
         }
     }
 }

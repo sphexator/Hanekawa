@@ -172,7 +172,7 @@ namespace Jibril.Modules.Club.Services
             database.CloseConnection();
             return result;
         }
-        public static IReadOnlyCollection<FleetInfo> GetClubs()
+        public static List<FleetInfo> GetClubs()
         {
             var result = new List<FleetInfo>();
             var database = new ClubDb("hanekawa");
