@@ -174,7 +174,7 @@ namespace Jibril.Modules.Administration.Services
             StartUnmuteTimer(user.Id, after); // start the timer
         }
 
-        public void StartUnmuteTimer(ulong userId, TimeSpan after)
+        private void StartUnmuteTimer(ulong userId, TimeSpan after)
         {
             //load the unmute timers for this guild
             var userUnmuteTimers = UnmuteTimers.GetOrAdd(GuildId, new ConcurrentDictionary<ulong, Timer>());

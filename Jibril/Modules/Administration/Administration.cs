@@ -196,7 +196,7 @@ namespace Jibril.Modules.Administration
         {
             var time = DateTime.Now;
             AdminDb.AddActionCase(user, time);
-            var caseid = AdminDb.GetActionCaseID(time);
+            var caseid = AdminDb.GetActionCaseId(time);
 
             var author = new EmbedAuthorBuilder
             {

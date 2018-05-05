@@ -11,7 +11,7 @@ namespace Jibril.Services.Common
         {
             var time = DateTime.Now;
             AdminDb.AddActionCase(user, time);
-            var caseId = AdminDb.GetActionCaseID(time);
+            var caseId = AdminDb.GetActionCaseId(time);
             return caseId;
         }
 

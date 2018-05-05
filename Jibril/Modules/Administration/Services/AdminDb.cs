@@ -161,7 +161,7 @@ namespace Jibril.Modules.Administration.Services
             database.CloseConnection();
         }
 
-        public static List<int> GetActionCaseID(DateTime time)
+        public static List<int> GetActionCaseId(DateTime time)
         {
             var result = new List<int>();
             var database = new AdminDb("hanekawa");
