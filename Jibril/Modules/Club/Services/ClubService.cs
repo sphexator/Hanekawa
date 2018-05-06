@@ -191,7 +191,7 @@ namespace Jibril.Modules.Club.Services
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             if (club.Rank != 2) return;
             var clubId = ClubDb.GetClubs().First(x => x.Id == club.ClubId);
-            ClubDb.PromoteLeader(user, clubId.Id);
+            ClubDb.PromoteLeader(user, oldLeader, clubId.Id);
         }
 
         private string GetClubName(IGuildUser user)
