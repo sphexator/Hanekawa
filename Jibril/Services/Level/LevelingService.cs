@@ -41,7 +41,7 @@ namespace Jibril.Services.Level
             {
                 var user = msg.Author as SocketGuildUser;
                 if (user.IsBot) return;
-
+                if ((msg.Channel as IGuildChannel)?.CategoryId == 441660828379381770) return;
                 var checkUser = DatabaseService.CheckUser(user).FirstOrDefault();
                 if (checkUser == null) DatabaseService.EnterUser(user);
 
