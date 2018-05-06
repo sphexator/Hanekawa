@@ -186,7 +186,7 @@ namespace Jibril.Modules.Club.Services
             if (clubData.Rank >= 3) return;
             ClubDb.Demote(user);
         }
-        public void PromoteLeader(IGuildUser user)
+        public void PromoteLeader(IGuildUser user, IGuildUser oldLeader)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             if (club.Rank != 2) return;

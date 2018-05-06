@@ -126,7 +126,10 @@ namespace Jibril.Modules.Club
                     $"{Context.User.Username}, you sure you want to transfer leadership to {user.Nickname ?? user.Username}? (Y/N)");
                 var response = await NextMessageAsync();
                 if (response.Content.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
-                    _service.PromoteLeader(user);
+                {
+                    _service.PromoteLeader(user, Context.User as IGuildUser);
+                    await ReplyAsync($"Promoted {user.Nickname ?? user.Username} to rank 1");
+                }
             }
 
             if (elig && aUser.ClubId == bUser.ClubId && bUser.Rank > 2)
@@ -174,7 +177,7 @@ namespace Jibril.Modules.Club
         [Command("list", RunMode = RunMode.Async)]
         [Alias("clubs")]
         [Summary("Paginates all clubs")]
-        //[RequiredChannel(ChannelId)]
+        [RequiredChannel(ChannelId)]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task Clubs()
         {

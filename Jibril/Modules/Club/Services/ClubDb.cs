@@ -97,10 +97,11 @@ namespace Jibril.Modules.Club.Services
             database.FireCommand(str);
             database.CloseConnection();
         }
-        public static void PromoteLeader(IUser user, int id)
+        public static void PromoteLeader(IUser user, IUser oldLeader, int id)
         {
             SetLeaderFleet(user, id);
             SetLeaderFleetInfo(user, id);
+            DemoteOldLeader(oldLeader, id);
         }
         private static void SetLeaderFleet(IUser user, int id)
         {
@@ -113,6 +114,13 @@ namespace Jibril.Modules.Club.Services
         {
             var database = new ClubDb("hanekawa");
             var str = $"UPDATE fleetinfo SET leader = '{user.Id}' WHERE id = '{id}'";
+            database.FireCommand(str);
+            database.CloseConnection();
+        }
+        private static void DemoteOldLeader(IUser user, int id)
+        {
+            var database = new ClubDb("hanekawa");
+            var str = $"UPDATE fleet SET rank = 2 WHERE userid = '{user.Id}' && '{id}'";
             database.FireCommand(str);
             database.CloseConnection();
         }
