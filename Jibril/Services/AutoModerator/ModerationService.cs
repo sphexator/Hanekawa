@@ -248,6 +248,7 @@ namespace Jibril.Services.AutoModerator
                         }
 
                         var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
+                        /*
                         if (userdata.Level <= 10 && rawMessage.Content.IsUrl())
                         {
                             await rawMessage.DeleteAsync();
@@ -255,6 +256,7 @@ namespace Jibril.Services.AutoModerator
                             await ch.SendMessageAsync($"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
                                                       $"{rawMessage.Content}");
                         }
+                        */
                     }
                 }
                 catch
