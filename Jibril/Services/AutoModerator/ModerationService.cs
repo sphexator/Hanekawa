@@ -246,13 +246,14 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                             }
                         }
-                        /*
+
                         var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
-                        if (userdata.Level <= 3 && rawMessage.Content.IsUrl())
+                        if (userdata.Level <= 10 && rawMessage.Content.IsUrl())
                         {
                             await rawMessage.DeleteAsync();
+                            var ch = await _discord.GetUser(111123736660324352).GetOrCreateDMChannelAsync();
+                            await ch.SendMessageAsync(rawMessage.Content);
                         }
-                        */
                     }
                 }
                 catch

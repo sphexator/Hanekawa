@@ -28,10 +28,6 @@ namespace Jibril.Extensions
             @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex UrlFilter =
-            new Regex(@"/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/",
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         private static readonly Regex GoogleLink =
             new Regex(@"(?:goo\.gl|google\.com).*?(\s|$)",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -39,7 +35,11 @@ namespace Jibril.Extensions
         private static readonly Regex PornLink =
             new Regex(@"(?:pornhub\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-                private static readonly Regex IpGrab =
+        private static readonly Regex UrlRegex = 
+            new Regex(@"(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'.,<>?«»“”‘’]))", 
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex IpGrab =
             new Regex(@"(?:youramonkey\.com|robtex\.com).*?(\s|$)", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -47,6 +47,11 @@ namespace Jibril.Extensions
         public static string Truncate(this string value, int maxChars)
         {
             return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
+        }
+
+        public static bool IsUrl(this string str)
+        {
+            return UrlRegex.IsMatch(str);
         }
 
         public static bool IsDiscordInvite(this string str)
@@ -69,10 +74,6 @@ namespace Jibril.Extensions
             return PornLink.IsMatch(str);
         }
 
-        public static bool IsUrl(this string str)
-        {
-            return UrlFilter.IsMatch(str);
-        }
         public static bool IsIpGrab(this string str)
         {
             return IpGrab.IsMatch(str);
