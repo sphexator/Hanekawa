@@ -11,7 +11,7 @@ namespace Jibril.Services.Reaction
     public class ReactionService
     {
         private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
         public ReactionService(DiscordSocketClient discord, IServiceProvider provider)
         {

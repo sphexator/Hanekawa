@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -21,23 +20,24 @@ namespace Jibril.Services.AutoModerator
 {
     public class ModerationService
     {
-        private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
         private readonly IConfiguration _config;
-        private static string PerspectiveToken { get; set; }
+        private readonly DiscordSocketClient _discord;
+        private readonly IServiceProvider _provider;
 
         public ModerationService(DiscordSocketClient discord, IServiceProvider provider, IConfiguration config)
         {
             _discord = discord;
             _provider = provider;
             _config = config;
-          
+
             PerspectiveToken = _config["perspective"];
 
             _discord.MessageReceived += Filter;
             _discord.MessageReceived += PerspectiveApi;
             _discord.UserJoined += _discord_UserJoined;
         }
+
+        private static string PerspectiveToken { get; set; }
 
         private Task _discord_UserJoined(SocketGuildUser user)
         {
@@ -47,9 +47,9 @@ namespace Jibril.Services.AutoModerator
                 {
                     var values = new Dictionary<string, string>
                     {
-                        { "token", $"E7puJQIwyp" },
-                        { "userid", $"{user.Id}" },
-                        { "version", "3" }
+                        {"token", $"E7puJQIwyp"},
+                        {"userid", $"{user.Id}"},
+                        {"version", "3"}
                     };
 
                     var content = new FormUrlEncodedContent(values);
@@ -125,7 +125,7 @@ namespace Jibril.Services.AutoModerator
             var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
             return s;
         }
-        
+
         private Task Filter(SocketMessage rawMessage)
         {
             var _ = Task.Run(async () =>
@@ -139,7 +139,6 @@ namespace Jibril.Services.AutoModerator
                     if (staffCheck != true)
                     {
                         if (rawMessage.Content.IsDiscordInvite())
-                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -162,17 +161,10 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-                        }
-                        if (rawMessage.Content.IsGoogleLink())
-                        {
-                            await rawMessage.DeleteAsync();
-                        }
-                        if (rawMessage.Content.IsIpGrab())
-                        {
-                            await rawMessage.DeleteAsync();
-                        }
+
+                        if (rawMessage.Content.IsGoogleLink()) await rawMessage.DeleteAsync();
+                        if (rawMessage.Content.IsIpGrab()) await rawMessage.DeleteAsync();
                         if (rawMessage.Content.IsScamLink())
-                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -196,10 +188,8 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-                        }
 
                         if (rawMessage.Content.IsPornLink() && ((ITextChannel) rawMessage.Channel).IsNsfw != true)
-                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -223,9 +213,8 @@ namespace Jibril.Services.AutoModerator
                                 Console.WriteLine(e);
                                 return;
                             }
-                        }
+
                         if (rawMessage.Content.Length >= 1500)
-                        {
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -245,18 +234,17 @@ namespace Jibril.Services.AutoModerator
                             {
                                 Console.WriteLine(e);
                             }
-                        }
 
-                        var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
-                        /*
-                        if (userdata.Level <= 10 && rawMessage.Content.IsUrl())
+                        if (rawMessage.Content.IsUrl())
                         {
+                            var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
+                            if (userdata.Level >= 10) return;
                             await rawMessage.DeleteAsync();
                             var ch = await _discord.GetUser(111123736660324352).GetOrCreateDMChannelAsync();
-                            await ch.SendMessageAsync($"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
-                                                      $"{rawMessage.Content}");
+                            await ch.SendMessageAsync(
+                                $"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
+                                $"{rawMessage.Content}");
                         }
-                        */
                     }
                 }
                 catch
@@ -311,7 +299,8 @@ namespace Jibril.Services.AutoModerator
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8,
                     "application/json");
                 var response = client
-                    .PostAsync($"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={PerspectiveToken}",
+                    .PostAsync(
+                        $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={PerspectiveToken}",
                         content).Result;
                 response.EnsureSuccessStatusCode();
                 var data = response.Content.ReadAsStringAsync().Result;
@@ -319,7 +308,7 @@ namespace Jibril.Services.AutoModerator
                 return result;
             }
         }
-        
+
         private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
         {
             var userdata = DatabaseService.UserData(user).FirstOrDefault();

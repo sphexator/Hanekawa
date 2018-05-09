@@ -10,7 +10,7 @@ namespace Jibril.Modules.Administration.Services
 {
     public class RuleService
     {
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
 
         public RuleService(DiscordSocketClient client)
         {

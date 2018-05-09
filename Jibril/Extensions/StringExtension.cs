@@ -36,10 +36,10 @@ namespace Jibril.Extensions
             new Regex(@"(?:pornhub\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex UrlRegex = 
-            new Regex(@"(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'.,<>?«»“”‘’]))", 
+            new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex EmoteRegex = 
-            new Regex(@"(?:cdn\.discordapp\.com/emojis/).*?(\s|$)");
+            new Regex(@"(?:cdn\.discordapp\.com/emojis/).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex IpGrab =
             new Regex(@"(?:youramonkey\.com|robtex\.com).*?(\s|$)", 
@@ -53,7 +53,9 @@ namespace Jibril.Extensions
 
         public static bool IsUrl(this string str)
         {
-            return !EmoteRegex.IsMatch(str);
+            if (EmoteRegex.IsMatch(str))
+                return false;
+            return UrlRegex.IsMatch(str);
         }
 
         public static bool IsDiscordInvite(this string str)

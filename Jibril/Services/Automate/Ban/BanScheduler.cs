@@ -10,7 +10,7 @@ namespace Jibril.Services.Automate.Ban
     public class BanScheduler : IJob
     {
         private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
         public BanScheduler(DiscordSocketClient discord, IServiceProvider provider)
         {

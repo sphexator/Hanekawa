@@ -10,7 +10,7 @@ namespace Jibril.Services.Level
 {
     public class LevelingService
     {
-        private IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
         private List<CooldownUser> _users = new List<CooldownUser>();
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)

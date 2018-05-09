@@ -24,7 +24,7 @@ namespace Jibril.Services.INC
         private readonly SocketTextChannel _ch;
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _eventStartMsg;
-        private bool _activeEvent;
+        private readonly bool _activeEvent;
         private const ulong Guild = 339370914724446208;
         private const ulong EventChannel = 346429829316476928;
         private const ulong OutPutChannel = 441322970485620756;

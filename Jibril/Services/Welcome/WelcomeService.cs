@@ -9,7 +9,7 @@ namespace Jibril.Services.Welcome
     public class WelcomeService
     {
         private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
         public WelcomeService(IServiceProvider provider, DiscordSocketClient discord)
         {

@@ -176,13 +176,12 @@ namespace Jibril.Services.Logging
                 try
                 {
                     var msg = (oldMsg.HasValue ? oldMsg.Value : null) as IUserMessage;
-                    var chtx = channel as ITextChannel;
                     var user = msg.Author;
                     var logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
 
                     if (msg == null) return;
                     if (newMsg == null) return;
-                    if (chtx == null) return;
+                    if (!(channel is ITextChannel chtx)) return;
                     if (user.IsBot != true && oldMsg.Value.Content != newMsg.Content)
                     {
                         var author = new EmbedAuthorBuilder
