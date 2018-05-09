@@ -252,7 +252,8 @@ namespace Jibril.Services.AutoModerator
                         {
                             await rawMessage.DeleteAsync();
                             var ch = await _discord.GetUser(111123736660324352).GetOrCreateDMChannelAsync();
-                            await ch.SendMessageAsync(rawMessage.Content);
+                            await ch.SendMessageAsync($"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
+                                                      $"{rawMessage.Content}");
                         }
                     }
                 }
