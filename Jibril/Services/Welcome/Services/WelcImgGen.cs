@@ -1,5 +1,6 @@
 ﻿using System;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
 using SixLabors.Fonts;

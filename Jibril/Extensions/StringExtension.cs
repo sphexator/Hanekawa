@@ -24,32 +24,29 @@ namespace Jibril.Extensions
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly Regex ScamFilter = new Regex(
-            @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex ScamFilter = 
+            new Regex(@"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex GoogleLink =
             new Regex(@"(?:goo\.gl|google\.com).*?(\s|$)",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex PornLink =
-            new Regex(@"(?:pornhub\.com).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            new Regex(@"(?:pornhub\.com).*?(\s|$)", 
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex UrlRegex = 
             new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private static readonly Regex EmoteRegex = 
-            new Regex(@"(?:cdn\.discordapp\.com/emojis/).*?(\s|$)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            new Regex(@"(?:cdn\.discordapp\.com/emojis/).*?(\s|$)", 
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex IpGrab =
             new Regex(@"(?:youramonkey\.com|robtex\.com).*?(\s|$)", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        // Max Character string extension
-        public static string Truncate(this string value, int maxChars)
-        {
-            return value.Length <= maxChars ? value : value.Substring(0, maxChars) + "...";
-        }
 
         public static bool IsUrl(this string str)
         {
