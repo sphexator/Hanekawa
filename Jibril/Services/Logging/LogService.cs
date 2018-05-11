@@ -44,10 +44,11 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
+                var userdata = DatabaseService.UserData(user).FirstOrDefault();
                 var content = $"📥 {user.Mention} has joined. (*{user.Id}*)" +
                               $"\n" +
-                              $"Account created: {user.CreatedAt}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"", Colours.OkColour, user);
+                              $"Account created: {user.CreatedAt.Humanize()}";
+                var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.OkColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -58,10 +59,9 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"📤 {user.Mention} has left. (*{user.Id}*)" +
-                              $"\n" +
-                              $"Username: {user.Username}#{user.Discriminator}";
-                var embed = EmbedGenerator.FooterEmbed(content, "", Colours.FailColour, user);
+                var userdata = DatabaseService.UserData(user).FirstOrDefault();
+                var content = $"📤 {user.Mention} has left. (*{user.Id}*)";
+                var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.FailColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -74,7 +74,6 @@ namespace Jibril.Services.Logging
             {
                 try
                 {
-                    //ApplyBanScheduler(user);
                     await LogEmbedBuilder(guild, user, ActionType.Bent, Colours.FailColour);
                 }
                 catch (Exception e)
