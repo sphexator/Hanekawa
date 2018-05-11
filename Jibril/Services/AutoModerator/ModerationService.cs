@@ -234,7 +234,7 @@ namespace Jibril.Services.AutoModerator
                             {
                                 Console.WriteLine(e);
                             }
-
+                        /*
                         if (rawMessage.Content.IsUrl())
                         {
                             var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
@@ -245,6 +245,7 @@ namespace Jibril.Services.AutoModerator
                                 $"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
                                 $"{rawMessage.Content}");
                         }
+                        */
                     }
                 }
                 catch
