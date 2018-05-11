@@ -23,7 +23,7 @@ namespace Jibril.Services.INC.Events.Types
                 if (pistolDamage + trgt.Damage >= 100)
                 {
                     DatabaseHungerGame.DieEvent(trgt.Userid);
-                    response = $"Kills {trgt.Name} with his bow inflicting {pistolDamage} damage.";
+                    response = $"Kills {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
                 }
                 else
                 {
