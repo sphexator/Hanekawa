@@ -30,6 +30,7 @@ namespace Jibril.Services.Reaction
                 try
                 {
                     var channel = arg2 as ITextChannel;
+                    if (channel.CategoryId == 441660828379381770) return;
                     if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265 && arg2.Id != 365479361207468032 &&
                         channel.IsNsfw == false)
                     {

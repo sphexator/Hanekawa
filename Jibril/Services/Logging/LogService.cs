@@ -44,9 +44,10 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"" +
+                var content = $"📥 {user.Mention} has joined. (*{user.Id}*)" +
+                              $"\n" +
                               $"Account created: {user.CreatedAt}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"📥 {user.Mention} has joined. (*{user.Id}*)", Colours.OkColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, $"", Colours.OkColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -57,9 +58,10 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var content = $"" +
+                var content = $"📤 {user.Mention} has left. (*{user.Id}*)" +
+                              $"\n" +
                               $"Username: {user.Username}#{user.Discriminator}";
-                var embed = EmbedGenerator.FooterEmbed(content, "📤 {user.Mention} has left. (*{user.Id}*)", Colours.FailColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, "", Colours.FailColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
