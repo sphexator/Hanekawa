@@ -24,20 +24,31 @@ namespace Jibril.Modules.Level
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
             var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
+            //var dbAmount = DatabaseService.CheckDbAmount();
+            //var rank = DatabaseService.CheckRank(userData);
 
-            var level = new EmbedFieldBuilder();
-            level.WithIsInline(true);
-            level.WithName("Level");
-            level.WithValue($"{userData.Level}");
-
-            var exp = new EmbedFieldBuilder();
-            exp.WithIsInline(true);
-            exp.WithName("Exp");
-            exp.WithValue($"{userData.Xp}/{xpToLevelUp}");
+            var level = new EmbedFieldBuilder
+            {
+                Name = "Level",
+                IsInline = true,
+                Value = $"{userData.Level}"
+            };
+            var exp = new EmbedFieldBuilder
+            {
+                Name = "Exp",
+                IsInline = true,
+                Value = $"{userData.Xp}/{xpToLevelUp}"
+            };
+            //var ranking = new EmbedFieldBuilder
+            //{
+            //    Name = "Rank",
+            //    IsInline = true,
+            //    Value = $"{rank}/{dbAmount}"
+            //};
 
             embed.AddField(level);
             embed.AddField(exp);
-
+            //embed.AddField(ranking);
             await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -49,19 +60,31 @@ namespace Jibril.Modules.Level
             var userData = DatabaseService.UserData(user).FirstOrDefault();
             var xpToLevelUp = Calculate.CalculateNextLevel(userData.Level);
             var embed = EmbedGenerator.AuthorEmbed("", $"{user.Username}", Colours.DefaultColour, user);
+            //var dbAmount = DatabaseService.CheckDbAmount();
+            //var rank = DatabaseService.CheckRank(userData);
 
-            var level = new EmbedFieldBuilder();
-            level.WithIsInline(true);
-            level.WithName("Level");
-            level.WithValue($"{userData.Level}");
-
-            var exp = new EmbedFieldBuilder();
-            exp.WithIsInline(true);
-            exp.WithName("Exp");
-            exp.WithValue($"{userData.Xp}/{xpToLevelUp}");
+            var level = new EmbedFieldBuilder
+            {
+                Name = "Level",
+                IsInline = true,
+                Value = $"{userData.Level}"
+            };
+            var exp = new EmbedFieldBuilder
+            {
+                Name = "Exp",
+                IsInline = true,
+                Value = $"{userData.Xp}/{xpToLevelUp}"
+            };
+            //var ranking = new EmbedFieldBuilder
+            //{
+            //    Name = "Rank",
+            //    IsInline = true,
+            //    Value = $"{rank}/{dbAmount}"
+            //};
 
             embed.AddField(level);
             embed.AddField(exp);
+            //embed.AddField(ranking);
             await ReplyAsync("", false, embed.Build());
         }
 
@@ -198,15 +221,15 @@ namespace Jibril.Modules.Level
             if (!result.Any()) DatabaseService.EnterUser(user);
             var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
 
-            var now = DateTime.Now;
-            var daily = userData.Daily;
+            var now = DateTime.UtcNow;
+            var daily = userData.Repcd;
             var difference = DateTime.Compare(daily, now);
 
-            if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+            if (userData.Repcd.ToString() == "0001-01-01 00:00:00" ||
                 daily.AddDays(1) <= now && difference < 0 || difference >= 0)
             {
                 LevelDatabase.ChangeDaily(user);
-                if (userData.Daily.ToString() == "0001-01-01 00:00:00" ||
+                if (userData.Repcd.ToString() == "0001-01-01 00:00:00" ||
                     daily.AddDays(1) <= now && difference <= 0 || difference >= 0)
                 {
                     GambleDB.AddRep(user);

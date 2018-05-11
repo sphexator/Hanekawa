@@ -16,7 +16,7 @@ namespace Jibril.Services.INC.Events.Types
         public static string KillEvent(Profile profile)
         {
             var trgt = GetTarget().FirstOrDefault();
-            if (profile.Weapons.Pistol > 0 && profile.Weapons.Bullets > 0)
+            if (profile.Weapons.Pistol > 0)
             {
                 var pistolDamage = DamageOutput.PistolDamage(profile.Player.Stamina, profile.Player.Bleeding);
                 string response;
@@ -33,7 +33,7 @@ namespace Jibril.Services.INC.Events.Types
                 return response;
             }
             
-            if (profile.Weapons.Bow > 0 && profile.Weapons.Arrows > 0)
+            if (profile.Weapons.Bow > 0)
             {
                 var bowDamage = DamageOutput.BowDamage(profile.Player.Stamina, profile.Player.Bleeding);
                 string response;

@@ -49,6 +49,34 @@ namespace Jibril.Services
             _dbConnection?.Close();
         }
 
+        public static int CheckDbAmount()
+        {
+            var database = new DatabaseService("hanekawa");
+            const string str = "SELECT * FROM exp";
+            var exec = database.FireCommand(str);
+            var count = 0;
+            while (exec.Read())
+            {
+                count++;
+            }
+            database.CloseConnection();
+            return count;
+        }
+
+        public static int CheckRank(UserData userData)
+        {
+            var database = new DatabaseService("hanekawa");
+            var str = $"SELECT * FROM exp WHERE total_xp >= '{userData.Total_xp}'";
+            var exec = database.FireCommand(str);
+            var count = 0;
+            while (exec.Read())
+            {
+                count++;
+            }
+            database.CloseConnection();
+            return count;
+        }
+
         public static List<string> CheckUser(IUser user)
         {
             var result = new List<string>();
