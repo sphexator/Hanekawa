@@ -45,9 +45,8 @@ namespace Jibril.Services.Logging
             var _ = Task.Run(async () =>
             {
                 var content = $"" +
-                              $"📥 {user.Mention} has joined. (*{user.Id}*)\n" +
                               $"Account created: {user.CreatedAt}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.OkColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, $"📥 {user.Mention} has joined. (*{user.Id}*)", Colours.OkColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -59,9 +58,8 @@ namespace Jibril.Services.Logging
             var _ = Task.Run(async () =>
             {
                 var content = $"" +
-                              $"📤 {user.Mention} has left. (*{user.Id}*)\n" +
                               $"Username: {user.Username}#{user.Discriminator}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"{DateTime.UtcNow}", Colours.FailColour, user);
+                var embed = EmbedGenerator.FooterEmbed(content, "📤 {user.Mention} has left. (*{user.Id}*)", Colours.FailColour, user);
                 var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
                 await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
             });
@@ -109,55 +107,55 @@ namespace Jibril.Services.Logging
                 {
                     if (!((optMsg.HasValue ? optMsg.Value : null) is IUserMessage msg))
                         return;
-
-                    if (!(ch is ITextChannel channel))
-                        return;
+                    if (msg.Author.IsBot) return;
+                    if (!(ch is ITextChannel channel)) return;
                     var logChannel = _discord.GetChannel(349065172691714049) as ITextChannel;
-                    var user = msg.Author;
-                    if (user.IsBot != true)
+
+                    var author = new EmbedAuthorBuilder
                     {
-                        var author = new EmbedAuthorBuilder
-                        {
-                            Name = "Message deleted"
-                        };
-                        var embed = new EmbedBuilder
-                        {
-                            Color = new Color(Colours.DefaultColour),
-                            Author = author
-                        };
-                        var footer = new EmbedFooterBuilder();
-                        if (optMsg.HasValue)
-                        {
-                            embed.WithDescription(
-                                $"{optMsg.Value.Author.Mention} deleted a message in {channel.Mention}\n" +
-                                $"{msg.Content.Truncate(1800)}");
-                        }
-                        else
-                        {
-                            var getMsg = await ch.GetMessageAsync(optMsg.Id);
-                            embed.WithDescription($"{getMsg.Author.Mention} deleted a message in {channel.Mention}\n" +
-                                                  $"{getMsg.Content.Truncate(1800)}");
-                        }
-
-                        try
-                        {
-                            if (optMsg.Value.Attachments.Count > 0)
-                            {
-                                var image = optMsg.Value.Attachments.First(x => x.Url != null).Url;
-                                embed.ImageUrl = image;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.Message);
-                        }
-
-                        footer.WithText($"{msg.CreatedAt} - msg ID: {msg.Id}");
-                        footer.WithIconUrl(optMsg.Value.Author.GetAvatarUrl());
-                        embed.WithFooter(footer);
-                        await Task.Delay(2000);
-                        await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                        Name = "Message deleted"
+                    };
+                    var footer = new EmbedFooterBuilder
+                    {
+                        IconUrl = msg.Author.GetAvatarUrl() ?? msg.Author.GetDefaultAvatarUrl(),
+                        Text = $"msg ID: {msg.Id}"
+                    };
+                    var embed = new EmbedBuilder
+                    {
+                        Color = new Color(Colours.DefaultColour),
+                        Author = author,
+                        Timestamp = msg.Timestamp,
+                        Footer = footer
+                    };
+                    if (optMsg.HasValue)
+                    {
+                        embed.WithDescription(
+                            $"{optMsg.Value.Author.Mention} deleted a message in {channel.Mention}\n" +
+                            $"{msg.Content.Truncate(1800)}");
                     }
+                    else
+                    {
+                        var getMsg = await ch.GetMessageAsync(optMsg.Id);
+                        embed.WithDescription($"{getMsg.Author.Mention} deleted a message in {channel.Mention}\n" +
+                                              $"{getMsg.Content.Truncate(1800)}");
+                    }
+
+                    try
+                    {
+                        embed.AddField(x =>
+                        {
+                            x.Name = "File";
+                            x.IsInline = false;
+                            x.Value = msg.Attachments.FirstOrDefault()?.Url;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                    await Task.Delay(2000);
+                    await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+
                 }
                 catch (Exception ex)
                 {
@@ -186,15 +184,21 @@ namespace Jibril.Services.Logging
                     {
                         var author = new EmbedAuthorBuilder
                         {
-                            Name = "Message Updated"
+                            Name = "Message Updated",
+                            IconUrl = newMsg.Author.GetAvatarUrl() ?? newMsg.Author.GetDefaultAvatarUrl()
+                        };
+                        var footer = new EmbedFooterBuilder
+                        {
+                            Text = $"MSG ID: {msg.Id}"
                         };
                         var embed = new EmbedBuilder
                         {
                             Color = new Color(Colours.DefaultColour),
-                            Author = author
+                            Author = author,
+                            Description = $"{newMsg.Author.Mention} updated a message in {chtx.Mention}",
+                            Timestamp = newMsg.Timestamp,
+                            Footer = footer
                         };
-                        var footer = new EmbedFooterBuilder();
-                        embed.WithDescription($"{newMsg.Author.Mention} updated a message in {chtx.Mention}");
                         embed.AddField(y =>
                         {
                             y.Name = "Updated Message:";
@@ -207,9 +211,6 @@ namespace Jibril.Services.Logging
                             x.Value = $"{msg.Content.Truncate(900)}";
                             x.IsInline = false;
                         });
-                        footer.WithText($"{oldMsg.Value.CreatedAt} - msg ID: {msg.Id}");
-                        footer.WithIconUrl(newMsg.Author.GetAvatarUrl());
-                        embed.WithFooter(footer);
                         await Task.Delay(2000);
                         await logChannel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
@@ -262,7 +263,7 @@ namespace Jibril.Services.Logging
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel) Math.Abs((int) severity - 5);
+            return (LogLevel)Math.Abs((int)severity - 5);
         }
 
         private static void ApplyBanScheduler(IUser user)
@@ -305,13 +306,14 @@ namespace Jibril.Services.Logging
             };
             var footer = new EmbedFooterBuilder
             {
-                Text = $"ID:{user.Id} | {DateTime.UtcNow}"
+                Text = $"ID:{user.Id}"
             };
             var embed = new EmbedBuilder
             {
                 Color = new Color(colour),
                 Author = author,
-                Footer = footer
+                Footer = footer,
+                Timestamp = new DateTimeOffset(DateTime.UtcNow)
             };
             embed.AddField(x =>
             {

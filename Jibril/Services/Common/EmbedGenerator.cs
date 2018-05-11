@@ -18,17 +18,19 @@ namespace Jibril.Services.Common
 
         public static EmbedBuilder FooterEmbed(string content, string footcont, uint color, IUser user)
         {
+            var footer = new EmbedFooterBuilder
+            {
+                Text = footcont,
+                IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl()
+            };
+
             var embed = new EmbedBuilder
             {
                 Color = new Color(color),
-                Description = content
+                Description = content,
+                Footer = footer,
+                Timestamp = new DateTimeOffset(DateTime.UtcNow)
             };
-
-            var footer = new EmbedFooterBuilder();
-            footer.WithText(footcont);
-            footer.WithIconUrl(user.GetAvatarUrl());
-
-            embed.WithFooter(footer);
 
             return embed;
         }
