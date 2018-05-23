@@ -23,8 +23,18 @@ namespace Jibril.Services.INC
     {
         private readonly SocketTextChannel _ch;
         private readonly DiscordSocketClient _client;
-        private readonly List<ulong> _eventStartMsg;
-        private readonly bool _activeEvent;
+        private List<ulong> EventStartMsg { get; }
+         = new List<ulong>();
+        private List<ulong> Participants { get; }
+            = new List<ulong>();
+        private readonly bool ActiveEvent;
+
+        // Test
+        //private const ulong Guild = 431617676859932704;
+        //private const ulong EventChannel = 441744578920448030;
+        //private const ulong OutPutChannel = 441744578920448030;
+
+        // Real
         private const ulong Guild = 339370914724446208;
         private const ulong EventChannel = 346429829316476928;
         private const ulong OutPutChannel = 441322970485620756;
@@ -37,9 +47,14 @@ namespace Jibril.Services.INC
             
             var config = DatabaseHungerGame.GetConfig().FirstOrDefault() ?? throw new ArgumentNullException(
                              $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
-            _activeEvent = config.Live;
-            var fuckingBullShit = new List<ulong> {config.MsgId};
-            _eventStartMsg = fuckingBullShit;
+            ActiveEvent = config.Live;
+            EventStartMsg.Add(config.MsgId);
+
+            var users = DatabaseHungerGame.GetTotalUsers();
+            foreach (var x in users)
+            {
+                Participants.Add(x);
+            }
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -79,7 +94,7 @@ namespace Jibril.Services.INC
             Emote.TryParse("<:rooree:430207965140877322>", out var emote);
             IEmote iemoteYes = emote;
             await msg.AddReactionAsync(iemoteYes);
-            _eventStartMsg.Add(msg.Id);
+            EventStartMsg.Add(msg.Id);
             DatabaseHungerGame.StoreMsgId(msg.Id);
         }
 
@@ -148,16 +163,18 @@ namespace Jibril.Services.INC
         {
             var _ = Task.Run(async () =>
             {
-                if (!_eventStartMsg.Contains(react.MessageId)) return;
+                if (!EventStartMsg.Contains(react.MessageId)) return;
                 if (msg.Value.Author.IsBot != true) return;
                 if (react.User.Value.IsBot) return;
+
+                var user = react.User.Value as IGuildUser;
+
                 if (react.Emote.Name != "rooree") return;
-                var users = DatabaseHungerGame.GetUsers();
-                if (users.Count >= 25) return;
-                var check = DatabaseHungerGame.CheckExistingUser(react.User.Value);
-                if (check == null) return;
-                DatabaseHungerGame.EnterUser(react.User.Value);
-                await SaveAvatar(react.User.Value);
+                if (Participants.Count >= 25) return;
+                if (Participants.Contains(user.Id)) return;
+                Participants.Add(user.Id);
+                DatabaseHungerGame.EnterUser(user);
+                await SaveAvatar(user);
             });
             return Task.CompletedTask;
         }
@@ -188,7 +205,7 @@ namespace Jibril.Services.INC
 
             try
             {
-                response = await httpclient.GetAsync(user.GetAvatarUrl());
+                response = await httpclient.GetAsync(user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
             }
             catch
             {
@@ -203,17 +220,21 @@ namespace Jibril.Services.INC
                 img.Save(filePath);
             }
         }
+
         private  static void ClearCache()
         {
             var cache = new DirectoryInfo("Services/INC/Cache/Avatar/");
             foreach (var file in cache.GetFiles())
                 file.Delete();
         }
-        private static void EndGame()
+
+        public void EndGame()
         {
             ClearCache();
             DatabaseHungerGame.GameEnd();
             DatabaseHungerGame.ClearTable();
+            EventStartMsg.Clear();
+            Participants.Clear();
         }
     }
 }

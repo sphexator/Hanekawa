@@ -58,6 +58,14 @@ namespace Jibril.Modules.Test
 
         }
 
+        [Command("end", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task EndGame()
+        {
+            _hg.EndGame();
+            await ReplyAsync("Cleared database");
+        }
+
         [Command("continue", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task ContinueTask()

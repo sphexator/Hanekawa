@@ -50,9 +50,10 @@ namespace Jibril.Services.INC.Database
             _dbConnection?.Close();
         }
 
-        public static void EnterUser(IUser user)
+        public static void EnterUser(IGuildUser user)
         {
-            var name = user.Username.RemoveSpecialCharacters();
+            var username = user.Nickname ?? user.Username;
+            var name = username.RemoveSpecialCharacters();
             var database = new DatabaseHungerGame("hanekawa");
             var str =
                 $"INSERT INTO hungergame (userid, name) VALUES ('{user.Id}', '{name}')";
@@ -181,7 +182,7 @@ namespace Jibril.Services.INC.Database
         public static void StoreMsgId(ulong id)
         {
             var database = new DatabaseHungerGame("hanekawa");
-            var str = $"UPDATE hungergameconfig SET msgId = {id} WHERE guildid = '339370914724446208'";
+            var str = $"UPDATE hungergameconfig SET msgId = {id} WHERE guild = '339370914724446208'";
             database.FireCommand(str);
             database.CloseConnection();
         }
