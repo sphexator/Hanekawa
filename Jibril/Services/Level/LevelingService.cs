@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Extensions;
 using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
@@ -11,7 +12,7 @@ namespace Jibril.Services.Level
     public class LevelingService
     {
         private readonly IServiceProvider _provider;
-        private List<CooldownUser> _users = new List<CooldownUser>();
+        private readonly List<CooldownUser> _users = new List<CooldownUser>();
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
         {
@@ -23,14 +24,19 @@ namespace Jibril.Services.Level
             client.UserJoined += GiveRolesBack;
         }
 
-        private static Task GiveRolesBack(SocketGuildUser usr)
+        private Task GiveRolesBack(SocketGuildUser usr)
         {
             var _ = Task.Run(async () =>
             {
-                var userdata = DatabaseService.UserData(usr).FirstOrDefault();
-                if (userdata == null) return;
-                if (userdata.Level <= 2) return;
-                await LevelRoles.AssignRoles(userdata, usr);
+                using (var db = new hanekawaContext())
+                {
+                    var userdata = await db.Exp.FindAsync(usr.Id.ToString());
+                    if (userdata == null) return Task.CompletedTask;
+                    if (userdata.Level <= 2) return Task.CompletedTask;
+                    await LevelRoles.AssignRoles(userdata, usr);
+                }
+
+                return null;
             });
             return Task.CompletedTask;
         }
@@ -42,25 +48,34 @@ namespace Jibril.Services.Level
                 var user = msg.Author as SocketGuildUser;
                 if (user.IsBot) return;
                 if ((msg.Channel as ITextChannel)?.CategoryId == 441660828379381770) return;
-                var checkUser = DatabaseService.CheckUser(user).FirstOrDefault();
-                if (checkUser == null) DatabaseService.EnterUser(user);
 
                 var cd = CheckCooldown(user);
                 if (cd == false) return;
-                var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                if(userdata.FirstMsg.ToString("yyyy-MM-dd HH:mm") == "0001-01-01 00:00") DatabaseService.AddFirstMessage(user);
-                var exp = Calculate.ReturnXP(msg);
-                var credit = Calculate.ReturnCredit();
-                var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
-
-                LevelDatabase.AddExperience(user, exp, credit);
-                Console.WriteLine(
-                    $"{DateTime.Now.ToLongTimeString()} | LEVEL SERVICE | Awarded {exp} exp to {msg.Author.Username}");
-                if (userdata.Xp + exp >= lvlupReq)
+                using (var db = new hanekawaContext())
                 {
-                    var remainingExp = userdata.Xp + exp - lvlupReq;
-                    LevelDatabase.Levelup(user, remainingExp);
-                    await LevelRoles.AssignNewRole(user, userdata.Level);
+                    var userdata = await db.GetOrAddUserData(user);
+                    var exp = Calculate.ReturnXP(msg);
+                    var credit = Calculate.ReturnCredit();
+                    var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
+
+                    Console.WriteLine(
+                        $"{DateTime.Now.ToLongTimeString()} | LEVEL SERVICE | Awarded {exp} exp to {msg.Author.Username}");
+                    if (userdata.Xp + exp >= lvlupReq)
+                    {
+                        userdata.Xp = userdata.Xp + exp - lvlupReq;
+                        userdata.Tokens = userdata.Tokens + credit;
+                        userdata.TotalXp = userdata.TotalXp + exp;
+                        userdata.Level = userdata.Level + 1;
+                        await db.SaveChangesAsync();
+
+                        await LevelRoles.AssignNewRole(user, userdata.Level);
+                    }
+                    else
+                    {
+                        userdata.Xp = userdata.Xp + exp;
+                        userdata.Tokens = userdata.Tokens + credit;
+                        userdata.TotalXp = userdata.TotalXp + exp;
+                    }
                 }
             });
             return Task.CompletedTask;

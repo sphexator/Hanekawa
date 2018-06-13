@@ -21,11 +21,11 @@ namespace Jibril.Services.Level.Services
             return returnExp;
         }
 
-        public static int ReturnCredit()
+        public static uint ReturnCredit()
         {
             var def = CalculateCredit();
             var credit = def * 1; //Modifier to credit gain
-            return credit;
+            return Convert.ToUInt32(credit);
         }
 
         // Voice Experience credit calculations = VECC

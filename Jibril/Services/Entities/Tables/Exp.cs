@@ -8,11 +8,11 @@ namespace Jibril
         public int Id { get; set; }
         public string UserId { get; set; }
         public string Username { get; set; }
-        public uint? Tokens { get; set; }
-        public uint? EventTokens { get; set; }
-        public int? Level { get; set; }
-        public int? Xp { get; set; }
-        public int? TotalXp { get; set; }
+        public uint Tokens { get; set; }
+        public uint EventTokens { get; set; }
+        public int Level { get; set; }
+        public int Xp { get; set; }
+        public int TotalXp { get; set; }
         public DateTime? Daily { get; set; }
         public DateTime? Cooldown { get; set; }
         public DateTime? VoiceTimer { get; set; }
@@ -20,8 +20,6 @@ namespace Jibril
         public string ShipClass { get; set; }
         public string FleetName { get; set; }
         public string Profilepic { get; set; }
-        public DateTime? GameCooldown { get; set; }
-        public DateTime? GamblingCooldown { get; set; }
         public string Hasrole { get; set; }
         public double Toxicityvalue { get; set; }
         public int Toxicitymsgcount { get; set; }
