@@ -14,14 +14,14 @@ namespace Jibril.Services.Level.Services
         }
 
         // Give reward
-        public static int ReturnXP(SocketMessage msg)
+        public static int MessageExperience(SocketMessage msg)
         {
             var def = CalculateExperience(msg);
             var returnExp = def * 1; //Modifier to exp gain
             return returnExp;
         }
 
-        public static uint ReturnCredit()
+        public static uint MessageCredit()
         {
             var def = CalculateCredit();
             var credit = def * 1; //Modifier to credit gain
@@ -29,6 +29,7 @@ namespace Jibril.Services.Level.Services
         }
 
         // Voice Experience credit calculations = VECC
+        /*
         public static void VECC(IUser user, DateTime vcTimer)
         {
             var calculateXp = CalculateVoiceExperience(vcTimer) * 1;
@@ -37,6 +38,7 @@ namespace Jibril.Services.Level.Services
             if (calculateXp > 0)
                 LevelDatabase.AddExperience(user, calculateXp, calculateCredit);
         }
+        */
 
         private static int CalculateExperience(SocketMessage msg)
         {
@@ -54,9 +56,9 @@ namespace Jibril.Services.Level.Services
             return credit;
         }
 
-        private static int CalculateVoiceExperience(DateTime vcTimer)
+        public static int CalculateVoiceExperience(DateTime vcTimer)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             var diff = now - vcTimer;
             var hours = int.Parse(diff.Hours.ToString());
@@ -67,16 +69,16 @@ namespace Jibril.Services.Level.Services
             return calculateXp;
         }
 
-        private static int CalculateVoiceCredit(DateTime vcTimer)
+        public static uint CalculateVoiceCredit(DateTime vcTimer)
         {
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
 
             var diff = now - vcTimer;
             var hours = int.Parse(diff.Hours.ToString());
             var minutes = int.Parse(diff.Minutes.ToString());
             var totalTime = hours * 60 + minutes;
 
-            return totalTime;
+            return Convert.ToUInt32(totalTime);
         }
     }
 }

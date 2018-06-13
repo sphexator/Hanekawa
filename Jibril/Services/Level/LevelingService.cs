@@ -24,7 +24,7 @@ namespace Jibril.Services.Level
             client.UserJoined += GiveRolesBack;
         }
 
-        private Task GiveRolesBack(SocketGuildUser usr)
+        private static Task GiveRolesBack(SocketGuildUser usr)
         {
             var _ = Task.Run(async () =>
             {
@@ -54,8 +54,8 @@ namespace Jibril.Services.Level
                 using (var db = new hanekawaContext())
                 {
                     var userdata = await db.GetOrAddUserData(user);
-                    var exp = Calculate.ReturnXP(msg);
-                    var credit = Calculate.ReturnCredit();
+                    var exp = Calculate.MessageExperience(msg);
+                    var credit = Calculate.MessageCredit();
                     var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
 
                     Console.WriteLine(
@@ -75,6 +75,7 @@ namespace Jibril.Services.Level
                         userdata.Xp = userdata.Xp + exp;
                         userdata.Tokens = userdata.Tokens + credit;
                         userdata.TotalXp = userdata.TotalXp + exp;
+                        await db.SaveChangesAsync();
                     }
                 }
             });
@@ -83,26 +84,51 @@ namespace Jibril.Services.Level
 
         private static Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
         {
-            var _ = Task.Run(() =>
+            var _ = Task.Run(async () =>
             {
-                var gusr = usr as IGuildUser;
+                var user = usr as IGuildUser;
                 var oldVc = oldState.VoiceChannel;
                 var newVc = newState.VoiceChannel;
                 try
                 {
-                    var checkUser = DatabaseService.CheckUser(gusr).FirstOrDefault();
-                    if (checkUser == null) DatabaseService.EnterUser(gusr);
-                    if (newVc != null && oldVc == null)
-                        LevelDatabase.StartVoiceCounter(gusr);
-                    if (oldVc == null || newVc != null) return;
-                    var userInfo = DatabaseService.UserData(gusr).FirstOrDefault();
-                    var cooldown = Convert.ToDateTime(userInfo.Voice_timer);
-                    Calculate.VECC(gusr, cooldown);
+                    using (var db = new hanekawaContext())
+                    {
+                        var userdata = await db.GetOrAddUserData(user);
+                        if (newVc != null && oldVc == null)
+                        {
+                            userdata.VoiceTimer = DateTime.UtcNow;
+                            await db.SaveChangesAsync();
+                            return;
+                        }
+                        if (oldVc == null || newVc != null) return;
+                        if (userdata.VoiceTimer != null)
+                        {
+                            var xp = Calculate.CalculateVoiceExperience(userdata.VoiceTimer.Value) * 1;
+                            if (xp < 0) return;
+                            var credit = Calculate.CalculateVoiceCredit(userdata.VoiceTimer.Value);
+                            var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
+
+                            if (userdata.Xp + xp >= lvlupReq)
+                            {
+                                userdata.Xp = userdata.Xp + xp - lvlupReq;
+                                userdata.Tokens = userdata.Tokens + credit;
+                                userdata.TotalXp = userdata.TotalXp + xp;
+                                userdata.Level = userdata.Level + 1;
+                                await db.SaveChangesAsync();
+
+                                await LevelRoles.AssignNewRole(user, userdata.Level);
+                            }
+                            else
+                            {
+                                userdata.Xp = userdata.Xp + xp;
+                                userdata.Tokens = userdata.Tokens + credit;
+                                userdata.TotalXp = userdata.TotalXp + xp;
+                                await db.SaveChangesAsync();
+                            }
+                        }
+                    }
                 }
-                catch
-                {
-                    //Ignore
-                }
+                catch{/*Ignore */}
             });
             return Task.CompletedTask;
         }
