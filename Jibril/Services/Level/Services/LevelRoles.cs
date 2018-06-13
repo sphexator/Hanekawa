@@ -62,7 +62,7 @@ namespace Jibril.Services.Level.Services
             if (level == 2)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.ship;
+                var roleGain = ClassNames.Ship;
                 const string roleLoss = "0";
                 const string message = "0";
                 result.Add(new RoleLevelResponse
@@ -77,7 +77,7 @@ namespace Jibril.Services.Level.Services
             if (level == 5)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.LC;
+                var roleGain = ClassNames.Lc;
                 const string roleLoss = "0";
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
@@ -95,8 +95,8 @@ namespace Jibril.Services.Level.Services
             if (level == 10)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.HC;
-                var roleLoss = ClassNames.LC;
+                var roleGain = ClassNames.Hc;
+                var roleLoss = ClassNames.Lc;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 GameDatabase.UpdateClass(user, roleGain);
@@ -113,8 +113,8 @@ namespace Jibril.Services.Level.Services
             if (level == 20)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.DD;
-                var roleLoss = ClassNames.HC;
+                var roleGain = ClassNames.Dd;
+                var roleLoss = ClassNames.Hc;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 GameDatabase.UpdateClass(user, roleGain);
@@ -131,8 +131,8 @@ namespace Jibril.Services.Level.Services
             if (level == 30)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.AC;
-                var roleLoss = ClassNames.DD;
+                var roleGain = ClassNames.Ac;
+                var roleLoss = ClassNames.Dd;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 GameDatabase.UpdateClass(user, roleGain);
@@ -149,8 +149,8 @@ namespace Jibril.Services.Level.Services
             if (level == 40)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.BB;
-                var roleLoss = ClassNames.AC;
+                var roleGain = ClassNames.Bb;
+                var roleLoss = ClassNames.Ac;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 GameDatabase.UpdateClass(user, roleGain);
@@ -168,7 +168,7 @@ namespace Jibril.Services.Level.Services
             {
                 var result = new List<RoleLevelResponse>();
                 var roleGain = ClassNames.ACr;
-                var roleLoss = ClassNames.BB;
+                var roleLoss = ClassNames.Bb;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 //GameDatabase.UpdateClass(user, roleGain);
@@ -185,7 +185,7 @@ namespace Jibril.Services.Level.Services
             if (level == 65)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.AB;
+                var roleGain = ClassNames.Ab;
                 var roleLoss = ClassNames.ACr;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
@@ -203,8 +203,8 @@ namespace Jibril.Services.Level.Services
             if (level == 80)
             {
                 var result = new List<RoleLevelResponse>();
-                var roleGain = ClassNames.TC;
-                var roleLoss = ClassNames.AB;
+                var roleGain = ClassNames.Tc;
+                var roleLoss = ClassNames.Ab;
                 var message = $"Reporting from command HQ.\n" +
                               $"You've been promoted to {roleGain}!";
                 //GameDatabase.UpdateClass(user, roleGain);
@@ -224,29 +224,29 @@ namespace Jibril.Services.Level.Services
         public static async Task AssignRoles(UserData userData, SocketGuildUser usr)
         {
             if (userData.Level >= 2 && userData.Level < 5)
-                await usr.AddRoleAsync(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.ship));
+                await usr.AddRoleAsync(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ship));
             var roles = GetRoles(userData, usr);
             await usr.AddRolesAsync(roles);
         }
 
         private static IEnumerable<IRole> GetRoles(UserData userData, SocketGuildUser usr)
         {
-            var role = new List<IRole> {usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.ship)};
+            var role = new List<IRole> {usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ship)};
             if (userData.Level >= 5 && userData.Level < 10)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.LC));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Lc));
             if (userData.Level >= 10 && userData.Level < 20)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.HC));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Hc));
             if (userData.Level >= 20 && userData.Level < 30)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.DD));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Dd));
             if (userData.Level >= 30 && userData.Level < 40)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.AC));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ac));
             if (userData.Level >= 40 && userData.Level < 50)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.BB));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Bb));
             if (userData.Level >= 50 && userData.Level < 65)
                 role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.ACr));
             if (userData.Level >= 65 && userData.Level < 80)
-                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.AB));
-            if (userData.Level >= 80) role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.TC));
+                role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ab));
+            if (userData.Level >= 80) role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Tc));
             return role;
         }
     }

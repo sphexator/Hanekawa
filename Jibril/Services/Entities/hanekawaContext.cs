@@ -1,6 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Jibril
 {
@@ -44,8 +43,7 @@ namespace Jibril
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("Server=localhost;Database=hanekawa;User=root;Password=12345;");
+                optionsBuilder.UseMySql(DbInfo.ConnectionString);
             }
         }
 
@@ -954,6 +952,18 @@ namespace Jibril
 
                 entity.Property(e => e.Userid).HasColumnName("userid");
             });
+        }
+    }
+
+    public class DbInfo
+    {
+        public static string ConnectionString { get; private set; }
+
+        public DbInfo(IConfiguration config)
+        {
+            var config1 = config;
+
+            ConnectionString = config1["connectionString"];
         }
     }
 }
