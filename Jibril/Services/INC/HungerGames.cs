@@ -78,10 +78,10 @@ namespace Jibril.Services.INC
                                  $"DatabaseHungerGame.GetConfig().FirstOrDefault()");
 
                 if (config.Live != true && config.SignUpStage == false) await StartSignUp().ConfigureAwait(false);
-                if (config.Live != true && config.SignUpStage &&
-                    config.SignupDuration.AddHours(23) > DateTime.Now) return;
-                if (config.Live) await ContinueEvent().ConfigureAwait(false);
-                if (config.Live != true && config.SignupDuration.AddMinutes(1) <= DateTime.Now) await StartEvent().ConfigureAwait(false);
+                else if (config.Live != true && config.SignUpStage &&
+                         config.SignupDuration.AddHours(15) > DateTime.Now) return;
+                else if (config.Live) await ContinueEvent().ConfigureAwait(false);
+                else if (config.Live != true && config.SignupDuration.AddHours(15) <= DateTime.Now) await StartEvent().ConfigureAwait(false);
             });
             return Task.CompletedTask;
         }

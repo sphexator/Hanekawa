@@ -117,8 +117,9 @@ namespace Jibril.Modules.Level
         [Command("give", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        public async Task GiveCredit(int amount, IGuildUser user)
+        public async Task GiveCredit(uint amount, IGuildUser user)
         {
+            if (user == Context.User) return;
             var userData = DatabaseService.UserData(Context.User).FirstOrDefault();
             if (userData?.Tokens < amount)
             {
@@ -132,8 +133,8 @@ namespace Jibril.Modules.Level
                 await ReplyAsync("", false, failres.Build());
                 return;
             }
-            GambleDB.RemoveCredit(Context.User, amount);
-            GambleDB.AddCredit(user, amount);
+            GambleDB.RemoveCredit(Context.User, Convert.ToInt32(amount));
+            GambleDB.AddCredit(user, Convert.ToInt32(amount));
             var embed = EmbedGenerator.DefaultEmbed(
                 $"{Context.User.Username} has given {user.Username} {amount} credit", Colours.DefaultColour);
             await ReplyAsync("", false, embed.Build());
