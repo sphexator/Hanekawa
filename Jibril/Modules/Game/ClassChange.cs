@@ -35,7 +35,7 @@ namespace Jibril.Modules.Game
                             embed.AddField(y =>
                             {
                                 y.Name = $"{i + 1}";
-                                y.Value = $"{c.ShipClass}       Level:{c.Level}";
+                                y.Value = $"{c.Class}       Level:{c.Level}";
                                 y.IsInline = false;
                             });
                         }

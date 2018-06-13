@@ -250,7 +250,7 @@ namespace Jibril.Modules.Game.Services
                 result.Add(new Classes
                 {
                     Level = level,
-                    ShipClass = classes
+                    Class = classes
                 });
             }
 
