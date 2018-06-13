@@ -2,7 +2,7 @@
 {
     public static class Images
     {
-        public static string[] Welcome =
+        public static readonly string[] Welcome =
         {
             "Data/Images/Welcome/Template/1.png",
             "Data/Images/Welcome/Template/2.png",
@@ -29,7 +29,7 @@
             "Data/Images/Welcome/Template/24.png"
         };
 
-        public static string[] Profile =
+        public static readonly string[] Profile =
         {
             "Data/Images/Profile/Backgrounds/1.jpg",
             "Data/Images/Profile/Backgrounds/2.jpg",

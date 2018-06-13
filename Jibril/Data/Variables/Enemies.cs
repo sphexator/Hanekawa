@@ -2,7 +2,7 @@
 {
     public class Enemies
     {
-        public static int[] EnemyID =
+        public static int[] EnemyId =
         {
             //Regular enemies
             1,
