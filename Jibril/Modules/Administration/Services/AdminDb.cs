@@ -1,22 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Discord;
-using Jibril.Data.Variables;
+﻿using Discord;
 using Jibril.Extensions;
 using Jibril.Modules.Administration.List;
 using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
 
 namespace Jibril.Modules.Administration.Services
 {
     public class AdminDb
     {
-        private readonly string database = DbInfo.DbNorm;
+        private readonly string database = "DbInfo.DbNorm";
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.Password;
+        private readonly string password = "DbInfo.Password";
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.Server;
-        private readonly string username = DbInfo.Username;
+        private readonly string server = "DbInfo.Server";
+        private readonly string username = "DbInfo.Username";
 
         public AdminDb(string table)
         {
@@ -650,12 +648,12 @@ namespace Jibril.Modules.Administration.Services
 
     public class WarningDB
     {
-        private readonly string database = DbInfo.DbWarn;
+        private readonly string database = "DbInfo.DbWarn";
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.Password;
+        private readonly string password = "DbInfo.Password";
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.Server;
-        private readonly string username = DbInfo.Username;
+        private readonly string server = "DbInfo.Server";
+        private readonly string username = "DbInfo.Username";
 
         public WarningDB(string table)
         {

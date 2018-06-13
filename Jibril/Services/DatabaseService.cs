@@ -10,11 +10,11 @@ namespace Jibril.Services
     public class DatabaseService
     {
         private const bool Pooling = false;
-        private readonly string _database = DbInfo.DbNorm;
+        private readonly string _database = "DbInfo.DbNorm";
         private readonly MySqlConnection _dbConnection;
-        private readonly string _password = DbInfo.Password;
-        private readonly string _server = DbInfo.Server;
-        private readonly string _username = DbInfo.Username;
+        private readonly string _password = "DbInfo.Password";
+        private readonly string _server = "DbInfo.Server";
+        private readonly string _username = "DbInfo.Username";
 
         private DatabaseService(string table)
         {

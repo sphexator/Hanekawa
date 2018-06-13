@@ -7,12 +7,12 @@ namespace Jibril.Modules.Profile.Services
 {
     public class ProfileDB
     {
-        private readonly string database = DbInfo.DbNorm;
+        private readonly string database = "DbInfo.DbNorm";
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.Password;
+        private readonly string password = "DbInfo.Password";
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.Server;
-        private readonly string username = DbInfo.Username;
+        private readonly string server = "DbInfo.Server";
+        private readonly string username = "DbInfo.Username";
 
         public ProfileDB(string table)
         {

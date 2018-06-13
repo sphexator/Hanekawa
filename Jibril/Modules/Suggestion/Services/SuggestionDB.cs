@@ -8,12 +8,12 @@ namespace Jibril.Modules.Suggestion.Services
 {
     public class SuggestionDB
     {
-        private readonly string database = DbInfo.DbNorm;
+        private readonly string database = "DbInfo.DbNorm";
         private readonly MySqlConnection dbConnection;
-        private readonly string password = DbInfo.Password;
+        private readonly string password = "DbInfo.Password";
         private readonly bool POOLING = false;
-        private readonly string server = DbInfo.Server;
-        private readonly string username = DbInfo.Username;
+        private readonly string server = "DbInfo.Server";
+        private readonly string username = "DbInfo.Username";
 
         public SuggestionDB(string table)
         {

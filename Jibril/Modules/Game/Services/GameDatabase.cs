@@ -7,12 +7,12 @@ namespace Jibril.Modules.Game.Services
 {
     public class GameDatabase
     {
-        private readonly string _database = DbInfo.DbNorm;
+        private readonly string _database = "DbInfo.DbNorm";
         private readonly MySqlConnection _dbConnection;
-        private readonly string _password = DbInfo.Password;
+        private readonly string _password = "DbInfo.Password";
         private readonly bool _pooling = false;
-        private readonly string _server = DbInfo.Server;
-        private readonly string _username = DbInfo.Username;
+        private readonly string _server = "DbInfo.Server";
+        private readonly string _username = "DbInfo.Username";
 
         public GameDatabase(string table)
         {
