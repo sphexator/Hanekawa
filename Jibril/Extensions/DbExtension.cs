@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using System.Threading.Tasks;
 
 namespace Jibril.Extensions
@@ -24,6 +25,17 @@ namespace Jibril.Extensions
             };
             await context.Exp.AddAsync(data);
             return await context.Exp.FindAsync(user.Id.ToString());
+        }
+
+        public static async Task<int> CreateCaseId(this hanekawaContext context, IUser user, DateTime time)
+        {
+            var data = new Modlog()
+            {
+                UserId = user.Id.ToString(),
+                Date = time.ToString()
+            };
+            await context.Modlog.AddAsync(data);
+            return (await context.Modlog.FindAsync(time.ToString())).Id;
         }
     }
 }

@@ -1,15 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Modules.Administration.Services;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
     public class Info : InteractiveBase
     {
+        //TODO: Set rules etc
+        /*
         [Command("setrules")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -161,5 +162,6 @@ namespace Jibril.Modules.Administration
                                          "Level 50 = Aviation Cruiser \n" +
                                          "Level 65 = Aviation Battleship \n" +
                                          "Level 80 = Training Cruiser";
+    */
     }
 }

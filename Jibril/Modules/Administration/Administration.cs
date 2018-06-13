@@ -3,10 +3,10 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using Jibril.Modules.Administration.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
-using Jibril.Services.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -194,53 +194,54 @@ namespace Jibril.Modules.Administration
 
         private async Task MuteLogResponse(SocketGuild guild, IUser user, IUser mutedUser, int length = 1440)
         {
-            var time = DateTime.Now;
-            AdminDb.AddActionCase(user, time);
-            var caseid = AdminDb.GetActionCaseId(time);
+            using (var db = new hanekawaContext())
+            {
+                var caseid = await db.CreateCaseId(user, DateTime.Now);
 
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = mutedUser.GetAvatarUrl(),
-                Name = $"Case {caseid[0]} | {Jibril.Services.Logging.ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = $"ID:{mutedUser.Id} | {DateTime.UtcNow}"
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.FailColour),
-                Author = author,
-                Footer = footer
-            };
-            embed.AddField(x =>
-            {
-                x.Name = "User";
-                x.Value = $"{mutedUser.Mention}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Moderator";
-                x.Value = $"{Context.User.Username}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Length";
-                x.Value = $"{length}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Reason";
-                x.Value = "N/A";
-                x.IsInline = true;
-            });
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = mutedUser.GetAvatarUrl(),
+                    Name = $"Case {caseid} | {Jibril.Services.Logging.ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = $"ID:{mutedUser.Id} | {DateTime.UtcNow}"
+                };
+                var embed = new EmbedBuilder
+                {
+                    Color = new Color(Colours.FailColour),
+                    Author = author,
+                    Footer = footer
+                };
+                embed.AddField(x =>
+                {
+                    x.Name = "User";
+                    x.Value = $"{mutedUser.Mention}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = $"{Context.User.Username}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Length";
+                    x.Value = $"{length}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
 
-            var log = guild.GetTextChannel(339381104534355970);
-            var msg = await log.SendMessageAsync("", false, embed.Build());
-            CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                var log = guild.GetTextChannel(339381104534355970);
+                var msg = await log.SendMessageAsync("", false, embed.Build());
+                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid);
+            }
         }
     }
 }

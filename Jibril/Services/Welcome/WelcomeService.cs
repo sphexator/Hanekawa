@@ -29,7 +29,6 @@ namespace Jibril.Services.Welcome
             {
                 if (user.IsBot != true)
                 {
-                    DatabaseInsert.InserToDb(user);
                     var randomString = RandomStringGenerator.StringGenerator();
                     var avatarToLoad = await ImageGenerator.AvatarGenerator(user, randomString);
                     var image = WelcImgGen.WelcomeImageGeneratorAsync(user, avatarToLoad, randomString);

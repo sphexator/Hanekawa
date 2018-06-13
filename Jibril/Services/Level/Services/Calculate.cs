@@ -1,10 +1,9 @@
-﻿using System;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
+using System;
 
 namespace Jibril.Services.Level.Services
 {
-    public class Calculate
+    public static class Calculate
     {
         // Calculate exp
         public static int CalculateNextLevel(int currentLevel)
