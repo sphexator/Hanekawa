@@ -11,6 +11,7 @@ using Jibril.Common.Collections;
 using Jibril.Data.Variables;
 using Jibril.Services.Common;
 using Jibril.Services.Logging;
+using ActionType = Jibril.Services.Logging.ActionType;
 
 namespace Jibril.Modules.Administration.Services
 {

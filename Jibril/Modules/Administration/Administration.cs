@@ -201,7 +201,7 @@ namespace Jibril.Modules.Administration
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = mutedUser.GetAvatarUrl(),
-                Name = $"Case {caseid[0]} | {ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
+                Name = $"Case {caseid[0]} | {Jibril.Services.Logging.ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
             };
             var footer = new EmbedFooterBuilder
             {

@@ -13,9 +13,9 @@ namespace Jibril.Modules.Club.Services
     {
         private const ulong GuildId = 339370914724446208;
         private static readonly OverwritePermissions DenyOverwrite =
-            new OverwritePermissions(readMessages: PermValue.Deny);
+            new OverwritePermissions(viewChannel: PermValue.Deny);
         private static readonly OverwritePermissions AllowOverwrite =
-            new OverwritePermissions(readMessages: PermValue.Allow, attachFiles: PermValue.Allow,
+            new OverwritePermissions(viewChannel: PermValue.Allow, attachFiles: PermValue.Allow,
                 embedLinks: PermValue.Allow);
         private static readonly OverwritePermissions LeaderOverwrite =
             new OverwritePermissions(manageMessages: PermValue.Allow);

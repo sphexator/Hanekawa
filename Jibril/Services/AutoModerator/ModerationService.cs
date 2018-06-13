@@ -15,6 +15,7 @@ using Jibril.Services.Logging;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Quartz.Util;
+using ActionType = Jibril.Services.Logging.ActionType;
 
 namespace Jibril.Services.AutoModerator
 {
