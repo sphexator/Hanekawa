@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jibril.Extensions;
 
 namespace Jibril.Modules.Club.Services
 {
@@ -51,11 +52,14 @@ namespace Jibril.Modules.Club.Services
             var elig = ClubDb.UserClubData(user).FirstOrDefault();
             return elig != null;
         }
-        public bool CanCreateClub(IGuildUser user)
+        public async Task<bool> CanCreateClubAsync(IGuildUser user)
         {
-            var elig = ClubDb.UserClubData(user).FirstOrDefault();
-            var userData = DatabaseService.UserData(user).FirstOrDefault();
-            return elig == null && userData.Level >= 40;
+            using (var db = new hanekawaContext())
+            {
+                var elig = ClubDb.UserClubData(user).FirstOrDefault();
+                var userData = await db.GetOrCreateUserData(user);
+                return elig == null && userData.Level >= 40;
+            }
         }
         public bool IsLeader(IGuildUser user)
         {
@@ -145,6 +149,7 @@ namespace Jibril.Modules.Club.Services
             }
             return $"Successfully created channel for {club.ClubName}.";
         }
+
         public async Task DeleteChannel(IGuildUser user, IGuild guild)
         {
             var name = GetClubName(user);
@@ -153,6 +158,7 @@ namespace Jibril.Modules.Club.Services
             await ch.DeleteAsync();
             await role.DeleteAsync();
         }
+
         private async Task<ICategoryChannel> GetorCreateClubCategory(IGuild guild)
         {
             var cts = await guild.GetCategoriesAsync();
@@ -161,11 +167,13 @@ namespace Jibril.Modules.Club.Services
             var club = await guild.CreateCategoryAsync("Club");
             return club;
         }
+
         private async Task AssignRole(IGuildUser user, IGuild guild, string name)
         {
             var role = guild.Roles.FirstOrDefault(x => x.Name == name);
             await user.AddRoleAsync(role);
         }
+
         private async Task RemoveRole(IGuildUser user, IGuild guild, string name)
         {
             var role = guild.Roles.FirstOrDefault(x => x.Name == name);
@@ -179,6 +187,7 @@ namespace Jibril.Modules.Club.Services
             if (clubData.Rank <= 2) return;
             ClubDb.Promote(user);
         }
+
         public void Demote(IGuildUser user)
         {
             var clubData = ClubDb.UserClubData(user).FirstOrDefault();
@@ -186,6 +195,7 @@ namespace Jibril.Modules.Club.Services
             if (clubData.Rank >= 3) return;
             ClubDb.Demote(user);
         }
+
         public void PromoteLeader(IGuildUser user, IGuildUser oldLeader)
         {
             var club = ClubDb.UserClubData(user).FirstOrDefault();
@@ -199,21 +209,25 @@ namespace Jibril.Modules.Club.Services
             var club = ClubDb.UserClubData(user).FirstOrDefault();
             return club?.ClubName;
         }
+
         private IGuildUser GetClubLeader(int id)
         {
             var clubId = ClubDb.GetClubs().First(x => x.Id == id);
             return _client.GetUser(clubId.Leader) as IGuildUser;
         }
+
         private ulong GetClubLeader(IGuildUser id)
         {
             var clubId = ClubDb.GetClubs().First(x => x.Leader == id.Id);
             return clubId.Leader;
         }
+
         private int GetClubId(IGuildUser user)
         {
             var clubId = ClubDb.GetClubs().FirstOrDefault(x => x.Leader == user.Id);
             return (int) clubId?.Id;
         }
+
         private IReadOnlyCollection<UserData> GetClubUserDataLevel40(IEnumerable<FleetUserInfo> clubUser)
         {
             return (from x in clubUser
@@ -248,6 +262,7 @@ namespace Jibril.Modules.Club.Services
                     LastMsg = y.LastMsg
                 }).ToList();
         }
+
         private IReadOnlyCollection<UserData> GetClubUserData(IEnumerable<FleetUserInfo> clubUser)
         {
             return clubUser.Select(x => DatabaseService.UserData(x.UserId).FirstOrDefault())

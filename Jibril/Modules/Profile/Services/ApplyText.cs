@@ -19,7 +19,7 @@ namespace Jibril.Modules.Profile.Services
     public static class ApplyText
     {
         public static string ApplyTextToProfile(string filepath, SocketUser user, string randomString,
-            UserData userData, GameStatus gameData)
+            Exp userData, Shipgame gameData)
         {
             var finalPath = $"Data/Images/Profile/Cache/{randomString}Final.png";
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
@@ -145,7 +145,7 @@ namespace Jibril.Modules.Profile.Services
                         ApplyKerning = true,
                         WrapTextWidth = totalexp.Length
                     })
-                    .DrawText($"{userData.Total_xp}", statFont, Rgba32.Black, new Point(284, 144),
+                    .DrawText($"{userData.TotalXp}", statFont, Rgba32.Black, new Point(284, 144),
                         new TextGraphicsOptions(true)
                         {
                             HorizontalAlignment = HorizontalAlignment.Right,

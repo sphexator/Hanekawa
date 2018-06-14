@@ -1,16 +1,12 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Jibril.Data.Variables;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Common.Collections;
-using Jibril.Data.Variables;
-using Jibril.Services.Common;
-using Jibril.Services.Logging;
 using ActionType = Jibril.Services.Logging.ActionType;
 
 namespace Jibril.Modules.Administration.Services
@@ -39,39 +35,43 @@ namespace Jibril.Modules.Administration.Services
         public TimedMuteService(DiscordSocketClient client)
         {
             _client = client;
-            MutedUsers = AdminDb.GetMutedUsersids();
-            var users = AdminDb.GetMutedUsers();
-            foreach (var x in users)
+            using (var db = new hanekawaContext())
             {
-                TimeSpan after;
-                if (x.Timer - TimeSpan.FromMinutes(2) <= DateTime.Now)
+                foreach (var x in db.Mute)
                 {
-                    after = TimeSpan.FromMinutes(2);
+                    TimeSpan after;
+                    if (x.Time - TimeSpan.FromMinutes(2) <= DateTime.Now)
+                    {
+                        after = TimeSpan.FromMinutes(2);
+                    }
+                    else
+                    {
+                        after = x.Time.Value - DateTime.Now;
+                    }
+                    StartUnmuteTimer(x.UserId, after);
                 }
-                else
-                {
-                    after = x.Timer - DateTime.Now;
-                }
-                StartUnmuteTimer(x.Userid, after);
             }
 
             //_client.UserJoined += Client_UserJoined;
         }
 
-        private Task Client_UserJoined(IGuildUser usr)
+        private async Task Client_UserJoinedAsync(IGuildUser usr)
         {
             try
             {
-                var muted = AdminDb.GetMutedUsersid(usr.Id);
+                using (var db = new hanekawaContext())
+                {
+                    var muted = await db.Mute.FindAsync(usr.Id);
 
-                if (muted == null) return Task.CompletedTask;
-                //var _ = Task.Run(() => MuteUser(usr).ConfigureAwait(false));
+                    if (muted == null) return;
+                    //var _ = Task.Run(() => MuteUser(usr).ConfigureAwait(false));
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
-            return Task.CompletedTask;
+            return;
         }
         public async Task MuteUser(IGuildUser usr, MuteType type = MuteType.All)
         {
@@ -92,11 +92,16 @@ namespace Jibril.Modules.Administration.Services
 
         public async Task UnmuteUser(IGuildUser usr, MuteType type = MuteType.All)
         {
-            StopUnmuteTimer(usr.Id);
-            try { await usr.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch { /*ignore*/ }
-            try { await usr.RemoveRoleAsync(await GetMuteRole(usr.Guild)).ConfigureAwait(false); } catch { /*ignore*/ }
-            AdminDb.RemoveTimedMute(GuildId, usr.Id);
-            UserUnmuted(usr, MuteType.All);
+            using (var db = new hanekawaContext())
+            {
+                StopUnmuteTimer(usr.Id);
+                try { await usr.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch { /*ignore*/ }
+                try { await usr.RemoveRoleAsync(await GetMuteRole(usr.Guild)).ConfigureAwait(false); } catch { /*ignore*/ }
+
+                var mute = await db.Mute.FindAsync(GuildId, usr.Id);
+                db.Mute.Remove(mute);
+                UserUnmuted(usr, MuteType.All);
+            }
         }
 
         public async Task LogUnmute(SocketGuild guild, IGuildUser user)
@@ -170,7 +175,16 @@ namespace Jibril.Modules.Administration.Services
             await MuteUser(user).ConfigureAwait(false); // mute the user. This will also remove any previous unmute timers
 
             var unmuateAt = DateTime.UtcNow + after;
-            AdminDb.AddTimedMute(GuildId, user.Id, unmuateAt);
+            using (var db = new hanekawaContext())
+            {
+                var data = new Mute()
+                {
+                    Guildid = GuildId,
+                    Time = unmuateAt,
+                    UserId = user.Id
+                };
+                await db.Mute.AddAsync(data);
+            }
 
             StartUnmuteTimer(user.Id, after); // start the timer
         }
@@ -192,7 +206,7 @@ namespace Jibril.Modules.Administration.Services
                 }
                 catch (Exception ex)
                 {
-                    RemoveUnmuteTimerFromDb(userId); // if unmute errored, just remove unmute from db
+                    RemoveUnmuteTimerFromDbAsync(userId); // if unmute errored, just remove unmute from db
                     Console.Write("Couldn't unmute user {0} in guild {1}", userId, GuildId);
                     Console.Write(ex);
                 }
@@ -216,9 +230,13 @@ namespace Jibril.Modules.Administration.Services
             }
         }
 
-        private void RemoveUnmuteTimerFromDb(ulong userId)
+        private async Task RemoveUnmuteTimerFromDbAsync(ulong userId)
         {
-            AdminDb.RemoveTimedMute(GuildId ,userId);
+            using (var db = new hanekawaContext())
+            {
+                var mute = await db.Mute.FindAsync(userId);
+                db.Mute.Remove(mute);
+            }
         }
     }
 }

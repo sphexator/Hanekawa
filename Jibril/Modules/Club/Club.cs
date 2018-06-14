@@ -31,7 +31,7 @@ namespace Jibril.Modules.Club
         public async Task CreateClub([Remainder] string name = null)
         {
             if (name == null) return;
-            var eligible = _service.CanCreateClub(Context.User as IGuildUser);
+            var eligible = _service.CanCreateClubAsync(Context.User as IGuildUser);
             if (eligible != true)
             {
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to create a club.");

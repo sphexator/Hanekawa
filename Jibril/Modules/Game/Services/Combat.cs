@@ -7,7 +7,7 @@ namespace Jibril.Modules.Game.Services
 {
     public class Combat
     {
-        public static EmbedBuilder CombatDamage(IUser user, GameStatus gameData, UserData userData, EnemyId enemyData)
+        public static EmbedBuilder CombatDamage(IUser user, Shipgame gameData, Exp userData, Enemyidentity enemyData)
         {
             var userDamage = BaseStats.CriticalStrike(userData.ShipClass, userData.Level);
             var enemyDamage = EnemyStat.Avoidance(userData.ShipClass, userData.Level);
@@ -57,11 +57,11 @@ namespace Jibril.Modules.Game.Services
                 var userTotalHp = $"{userHealthafter}/{gameData.Health}";
                 var content = $"**{user.Username}** hit and killed **{enemyData.EnemyName}** for **{userDamage}**\n" +
                               $"\n" +
-                              $"**{user.Username}** received **{enemyData.ExpGain}** experience and **${enemyData.CurrenyGain}** for killing **{enemyData.EnemyName}**";
+                              $"**{user.Username}** received **{enemyData.ExpGain}** experience and **${enemyData.CurrencyGain}** for killing **{enemyData.EnemyName}**";
                 var embed = CombatResponse.CombatResponseMessage(enemyData, Colours.OkColour, content, userTotalHp,
                     enemyTotalHp);
                 // Killed enemy
-                GameDatabase.FightOver(enemyData.ExpGain, enemyData.CurrenyGain, user);
+                GameDatabase.FightOver(enemyData.ExpGain.Value, enemyData.CurrencyGain.Value, user);
                 GameDatabase.FinishedNPCFight(user);
                 return embed;
             }

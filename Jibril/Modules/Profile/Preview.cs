@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Extensions;
 using Jibril.Modules.Game.Services;
 using Jibril.Modules.Profile.Services;
 using Jibril.Preconditions;
@@ -18,26 +19,19 @@ namespace Jibril.Modules.Profile
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task PostProfile([Remainder] string bg = null)
         {
-            var user = Context.User;
-            DbRequirement(user);
+            using (var db = new hanekawaContext())
+            {
+                var userData = await db.GetOrCreateUserData(Context.User);
+                var gameData = await db.GetOrCreateShipGame(Context.User);
 
-            var userData = DatabaseService.UserData(user).FirstOrDefault();
-            var gameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
+                var randomString = RandomStringGenerator.StringGenerator();
+                var avatar = await DetectBackground.AvatarGenerator(Context.User, randomString);
+                var background = await DetectBackground.PreviewBackgroundTask(Context.User, randomString, userData, avatar, bg);
+                var finalizeBg = ApplyText.ApplyTextToProfile(background, Context.User, randomString, userData, gameData);
 
-            var randomString = RandomStringGenerator.StringGenerator();
-            var avatar = await DetectBackground.AvatarGenerator(user, randomString);
-            var background = await DetectBackground.PreviewBackgroundTask(user, randomString, userData, avatar, bg);
-            var finalizeBg = ApplyText.ApplyTextToProfile(background, user, randomString, userData, gameData);
-
-            await Context.Channel.SendFileAsync(finalizeBg);
-            RemoveImage.RemoveSavedProfile();
-        }
-
-        private static void DbRequirement(SocketUser user)
-        {
-            var check = GameDatabase.GameCheckExistingUser(user);
-            if (check == null)
-                GameDatabase.AddNPCDefault(user, 100);
+                await Context.Channel.SendFileAsync(finalizeBg);
+                RemoveImage.RemoveSavedProfile();
+            }
         }
     }
 }

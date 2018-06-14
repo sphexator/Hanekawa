@@ -1,12 +1,13 @@
 ﻿using System;
 using Discord;
 using System.Threading.Tasks;
+using Jibril.Modules.Game.Services;
 
 namespace Jibril.Extensions
 {
     public static class DbExtension
     {
-        public static async Task<Exp> GetOrAddUserData(this hanekawaContext context, IUser user)
+        public static async Task<Exp> GetOrCreateUserData(this hanekawaContext context, IUser user)
         {
             var userdata = await context.Exp.FindAsync(user.Id.ToString());
             if (userdata != null) return userdata;
@@ -36,6 +37,43 @@ namespace Jibril.Extensions
             };
             await context.Modlog.AddAsync(data);
             return (await context.Modlog.FindAsync(time.ToString())).Id;
+        }
+
+        public static async Task<Inventory> GetOrCreateInventory(this hanekawaContext context, IUser user)
+        {
+            var inventory = await context.Inventory.FindAsync(user.Id);
+            if (inventory != null) return inventory;
+            var data = new Inventory
+            {
+                Customrole = 0,
+                DamageBoost = 0,
+                Gift = 0,
+                RepairKit = 0,
+                Shield = 0,
+                UserId = user.Id.ToString()
+            };
+            await context.Inventory.AddAsync(data);
+            return await context.Inventory.FindAsync(user.Id.ToString());
+        }
+
+        public static async Task<Shipgame> GetOrCreateShipGame(this hanekawaContext context, IUser user)
+        {
+            var shipData = await context.Shipgame.FindAsync(user.Id.ToString());
+            if (shipData != null) return shipData;
+            var userdata = await context.Exp.FindAsync(user.Id.ToString());
+            var data = new Shipgame()
+            {
+                Combatstatus = 0,
+                Damagetaken = 0,
+                EnemyDamageTaken = 0,
+                Enemyhealth = 0,
+                Enemyid = 0,
+                Health = BaseStats.HealthPoint(userdata.Level, userdata.ShipClass),
+                KillAmount = 0,
+                UserId = user.Id.ToString()
+            };
+            await context.Shipgame.AddAsync(data);
+            return await context.Shipgame.FindAsync(user.Id.ToString());
         }
     }
 }

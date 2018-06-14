@@ -1,27 +1,23 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Services;
-using Jibril.Services.Level.Lists;
 using SixLabors.ImageSharp;
 using SixLabors.Primitives;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Profile.Services
 {
     public static class DetectBackground
     {
-        public static async Task<string> GetBackground(SocketUser user, string randomString, UserData userData,
+        public static async Task<string> GetBackground(SocketUser user, string randomString, Exp userData,
             string avatar)
         {
-            var checkBackground = DatabaseService.UserData(user).FirstOrDefault();
             var background = $"Data/Images/Profile/Cache/{randomString}background.png";
             try
             {
                 var httpClient = new HttpClient();
-                var response = await httpClient.GetAsync(checkBackground.Profilepic);
+                var response = await httpClient.GetAsync(userData.Profilepic);
                 var inputStream = await response.Content.ReadAsStreamAsync();
                 using (var img = Image.Load(inputStream))
                 {
@@ -46,7 +42,7 @@ namespace Jibril.Modules.Profile.Services
             }
         }
         private static string BuildBackground(SocketUser user, string background, string randomString,
-            UserData userData,
+            Exp userData,
             string aviS)
         {
             const string tmptPath = "Data/Images/Profile/Template/profile.png";
@@ -89,7 +85,7 @@ namespace Jibril.Modules.Profile.Services
             }
         }
 
-        public static async Task<string> PreviewBackgroundTask(SocketUser user, string randomString, UserData userData,
+        public static async Task<string> PreviewBackgroundTask(SocketUser user, string randomString, Exp userData,
             string avatar, string background)
         {
             var httpClient = new HttpClient();

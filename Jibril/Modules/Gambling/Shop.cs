@@ -1,12 +1,12 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 using Discord;
 using Discord.Commands;
 using Jibril.Data.Variables;
-using Jibril.Modules.Gambling.Services;
+using Jibril.Extensions;
 using Jibril.Preconditions;
-using Jibril.Services;
 using Jibril.Services.Common;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Gambling
 {
@@ -17,41 +17,44 @@ namespace Jibril.Modules.Gambling
         [RequiredChannel(339383206669320192)]
         public async Task UserInventory()
         {
-            var inventoryCheck = GambleDB.Inventory(Context.User).FirstOrDefault();
-            if (inventoryCheck == null)
-                GambleDB.CreateInventory(Context.User);
-            var inventory = GambleDB.Inventory(Context.User).FirstOrDefault();
+            using (var db = new hanekawaContext())
+            {
+                var inventory = await db.GetOrCreateInventory(Context.User);
 
-            string[] items = {"Repair Kit", "Damage Boost", "Shield", "Custom Role", "Gift"};
-            await ReplyAsync($"{Context.User.Username} Inventory:" +
-                             "```" +
-                             $"{items[0].PadRight(22)}   {inventory.Repairkit}\n" +
-                             $"{items[1].PadRight(22)}   {inventory.Dmgboost}\n" +
-                             $"{items[2].PadRight(22)}   {inventory.Shield}\n" +
-                             $"{items[3].PadRight(22)}   {inventory.CustomRole}\n" +
-                             $"{items[4].PadRight(22)}   {inventory.Gift}\n" +
-                             "```");
+                string[] items = { "Repair Kit", "Damage Boost", "Shield", "Custom Role", "Gift" };
+                await ReplyAsync($"{Context.User.Username} Inventory:" +
+                                 "```" +
+                                 $"{items[0].PadRight(22)}   {inventory.RepairKit}\n" +
+                                 $"{items[1].PadRight(22)}   {inventory.DamageBoost}\n" +
+                                 $"{items[2].PadRight(22)}   {inventory.Shield}\n" +
+                                 $"{items[3].PadRight(22)}   {inventory.Customrole}\n" +
+                                 $"{items[4].PadRight(22)}   {inventory.Gift}\n" +
+                                 "```");
+            }
         }
 
         [Command("shop", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
         public async Task Shoplist()
         {
-            var shoplist = GambleDB.Shoplist().ToList();
-
-            var embed = EmbedGenerator.DefaultEmbed($"To buy, use !buy <number>", Colours.DefaultColour);
-            for (var i = 0; i < 4; i++)
+            using (var db = new hanekawaContext())
             {
-                var c = shoplist[i];
-                embed.AddField(y =>
-                {
-                    y.Name = $"{i}: {c.Item}";
-                    y.Value = $"${c.Price}";
-                    y.IsInline = true;
-                });
-            }
+                var shoplist = db.Shop.ToList();
 
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                var embed = EmbedGenerator.DefaultEmbed($"To buy, use !buy <number>", Colours.DefaultColour);
+                var numba = 1;
+                foreach (var x in shoplist)
+                {
+                    embed.AddField(y =>
+                    {
+                        y.Name = $"{numba}: {x.Item}";
+                        y.Value = $"${x.Price}";
+                        y.IsInline = true;
+                    });
+                    numba++;
+                }
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            }
         }
 
         [Command("eventshop", RunMode = RunMode.Async)]
@@ -59,80 +62,101 @@ namespace Jibril.Modules.Gambling
         [RequiredChannel(339383206669320192)]
         public async Task EventShop()
         {
-            var shoplist = GambleDB.EventShopList().ToList();
-
-            var embed = EmbedGenerator.DefaultEmbed($"To buy, use !ebuy <number>", Colours.DefaultColour);
-            for (var i = 0; i < 1; i++)
+            using (var db = new hanekawaContext())
             {
-                var c = shoplist[i];
-                embed.AddField(y =>
-                {
-                    y.Name = $"{i}: {c.Item} Stock: {c.Stock}";
-                    y.Value = $"{c.Price}";
-                    y.IsInline = true;
-                });
-            }
+                var shoplist = db.Eventshop.ToList();
 
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                var embed = EmbedGenerator.DefaultEmbed($"To buy, use !ebuy <number>", Colours.DefaultColour);
+                var numba = 1;
+                foreach (var x in shoplist)
+                {
+                    embed.AddField(y =>
+                    {
+                        y.Name = $"{numba}: {x.Item} Stock: {x.Stock}";
+                        y.Value = $"{x.Price}";
+                        y.IsInline = true;
+                    });
+                    numba++;
+                }
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            }
         }
 
         [Command("buy", RunMode = RunMode.Async)]
         [RequiredChannel(339383206669320192)]
-        public async Task Buy(int item, [Remainder] int amount = 1)
+        public async Task Buy(int itemId, [Remainder] int amount = 1)
         {
             var user = Context.User;
-            CheckInventoryExistence(user);
-
-            var userdata = DatabaseService.UserData(user).FirstOrDefault();
-            var shoplist = GambleDB.Shoplist().ToList();
-
-            if (shoplist[item] == null) return;
-            var cost = shoplist[item].Price * amount;
-            if (userdata.Tokens >= shoplist[item].Price)
+            using (var db = new hanekawaContext())
             {
-                GambleDB.BuyItem(user, shoplist[item].Item, amount);
-                GambleDB.RemoveCredit(user, cost);
+                var userdata = await db.GetOrCreateUserData(user);
+                var inventory = await db.GetOrCreateInventory(user);
+                var item = await db.Shop.FindAsync(itemId);
+                if (item == null) return;
+                var cost = Convert.ToUInt32(item.Price * amount);
+                if (userdata.Tokens >= cost)
+                {
+                    switch (item.Item)
+                    {
+                        case "RepairKit":
+                            inventory.RepairKit = inventory.RepairKit + amount;
+                            break;
+                        case "DamageBoost":
+                            inventory.DamageBoost = inventory.DamageBoost + amount;
+                            break;
+                        case "Shield":
+                            inventory.Shield = inventory.Shield + amount;
+                            break;
+                        case "Gift":
+                            inventory.Gift = inventory.Gift + amount;
+                            break;
+                    }
 
-                var embed = EmbedGenerator.DefaultEmbed(
-                    $"{user.Username} bought {shoplist[item].Item} for ${shoplist[item].Price}", Colours.OkColour);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-            }
-            else if (userdata.Tokens < shoplist[item].Price)
-            {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough money for that.",
-                    Colours.FailColour);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                    userdata.Tokens = userdata.Tokens - cost;
+                    await db.SaveChangesAsync();
+
+                    var embed = EmbedGenerator.DefaultEmbed(
+                        $"{user.Username} bought {item.Item} for ${item.Price}", Colours.OkColour);
+                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
+                else
+                {
+                    var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough money for that.",
+                        Colours.FailColour);
+                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
             }
         }
 
         [Command("eventbuy", RunMode = RunMode.Async)]
         [Alias("ebuy")]
         [RequiredChannel(339383206669320192)]
-        public async Task EventBuy(int item)
+        public async Task EventBuy(int itemId)
         {
             var user = Context.User;
-            CheckInventoryExistence(user);
-
-            var userdata = DatabaseService.UserData(user).FirstOrDefault();
-            var shoplist = GambleDB.EventShopList().ToList();
-
-            if (shoplist[item] == null) return;
-            if (item == 0 && shoplist[item].Stock == 0) return;
-            if (userdata.Event_tokens >= shoplist[item].Price)
+            using (var db = new hanekawaContext())
             {
-                GambleDB.BuyItem(user, shoplist[item].Item, 1);
-                GambleDB.RemoveEventTokens(user, shoplist[item].Price);
-                GambleDB.ChangeShopStockAmount();
-                var embed = EmbedGenerator.DefaultEmbed(
-                    $"{user.Username} bought {shoplist[item].Item} for {shoplist[item].Price} tokens",
-                    Colours.OkColour);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-            }
-            else if (userdata.Event_tokens < shoplist[item].Price)
-            {
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough for that.",
-                    Colours.FailColour);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                var userdata = await db.GetOrCreateUserData(user);
+                var inventory = await db.GetOrCreateInventory(user);
+                var item = await db.Eventshop.FindAsync(itemId);
+                if (item == null || item.Stock == 0) return;
+                if (userdata.EventTokens >= item.Price)
+                {
+                    userdata.EventTokens = userdata.EventTokens - Convert.ToUInt32(item.Price);
+                    inventory.Customrole = inventory.Customrole + 1;
+                    item.Stock = item.Stock - 1;
+                    await db.SaveChangesAsync();
+                    var embed = EmbedGenerator.DefaultEmbed(
+                        $"{user.Username} bought {item.Item} for {item.Price} tokens",
+                        Colours.OkColour);
+                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
+                else if (userdata.EventTokens < item.Price)
+                {
+                    var embed = EmbedGenerator.DefaultEmbed($"{user.Username} - You don't have enough for that.",
+                        Colours.FailColour);
+                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
             }
         }
 
@@ -142,34 +166,28 @@ namespace Jibril.Modules.Gambling
         public async Task CreateRole([Remainder] string name)
         {
             var user = Context.User as IGuildUser;
-
-            var inventory = GambleDB.Inventory(user).FirstOrDefault();
-            var roleStatus = GambleDB.CheckRoleStatus(user).FirstOrDefault();
-            if (inventory.CustomRole > 0 && roleStatus != "yes")
+            using (var db = new hanekawaContext())
             {
-                GambleDB.UseItem(user, "CustomRole");
-                GambleDB.UpdateRoleStatus(user);
-                var role = await Context.Guild.CreateRoleAsync($"{name}", GuildPermissions.None);
-                await user.AddRoleAsync(role);
-                var embed = EmbedGenerator.DefaultEmbed($"{user.Username} created role {name}", Colours.OkColour);
-                await ReplyAsync("", false, embed.Build());
-            }
-            else
-            {
-                var embed = EmbedGenerator.DefaultEmbed(
-                    $"{user.Username}: You need to buy a role or you've already bought a role", Colours.FailColour);
-                await ReplyAsync("", false, embed.Build());
-            }
-        }
+                var inventory = await db.GetOrCreateInventory(user);
+                var userdata = await db.GetOrCreateUserData(user);
+                if (inventory.Customrole > 0 && userdata.Hasrole != "yes")
+                {
+                    inventory.Customrole = inventory.Customrole - 1;
+                    userdata.Hasrole = "yes";
+                    await db.SaveChangesAsync();
 
-
-        private static void CheckInventoryExistence(IUser user)
-        {
-            var inventory = GambleDB.Inventory(user);
-            if (inventory == null)
-                GambleDB.CreateInventory(user);
-            else
-                return;
+                    var role = await Context.Guild.CreateRoleAsync($"{name}", GuildPermissions.None);
+                    await user.AddRoleAsync(role);
+                    var embed = EmbedGenerator.DefaultEmbed($"{user.Username} created role {name}", Colours.OkColour);
+                    await ReplyAsync("", false, embed.Build());
+                }
+                else
+                {
+                    var embed = EmbedGenerator.DefaultEmbed(
+                        $"{user.Username}: You need to buy a role or you've already bought a role", Colours.FailColour);
+                    await ReplyAsync("", false, embed.Build());
+                }
+            }
         }
     }
 }

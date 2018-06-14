@@ -1,12 +1,15 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using Jibril.Modules.Gambling.Services;
 using Jibril.Preconditions;
 using Jibril.Services;
 using Jibril.Services.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jibril.Modules.Gambling
 {
@@ -20,11 +23,15 @@ namespace Jibril.Modules.Gambling
         public async Task Wallet()
         {
             var user = Context.User;
-            var userData = DatabaseService.UserData(user).FirstOrDefault();
-            var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
-                                                   $"Event Tokens: {userData.Event_tokens}", user.Mention,
-                Colours.DefaultColour, user);
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            using (var db = new hanekawaContext())
+            {
+                var userData = await db.GetOrCreateUserData(user);
+                var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
+                                                       $"Event Tokens: {userData.EventTokens}", user.Mention,
+                    Colours.DefaultColour, user);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            }
+
         }
 
         [Command("wallet")]
@@ -33,11 +40,14 @@ namespace Jibril.Modules.Gambling
         [RequiredChannel(339383206669320192)]
         public async Task Wallet(IGuildUser user)
         {
-            var userData = DatabaseService.UserData(user).FirstOrDefault();
-            var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
-                                                   $"Event Tokens: {userData.Event_tokens}", user.Mention,
-                Colours.DefaultColour, user);
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            using (var db = new hanekawaContext())
+            {
+                var userData = await db.GetOrCreateUserData(Context.User);
+                var embed = EmbedGenerator.AuthorEmbed($"Credit: ${userData.Tokens}\n" +
+                                                       $"Event Tokens: {userData.EventTokens}", user.Mention,
+                    Colours.DefaultColour, user);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+            }
         }
 
         [Command("Richest")]
@@ -46,23 +56,27 @@ namespace Jibril.Modules.Gambling
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task Richest()
         {
-            var embed = new EmbedBuilder();
-            embed.WithColor(new Color(Colours.DefaultColour));
-            embed.Title = "Leaderboard";
-            var result = GambleDB.GetLeaderBoard().ToList();
-            for (var i = 0; i < 10; i++)
+            using (var db = new hanekawaContext())
             {
-                var c = result[i];
-                var rank = i + 1;
-                embed.AddField(y =>
+                var embed = new EmbedBuilder();
+                embed.WithColor(new Color(Colours.DefaultColour));
+                embed.Title = "Leaderboard";
+                var result = db.Exp.OrderByDescending(x => x.Tokens).ToList();
+                for (var i = 0; i < 10; i++)
                 {
-                    y.Name = $"Rank {rank}";
-                    y.Value = $"<@!{c.UserId}> | Credit:{c.Tokens}";
-                    y.IsInline = false;
-                });
+                    var c = result[i];
+                    var rank = i + 1;
+                    embed.AddField(y =>
+                    {
+                        y.Name = $"Rank {rank}";
+                        y.Value = $"<@!{c.UserId}> | Credit:{c.Tokens}";
+                        y.IsInline = false;
+                    });
+                }
+
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
 
-            await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
         [Command("reward")]
@@ -72,11 +86,15 @@ namespace Jibril.Modules.Gambling
         public async Task GiveCredit(int amount, IUser user)
         {
             if (amount == 0) return;
-
-            GambleDB.AddEventCredit(user, amount);
-            var content = $"{Context.User.Mention} awarded {amount} credit to {user.Mention}";
-            var embed = EmbedGenerator.DefaultEmbed(content, Colours.DefaultColour);
-            await ReplyAsync("", false, embed.Build());
+            using (var db = new hanekawaContext())
+            {
+                var userdata = await db.GetOrCreateUserData(user);
+                userdata.EventTokens = userdata.EventTokens + Convert.ToUInt32(amount);
+                await db.SaveChangesAsync();
+                var content = $"{Context.User.Mention} awarded {amount} credit to {user.Mention}";
+                var embed = EmbedGenerator.DefaultEmbed(content, Colours.DefaultColour);
+                await ReplyAsync("", false, embed.Build());
+            }
         }
     }
 }

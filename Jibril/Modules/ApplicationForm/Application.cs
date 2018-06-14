@@ -12,6 +12,7 @@ namespace Jibril.Modules.ApplicationForm
 {
     public class Application : InteractiveBase
     {
+        /*
         [Command("apply", RunMode = RunMode.Async)]
         [RequireOwner]
         [Ratelimit(1, 60, Measure.Minutes, false, true)]
@@ -125,5 +126,6 @@ namespace Jibril.Modules.ApplicationForm
                 await ReplyAsync("You need to be level10 or higher inorder to apply.");
             }
         }
+        */
     }
 }

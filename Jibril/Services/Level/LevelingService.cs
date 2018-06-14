@@ -53,7 +53,7 @@ namespace Jibril.Services.Level
                 if (cd == false) return;
                 using (var db = new hanekawaContext())
                 {
-                    var userdata = await db.GetOrAddUserData(user);
+                    var userdata = await db.GetOrCreateUserData(user);
                     var exp = Calculate.MessageExperience(msg);
                     var credit = Calculate.MessageCredit();
                     var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
@@ -93,7 +93,7 @@ namespace Jibril.Services.Level
                 {
                     using (var db = new hanekawaContext())
                     {
-                        var userdata = await db.GetOrAddUserData(user);
+                        var userdata = await db.GetOrCreateUserData(user);
                         if (newVc != null && oldVc == null)
                         {
                             userdata.VoiceTimer = DateTime.UtcNow;

@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
+using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services;
 
@@ -172,16 +173,22 @@ namespace Jibril.Modules.Administration
         public async Task MvPToggle()
         {
             await Context.Message.DeleteAsync();
-            var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.MvPIgnore == 0)
+            using (var db = new hanekawaContext())
             {
-                DatabaseService.SetMvPIgnore(Context.User);
-                await ReplyAndDeleteAsync($"{Context.User.Username} has opted out of Kai Ni", false, null, TimeSpan.FromSeconds(5));
-            }
-            if (userdata.MvPIgnore == 1)
-            {
-                DatabaseService.RemoveMvPIgnore(Context.User);
-                await ReplyAndDeleteAsync($"{Context.User.Username} has opted in to Kai Ni", false, null, TimeSpan.FromSeconds(5));
+                var userdata = await db.GetOrCreateUserData(Context.User);
+                switch (userdata.Mvpignore)
+                {
+                    case 0:
+                        userdata.Mvpignore = 1;
+                        await db.SaveChangesAsync();
+                        await ReplyAndDeleteAsync($"{Context.User.Username} has opted out of Kai Ni", false, null, TimeSpan.FromSeconds(5));
+                        return;
+                    case 1:
+                        userdata.Mvpignore = 0;
+                        await db.SaveChangesAsync();
+                        await ReplyAndDeleteAsync($"{Context.User.Username} has opted in to Kai Ni", false, null, TimeSpan.FromSeconds(5));
+                        break;
+                }
             }
         }
     }
