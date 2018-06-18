@@ -7,7 +7,7 @@ using Quartz;
 
 namespace Jibril.Services.Automate.Ban
 {
-    public class BanScheduler : IJob
+    public class BanScheduler
     {
         private readonly DiscordSocketClient _discord;
         private readonly IServiceProvider _provider;
@@ -18,7 +18,7 @@ namespace Jibril.Services.Automate.Ban
             _provider = provider;
         }
 
-
+        /*
         public Task Execute(IJobExecutionContext context)
         {
             UnbanUser();
@@ -40,5 +40,6 @@ namespace Jibril.Services.Automate.Ban
             });
             return Task.CompletedTask;
         }
+        */
     }
 }

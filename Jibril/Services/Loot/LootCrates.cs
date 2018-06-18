@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Extensions;
 using Jibril.Services.Level;
 using Jibril.Services.Level.Services;
 
@@ -97,31 +98,42 @@ namespace Jibril.Services.Loot
                 if (reaction.User.Value.IsBot) return;
                 if (reaction.Emote.Name != "realsip") return;
                 Console.WriteLine("Reaction passed");
+                var user = reaction.User.Value;
                 try
                 {
                     if (_crateMessage.Contains(msg.Id))
                     {
-                        var message = await msg.GetOrDownloadAsync();
-                        await message.DeleteAsync();
-                        var user = reaction.User.Value;
-                        var rand = new Random();
-                        var reward = rand.Next(15, 150);
-                        var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
-                        LevelDatabase.AddExperience(user, reward, reward);
-                        await Task.Delay(5000);
-                        await triggermsg.DeleteAsync();
+                        using (var db = new hanekawaContext())
+                        {
+                            var userdata = await db.GetOrCreateUserData(user);
+                            var message = await msg.GetOrDownloadAsync();
+                            await message.DeleteAsync();
+                            var rand = new Random();
+                            var reward = rand.Next(15, 150);
+                            var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
+                            userdata.Xp = userdata.Xp + reward;
+                            userdata.TotalXp = userdata.TotalXp + reward;
+                            userdata.Tokens = userdata.Tokens + Convert.ToUInt32(reward);
+                            await Task.Delay(5000);
+                            await triggermsg.DeleteAsync();
+                        }
                     }
                     if (_sCMessage.Contains(msg.Id))
                     {
-                        var message = await msg.GetOrDownloadAsync();
-                        await message.DeleteAsync();
-                        var user = reaction.User.Value;
-                        var rand = new Random();
-                        var reward = rand.Next(150, 250);
-                        var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
-                        LevelDatabase.AddExperience(user, reward, reward);
-                        await Task.Delay(5000);
-                        await triggermsg.DeleteAsync();
+                        using (var db = new hanekawaContext())
+                        {
+                            var userdata = await db.GetOrCreateUserData(user);
+                            var message = await msg.GetOrDownloadAsync();
+                            await message.DeleteAsync();
+                            var rand = new Random();
+                            var reward = rand.Next(150, 250);
+                            var triggermsg = await ch.SendMessageAsync($"rewarded {user.Mention} with {reward} exp and credit");
+                            userdata.Xp = userdata.Xp + reward;
+                            userdata.TotalXp = userdata.TotalXp + reward;
+                            userdata.Tokens = userdata.Tokens + Convert.ToUInt32(reward);
+                            await Task.Delay(5000);
+                            await triggermsg.DeleteAsync();
+                        }
                     }
                 }
                 catch
@@ -132,7 +144,7 @@ namespace Jibril.Services.Loot
             return Task.CompletedTask;
         }
 
-        private IEnumerable<IEmote> ReturnEmotes()
+        private static IEnumerable<IEmote> ReturnEmotes()
         {
             var emotes = new List<IEmote>();
             Emote.TryParse("<:realsip:429809346222882836>", out var real);

@@ -17,33 +17,29 @@ namespace Jibril.Modules.Game
         [RequiredChannel(346429281314013184)]
         public async Task FindNPC()
         {
-            try
+            using (var db = new hanekawaContext())
             {
-                var user = Context.User;
-                var userData = DatabaseService.UserData(user).FirstOrDefault();
-                var result = GameDatabase.GameCheckExistingUser(user);
-                if (result.Count <= 0)
+                try
                 {
-                    var userHealth = BaseStats.HealthPoint(userData.Level, userData.ShipClass);
-                    GameDatabase.AddNPCDefault(user, userHealth);
+                    var user = Context.User;
+                    var userData = await db.GetOrCreateUserData(user);
+                    var gameStatus = await db.GetOrCreateShipGame(user);
+                    if (gameStatus.Combatstatus == 1)
+                    {
+                        var embed = await CombatResponse.Combat(user, Colours.OkColour, gameStatus);
+                        await ReplyAsync($"{user.Username}, You're already in a fight, use !attack to fight the enemy",
+                            false, embed.Build());
+                    }
+                    else
+                    {
+                        var embed = await FindEnemy.FindEnemyNPCAsync(user, userData);
+                        await ReplyAsync("", false, embed.Build());
+                    }
                 }
-
-                var GameStatus = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
-                if (GameStatus.Combatstatus == 1)
+                catch
                 {
-                    var embed = CombatResponse.Combat(user, Colours.OkColour, GameStatus);
-                    await ReplyAsync($"{user.Username}, You're already in a fight, use !attack to fight the enemy",
-                        false, embed.Build());
+                    // ignored
                 }
-                else
-                {
-                    var embed = FindEnemy.FindEnemyNPC(user, userData);
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            catch
-            {
-                // ignored
             }
         }
 
@@ -60,7 +56,7 @@ namespace Jibril.Modules.Game
                 {
                     var userData = await db.GetOrCreateUserData(user);
                     var enemyData = await db.Enemyidentity.FindAsync(gameData.Enemyid.Value);
-                    var embed = Combat.CombatDamage(user, gameData, userData, enemyData);
+                    var embed = await Combat.CombatDamageAsync(user, gameData, userData, enemyData);
                     await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                 }
                 else
@@ -86,7 +82,6 @@ namespace Jibril.Modules.Game
                     Colours.DefaultColour, user);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
-
         }
 
         [Command("flee")]
@@ -95,16 +90,16 @@ namespace Jibril.Modules.Game
         public async Task FleeFromCombat()
         {
             var user = Context.User;
-            try
+            using (var db = new hanekawaContext())
             {
-                GameDatabase.FinishedNPCFight(user);
+                var gameData = await db.GetOrCreateShipGame(user);
+                gameData.Combatstatus = 0;
+                gameData.EnemyDamageTaken = 0;
+                await db.SaveChangesAsync();
+
                 var embed = EmbedGenerator.DefaultEmbed($"{user.Username} has fleed from combat",
                     Colours.DefaultColour);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-            }
-            catch
-            {
-                await ReplyAsync(":thinking:").ConfigureAwait(false);
             }
         }
     }

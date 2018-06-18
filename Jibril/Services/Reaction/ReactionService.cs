@@ -1,100 +1,95 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Variables;
-using Jibril.Extensions;
+using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Services.Reaction
 {
     public class ReactionService
     {
-        private readonly DiscordSocketClient _discord;
-        private readonly IServiceProvider _provider;
+        private readonly DiscordSocketClient _client;
+        public ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
 
-        public ReactionService(DiscordSocketClient discord, IServiceProvider provider)
+        public ReactionService(DiscordSocketClient client, IServiceProvider provider)
         {
-            _discord = discord;
-            _provider = provider;
+            _client = client;
 
-            _discord.ReactionAdded += _discord_ReactionAdded;
-            _discord.ReactionRemoved += _discord_ReactionRemoved;
+            _client.ReactionAdded += BoardReactionAdded;
+            _client.ReactionRemoved += BoardReactionRemoved;
         }
 
-        private Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
-            SocketReaction arg3)
+        private Task BoardReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
+            SocketReaction reaction)
         {
-            var _ = Task.Run(async () =>
+            if (((ITextChannel)reaction.Channel).IsNsfw) return Task.CompletedTask;
+            if (reaction.Emote.Name != "OwO") return Task.CompletedTask;
+            if (reaction.Message.Value.Author.IsBot) return Task.CompletedTask;
+            if (reaction.User.Value.IsBot || reaction.UserId == reaction.Message.Value.Author.Id)
+                return Task.CompletedTask;
+            var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
+            board.TryGetValue(reaction.MessageId, out var msg);
+            if (msg + 1 == 2)
             {
-                try
-                {
-                    var channel = arg2 as ITextChannel;
-                    if (channel.CategoryId == 441660828379381770) return;
-                    if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265 && arg2.Id != 365479361207468032 &&
-                        channel.IsNsfw == false)
+                var _ = Task.Run(async () =>
                     {
-                        var msgid = arg1.Id.ToString();
-                        var chid = arg2.Id.ToString();
-                        var reactionData = ReactionDb.ReactionData(msgid).FirstOrDefault();
-                        if (reactionData == null) ReactionDb.InsertReactionMessage(msgid, chid, 1);
-                        if (reactionData != null && reactionData.Sent == "no")
-                        {
-                            ReactionDb.AddReaction(msgid);
-                            var counter = reactionData.Counter + 1;
-                            if (counter == 4)
-                            {
-                                ReactionDb.ReactionMsgPosted(msgid);
-                                var content = arg3.Message.Value.Content;
-                                var author = new EmbedAuthorBuilder
-                                {
-                                    IconUrl = arg1.Value.Author.GetAvatarUrl(),
-                                    Name = arg1.Value.Author.Username
-                                };
-                                var footer = new EmbedFooterBuilder {Text = $"{channel.Name}"};
-                                var embed = new EmbedBuilder
-                                {
-                                    Description = content,
-                                    Color = new Color(Colours.DefaultColour),
-                                    Author = author,
-                                    Footer = footer,
-                                    Timestamp = arg1.Value.Timestamp
-                                };
-                                if (arg3.Message.Value.Content != null) embed.Description = arg3.Message.Value.Content;
-                                if (arg1.Value.Attachments.Count > 0)
-                                {
-                                    var image = arg1.Value.Attachments.First(x => x.Url != null).Url;
-                                    embed.ImageUrl = image;
-                                }
-                                var guild = _discord.GetGuild(339370914724446208);
-                                if (!(guild.GetChannel(365479361207468032) is ITextChannel msgch)) return;
-                                await msgch.SendMessageAsync("", false, embed.Build());
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
-            });
+                        board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 99);
+                        await SendBoardAsync((ITextChannel)reaction.Channel, reaction.MessageId);
+                    });
+                return Task.CompletedTask;
+            }
+
+            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
             return Task.CompletedTask;
         }
 
-        private Task _discord_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
-            SocketReaction arg3)
+        private Task BoardReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
+            SocketReaction reaction)
         {
-            var _ = Task.Run(() =>
-            {
-                if (arg3.Emote.Name == "OwO" && arg2.Id != 364096978545803265)
-                {
-                    var msgid = arg1.Id.ToString();
-                    var reactionData = ReactionDb.ReactionData(msgid);
-                    if (reactionData == null) return;
-                    ReactionDb.RemoveReaction(msgid);
-                }
-            });
+            if (((ITextChannel)reaction.Channel).IsNsfw) return Task.CompletedTask;
+            if (reaction.Emote.Name != "OwO") return Task.CompletedTask;
+            if (reaction.User.Value.IsBot || reaction.UserId == reaction.Message.Value.Author.Id)
+                return Task.CompletedTask;
+            var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
+            board.TryGetValue(reaction.MessageId, out var msg);
+            if (msg + 1 >= 2) return Task.CompletedTask;
+            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
+
             return Task.CompletedTask;
+        }
+
+        private async Task SendBoardAsync(ITextChannel channel, ulong messageId)
+        {
+            var guild = _client.GetGuild(channel.GuildId);
+            var message = await channel.GetMessageAsync(messageId);
+            var user = message.Author as SocketGuildUser;
+            var channelz = guild.GetTextChannel(433412697913163796);
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
+                Name = user.Nickname ?? user.Username
+            };
+            var footer = new EmbedFooterBuilder
+            {
+                Text = channel.Name
+            };
+            var embed = new EmbedBuilder
+            {
+                Author = author,
+                Footer = footer,
+                Description = message.Content,
+                Timestamp = message.Timestamp,
+                Color = GetBoardColor(user).Color
+            };
+            await channelz.SendMessageAsync(null, false, embed.Build());
+        }
+
+        private static SocketRole GetBoardColor(SocketGuildUser user)
+        {
+            return user.Roles.FirstOrDefault(x => x.Color.RawValue != 0);
         }
     }
 }

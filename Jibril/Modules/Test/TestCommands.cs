@@ -13,6 +13,7 @@ namespace Jibril.Modules.Test
 {
     public class TestCommands : InteractiveBase
     {
+        /*
         private readonly HungerGames _hg;
         public TestCommands(HungerGames hg)
         {
@@ -79,23 +80,7 @@ namespace Jibril.Modules.Test
                 Console.WriteLine(e);
             }
         }
-
-        [Command("test")]
-        [RequireOwner]
-        public async Task TestCommandTask()
-        {
-            var role = Context.Client.GetGuild(200265036596379648).Roles.FirstOrDefault(x => x.Name == "Kai Ni");
-            var oldMvps = role?.Members;
-            var ma = DatabaseService.GetActiveUsers();
-            var newMvps = new List<IGuildUser>();
-            foreach (var x in ma)
-            {
-                var user = Context.Guild.GetUser(x);
-                newMvps.Add(user);
-            }
-
-            var embed = AmInfamous.MvpMessage(oldMvps, oldMvps);
-            await ReplyAsync("", false, embed.Build());
-        }
+        */
     }
+    
 }

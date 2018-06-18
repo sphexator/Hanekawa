@@ -28,15 +28,20 @@ namespace Jibril.Extensions
             return await context.Exp.FindAsync(user.Id.ToString());
         }
 
-        public static async Task<int> CreateCaseId(this hanekawaContext context, IUser user, DateTime time)
+        public static async Task<Modlog> GetOrCreateCaseId(this hanekawaContext context, IUser user, DateTime time, int? id = null)
         {
+            if (id != null)
+            {
+                var response = await context.Modlog.FindAsync(id);
+                if (response != null) return response;
+            }
             var data = new Modlog()
             {
                 UserId = user.Id.ToString(),
                 Date = time.ToString()
             };
             await context.Modlog.AddAsync(data);
-            return (await context.Modlog.FindAsync(time.ToString())).Id;
+            return (await context.Modlog.FindAsync(time.ToString()));
         }
 
         public static async Task<Inventory> GetOrCreateInventory(this hanekawaContext context, IUser user)

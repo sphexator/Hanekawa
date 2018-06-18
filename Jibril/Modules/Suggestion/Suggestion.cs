@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Data.Variables;
-using Jibril.Modules.Suggestion.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Suggestion
 {

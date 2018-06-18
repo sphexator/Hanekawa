@@ -6,7 +6,7 @@ namespace Jibril.Services.INC.Events
 {
     public static class EventHandler
     {
-        public static string EventManager(Profile profile)
+        public static string EventManager(Hungergame profile)
         {
             var evt = ChanceGenerator.EventDeterminator(profile);
             switch (evt)

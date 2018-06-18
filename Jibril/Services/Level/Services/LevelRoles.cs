@@ -57,160 +57,169 @@ namespace Jibril.Services.Level.Services
         private static IEnumerable<RoleLevelResponse> GetNewRole(IUser user, int lvl)
         {
             var level = lvl;
-
-            switch (level)
+            using (var db = new hanekawaContext())
             {
-                // Ship Girl
-                case 2:
+                var userdata = db.Exp.Find(user.Id);
+                switch (level)
                 {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Ship;
-                    const string roleLoss = "0";
-                    const string message = "0";
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 5:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Lc;
-                    const string roleLoss = "0";
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    GameDatabase.UpdateClass(user, roleGain);
+                    // Ship Girl
+                    case 2:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Ship;
+                            const string roleLoss = "0";
+                            const string message = "0";
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 5:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Lc;
+                            const string roleLoss = "0";
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            userdata.ShipClass = roleGain;
+                            db.SaveChanges();
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 10:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Hc;
-                    const string roleLoss = ClassNames.Lc;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 10:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Hc;
+                            const string roleLoss = ClassNames.Lc;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            userdata.ShipClass = roleGain;
+                            db.SaveChanges();
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 20:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Dd;
-                    const string roleLoss = ClassNames.Hc;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 20:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Dd;
+                            const string roleLoss = ClassNames.Hc;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            userdata.ShipClass = roleGain;
+                            db.SaveChanges();
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 30:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Ac;
-                    const string roleLoss = ClassNames.Dd;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 30:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Ac;
+                            const string roleLoss = ClassNames.Dd;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            userdata.ShipClass = roleGain;
+                            db.SaveChanges();
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 40:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Bb;
-                    const string roleLoss = ClassNames.Ac;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 40:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Bb;
+                            const string roleLoss = ClassNames.Ac;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            userdata.ShipClass = roleGain;
+                            db.SaveChanges();
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 50:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.ACr;
-                    const string roleLoss = ClassNames.Bb;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    //GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 50:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.ACr;
+                            const string roleLoss = ClassNames.Bb;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            //GameDatabase.UpdateClass(user, roleGain);
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 65:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Ab;
-                    const string roleLoss = ClassNames.ACr;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    //GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 65:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Ab;
+                            const string roleLoss = ClassNames.ACr;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            //GameDatabase.UpdateClass(user, roleGain);
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
-                }
-                case 80:
-                {
-                    var result = new List<RoleLevelResponse>();
-                    const string roleGain = ClassNames.Tc;
-                    const string roleLoss = ClassNames.Ab;
-                    var message = $"Reporting from command HQ.\n" +
-                                  $"You've been promoted to {roleGain}!";
-                    //GameDatabase.UpdateClass(user, roleGain);
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
+                    case 80:
+                        {
+                            var result = new List<RoleLevelResponse>();
+                            const string roleGain = ClassNames.Tc;
+                            const string roleLoss = ClassNames.Ab;
+                            var message = $"Reporting from command HQ.\n" +
+                                          $"You've been promoted to {roleGain}!";
+                            //GameDatabase.UpdateClass(user, roleGain);
 
-                    result.Add(new RoleLevelResponse
-                    {
-                        roleGain = roleGain,
-                        roleLoss = roleLoss,
-                        Message = message
-                    });
-                    return result;
+                            result.Add(new RoleLevelResponse
+                            {
+                                roleGain = roleGain,
+                                roleLoss = roleLoss,
+                                Message = message
+                            });
+                            return result;
+                        }
                 }
+
             }
 
             return null;
@@ -226,7 +235,7 @@ namespace Jibril.Services.Level.Services
 
         private static IEnumerable<IRole> GetRoles(Exp userData, SocketGuildUser usr)
         {
-            var role = new List<IRole> {usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ship)};
+            var role = new List<IRole> { usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Ship) };
             if (userData.Level >= 5 && userData.Level < 10)
                 role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Lc));
             if (userData.Level >= 10 && userData.Level < 20)

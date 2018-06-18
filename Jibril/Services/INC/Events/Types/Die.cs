@@ -8,12 +8,18 @@ namespace Jibril.Services.INC.Events.Types
 {
     public class Die
     {
-        public static string DieEvent(Profile profile)
+        public static string DieEvent(Hungergame profile)
         {
-            var rand = new Random();
-            var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
-            DatabaseHungerGame.DieEvent(profile.Player.UserId);
-            return response;
+            using (var db = new hanekawaContext())
+            {
+                var rand = new Random();
+                var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
+                var user = db.Hungergame.Find(profile.Userid.ToString());
+                user.Status = true;
+                user.DamageTaken = 100;
+                db.SaveChanges();
+                return response;
+            }
         }
 
         private static readonly string[] DieResponseStrings =

@@ -50,7 +50,8 @@ namespace Jibril.Modules.Gambling
                     if (userRoll == rolled)
                     {
                         var award = bet * 5;
-                        GambleDB.AddCredit(user, award);
+                        userData.Tokens = userData.Tokens + Convert.ToUInt32(award);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Congratulations {user.Mention}!, You made a total of ${award} off ${bet}!\n" +
                             $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OkColour);
@@ -58,8 +59,8 @@ namespace Jibril.Modules.Gambling
                     }
                     else
                     {
-                        var betlost = Convert.ToInt32(bet);
-                        GambleDB.RemoveCredit(user, betlost);
+                        userData.Tokens = userData.Tokens - Convert.ToUInt32(bet);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Sorry **{user.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
                             $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.FailColour);
@@ -94,7 +95,8 @@ namespace Jibril.Modules.Gambling
                     {
                         var cward = Convert.ToInt32(amount);
                         var award = cward * 5;
-                        GambleDB.AddCredit(user, award);
+                        userData.Tokens = userData.Tokens + Convert.ToUInt32(award);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Congratulations {user.Mention}!, You made a total of ${award} off ${amount}!\n" +
                             $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.OkColour);
@@ -102,8 +104,8 @@ namespace Jibril.Modules.Gambling
                     }
                     else
                     {
-                        var betlost = Convert.ToInt32(amount);
-                        GambleDB.RemoveCredit(user, betlost);
+                        userData.Tokens = userData.Tokens - Convert.ToUInt32(bet);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Sorry **{user.Mention}**, You rolled **{userRoll}** and lost ${amount}\n " +
                             $"You rolled:{userRoll} - Bot rolled: {rolled}", Colours.FailColour);
@@ -140,7 +142,8 @@ namespace Jibril.Modules.Gambling
                     if (rolled >= 90)
                     {
                         var award = bet * 2;
-                        GambleDB.AddCredit(user, award);
+                        userdata.Tokens = userdata.Tokens + Convert.ToUInt32(award);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
                             Colours.OkColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -148,15 +151,16 @@ namespace Jibril.Modules.Gambling
                     else if (rolled >= 50)
                     {
                         var award = bet;
-                        GambleDB.AddCredit(user, award);
+                        userdata.Tokens = userdata.Tokens + Convert.ToUInt32(award);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
                             Colours.OkColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
                     else
                     {
-                        var betlost = Convert.ToInt32(bet);
-                        GambleDB.RemoveCredit(user, betlost);
+                        userdata.Tokens = userdata.Tokens - Convert.ToUInt32(bet);
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Sorry **{user.Mention}**, You have lost ${bet} Off a roll of **{rolled}**",
                             Colours.FailColour);
@@ -187,8 +191,8 @@ namespace Jibril.Modules.Gambling
                     if (rolled >= 90)
                     {
                         var award = amount * 2;
-                        var cward = Convert.ToInt32(amount);
-                        GambleDB.AddCredit(user, cward);
+                        userdata.Tokens = userdata.Tokens + award;
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
                             Colours.OkColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -196,16 +200,16 @@ namespace Jibril.Modules.Gambling
                     else if (rolled >= 50)
                     {
                         var award = amount;
-                        var cward = Convert.ToInt32(amount);
-                        GambleDB.AddCredit(user, cward);
+                        userdata.Tokens = userdata.Tokens + award;
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed($"{user.Mention} rolled **{rolled}** and won ${award}",
                             Colours.OkColour);
                         await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
                     else
                     {
-                        var betlost = Convert.ToInt32(amount);
-                        GambleDB.RemoveCredit(user, betlost);
+                        userdata.Tokens = userdata.Tokens - amount;
+                        await db.SaveChangesAsync();
                         var embed = EmbedGenerator.DefaultEmbed(
                             $"Sorry **{user.Mention}**, You have lost ${bet} Off a roll of **{rolled}**",
                             Colours.FailColour);

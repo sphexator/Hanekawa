@@ -1,11 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
 using Jibril.Modules.Administration.Services;
 using Jibril.Modules.Audio.Service;
 using Jibril.Modules.Club.Services;
@@ -25,6 +21,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Jibril
 {
@@ -42,7 +41,7 @@ namespace Jibril
         {
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                MessageCacheSize = 1000,
+                MessageCacheSize = 35,
                 AlwaysDownloadUsers = true
             });
             _config = BuildConfig();

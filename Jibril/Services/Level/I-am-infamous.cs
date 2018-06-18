@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jibril.Services.Level
 {
@@ -41,32 +42,35 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                var guild = _client.GetGuild(339370914724446208);
-                var role = guild.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
-                var oldMvps = role?.Members;
-                var ma = DatabaseService.GetActiveUsers();
-                var newMvps = new List<IGuildUser>();
-                foreach (var x in ma)
+                using (var db = new hanekawaContext())
                 {
-                    var user = guild?.GetUser(x);
-                    newMvps.Add(user);
-                }
+                    var guild = _client.GetGuild(339370914724446208);
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
+                    var oldMvps = role?.Members;
+                    await db.Exp.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
+                    var ma = await db.Exp.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
+                    var newMvps = new List<IGuildUser>();
+                    foreach (var x in ma)
+                    {
+                        var user = guild?.GetUser(Convert.ToUInt64(x.UserId));
+                        newMvps.Add(user);
+                    }
 
-                try
-                {
-                    var embed = MvpMessage(newMvps, oldMvps);
-                    await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Couldn't send new kai ni message\n" +
-                                      $"{e}");
-                }
+                    try
+                    {
+                        var embed = MvpMessage(newMvps, oldMvps);
+                        await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Couldn't send new kai ni message\n" +
+                                          $"{e}");
+                    }
 
-                await Demote(oldMvps, role);
-                await Promote(newMvps, role);
-                DatabaseService.ResetMessageCounter();
-                foreach (var x in newMvps) DatabaseService.SetNewMvp(x);
+                    await Demote(oldMvps, role);
+                    await Promote(newMvps, role);
+                    await db.Exp.ForEachAsync(x => x.MvpCounter = 0);
+                }
             });
             return Task.CompletedTask;
         }
@@ -134,15 +138,19 @@ namespace Jibril.Services.Level
 
         private Task MessageCounter(SocketMessage msg)
         {
-            var _ = Task.Run(() =>
+            var _ = Task.Run(async () =>
             {
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
                 if (!_channels.Contains(msg.Channel.Id)) return;
                 var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
                 if (cd == false) return;
-                Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                DatabaseService.AddMessageCounter(msg.Author);
+                using (var db = new hanekawaContext())
+                {
+                    Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
+                    var user = await db.Exp.FindAsync(msg.Author.Id);
+                    user.MvpCounter = user.MvpCounter + 1;
+                }
             });
             return Task.CompletedTask;
         }

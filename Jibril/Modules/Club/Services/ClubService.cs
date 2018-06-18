@@ -1,12 +1,11 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Jibril.Services;
+using Jibril.Extensions;
 using Jibril.Services.Level.Lists;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Extensions;
 
 namespace Jibril.Modules.Club.Services
 {
@@ -230,70 +229,72 @@ namespace Jibril.Modules.Club.Services
 
         private IReadOnlyCollection<UserData> GetClubUserDataLevel40(IEnumerable<FleetUserInfo> clubUser)
         {
-            return (from x in clubUser
-                select DatabaseService.UserData(x.UserId).FirstOrDefault()
-                into y
-                where y.Level >= 40
-                select new UserData
-                {
-                    UserId = y.UserId,
-                    Username = y.Username,
-                    Tokens = y.Tokens,
-                    Event_tokens = y.Event_tokens,
-                    Level = y.Level,
-                    Xp = y.Xp,
-                    Total_xp = y.Total_xp,
-                    Daily = y.Daily,
-                    Cooldown = y.Cooldown,
-                    Voice_timer = y.Voice_timer,
-                    JoinDateTime = y.JoinDateTime,
-                    FleetName = y.FleetName,
-                    ShipClass = y.ShipClass,
-                    Profilepic = y.Profilepic,
-                    GameCD = y.GameCD,
-                    BetCD = y.BetCD,
-                    Hasrole = y.Hasrole,
-                    Toxicityvalue = y.Toxicityvalue,
-                    Toxicitymsgcount = y.Toxicitymsgcount,
-                    Toxicityavg = y.Toxicityavg,
-                    Rep = y.Rep,
-                    Repcd = y.Repcd,
-                    FirstMsg = y.FirstMsg,
-                    LastMsg = y.LastMsg
-                }).ToList();
+            using (var db = new hanekawaContext())
+            {
+                return (from x in clubUser
+                    select db.Exp.Find(x.UserId)
+                    into y
+                    where y.Level >= 40
+                    select new UserData
+                    {
+                        UserId = y.UserId,
+                        Username = y.Username,
+                        Tokens = y.Tokens,
+                        Event_tokens = y.EventTokens,
+                        Level = y.Level,
+                        Xp = y.Xp,
+                        Total_xp = y.TotalXp,
+                        Daily = y.Daily.Value,
+                        Cooldown = y.Cooldown.Value,
+                        Voice_timer = y.VoiceTimer.Value,
+                        JoinDateTime = y.Joindate.Value,
+                        FleetName = y.FleetName,
+                        ShipClass = y.ShipClass,
+                        Profilepic = y.Profilepic,
+                        Hasrole = y.Hasrole,
+                        Toxicityvalue = y.Toxicityvalue,
+                        Toxicitymsgcount = y.Toxicitymsgcount,
+                        Toxicityavg = y.Toxicityavg,
+                        Rep = y.Rep,
+                        Repcd = y.Repcd,
+                        FirstMsg = y.Firstmsg.Value,
+                        LastMsg = y.Lastmsg.Value
+                    }).ToList();
+            }
         }
 
         private IReadOnlyCollection<UserData> GetClubUserData(IEnumerable<FleetUserInfo> clubUser)
         {
-            return clubUser.Select(x => DatabaseService.UserData(x.UserId).FirstOrDefault())
-                .Select(y => new UserData
-                {
-                    UserId = y.UserId,
-                    Username = y.Username,
-                    Tokens = y.Tokens,
-                    Event_tokens = y.Event_tokens,
-                    Level = y.Level,
-                    Xp = y.Xp,
-                    Total_xp = y.Total_xp,
-                    Daily = y.Daily,
-                    Cooldown = y.Cooldown,
-                    Voice_timer = y.Voice_timer,
-                    JoinDateTime = y.JoinDateTime,
-                    FleetName = y.FleetName,
-                    ShipClass = y.ShipClass,
-                    Profilepic = y.Profilepic,
-                    GameCD = y.GameCD,
-                    BetCD = y.BetCD,
-                    Hasrole = y.Hasrole,
-                    Toxicityvalue = y.Toxicityvalue,
-                    Toxicitymsgcount = y.Toxicitymsgcount,
-                    Toxicityavg = y.Toxicityavg,
-                    Rep = y.Rep,
-                    Repcd = y.Repcd,
-                    FirstMsg = y.FirstMsg,
-                    LastMsg = y.LastMsg
-                })
-                .ToList();
+            using (var db = new hanekawaContext())
+            {
+                return clubUser.Select(x => db.Exp.Find(x.UserId))
+                    .Select(y => new UserData
+                    {
+                        UserId = y.UserId,
+                        Username = y.Username,
+                        Tokens = y.Tokens,
+                        Event_tokens = y.EventTokens,
+                        Level = y.Level,
+                        Xp = y.Xp,
+                        Total_xp = y.TotalXp,
+                        Daily = y.Daily.Value,
+                        Cooldown = y.Cooldown.Value,
+                        Voice_timer = y.VoiceTimer.Value,
+                        JoinDateTime = y.Joindate.Value,
+                        FleetName = y.FleetName,
+                        ShipClass = y.ShipClass,
+                        Profilepic = y.Profilepic,
+                        Hasrole = y.Hasrole,
+                        Toxicityvalue = y.Toxicityvalue,
+                        Toxicitymsgcount = y.Toxicitymsgcount,
+                        Toxicityavg = y.Toxicityavg,
+                        Rep = y.Rep,
+                        Repcd = y.Repcd,
+                        FirstMsg = y.Firstmsg.Value,
+                        LastMsg = y.Lastmsg.Value
+                    })
+                    .ToList();
+            }
         }
     }
 }

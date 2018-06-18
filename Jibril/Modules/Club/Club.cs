@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -10,6 +6,10 @@ using Jibril.Data.Variables;
 using Jibril.Modules.Club.Services;
 using Jibril.Preconditions;
 using Jibril.Services.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Club
 {
@@ -31,7 +31,7 @@ namespace Jibril.Modules.Club
         public async Task CreateClub([Remainder] string name = null)
         {
             if (name == null) return;
-            var eligible = _service.CanCreateClubAsync(Context.User as IGuildUser);
+            var eligible = await _service.CanCreateClubAsync(Context.User as IGuildUser);
             if (eligible != true)
             {
                 await ReplyAsync($"{Context.User.Username}, you do not have the required permission to create a club.");

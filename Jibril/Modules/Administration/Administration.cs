@@ -196,7 +196,8 @@ namespace Jibril.Modules.Administration
         {
             using (var db = new hanekawaContext())
             {
-                var caseid = await db.CreateCaseId(user, DateTime.Now);
+                var now = DateTime.Now;
+                var caseid = await db.GetOrCreateCaseId(user, now);
 
                 var author = new EmbedAuthorBuilder
                 {
@@ -240,7 +241,8 @@ namespace Jibril.Modules.Administration
 
                 var log = guild.GetTextChannel(339381104534355970);
                 var msg = await log.SendMessageAsync("", false, embed.Build());
-                CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid);
+                caseid.Msgid = msg.Id.ToString();
+                await db.SaveChangesAsync();
             }
         }
     }

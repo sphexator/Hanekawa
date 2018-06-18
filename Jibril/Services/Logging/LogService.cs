@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
 using Jibril.Data.Variables;
-using Jibril.Modules.Administration.Services;
+using Jibril.Extensions;
 using Jibril.Services.Common;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Services.Logging
 {
@@ -44,13 +44,16 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                var content = $"📥 {user.Mention} has joined. (*{user.Id}*)" +
-                              $"\n" +
-                              $"Account created: {user.CreatedAt.Humanize()}";
-                var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.OkColour, user);
-                var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
-                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                using (var db = new hanekawaContext())
+                {
+                    var userdata = await db.GetOrCreateUserData(user);
+                    var content = $"📥 {user.Mention} has joined. (*{user.Id}*)" +
+                                  $"\n" +
+                                  $"Account created: {user.CreatedAt.Humanize()}";
+                    var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.OkColour, user);
+                    var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
+                    await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
             });
             return Task.CompletedTask;
         }
@@ -59,11 +62,14 @@ namespace Jibril.Services.Logging
         {
             var _ = Task.Run(async () =>
             {
-                var userdata = DatabaseService.UserData(user).FirstOrDefault();
-                var content = $"📤 {user.Mention} has left. (*{user.Id}*)";
-                var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.FailColour, user);
-                var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
-                await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                using (var db = new hanekawaContext())
+                {
+                    var userdata = await db.GetOrCreateUserData(user);
+                    var content = $"📤 {user.Mention} has left. (*{user.Id}*)";
+                    var embed = EmbedGenerator.FooterEmbed(content, $"Username: {user.Username}#{user.Discriminator} - Level: {userdata?.Level ?? 1}", Colours.FailColour, user);
+                    var channel = user.Guild.TextChannels.First(x => x.Id == 339380907146477579);
+                    await channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
             });
             return Task.CompletedTask;
         }
@@ -252,7 +258,6 @@ namespace Jibril.Services.Logging
                                       $"{command.StackTrace}");
             }
 
-
             _commandsLogger.Log(
                 LogLevelFromSeverity(message.Severity),
                 0,
@@ -267,77 +272,54 @@ namespace Jibril.Services.Logging
             return (LogLevel)Math.Abs((int)severity - 5);
         }
 
-        private static void ApplyBanScheduler(IUser user)
-        {
-            var userdata = DatabaseService.UserData(user).FirstOrDefault();
-            if (userdata?.Level < 10)
-            {
-                var banCheck = AdminDb.CheckBanList(user);
-                if (banCheck == null)
-                    AdminDb.AddBanPerm(user);
-                else AdminDb.UpdateBanPerm(user);
-            }
-
-            if (userdata?.Level > 10 && userdata.Level < 25)
-            {
-                var banCheck = AdminDb.CheckBanList(user);
-                if (banCheck == null) AdminDb.AddBan(user);
-                else AdminDb.UpdateBanPerm(user);
-            }
-
-            if (!(userdata?.Level > 30)) return;
-            {
-                var banCheck = AdminDb.CheckBanList(user);
-                if (banCheck == null) AdminDb.AddBan(user);
-                else AdminDb.UpdateBan(user);
-            }
-        }
-
         private async Task LogEmbedBuilder(SocketGuild guild, IUser user, string actionType, uint colour,
             int length = 1440)
         {
-            var time = DateTime.Now;
-            AdminDb.AddActionCase(user, time);
-            var caseid = AdminDb.GetActionCaseId(time);
+            using (var db = new hanekawaContext())
+            {
+                var time = DateTime.Now;
+                var caseid = await db.GetOrCreateCaseId(user, time);
 
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = user.GetAvatarUrl(),
-                Name = $"Case {caseid[0]} | {actionType} | {user.Username}#{user.DiscriminatorValue}"
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = $"ID:{user.Id}"
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(colour),
-                Author = author,
-                Footer = footer,
-                Timestamp = new DateTimeOffset(DateTime.UtcNow)
-            };
-            embed.AddField(x =>
-            {
-                x.Name = "User";
-                x.Value = $"{user.Mention}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Moderator";
-                x.Value = $"N/A";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Reason";
-                x.Value = "N/A";
-                x.IsInline = true;
-            });
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = user.GetAvatarUrl(),
+                    Name = $"Case {caseid.Id} | {actionType} | {user.Username}#{user.DiscriminatorValue}"
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = $"ID:{user.Id}"
+                };
+                var embed = new EmbedBuilder
+                {
+                    Color = new Color(colour),
+                    Author = author,
+                    Footer = footer,
+                    Timestamp = new DateTimeOffset(DateTime.UtcNow)
+                };
+                embed.AddField(x =>
+                {
+                    x.Name = "User";
+                    x.Value = $"{user.Mention}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = $"N/A";
+                    x.IsInline = true;
+                });
+                embed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = "N/A";
+                    x.IsInline = true;
+                });
 
-            var log = guild.GetTextChannel(339381104534355970);
-            var msg = await log.SendMessageAsync("", false, embed.Build());
-            CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+                var log = guild.GetTextChannel(339381104534355970);
+                var msg = await log.SendMessageAsync("", false, embed.Build());
+                caseid.Msgid = msg.Id.ToString();
+                await db.SaveChangesAsync();
+            }
         }
     }
 

@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
 using Jibril.Data.Variables;
-using Jibril.Modules.Administration.Services;
-using Jibril.Services;
 using Jibril.Services.Common;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Administration
 {
+    /*
     public class Warn : InteractiveBase
     {
         [Command("warn", RunMode = RunMode.Async)]
@@ -276,4 +275,5 @@ namespace Jibril.Modules.Administration
             return stream;
         }
     }
+    */
 }

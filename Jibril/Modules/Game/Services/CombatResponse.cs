@@ -10,15 +10,15 @@ namespace Jibril.Modules.Game.Services
 {
     public class CombatResponse
     {
-        public static async Task<EmbedBuilder> Combat(IUser user, uint Colour, GameStatus gameStatus)
+        public static async Task<EmbedBuilder> Combat(IUser user, uint Colour, Shipgame gameStatus)
         {
             using (var db = new hanekawaContext())
             {
                 var userData = await db.GetOrCreateUserData(user);
-                var EnemyData = GameDatabase.Enemy(gameStatus.Enemyid).FirstOrDefault();
+                var enemyData = await db.Enemyidentity.FindAsync(gameStatus.Enemyid.Value);
                 var embed = new EmbedBuilder();
                 embed.WithColor(new Color(Colour));
-                embed.WithImageUrl($"https://i.imgur.com/{EnemyData.ImagePath}.png");
+                embed.WithImageUrl($"https://i.imgur.com/{enemyData.ImageName}.png");
 
                 var fieldClass = new EmbedFieldBuilder();
                 var fieldHealth = new EmbedFieldBuilder();
@@ -26,7 +26,7 @@ namespace Jibril.Modules.Game.Services
 
                 fieldClass.WithIsInline(true);
                 fieldClass.WithName("Class");
-                fieldClass.WithValue($"{EnemyData.EnemyClass}");
+                fieldClass.WithValue($"{enemyData.EnemyClass}");
 
                 fieldHealth.WithIsInline(true);
                 fieldHealth.WithName("Health");
@@ -47,40 +47,43 @@ namespace Jibril.Modules.Game.Services
 
         }
 
-        public static EmbedBuilder CombatStart(IUser user, uint Colour, int enemy, int enemyHealth, UserData userData,
-            EnemyId enemyName)
+        public static async Task<EmbedBuilder> CombatStartAsync(IUser user, uint Colour, int enemy, int enemyHealth, Exp userData,
+            Enemyidentity enemyName)
         {
-            var embed = new EmbedBuilder();
-            embed.WithColor(new Color(Colour));
-            //embed.WithTitle(enemyName.FirstOrDefault().enemyName);
-            embed.WithImageUrl($"http://i.imgur.com/{enemyName.ImagePath}.png");
+            using (var db = new hanekawaContext())
+            {
+                var embed = new EmbedBuilder();
+                embed.WithColor(new Color(Colour));
+                //embed.WithTitle(enemyName.FirstOrDefault().enemyName);
+                embed.WithImageUrl($"http://i.imgur.com/{enemyName.ImageName}.png");
 
-            var fieldClass = new EmbedFieldBuilder();
-            var fieldHealth = new EmbedFieldBuilder();
-            var fieldLevel = new EmbedFieldBuilder();
+                var fieldClass = new EmbedFieldBuilder();
+                var fieldHealth = new EmbedFieldBuilder();
+                var fieldLevel = new EmbedFieldBuilder();
 
-            var GetGameData = GameDatabase.GetUserGameStatus(user).FirstOrDefault();
-            fieldClass.WithIsInline(true);
-            fieldClass.WithName("Class");
-            fieldClass.WithValue($"{enemyName.EnemyClass}");
+                var GetGameData = await db.GetOrCreateShipGame(user);
+                fieldClass.WithIsInline(true);
+                fieldClass.WithName("Class");
+                fieldClass.WithValue($"{enemyName.EnemyClass}");
 
-            fieldHealth.WithIsInline(true);
-            fieldHealth.WithName("Health");
-            var dmgTaken = GetGameData.EnemyDamageTaken;
-            var enmyhealth = enemyHealth - dmgTaken;
-            fieldHealth.WithValue($"{enmyhealth}/{enemyHealth}");
+                fieldHealth.WithIsInline(true);
+                fieldHealth.WithName("Health");
+                var dmgTaken = GetGameData.EnemyDamageTaken;
+                var enmyhealth = enemyHealth - dmgTaken;
+                fieldHealth.WithValue($"{enmyhealth}/{enemyHealth}");
 
-            fieldLevel.WithIsInline(true);
-            fieldLevel.WithName("Level");
-            fieldLevel.WithValue($"{userData.Level}");
+                fieldLevel.WithIsInline(true);
+                fieldLevel.WithName("Level");
+                fieldLevel.WithValue($"{userData.Level}");
 
-            embed.AddField(fieldClass);
-            embed.AddField(fieldHealth);
-            embed.AddField(fieldLevel);
-            embed.Title = $"Enemy: {enemyName.EnemyName}";
-            embed.Description = $"You encountered enemy: **{enemyName.EnemyName}**.";
+                embed.AddField(fieldClass);
+                embed.AddField(fieldHealth);
+                embed.AddField(fieldLevel);
+                embed.Title = $"Enemy: {enemyName.EnemyName}";
+                embed.Description = $"You encountered enemy: **{enemyName.EnemyName}**.";
 
-            return embed;
+                return embed;
+            }
         }
 
         public static EmbedBuilder CombatResponseMessage(Enemyidentity enemyData, uint Colour, string Content, string Usr,

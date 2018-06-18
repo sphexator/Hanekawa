@@ -262,16 +262,6 @@ namespace Jibril
                     .HasColumnType("varchar(45)")
                     .HasDefaultValueSql("'o'");
 
-                entity.Property(e => e.GamblingCooldown)
-                    .HasColumnName("gambling_cooldown")
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("'0001-01-01 00:00:00'");
-
-                entity.Property(e => e.GameCooldown)
-                    .HasColumnName("game_cooldown")
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("'0001-01-01 00:00:00'");
-
                 entity.Property(e => e.Hasrole)
                     .HasColumnName("hasrole")
                     .HasColumnType("varchar(45)")

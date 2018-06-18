@@ -206,8 +206,8 @@ namespace Jibril.Modules.Administration.Services
                 }
                 catch (Exception ex)
                 {
-                    RemoveUnmuteTimerFromDbAsync(userId); // if unmute errored, just remove unmute from db
-                    Console.Write("Couldn't unmute user {0} in guild {1}", userId, GuildId);
+                    await RemoveUnmuteTimerFromDbAsync(userId); // if unmute errored, just remove unmute from db
+                    Console.Write($"Couldn't unmute user {userId} in guild {GuildId}");
                     Console.Write(ex);
                 }
             }, null, after, Timeout.InfiniteTimeSpan);

@@ -13,6 +13,7 @@ namespace Jibril.Modules.Administration
 {
     public class Crates : InteractiveBase
     {
+
         private readonly LootCrates _drops;
         public Crates(LootCrates drops)
         {
