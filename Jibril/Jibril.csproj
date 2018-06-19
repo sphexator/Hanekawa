@@ -20,8 +20,17 @@
 
   <ItemGroup>
     <Compile Remove="Data\Images\Zip\**" />
+    <Compile Remove="Modules\ApplicationForm\**" />
+    <Compile Remove="Services\AutoModerator\Perspective\Services\**" />
+    <Compile Remove="Services\Welcome\Lists\**" />
     <EmbeddedResource Remove="Data\Images\Zip\**" />
+    <EmbeddedResource Remove="Modules\ApplicationForm\**" />
+    <EmbeddedResource Remove="Services\AutoModerator\Perspective\Services\**" />
+    <EmbeddedResource Remove="Services\Welcome\Lists\**" />
     <None Remove="Data\Images\Zip\**" />
+    <None Remove="Modules\ApplicationForm\**" />
+    <None Remove="Services\AutoModerator\Perspective\Services\**" />
+    <None Remove="Services\Welcome\Lists\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,14 +63,10 @@
 
   <ItemGroup>
     <Folder Include="Data\Images\PictureSpam\" />
-    <Folder Include="Modules\ApplicationForm\Services\" />
-    <Folder Include="Modules\Game\Services\Stats\" />
-    <Folder Include="Modules\Suggestion\Services\" />
-    <Folder Include="Modules\Voice\Services\" />
-    <Folder Include="Services\AutoModerator\Perspective\Services\" />
+    <Folder Include="Modules\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
     <Folder Include="Services\INC\Cache\Banner\" />
-    <Folder Include="Services\Welcome\Lists\" />
+    <Folder Include="Services\Loot\" />
   </ItemGroup>
 
   <ItemGroup>

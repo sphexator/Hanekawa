@@ -1,7 +1,6 @@
-﻿using System;
-using Discord;
+﻿using Discord;
+using System;
 using System.Threading.Tasks;
-using Jibril.Modules.Game.Services;
 
 namespace Jibril.Extensions
 {
@@ -73,7 +72,7 @@ namespace Jibril.Extensions
                 EnemyDamageTaken = 0,
                 Enemyhealth = 0,
                 Enemyid = 0,
-                Health = BaseStats.HealthPoint(userdata.Level, userdata.ShipClass),
+                //Health = BaseStats.HealthPoint(userdata.Level, userdata.ShipClass),
                 KillAmount = 0,
                 UserId = user.Id.ToString()
             };

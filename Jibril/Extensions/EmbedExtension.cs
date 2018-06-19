@@ -8,5 +8,4 @@ namespace Jibril.Extensions
         public static Task<IUserMessage> SendEmbedAsync(this IMessageChannel ch, EmbedBuilder getEmbed, string content = null)
             => ch.SendMessageAsync(content, embed: getEmbed.Build());
     }
-
 }

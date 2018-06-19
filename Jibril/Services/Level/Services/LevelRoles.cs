@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Jibril.Data.Variables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Jibril.Data.Variables;
-using Jibril.Modules.Game.Services;
-using Jibril.Services.Level.Lists;
 
 namespace Jibril.Services.Level.Services
 {
