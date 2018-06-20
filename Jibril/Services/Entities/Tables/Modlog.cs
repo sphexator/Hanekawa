@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Jibril
+namespace Jibril.Services.Entities.Tables
 {
-    public partial class Modlog
+    public class ModLog
     {
-        public int Id { get; set; }
-        public string UserId { get; set; }
-        public string Msgid { get; set; }
-        public string Responduser { get; set; }
+        public uint Id { get; set; }
+        public ulong UserId { get; set; }
+        public string Action { get; set; }
+        public ulong MessageId { get; set; }
+        public ulong ModId { get; set; }
         public string Response { get; set; }
-        public string Date { get; set; }
+        public DateTime Date { get; set; }
     }
 }

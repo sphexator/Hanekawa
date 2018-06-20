@@ -1,11 +1,10 @@
 ﻿namespace Jibril.Services.Entities.Tables
 {
-    public class Shop
+    public class ShopEvent
     {
         public uint Id { get; set; }
         public string Item { get; set; }
         public uint Price { get; set; }
-        public ulong? RoleId { get; set; }
-        public string ROle { get; set; }
+        public uint? Stock { get; set; }
     }
 }

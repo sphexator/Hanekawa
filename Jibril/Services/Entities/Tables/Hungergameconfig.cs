@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Jibril
+namespace Jibril.Services.Entities.Tables
 {
-    public partial class Hungergameconfig
+    public class HungerGameConfig
     {
-        public ulong Guild { get; set; }
-        public ulong MsgId { get; set; }
+        public ulong GuildId { get; set; }
+        public ulong MessageId { get; set; }
+        public bool SignupStage { get; set; }
         public bool Live { get; set; }
-        public int Round { get; set; }
-        public DateTime SignupDuration { get; set; }
-        public bool Signupstage { get; set; }
+        public uint Round { get; set; }
+        public DateTime SignupTime { get; set; }
     }
 }

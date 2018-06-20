@@ -79,5 +79,10 @@ namespace Jibril.Extensions
             await context.Shipgame.AddAsync(data);
             return await context.Shipgame.FindAsync(user.Id.ToString());
         }
+
+        public static async Task GetOrCreateGuildConfig(this hanekawaContext context, IGuildUser user)
+        {
+
+        }
     }
 }

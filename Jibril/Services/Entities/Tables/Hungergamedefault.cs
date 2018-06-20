@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Jibril
+﻿namespace Jibril.Services.Entities.Tables
 {
-    public partial class Hungergamedefault
+    public class HungerGameDefault
     {
-        public ulong Userid { get; set; }
+        public ulong UserId { get; set; }
         public string Name { get; set; }
     }
 }
