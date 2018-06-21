@@ -52,7 +52,7 @@ namespace Jibril
             var scheduler = services.GetService<IScheduler>();
 
             //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
-            QuartzServicesUtilities.StartCronJob<AmInfamous>(scheduler, "0 0 13 ? * MON *");
+            QuartzServicesUtilities.StartCronJob<MvpService>(scheduler, "0 0 13 ? * MON *");
             QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0 0/6 1/1 * ? *");
             */
 
@@ -65,7 +65,7 @@ namespace Jibril
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
-            services.UseQuartz(typeof(AmInfamous));
+            services.UseQuartz(typeof(MvpService));
             services.AddSingleton(_client);
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
@@ -74,7 +74,7 @@ namespace Jibril
             services.AddSingleton<ReactionService>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<HungerGames>();
-            services.AddSingleton<AmInfamous>();
+            services.AddSingleton<MvpService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);

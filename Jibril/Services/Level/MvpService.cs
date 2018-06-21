@@ -6,17 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jibril.Extensions;
+using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Jibril.Services.Level
 {
-    public class AmInfamous : IJob
+    public class MvpService : IJob
     {
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _channels = new List<ulong>();
         private readonly List<CooldownUser> _users = new List<CooldownUser>();
 
-        public AmInfamous(DiscordSocketClient client)
+        public MvpService(DiscordSocketClient client)
         {
             _client = client;
 
@@ -42,13 +44,13 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new hanekawaContext())
+                using (var db = new DbService())
                 {
                     var guild = _client.GetGuild(339370914724446208);
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
                     var oldMvps = role?.Members;
-                    await db.Exp.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
-                    var ma = await db.Exp.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
+                    await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
+                    var ma = await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
                     var newMvps = new List<IGuildUser>();
                     foreach (var x in ma)
                     {
@@ -69,7 +71,8 @@ namespace Jibril.Services.Level
 
                     await Demote(oldMvps, role);
                     await Promote(newMvps, role);
-                    await db.Exp.ForEachAsync(x => x.MvpCounter = 0);
+                    await db.Accounts.ForEachAsync(x => x.MvpCounter = 0);
+                    await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
@@ -145,10 +148,10 @@ namespace Jibril.Services.Level
                 if (!_channels.Contains(msg.Channel.Id)) return;
                 var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
                 if (cd == false) return;
-                using (var db = new hanekawaContext())
+                using (var db = new DbService())
                 {
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                    var user = await db.Exp.FindAsync(msg.Author.Id);
+                    var user = await db.GetOrCreateUserData(msg.Author);
                     user.MvpCounter = user.MvpCounter + 1;
                 }
             });
