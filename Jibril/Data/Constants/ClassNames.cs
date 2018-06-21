@@ -2,7 +2,6 @@
 {
     public static class ClassNames
     {
-        public const string Ship = "Ship";
         public const string Shipgirl = "Ship Girl";
         public const string Lc = "Light Cruiser";
         public const string Hc = "Heavy Cruiser";

@@ -1,88 +1,92 @@
 ﻿using Discord;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using Jibril.Data.Constants;
+using Jibril.Data.Variables;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jibril.Extensions
 {
     public static class DbExtension
     {
-        public static async Task<Exp> GetOrCreateUserData(this hanekawaContext context, IUser user)
+        public static async Task<Account> GetOrCreateUserData(this DbService context, IUser user)
         {
-            var userdata = await context.Exp.FindAsync(user.Id.ToString());
+            var userdata = await context.Accounts.FindAsync(user.Id.ToString());
             if (userdata != null) return userdata;
-            var data = new Exp
+            var inventory = new Inventory
             {
-                UserId = user.Id.ToString(),
-                Tokens = 0,
-                EventTokens = 0,
-                Level = 1,
-                Xp = 0,
-                TotalXp = 0,
-                Toxicityavg = 0,
-                Toxicitymsgcount = 0,
-                Toxicityvalue = 0,
-                Rep = 0
-            };
-            await context.Exp.AddAsync(data);
-            return await context.Exp.FindAsync(user.Id.ToString());
-        }
-
-        public static async Task<Modlog> GetOrCreateCaseId(this hanekawaContext context, IUser user, DateTime time, int? id = null)
-        {
-            if (id != null)
-            {
-                var response = await context.Modlog.FindAsync(id);
-                if (response != null) return response;
-            }
-            var data = new Modlog()
-            {
-                UserId = user.Id.ToString(),
-                Date = time.ToString()
-            };
-            await context.Modlog.AddAsync(data);
-            return (await context.Modlog.FindAsync(time.ToString()));
-        }
-
-        public static async Task<Inventory> GetOrCreateInventory(this hanekawaContext context, IUser user)
-        {
-            var inventory = await context.Inventory.FindAsync(user.Id);
-            if (inventory != null) return inventory;
-            var data = new Inventory
-            {
-                Customrole = 0,
+                UserId = user.Id,
+                CustomRole = 0,
                 DamageBoost = 0,
                 Gift = 0,
                 RepairKit = 0,
-                Shield = 0,
-                UserId = user.Id.ToString()
+                Shield = 0
             };
-            await context.Inventory.AddAsync(data);
-            return await context.Inventory.FindAsync(user.Id.ToString());
+            var data = new Account
+                {
+                UserId = user.Id,
+                Class = ClassNames.Shipgirl,
+                Credit = 0,
+                CreditSpecial = 0,
+                CustomRoleId = null,
+                DailyCredit = DateTime.UtcNow,
+                GameKillAmount = 0,
+                MvpCounter = 0,
+                RepCooldown = DateTime.UtcNow,
+                Rep = 0,
+                Exp = 0,
+                VoiceExpTime = DateTime.UtcNow,
+                TotalExp = 0,
+                MvpIgnore = false,
+                MvpImmunity = false,
+                Level = 0,
+                Inventory = new List<Inventory>{inventory}
+            };
+            await context.Accounts.AddAsync(data);
+            return await context.Accounts.FindAsync(user.Id);
         }
 
-        public static async Task<Shipgame> GetOrCreateShipGame(this hanekawaContext context, IUser user)
+        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, DateTime time, ModAction action)
         {
-            var shipData = await context.Shipgame.FindAsync(user.Id.ToString());
-            if (shipData != null) return shipData;
-            var userdata = await context.Exp.FindAsync(user.Id.ToString());
-            var data = new Shipgame()
+            var data = new ModLog
             {
-                Combatstatus = 0,
-                Damagetaken = 0,
-                EnemyDamageTaken = 0,
-                Enemyhealth = 0,
-                Enemyid = 0,
-                //Health = BaseStats.HealthPoint(userdata.Level, userdata.ShipClass),
-                KillAmount = 0,
-                UserId = user.Id.ToString()
+                UserId = user.Id,
+                Date = time,
+                Action = action.ToString()
             };
-            await context.Shipgame.AddAsync(data);
-            return await context.Shipgame.FindAsync(user.Id.ToString());
+            await context.ModLogs.AddAsync(data);
+            return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task GetOrCreateGuildConfig(this hanekawaContext context, IGuildUser user)
+        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, string name, DateTime time)
         {
+            var check = await context.ClubInfos.FindAsync(user.Id);
+            if (check != null) return null;
+            var data = new ClubInfo
+            {
+                Leader = user.Id,
+                Name = name,
+                CreationDate = time
+            };
+            await context.ClubInfos.AddAsync(data);
+            return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
+        }
 
+        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuild guild)
+        {
+            var response = await context.GuildConfigs.FindAsync(guild.Id);
+            if (response != null) return response;
+            var data = new GuildConfig
+            {
+                GuildId = guild.Id,
+                Welcome = true
+            };
+            await context.GuildConfigs.AddAsync(data);
+            return await context.GuildConfigs.FindAsync(guild.Id);
         }
     }
 }

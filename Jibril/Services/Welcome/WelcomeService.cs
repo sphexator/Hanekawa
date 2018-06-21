@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Discord;
 using Humanizer;
 using Jibril.Extensions;
+using Jibril.Services.Entities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
@@ -21,7 +22,8 @@ namespace Jibril.Services.Welcome
     {
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
-        private readonly bool _disableBanner;
+        private ConcurrentDictionary<ulong, bool> DisableBanner { get; set; }
+            = new ConcurrentDictionary<ulong, bool>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; set; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
         private ConcurrentDictionary<ulong, uint> JoinCount { get; set; }
@@ -36,8 +38,13 @@ namespace Jibril.Services.Welcome
             _client.JoinedGuild += CreateGuildDirectory;
             _client.LeftGuild += BannerCleanup;
             _client.UserJoined += WelcomeToggler;
-
-            _disableBanner = false;
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs)
+                {
+                    DisableBanner.AddOrUpdate(x.GuildId, x.Welcome, (arg1, b) => false);
+                }
+            }
 
             Directory.CreateDirectory("Data/Welcome/");
         }
@@ -58,9 +65,9 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new hanekawaContext())
+                using (var db = new DbService())
                 {
-                    await db
+                    await db.GuildConfigs.FindAsync(user.Guild.Id);
                     var counter = JoinCount.GetOrAdd(user.Guild.Id, 0);
                 }
             });
@@ -72,15 +79,14 @@ namespace Jibril.Services.Welcome
             var _ = Task.Run(async () =>
             {
                 if (user.IsBot) return;
-                if (!CheckCooldown(user as IGuildUser)) return;
-                using (var db = new hanekawaContext())
+                if (!CheckCooldown(user)) return;
+                DisableBanner.TryGetValue(user.Guild.Id, out var disabled);
+                if (!disabled)
+                using (var db = new DbService())
                 {
                     var cfg = await db.GuildConfigs.FindAsync(user.Guild.Id);
-                    if (cfg.WelcomeToggle == false) return;
-                    if (CheckCooldown(user) == false) return;
-                    if (cfg.IsWelcomeImage)
-                        await WelcomeBanner(user.Guild.GetTextChannel((ulong)cfg.WelcomeMessageChannelId), user)
-                            .ConfigureAwait(false);
+                    await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel), user)
+                        .ConfigureAwait(false);
                 }
             });
             return Task.CompletedTask;
@@ -111,7 +117,7 @@ namespace Jibril.Services.Welcome
             return img;
         }
 
-        private static async Task<MemoryStream> GetAvatarAsync(IUser user)
+        private static async Task<Stream> GetAvatarAsync(IUser user)
         {
             var stream = new MemoryStream();
             using (var client = new HttpClient())
@@ -121,7 +127,6 @@ namespace Jibril.Services.Welcome
                 {
                     img.Mutate(x => x.ConvertToAvatar(new Size(60, 60), 32));
                     img.Save(stream, new PngEncoder());
-                    img.Dispose();
                 }
             }
 
@@ -139,7 +144,7 @@ namespace Jibril.Services.Welcome
                 var text = user.Username.Truncate(15);
 
                 img.Mutate(ctx => ctx
-                    .DrawImage(Image.Load(avatar.GetBuffer(), new PngDecoder()), new Size(60, 60), new Point(10, 10),
+                    .DrawImage(Image.Load(avatar, new PngDecoder()), new Size(60, 60), new Point(10, 10),
                         GraphicsOptions.Default)
                     .DrawText(text, font, Rgba32.White, new PointF(245, 51), new TextGraphicsOptions(true)
                     {
@@ -149,9 +154,6 @@ namespace Jibril.Services.Welcome
                         ApplyKerning = true
                     }));
                 img.Save(stream, new PngEncoder());
-
-                img.Dispose();
-                avatar.Dispose();
             }
 
             return stream;
