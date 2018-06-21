@@ -3,59 +3,30 @@ using System;
 
 namespace Jibril.Services.Level.Services
 {
-    public static class Calculate
+    public abstract class Calculate
     {
-        // Calculate exp
-        public static int CalculateNextLevel(int currentLevel)
+        public uint GetNextLevelRequirement(uint currentLevel)
         {
             var calc = 3 * currentLevel * currentLevel + 150;
             return calc;
         }
 
-        // Give reward
-        public static int MessageExperience(SocketMessage msg)
-        {
-            var def = CalculateExperience(msg);
-            var returnExp = def * 1; //Modifier to exp gain
-            return returnExp;
-        }
-
-        public static uint MessageCredit()
-        {
-            var def = CalculateCredit();
-            var credit = def * 1; //Modifier to credit gain
-            return Convert.ToUInt32(credit);
-        }
-
-        // Voice Experience credit calculations = VECC
-        /*
-        public static void VECC(IUser user, DateTime vcTimer)
-        {
-            var calculateXp = CalculateVoiceExperience(vcTimer) * 1;
-            var calculateCredit = CalculateVoiceCredit(vcTimer);
-
-            if (calculateXp > 0)
-                LevelDatabase.AddExperience(user, calculateXp, calculateCredit);
-        }
-        */
-
-        private static int CalculateExperience(SocketMessage msg)
+        public uint GetMessageExp(SocketMessage msg)
         {
             var rand = new Random();
             var xp = rand.Next(10, 20);
-            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184)) return xp / 5;
-            return xp;
+            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184)) return Convert.ToUInt32(xp / 5);
+            return Convert.ToUInt32(xp);
         }
 
-        // Default Calculations of experience
-        private static int CalculateCredit()
+        public uint GetMessageCredit()
         {
             var rand = new Random();
             var credit = rand.Next(1, 3);
-            return credit;
+            return Convert.ToUInt32(credit);
         }
 
-        public static int CalculateVoiceExperience(DateTime vcTimer)
+        public uint GetVoiceExp(DateTime vcTimer)
         {
             var now = DateTime.UtcNow;
 
@@ -65,10 +36,10 @@ namespace Jibril.Services.Level.Services
             var totalTime = hours * 60 + minutes;
             var calculateXp = totalTime * 2;
 
-            return calculateXp;
+            return Convert.ToUInt32(calculateXp);
         }
 
-        public static uint CalculateVoiceCredit(DateTime vcTimer)
+        public uint GetVoiceCredit(DateTime vcTimer)
         {
             var now = DateTime.UtcNow;
 
@@ -79,5 +50,17 @@ namespace Jibril.Services.Level.Services
 
             return Convert.ToUInt32(totalTime);
         }
+
+        // Voice Experience credit calculations = VECC
+        /*
+        public static void VECC(IUser user, DateTime vcTimer)
+        {
+            var calculateXp = GetVoiceExp(vcTimer) * 1;
+            var calculateCredit = GetVoiceCredit(vcTimer);
+
+            if (calculateXp > 0)
+                LevelDatabase.AddExperience(user, calculateXp, calculateCredit);
+        }
+        */
     }
 }

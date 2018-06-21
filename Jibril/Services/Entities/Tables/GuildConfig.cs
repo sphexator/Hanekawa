@@ -11,5 +11,7 @@
         public ulong? LogBan { get; set; }
         public ulong? LogMute { get; set; }
         public uint? AntiSpam { get; set; }
+        public uint ExpMultiplier { get; set; }
+        public bool StackLvlRoles { get; set; }
     }
 }

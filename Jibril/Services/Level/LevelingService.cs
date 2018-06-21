@@ -1,149 +1,213 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Extensions;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
 using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
 {
     public class LevelingService
     {
+        private readonly Calculate _calc;
+        private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
         private readonly List<CooldownUser> _users = new List<CooldownUser>();
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
         {
-            var client = discord;
+            _client = discord;
             _provider = provider;
 
-            client.MessageReceived += GiveExp;
-            client.UserVoiceStateUpdated += VoiceExp;
-            client.UserJoined += GiveRolesBack;
+            _client.MessageReceived += MessageExp;
+            _client.UserVoiceStateUpdated += VoiceExp;
+            _client.UserJoined += GiveRolesBack;
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+            }
         }
 
-        private static Task GiveRolesBack(SocketGuildUser usr)
+        private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
+            = new ConcurrentDictionary<ulong, uint>();
+
+        private Task GiveRolesBack(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new hanekawaContext())
+                using (var db = new DbService())
                 {
-                    var userdata = await db.Exp.FindAsync(usr.Id.ToString());
-                    if (userdata == null) return Task.CompletedTask;
-                    if (userdata.Level <= 2) return Task.CompletedTask;
-                    await LevelRoles.AssignRoles(userdata, usr);
-                }
+                    var userdata = await db.GetOrCreateUserData(user);
+                    if (userdata.Level <= 2) return;
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    if (cfg.StackLvlRoles)
+                    {
+                        var roleCollection = await GetRoleCollection(user);
+                        await user.AddRolesAsync(roleCollection);
+                        return;
+                    }
 
-                return null;
+                    var singleRole = await GetRoleSingle(user);
+                    await user.AddRoleAsync(singleRole);
+                }
             });
             return Task.CompletedTask;
         }
 
-        private Task GiveExp(SocketMessage msg)
+        private Task MessageExp(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
-                var user = msg.Author as SocketGuildUser;
-                if (user.IsBot) return;
-                if ((msg.Channel as ITextChannel)?.CategoryId == 441660828379381770) return;
+                if (!(message is SocketUserMessage msg)) return;
+                if (msg.Source != MessageSource.User) return;
+                if (!(msg.Channel is IGuildChannel)) return;
 
-                var cd = CheckCooldown(user);
-                if (cd == false) return;
-                using (var db = new hanekawaContext())
+                if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
+                using (var db = new DbService())
                 {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    var exp = Calculate.MessageExperience(msg);
-                    var credit = Calculate.MessageCredit();
-                    var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
+                    ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
+                    var userdata = await db.GetOrCreateUserData(msg.Author);
+                    var exp = _calc.GetMessageExp(msg) * multi;
+                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
 
-                    Console.WriteLine(
-                        $"{DateTime.Now.ToLongTimeString()} | LEVEL SERVICE | Awarded {exp} exp to {msg.Author.Username}");
-                    if (userdata.Xp + exp >= lvlupReq)
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+
+                    if (userdata.Exp + exp >= nxtLvl)
                     {
-                        userdata.Xp = userdata.Xp + exp - lvlupReq;
-                        userdata.Tokens = userdata.Tokens + credit;
-                        userdata.TotalXp = userdata.TotalXp + exp;
                         userdata.Level = userdata.Level + 1;
-                        await db.SaveChangesAsync();
-
-                        await LevelRoles.AssignNewRole(user, userdata.Level);
+                        userdata.Exp = userdata.Exp + exp - nxtLvl;
+                        await NewLevelManager(userdata, msg.Author as IGuildUser);
                     }
                     else
                     {
-                        userdata.Xp = userdata.Xp + exp;
-                        userdata.Tokens = userdata.Tokens + credit;
-                        userdata.TotalXp = userdata.TotalXp + exp;
-                        await db.SaveChangesAsync();
+                        userdata.Exp = userdata.Exp + exp;
                     }
+
+                    await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
         }
 
-        private static Task VoiceExp(SocketUser usr, SocketVoiceState oldState, SocketVoiceState newState)
+        private Task VoiceExp(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
         {
             var _ = Task.Run(async () =>
             {
-                var user = usr as IGuildUser;
-                var oldVc = oldState.VoiceChannel;
-                var newVc = newState.VoiceChannel;
-                try
+                using (var db = new DbService())
                 {
-                    using (var db = new hanekawaContext())
+                    var userdata = await db.GetOrCreateUserData(user);
+                    var oldVc = oldState.VoiceChannel;
+                    var newVc = newState.VoiceChannel;
+                    if (newVc != null && oldVc == null)
                     {
-                        var userdata = await db.GetOrCreateUserData(user);
-                        if (newVc != null && oldVc == null)
-                        {
-                            userdata.VoiceTimer = DateTime.UtcNow;
-                            await db.SaveChangesAsync();
-                            return;
-                        }
-                        if (oldVc == null || newVc != null) return;
-                        if (userdata.VoiceTimer != null)
-                        {
-                            var xp = Calculate.CalculateVoiceExperience(userdata.VoiceTimer.Value) * 1;
-                            if (xp < 0) return;
-                            var credit = Calculate.CalculateVoiceCredit(userdata.VoiceTimer.Value);
-                            var lvlupReq = Calculate.CalculateNextLevel(userdata.Level);
-
-                            if (userdata.Xp + xp >= lvlupReq)
-                            {
-                                userdata.Xp = userdata.Xp + xp - lvlupReq;
-                                userdata.Tokens = userdata.Tokens + credit;
-                                userdata.TotalXp = userdata.TotalXp + xp;
-                                userdata.Level = userdata.Level + 1;
-                                await db.SaveChangesAsync();
-
-                                await LevelRoles.AssignNewRole(user, userdata.Level);
-                            }
-                            else
-                            {
-                                userdata.Xp = userdata.Xp + xp;
-                                userdata.Tokens = userdata.Tokens + credit;
-                                userdata.TotalXp = userdata.TotalXp + xp;
-                                await db.SaveChangesAsync();
-                            }
-                        }
+                        userdata.VoiceExpTime = DateTime.UtcNow;
+                        await db.SaveChangesAsync();
+                        return;
                     }
+
+                    if (oldVc == null || newVc != null) return;
+                    ExpMultiplier.TryGetValue(oldState.VoiceChannel.Guild.Id, out var multi);
+                    var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * multi;
+                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+
+                    if (userdata.Exp + exp >= nxtLvl)
+                    {
+                        userdata.Level = userdata.Level + 1;
+                        userdata.Exp = userdata.Exp + exp - nxtLvl;
+                        await NewLevelManager(userdata, user as IGuildUser);
+                    }
+                    else
+                    {
+                        userdata.Exp = userdata.Exp + exp;
+                    }
+
+                    await db.SaveChangesAsync();
                 }
-                catch{/*Ignore */}
             });
             return Task.CompletedTask;
+        }
+
+        private async Task NewLevelManager(Account userdata, IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var role = await GetLevelUpRole(userdata.Level, user);
+                if (role == null) return;
+                var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
+                if(!cfg.StackLvlRoles) await RemoveLevelRoles(user);
+                await user.AddRoleAsync(role);
+            }
+        }
+
+        private async Task<IRole> GetRoleSingle(IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var dbUser = await db.GetOrCreateUserData(user);
+                ulong roleid = 0;
+                foreach (var x in db.LevelRewards)
+                    if (dbUser.Level >= x.Level)
+                        roleid = x.Role;
+
+                return roleid == 0 ? null : _client.GetGuild(user.GuildId).GetRole(roleid);
+            }
+        }
+
+        private async Task<List<IRole>> GetRoleCollection(IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var userdata = await db.GetOrCreateUserData(user);
+                var roles = Enumerable.Cast<IRole>(from x in db.LevelRewards
+                    where userdata.Level >= x.Level
+                    select _client.GetGuild(user.GuildId).GetRole(x.Role)).ToList();
+
+                return roles.Count == 0 ? null : roles;
+            }
+        }
+
+        private async Task<IRole> GetLevelUpRole(uint level, IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var roleid = await db.LevelRewards.FindAsync(level);
+                return roleid == null ? null : _client.GetGuild(user.GuildId).GetRole(roleid.Role);
+            }
+        }
+
+        private async Task RemoveLevelRoles(IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                foreach (var x in db.LevelRewards)
+                {
+                    if (x.Stackable) continue;
+                    if (user.RoleIds.Equals(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
+                }
+            }
         }
 
         private bool CheckCooldown(SocketGuildUser usr)
         {
             var tempUser = _users.FirstOrDefault(x => x.User == usr);
-            if (tempUser != null)// check to see if you have handled a request in the past from this user.
+            if (tempUser != null) // check to see if you have handled a request in the past from this user.
             {
                 if (!((DateTime.Now - tempUser.LastRequest).TotalSeconds >= 60)) return false;
                 _users.Find(x => x.User == usr).LastRequest = DateTime.Now; // update their last request time to now.
                 return true;
             }
 
-            var newUser = new CooldownUser()
+            var newUser = new CooldownUser
             {
                 User = usr,
                 LastRequest = DateTime.Now

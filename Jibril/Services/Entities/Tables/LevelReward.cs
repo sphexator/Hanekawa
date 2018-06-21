@@ -5,5 +5,6 @@
         public uint Level { get; set; }
         public string Name { get; set; }
         public ulong Role { get; set; }
+        public bool Stackable { get; set; }
     }
 }
