@@ -8,7 +8,7 @@ using Jibril.Data.Variables;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
-
+ 
 namespace Jibril.Extensions
 {
     public static class DbExtension
