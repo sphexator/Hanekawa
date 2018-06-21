@@ -13,7 +13,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ActionType = Jibril.Services.Logging.ActionType;
+using ActionType = Jibril.Services.Log.ActionType;
 
 namespace Jibril.Services.AutoModerator
 {

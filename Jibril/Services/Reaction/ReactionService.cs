@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
