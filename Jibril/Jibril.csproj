@@ -68,7 +68,6 @@
     <Folder Include="Modules\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
     <Folder Include="Services\INC\Cache\Banner\" />
-    <Folder Include="Services\Loot\" />
   </ItemGroup>
 
   <ItemGroup>
