@@ -32,7 +32,6 @@ namespace Jibril.Services.AutoModerator
             PerspectiveToken = _config["perspective"];
 
             _discord.MessageReceived += Filter;
-            _discord.MessageReceived += PerspectiveApi;
             _discord.UserJoined += _discord_UserJoined;
         }
 
@@ -86,7 +85,6 @@ namespace Jibril.Services.AutoModerator
         private static List<EmbedFieldBuilder> FieldBuilders(string xx, IGuildUser usr)
         {
             var x = FilterString(xx);
-            var fields = new List<EmbedFieldBuilder>();
             var tag = new EmbedFieldBuilder
             {
                 Name = "Name",
@@ -111,11 +109,7 @@ namespace Jibril.Services.AutoModerator
                 Value = $"{x[4]}",
                 IsInline = true
             };
-            fields.Add(tag);
-            fields.Add(id);
-            fields.Add(reason);
-            fields.Add(proof);
-
+            var fields = new List<EmbedFieldBuilder> {tag, id, reason, proof};
             return fields;
         }
 
@@ -253,144 +247,6 @@ namespace Jibril.Services.AutoModerator
                 }
             });
             return Task.CompletedTask;
-        }
-
-        private Task PerspectiveApi(SocketMessage msg)
-        {
-            var _ = Task.Run(async () =>
-            {
-                if (!(msg is SocketUserMessage message)) return;
-                if (message.Source != MessageSource.User) return;
-                try
-                {
-                    using (var db = new hanekawaContext())
-                    {
-                        var content = msg.Content;
-                        var emote = new Regex("((:)([a-z]).*?(:))",
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                        var emoteLeftover = new Regex("((<)([0-9]).*?(>))",
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                        var mention = new Regex("((<@)([0-9]).*?(>))|((<@!)([0-9]).*?(>))",
-                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                        var emoteFilter = emote.Replace(content, "");
-                        var emoteFilterv2 = emoteLeftover.Replace(emoteFilter, "");
-                        var mentionFilter = mention.Replace(emoteFilterv2, "");
-                        if (mentionFilter.IsNullOrWhiteSpace()) return;
-                        var request = new AnalyzeCommentRequest(mentionFilter);
-
-                        var response = SendNudes(request);
-                        var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
-                        var analyze = (await CalculateNudeScore(score, msg.Author)).FirstOrDefault();
-                        var user = await db.GetOrCreateUserData(msg.Author);
-                        user.Toxicityvalue = analyze.ToxicityValue;
-                        user.Toxicitymsgcount = user.Toxicitymsgcount + 1;
-                        user.Toxicityavg = analyze.Toxicityavg;
-                        await db.SaveChangesAsync();
-                        Console.WriteLine(
-                            $"{DateTime.Now.ToLongTimeString()} | TOXICITY SERVICE | {msg.Author.Id} | Toxicity score:{score} | {msg.Author.Username}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine("Toxicity failed");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private AnalyzeCommentResponse SendNudes(AnalyzeCommentRequest request)
-        {
-            using (var client = new HttpClient())
-            {
-                var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8,
-                    "application/json");
-                var response = client
-                    .PostAsync(
-                        $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={PerspectiveToken}",
-                        content).Result;
-                response.EnsureSuccessStatusCode();
-                var data = response.Content.ReadAsStringAsync().Result;
-                var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
-                return result;
-            }
-        }
-
-        private static async Task<IEnumerable<ToxicityList>> CalculateNudeScore(double score, IUser user)
-        {
-            using (var db = new hanekawaContext())
-            {
-                var userdata = await db.GetOrCreateUserData(user);
-                var calculate = userdata.Toxicityvalue + score;
-                var avg = calculate / (userdata.Toxicitymsgcount + 1);
-                var result = new List<ToxicityList>
-                {
-                    new ToxicityList
-                    {
-                        ToxicityValue = calculate,
-                        Toxicitymsgcount = userdata.Toxicitymsgcount + 1,
-                        Toxicityavg = avg
-                    }
-                };
-                return result;
-            }
-        }
-
-        private static EmbedBuilder AutoModResponse(IUser user, string reason, string message, string length = null)
-        {
-            using (var db = new hanekawaContext())
-            {
-                var caseid = db.GetOrCreateCaseId(user, DateTime.Now);
-
-                var author = new EmbedAuthorBuilder
-                {
-                    IconUrl = user.GetAvatarUrl(),
-                    Name = $"Case {caseid} | {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
-                };
-                var footer = new EmbedFooterBuilder
-                {
-                    Text = $"ID:{user.Id} | {DateTime.UtcNow}"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = new Color(Colours.FailColour),
-                    Author = author,
-                    Footer = footer
-                };
-                embed.AddField(x =>
-                {
-                    x.Name = "User";
-                    x.Value = $"{user.Mention}";
-                    x.IsInline = true;
-                });
-                embed.AddField(x =>
-                {
-                    x.Name = "Moderator";
-                    x.Value = $"Auto Moderator";
-                    x.IsInline = true;
-                });
-                if (length != null)
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Length";
-                        x.Value = $"{length}";
-                        x.IsInline = true;
-                    });
-                embed.AddField(x =>
-                {
-                    x.Name = "Reason";
-                    x.Value = $"{reason}";
-                    x.IsInline = true;
-                });
-                if (message.Length < 1000)
-                    embed.AddField(x =>
-                    {
-                        x.Name = "Message";
-                        x.Value = $"{message}";
-                        x.IsInline = false;
-                    });
-                return embed;
-            }
         }
     }
 

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Services.Entities.Tables;
+﻿using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Jibril.Services.Entities
 {
     public class DbService : DbContext
     {
-        public DbService()
-        {
-        }
-
-        public DbService(DbContextOptions<DbService> options) : base(options)
-        {
-        }
+        public DbService(){ }
+        public DbService(DbContextOptions<DbService> options) : base(options){ }
 
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
@@ -32,6 +25,7 @@ namespace Jibril.Services.Entities
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
         public virtual DbSet<Suggestion> Suggestions { get; set; }
+        public virtual DbSet<Warn> Warns { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -71,6 +65,22 @@ namespace Jibril.Services.Entities
                 x.HasKey(e => e.UserId);
                 x.HasKey(e => e.MessageId);
             });
+            modelBuilder.Entity<Warn>(x =>
+            {
+                x.HasKey(e => e.Id);
+            });
+        }
+    }
+
+    public class DbInfo
+    {
+        public static string ConnectionString { get; private set; }
+
+        public DbInfo(IConfiguration config)
+        {
+            var config1 = config;
+
+            ConnectionString = config1["connectionString"];
         }
     }
 }
