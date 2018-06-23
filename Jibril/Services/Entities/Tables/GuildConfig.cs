@@ -13,5 +13,6 @@
         public uint? AntiSpam { get; set; }
         public uint ExpMultiplier { get; set; }
         public bool StackLvlRoles { get; set; }
+        public ulong? MuteRole { get; set; }
     }
 }

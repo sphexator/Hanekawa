@@ -158,6 +158,7 @@ namespace Jibril.Services.AutoModerator
                             Valid = true
                         };
                         await db.Warns.AddAsync(data);
+                        await db.SaveChangesAsync();
                     }
                     break;
                 case 2:
@@ -183,6 +184,7 @@ namespace Jibril.Services.AutoModerator
                             Valid = true
                         };
                         await db.Warns.AddAsync(data);
+                        await db.SaveChangesAsync();
                     }
                     //TODO: Mute user
                     break;
