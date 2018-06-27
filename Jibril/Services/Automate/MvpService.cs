@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,8 @@ namespace Jibril.Services.Automate
     {
         private readonly DiscordSocketClient _client;
         private readonly List<ulong> _channels = new List<ulong>();
-        private readonly List<CooldownUser> _users = new List<CooldownUser>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> Cooldown { get; set; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         public MvpService(DiscordSocketClient client)
         {
@@ -33,14 +35,34 @@ namespace Jibril.Services.Automate
 
             _channels.Add(404633037884620802); //Test channel
         }
+        // Message Reciever method
+        private Task MessageCounter(SocketMessage msg)
+        {
+            var _ = Task.Run(async () =>
+            {
+                if (!(msg is SocketUserMessage message)) return;
+                if (message.Source != MessageSource.User) return;
+                if (!_channels.Contains(msg.Channel.Id)) return;
+                var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
+                if (cd == false) return;
+                using (var db = new DbService())
+                {
+                    Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
+                    var user = await db.GetOrCreateUserData(msg.Author);
+                    user.MvpCounter = user.MvpCounter + 1;
+                }
+            });
+            return Task.CompletedTask;
+        }
 
+        //Scheduled event
         public Task Execute(IJobExecutionContext context)
         {
             NewMvpUsers();
             return Task.CompletedTask;
         }
 
-        private Task NewMvpUsers()
+        private void NewMvpUsers()
         {
             var _ = Task.Run(async () =>
             {
@@ -48,20 +70,20 @@ namespace Jibril.Services.Automate
                 {
                     var guild = _client.GetGuild(339370914724446208);
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Kai Ni");
-                    var oldMvps = role?.Members;
-                    await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
-                    var ma = await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync();
+                    var oldMvps = role?.Members.ToList();
+                    await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync().ConfigureAwait(false);
+                    var ma = await db.Accounts.OrderBy(x => x.MvpCounter).Take(5).ToListAsync().ConfigureAwait(false);
                     var newMvps = new List<IGuildUser>();
                     foreach (var x in ma)
                     {
-                        var user = guild?.GetUser(Convert.ToUInt64(x.UserId));
+                        var user = guild?.GetUser(x.UserId);
                         newMvps.Add(user);
                     }
 
                     try
                     {
                         var embed = MvpMessage(newMvps, oldMvps);
-                        await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build());
+                        await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -69,13 +91,12 @@ namespace Jibril.Services.Automate
                                           $"{e}");
                     }
 
-                    await Demote(oldMvps, role);
-                    await Promote(newMvps, role);
-                    await db.Accounts.ForEachAsync(x => x.MvpCounter = 0);
-                    await db.SaveChangesAsync();
+                    await Demote(oldMvps, role).ConfigureAwait(false);
+                    await Promote(newMvps, role).ConfigureAwait(false);
+                    await db.Accounts.ForEachAsync(x => x.MvpCounter = 0).ConfigureAwait(false);
+                    await db.SaveChangesAsync().ConfigureAwait(false);
                 }
             });
-            return Task.CompletedTask;
         }
 
         private static async Task Demote(IEnumerable<IGuildUser> mvps, IRole role)
@@ -97,7 +118,7 @@ namespace Jibril.Services.Automate
             foreach (var x in mvps)
                 try
                 {
-                    await x.AddRoleAsync(role);
+                    await x.AddRoleAsync(role).ConfigureAwait(false);
                     await Task.Delay(1000);
                 }
                 catch
@@ -106,22 +127,11 @@ namespace Jibril.Services.Automate
                 }
         }
 
-        public static EmbedBuilder MvpMessage(IEnumerable<IGuildUser> newMvps, IEnumerable<IGuildUser> oldMvps)
+        private static EmbedBuilder MvpMessage(IEnumerable<IGuildUser> newMvps, IEnumerable<IGuildUser> oldMvps)
         {
-            var outputp1 = new List<string>();
-            var outputp2 = new List<string>();
             var response = new List<string>();
-            foreach (var x in oldMvps)
-            {
-                var s = $"{x.Mention}";
-                outputp1.Add(s);
-            }
-
-            foreach (var y in newMvps)
-            {
-                var a = $"{y.Mention}";
-                outputp2.Add(a);
-            }
+            var outputp1 = oldMvps.Select(x => $"{x.Mention}").ToList();
+            var outputp2 = newMvps.Select(y => $"{y.Mention}").ToList();
 
             for (var i = 0; i < 5; i++)
             {
@@ -139,48 +149,27 @@ namespace Jibril.Services.Automate
             return embed;
         }
 
-        private Task MessageCounter(SocketMessage msg)
+        private bool CheckCooldownAsync(SocketGuildUser user)
         {
-            var _ = Task.Run(async () =>
+            var check = Cooldown.TryGetValue(user.Guild.Id, out var cds);
+            if (!check)
             {
-                if (!(msg is SocketUserMessage message)) return;
-                if (message.Source != MessageSource.User) return;
-                if (!_channels.Contains(msg.Channel.Id)) return;
-                var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
-                if (cd == false) return;
-                using (var db = new DbService())
-                {
-                    Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                    var user = await db.GetOrCreateUserData(msg.Author);
-                    user.MvpCounter = user.MvpCounter + 1;
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private bool CheckCooldownAsync(SocketGuildUser usr)
-        {
-            var tempUser = _users.FirstOrDefault(x => x.User == usr);
-            if (tempUser != null) // check to see if you have handled a request in the past from this user.
-            {
-                if (!((DateTime.Now - tempUser.LastRequest).TotalSeconds >= 60)) return false;
-                _users.Find(x => x.User == usr).LastRequest = DateTime.Now; // update their last request time to now.
+                Cooldown.TryAdd(user.Guild.Id, new ConcurrentDictionary<ulong, DateTime>());
+                Cooldown.TryGetValue(user.Guild.Id, out cds);
+                cds.TryAdd(user.Id, DateTime.UtcNow);
                 return true;
             }
 
-            var newUser = new CooldownUser
+            var userCheck = cds.TryGetValue(user.Id, out var cd);
+            if (!userCheck)
             {
-                User = usr,
-                LastRequest = DateTime.Now
-            };
-            _users.Add(newUser);
+                cds.TryAdd(user.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
+            cds.AddOrUpdate(user.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
             return true;
         }
-    }
-
-    public class CooldownUser
-    {
-        public SocketGuildUser User { get; set; }
-        public DateTime LastRequest { get; set; }
     }
 }
