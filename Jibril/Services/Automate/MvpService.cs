@@ -1,16 +1,16 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Jibril.Data.Variables;
-using Quartz;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 
-namespace Jibril.Services.Level
+namespace Jibril.Services.Automate
 {
     public class MvpService : IJob
     {

@@ -19,7 +19,7 @@ namespace Jibril.Services.Administration
             All
         }
 
-        public const string DefaultMuteRole = "Mute";
+        private const string DefaultMuteRole = "Mute";
         private readonly DiscordSocketClient _client;
 
         public event Action<IGuildUser, MuteType> UserMuted = delegate { };
@@ -103,13 +103,11 @@ namespace Jibril.Services.Administration
             {
                 try
                 {
-                    if (!toOverwrite.PermissionOverwrites.Select(x => x.Permissions).Contains(DenyOverwrite))
-                    {
-                        await toOverwrite.AddPermissionOverwriteAsync(muteRole, DenyOverwrite)
-                            .ConfigureAwait(false);
+                    if (toOverwrite.PermissionOverwrites.Select(x => x.Permissions).Contains(DenyOverwrite)) continue;
+                    await toOverwrite.AddPermissionOverwriteAsync(muteRole, DenyOverwrite)
+                        .ConfigureAwait(false);
 
-                        await Task.Delay(200).ConfigureAwait(false);
-                    }
+                    await Task.Delay(200).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -148,9 +146,9 @@ namespace Jibril.Services.Administration
 
         private void StopUnmuteTimer(ulong guildId, ulong userId)
         {
-            if (!UnmuteTimers.TryGetValue(guildId, out ConcurrentDictionary<ulong, Timer> userUnmuteTimers)) return;
+            if (!UnmuteTimers.TryGetValue(guildId, out var userUnmuteTimers)) return;
 
-            if (userUnmuteTimers.TryRemove(userId, out Timer removed))
+            if (userUnmuteTimers.TryRemove(userId, out var removed))
             {
                 removed.Change(Timeout.Infinite, Timeout.Infinite);
             }

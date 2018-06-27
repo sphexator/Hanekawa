@@ -25,5 +25,6 @@ namespace Jibril.Services.Entities.Tables
         public DateTime? FirstMessage { get; set; }
         public List<Inventory> Inventory { get; set; }
         public uint GameKillAmount { get; set; }
+        public bool Active { get; set; }
     }
 }

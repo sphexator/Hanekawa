@@ -1,4 +1,12 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Jibril.Services.Administration;
+using Jibril.Services.AutoModerator.Perspective.Models;
+using Jibril.Services.Entities;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Quartz.Util;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,14 +15,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Jibril.Services.AutoModerator.Perspective.Models;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Quartz.Util;
 
 namespace Jibril.Services.AutoModerator
 {
@@ -23,17 +23,9 @@ namespace Jibril.Services.AutoModerator
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly HttpClient _httpClient;
+        private readonly MuteService _muteService;
         private readonly string _perspectiveToken;
-        // TODO: Add timed mute service
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>> NudeValue { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>>();
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
-
-        private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; set; }
-            = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
+        private readonly WarnService _warnService;
 
         public NudeScoreService(DiscordSocketClient client, HttpClient httpClient, IConfiguration config)
         {
@@ -45,6 +37,17 @@ namespace Jibril.Services.AutoModerator
 
             _client.MessageReceived += DetermineNudeScore;
         }
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>>
+            NudeValue { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>
+            >();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+
+        private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
+            = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
 
         private Task DetermineNudeScore(SocketMessage msg)
         {
@@ -63,10 +66,17 @@ namespace Jibril.Services.AutoModerator
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                 var result = CalculateNudeScore(score, msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel);
                 if (result == null) return;
+                using (var db = new DbService())
+                {
+                    var channel = await db.NudeServiceChannels.FindAsync((msg.Author as SocketGuildUser).Guild.Id, msg.Channel.Id).ConfigureAwait(false);
+                    if (channel == null) return;
+                    if (result < channel.Tolerance) return;
+                }
                 await NudeWarn(msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel).ConfigureAwait(false);
             });
             return Task.CompletedTask;
         }
+
         private AnalyzeCommentResponse SendNudes(AnalyzeCommentRequest request)
         {
             using (var client = _httpClient)
@@ -83,9 +93,11 @@ namespace Jibril.Services.AutoModerator
                 return result;
             }
         }
+
         private uint? CalculateNudeScore(double doubleScore, IGuildUser user, SocketTextChannel channel)
         {
-            var toxList = NudeValue.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
+            var toxList = NudeValue.GetOrAdd(user.GuildId,
+                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
             var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<uint>>());
             var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<uint>());
             var score = Convert.ToUInt32(doubleScore) * 100;
@@ -102,17 +114,15 @@ namespace Jibril.Services.AutoModerator
 
             uint totalScore = 0;
 
-            foreach (var x in channelValue)
-            {
-                totalScore = x + totalScore;
-            }
+            foreach (var x in channelValue) totalScore = x + totalScore;
 
             return Convert.ToUInt32(totalScore / userValue.Count);
         }
 
         private void ClearChannelNudeScore(IGuildUser user, SocketTextChannel channel)
         {
-            var toxList = NudeValue.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
+            var toxList = NudeValue.GetOrAdd(user.GuildId,
+                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
             var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<uint>>());
             var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<uint>());
             channelValue.Clear();
@@ -120,7 +130,7 @@ namespace Jibril.Services.AutoModerator
 
         private void StartWarnTimer(IGuildUser user)
         {
-            var toAdd = new Timer( _ =>
+            var toAdd = new Timer(_ =>
             {
                 var guildWarn = WarnAmount.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, uint>());
                 guildWarn.AddOrUpdate(user.Id, 0, (key, old) => old = old - 1);
@@ -145,21 +155,10 @@ namespace Jibril.Services.AutoModerator
                     guildWarn.AddOrUpdate(user.Id, 1, (key, old) => old = old + 1);
                     StartWarnTimer(user);
                     ClearChannelNudeScore(user, channel);
-                    using (var db = new DbService())
-                    {
-                        var data = new Warn
-                        {
-                            GuildId = user.GuildId,
-                            UserId = user.Id,
-                            Moderator = 1,
-                            Reason = $"High toxicity score in {channel.Name}",
-                            Time = DateTime.UtcNow,
-                            Type = "Warn",
-                            Valid = true
-                        };
-                        await db.Warns.AddAsync(data);
-                        await db.SaveChangesAsync();
-                    }
+                    await _warnService.AddWarning(user, 1, DateTime.UtcNow, $"High toxicity score in {channel.Name}",
+                        WarnReason.Warning, (await channel.GetMessagesAsync().FlattenAsync())
+                        .Where(m => m.Author.Id == user.Id)
+                        .Take(100).ToArray().ToList()).ConfigureAwait(false);
                     break;
                 case 2:
                     guildWarn.AddOrUpdate(user.Id, 1, (key, old) => old = old + 1);
@@ -171,22 +170,11 @@ namespace Jibril.Services.AutoModerator
                     guildWarn.AddOrUpdate(user.Id, 1, (key, old) => old = old + 1);
                     StartWarnTimer(user);
                     ClearChannelNudeScore(user, channel);
-                    using (var db = new DbService())
-                    {
-                        var data = new Warn()
-                        {
-                            GuildId = user.GuildId,
-                            UserId = user.Id,
-                            Moderator = 1,
-                            Reason = $"High toxicity score in {channel.Name}",
-                            Time = DateTime.UtcNow,
-                            Type = "Mute",
-                            Valid = true
-                        };
-                        await db.Warns.AddAsync(data);
-                        await db.SaveChangesAsync();
-                    }
-                    //TODO: Mute user
+                    await _warnService.AddWarning(user, 1, DateTime.UtcNow, $"High toxicity score in {channel.Name}",
+                        WarnReason.Mute, (await channel.GetMessagesAsync().FlattenAsync())
+                        .Where(m => m.Author.Id == user.Id)
+                        .Take(100).ToArray().ToList()).ConfigureAwait(false);
+                    await _muteService.TimedMute(user, TimeSpan.FromHours(1)).ConfigureAwait(false);
                     break;
             }
         }

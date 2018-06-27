@@ -26,6 +26,8 @@ namespace Jibril.Services.Entities
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
         public virtual DbSet<Suggestion> Suggestions { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
+        public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
+        public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -68,6 +70,15 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => e.Id);
+            });
+            modelBuilder.Entity<WarnMsgLog>(x =>
+            {
+                x.HasKey(e => e.Id);
+            });
+            modelBuilder.Entity<NudeServiceChannel>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.HasKey(e => e.ChannelId);
             });
         }
     }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Jibril.Extensions;
+using Jibril.Services.Automate;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 using Jibril.Services.Level.Services;
@@ -71,7 +72,7 @@ namespace Jibril.Services.Level
                 if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
                 using (var db = new DbService())
                 {
-                    ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
+                    ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(msg.Author);
                     var exp = _calc.GetMessageExp(msg) * multi;
                     var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
@@ -83,7 +84,7 @@ namespace Jibril.Services.Level
                     {
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, msg.Author as IGuildUser);
+                        await NewLevelManager(userdata, msg.Author as IGuildUser, db);
                     }
                     else
                     {
@@ -137,16 +138,13 @@ namespace Jibril.Services.Level
             return Task.CompletedTask;
         }
 
-        private async Task NewLevelManager(Account userdata, IGuildUser user)
+        private async Task NewLevelManager(Account userdata, IGuildUser user, DbService db)
         {
-            using (var db = new DbService())
-            {
-                var role = await GetLevelUpRole(userdata.Level, user);
-                if (role == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
-                if(!cfg.StackLvlRoles) await RemoveLevelRoles(user);
-                await user.AddRoleAsync(role);
-            }
+            var role = await GetLevelUpRole(userdata.Level, user);
+            if (role == null) return;
+            var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
+            if (!cfg.StackLvlRoles) await RemoveLevelRoles(user);
+            await user.AddRoleAsync(role);
         }
 
         private async Task<IRole> GetRoleSingle(IGuildUser user)
@@ -169,8 +167,8 @@ namespace Jibril.Services.Level
             {
                 var userdata = await db.GetOrCreateUserData(user);
                 var roles = Enumerable.Cast<IRole>(from x in db.LevelRewards
-                    where userdata.Level >= x.Level
-                    select _client.GetGuild(user.GuildId).GetRole(x.Role)).ToList();
+                                                   where userdata.Level >= x.Level
+                                                   select _client.GetGuild(user.GuildId).GetRole(x.Role)).ToList();
 
                 return roles.Count == 0 ? null : roles;
             }

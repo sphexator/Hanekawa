@@ -16,6 +16,8 @@ using Quartz.Spi;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Jibril.Services.Automate;
+using Jibril.Services.Entities;
 
 namespace Jibril
 {
@@ -66,6 +68,13 @@ namespace Jibril
             var services = new ServiceCollection();
             services.UseQuartz(typeof(MvpService));
             services.AddSingleton(_client);
+
+            services.AddDistributedRedisCache(options =>
+            {
+                options.Configuration = "localhost";
+                options.InstanceName = "db2";
+            });
+
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<LevelingService>();
