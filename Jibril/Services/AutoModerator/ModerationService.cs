@@ -2,42 +2,47 @@
 using Discord.WebSocket;
 using Jibril.Data.Variables;
 using Jibril.Extensions;
-using Jibril.Services.AutoModerator.Perspective.Models;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Quartz.Util;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using ActionType = Jibril.Services.Log.ActionType;
+using Jibril.Events;
 
 namespace Jibril.Services.AutoModerator
 {
     public class ModerationService
     {
-        private readonly IConfiguration _config;
         private readonly DiscordSocketClient _discord;
-        private readonly IServiceProvider _provider;
+        private ConcurrentDictionary<ulong, List<ulong>> UrlFilterChannels { get; set; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
+        private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
+
+        public enum AutoModActionType
+        {
+            Invite,
+            Spam,
+            ScamLink,
+            Url
+        }
+
+        public event AsyncEvent<IGuildUser, AutoModActionType> AutoModPermMute;
+        public event AsyncEvent<IGuildUser, AutoModActionType, TimeSpan> AutoModTimedMute;
+        public event AsyncEvent<IGuildUser, AutoModActionType> AutoModPermLog;
+        public event AsyncEvent<IGuildUser, AutoModActionType, TimeSpan> AutoModTimedLog;
 
         public ModerationService(DiscordSocketClient discord, IServiceProvider provider, IConfiguration config)
         {
             _discord = discord;
-            _provider = provider;
-            _config = config;
 
-            PerspectiveToken = _config["perspective"];
-
-            _discord.MessageReceived += Filter;
-            _discord.UserJoined += _discord_UserJoined;
+            _discord.MessageReceived += AutoModInitializer;
+            _discord.UserJoined += GlobalBanChecker;
         }
 
-        private static string PerspectiveToken { get; set; }
-
-        private Task _discord_UserJoined(SocketGuildUser user)
+        private Task GlobalBanChecker(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
@@ -63,63 +68,7 @@ namespace Jibril.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private static EmbedBuilder EmbedBuilder(string x, IGuildUser u)
-        {
-            var txt = FieldBuilders(x, u);
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = u.GetAvatarUrl(),
-                Name = u.Username
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.DefaultColour),
-                Title = "Suspicious user",
-                Fields = txt,
-                Author = author
-            };
-
-            return embed;
-        }
-
-        private static List<EmbedFieldBuilder> FieldBuilders(string xx, IGuildUser usr)
-        {
-            var x = FilterString(xx);
-            var tag = new EmbedFieldBuilder
-            {
-                Name = "Name",
-                Value = usr.Mention,
-                IsInline = true
-            };
-            var id = new EmbedFieldBuilder
-            {
-                Name = "User ID",
-                Value = usr.Id,
-                IsInline = true
-            };
-            var reason = new EmbedFieldBuilder
-            {
-                Name = "Reason",
-                Value = $"{x[3]}",
-                IsInline = true
-            };
-            var proof = new EmbedFieldBuilder
-            {
-                Name = "Proof",
-                Value = $"{x[4]}",
-                IsInline = true
-            };
-            var fields = new List<EmbedFieldBuilder> {tag, id, reason, proof};
-            return fields;
-        }
-
-        private static string[] FilterString(string x)
-        {
-            var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            return s;
-        }
-
-        private Task Filter(SocketMessage rawMessage)
+        private Task AutoModInitializer(SocketMessage rawMessage)
         {
             var _ = Task.Run(async () =>
             {
@@ -182,7 +131,7 @@ namespace Jibril.Services.AutoModerator
                                 return;
                             }
 
-                        if (rawMessage.Content.IsPornLink() && ((ITextChannel) rawMessage.Channel).IsNsfw != true)
+                        if (rawMessage.Content.IsPornLink() && ((ITextChannel)rawMessage.Channel).IsNsfw != true)
                             try
                             {
                                 await rawMessage.DeleteAsync();
@@ -247,6 +196,60 @@ namespace Jibril.Services.AutoModerator
                 }
             });
             return Task.CompletedTask;
+        }
+
+        private async Task InviteFilter(SocketMessage msg)
+        {
+            if (msg.Content.IsDiscordInvite())
+            {
+                await msg.DeleteAsync();
+                await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Invite);
+                await AutoModPermMute(msg.Author as SocketGuildUser, AutoModActionType.Invite);
+            }
+        }
+
+        private async Task SpamFilter(SocketMessage msg)
+        {
+            if (msg.Content.IsGoogleLink()) await msg.DeleteAsync();
+            if (msg.Content.IsIpGrab()) await msg.DeleteAsync();
+            if (msg.Content.IsScamLink())
+            {
+                await msg.DeleteAsync();
+                await AutoModPermMute(msg.Author as SocketGuildUser, AutoModActionType.ScamLink);
+                await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.ScamLink);
+            }
+        }
+
+        private async Task ScamLinkFilter(SocketMessage msg)
+        {
+
+        }
+
+        private async Task UrlFilter(SocketMessage msg)
+        {
+            if (msg.Content.IsUrl())
+            {
+                await msg.DeleteAsync();
+                var ch = await _discord.GetUser(111123736660324352).GetOrCreateDMChannelAsync();
+                await ch.SendMessageAsync(
+                    $"{msg.Author.Username}#{msg.Author.DiscriminatorValue} ({msg.Author.Id}) - Posted in {msg.Channel.Name}\n" +
+                    $"{msg.Content}");
+            }
+        }
+
+        private async Task LengthFilter(SocketMessage msg)
+        {
+            if (msg.Content.Length >= 1500)
+            {
+                await msg.DeleteAsync();
+                AutoModTimedMute(msg.Author as SocketGuildUser, AutoModActionType.Spam, 30);
+            }
+        }
+
+        private static string[] FilterString(string x)
+        {
+            var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            return s;
         }
     }
 

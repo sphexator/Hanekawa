@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Jibril.Events;
+using Jibril.Services.AutoModerator;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 
@@ -21,9 +23,11 @@ namespace Jibril.Services.Administration
 
         private const string DefaultMuteRole = "Mute";
         private readonly DiscordSocketClient _client;
+        private readonly ModerationService _moderationService;
 
-        public event Action<IGuildUser, MuteType> UserMuted = delegate { };
-        public event Action<IGuildUser, MuteType> UserUnmuted = delegate { };
+        public event AsyncEvent<IGuildUser, MuteType> UserMuted;
+        public event AsyncEvent<IGuildUser, MuteType, TimeSpan> UserTimedMuted;
+        public event AsyncEvent<IGuildUser, MuteType> UserUnmuted;
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; set; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
@@ -35,6 +39,8 @@ namespace Jibril.Services.Administration
         public MuteService(DiscordSocketClient client)
         {
             _client = client;
+            _moderationService.AutoModPermMute += AutoModPermMute;
+            _moderationService.AutoModTimedMute += AutoModTimedMute;
             using (var db = new DbService())
             {
                 foreach (var x in db.MuteTimers)
@@ -53,18 +59,30 @@ namespace Jibril.Services.Administration
             }
         }
 
+        private Task AutoModTimedMute(IGuildUser arg1, ModerationService.AutoModActionType arg2, int arg3)
+        {
+            var _ = Task.Run(async () =>
+            {
+                await TimedMute(arg1);
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task AutoModPermMute(IGuildUser arg1, ModerationService.AutoModActionType arg2)
+        {
+            var _ = Task.Run(async () => { await MuteUser(arg1); });
+            return Task.CompletedTask;
+        }
+
         public async Task MuteUser(IGuildUser user, MuteType type = MuteType.All)
         {
-            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
-            var muteRole = await GetMuteRole(user.Guild);
-            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            StopUnmuteTimer(user.GuildId, user.Id);
+            await Mute(user);
             UserMuted(user, type);
         }
 
         public async Task TimedMute(IGuildUser user, TimeSpan after)
         {
-            await MuteUser(user).ConfigureAwait(false);
+            await Mute(user).ConfigureAwait(false);
             using (var db = new DbService())
             {
                 var unMuteAt = DateTime.UtcNow + after;
@@ -78,15 +96,24 @@ namespace Jibril.Services.Administration
                 await db.SaveChangesAsync();
             }
             StartUnmuteTimer(user.GuildId, user.Id, after);
+            UserTimedMuted(user, MuteType.All, after);
         }
 
         public async Task UnmuteUser(IGuildUser user, MuteType type = MuteType.All)
         {
             StopUnmuteTimer(user.GuildId, user.Id);
-            try{await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);} catch {/*IGNORE*/}
-            try{await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);} catch {/*IGNORE*/}
-            
+            try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}
+            try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch {/*IGNORE*/}
+
             UserUnmuted(user, type);
+        }
+
+        private async Task Mute(IGuildUser user, MuteType type = MuteType.All)
+        {
+            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+            var muteRole = await GetMuteRole(user.Guild);
+            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+            StopUnmuteTimer(user.GuildId, user.Id);
         }
 
         private async Task<IRole> GetMuteRole(IGuild guild)
