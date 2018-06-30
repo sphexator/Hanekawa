@@ -5,6 +5,8 @@ using System.Text;
 using Discord;
 using Discord.WebSocket;
 using Google.Apis.Util;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
 using Jibril.Services.INC.Calculate;
 using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Database;
@@ -13,9 +15,9 @@ namespace Jibril.Services.INC.Events.Types
 {
     public static class Kill
     {
-        public static string KillEvent(Hungergame profile)
+        public static string KillEvent(HungerGameLive profile)
         {
-            using (var db = new hanekawaContext())
+            using (var db = new DbService())
             {
                 var trgt = GetTarget().FirstOrDefault();
                 if (profile.Pistol> 0)
@@ -24,17 +26,17 @@ namespace Jibril.Services.INC.Events.Types
                     string response;
                     if (pistolDamage + trgt.Damage >= 100)
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = true;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Kills {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
                     }
                     else
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = false;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
                     }
@@ -47,17 +49,17 @@ namespace Jibril.Services.INC.Events.Types
                     string response;
                     if (bowDamage + trgt.Damage >= 100)
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = true;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Kills {trgt.Name} with his bow inflicting {bowDamage} damage.";
                     }
                     else
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = false;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
                     }
@@ -70,17 +72,17 @@ namespace Jibril.Services.INC.Events.Types
                     string response;
                     if (axeDamage + trgt.Damage >= 100)
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = true;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Kills {trgt.Name} with his axe inflicting {axeDamage} damage.";
                     }
                     else
                     {
-                        var user = db.Hungergame.Find(trgt.Userid.ToString());
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                         user.Status = false;
-                        user.DamageTaken = 100;
+                        user.Health = 0;
                         db.SaveChanges();
                         response = $"Hits {trgt.Name} with his axe inflicting {axeDamage} damage.";
                     }
@@ -91,17 +93,17 @@ namespace Jibril.Services.INC.Events.Types
                 string msg;
                 if (fistDamage + trgt.Damage >= 100)
                 {
-                    var user = db.Hungergame.Find(trgt.Userid.ToString());
+                    var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                     user.Status = true;
-                    user.DamageTaken = 100;
+                    user.Health = 0;
                     db.SaveChanges();
                     msg = $"Kills {trgt.Name} with his fists inflicting {fistDamage} damage.";
                 }
                 else
                 {
-                    var user = db.Hungergame.Find(trgt.Userid.ToString());
+                    var user = db.HungerGameLives.Find(trgt.Userid.ToString());
                     user.Status = false;
-                    user.DamageTaken = 100;
+                    user.Health = 0;
                     db.SaveChanges();
                     msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
                 }
@@ -111,9 +113,9 @@ namespace Jibril.Services.INC.Events.Types
 
         private static IEnumerable<KillTarget> GetTarget()
         {
-            using (var db = new hanekawaContext())
+            using (var db = new DbService())
             {
-                var users = db.Hungergame.ToList();
+                var users = db.HungerGameLives.ToList();
                 var rand = new Random();
                 var chosn = rand.Next(users.Count);
                 var user = users[chosn];
@@ -121,9 +123,9 @@ namespace Jibril.Services.INC.Events.Types
                 {
                     new KillTarget
                     {
-                        Userid = user.Userid,
+                        Userid = user.UserId,
                         Name = user.Name,
-                        Damage = user.DamageTaken
+                        Damage = user.Health
                     }
                 };
                 return result;
@@ -135,7 +137,7 @@ namespace Jibril.Services.INC.Events.Types
     {
         public string Name { get; set; }
         public ulong Userid { get; set; }
-        public int Damage { get; set; }
+        public uint Damage { get; set; }
 
         internal object ThrowIfNull()
         {

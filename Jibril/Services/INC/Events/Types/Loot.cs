@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
 using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Database;
 
@@ -8,14 +10,14 @@ namespace Jibril.Services.INC.Events.Types
 {
     public class Loot
     {
-        public static string LootEvent(Hungergame profile)
+        public static string LootEvent(HungerGameLive profile)
         {
             var rand = new Random();
             const int pool = FoodAndWater + Weapons + Bandages;
             var result = rand.Next(1, pool);
-            using (var db = new hanekawaContext())
+            using (var db = new DbService())
             {
-                var user = db.Hungergame.Find(profile.Userid);
+                var user = db.HungerGameLives.Find(profile.UserId);
                 if (result <= FoodAndWater)
                 {
                     string toReturn = null;
@@ -24,21 +26,17 @@ namespace Jibril.Services.INC.Events.Types
                     {
                         case 1:
                             user.Water = user.Water + 1;
-                            user.Totaldrink = user.Totaldrink + 1;
                             db.SaveChanges();
                             toReturn = "Obtained Water";
                             break;
                         case 2:
-                            user.Fish = user.Fish + 1;
-                            user.Totalfood = user.Totalfood + 1;
+                            user.Food = user.Food + 1;
                             db.SaveChanges();
                             toReturn = "Obtained Food";
                             break;
                         case 3:
                             user.Water = user.Water + 1;
-                            user.Fish = user.Fish + 1;
-                            user.Totaldrink = user.Totaldrink + 1;
-                            user.Totalfood = user.Totalfood + 1;
+                            user.Food = user.Food + 1;
                             db.SaveChanges();
                             toReturn = "Obtained Water and Food";
                             break;
@@ -48,8 +46,9 @@ namespace Jibril.Services.INC.Events.Types
                 }
                 if (result <= FoodAndWater + Bandages)
                 {
-                    user.Bandages = user.Bandages + 1;
-                    db.SaveChanges();
+                    //TODO: Add bandages
+                    //user.b = user.Bandages + 1;
+                    //db.SaveChanges();
                     return $"Obtained {ConsumableNames.Bandages}";
                 }
 
@@ -58,7 +57,6 @@ namespace Jibril.Services.INC.Events.Types
                 if (weapon <= 50)
                 {
                     user.Bow = user.Bow + 1;
-                    user.Arrows = user.Arrows + 10;
                     db.SaveChanges();
                     return "Obtained bow";
                     //Add Bow
@@ -73,7 +71,6 @@ namespace Jibril.Services.INC.Events.Types
                 if (weapon <= 50 + 30 + 15)
                 {
                     user.Pistol = user.Pistol + 1;
-                    user.Bullets = user.Bullets + 10;
                     db.SaveChanges();
                     return "Obtained pistol";
                     //Add Pistol
@@ -86,7 +83,6 @@ namespace Jibril.Services.INC.Events.Types
                 }
 
                 user.Bow = user.Bow + 1;
-                user.Arrows = user.Arrows + 10;
                 db.SaveChanges();
                 return $"Obtained bow";
             }

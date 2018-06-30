@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
 using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Database;
 
@@ -8,15 +10,15 @@ namespace Jibril.Services.INC.Events.Types
 {
     public class Die
     {
-        public static string DieEvent(Hungergame profile)
+        public static string DieEvent(HungerGameLive profile)
         {
-            using (var db = new hanekawaContext())
+            using (var db = new DbService())
             {
                 var rand = new Random();
                 var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
-                var user = db.Hungergame.Find(profile.Userid.ToString());
+                var user = db.HungerGameLives.Find(profile.UserId);
                 user.Status = true;
-                user.DamageTaken = 100;
+                user.Health = 0;
                 db.SaveChanges();
                 return response;
             }

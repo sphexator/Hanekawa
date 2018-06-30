@@ -25,9 +25,9 @@ namespace Jibril.Services.Administration
         private readonly DiscordSocketClient _client;
         private readonly ModerationService _moderationService;
 
-        public event AsyncEvent<IGuildUser, MuteType> UserMuted;
-        public event AsyncEvent<IGuildUser, MuteType, TimeSpan> UserTimedMuted;
-        public event AsyncEvent<IGuildUser, MuteType> UserUnmuted;
+        public event AsyncEvent<SocketGuildUser, SocketGuildUser> UserMuted;
+        public event AsyncEvent<SocketGuildUser, SocketGuildUser, TimeSpan> UserTimedMuted;
+        public event AsyncEvent<SocketGuildUser> UserUnmuted;
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; set; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
@@ -59,25 +59,53 @@ namespace Jibril.Services.Administration
             }
         }
 
-        private Task AutoModTimedMute(IGuildUser arg1, ModerationService.AutoModActionType arg2, int arg3)
+        // EVENTS
+        private Task AutoModTimedMute(IGuildUser user, TimeSpan after)
         {
-            var _ = Task.Run(async () =>
+            var _ = Task.Run(async () =>{await TimedMute(user, after);});
+            return Task.CompletedTask;
+        }
+        private Task AutoModPermMute(IGuildUser arg1)
+        {
+            var _ = Task.Run(async () => { await Mute(arg1); });
+            return Task.CompletedTask;
+        }
+
+        // MUTE AREA
+        public async Task Mute(IGuildUser user, MuteType type = MuteType.All)
+        {
+            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+            var muteRole = await GetMuteRole(user.Guild);
+            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+            StopUnmuteTimer(user.GuildId, user.Id);
+        }
+        public async Task Mute(IGuildUser user, IGuildUser staff, MuteType type = MuteType.All)
+        {
+            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+            var muteRole = await GetMuteRole(user.Guild);
+            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+            StopUnmuteTimer(user.GuildId, user.Id);
+            UserMuted(user as SocketGuildUser, staff as SocketGuildUser);
+        }
+
+        // TIMED MUTE AREA
+        public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
+        {
+            await Mute(user, staff).ConfigureAwait(false);
+            using (var db = new DbService())
             {
-                await TimedMute(arg1);
-            });
-            return Task.CompletedTask;
-        }
-
-        private Task AutoModPermMute(IGuildUser arg1, ModerationService.AutoModActionType arg2)
-        {
-            var _ = Task.Run(async () => { await MuteUser(arg1); });
-            return Task.CompletedTask;
-        }
-
-        public async Task MuteUser(IGuildUser user, MuteType type = MuteType.All)
-        {
-            await Mute(user);
-            UserMuted(user, type);
+                var unMuteAt = DateTime.UtcNow + after;
+                var data = new MuteTimer
+                {
+                    GuildId = user.GuildId,
+                    UserId = user.Id,
+                    Time = unMuteAt
+                };
+                await db.MuteTimers.AddAsync(data);
+                await db.SaveChangesAsync();
+            }
+            StartUnmuteTimer(user.GuildId, user.Id, after);
+            UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
         }
 
         public async Task TimedMute(IGuildUser user, TimeSpan after)
@@ -96,53 +124,6 @@ namespace Jibril.Services.Administration
                 await db.SaveChangesAsync();
             }
             StartUnmuteTimer(user.GuildId, user.Id, after);
-            UserTimedMuted(user, MuteType.All, after);
-        }
-
-        public async Task UnmuteUser(IGuildUser user, MuteType type = MuteType.All)
-        {
-            StopUnmuteTimer(user.GuildId, user.Id);
-            try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}
-            try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch {/*IGNORE*/}
-
-            UserUnmuted(user, type);
-        }
-
-        private async Task Mute(IGuildUser user, MuteType type = MuteType.All)
-        {
-            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
-            var muteRole = await GetMuteRole(user.Guild);
-            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            StopUnmuteTimer(user.GuildId, user.Id);
-        }
-
-        private async Task<IRole> GetMuteRole(IGuild guild)
-        {
-            var check = MuteRole.TryGetValue(guild.Id, out var roleId);
-            IRole muteRole;
-            if (!check)
-            {
-                muteRole = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None).ConfigureAwait(false);
-            }
-            else muteRole = guild.Roles.FirstOrDefault(x => x.Id == roleId);
-
-            foreach (var toOverwrite in (await guild.GetTextChannelsAsync()))
-            {
-                try
-                {
-                    if (toOverwrite.PermissionOverwrites.Select(x => x.Permissions).Contains(DenyOverwrite)) continue;
-                    await toOverwrite.AddPermissionOverwriteAsync(muteRole, DenyOverwrite)
-                        .ConfigureAwait(false);
-
-                    await Task.Delay(200).ConfigureAwait(false);
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
-
-            return muteRole;
         }
 
         private void StartUnmuteTimer(ulong guildId, ulong userId, TimeSpan after)
@@ -155,8 +136,7 @@ namespace Jibril.Services.Administration
                 {
                     var guild = _client.GetGuild(guildId);
                     var user = guild.GetUser(userId);
-                    await UnmuteUser(user).ConfigureAwait(false);
-                    UserUnmuted(user, MuteType.All);
+                    await UnmuteUser(user);
                 }
                 catch
                 {
@@ -190,6 +170,46 @@ namespace Jibril.Services.Administration
                 db.MuteTimers.Remove(data);
                 db.SaveChanges();
             }
+        }
+
+        // Unmute AREA
+        public async Task UnmuteUser(IGuildUser user, MuteType type = MuteType.All)
+        {
+            StopUnmuteTimer(user.GuildId, user.Id);
+            try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}
+            try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch {/*IGNORE*/}
+
+            UserUnmuted(user as SocketGuildUser);
+        }
+
+        // GET ROLE AREA
+        private async Task<IRole> GetMuteRole(IGuild guild)
+        {
+            var check = MuteRole.TryGetValue(guild.Id, out var roleId);
+            IRole muteRole;
+            if (!check)
+            {
+                muteRole = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None).ConfigureAwait(false);
+            }
+            else muteRole = guild.Roles.FirstOrDefault(x => x.Id == roleId);
+
+            foreach (var toOverwrite in (await guild.GetTextChannelsAsync()))
+            {
+                try
+                {
+                    if (toOverwrite.PermissionOverwrites.Select(x => x.Permissions).Contains(DenyOverwrite)) continue;
+                    await toOverwrite.AddPermissionOverwriteAsync(muteRole, DenyOverwrite)
+                        .ConfigureAwait(false);
+
+                    await Task.Delay(200).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            return muteRole;
         }
     }
 }

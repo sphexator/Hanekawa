@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using static Jibril.Services.AutoModerator.ModerationService;
 
 namespace Jibril.Services.AutoModerator
 {
@@ -26,12 +27,14 @@ namespace Jibril.Services.AutoModerator
         private readonly MuteService _muteService;
         private readonly string _perspectiveToken;
         private readonly WarnService _warnService;
+        private readonly ModerationService _moderationService;
 
-        public NudeScoreService(DiscordSocketClient client, HttpClient httpClient, IConfiguration config)
+        public NudeScoreService(DiscordSocketClient client, HttpClient httpClient, IConfiguration config, ModerationService moderationService)
         {
             _client = client;
             _httpClient = httpClient;
             _config = config;
+            _moderationService = moderationService;
 
             _perspectiveToken = _config["perspective"];
 
@@ -174,7 +177,8 @@ namespace Jibril.Services.AutoModerator
                         WarnReason.Mute, (await channel.GetMessagesAsync().FlattenAsync())
                         .Where(m => m.Author.Id == user.Id)
                         .Take(100).ToArray().ToList()).ConfigureAwait(false);
-                    await _muteService.TimedMute(user, TimeSpan.FromHours(1)).ConfigureAwait(false);
+                    await _moderationService.AutoModMute(user as SocketGuildUser, AutoModActionType.Toxicity,
+                        TimeSpan.FromHours(1), $"High toxicity score in {channel.Name}");
                     break;
             }
         }

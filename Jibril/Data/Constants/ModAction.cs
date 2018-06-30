@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Data.Constants
+﻿namespace Jibril.Data.Constants
 {
     public enum ModAction
     {
         Mute,
-        Ban
+        UnMute,
+        Ban,
+        Unban
     }
 }

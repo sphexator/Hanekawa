@@ -1,4 +1,5 @@
-﻿using Jibril.Services.INC.Calculate;
+﻿using Jibril.Services.Entities.Tables;
+using Jibril.Services.INC.Calculate;
 using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Events.Types;
 
@@ -6,7 +7,7 @@ namespace Jibril.Services.INC.Events
 {
     public static class EventHandler
     {
-        public static string EventManager(Hungergame profile)
+        public static string EventManager(HungerGameLive profile)
         {
             var evt = ChanceGenerator.EventDeterminator(profile);
             switch (evt)

@@ -1,4 +1,5 @@
 ﻿using System;
+using Jibril.Services.Entities.Tables;
 using Jibril.Services.INC.Data;
 
 namespace Jibril.Services.INC.Calculate
@@ -23,7 +24,7 @@ namespace Jibril.Services.INC.Calculate
         public const string SleepName = "Sleep";
         public const string EatName = "Eat";
 
-        public static string EventDeterminator(Hungergame profile)
+        public static string EventDeterminator(HungerGameLive profile)
         {
             var loot = LootChance(profile);
             var kill = KillChance(profile);
@@ -47,29 +48,29 @@ namespace Jibril.Services.INC.Calculate
             return generator <= loot + kill + idle + meet + hack + die + sleep + eat ? EatName : null;
         }
 
-        private static int LootChance(Hungergame profile)
+        private static int LootChance(HungerGameLive profile)
         {
-            if (profile.Totaldrink == 0) return Loot + 400;
-            if (profile.Totalfood == 0) return Loot + 400;
-            if (profile.Totaldrink > 0 || profile.Totalfood > 0 ||
-                profile.Totalweapons > 1) return Loot - 200;
+            if (profile.Water == 0) return Loot + 400;
+            if (profile.Food == 0) return Loot + 400;
+            if (profile.Water > 0 || profile.Food > 0 ||
+                profile.TotalWeapons > 1) return Loot - 200;
             return Loot;
         }
 
-        private static int KillChance(Hungergame profile)
+        private static int KillChance(HungerGameLive profile)
         {
-            if (profile.Totaldrink == 0 || profile.Totalfood == 0)
+            if (profile.Water == 0 || profile.Food == 0)
                 return Kill;
-            if (profile.Totalweapons >= 1 || profile.Totaldrink > 0 ||
-                profile.Totalfood > 0)
+            if (profile.TotalWeapons >= 1 || profile.Water > 0 ||
+                profile.Food > 0)
                 return Kill + 2500;
-            if (profile.Totalweapons >= 1 && profile.Totaldrink > 0 ||
-                profile.Totalfood > 0)
+            if (profile.TotalWeapons >= 1 && profile.Water > 0 ||
+                profile.Food > 0)
                 return Kill + 10000;
             return Kill;
         }
 
-        private static int SleepChance(Hungergame profile)
+        private static int SleepChance(HungerGameLive profile)
         {
             if (profile.Sleep >= 90) return Sleep + 1000;
             if (profile.Sleep >= 75) return Sleep + 750;
@@ -77,31 +78,31 @@ namespace Jibril.Services.INC.Calculate
             return Sleep;
         }
 
-        private static int EatChance(Hungergame profile)
+        private static int EatChance(HungerGameLive profile)
         {
-            if (profile.Hunger >= 90 || profile.Totalfood > 0) return Eat + 1000;
-            if (profile.Hunger >= 75 || profile.Totalfood > 0) return Eat + 700;
-            if (profile.Hunger >= 50 || profile.Totalfood > 0) return Eat + 400;
-            if (profile.Hunger >= 20 || profile.Totalfood > 0) return Eat + 200;
+            if (profile.Hunger >= 90 || profile.Food > 0) return Eat + 1000;
+            if (profile.Hunger >= 75 || profile.Food > 0) return Eat + 700;
+            if (profile.Hunger >= 50 || profile.Food > 0) return Eat + 400;
+            if (profile.Hunger >= 20 || profile.Food > 0) return Eat + 200;
             return Eat;
         }
 
-        private static int IdleChance(Hungergame profile)
+        private static int IdleChance(HungerGameLive profile)
         {
             return Idle;
         }
 
-        private static int MeetChance(Hungergame profile)
+        private static int MeetChance(HungerGameLive profile)
         {
             return Meet;
         }
 
-        private static int HackChance(Hungergame profile)
+        private static int HackChance(HungerGameLive profile)
         {
             return Hack;
         }
 
-        private static int DieChance(Hungergame profile)
+        private static int DieChance(HungerGameLive profile)
         {
             return Die;
         }

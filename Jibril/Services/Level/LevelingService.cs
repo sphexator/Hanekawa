@@ -125,7 +125,7 @@ namespace Jibril.Services.Level
                     {
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, user as IGuildUser);
+                        await NewLevelManager(userdata, user as IGuildUser, db);
                     }
                     else
                     {

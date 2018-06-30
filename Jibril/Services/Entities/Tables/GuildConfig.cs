@@ -9,7 +9,7 @@
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }
         public ulong? LogBan { get; set; }
-        public ulong? LogMute { get; set; }
+        public ulong? LogAvi { get; set; }
         public uint? AntiSpam { get; set; }
         public uint ExpMultiplier { get; set; }
         public bool StackLvlRoles { get; set; }

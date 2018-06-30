@@ -8,12 +8,13 @@ using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Jibril.Services.Entities.Tables;
 
 namespace Jibril.Services.INC.Generator
 {
     public class ImageGenerator
     {
-        public static Stream GenerateEventImage(List<Hungergame> profile)
+        public static Stream GenerateEventImage(List<HungerGameLive> profile)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             var result = new MemoryStream();
@@ -26,8 +27,8 @@ namespace Jibril.Services.INC.Generator
                 foreach (var x in profile)
                 {
                     var points = GetBorderPointers(width, height);
-                    var hpBar = GetHeathBar(width, height, x.DamageTaken);
-                    var aviPath = $"Services/INC/Cache/Avatar/{x.Userid}.png";
+                    var hpBar = GetHeathBar(width, height, x.Health);
+                    var aviPath = $"Services/INC/Cache/Avatar/{x.UserId}.png";
                     var avi = Image.Load(aviPath);
                     if (x.Status == false)
                     {
@@ -49,7 +50,7 @@ namespace Jibril.Services.INC.Generator
 
                     var path = GetHealthTextLocation(width, height);
                     var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
-                    var hp = $"       {x.Health - x.DamageTaken} / 100";
+                    var hp = $"       {x.Health} / 100";
                     img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
                     width++;
                     row++;
@@ -83,7 +84,7 @@ namespace Jibril.Services.INC.Generator
             return result;
         }
 
-        private static PointF[] GetHeathBar(int seat, int row, int damage)
+        private static PointF[] GetHeathBar(int seat, int row, uint damage)
         {
             //Size of box
             const int w1 = 10 + 3;

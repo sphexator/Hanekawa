@@ -8,7 +8,7 @@ namespace Jibril.Services.Entities.Tables
         public ulong UserId { get; set; }
         public string Action { get; set; }
         public ulong MessageId { get; set; }
-        public ulong ModId { get; set; }
+        public ulong? ModId { get; set; }
         public string Response { get; set; }
         public DateTime Date { get; set; }
     }

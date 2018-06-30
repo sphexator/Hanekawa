@@ -10,6 +10,7 @@ namespace Jibril.Services.Level.Services
 {
     public static class LevelRoles
     {
+        /*
         public static async Task AssignNewRole(IGuildUser user, int lvl)
         {
             var levelup = GetNewRole(user, lvl).FirstOrDefault();
@@ -251,5 +252,6 @@ namespace Jibril.Services.Level.Services
             if (userData.Level >= 80) role.Add(usr.Guild.Roles.FirstOrDefault(x => x.Name == ClassNames.Tc));
             return role;
         }
+        */
     }
 }
