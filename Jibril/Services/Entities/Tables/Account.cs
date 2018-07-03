@@ -23,6 +23,9 @@ namespace Jibril.Services.Entities.Tables
         public DateTime RepCooldown { get; set; }
         public DateTime LastMessage { get; set; }
         public DateTime? FirstMessage { get; set; }
+        public uint Sessions { get; set; }
+        public TimeSpan TimeInVoice { get; set; }
+        public DateTime VoiceTime { get; set; }
         public List<Inventory> Inventory { get; set; }
         public uint GameKillAmount { get; set; }
         public bool Active { get; set; }

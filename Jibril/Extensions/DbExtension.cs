@@ -8,14 +8,14 @@ using Jibril.Data.Variables;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
- 
+
 namespace Jibril.Extensions
 {
     public static class DbExtension
     {
         public static async Task<Account> GetOrCreateUserData(this DbService context, IUser user)
         {
-            var userdata = await context.Accounts.FindAsync(user.Id.ToString());
+            var userdata = await context.Accounts.FindAsync(user.Id);
             if (userdata != null) return userdata;
             var inventory = new Inventory
             {
@@ -27,8 +27,9 @@ namespace Jibril.Extensions
                 Shield = 0
             };
             var data = new Account
-                {
+            {
                 UserId = user.Id,
+                Active = true,
                 Class = ClassNames.Shipgirl,
                 Credit = 0,
                 CreditSpecial = 0,
@@ -44,7 +45,7 @@ namespace Jibril.Extensions
                 MvpIgnore = false,
                 MvpImmunity = false,
                 Level = 0,
-                Inventory = new List<Inventory>{inventory}
+                Inventory = new List<Inventory> { inventory }
             };
             await context.Accounts.AddAsync(data);
             return await context.Accounts.FindAsync(user.Id);

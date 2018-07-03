@@ -18,11 +18,11 @@ namespace Jibril.Services.Level
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
-        private readonly List<CooldownUser> _users = new List<CooldownUser>();
 
-        public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
+        public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
+            _calc = calc;
             _provider = provider;
 
             _client.MessageReceived += MessageExp;
@@ -197,20 +197,7 @@ namespace Jibril.Services.Level
 
         private bool CheckCooldown(SocketGuildUser usr)
         {
-            var tempUser = _users.FirstOrDefault(x => x.User == usr);
-            if (tempUser != null) // check to see if you have handled a request in the past from this user.
-            {
-                if (!((DateTime.Now - tempUser.LastRequest).TotalSeconds >= 60)) return false;
-                _users.Find(x => x.User == usr).LastRequest = DateTime.Now; // update their last request time to now.
-                return true;
-            }
-
-            var newUser = new CooldownUser
-            {
-                User = usr,
-                LastRequest = DateTime.Now
-            };
-            _users.Add(newUser);
+            //TODO Cooldown system
             return true;
         }
     }

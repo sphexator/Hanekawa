@@ -33,23 +33,36 @@ namespace Jibril.Services.Entities
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(DbInfo.ConnectionString);
+                //optionsBuilder.UseMySql(DbInfo.ConnectionString);
+                optionsBuilder.UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<ClubInfo>(x => { x.HasKey(e => e.Id); });
+            modelBuilder.Entity<ClubInfo>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
-            modelBuilder.Entity<GameEnemy>(x => { x.HasKey(e => e.Id); });
+            modelBuilder.Entity<GameEnemy>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => e.Level); });
-            modelBuilder.Entity<ModLog>(x => { x.HasKey(e => e.Id); });
+            modelBuilder.Entity<ModLog>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<MuteTimer>(x =>
             {
                 x.HasKey(e => e.GuildId);
@@ -57,11 +70,21 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<Report>(x =>
             {
+                x.HasKey(e => e.Id);
                 x.HasKey(e => e.MessageId);
                 x.HasKey(e => e.UserId);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<Shop>(x => { x.HasKey(e => e.Id); });
-            modelBuilder.Entity<ShopEvent>(x => { x.HasKey(e => e.Id); });
+            modelBuilder.Entity<Shop>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<ShopEvent>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<Suggestion>(x =>
             {
                 x.HasKey(e => e.UserId);
@@ -70,16 +93,19 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<WarnMsgLog>(x =>
             {
                 x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<NudeServiceChannel>(x =>
             {
                 x.HasKey(e => e.GuildId);
                 x.HasKey(e => e.ChannelId);
             });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
         }
     }
 

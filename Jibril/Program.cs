@@ -16,6 +16,7 @@ using Quartz.Spi;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Jibril.Services.Administration;
 using Jibril.Services.Automate;
 using Jibril.Services.Entities;
 
@@ -83,6 +84,8 @@ namespace Jibril
             services.AddSingleton<ModerationService>();
             services.AddSingleton<HungerGames>();
             services.AddSingleton<MvpService>();
+            services.AddSingleton<MuteService>();
+            services.AddSingleton<NudeScoreService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);
