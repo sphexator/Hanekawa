@@ -54,7 +54,11 @@ namespace Jibril.Services.Administration
                               $"\n" +
                               $"**>Activity**\n" +
                               $"Last Message: {userdata.LastMessage.Humanize()} \n" +
-                              $"First Message: {userdata.LastMessage.Humanize()}";
+                              $"First Message: {userdata.LastMessage.Humanize()} \n" +
+                              $"\n" +
+                              $"**>Session**\n" +
+                              $"Amount: {userdata.Sessions}\n" +
+                              $"Time: {userdata.TimeInVoice.Humanize()}";
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = user.GetAvatar(),
@@ -64,6 +68,7 @@ namespace Jibril.Services.Administration
                 {
                     Description = content,
                     Author = author,
+                    Color = Color.Purple,
                     Fields = await GetWarnings(user)
                 };
                 return embed;
