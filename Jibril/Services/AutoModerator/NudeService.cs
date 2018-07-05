@@ -9,6 +9,7 @@ using Quartz.Util;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -43,9 +44,10 @@ namespace Jibril.Services.AutoModerator
             _client.MessageReceived += DetermineNudeScore;
         }
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>>
-            NudeValue { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>>
+            NudeValue
+        { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>
             >();
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; }
@@ -67,13 +69,14 @@ namespace Jibril.Services.AutoModerator
                 if (filter.IsNullOrWhiteSpace()) return;
                 var request = new AnalyzeCommentRequest(filter);
 
-                var response = SendNudes(request);
+                var response = await SendNudes(request);
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                 var result = CalculateNudeScore(score, msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel);
                 if (result == null) return;
+                Console.WriteLine($"{msg.Author.Username} avg. toxicity of {result}% in {msg.Channel.Name}");
                 using (var db = new DbService())
                 {
-                    var channel = await db.NudeServiceChannels.FindAsync((msg.Author as SocketGuildUser).Guild.Id, msg.Channel.Id).ConfigureAwait(false);
+                    var channel = await db.NudeServiceChannels.FindAsync(((SocketGuildUser)msg.Author).Guild.Id, msg.Channel.Id).ConfigureAwait(false);
                     if (channel == null) return;
                     if (result < channel.Tolerance) return;
                 }
@@ -82,16 +85,16 @@ namespace Jibril.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private AnalyzeCommentResponse SendNudes(AnalyzeCommentRequest request)
+        private async Task<AnalyzeCommentResponse> SendNudes(AnalyzeCommentRequest request)
         {
-            using (var client = _httpClient)
+            using (var client = new HttpClient())
             {
                 var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8,
                     "application/json");
-                var response = client
+                var response = await client
                     .PostAsync(
                         $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={_perspectiveToken}",
-                        content).Result;
+                        content);
                 response.EnsureSuccessStatusCode();
                 var data = response.Content.ReadAsStringAsync().Result;
                 var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
@@ -99,37 +102,40 @@ namespace Jibril.Services.AutoModerator
             }
         }
 
-        private uint? CalculateNudeScore(double doubleScore, IGuildUser user, SocketTextChannel channel)
+        private double? CalculateNudeScore(double doubleScore, IGuildUser user, SocketTextChannel channel)
         {
             var toxList = NudeValue.GetOrAdd(user.GuildId,
-                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
-            var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<uint>>());
-            var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<uint>());
-            var score = Convert.ToUInt32(doubleScore) * 100;
+                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>());
+            var channelValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<double>>());
+            var userValue = channelValue.GetOrAdd(channel.Id, new LinkedList<double>());
+
+            var result = doubleScore * 100;
+            Console.WriteLine($"{user.Nickname ?? user.Username} scored {result} toxicity score");
+
             if (channelValue.Count == 20)
             {
-                channelValue.RemoveLast();
-                channelValue.AddFirst(score);
+                userValue.RemoveLast();
+                userValue.AddFirst(result);
             }
             else
             {
-                channelValue.AddFirst(score);
+                userValue.AddFirst(result);
                 return null;
             }
 
-            uint totalScore = 0;
+            double totalScore = 0;
 
-            foreach (var x in channelValue) totalScore = x + totalScore;
+            foreach (var x in userValue) totalScore = x + totalScore;
 
-            return Convert.ToUInt32(totalScore / userValue.Count);
+            return totalScore / channelValue.Count;
         }
 
         private void ClearChannelNudeScore(IGuildUser user, SocketTextChannel channel)
         {
             var toxList = NudeValue.GetOrAdd(user.GuildId,
-                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<uint>>>());
-            var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<uint>>());
-            var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<uint>());
+                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>());
+            var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<double>>());
+            var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<double>());
             channelValue.Clear();
         }
 

@@ -19,10 +19,9 @@ namespace Jibril.Services.Level
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
 
-        public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
+        public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
         {
             _client = discord;
-            _calc = calc;
             _provider = provider;
 
             _client.MessageReceived += MessageExp;
@@ -90,7 +89,7 @@ namespace Jibril.Services.Level
                     {
                         userdata.Exp = userdata.Exp + exp;
                     }
-
+                    Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
                     await db.SaveChangesAsync();
                 }
             });

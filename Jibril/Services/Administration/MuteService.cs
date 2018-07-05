@@ -36,9 +36,10 @@ namespace Jibril.Services.Administration
 
         private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
 
-        public MuteService(DiscordSocketClient client)
+        public MuteService(DiscordSocketClient client, ModerationService moderationService)
         {
             _client = client;
+            _moderationService = moderationService;
             _moderationService.AutoModPermMute += AutoModPermMute;
             _moderationService.AutoModTimedMute += AutoModTimedMute;
             using (var db = new DbService())

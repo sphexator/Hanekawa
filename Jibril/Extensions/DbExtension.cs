@@ -44,10 +44,14 @@ namespace Jibril.Extensions
                 TotalExp = 0,
                 MvpIgnore = false,
                 MvpImmunity = false,
-                Level = 0,
+                Level = 1,
+                Sessions = 0,
+                TimeInVoice = TimeSpan.Zero,
+                VoiceTime = DateTime.UtcNow,
                 Inventory = new List<Inventory> { inventory }
             };
             await context.Accounts.AddAsync(data);
+            await context.SaveChangesAsync();
             return await context.Accounts.FindAsync(user.Id);
         }
 
@@ -60,6 +64,7 @@ namespace Jibril.Extensions
                 Action = action.ToString()
             };
             await context.ModLogs.AddAsync(data);
+            await context.SaveChangesAsync();
             return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time);
         }
 
@@ -74,6 +79,7 @@ namespace Jibril.Extensions
                 CreationDate = time
             };
             await context.ClubInfos.AddAsync(data);
+            await context.SaveChangesAsync();
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
         }
 
@@ -84,9 +90,19 @@ namespace Jibril.Extensions
             var data = new GuildConfig
             {
                 GuildId = guild.Id,
-                Welcome = true
+                WelcomeChannel = null,
+                LogMsg = null,
+                LogJoin = null,
+                LogBan = null,
+                LogAvi = null,
+                StackLvlRoles = false,
+                AntiSpam = null,
+                ExpMultiplier = 1,
+                MuteRole = null,
+                WelcomeLimit = 10
             };
             await context.GuildConfigs.AddAsync(data);
+            await context.SaveChangesAsync();
             return await context.GuildConfigs.FindAsync(guild.Id);
         }
     }

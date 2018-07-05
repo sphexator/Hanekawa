@@ -1,6 +1,5 @@
 ﻿using Jibril.Services.Entities.Tables;
 using Jibril.Services.INC.Calculate;
-using Jibril.Services.INC.Data;
 using Jibril.Services.INC.Events.Types;
 
 namespace Jibril.Services.INC.Events

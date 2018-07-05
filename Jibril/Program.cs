@@ -15,10 +15,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz.Spi;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Jibril.Services.Administration;
 using Jibril.Services.Automate;
 using Jibril.Services.Entities;
+using Jibril.Services.Level.Services;
 
 namespace Jibril
 {
@@ -48,6 +50,8 @@ namespace Jibril
             services.GetRequiredService<LevelingService>();
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<ReactionService>();
+            services.GetRequiredService<WarnService>();
+            services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<HungerGames>();
 
             /*
@@ -85,7 +89,9 @@ namespace Jibril
             services.AddSingleton<HungerGames>();
             services.AddSingleton<MvpService>();
             services.AddSingleton<MuteService>();
+            services.AddSingleton<WarnService>();
             services.AddSingleton<NudeScoreService>();
+            services.AddSingleton(new HttpClient());
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);

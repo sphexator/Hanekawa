@@ -3,8 +3,7 @@
     public class GuildConfig
     {
         public ulong GuildId { get; set; }
-        public bool Welcome { get; set; }
-        public ulong WelcomeChannel { get; set; }
+        public ulong? WelcomeChannel { get; set; }
         public uint WelcomeLimit { get; set; }
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }

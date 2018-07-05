@@ -3,14 +3,16 @@ using System;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jibril.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20180703184554_minorchange")]
+    partial class minorchange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,7 +156,9 @@ namespace Jibril.Migrations
 
                     b.Property<bool>("StackLvlRoles");
 
-                    b.Property<ulong?>("WelcomeChannel");
+                    b.Property<bool>("Welcome");
+
+                    b.Property<ulong>("WelcomeChannel");
 
                     b.Property<uint>("WelcomeLimit");
 
