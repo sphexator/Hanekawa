@@ -68,7 +68,6 @@
   <ItemGroup>
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
-    <Folder Include="Modules\Account\" />
     <Folder Include="Modules\Game\" />
     <Folder Include="Modules\Help\" />
     <Folder Include="Modules\Report\" />

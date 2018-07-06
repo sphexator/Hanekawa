@@ -49,10 +49,12 @@ namespace Jibril.Modules.Administration
         [Command("kick", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
-        public async Task KickAsync(SocketGuildUser user)
+        public async Task KickAsync(IGuildUser user)
         {
+            
             await Context.Message.DeleteAsync().ConfigureAwait(false);
-            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+            if (Context.User.Id != user.Guild.OwnerId && ((SocketGuildUser
+            )user).Roles.Select(r => r.Position).Max() >=
                 ((SocketGuildUser) Context.User).Roles.Select(r => r.Position)
                 .Max())
             {

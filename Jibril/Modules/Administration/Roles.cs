@@ -27,7 +27,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync().ConfigureAwait(false);
                         await user.AddRoleAsync(lewdRole).ConfigureAwait(false);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Assigned lewd role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
@@ -37,7 +37,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync().ConfigureAwait(false);
                         await user.RemoveRoleAsync(lewdRole).ConfigureAwait(false);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Removed lewd role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
@@ -66,7 +66,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync().ConfigureAwait(false);
                         await user.AddRoleAsync(picdump).ConfigureAwait(false);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Assigned picdump role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
@@ -76,7 +76,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync();
                         await user.RemoveRoleAsync(picdump);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Removed picdump role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
@@ -104,7 +104,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync().ConfigureAwait(false);
                         await user.AddRoleAsync(japanese).ConfigureAwait(false);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Assigned Japanese role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
@@ -114,7 +114,7 @@ namespace Jibril.Modules.Administration
                         await Context.Message.DeleteAsync();
                         await user.RemoveRoleAsync(japanese);
                         var embed = new EmbedBuilder();
-                        embed.WithColor(Color.Green);
+                        embed.WithColor(Color.DarkPurple);
                         embed.Description = "Removed Japanese role";
                         await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5))
                             .ConfigureAwait(false);
