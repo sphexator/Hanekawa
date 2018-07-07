@@ -3,10 +3,9 @@
     public class Inventory
     {
         public ulong UserId { get; set; }
-        public uint RepairKit { get; set; }
-        public uint DamageBoost { get; set; }
-        public uint Shield { get; set; }
-        public uint CustomRole { get; set; }
-        public uint Gift { get; set; }
+        public string Name { get; set; }
+        public uint Amount { get; set; }
+        public bool Unique { get; set; }
+        public bool Consumable { get; set; }
     }
 }

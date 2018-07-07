@@ -19,12 +19,7 @@ namespace Jibril.Extensions
             if (userdata != null) return userdata;
             var inventory = new Inventory
             {
-                UserId = user.Id,
-                CustomRole = 0,
-                DamageBoost = 0,
-                Gift = 0,
-                RepairKit = 0,
-                Shield = 0
+
             };
             var data = new Account
             {

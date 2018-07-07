@@ -7,7 +7,7 @@ namespace Jibril.Services.Entities
     public class DbService : DbContext
     {
         public DbService(){ }
-        public DbService(DbContextOptions<DbService> options) : base(options){ }
+        public DbService(DbContextOptions options) : base(options){ }
 
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }

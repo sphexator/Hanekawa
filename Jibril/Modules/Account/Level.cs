@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services.Entities;
 using Jibril.Services.Level.Services;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Account
 {
@@ -91,6 +90,28 @@ namespace Jibril.Modules.Account
                     embed.AddField(field);
                     rank++;
                 }
+            }
+        }
+
+        [Command("rep", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task RepAsync(SocketGuildUser user = null)
+        {
+            using (var db = new DbService())
+            {
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
+                if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+                {
+                    var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue).Build());
+                    return;
+                }
+                var userdata = await db.GetOrCreateUserData(user);
+                userdata.RepCooldown = DateTime.UtcNow;
+                userdata.Rep = userdata.Rep + 1;
+                await db.SaveChangesAsync();
+                await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());
+
             }
         }
     }

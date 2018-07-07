@@ -129,5 +129,19 @@ namespace Jibril.Modules.Account
                 }
             }
         }
+
+        [Command("reward", RunMode = RunMode.Async)]
+        [Alias("award")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task RewardCreditAsync(uint amount, IGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var userdata = await db.GetOrCreateUserData(user);
+                userdata.CreditSpecial = userdata.CreditSpecial + amount;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} Event Credit to {user.Mention}").Build());
+            }
+        }
     }
 }
