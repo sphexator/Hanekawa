@@ -6,8 +6,13 @@ namespace Jibril.Services.Entities
 {
     public class DbService : DbContext
     {
-        public DbService(){ }
-        public DbService(DbContextOptions options) : base(options){ }
+        public DbService()
+        {
+        }
+
+        public DbService(DbContextOptions options) : base(options)
+        {
+        }
 
         public virtual DbSet<Account> Accounts { get; set; }
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
@@ -32,47 +37,35 @@ namespace Jibril.Services.Entities
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-            {
-                //optionsBuilder.UseMySql(DbInfo.ConnectionString);
                 optionsBuilder.UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
-            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<ClubInfo>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-            modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
-            modelBuilder.Entity<GameEnemy>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
             modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => e.Level); });
-            modelBuilder.Entity<ModLog>(x =>
+            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
+            modelBuilder.Entity<Suggestion>(x => { x.HasKey(e => new {e.UserId, e.MessageId}); });
+            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
+            modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<MuteTimer>(x =>
+            modelBuilder.Entity<WarnMsgLog>(x =>
             {
-                x.HasKey(e => e.GuildId);
-                x.HasKey(e => e.UserId);    
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<Report>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.HasKey(e => e.MessageId);
-                x.HasKey(e => e.UserId);
+                x.HasKey(e => new { e.Id, e.MessageId, e.UserId });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<Shop>(x =>
@@ -85,39 +78,34 @@ namespace Jibril.Services.Entities
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<Suggestion>(x =>
-            {
-                x.HasKey(e => e.UserId);
-                x.HasKey(e => e.MessageId);
-            });
-            modelBuilder.Entity<Warn>(x =>
+            modelBuilder.Entity<ModLog>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<WarnMsgLog>(x =>
+            modelBuilder.Entity<ClubInfo>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<NudeServiceChannel>(x =>
+            modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
+            modelBuilder.Entity<GameEnemy>(x =>
             {
-                x.HasKey(e => e.GuildId);
-                x.HasKey(e => e.ChannelId);
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
         }
     }
 
     public class DbInfo
     {
-        public static string ConnectionString { get; private set; }
-
         public DbInfo(IConfiguration config)
         {
             var config1 = config;
 
             ConnectionString = config1["connectionString"];
         }
+
+        public static string ConnectionString { get; private set; }
     }
 }

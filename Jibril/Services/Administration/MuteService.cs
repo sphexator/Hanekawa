@@ -92,11 +92,11 @@ namespace Jibril.Services.Administration
         // TIMED MUTE AREA
         public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
-            await Mute(user, staff).ConfigureAwait(false);
+            await Mute(user).ConfigureAwait(false);
             using (var db = new DbService())
             {
                 var unMuteAt = DateTime.UtcNow + after;
-                var userCheck = await db.MuteTimers.FindAsync(user.Id);
+                var userCheck = await db.MuteTimers.FindAsync(user.Id, user.GuildId);
                 if (userCheck == null)
                 {
                     var data = new MuteTimer

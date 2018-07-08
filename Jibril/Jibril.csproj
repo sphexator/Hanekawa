@@ -37,6 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20180708170018_keyUpdate333.cs" />
+    <Compile Remove="Migrations\20180708170807_keyUpdate33333.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
     <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00973" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00973" />

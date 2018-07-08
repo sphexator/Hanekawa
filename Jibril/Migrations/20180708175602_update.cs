@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jibril.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class update : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -100,8 +100,7 @@ namespace Jibril.Migrations
                 {
                     GuildId = table.Column<ulong>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Welcome = table.Column<bool>(nullable: false),
-                    WelcomeChannel = table.Column<ulong>(nullable: false),
+                    WelcomeChannel = table.Column<ulong>(nullable: true),
                     WelcomeLimit = table.Column<uint>(nullable: false),
                     LogJoin = table.Column<ulong>(nullable: true),
                     LogMsg = table.Column<ulong>(nullable: true),
@@ -233,14 +232,12 @@ namespace Jibril.Migrations
                 columns: table => new
                 {
                     GuildId = table.Column<ulong>(nullable: false),
-                    UserId = table.Column<ulong>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<ulong>(nullable: false),
                     Time = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MuteTimers", x => x.UserId);
-                    table.UniqueConstraint("AK_MuteTimers_GuildId", x => x.GuildId);
+                    table.PrimaryKey("PK_MuteTimers", x => new { x.UserId, x.GuildId });
                 });
 
             migrationBuilder.CreateTable(
@@ -248,22 +245,21 @@ namespace Jibril.Migrations
                 columns: table => new
                 {
                     GuildId = table.Column<ulong>(nullable: false),
-                    ChannelId = table.Column<ulong>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ChannelId = table.Column<ulong>(nullable: false),
                     Tolerance = table.Column<uint>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NudeServiceChannels", x => x.ChannelId);
-                    table.UniqueConstraint("AK_NudeServiceChannels_GuildId", x => x.GuildId);
+                    table.PrimaryKey("PK_NudeServiceChannels", x => new { x.GuildId, x.ChannelId });
                 });
 
             migrationBuilder.CreateTable(
                 name: "Reports",
                 columns: table => new
                 {
-                    UserId = table.Column<ulong>(nullable: false)
+                    Id = table.Column<uint>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<ulong>(nullable: false),
                     MessageId = table.Column<ulong>(nullable: false),
                     Status = table.Column<bool>(nullable: false),
                     Message = table.Column<string>(nullable: true),
@@ -272,8 +268,7 @@ namespace Jibril.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reports", x => x.UserId);
-                    table.UniqueConstraint("AK_Reports_MessageId", x => x.MessageId);
+                    table.PrimaryKey("PK_Reports", x => new { x.Id, x.MessageId, x.UserId });
                 });
 
             migrationBuilder.CreateTable(
@@ -314,16 +309,14 @@ namespace Jibril.Migrations
                     Id = table.Column<uint>(nullable: false),
                     UserId = table.Column<ulong>(nullable: false),
                     Status = table.Column<bool>(nullable: false),
-                    MessageId = table.Column<ulong>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    MessageId = table.Column<ulong>(nullable: false),
                     ResponseUser = table.Column<ulong>(nullable: false),
                     Response = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Suggestions", x => x.MessageId);
-                    table.UniqueConstraint("AK_Suggestions_UserId", x => x.UserId);
+                    table.PrimaryKey("PK_Suggestions", x => new { x.UserId, x.MessageId });
                 });
 
             migrationBuilder.CreateTable(
@@ -369,11 +362,10 @@ namespace Jibril.Migrations
                 {
                     UserId = table.Column<ulong>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    RepairKit = table.Column<uint>(nullable: false),
-                    DamageBoost = table.Column<uint>(nullable: false),
-                    Shield = table.Column<uint>(nullable: false),
-                    CustomRole = table.Column<uint>(nullable: false),
-                    Gift = table.Column<uint>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    Amount = table.Column<uint>(nullable: false),
+                    Unique = table.Column<bool>(nullable: false),
+                    Consumable = table.Column<bool>(nullable: false),
                     AccountUserId = table.Column<ulong>(nullable: true)
                 },
                 constraints: table =>

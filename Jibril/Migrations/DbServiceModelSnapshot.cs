@@ -270,15 +270,13 @@ namespace Jibril.Migrations
 
                     b.Property<ulong?>("AccountUserId");
 
-                    b.Property<uint>("CustomRole");
+                    b.Property<uint>("Amount");
 
-                    b.Property<uint>("DamageBoost");
+                    b.Property<bool>("Consumable");
 
-                    b.Property<uint>("Gift");
+                    b.Property<string>("Name");
 
-                    b.Property<uint>("RepairKit");
-
-                    b.Property<uint>("Shield");
+                    b.Property<bool>("Unique");
 
                     b.HasKey("UserId");
 
@@ -327,60 +325,48 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.MuteTimer", b =>
                 {
-                    b.Property<ulong>("UserId")
-                        .ValueGeneratedOnAdd();
+                    b.Property<ulong>("UserId");
 
                     b.Property<ulong>("GuildId");
 
                     b.Property<DateTime>("Time");
 
-                    b.HasKey("UserId");
-
-                    b.HasAlternateKey("GuildId");
+                    b.HasKey("UserId", "GuildId");
 
                     b.ToTable("MuteTimers");
                 });
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.NudeServiceChannel", b =>
                 {
-                    b.Property<ulong>("ChannelId")
-                        .ValueGeneratedOnAdd();
-
                     b.Property<ulong>("GuildId");
+
+                    b.Property<ulong>("ChannelId");
 
                     b.Property<uint>("Tolerance");
 
-                    b.HasKey("ChannelId");
-
-                    b.HasAlternateKey("GuildId");
+                    b.HasKey("GuildId", "ChannelId");
 
                     b.ToTable("NudeServiceChannels");
                 });
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Report", b =>
                 {
-                    b.Property<ulong>("UserId")
+                    b.Property<uint>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<ulong>("MessageId");
+
+                    b.Property<ulong>("UserId");
 
                     b.Property<string>("Attachment");
 
                     b.Property<DateTime>("Date");
 
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd();
-
                     b.Property<string>("Message");
-
-                    b.Property<ulong>("MessageId");
 
                     b.Property<bool>("Status");
 
-                    b.HasKey("UserId");
-
-                    b.HasAlternateKey("Id");
-
-
-                    b.HasAlternateKey("MessageId");
+                    b.HasKey("Id", "MessageId", "UserId");
 
                     b.ToTable("Reports");
                 });
@@ -421,8 +407,9 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Suggestion", b =>
                 {
-                    b.Property<ulong>("MessageId")
-                        .ValueGeneratedOnAdd();
+                    b.Property<ulong>("UserId");
+
+                    b.Property<ulong>("MessageId");
 
                     b.Property<DateTime>("Date");
 
@@ -434,11 +421,7 @@ namespace Jibril.Migrations
 
                     b.Property<bool>("Status");
 
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("MessageId");
-
-                    b.HasAlternateKey("UserId");
+                    b.HasKey("UserId", "MessageId");
 
                     b.ToTable("Suggestions");
                 });
