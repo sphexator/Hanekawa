@@ -19,9 +19,10 @@ namespace Jibril.Services.Level
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
 
-        public LevelingService(IServiceProvider provider, DiscordSocketClient discord)
+        public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
+            _calc = calc;
             _provider = provider;
 
             _client.MessageReceived += MessageExp;
@@ -36,6 +37,8 @@ namespace Jibril.Services.Level
 
         private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
             = new ConcurrentDictionary<ulong, uint>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         private Task GiveRolesBack(SocketGuildUser user)
         {
@@ -64,33 +67,40 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                if (!(message is SocketUserMessage msg)) return;
-                if (msg.Source != MessageSource.User) return;
-                if (!(msg.Channel is IGuildChannel)) return;
-
-                if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
-                using (var db = new DbService())
+                try
                 {
-                    ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
-                    var userdata = await db.GetOrCreateUserData(msg.Author);
-                    var exp = _calc.GetMessageExp(msg) * multi;
-                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+                    if (!(message is SocketUserMessage msg)) return;
+                    if (msg.Source != MessageSource.User) return;
+                    if (!(msg.Channel is IGuildChannel)) return;
 
-                    userdata.TotalExp = userdata.TotalExp + exp;
-                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+                    if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
+                    using (var db = new DbService())
+                    {
+                        ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
+                        var userdata = await db.GetOrCreateUserData(msg.Author);
+                        var exp = _calc.GetMessageExp(msg) * multi;
+                        var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
 
-                    if (userdata.Exp + exp >= nxtLvl)
-                    {
-                        userdata.Level = userdata.Level + 1;
-                        userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, msg.Author as IGuildUser, db);
+                        userdata.TotalExp = userdata.TotalExp + exp;
+                        userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+
+                        if (userdata.Exp + exp >= nxtLvl)
+                        {
+                            userdata.Level = userdata.Level + 1;
+                            userdata.Exp = userdata.Exp + exp - nxtLvl;
+                            await NewLevelManager(userdata, msg.Author as IGuildUser, db);
+                        }
+                        else
+                        {
+                            userdata.Exp = userdata.Exp + exp;
+                        }
+                        Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
+                        await db.SaveChangesAsync();
                     }
-                    else
-                    {
-                        userdata.Exp = userdata.Exp + exp;
-                    }
-                    Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
-                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             });
             return Task.CompletedTask;
@@ -182,7 +192,7 @@ namespace Jibril.Services.Level
             }
         }
 
-        private async Task RemoveLevelRoles(IGuildUser user)
+        private static async Task RemoveLevelRoles(IGuildUser user)
         {
             using (var db = new DbService())
             {
@@ -194,9 +204,26 @@ namespace Jibril.Services.Level
             }
         }
 
-        private bool CheckCooldown(SocketGuildUser usr)
+        private bool CheckCooldown(IGuildUser usr)
         {
-            //TODO Cooldown system
+            var check = ServerExpCooldown.TryGetValue(usr.GuildId, out var cds);
+            if (!check)
+            {
+                ServerExpCooldown.TryAdd(usr.GuildId, new ConcurrentDictionary<ulong, DateTime>());
+                ServerExpCooldown.TryGetValue(usr.GuildId, out cds);
+                cds.TryAdd(usr.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            var userCheck = cds.TryGetValue(usr.Id, out var cd);
+            if (!userCheck)
+            {
+                cds.TryAdd(usr.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
+            cds.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
             return true;
         }
     }

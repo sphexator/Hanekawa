@@ -18,51 +18,63 @@ namespace Jibril.Modules.Account
     {
         private readonly Calculate _calculate;
 
+        public Level(Calculate calculate)
+        {
+            _calculate = calculate;
+        }
+
         [Command("rank", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task RankAsync(SocketGuildUser user = null)
         {
-            if (user == null) user = Context.User as SocketGuildUser;
-            using (var db = new DbService())
+            try
             {
-                var userdata = await db.GetOrCreateUserData(user);
-                var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp);
-                var total = db.Accounts.CountAsync();
-                await Task.WhenAll(rank, total);
-                var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
-                var author = new EmbedAuthorBuilder
+                if (user == null) user = Context.User as SocketGuildUser;
+                using (var db = new DbService())
                 {
-                    Name = user.GetName()
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.DarkPurple,
-                    Author = author,
-                    ThumbnailUrl = user.GetAvatar()
-                };
-                var level = new EmbedFieldBuilder
-                {
-                    Name = "Level",
-                    IsInline = true,
-                    Value = $"{userdata.Level}"
-                };
-                var exp = new EmbedFieldBuilder
-                {
-                    Name = "Exp",
-                    IsInline = true,
-                    Value = $"{userdata.Exp}/{nxtLevel}"
-                };
-                var ranking = new EmbedFieldBuilder
-                {
-                    Name = "Rank",
-                    IsInline = true,
-                    Value = $"{rank}/{total}"
-                };
+                    var userdata = await db.GetOrCreateUserData(user);
+                    var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp);
+                    var total = db.Accounts.CountAsync();
+                    await Task.WhenAll(rank, total);
+                    var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
+                    var author = new EmbedAuthorBuilder
+                    {
+                        Name = user.GetName()
+                    };
+                    var embed = new EmbedBuilder
+                    {
+                        Color = Color.DarkPurple,
+                        Author = author,
+                        ThumbnailUrl = user.GetAvatar()
+                    };
+                    var level = new EmbedFieldBuilder
+                    {
+                        Name = "Level",
+                        IsInline = true,
+                        Value = $"{userdata.Level}"
+                    };
+                    var exp = new EmbedFieldBuilder
+                    {
+                        Name = "Exp",
+                        IsInline = true,
+                        Value = $"{userdata.Exp}/{nxtLevel}"
+                    };
+                    var ranking = new EmbedFieldBuilder
+                    {
+                        Name = "Rank",
+                        IsInline = true,
+                        Value = $"{rank.Result}/{total.Result}"
+                    };
 
-                embed.AddField(level);
-                embed.AddField(exp);
-                embed.AddField(ranking);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                    embed.AddField(level);
+                    embed.AddField(exp);
+                    embed.AddField(ranking);
+                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
@@ -70,26 +82,33 @@ namespace Jibril.Modules.Account
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LeaderboardAsync()
         {
-            using (var db = new DbService())
+            try
             {
-                var embed = new EmbedBuilder
+                using (var db = new DbService())
                 {
-                    Color = Color.DarkPurple,
-                    Title = "Leaderboard"
-                };
-                var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
-                var rank = 1;
-                foreach (var x in users)
-                {
-                    var field = new EmbedFieldBuilder
+                    var embed = new EmbedBuilder
                     {
-                        IsInline = false,
-                        Name = $"Rank: {rank}",
-                        Value = $"<@{x.UserId} - Level:{x.Level} - Total Exp:{x.TotalExp}"
+                        Color = Color.DarkPurple,
+                        Title = "Leaderboard"
                     };
-                    embed.AddField(field);
-                    rank++;
+                    var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+                    var rank = 1;
+                    foreach (var x in users)
+                    {
+                        var field = new EmbedFieldBuilder
+                        {
+                            IsInline = false,
+                            Name = $"Rank: {rank}",
+                            Value = $"<@{x.UserId} - Level:{x.Level} - Total Exp:{x.TotalExp}"
+                        };
+                        embed.AddField(field);
+                        rank++;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 

@@ -30,7 +30,7 @@ namespace Jibril.Modules.Administration
         {
             await Context.Message.DeleteAsync().ConfigureAwait(false);
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
-                ((SocketGuildUser) Context.User).Roles.Select(r => r.Position)
+                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
                 .Max())
             {
                 var fembed = new EmbedBuilder().Reply(
@@ -51,11 +51,11 @@ namespace Jibril.Modules.Administration
         [RequireBotPermission(GuildPermission.BanMembers)]
         public async Task KickAsync(IGuildUser user)
         {
-            
+
             await Context.Message.DeleteAsync().ConfigureAwait(false);
             if (Context.User.Id != user.Guild.OwnerId && ((SocketGuildUser
             )user).Roles.Select(r => r.Position).Max() >=
-                ((SocketGuildUser) Context.User).Roles.Select(r => r.Position)
+                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
                 .Max())
             {
                 var fembed = new EmbedBuilder().Reply(
@@ -73,30 +73,31 @@ namespace Jibril.Modules.Administration
 
         [Command("prune", RunMode = RunMode.Async)]
         [Alias("clear")]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task PruneAsync(uint x = 1, IGuildUser user = null)
+        public async Task PruneAsync(int x = 5, IGuildUser user = null)
         {
             if (x > 1000) x = 1000;
-            var messages = new List<IMessage>();
             if (user == null)
             {
-                messages = (await Context.Channel.GetMessagesAsync((int) x).FlattenAsync()).ToList();
+                var msgs = await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync();
+                var channel = Context.Channel as ITextChannel;
+                await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
             }
             else
             {
-                var msgs = (await Context.Channel.GetMessagesAsync((int) x).FlattenAsync())
+                var msgs = (await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync())
                     .Where(m => m.Author.Id == user.Id)
-                    .Take((int) x).ToArray();
-                messages.AddRange(msgs);
+                    .Take(x);
+                var channel = Context.Channel as ITextChannel;
+                await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
             }
-
-            messages.Add(Context.Message);
-            await Task.WhenAll(Task.Delay(1000), (Context.Channel as ITextChannel)?.DeleteMessagesAsync(messages))
-                .ConfigureAwait(false);
-            var embed = new EmbedBuilder().Reply($"{messages.Count} messages deleted!", Color.Green.RawValue);
-            await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("mute", RunMode = RunMode.Async)]
@@ -105,7 +106,7 @@ namespace Jibril.Modules.Administration
         public async Task MuteAsync(SocketGuildUser user, uint timer = 1440, string reason = null)
         {
             await Context.Message.DeleteAsync();
-            var mute = _muteService.TimedMute(user, (SocketGuildUser) Context.User, TimeSpan.FromMinutes(timer));
+            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
             var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute);
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
@@ -128,7 +129,7 @@ namespace Jibril.Modules.Administration
         [Command("warn", RunMode = RunMode.Async)]
         [Alias("warning")]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
-        public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = "No Reason Provided")
+        public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = "I made this :)")
         {
             await Context.Message.DeleteAsync();
             var msgs = (await Context.Channel.GetMessagesAsync().FlattenAsync()).Where(m => m.Author.Id == user.Id)
@@ -182,12 +183,12 @@ namespace Jibril.Modules.Administration
                 updEmbed.AddField(x =>
                 {
                     x.Name = "Moderator";
-                    x.Value = $"{Context.User.Username}";
+                    x.Value = $"{(Context.User as SocketGuildUser).GetName()}";
                     x.IsInline = true;
                 });
                 try
                 {
-                    var length = embed.Fields.First(x => x.Name == "Length");
+                    var length = embed.Fields.First(x => x.Name == "Duration");
                     updEmbed.AddField(x =>
                     {
                         x.Name = length.Name;
@@ -195,10 +196,7 @@ namespace Jibril.Modules.Administration
                         x.IsInline = length.IsInline;
                     });
                 }
-                catch
-                {
-                    /*ignore*/
-                }
+                catch{/*ignore*/}
 
                 updEmbed.AddField(x =>
                 {

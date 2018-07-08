@@ -16,9 +16,17 @@ namespace Jibril.Modules.Account.Gamble
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task BetAsync(uint bet)
         {
+            if (bet == 0) return;
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User);
+                if (userdata.Credit == 0)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have any credit to gamble with",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
                 await ReplyAsync(null, false, (await GambleBetAsync(Context, db, userdata, bet)).Build());
             }
         }
@@ -31,6 +39,14 @@ namespace Jibril.Modules.Account.Gamble
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User);
+
+                if (userdata.Credit == 0)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have any credit to gamble with",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
                 var bet = userdata.Credit;
                 await ReplyAsync(null, false, (await GambleBetAsync(Context, db, userdata, bet, true)).Build());
             }
@@ -40,10 +56,18 @@ namespace Jibril.Modules.Account.Gamble
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task RollAsync(uint bet)
         {
+            if (bet == 0) return;
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User);
-                await ReplyAsync(null, false, (await GambleRoll(Context, db, userdata, bet)).Build());
+                if (userdata.Credit == 0)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have any credit to gamble with",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
+                await ReplyAsync(null, false, (await GambleRollAsync(Context, db, userdata, bet)).Build());
             }
         }
 
@@ -55,8 +79,15 @@ namespace Jibril.Modules.Account.Gamble
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User);
+                if (userdata.Credit == 0)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have any credit to gamble with",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
                 var bet = userdata.Credit;
-                await ReplyAsync(null, false, (await GambleRoll(Context, db, userdata, bet, true)).Build());
+                await ReplyAsync(null, false, (await GambleRollAsync(Context, db, userdata, bet, true)).Build());
             }
         }
 
@@ -64,7 +95,6 @@ namespace Jibril.Modules.Account.Gamble
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
-
             var userRoll = new Random().Next(1, 6);
             var botRoll = new Random().Next(1, 9);
             if (userRoll == botRoll)
@@ -74,13 +104,13 @@ namespace Jibril.Modules.Account.Gamble
                 return new EmbedBuilder().Reply($"Congratulations {context.User.Mention}!, You made a total of **${bet * 5}** off ${bet}!\n" +
                                                 $"You rolled: {userRoll} - Bot rolled: {botRoll}", Color.Green.RawValue);
             }
-            userdata.Credit = userdata.Credit - bet * 5;
+            userdata.Credit = userdata.Credit - bet;
             await db.SaveChangesAsync();
             return new EmbedBuilder().Reply($"Sorry **{context.User.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
                                             $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red.RawValue);
         }
 
-        private static async Task<EmbedBuilder> GambleRoll(SocketCommandContext context, DbContext db, Services.Entities.Tables.Account userdata, uint bet, bool allin = false)
+        private static async Task<EmbedBuilder> GambleRollAsync(SocketCommandContext context, DbContext db, Services.Entities.Tables.Account userdata, uint bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();

@@ -69,7 +69,6 @@
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Modules\Game\" />
-    <Folder Include="Modules\Help\" />
     <Folder Include="Modules\Report\" />
     <Folder Include="Modules\Suggestion\" />
     <Folder Include="Services\INC\Cache\Avatar\" />

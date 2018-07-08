@@ -3,7 +3,7 @@ using System;
 
 namespace Jibril.Services.Level.Services
 {
-    public abstract class Calculate
+    public class Calculate
     {
         public uint GetNextLevelRequirement(uint currentLevel)
         {

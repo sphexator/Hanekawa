@@ -82,6 +82,7 @@ namespace Jibril
 
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
+            services.AddSingleton<Calculate>();
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<ReactionService>();
