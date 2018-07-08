@@ -170,7 +170,8 @@ namespace Jibril.Modules.Administration
                 {
                     Author = author,
                     Footer = footer,
-                    Color = embed.Color
+                    Color = embed.Color,
+                    Timestamp = embed.Timestamp
                 };
                 var userField = embed.Fields.FirstOrDefault(x => x.Name == "User");
                 updEmbed.AddField(x =>

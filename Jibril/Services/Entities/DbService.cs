@@ -66,7 +66,7 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<MuteTimer>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.HasKey(e => e.UserId);
+                x.HasKey(e => e.UserId);    
             });
             modelBuilder.Entity<Report>(x =>
             {
