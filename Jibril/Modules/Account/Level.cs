@@ -27,54 +27,47 @@ namespace Jibril.Modules.Account
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task RankAsync(SocketGuildUser user = null)
         {
-            try
+            if (user == null) user = Context.User as SocketGuildUser;
+            using (var db = new DbService())
             {
-                if (user == null) user = Context.User as SocketGuildUser;
-                using (var db = new DbService())
+                var userdata = await db.GetOrCreateUserData(user);
+                var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp);
+                var total = db.Accounts.CountAsync();
+                await Task.WhenAll(rank, total);
+                var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
+                var author = new EmbedAuthorBuilder
                 {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp);
-                    var total = db.Accounts.CountAsync();
-                    await Task.WhenAll(rank, total);
-                    var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
-                    var author = new EmbedAuthorBuilder
-                    {
-                        Name = user.GetName()
-                    };
-                    var embed = new EmbedBuilder
-                    {
-                        Color = Color.DarkPurple,
-                        Author = author,
-                        ThumbnailUrl = user.GetAvatar()
-                    };
-                    var level = new EmbedFieldBuilder
-                    {
-                        Name = "Level",
-                        IsInline = true,
-                        Value = $"{userdata.Level}"
-                    };
-                    var exp = new EmbedFieldBuilder
-                    {
-                        Name = "Exp",
-                        IsInline = true,
-                        Value = $"{userdata.Exp}/{nxtLevel}"
-                    };
-                    var ranking = new EmbedFieldBuilder
-                    {
-                        Name = "Rank",
-                        IsInline = true,
-                        Value = $"{rank.Result}/{total.Result}"
-                    };
+                    Name = user.GetName()
+                };
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.DarkPurple,
+                    Author = author,
+                    ThumbnailUrl = user.GetAvatar()
+                };
+                var level = new EmbedFieldBuilder
+                {
+                    Name = "Level",
+                    IsInline = true,
+                    Value = $"{userdata.Level}"
+                };
+                var exp = new EmbedFieldBuilder
+                {
+                    Name = "Exp",
+                    IsInline = true,
+                    Value = $"{userdata.Exp}/{nxtLevel}"
+                };
+                var ranking = new EmbedFieldBuilder
+                {
+                    Name = "Rank",
+                    IsInline = true,
+                    Value = $"{rank.Result}/{total.Result}"
+                };
 
-                    embed.AddField(level);
-                    embed.AddField(exp);
-                    embed.AddField(ranking);
-                    await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                embed.AddField(level);
+                embed.AddField(exp);
+                embed.AddField(ranking);
+                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
 
@@ -82,33 +75,27 @@ namespace Jibril.Modules.Account
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LeaderboardAsync()
         {
-            try
+            using (var db = new DbService())
             {
-                using (var db = new DbService())
+                var embed = new EmbedBuilder
                 {
-                    var embed = new EmbedBuilder
+                    Color = Color.DarkPurple,
+                    Title = "Leaderboard"
+                };
+                var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+                var rank = 1;
+                foreach (var x in users)
+                {
+                    var field = new EmbedFieldBuilder
                     {
-                        Color = Color.DarkPurple,
-                        Title = "Leaderboard"
+                        IsInline = false,
+                        Name = $"Rank: {rank}",
+                        Value = $"<@{x.UserId}> - Level:{x.Level} - Total Exp:{x.TotalExp}"
                     };
-                    var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
-                    var rank = 1;
-                    foreach (var x in users)
-                    {
-                        var field = new EmbedFieldBuilder
-                        {
-                            IsInline = false,
-                            Name = $"Rank: {rank}",
-                            Value = $"<@{x.UserId} - Level:{x.Level} - Total Exp:{x.TotalExp}"
-                        };
-                        embed.AddField(field);
-                        rank++;
-                    }
+                    embed.AddField(field);
+                    rank++;
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 
@@ -130,7 +117,6 @@ namespace Jibril.Modules.Account
                 userdata.Rep = userdata.Rep + 1;
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());
-
             }
         }
     }

@@ -122,11 +122,12 @@ namespace Jibril.Modules.Account
                     {
                         IsInline = false,
                         Name = $"Rank: {rank}",
-                        Value = $"<@{x.UserId} - Credit:{x.Credit}"
+                        Value = $"<@{x.UserId}> - Credit:{x.Credit}"
                     };
                     embed.AddField(field);
                     rank++;
                 }
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 

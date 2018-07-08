@@ -96,14 +96,23 @@ namespace Jibril.Services.Administration
             using (var db = new DbService())
             {
                 var unMuteAt = DateTime.UtcNow + after;
-                var data = new MuteTimer
+                var userCheck = await db.MuteTimers.FindAsync(user.Id);
+                if (userCheck == null)
                 {
-                    GuildId = user.GuildId,
-                    UserId = user.Id,
-                    Time = unMuteAt
-                };
-                await db.MuteTimers.AddAsync(data);
-                await db.SaveChangesAsync();
+                    var data = new MuteTimer
+                    {
+                        GuildId = user.GuildId,
+                        UserId = user.Id,
+                        Time = unMuteAt
+                    };
+                    await db.MuteTimers.AddAsync(data);
+                    await db.SaveChangesAsync();
+                }
+                else
+                {
+                    userCheck.Time = unMuteAt;
+                    await db.SaveChangesAsync();
+                }
             }
             StartUnmuteTimer(user.GuildId, user.Id, after);
             UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
