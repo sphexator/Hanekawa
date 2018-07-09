@@ -4,6 +4,7 @@
     {
         public ulong GuildId { get; set; }
         public ulong? WelcomeChannel { get; set; }
+        public ulong? SuggestionChannel { get; set; }
         public uint WelcomeLimit { get; set; }
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }

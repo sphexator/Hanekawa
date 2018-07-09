@@ -50,7 +50,11 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => e.Level); });
             modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
-            modelBuilder.Entity<Suggestion>(x => { x.HasKey(e => new {e.UserId, e.MessageId}); });
+            modelBuilder.Entity<Suggestion>(x =>
+            {
+                x.HasKey(e => new {e.Id});
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<Warn>(x =>
