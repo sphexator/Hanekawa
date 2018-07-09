@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Jibril.Services.Administration;
 using Jibril.Services.Automate;
 using Jibril.Services.Entities;
+using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Level.Services;
 
 namespace Jibril
@@ -92,7 +93,9 @@ namespace Jibril
             services.AddSingleton<MuteService>();
             services.AddSingleton<WarnService>();
             services.AddSingleton<NudeScoreService>();
-            services.AddSingleton(new HttpClient());
+            services.AddSingleton<BaseStats>();
+            services.AddSingleton<ClassStats>();
+            services.AddSingleton<EnemyStat>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);

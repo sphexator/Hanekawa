@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Jibril.Services.Games.ShipGame
+namespace Jibril.Services.Games.ShipGame.Data
 {
     public class BaseStats
     {

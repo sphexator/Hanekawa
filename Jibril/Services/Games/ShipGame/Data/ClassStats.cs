@@ -1,6 +1,6 @@
 ﻿using Jibril.Data.Variables;
 
-namespace Jibril.Services.Games.ShipGame
+namespace Jibril.Services.Games.ShipGame.Data
 {
     public class ClassStats
     {
