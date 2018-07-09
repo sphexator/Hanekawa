@@ -91,6 +91,19 @@ namespace Jibril.Extensions
             return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
         }
 
+        public static async Task<Report> CreateReport(this DbService context, IUser user, DateTime time)
+        {
+            var data = new Report
+            {
+                UserId = user.Id,
+                Status = true,
+                Date = time
+            };
+            await context.Reports.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.Reports.FirstOrDefaultAsync(x => x.Date == time);
+        }
+
         public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuild guild)
         {
             var response = await context.GuildConfigs.FindAsync(guild.Id);

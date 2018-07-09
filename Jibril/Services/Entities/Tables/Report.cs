@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jibril.Services.Entities.Tables
 {
@@ -8,7 +6,7 @@ namespace Jibril.Services.Entities.Tables
     {
         public uint Id { get; set; }
         public ulong UserId { get; set; }
-        public ulong MessageId { get; set; }
+        public ulong? MessageId { get; set; }
         public bool Status { get; set; }
         public string Message { get; set; }
         public string Attachment { get; set; }

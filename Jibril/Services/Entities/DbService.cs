@@ -69,7 +69,7 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<Report>(x =>
             {
-                x.HasKey(e => new { e.Id, e.MessageId, e.UserId });
+                x.HasKey(e => new { e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<Shop>(x =>

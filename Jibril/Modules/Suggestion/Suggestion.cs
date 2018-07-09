@@ -43,7 +43,7 @@ namespace Jibril.Modules.Suggestion
                 caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply("Suggestion sent!", Color.Red.RawValue).Build());
+                    new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
             }
         }
 
