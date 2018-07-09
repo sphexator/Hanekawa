@@ -199,7 +199,14 @@ namespace Jibril.Services.Administration
             IRole muteRole;
             if (!check)
             {
-                muteRole = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None).ConfigureAwait(false);
+                var defaultCheck = guild.Roles.FirstOrDefault(x => x.Name == DefaultMuteRole);
+                if (defaultCheck == null)
+                {
+                    var role = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None)
+                        .ConfigureAwait(false);
+                    muteRole = role;
+                }
+                else muteRole = defaultCheck;
             }
             else muteRole = guild.Roles.FirstOrDefault(x => x.Id == roleId);
 
@@ -218,7 +225,6 @@ namespace Jibril.Services.Administration
                     // ignored
                 }
             }
-
             return muteRole;
         }
     }
