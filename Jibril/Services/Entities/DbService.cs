@@ -52,7 +52,7 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
             modelBuilder.Entity<Suggestion>(x =>
             {
-                x.HasKey(e => new {e.Id});
+                x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
@@ -69,7 +69,7 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<Report>(x =>
             {
-                x.HasKey(e => new { e.Id});
+                x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<Shop>(x =>
