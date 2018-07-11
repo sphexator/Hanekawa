@@ -46,10 +46,10 @@ namespace Jibril.Services.Administration
                 var content = $"**>User Information**\n" +
                               $"Status: {user.Status}\n" +
                               $"Game: {user.Activity}\n" +
-                              $"Created: {user.CreatedAt.Humanize()}({user.CreatedAt})\n" +
+                              $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
                               $"\n" +
                               $"**>Member Information**\n" +
-                              $"Joined: {user.JoinedAt.Humanize()}({user.JoinedAt})\n" +
+                              $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
                               $"Roles: {roles}\n" +
                               $"\n" +
                               $"**>Activity**\n" +
