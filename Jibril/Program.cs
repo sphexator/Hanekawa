@@ -3,10 +3,15 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Services;
+using Jibril.Services.Administration;
+using Jibril.Services.Automate;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
+using Jibril.Services.Entities;
+using Jibril.Services.Games.ShipGame.Data;
 using Jibril.Services.INC;
 using Jibril.Services.Level;
+using Jibril.Services.Level.Services;
 using Jibril.Services.Log;
 using Jibril.Services.Reaction;
 using Jibril.Services.Welcome;
@@ -15,13 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz.Spi;
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Jibril.Services.Administration;
-using Jibril.Services.Automate;
-using Jibril.Services.Entities;
+using Jibril.Modules.Game;
 using Jibril.Services.Games.ShipGame;
-using Jibril.Services.Level.Services;
 
 namespace Jibril
 {
@@ -54,6 +55,7 @@ namespace Jibril
             services.GetRequiredService<WarnService>();
             services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<HungerGames>();
+            services.GetRequiredService<ShipGameService>();
 
             /*
             var scheduler = services.GetService<IScheduler>();
@@ -96,6 +98,7 @@ namespace Jibril
             services.AddSingleton<BaseStats>();
             services.AddSingleton<ClassStats>();
             services.AddSingleton<EnemyStat>();
+            services.AddSingleton<ShipGameService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);

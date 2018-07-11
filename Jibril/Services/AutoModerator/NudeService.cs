@@ -24,16 +24,14 @@ namespace Jibril.Services.AutoModerator
     {
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
-        private readonly HttpClient _httpClient;
         private readonly MuteService _muteService;
         private readonly string _perspectiveToken;
         private readonly WarnService _warnService;
         private readonly ModerationService _moderationService;
 
-        public NudeScoreService(DiscordSocketClient client, HttpClient httpClient, IConfiguration config, ModerationService moderationService, WarnService warnService, MuteService muteService)
+        public NudeScoreService(DiscordSocketClient client, IConfiguration config, ModerationService moderationService, WarnService warnService, MuteService muteService)
         {
             _client = client;
-            _httpClient = httpClient;
             _config = config;
             _moderationService = moderationService;
             _warnService = warnService;

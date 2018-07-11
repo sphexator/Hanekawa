@@ -128,17 +128,17 @@ namespace Jibril.Services.Administration
                 foreach (var x in warns)
                 {
                     if (!x.Valid) continue;
+                    var content = $"{x.Type} - <@{x.Moderator}>\n" +
+                                  $"{x.Reason ?? "I made this :)"}\n" +
+                                  $"{x.Time.Humanize()}\n";
                     var field = new EmbedFieldBuilder
                     {
                         Name = $"Warn ID: {x.Id}",
-                        IsInline = false,
-                        Value = $"<@{x.Moderator}>\n" +
-                                $"{x.Reason}\n" +
-                                $"{x.Reason}"
+                        IsInline = true,
+                        Value = content.Truncate(999)
                     };
                     result.Add(field);
                 }
-
                 return result;
             }
         }
@@ -150,13 +150,14 @@ namespace Jibril.Services.Administration
                 var result = new List<EmbedFieldBuilder>();
                 foreach (var x in await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id).ToListAsync())
                 {
+                    var content = $"{x.Type} - <@{x.Moderator}>\n" +
+                                  $"{x.Reason ?? "I made this :)"}\n" +
+                                  $"{x.Time.Humanize()}\n";
                     var field = new EmbedFieldBuilder
                     {
                         Name = $"Warn ID: {x.Id}",
                         IsInline = false,
-                        Value = $"<@{x.Moderator}>\n" +
-                                $"{x.Reason}\n" +
-                                $"{x.Reason}"
+                        Value = content.Truncate(999)
                     };
                     result.Add(field);
                 }

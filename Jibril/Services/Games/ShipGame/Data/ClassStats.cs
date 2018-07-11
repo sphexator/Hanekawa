@@ -78,12 +78,12 @@ namespace Jibril.Services.Games.ShipGame.Data
             {
                 case ClassNames.Lc:
                 {
-                    const int avoidance = 25;
+                    const int avoidance = 0;
                     return avoidance;
                 }
                 case ClassNames.Hc:
                 {
-                    const int avoidance = 20;
+                    const int avoidance = 0;
                     return avoidance;
                 }
                 case ClassNames.Dd:
@@ -98,12 +98,12 @@ namespace Jibril.Services.Games.ShipGame.Data
                 }
                 case ClassNames.Bb:
                 {
-                    const int avoidance = 15;
+                    const int avoidance = 0;
                     return avoidance;
                 }
                 default:
                 {
-                    const int avoidance = 10;
+                    const int avoidance = 0;
                     return avoidance;
                 }
             }

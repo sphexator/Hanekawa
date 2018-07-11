@@ -31,8 +31,6 @@ namespace Jibril.Services.Administration
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; set; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
-        private ConcurrentDictionary<ulong, ulong> MuteRole { get; set; }
-            = new ConcurrentDictionary<ulong, ulong>();
 
         private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
 
@@ -51,19 +49,13 @@ namespace Jibril.Services.Administration
                     else after = x.Time - DateTime.UtcNow;
                     StartUnmuteTimer(x.GuildId, x.UserId, after);
                 }
-
-                foreach (var x in db.GuildConfigs)
-                {
-                    if (!x.MuteRole.HasValue) continue;
-                    MuteRole.TryAdd(x.GuildId, x.MuteRole.Value);
-                }
             }
         }
 
         // EVENTS
         private Task AutoModTimedMute(IGuildUser user, TimeSpan after)
         {
-            var _ = Task.Run(async () =>{await TimedMute(user, after);});
+            var _ = Task.Run(async () => { await TimedMute(user, after); });
             return Task.CompletedTask;
         }
         private Task AutoModPermMute(IGuildUser arg1)
@@ -88,7 +80,7 @@ namespace Jibril.Services.Administration
             StopUnmuteTimer(user.GuildId, user.Id);
             UserMuted(user as SocketGuildUser, staff as SocketGuildUser);
         }
-
+        
         // TIMED MUTE AREA
         public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
@@ -193,22 +185,17 @@ namespace Jibril.Services.Administration
         }
 
         // GET ROLE AREA
-        private async Task<IRole> GetMuteRole(IGuild guild)
+        private static async Task<IRole> GetMuteRole(IGuild guild)
         {
-            var check = MuteRole.TryGetValue(guild.Id, out var roleId);
             IRole muteRole;
-            if (!check)
+            var defaultCheck = guild.Roles.FirstOrDefault(x => x.Name == DefaultMuteRole);
+            if (defaultCheck == null)
             {
-                var defaultCheck = guild.Roles.FirstOrDefault(x => x.Name == DefaultMuteRole);
-                if (defaultCheck == null)
-                {
-                    var role = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None)
-                        .ConfigureAwait(false);
-                    muteRole = role;
-                }
-                else muteRole = defaultCheck;
+                var role = await guild.CreateRoleAsync(DefaultMuteRole, GuildPermissions.None)
+                    .ConfigureAwait(false);
+                muteRole = role;
             }
-            else muteRole = guild.Roles.FirstOrDefault(x => x.Id == roleId);
+            else muteRole = defaultCheck;
 
             foreach (var toOverwrite in (await guild.GetTextChannelsAsync()))
             {
