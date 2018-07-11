@@ -72,6 +72,7 @@ namespace Jibril.Services.Administration
             if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
             StopUnmuteTimer(user.GuildId, user.Id);
         }
+
         public async Task Mute(IGuildUser user, IGuildUser staff, MuteType type = MuteType.All)
         {
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
