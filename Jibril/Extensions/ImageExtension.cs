@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using Discord.WebSocket;
 using Jibril.Services.Entities.Tables;
 using Jibril.Services.Level.Services;
 using SixLabors.Fonts;
@@ -7,7 +8,6 @@ using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
-using System;
 
 namespace Jibril.Extensions
 {
@@ -63,7 +63,8 @@ namespace Jibril.Extensions
             return new PathCollection(cornerToptLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
         }
 
-        public static IImageProcessingContext<Rgba32> ApplyProfileText(this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user)
+        public static IImageProcessingContext<Rgba32> ApplyProfileText(
+            this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user)
         {
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
             var nameFont = SystemFonts.CreateFont("Good Times Rg", 12, FontStyle.Regular);
@@ -116,7 +117,7 @@ namespace Jibril.Extensions
             processingContext.Draw(Rgba32.DarkGray, 1, expPath.Build()); //Exp area
             processingContext.Draw(Rgba32.DarkGray, 1, totalexpPath.Build()); //Total exp area
             processingContext.Draw(Rgba32.DarkGray, 1, creditPath.Build()); // Credit area
-                                                                // Game Info
+            // Game Info
             processingContext.Draw(Rgba32.DarkGray, 1, healthPath.Build()); // Health area
             processingContext.Draw(Rgba32.DarkGray, 1, damagePath.Build()); // Damage area
             processingContext.Draw(Rgba32.DarkGray, 1, npckillPath.Build()); // NPC kills area
@@ -133,65 +134,70 @@ namespace Jibril.Extensions
                     ApplyKerning = true,
                     WrapTextWidth = usernamePath.Build().Length
                 });
-            processingContext.DrawText(levelstr, statFont, Rgba32.Black, new Point(114, 120), new TextGraphicsOptions(true)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Antialias = true,
-                ApplyKerning = true,
-                WrapTextWidth = levelPath.Build().Length
-            });
+            processingContext.DrawText(levelstr, statFont, Rgba32.Black, new Point(114, 120),
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Antialias = true,
+                    ApplyKerning = true,
+                    WrapTextWidth = levelPath.Build().Length
+                });
             processingContext.DrawText(userData.Level.ToString(), statFont, Rgba32.Black, new Point(284, 120),
-                    new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Antialias = true,
-                        ApplyKerning = true
-                    });
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Antialias = true,
+                    ApplyKerning = true
+                });
             processingContext.DrawText($"{userData.Exp}/{xpToLevelUp}", statFont, Rgba32.Black, new Point(284, 132),
-                    new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Antialias = true,
-                        ApplyKerning = true
-                    });
-            processingContext.DrawText(expstr, statFont, Rgba32.Black, new Point(114, 132), new TextGraphicsOptions(true)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Antialias = true,
-                ApplyKerning = true,
-                WrapTextWidth = expPath.Build().Length
-            });
-            processingContext.DrawText(totalexpstr, statFont, Rgba32.Black, new Point(114, 144), new TextGraphicsOptions(true)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Antialias = true,
-                ApplyKerning = true,
-                WrapTextWidth = totalexpPath.Build().Length
-            });
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Antialias = true,
+                    ApplyKerning = true
+                });
+            processingContext.DrawText(expstr, statFont, Rgba32.Black, new Point(114, 132),
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Antialias = true,
+                    ApplyKerning = true,
+                    WrapTextWidth = expPath.Build().Length
+                });
+            processingContext.DrawText(totalexpstr, statFont, Rgba32.Black, new Point(114, 144),
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Antialias = true,
+                    ApplyKerning = true,
+                    WrapTextWidth = totalexpPath.Build().Length
+                });
             processingContext.DrawText($"{userData.TotalExp}", statFont, Rgba32.Black, new Point(284, 144),
-                    new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Antialias = true,
-                        ApplyKerning = true
-                    });
-            processingContext.DrawText(creditstr, statFont, Rgba32.Black, new Point(114, 156), new TextGraphicsOptions(true)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Antialias = true,
-                ApplyKerning = true,
-                WrapTextWidth = creditPath.Build().Length
-            });
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Antialias = true,
+                    ApplyKerning = true
+                });
+            processingContext.DrawText(creditstr, statFont, Rgba32.Black, new Point(114, 156),
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Antialias = true,
+                    ApplyKerning = true,
+                    WrapTextWidth = creditPath.Build().Length
+                });
             processingContext.DrawText($"{userData.Credit}", statFont, Rgba32.Black, new Point(284, 156),
-                    new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Antialias = true,
-                        ApplyKerning = true
-                    });
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Antialias = true,
+                    ApplyKerning = true
+                });
             try
             {
-                processingContext.DrawText(healthstr, classFont, Rgba32.Black, new Point(114, 180), new TextGraphicsOptions(true)
+                processingContext.DrawText(healthstr, classFont, Rgba32.Black, new Point(114, 180),
+                    new TextGraphicsOptions(true)
                     {
                         HorizontalAlignment = HorizontalAlignment.Left,
                         Antialias = true,
@@ -222,13 +228,13 @@ namespace Jibril.Extensions
                         ApplyKerning = true
                     });
                 processingContext.DrawText(npckillstr, classFont, Rgba32.Black, new Point(114, 200),
-                        new TextGraphicsOptions(true)
-                        {
-                            HorizontalAlignment = HorizontalAlignment.Left,
-                            Antialias = true,
-                            ApplyKerning = true,
-                            WrapTextWidth = npckillPath.Build().Length
-                        });
+                    new TextGraphicsOptions(true)
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Antialias = true,
+                        ApplyKerning = true,
+                        WrapTextWidth = npckillPath.Build().Length
+                    });
                 processingContext.DrawText($"{userData.GameKillAmount}", classFont, Rgba32.Black, new Point(284, 200),
                     new TextGraphicsOptions(true)
                     {
@@ -274,7 +280,8 @@ namespace Jibril.Extensions
                         ApplyKerning = true,
                         WrapTextWidth = missionPath.Build().Length
                     });
-                processingContext.DrawText("0", classFont, Rgba32.Black, new Point(284, 230), new TextGraphicsOptions(true)
+                processingContext.DrawText("0", classFont, Rgba32.Black, new Point(284, 230),
+                    new TextGraphicsOptions(true)
                     {
                         HorizontalAlignment = HorizontalAlignment.Right,
                         Antialias = true,
@@ -285,14 +292,15 @@ namespace Jibril.Extensions
             {
                 Console.WriteLine(e.Message + "\n" + e.StackTrace);
             }
+
             processingContext.DrawText($"{userData.Class}", gdclassFont, Rgba32.Black, new PointF(50, 280),
-                    new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Antialias = true,
-                        ApplyKerning = true
-                    });
+                new TextGraphicsOptions(true)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Antialias = true,
+                    ApplyKerning = true
+                });
             return processingContext;
         }
 
@@ -303,21 +311,5 @@ namespace Jibril.Extensions
             var scaledFont = new Font(font, scalingFactor * font.Size);
             return scaledFont;
         }
-
-        /*
-         // TODO: Add club to profile
-        private static string CheckFleetMembership(IUser user)
-        {
-            var ClubName = ClubDb.UserClubData(user).FirstOrDefault();
-            return ClubName == null ? "N/A" : ClubName.ClubName;
-        }
-
-        private static string GetFleetCommander(IUser user, string fleet)
-        {
-            if (fleet.Equals("N/A", StringComparison.InvariantCultureIgnoreCase)) return "N/A";
-            var commander = ClubDb.GetClubs().FirstOrDefault(x => x.Name == fleet);
-            return commander?.Name ?? "N/A";
-        }
-        */
     }
 }

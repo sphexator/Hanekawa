@@ -116,7 +116,7 @@ namespace Jibril.Services.INC.Generator
             return pathBuilder.Build();
         }
 
-        private static int GetImageHeight(IReadOnlyCollection<Profile> profile)
+        private static int GetImageHeight(IReadOnlyCollection<Data.Profile> profile)
         {
             if (profile.Count <= 5) return 106;
             if (profile.Count <= 10) return 207;
