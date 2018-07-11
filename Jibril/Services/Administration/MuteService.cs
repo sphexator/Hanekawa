@@ -14,13 +14,6 @@ namespace Jibril.Services.Administration
 {
     public class MuteService
     {
-        public enum MuteType
-        {
-            Voice,
-            Chat,
-            All
-        }
-
         private const string DefaultMuteRole = "Mute";
         private readonly DiscordSocketClient _client;
         private readonly ModerationService _moderationService;
@@ -65,7 +58,7 @@ namespace Jibril.Services.Administration
         }
 
         // MUTE AREA
-        public async Task Mute(IGuildUser user, MuteType type = MuteType.All)
+        public async Task Mute(IGuildUser user)
         {
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
             var muteRole = await GetMuteRole(user.Guild);
@@ -73,7 +66,7 @@ namespace Jibril.Services.Administration
             StopUnmuteTimer(user.GuildId, user.Id);
         }
 
-        public async Task Mute(IGuildUser user, IGuildUser staff, MuteType type = MuteType.All)
+        public async Task Mute(IGuildUser user, IGuildUser staff)
         {
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
             var muteRole = await GetMuteRole(user.Guild);
@@ -174,7 +167,7 @@ namespace Jibril.Services.Administration
         }
 
         // Unmute AREA
-        public async Task UnmuteUser(IGuildUser user, MuteType type = MuteType.All)
+        public async Task UnmuteUser(IGuildUser user)
         {
             StopUnmuteTimer(user.GuildId, user.Id);
             try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}

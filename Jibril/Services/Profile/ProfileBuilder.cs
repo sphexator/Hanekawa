@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Jibril.Extensions;
+using Jibril.Services.Entities;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.Primitives;
@@ -15,14 +16,41 @@ namespace Jibril.Services.Profile
 {
     public class ProfileBuilder
     {
-        public Stream GetProfile(SocketGuildUser user, string url = null)
+        public async Task<Stream> GetProfileAsync(SocketGuildUser user)
         {
             var stream = new MemoryStream();
+            using (var db = new DbService())
+            {
+                var url = (await db.GetOrCreateUserData(user)).ProfilePic;
 
+
+            }
+            return stream;
+        }
+        public async Task<Stream> GetProfileAsync(SocketGuildUser user, string url)
+        {
+            var stream = new MemoryStream();
+            using (var db = new DbService())
+            {
+                var userdata = await db.GetOrCreateUserData(user);
+                var bg = await GetCustomBackgroundAsync(url);
+                using (var img = Image.Load(bg))
+                {
+                    var avatar = Image.Load(await GetAvatarAsync(user));
+                    var shipClass = Image.Load($"Data/Profile/Class/{userdata.Class}.png");
+                    var template = Image.Load("Data/Profile/Template.png");
+                    img.Mutate(x => x
+                        .ApplyProfileText(userdata, user)
+                        .DrawImage(avatar, new Size(86, 86), new Point(7, 87), GraphicsOptions.Default)
+                        .DrawImage(template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
+                        .DrawImage(shipClass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default));
+                    img.Save(stream, new PngEncoder());
+                }
+            }
             return stream;
         }
 
-        private async Task<Stream> GetCustomBackground(string url)
+        private async Task<Stream> GetCustomBackgroundAsync(string url)
         {
             try
             {
@@ -39,10 +67,10 @@ namespace Jibril.Services.Profile
 
                 return stream;
             }
-            catch { return await GetBackground(); }
+            catch { return await GetBackgroundAsync(); }
         }
 
-        private async Task<Stream> GetBackground()
+        private async Task<Stream> GetBackgroundAsync()
         {
             var stream = new MemoryStream();
             var rand = new Random();
@@ -57,7 +85,7 @@ namespace Jibril.Services.Profile
             return stream;
         }
 
-        private async Task<Stream> GetAvatar(SocketGuildUser user)
+        private async Task<Stream> GetAvatarAsync(SocketGuildUser user)
         {
             var stream = new MemoryStream();
             using (var client = new HttpClient())

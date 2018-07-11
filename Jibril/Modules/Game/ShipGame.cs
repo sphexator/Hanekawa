@@ -96,12 +96,10 @@ namespace Jibril.Modules.Game
 
         [Command("attack", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        //[GlobalRatelimit(1, 5, Measure.Seconds)]
+        [GlobalRatelimit(1, 5, Measure.Seconds)]
         public async Task AttackGameAsync()
         {
             var check = _gameService.isInBattle(Context);
-            //var battles = ActiveBattles.GetOrAdd(Context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            //var check = battles.TryGetValue(Context.User.Id, out var game);
             if (!check) return;
             using (var db = new DbService())
             {
@@ -220,19 +218,21 @@ namespace Jibril.Modules.Game
 
         [Command("duel", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        //[GlobalRatelimit(1, 5, Measure.Seconds)]
+        [GlobalRatelimit(1, 5, Measure.Seconds)]
         public async Task AttackGameAsync(IGuildUser user, uint bet = 0)
         {
             using (var db = new DbService())
             {
                 var playerOne = await db.GetOrCreateUserData(Context.User);
                 var playerTwo = await db.GetOrCreateUserData(user);
-                var msgLog = new LinkedList<string>();
-                msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** VS **{user.GetName()}**");
                 var playerOneHealth = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
                 var playerTwoHealth = _baseStats.HealthPoint((int)playerTwo.Level, playerTwo.Class);
                 var playerOnetotalHp = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
                 var playerTwototalHp = _baseStats.HealthPoint((int)playerTwo.Level, playerTwo.Class);
+
+                var msgLog = new LinkedList<string>();
+                msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** VS **{user.GetName()}**");
+
                 var embed = new EmbedBuilder
                 {
                     Description = UpdateCombatLog(msgLog),
@@ -286,10 +286,13 @@ namespace Jibril.Modules.Game
                         userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
                         enemyField.Value = $"{playerTwoHealth}/{playerTwototalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
+                        playerOne.Credit = playerOne.Credit + bet;
+                        playerTwo.Credit = playerTwo.Credit - bet;
+                        await db.SaveChangesAsync();
                         alive = false;
                         continue;
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(1500);
 
                     var enmyDmg = _baseStats.CriticalStrike(playerTwo.Class, (int)playerTwo.Level);
                     playerOneHealth = playerOneHealth - enmyDmg;
@@ -322,10 +325,13 @@ namespace Jibril.Modules.Game
                         userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
                         enemyField.Value = $"{playerTwoHealth}/{playerTwototalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
+                        playerOne.Credit = playerOne.Credit - bet;
+                        playerTwo.Credit = playerTwo.Credit + bet;
+                        await db.SaveChangesAsync();
                         alive = false;
                         continue;
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(1500);
                 }
             }
         }

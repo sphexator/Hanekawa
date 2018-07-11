@@ -1,5 +1,4 @@
-﻿using System;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Jibril.Services.Entities.Tables;
 using Jibril.Services.Level.Services;
 using SixLabors.Fonts;
@@ -8,6 +7,7 @@ using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using System;
 
 namespace Jibril.Extensions
 {
@@ -63,8 +63,7 @@ namespace Jibril.Extensions
             return new PathCollection(cornerToptLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
         }
 
-        public static IImageProcessingContext<Rgba32> ApplyProfileText(
-            this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user)
+        public static IImageProcessingContext<Rgba32> ApplyProfileText(this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user)
         {
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
             var nameFont = SystemFonts.CreateFont("Good Times Rg", 12, FontStyle.Regular);

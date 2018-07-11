@@ -23,6 +23,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Jibril.Modules.Game;
 using Jibril.Services.Games.ShipGame;
+using Jibril.Services.Profile;
 
 namespace Jibril
 {
@@ -99,6 +100,7 @@ namespace Jibril
             services.AddSingleton<ClassStats>();
             services.AddSingleton<EnemyStat>();
             services.AddSingleton<ShipGameService>();
+            services.AddSingleton<ProfileBuilder>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton(_config);

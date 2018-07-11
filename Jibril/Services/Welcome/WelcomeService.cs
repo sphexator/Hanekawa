@@ -133,8 +133,8 @@ namespace Jibril.Services.Welcome
                 var response = await client.GetStreamAsync(user.GetAvatar());
                 using (var img = Image.Load(response))
                 {
-                    img.Mutate(x => x.ConvertToAvatar(new Size(60, 60), 32));
-                    img.Save(stream, new PngEncoder());
+                    var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
+                    avi.Save(stream, new PngEncoder());
                 }
             }
 
