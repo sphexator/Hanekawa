@@ -65,8 +65,8 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
     <PackageReference Include="Quartz" Version="3.0.6" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0002" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0002" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0004" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>
@@ -211,7 +211,7 @@
     <None Update="Data\Images\Profile\ShipClass\Ship Girl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Profile\profile.png">
+    <None Update="Data\Profile\Template.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Welcome\Cache\Avatar\placeboAvatar.png">

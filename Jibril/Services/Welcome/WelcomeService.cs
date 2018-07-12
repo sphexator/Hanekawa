@@ -11,10 +11,13 @@ using Jibril.Extensions;
 using Jibril.Services.Entities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
+using SixLabors.ImageSharp.Processing.Drawing;
 
 namespace Jibril.Services.Welcome
 {
@@ -93,15 +96,8 @@ namespace Jibril.Services.Welcome
                 var text = user.Username.Truncate(15);
 
                 img.Mutate(ctx => ctx
-                    .DrawImage(Image.Load(avatar, new PngDecoder()), new Size(60, 60), new Point(10, 10),
-                        GraphicsOptions.Default)
-                    .DrawText(text, font, Rgba32.White, new PointF(245, 51), new TextGraphicsOptions(true)
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Antialias = true,
-                        ApplyKerning = true
-                    }));
+                    .DrawImage(GraphicsOptions.Default, Image.Load(avatar, new PngDecoder()), new Point(10, 10))
+                    .DrawText(text, font, Rgba32.White, new PointF(245, 51)));
                 img.Save(stream, new PngEncoder());
             }
             return stream;

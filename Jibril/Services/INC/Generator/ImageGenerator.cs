@@ -1,7 +1,6 @@
 ﻿using Jibril.Services.INC.Data;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Brushes;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
@@ -9,6 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Jibril.Services.Entities.Tables;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing.Filters;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Jibril.Services.INC.Generator
 {
@@ -36,12 +42,11 @@ namespace Jibril.Services.INC.Generator
                         avi.Mutate(y => y
                             .BlackWhite()
                             .Resize(80, 80)
-                            .DrawImage(death, new Size(80, 80), new Point(0, 0), GraphicsOptions.Default));
+                            .DrawImage(GraphicsOptions.Default, death, new Point(0, 0)));
                     }
 
                     img.Mutate(a => a
-                        .DrawImage(avi, new Size(80, 80), new Point(20 + 108 * width, 6 + 111 * height),
-                            GraphicsOptions.Default)
+                        .DrawImage(GraphicsOptions.Default, avi, new Point(20 + 108 * width, 6 + 111 * height))
                         .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points));
                     if (x.Status)
                     {

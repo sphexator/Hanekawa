@@ -1,8 +1,12 @@
 ﻿using Discord.WebSocket;
 using Jibril.Extensions;
 using Jibril.Services.Entities;
+using Jibril.Services.Level.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using System;
 using System.IO;
@@ -23,16 +27,21 @@ namespace Jibril.Services.Profile
                 Stream bg;
                 if (userdata.ProfilePic != null) bg = await GetCustomBackgroundAsync(userdata.ProfilePic);
                 else bg = await GetBackgroundAsync();
+                bg.Seek(0, SeekOrigin.Begin);
                 using (var img = Image.Load(bg))
                 {
-                    var avatar = Image.Load(await GetAvatarAsync(user));
+                    var avi = await GetAvatarAsync(user);
+                    avi.Seek(0, SeekOrigin.Begin);
+                    var avatar = Image.Load(avi);
+                    avatar.Mutate(x => x.Resize(86, 86));
                     var shipClass = Image.Load($"Data/Profile/Class/{userdata.Class}.png");
                     var template = Image.Load("Data/Profile/Template.png");
+                    shipClass.Mutate(x => x.Resize(88, 97));
                     img.Mutate(x => x
-                        .ApplyProfileText(userdata, user)
-                        .DrawImage(avatar, new Size(86, 86), new Point(7, 87), GraphicsOptions.Default)
-                        .DrawImage(template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
-                        .DrawImage(shipClass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default));
+                        .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
+                        .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
+                        .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
+                        .ApplyProfileText(userdata, user, new Calculate().GetNextLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }
@@ -51,11 +60,12 @@ namespace Jibril.Services.Profile
                     var avatar = Image.Load(await GetAvatarAsync(user));
                     var shipClass = Image.Load($"Data/Profile/Class/{userdata.Class}.png");
                     var template = Image.Load("Data/Profile/Template.png");
+                    shipClass.Mutate(x => x.Resize(88, 97));
                     img.Mutate(x => x
-                        .ApplyProfileText(userdata, user)
-                        .DrawImage(avatar, new Size(86, 86), new Point(7, 87), GraphicsOptions.Default)
-                        .DrawImage(template, new Size(300, 300), new Point(0, 0), GraphicsOptions.Default)
-                        .DrawImage(shipClass, new Size(88, 97), new Point(6, 178), GraphicsOptions.Default));
+                        .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
+                        .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
+                        .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
+                        .ApplyProfileText(userdata, user, new Calculate().GetNextLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }

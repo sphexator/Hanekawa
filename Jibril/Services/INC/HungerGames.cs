@@ -14,6 +14,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Transforms;
 using EventHandler = Jibril.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 
