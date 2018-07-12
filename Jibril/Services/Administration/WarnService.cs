@@ -30,7 +30,7 @@ namespace Jibril.Services.Administration
         {
             using (var db = new DbService())
             {
-                await db.Warns.Where(x => x.Time.AddDays(7) <= DateTime.UtcNow)
+                await db.Warns.Where(x => x.Time.AddDays(7).Date <= DateTime.UtcNow.Date)
                     .ForEachAsync(x => x.Valid = false);
                 await db.SaveChangesAsync();
             }

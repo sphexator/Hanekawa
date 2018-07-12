@@ -149,10 +149,10 @@ namespace Jibril.Services.Administration
 
         private void StopUnmuteTimer(ulong guildId, ulong userId)
         {
+            RemoveTimerFromDb(guildId, userId);
             if (!UnmuteTimers.TryGetValue(guildId, out var userUnmuteTimers)) return;
             if (!userUnmuteTimers.TryRemove(userId, out var removed)) return;
             removed.Change(Timeout.Infinite, Timeout.Infinite);
-            RemoveTimerFromDb(guildId, userId);
         }
 
         private static void RemoveTimerFromDb(ulong guildId, ulong userId)

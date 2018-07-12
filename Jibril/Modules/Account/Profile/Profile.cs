@@ -27,9 +27,11 @@ namespace Jibril.Modules.Account.Profile
         public async Task ProfileAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
+            await Context.Channel.TriggerTypingAsync();
             var stream = await _profileBuilder.GetProfileAsync(user);
             stream.Seek(0, SeekOrigin.Begin);
-            await Context.Channel.SendFileAsync(stream, "profile");
+            await Context.Channel.SendFileAsync(stream, "profile.png");
+            stream.Dispose();
         }
 
         [Command("preview", RunMode = RunMode.Async)]
@@ -40,7 +42,7 @@ namespace Jibril.Modules.Account.Profile
             {
                 var stream = await _profileBuilder.GetProfileAsync((Context.User as SocketGuildUser), url);
                 stream.Seek(0, SeekOrigin.Begin);
-                await Context.Channel.SendFileAsync(stream, "profile");
+                await Context.Channel.SendFileAsync(stream, "profile.png");
             }
             catch
             {

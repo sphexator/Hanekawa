@@ -55,7 +55,7 @@ namespace Jibril.Modules.Game
                 using (var db = new DbService())
                 {
                     var id = await db.GameEnemies.CountAsync();
-                    var enemy = await db.GameEnemies.FindAsync((uint)id);
+                    var enemy = await db.GameEnemies.FindAsync(new Random().Next(1, id));
                     var userdata = await db.GetOrCreateUserData(Context.User);
 
                     _gameService.AddBattle(Context, enemy); // battles.TryAdd(Context.User.Id, enemy));

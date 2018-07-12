@@ -44,13 +44,13 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00973" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00973" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00973" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00973" />
+    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00975" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00975" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00975" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00975" />
     <PackageReference Include="Discord.Net.Rpc" Version="2.0.0-beta-00860" />
-    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00973" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00973" />
+    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00975" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00975" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.34.0.1239" />
     <PackageReference Include="Humanizer" Version="2.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.1" />
@@ -62,16 +62,19 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.0-rc2-final" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
-    <PackageReference Include="Quartz" Version="3.0.5" />
+    <PackageReference Include="Quartz" Version="3.0.6" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0002" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0002" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Images\Profile\Backgrounds\" />
+    <Folder Include="Data\Images\Profile\ShipClass\" />
+    <Folder Include="Data\Images\Profile\Template\" />
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
@@ -148,64 +151,67 @@
     <None Update="Data\Images\Game\Enemy\TransportShipWaClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\1.jpg">
+    <None Update="Data\Profile\Class\ShipGirl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\10.jpg">
+    <None Update="Data\Profile\Default\1.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\11.jpg">
+    <None Update="Data\Profile\Default\10.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\12.jpg">
+    <None Update="Data\Profile\Default\11.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\13.jpg">
+    <None Update="Data\Profile\Default\12.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\2.jpg">
+    <None Update="Data\Profile\Default\13.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\3.jpg">
+    <None Update="Data\Profile\Default\2.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\4.jpg">
+    <None Update="Data\Profile\Default\3.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\5.jpg">
+    <None Update="Data\Profile\Default\4.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\6.jpg">
+    <None Update="Data\Profile\Default\5.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\7.jpg">
+    <None Update="Data\Profile\Default\6.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\8.jpg">
+    <None Update="Data\Profile\Default\7.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Backgrounds\9.jpg">
+    <None Update="Data\Profile\Default\8.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\ShipClass\Aircraft Carrier.png">
+    <None Update="Data\Profile\Default\9.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\ShipClass\Battleship.png">
+    <None Update="Data\Profile\Class\Aircraft Carrier.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\ShipClass\Destroyer.png">
+    <None Update="Data\Profile\Class\Battleship.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\ShipClass\Heavy Cruiser.png">
+    <None Update="Data\Profile\Class\Destroyer.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\ShipClass\Light Cruiser.png">
+    <None Update="Data\Profile\Class\Heavy Cruiser.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Profile\Class\Light Cruiser.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Profile\ShipClass\Ship Girl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Profile\Template\profile.png">
+    <None Update="Data\Profile\profile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Images\Welcome\Cache\Avatar\placeboAvatar.png">

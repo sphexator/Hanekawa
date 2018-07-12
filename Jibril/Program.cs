@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Jibril.Modules.Game;
 using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Profile;
+using Quartz;
 
 namespace Jibril
 {
@@ -58,14 +59,15 @@ namespace Jibril
             services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
 
-            /*
+            
             var scheduler = services.GetService<IScheduler>();
-
+            /*
             //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
             QuartzServicesUtilities.StartCronJob<MvpService>(scheduler, "0 0 13 ? * MON *");
             QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0 0/6 1/1 * ? *");
-            */
 
+            */
+            QuartzServicesUtilities.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
 

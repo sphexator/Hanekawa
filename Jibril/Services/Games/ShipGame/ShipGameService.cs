@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
+﻿using Discord.Commands;
 using Jibril.Services.Entities.Tables;
+using System.Collections.Concurrent;
 
 namespace Jibril.Services.Games.ShipGame
 {
