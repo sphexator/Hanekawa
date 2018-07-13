@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -54,8 +55,8 @@ namespace Jibril.Modules.Game
             {
                 using (var db = new DbService())
                 {
-                    var id = await db.GameEnemies.CountAsync();
-                    var enemy = await db.GameEnemies.FindAsync(new Random().Next(1, id));
+                    var enemies = await db.GameEnemies.ToListAsync();
+                    var enemy = enemies[new Random().Next(enemies.Count)];
                     var userdata = await db.GetOrCreateUserData(Context.User);
 
                     _gameService.AddBattle(Context, enemy); // battles.TryAdd(Context.User.Id, enemy));
@@ -111,6 +112,7 @@ namespace Jibril.Modules.Game
                 var enemyHealth = _enemyStat.HealthPoint((int)userdata.Level, (int)game.Health);
                 var usertotalHp = _baseStats.HealthPoint((int)userdata.Level, userdata.Class);
                 var enemytotalHp = _enemyStat.HealthPoint((int)userdata.Level, (int)game.Health);
+
                 var embed = new EmbedBuilder
                 {
                     Description = UpdateCombatLog(msgLog),
@@ -146,7 +148,7 @@ namespace Jibril.Modules.Game
                         {
                             msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** hit **{game.Name}** for **{usrDmg}**");
                         }
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{game.Name}");
                         userField.Value = $"{userHealth}/{usertotalHp}";
@@ -156,15 +158,15 @@ namespace Jibril.Modules.Game
                     else
                     {
                         msgLog.RemoveLast();
-                        msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** defeated **{game.Name}**!\n" +
+                        msgLog.AddFirst($"**{(Context.User as SocketGuildUser).Mention}** defeated **{game.Name}**!\n" +
                                         $"Looted **${game.CreditGain}** and gained **{game.ExpGain}** exp.");
                         _gameService.RemoveBattle(Context);//battles.TryRemove(Context.User.Id, out var a);
                         embed.Color = Color.Green;
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{game.Name}");
                         userField.Value = $"{userHealth}/{usertotalHp}";
-                        enemyField.Value = $"{enemyHealth}/{enemytotalHp}";
+                        enemyField.Value = $"0/{enemytotalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
                         userdata.Credit = userdata.Credit + game.CreditGain;
                         userdata.Exp = userdata.Exp + game.ExpGain;
@@ -188,7 +190,7 @@ namespace Jibril.Modules.Game
                         {
                             msgLog.AddFirst($"**{game.Name}** hit **{(Context.User as SocketGuildUser).GetName()}** for **{enmyDmg}**");
                         }
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{game.Name}");
                         userField.Value = $"{userHealth}/{usertotalHp}";
@@ -202,10 +204,10 @@ namespace Jibril.Modules.Game
                                         $"**{(Context.User as SocketGuildUser).GetName()}** died.");
                         _gameService.RemoveBattle(Context); //battles.TryRemove(Context.User.Id, out var a);
                         embed.Color = Color.Red;
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{game.Name}");
-                        userField.Value = $"{userHealth}/{usertotalHp}";
+                        userField.Value = $"0/{usertotalHp}";
                         enemyField.Value = $"{enemyHealth}/{enemytotalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
                         alive = false;
@@ -221,18 +223,21 @@ namespace Jibril.Modules.Game
         [GlobalRatelimit(1, 5, Measure.Seconds)]
         public async Task AttackGameAsync(IGuildUser user, uint bet = 0)
         {
+            if (user == Context.User) return;
             using (var db = new DbService())
             {
                 var playerOne = await db.GetOrCreateUserData(Context.User);
                 var playerTwo = await db.GetOrCreateUserData(user);
                 var playerOneHealth = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
-                var playerTwoHealth = _baseStats.HealthPoint((int)playerTwo.Level, playerTwo.Class);
+                var playerTwoHealth = _baseStats.HealthPoint((int)playerOne.Level, playerTwo.Class);
                 var playerOnetotalHp = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
-                var playerTwototalHp = _baseStats.HealthPoint((int)playerTwo.Level, playerTwo.Class);
+                var playerTwototalHp = _baseStats.HealthPoint((int)playerOne.Level, playerTwo.Class);
 
                 var msgLog = new LinkedList<string>();
                 msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** VS **{user.GetName()}**");
 
+                var img = await _gameService.CreateBanner(Context.User as SocketGuildUser, user as SocketGuildUser, playerOne.Class);
+                img.Seek(0, SeekOrigin.Begin);
                 var embed = new EmbedBuilder
                 {
                     Description = UpdateCombatLog(msgLog),
@@ -250,7 +255,8 @@ namespace Jibril.Modules.Game
                     Name = $"{user.GetName()}",
                     Value = $"{playerTwoHealth}/{playerTwototalHp}"
                 });
-                var msg = await ReplyAsync("test message", false, embed.Build());
+                var msg = await Context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
+                //var msg = await ReplyAsync("test message", false, embed.Build());
 
                 var alive = true;
                 while (alive)
@@ -268,7 +274,7 @@ namespace Jibril.Modules.Game
                         {
                             msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** hit **{user.GetName()}** for **{usrDmg}**");
                         }
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{user.GetName()}");
                         userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
@@ -280,11 +286,11 @@ namespace Jibril.Modules.Game
                         msgLog.RemoveLast();
                         msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** defeated **{user.GetName()}**!");
                         embed.Color = Color.Green;
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{user.GetName()}");
                         userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
-                        enemyField.Value = $"{playerTwoHealth}/{playerTwototalHp}";
+                        enemyField.Value = $"0/{playerTwototalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
                         playerOne.Credit = playerOne.Credit + bet;
                         playerTwo.Credit = playerTwo.Credit - bet;
@@ -294,7 +300,7 @@ namespace Jibril.Modules.Game
                     }
                     await Task.Delay(1500);
 
-                    var enmyDmg = _baseStats.CriticalStrike(playerTwo.Class, (int)playerTwo.Level);
+                    var enmyDmg = _baseStats.CriticalStrike(playerTwo.Class, (int)playerOne.Level);
                     playerOneHealth = playerOneHealth - enmyDmg;
                     if (playerOneHealth > 0)
                     {
@@ -307,7 +313,7 @@ namespace Jibril.Modules.Game
                         {
                             msgLog.AddFirst($"**{user.GetName()}** hit **{(Context.User as SocketGuildUser).GetName()}** for **{enmyDmg}**");
                         }
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{user.GetName()}");
                         userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
@@ -319,10 +325,10 @@ namespace Jibril.Modules.Game
                         msgLog.RemoveLast();
                         msgLog.AddFirst($"**{user.GetName()}** defeated **{(Context.User as SocketGuildUser).GetName()}**!");
                         embed.Color = Color.Red;
-                        embed.Description = UpdateCombatLog(msgLog);
+                        embed.Description = UpdateCombatLog(msgLog.Reverse());
                         var userField = embed.Fields.First(x => x.Name == $"{(Context.User as SocketGuildUser).GetName()}");
                         var enemyField = embed.Fields.First(x => x.Name == $"{user.GetName()}");
-                        userField.Value = $"{playerOneHealth}/{playerOnetotalHp}";
+                        userField.Value = $"0/{playerOnetotalHp}";
                         enemyField.Value = $"{playerTwoHealth}/{playerTwototalHp}";
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
                         playerOne.Credit = playerOne.Credit - bet;

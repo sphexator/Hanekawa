@@ -72,9 +72,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\Images\Game\Enemy\" />
     <Folder Include="Data\Images\Profile\Backgrounds\" />
     <Folder Include="Data\Images\Profile\ShipClass\" />
     <Folder Include="Data\Images\Profile\Template\" />
+    <Folder Include="Data\Welcome\" />
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
@@ -91,64 +93,82 @@
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\BattleshipReClass.png">
+    <None Update="Data\Game\background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\BattleshipRuClass.png">
+    <None Update="Data\Game\Border\Red-border.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\BattleshipTaClass.png">
+    <None Update="Data\Game\Enemy\BattleshipReClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\DestroyerHaClass.png">
+    <None Update="Data\Game\Enemy\BattleshipRuClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\DestroyerIClass.png">
+    <None Update="Data\Game\Enemy\BattleshipTaClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\DestroyerNiClass.png">
+    <None Update="Data\Game\Enemy\DestroyerHaClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\DestroyerRoClass.png">
+    <None Update="Data\Game\Enemy\DestroyerIClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\HeavyCruiserNeClass.png">
+    <None Update="Data\Game\Enemy\DestroyerNiClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\HeavyCruiserRiClass.png">
+    <None Update="Data\Game\Enemy\DestroyerRoClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\LightCarrierNuClass.png">
+    <None Update="Data\Game\Enemy\HeavyCruiserNeClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\LightCruiserHeClass.png">
+    <None Update="Data\Game\Enemy\HeavyCruiserRiClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\LightCruiserHoClass.png">
+    <None Update="Data\Game\Enemy\LightCarrierNuClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\LightCruiserToClass.png">
+    <None Update="Data\Game\Enemy\LightCruiserHeClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\LightCruiserTsuClass.png">
+    <None Update="Data\Game\Enemy\LightCruiserHoClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\StandardCarrierWoClass.png">
+    <None Update="Data\Game\Enemy\LightCruiserToClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\SubmarineKaClass.png">
+    <None Update="Data\Game\Enemy\LightCruiserTsuClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\SubmarineSoClass.png">
+    <None Update="Data\Game\Enemy\StandardCarrierWoClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\SubmarineYoClass.png">
+    <None Update="Data\Game\Enemy\SubmarineKaClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\TorpedoCruiserChiClass.png">
+    <None Update="Data\Game\Enemy\SubmarineSoClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Images\Game\Enemy\TransportShipWaClass.png">
+    <None Update="Data\Game\Enemy\SubmarineYoClass.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Game\Enemy\TorpedoCruiserChiClass.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Game\Enemy\TransportShipWaClass.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Info\faq.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Info\level_roles.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Info\rules.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Info\staff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Class\ShipGirl.png">

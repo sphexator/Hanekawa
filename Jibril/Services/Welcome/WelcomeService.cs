@@ -92,6 +92,7 @@ namespace Jibril.Services.Welcome
             using (var img = Image.Load(toLoad, new PngDecoder()))
             {
                 var avatar = await GetAvatarAsync(user);
+                avatar.Seek(0, SeekOrigin.Begin);
                 var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
                 var text = user.Username.Truncate(15);
 
@@ -108,7 +109,6 @@ namespace Jibril.Services.Welcome
             var stream = await ImageGeneratorAsync(user);
             stream.Seek(0, SeekOrigin.Begin);
             await ch.SendFileAsync(stream, "welcome.png");
-            stream.Dispose();
         }
 
         private static string GetImage(IGuild guild)
@@ -127,6 +127,7 @@ namespace Jibril.Services.Welcome
             using (var client = new HttpClient())
             {
                 var response = await client.GetStreamAsync(user.GetAvatar());
+                response.Seek(0, SeekOrigin.Begin);
                 using (var img = Image.Load(response))
                 {
                     var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
