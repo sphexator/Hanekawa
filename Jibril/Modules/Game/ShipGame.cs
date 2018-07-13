@@ -228,6 +228,22 @@ namespace Jibril.Modules.Game
             {
                 var playerOne = await db.GetOrCreateUserData(Context.User);
                 var playerTwo = await db.GetOrCreateUserData(user);
+
+                if (playerOne.Credit < bet)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} can't bet more then you already have.",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
+                if (playerTwo.Credit < bet)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{user.Mention} can't bet more then you already have.",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
+
                 var playerOneHealth = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
                 var playerTwoHealth = _baseStats.HealthPoint((int)playerOne.Level, playerTwo.Class);
                 var playerOnetotalHp = _baseStats.HealthPoint((int)playerOne.Level, playerOne.Class);
