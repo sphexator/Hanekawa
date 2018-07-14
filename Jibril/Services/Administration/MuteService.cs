@@ -159,10 +159,17 @@ namespace Jibril.Services.Administration
         {
             using (var db = new DbService())
             {
-                var data = await db.MuteTimers.FindAsync(guildId, userId);
-                if (data == null) return;
-                db.MuteTimers.Remove(data);
-                await db.SaveChangesAsync();
+                try
+                {
+                    var data = db.MuteTimers.First(x => x.GuildId == guildId && x.UserId == userId);
+                    if (data == null) return;
+                    db.MuteTimers.Remove(data);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
 
