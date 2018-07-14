@@ -67,40 +67,37 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                try
-                {
-                    if (!(message is SocketUserMessage msg)) return;
-                    if (msg.Source != MessageSource.User) return;
-                    if (!(msg.Channel is IGuildChannel)) return;
+                if (!(message is SocketUserMessage msg)) return;
+                if (msg.Source != MessageSource.User) return;
+                if (!(msg.Channel is IGuildChannel)) return;
 
-                    if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
-                    using (var db = new DbService())
+                if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
+                using (var db = new DbService())
+                {
+                    ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
+                    var userdata = await db.GetOrCreateUserData(msg.Author);
+                    var exp = _calc.GetMessageExp(msg) * multi;
+                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+
+                    userdata.LastMessage = DateTime.UtcNow;
+                    if (userdata.FirstMessage < DateTime.UtcNow - TimeSpan.FromDays(900))
+                        userdata.FirstMessage = DateTime.UtcNow;
+
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+
+                    if (userdata.Exp + exp >= nxtLvl)
                     {
-                        ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
-                        var userdata = await db.GetOrCreateUserData(msg.Author);
-                        var exp = _calc.GetMessageExp(msg) * multi;
-                        var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
-
-                        userdata.TotalExp = userdata.TotalExp + exp;
-                        userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
-
-                        if (userdata.Exp + exp >= nxtLvl)
-                        {
-                            userdata.Level = userdata.Level + 1;
-                            userdata.Exp = userdata.Exp + exp - nxtLvl;
-                            await NewLevelManager(userdata, msg.Author as IGuildUser, db);
-                        }
-                        else
-                        {
-                            userdata.Exp = userdata.Exp + exp;
-                        }
-                        Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
-                        await db.SaveChangesAsync();
+                        userdata.Level = userdata.Level + 1;
+                        userdata.Exp = userdata.Exp + exp - nxtLvl;
+                        await NewLevelManager(userdata, msg.Author as IGuildUser, db);
                     }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
+                    else
+                    {
+                        userdata.Exp = userdata.Exp + exp;
+                    }
+                    Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
+                    await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
@@ -110,38 +107,47 @@ namespace Jibril.Services.Level
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                try
                 {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    var oldVc = oldState.VoiceChannel;
-                    var newVc = newState.VoiceChannel;
-                    if (newVc != null && oldVc == null)
+                    using (var db = new DbService())
                     {
-                        userdata.VoiceExpTime = DateTime.UtcNow;
+                        var userdata = await db.GetOrCreateUserData(user);
+                        var oldVc = oldState.VoiceChannel;
+                        var newVc = newState.VoiceChannel;
+                        if (newVc != null && oldVc == null)
+                        {
+                            userdata.VoiceExpTime = DateTime.UtcNow;
+                            await db.SaveChangesAsync();
+                            return;
+                        }
+
+                        if (oldVc == null || newVc != null) return;
+                        var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
+                        var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * multi;
+                        var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+
+                        userdata.TotalExp = userdata.TotalExp + exp;
+                        userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+                        userdata.TimeInVoice = userdata.TimeInVoice + (DateTime.UtcNow - userdata.VoiceExpTime);
+                        userdata.Sessions = userdata.Sessions + 1;
+
+                        if (userdata.Exp + exp >= nxtLvl)
+                        {
+                            userdata.Level = userdata.Level + 1;
+                            userdata.Exp = userdata.Exp + exp - nxtLvl;
+                            await NewLevelManager(userdata, user as IGuildUser, db);
+                        }
+                        else
+                        {
+                            userdata.Exp = userdata.Exp + exp;
+                        }
+                        Console.WriteLine($"{user.Username} gained {exp} exp");
                         await db.SaveChangesAsync();
-                        return;
                     }
-
-                    if (oldVc == null || newVc != null) return;
-                    ExpMultiplier.TryGetValue(oldState.VoiceChannel.Guild.Id, out var multi);
-                    var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * multi;
-                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
-
-                    userdata.TotalExp = userdata.TotalExp + exp;
-                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
-
-                    if (userdata.Exp + exp >= nxtLvl)
-                    {
-                        userdata.Level = userdata.Level + 1;
-                        userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, user as IGuildUser, db);
-                    }
-                    else
-                    {
-                        userdata.Exp = userdata.Exp + exp;
-                    }
-
-                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             });
             return Task.CompletedTask;

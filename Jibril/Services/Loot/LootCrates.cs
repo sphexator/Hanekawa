@@ -15,8 +15,8 @@ namespace Jibril.Services.Loot
         private ConcurrentDictionary<ulong, ulong> LootChannels { get; set; }
             = new ConcurrentDictionary<ulong, ulong>();
 
-        private readonly List<ulong> RegularLoot = new List<ulong>();
-        private readonly List<ulong> SpecialLoot = new List<ulong>();
+        private readonly List<ulong> _regularLoot = new List<ulong>();
+        private readonly List<ulong> _specialLoot = new List<ulong>();
 
         private readonly DiscordSocketClient _client;
 
@@ -32,16 +32,16 @@ namespace Jibril.Services.Loot
             if (!msg.HasValue) return Task.CompletedTask;
             if (rct.User.Value.IsBot) return Task.CompletedTask;
             if (rct.Emote.Name != "realsip") return Task.CompletedTask;
-            if (!RegularLoot.Contains(rct.MessageId) ||
-                !SpecialLoot.Contains(rct.MessageId)) return Task.CompletedTask;
+            if (!_regularLoot.Contains(rct.MessageId) ||
+                !_specialLoot.Contains(rct.MessageId)) return Task.CompletedTask;
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
                     var userdata = await db.GetOrCreateUserData(rct.User.Value);
-                    if (SpecialLoot.Contains(rct.MessageId))
+                    if (_specialLoot.Contains(rct.MessageId))
                     {
-                        SpecialLoot.Remove(rct.MessageId);
+                        _specialLoot.Remove(rct.MessageId);
                         if (!msg.HasValue) await msg.GetOrDownloadAsync();
                         await msg.Value.DeleteAsync();
                         var rand = new Random().Next(150, 250);
@@ -57,7 +57,7 @@ namespace Jibril.Services.Loot
                     }
                     else
                     {
-                        RegularLoot.Remove(rct.MessageId);
+                        _regularLoot.Remove(rct.MessageId);
                         if (!msg.HasValue) await msg.GetOrDownloadAsync();
                         await msg.Value.DeleteAsync();
                         var rand = new Random().Next(15, 150);
@@ -83,7 +83,6 @@ namespace Jibril.Services.Loot
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
                 if (!LootChannels.TryGetValue(message.Channel.Id, out var chx)) return;
-                //ADD CD
 
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
@@ -94,7 +93,7 @@ namespace Jibril.Services.Loot
                     var emotes = ReturnEmotes().ToList();
                     foreach (var x in emotes.OrderBy(x => new Random().Next()).Take(emotes.Count))
                     {
-                        if (x.Name == "realsip") RegularLoot.Add(triggerMsg.Id);
+                        if (x.Name == "realsip") _regularLoot.Add(triggerMsg.Id);
                         await triggerMsg.AddReactionAsync(x);
                     }
                 }
@@ -111,7 +110,7 @@ namespace Jibril.Services.Loot
             var rng = new Random();
             foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
             {
-                if (x.Name == "realsip") SpecialLoot.Add(triggerMsg.Id);
+                if (x.Name == "realsip") _specialLoot.Add(triggerMsg.Id);
                 await triggerMsg.AddReactionAsync(x);
             }
         }

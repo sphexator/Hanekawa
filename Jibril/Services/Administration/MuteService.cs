@@ -31,8 +31,10 @@ namespace Jibril.Services.Administration
         {
             _client = client;
             _moderationService = moderationService;
+
             _moderationService.AutoModPermMute += AutoModPermMute;
             _moderationService.AutoModTimedMute += AutoModTimedMute;
+
             using (var db = new DbService())
             {
                 foreach (var x in db.MuteTimers)
