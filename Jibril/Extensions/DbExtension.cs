@@ -1,13 +1,12 @@
 ﻿using Discord;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Discord.WebSocket;
 using Jibril.Data.Constants;
 using Jibril.Data.Variables;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace Jibril.Extensions
 {
@@ -17,10 +16,6 @@ namespace Jibril.Extensions
         {
             var userdata = await context.Accounts.FindAsync(user.Id);
             if (userdata != null) return userdata;
-            var inventory = new Inventory
-            {
-
-            };
             var data = new Account
             {
                 UserId = user.Id,
@@ -42,8 +37,7 @@ namespace Jibril.Extensions
                 Level = 1,
                 Sessions = 0,
                 TimeInVoice = TimeSpan.Zero,
-                VoiceTime = DateTime.UtcNow,
-                Inventory = new List<Inventory> { inventory }
+                VoiceTime = DateTime.UtcNow
             };
             await context.Accounts.AddAsync(data);
             await context.SaveChangesAsync();
@@ -120,7 +114,9 @@ namespace Jibril.Extensions
                 AntiSpam = null,
                 ExpMultiplier = 1,
                 MuteRole = null,
-                WelcomeLimit = 10
+                WelcomeLimit = 10,
+                Prefix = ".",
+                BoardChannel = null
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
