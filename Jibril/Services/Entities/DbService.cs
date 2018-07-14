@@ -33,6 +33,7 @@ namespace Jibril.Services.Entities
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
+        public virtual DbSet<LootChannel> LootChannels { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -55,6 +56,7 @@ namespace Jibril.Services.Entities
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
+            modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<Warn>(x =>

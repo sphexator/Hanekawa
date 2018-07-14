@@ -3,8 +3,10 @@
     public class GuildConfig
     {
         public ulong GuildId { get; set; }
+        public string Prefix { get; set; }
         public ulong? WelcomeChannel { get; set; }
         public ulong? SuggestionChannel { get; set; }
+        public ulong? BoardChannel { get; set; }
         public ulong? ReportChannel { get; set; }
         public uint WelcomeLimit { get; set; }
         public ulong? LogJoin { get; set; }
