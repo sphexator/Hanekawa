@@ -18,6 +18,7 @@ using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Jibril.Services.Welcome
 {
@@ -73,7 +74,7 @@ namespace Jibril.Services.Welcome
             var _ = Task.Run(async () =>
             {
                 if (user.IsBot) return;
-                if (!CheckCooldown(user)) return;
+                //if (!CheckCooldown(user)) return;
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
@@ -81,8 +82,11 @@ namespace Jibril.Services.Welcome
                     await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user)
                         .ConfigureAwait(false);
                 }
+
             });
+
             return Task.CompletedTask;
+
         }
 
         private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
@@ -92,19 +96,22 @@ namespace Jibril.Services.Welcome
             using (var img = Image.Load(toLoad, new PngDecoder()))
             {
                 var avatar = await GetAvatarAsync(user);
-                avatar.Seek(0, SeekOrigin.Begin);
+                //avatar.Seek(0, SeekOrigin.Begin);
                 var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
                 var text = user.Username.Truncate(15);
-
+                var optionsCenter = new TextGraphicsOptions
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
                 img.Mutate(ctx => ctx
-                    .DrawImage(GraphicsOptions.Default, Image.Load(avatar, new PngDecoder()), new Point(10, 10))
-                    .DrawText(text, font, Rgba32.White, new PointF(245, 51)));
+                    .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
+                    .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
             return stream;
         }
 
-        private static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
+        public static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
         {
             var stream = await ImageGeneratorAsync(user);
             stream.Seek(0, SeekOrigin.Begin);
@@ -115,27 +122,24 @@ namespace Jibril.Services.Welcome
         {
             var banner = new DirectoryInfo($"Data/Welcome/{guild.Id}/");
             var images = banner.GetFiles().ToList();
+            if (images.Count == 0) return @"Data\Welcome\Default.png";
             var rand = new Random();
             var randomImage = rand.Next(images.Count);
             var img = $"Data/Welcome/{guild.Id}/{images[randomImage].Name}";
             return img;
         }
 
-        private static async Task<Stream> GetAvatarAsync(IUser user)
+        private static async Task<Image<Rgba32>> GetAvatarAsync(IUser user)
         {
-            var stream = new MemoryStream();
             using (var client = new HttpClient())
             {
                 var response = await client.GetStreamAsync(user.GetAvatar());
-                response.Seek(0, SeekOrigin.Begin);
                 using (var img = Image.Load(response))
                 {
                     var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
-                    avi.Save(stream, new PngEncoder());
+                    return avi.Clone();
                 }
             }
-
-            return stream;
         }
 
         private static Task BannerCleanup(SocketGuild guild)
@@ -152,20 +156,24 @@ namespace Jibril.Services.Welcome
 
         private bool CheckCooldown(IGuildUser usr)
         {
-            var checKey = WelcomeCooldown.ContainsKey(usr.GuildId);
-            if (!checKey)
+            var check = WelcomeCooldown.TryGetValue(usr.GuildId, out var cds);
+            if (!check)
             {
-                WelcomeCooldown.TryAdd(usr.Id, new ConcurrentDictionary<ulong, DateTime>());
-                WelcomeCooldown.TryGetValue(usr.GuildId, out var userCollection);
-                userCollection?.TryAdd(usr.Id, DateTime.UtcNow);
+                WelcomeCooldown.TryAdd(usr.GuildId, new ConcurrentDictionary<ulong, DateTime>());
+                WelcomeCooldown.TryGetValue(usr.GuildId, out cds);
+                cds.TryAdd(usr.Id, DateTime.UtcNow);
                 return true;
             }
 
-            WelcomeCooldown.TryGetValue(usr.GuildId, out var collection);
-            if (collection == null) return false;
-            collection.TryGetValue(usr.Id, out var user);
-            if (!((DateTime.UtcNow - user).TotalSeconds >= 600)) return false;
-            collection.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => DateTime.UtcNow);
+            var userCheck = cds.TryGetValue(usr.Id, out var cd);
+            if (!userCheck)
+            {
+                cds.TryAdd(usr.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 600)) return false;
+            cds.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
             return true;
         }
     }

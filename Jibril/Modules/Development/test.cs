@@ -1,7 +1,7 @@
-﻿using Discord.Addons.Interactive;
+﻿using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using System.Threading.Tasks;
-using Discord;
 
 namespace Jibril.Modules.Development
 {
@@ -107,7 +107,6 @@ namespace Jibril.Modules.Development
                                     "Level 50 = Aviation Cruiser\n" +
                                     "Level 65 = Aviation Battleship\n" +
                                     "Level 80 = Training Cruiser\n";
-
 
             var rules = new EmbedBuilder
             {

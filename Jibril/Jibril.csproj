@@ -76,7 +76,6 @@
     <Folder Include="Data\Images\Profile\Backgrounds\" />
     <Folder Include="Data\Images\Profile\ShipClass\" />
     <Folder Include="Data\Images\Profile\Template\" />
-    <Folder Include="Data\Welcome\" />
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Services\INC\Cache\Avatar\" />

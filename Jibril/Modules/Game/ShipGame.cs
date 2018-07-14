@@ -175,7 +175,7 @@ namespace Jibril.Modules.Game
                         alive = false;
                         continue;
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(2000);
 
                     var enmyDmg = _enemyStat.Avoidance(userdata.Class, (int)userdata.Level);
                     userHealth = userHealth - enmyDmg;
@@ -213,7 +213,7 @@ namespace Jibril.Modules.Game
                         alive = false;
                         continue;
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(2000);
                 }
             }
         }
