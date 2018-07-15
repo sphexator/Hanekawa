@@ -4,13 +4,16 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Jibril.Extensions;
+using Jibril.Services.Entities;
 
 namespace Jibril.Services.Reaction
 {
     public class ReactionService
     {
         private readonly DiscordSocketClient _client;
-        public ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
 
         public ReactionService(DiscordSocketClient client, IServiceProvider provider)
@@ -62,28 +65,33 @@ namespace Jibril.Services.Reaction
 
         private async Task SendBoardAsync(ITextChannel channel, ulong messageId)
         {
-            var guild = _client.GetGuild(channel.GuildId);
-            var message = await channel.GetMessageAsync(messageId);
-            var user = message.Author as SocketGuildUser;
-            var channelz = guild.GetTextChannel(433412697913163796);
-            var author = new EmbedAuthorBuilder
+            using (var db = new DbService())
             {
-                IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
-                Name = user.Nickname ?? user.Username
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = channel.Name
-            };
-            var embed = new EmbedBuilder
-            {
-                Author = author,
-                Footer = footer,
-                Description = message.Content,
-                Timestamp = message.Timestamp,
-                Color = GetBoardColor(user).Color
-            };
-            await channelz.SendMessageAsync(null, false, embed.Build());
+                var cfg = await db.GetOrCreateGuildConfig(channel.Guild as SocketGuild);
+                if (!cfg.BoardChannel.HasValue) return;
+                var guild = _client.GetGuild(channel.GuildId);
+                var message = await channel.GetMessageAsync(messageId);
+                var user = message.Author as SocketGuildUser;
+                var channelz = guild.GetTextChannel(cfg.BoardChannel.Value);
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = user.GetAvatar(),
+                    Name = user.GetName()
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = channel.Name
+                };
+                var embed = new EmbedBuilder
+                {
+                    Author = author,
+                    Footer = footer,
+                    Description = message.Content,
+                    Timestamp = message.Timestamp,
+                    Color = GetBoardColor(user).Color
+                };
+                await channelz.SendMessageAsync(null, false, embed.Build());
+            }
         }
 
         private static SocketRole GetBoardColor(SocketGuildUser user)

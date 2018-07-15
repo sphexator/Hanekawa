@@ -114,10 +114,7 @@ namespace Jibril.Modules.Report
                         $"Answer from {Context.User}:\n" +
                         $"{text}");
                 }
-                catch
-                {
-                    /*IGNORE*/
-                }
+                catch{ /*IGNORE*/ }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
             }

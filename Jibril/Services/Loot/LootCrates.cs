@@ -7,13 +7,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jibril.Extensions;
 using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
 
 namespace Jibril.Services.Loot
 {
     public class LootCrates
     {
-        private ConcurrentDictionary<ulong, ulong> LootChannels { get; set; }
-            = new ConcurrentDictionary<ulong, ulong>();
+        private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; set; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
 
         private readonly List<ulong> _regularLoot = new List<ulong>();
         private readonly List<ulong> _specialLoot = new List<ulong>();
@@ -25,6 +26,21 @@ namespace Jibril.Services.Loot
             _client = client;
             _client.MessageReceived += CrateTrigger;
             _client.ReactionAdded += CrateClaimer;
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs)
+                {
+                    var result = db.LootChannels.Where(c => c.GuildId == x.GuildId).ToList();
+                    var channels = new List<ulong>();
+                    foreach (var y in result)
+                    {
+                        channels.Add(y.ChannelId);
+                    }
+
+                    LootChannels.GetOrAdd(x.GuildId, channels);
+                }
+            }
         }
 
         private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
@@ -114,6 +130,48 @@ namespace Jibril.Services.Loot
                 await triggerMsg.AddReactionAsync(x);
             }
         }
+
+        public async Task AddLootChannelAsync(SocketTextChannel ch)
+        {
+            await AddToDatabaseAsync(ch.Guild.Id, ch.Id);
+            var channels = LootChannels.GetOrAdd(ch.Guild.Id, new List<ulong>());
+            channels.Add(ch.Id);
+            LootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => old = channels);
+        }
+
+        public async Task RemoveLootChannelAsync(SocketTextChannel ch)
+        {
+            await RemoveFromDatabaseAsync(ch.Guild.Id, ch.Id);
+            if (!LootChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
+            if (!channels.Contains(ch.Id)) return;
+            channels.Remove(ch.Id);
+            LootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => channels);
+        }
+
+        private static async Task AddToDatabaseAsync(ulong guildId, ulong channelId)
+        {
+            using (var db = new DbService())
+            {
+                var data = new LootChannel
+                {
+                    ChannelId = channelId,
+                    GuildId = guildId
+                };
+                await db.LootChannels.AddAsync(data);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        private static async Task RemoveFromDatabaseAsync(ulong guildId, ulong channelId)
+        {
+            using (var db = new DbService())
+            {
+                var data = db.LootChannels.First(x => x.GuildId == guildId && x.ChannelId == channelId);
+                db.LootChannels.Remove(data);
+                await db.SaveChangesAsync();
+            }
+        }
+
 
         private static IEnumerable<IEmote> ReturnEmotes()
         {
