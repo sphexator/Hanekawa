@@ -50,12 +50,14 @@ namespace Jibril.Modules.Administration
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Okay, I'll let you announce it...",
                             Color.Green.RawValue).Build());
+                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after);
                 }
                 else
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Announcing event in designated channel.",
+                        new EmbedBuilder().Reply($"Announcing event into designated channel.",
                             Color.Green.RawValue).Build());
+                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after, true, Context.Channel as SocketTextChannel);
                 }
             }
             catch

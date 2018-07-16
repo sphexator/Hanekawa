@@ -44,13 +44,13 @@ namespace Jibril.Services.Level
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
-        public void AddExpMultiplier(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, SocketTextChannel fallbackChannel = null)
+        public async Task AddExpMultiplierAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, SocketTextChannel fallbackChannel = null)
         {
             ExpMultiplier.AddOrUpdate(guild.Id, multiplier, (key, old) => old = multiplier);
             StartExpEvent(guild.Id, after);
             if (announce)
             {
-
+                await AnnounceExpEvent(guild, multiplier, after, fallbackChannel);
             }
         }
 
