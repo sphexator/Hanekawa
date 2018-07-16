@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Extensions;
 using Jibril.Services.Automate;
 using Jibril.Services.Entities;
@@ -37,9 +39,51 @@ namespace Jibril.Services.Level
 
         private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
             = new ConcurrentDictionary<ulong, uint>();
+        private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
+            = new ConcurrentDictionary<ulong, Timer>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
+        public void AddExpMultiplier(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, SocketTextChannel fallbackChannel = null)
+        {
+            ExpMultiplier.AddOrUpdate(guild.Id, multiplier, (key, old) => old = multiplier);
+            StartExpEvent(guild.Id, after);
+            if (announce)
+            {
+
+            }
+        }
+
+        private void StartExpEvent(ulong guildid, TimeSpan after)
+        {
+            var toAdd = new Timer(_ =>
+            {
+                ExpMultiplier.AddOrUpdate(guildid, 1, (key, old) => old = 1);
+
+            }, null, after, Timeout.InfiniteTimeSpan);
+            ExpEvent.AddOrUpdate(guildid, (key) => toAdd, (key, old) =>
+            {
+                old.Change(Timeout.Infinite, Timeout.Infinite);
+                return toAdd;
+            });
+        }
+
+        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
+                if (cfg.EventChannel.HasValue)
+                {
+                    var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
+                    await channel.SendEmbedAsync(new EmbedBuilder().Reply($"A {multiplier}x exp event has started!\n" +
+                                                                          $"Duration: {after.Humanize()} ({after} minutes)"));
+                }
+                else
+                    await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply($"No event channel has been setup.", Color.Red.RawValue));
+            }
+        }
+        
         private Task GiveRolesBack(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>

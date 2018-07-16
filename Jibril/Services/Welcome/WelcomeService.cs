@@ -31,10 +31,14 @@ namespace Jibril.Services.Welcome
         // False = banners disabled 
         private ConcurrentDictionary<ulong, bool> DisableBanner { get; set; }
             = new ConcurrentDictionary<ulong, bool>();
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
         private ConcurrentDictionary<ulong, uint> JoinCount { get; set; }
             = new ConcurrentDictionary<ulong, uint>();
+
+        private ConcurrentDictionary<ulong, bool> AntiRaidDisable { get; }
+            = new ConcurrentDictionary<ulong, bool>();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; set; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         public WelcomeService(IServiceProvider provider, DiscordSocketClient discord)
         {
@@ -60,11 +64,24 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
+                uint counter;
+                uint limit;
                 using (var db = new DbService())
                 {
-                    await db.GuildConfigs.FindAsync(user.Guild.Id);
-                    var counter = JoinCount.GetOrAdd(user.Guild.Id, 0);
+                    var cfg = await db.GuildConfigs.FindAsync(user.Guild.Id);
+                    limit = cfg.WelcomeLimit;
+                    counter = JoinCount.GetOrAdd(user.Guild.Id, 0);
                 }
+
+                counter++;
+                JoinCount.AddOrUpdate(user.Guild.Id, counter, (key, old) => old = counter);
+
+                if (counter >= limit) AntiRaidDisable.AddOrUpdate(user.Guild.Id, true, (key, old) => old = true);
+                await Task.Delay(5000);
+
+                JoinCount.TryGetValue(user.Guild.Id, out var currentValue);
+                if (currentValue <= limit) AntiRaidDisable.AddOrUpdate(user.Guild.Id, true, (key, old) => old = false);
+                JoinCount.AddOrUpdate(user.Guild.Id, currentValue--, (key, old) => old = currentValue--);
             });
             return Task.CompletedTask;
         }
@@ -74,7 +91,9 @@ namespace Jibril.Services.Welcome
             var _ = Task.Run(async () =>
             {
                 if (user.IsBot) return;
-                //if (!CheckCooldown(user)) return;
+                if (!CheckCooldown(user)) return;
+                var status = AntiRaidDisable.GetOrAdd(user.Guild.Id, false);
+                if (status) return;
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
@@ -111,7 +130,7 @@ namespace Jibril.Services.Welcome
             return stream;
         }
 
-        public static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
+        private static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
         {
             var stream = await ImageGeneratorAsync(user);
             stream.Seek(0, SeekOrigin.Begin);

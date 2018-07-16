@@ -6,9 +6,11 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Humanizer;
 using Jibril.Extensions;
 using Jibril.Services.Administration;
 using Jibril.Services.Entities;
+using Jibril.Services.Level;
 
 namespace Jibril.Modules.Administration
 {
@@ -16,11 +18,52 @@ namespace Jibril.Modules.Administration
     {
         private readonly MuteService _muteService;
         private readonly WarnService _warnService;
+        private readonly LevelingService _levelingService;
 
-        public Administration(MuteService muteService, WarnService warnService)
+        public Administration(MuteService muteService, WarnService warnService, LevelingService levelingService)
         {
             _muteService = muteService;
             _warnService = warnService;
+            _levelingService = levelingService;
+        }
+
+        [Command("exp", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ExpEventAsync(uint multiplier, uint duration = 1440)
+        {
+            try
+            {
+                var after = TimeSpan.FromMinutes(duration);
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply(
+                        $"Wanna activate a exp event with multiplier of {multiplier} for {after.Humanize()} ({duration} minutes) ? (y/n)",
+                        Color.DarkPurple.RawValue).Build());
+                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                if (response.Content.ToLower() != "y") return;
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Do you want to announce the event? (y/n)",
+                        Color.DarkPurple.RawValue).Build());
+                var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                if (announceResp.Content.ToLower() == "y")
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Okay, I'll let you announce it...",
+                            Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Announcing event in designated channel.",
+                            Color.Green.RawValue).Build());
+                }
+            }
+            catch
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Exp event setup aborted.",
+                        Color.Red.RawValue).Build());
+            }
         }
 
         [Command("ban", RunMode = RunMode.Async)]

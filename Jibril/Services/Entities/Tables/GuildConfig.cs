@@ -8,6 +8,7 @@
         public ulong? SuggestionChannel { get; set; }
         public ulong? BoardChannel { get; set; }
         public ulong? ReportChannel { get; set; }
+        public ulong? EventChannel { get; set; }
         public uint WelcomeLimit { get; set; }
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }

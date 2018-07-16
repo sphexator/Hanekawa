@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Jibril.Services.Entities;
 
 namespace Jibril.Services.AutoModerator
 {
@@ -47,6 +48,7 @@ namespace Jibril.Services.AutoModerator
             await AutoModTimedMute(user, time);
             await AutoModTimedLog(user, type, time, reason);
         }
+
         public async Task AutoModMute(SocketGuildUser user, AutoModActionType type, string reason)
         {
             await AutoModPermMute(user);
@@ -57,6 +59,7 @@ namespace Jibril.Services.AutoModerator
         {
             var _ = Task.Run(async () =>
             {
+                using (var db = new DbService())
                 using (var client = new HttpClient())
                 {
                     var values = new Dictionary<string, string>
@@ -127,7 +130,7 @@ namespace Jibril.Services.AutoModerator
 
         private async Task UrlFilter(SocketMessage msg)
         {
-            if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+            //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
         }
 
         private async Task WordFilter(SocketMessage msg)

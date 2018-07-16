@@ -77,10 +77,7 @@ namespace Jibril.Modules.Suggestion
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
                 }
-                catch
-                {
-                    /*IGNORE*/
-                }
+                catch { /*IGNORE*/ }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
             }
@@ -154,10 +151,7 @@ namespace Jibril.Modules.Suggestion
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
                 }
-                catch
-                {
-                    /*IGNORE*/
-                }
+                catch { /*IGNORE*/ }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
             }
