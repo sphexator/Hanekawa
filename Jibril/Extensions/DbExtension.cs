@@ -110,12 +110,11 @@ namespace Jibril.Extensions
                 LogJoin = null,
                 LogBan = null,
                 LogAvi = null,
-                StackLvlRoles = false,
-                AntiSpam = null,
+                StackLvlRoles = true,
                 ExpMultiplier = 1,
                 MuteRole = null,
-                WelcomeLimit = 10,
-                Prefix = ".",
+                WelcomeLimit = 5,
+                Prefix = "h.",
                 BoardChannel = null
             };
             await context.GuildConfigs.AddAsync(data);

@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Humanizer;
+using Jibril.Extensions;
+using Jibril.Services.Entities;
+using Jibril.Services.Entities.Tables;
+using Jibril.Services.Level.Services;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Extensions;
-using Jibril.Services.Automate;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.Level.Services;
 
 namespace Jibril.Services.Level
 {
@@ -68,7 +67,7 @@ namespace Jibril.Services.Level
             });
         }
 
-        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
+        private static async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
         {
             using (var db = new DbService())
             {
@@ -249,7 +248,7 @@ namespace Jibril.Services.Level
                 foreach (var x in db.LevelRewards)
                 {
                     if (x.Stackable) continue;
-                    if (user.RoleIds.Equals(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
+                    if (user.RoleIds.Contains(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
                 }
             }
         }

@@ -1,12 +1,25 @@
-﻿using Discord;
+﻿using System.Linq;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Jibril.Modules.Development
 {
     public class test : InteractiveBase
     {
+        [Command("roleid", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task GetRoleID([Remainder] string roleName)
+        {
+            var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == roleName);
+            await ReplyAsync($"{role.Name}\n" +
+                             $"{role.Id}\n" +
+                             $"{role.Color.RawValue}\n" +
+                             $"{role.Position}");
+        }
+
         [Command("test", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task TestRules()

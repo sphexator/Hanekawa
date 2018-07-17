@@ -5,6 +5,7 @@ namespace Jibril.Services.Entities.Tables
 {
     public class Account
     {
+        public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public uint Credit { get; set; }
         public uint CreditSpecial { get; set; }
