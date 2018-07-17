@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Services.Automate
 {

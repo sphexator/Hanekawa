@@ -21,11 +21,13 @@ using Quartz.Spi;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Google.Apis.YouTube.v3;
 using Jibril.Modules.Game;
 using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Loot;
 using Jibril.Services.Profile;
 using Quartz;
+using SharpLink;
 
 namespace Jibril
 {
@@ -33,11 +35,10 @@ namespace Jibril
     {
         private DiscordSocketClient _client;
         private IConfiguration _config;
+        private LavalinkManager _lavalink;
+        private YouTubeService _youTubeService;
 
-        private static void Main()
-        {
-            new Program().MainASync().GetAwaiter().GetResult();
-        }
+        private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
 
         private async Task MainASync()
         {
@@ -60,6 +61,7 @@ namespace Jibril
             services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
 
+            _client.Ready += _client_ReadyAsync;
             
             var scheduler = services.GetService<IScheduler>();
             /*
@@ -73,6 +75,20 @@ namespace Jibril
             await _client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private async Task _client_ReadyAsync()
+        {
+            _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
+            {
+                RESTHost = "localhost",
+                RESTPort = 2333,
+                WebSocketHost = "localhost",
+                WebSocketPort = 80,
+                TotalShards = await _client.GetRecommendedShardCountAsync()
+            });
+
+            await _lavalink.StartAsync();
         }
 
         private IServiceProvider ConfigureServices()
