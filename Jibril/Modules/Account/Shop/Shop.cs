@@ -19,7 +19,7 @@ namespace Jibril.Modules.Account.Shop
         {
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 var inv = $"{(Context.User as SocketGuildUser).GetName()} Inventory:\n";
                 if (userdata.Inventory.Count != 0)
                 {
@@ -84,7 +84,7 @@ namespace Jibril.Modules.Account.Shop
             {
                 var getItem = await db.Shops.FindAsync(itemId);
                 if (getItem == null) return;
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (userdata.Credit < getItem.Price)
                 {
                     await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} don't have enough credit to buy that item!", Color.Red.RawValue).Build());

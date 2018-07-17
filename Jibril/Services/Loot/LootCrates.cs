@@ -54,7 +54,7 @@ namespace Jibril.Services.Loot
             {
                 using (var db = new DbService())
                 {
-                    var userdata = await db.GetOrCreateUserData(rct.User.Value);
+                    var userdata = await db.GetOrCreateUserData(rct.User.Value as SocketGuildUser);
                     if (_specialLoot.Contains(rct.MessageId))
                     {
                         _specialLoot.Remove(rct.MessageId);

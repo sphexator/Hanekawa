@@ -48,7 +48,7 @@ namespace Jibril.Services.Automate
                 using (var db = new DbService())
                 {
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                    var user = await db.GetOrCreateUserData(msg.Author);
+                    var user = await db.GetOrCreateUserData(msg.Author as SocketGuildUser);
                     user.MvpCounter = user.MvpCounter + 1;
                 }
             });

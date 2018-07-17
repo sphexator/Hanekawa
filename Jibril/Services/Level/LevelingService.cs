@@ -118,7 +118,7 @@ namespace Jibril.Services.Level
                 using (var db = new DbService())
                 {
                     ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
-                    var userdata = await db.GetOrCreateUserData(msg.Author);
+                    var userdata = await db.GetOrCreateUserData(msg.Author as SocketGuildUser);
                     var exp = _calc.GetMessageExp(msg) * multi;
                     var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
 
@@ -154,7 +154,7 @@ namespace Jibril.Services.Level
                 {
                     using (var db = new DbService())
                     {
-                        var userdata = await db.GetOrCreateUserData(user);
+                        var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                         var oldVc = oldState.VoiceChannel;
                         var newVc = newState.VoiceChannel;
                         if (newVc != null && oldVc == null)
@@ -209,7 +209,7 @@ namespace Jibril.Services.Level
         {
             using (var db = new DbService())
             {
-                var dbUser = await db.GetOrCreateUserData(user);
+                var dbUser = await db.GetOrCreateUserData(user as SocketGuildUser);
                 ulong roleid = 0;
                 foreach (var x in db.LevelRewards)
                     if (dbUser.Level >= x.Level)
@@ -223,7 +223,7 @@ namespace Jibril.Services.Level
         {
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(user);
+                var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 var roles = Enumerable.Cast<IRole>(from x in db.LevelRewards
                                                    where userdata.Level >= x.Level
                                                    select _client.GetGuild(user.GuildId).GetRole(x.Role)).ToList();

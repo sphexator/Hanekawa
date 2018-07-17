@@ -57,7 +57,7 @@ namespace Jibril.Modules.Game
                 {
                     var enemies = await db.GameEnemies.ToListAsync();
                     var enemy = enemies[new Random().Next(enemies.Count)];
-                    var userdata = await db.GetOrCreateUserData(Context.User);
+                    var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
 
                     _gameService.AddBattle(Context, enemy); // battles.TryAdd(Context.User.Id, enemy));
                     var embed = new EmbedBuilder
@@ -105,7 +105,7 @@ namespace Jibril.Modules.Game
             using (var db = new DbService())
             {
                 var game = _gameService.GetEnemyData(Context);
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 var msgLog = new LinkedList<string>();
                 msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** VS **{game.Name}**");
                 var userHealth = _baseStats.HealthPoint((int)userdata.Level, userdata.Class);
@@ -226,8 +226,8 @@ namespace Jibril.Modules.Game
             if (user == Context.User) return;
             using (var db = new DbService())
             {
-                var playerOne = await db.GetOrCreateUserData(Context.User);
-                var playerTwo = await db.GetOrCreateUserData(user);
+                var playerOne = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                var playerTwo = await db.GetOrCreateUserData(user as SocketGuildUser);
 
                 if (playerOne.Credit < bet)
                 {

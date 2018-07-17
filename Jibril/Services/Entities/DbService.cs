@@ -15,6 +15,7 @@ namespace Jibril.Services.Entities
         }
 
         public virtual DbSet<Account> Accounts { get; set; }
+        public virtual DbSet<AccountGlobal> AccountGlobals { get; set; }
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
         public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
         public virtual DbSet<GameEnemy> GameEnemies { get; set; }
@@ -43,7 +44,8 @@ namespace Jibril.Services.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Account>(x => { x.HasKey(e => e.UserId); });
+            modelBuilder.Entity<Account>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
+            modelBuilder.Entity<AccountGlobal>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });

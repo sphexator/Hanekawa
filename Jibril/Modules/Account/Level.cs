@@ -105,7 +105,7 @@ namespace Jibril.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;

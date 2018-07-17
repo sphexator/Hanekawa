@@ -12,13 +12,14 @@ namespace Jibril.Extensions
 {
     public static class DbExtension
     {
-        public static async Task<Account> GetOrCreateUserData(this DbService context, IUser user)
+        public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.Accounts.FindAsync(user.Id);
             if (userdata != null) return userdata;
             var data = new Account
             {
                 UserId = user.Id,
+                GuildId = user.Guild.Id,
                 Active = true,
                 Class = ClassNames.Shipgirl,
                 Credit = 0,
@@ -28,7 +29,6 @@ namespace Jibril.Extensions
                 GameKillAmount = 0,
                 MvpCounter = 0,
                 RepCooldown = DateTime.UtcNow,
-                Rep = 0,
                 Exp = 0,
                 VoiceExpTime = DateTime.UtcNow,
                 TotalExp = 0,
@@ -42,6 +42,23 @@ namespace Jibril.Extensions
             await context.Accounts.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.Accounts.FindAsync(user.Id);
+        }
+
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user)
+        {
+            var userdata = await context.AccountGlobals.FindAsync(user.Id);
+            if (userdata != null) return userdata;
+            var data = new AccountGlobal
+            {
+                UserId = user.Id,
+                Exp = 0,
+                TotalExp = 0,
+                Level = 1,
+                Rep = 0
+            };
+            await context.AccountGlobals.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.AccountGlobals.FindAsync(user.Id);
         }
 
         public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, DateTime time, ModAction action)

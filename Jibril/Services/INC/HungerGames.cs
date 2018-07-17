@@ -168,7 +168,7 @@ namespace Jibril.Services.INC
                     if (remaining.FirstOrDefault().UserId > 24)
                     {
                         var user = _client.GetUser(remaining.FirstOrDefault().UserId);
-                        var userdata = await db.GetOrCreateUserData(user);
+                        var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                         userdata.Exp = userdata.Exp + 1000;
                         userdata.Credit = userdata.Credit + 1000;
                         userdata.CreditSpecial = userdata.CreditSpecial + 1000;

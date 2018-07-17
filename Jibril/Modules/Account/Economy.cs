@@ -50,7 +50,7 @@ namespace Jibril.Modules.Account
             if (user == Context.User) return;
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 var recieverData = await db.GetOrCreateUserData(user);
                 if (userdata.Credit <= amount)
                 {
@@ -71,7 +71,7 @@ namespace Jibril.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
@@ -93,7 +93,7 @@ namespace Jibril.Modules.Account
                 else
                 {
                     reward = Convert.ToUInt32(new Random().Next(200, 300));
-                    var userData = await db.GetOrCreateUserData(Context.User);
+                    var userData = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                     var recieverData = await db.GetOrCreateUserData(user);
                     userData.DailyCredit = DateTime.UtcNow;
                     recieverData.Credit = recieverData.Credit + reward;
@@ -138,7 +138,7 @@ namespace Jibril.Modules.Account
         {
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(user);
+                var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 userdata.CreditSpecial = userdata.CreditSpecial + amount;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} Event Credit to {user.Mention}").Build());

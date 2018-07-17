@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
 using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services.Entities;
@@ -19,7 +20,7 @@ namespace Jibril.Modules.Account.Gamble
             if (bet == 0) return;
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
@@ -38,7 +39,7 @@ namespace Jibril.Modules.Account.Gamble
             if (!amount.Equals("all")) return;
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
 
                 if (userdata.Credit == 0)
                 {
@@ -59,7 +60,7 @@ namespace Jibril.Modules.Account.Gamble
             if (bet == 0) return;
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
@@ -78,7 +79,7 @@ namespace Jibril.Modules.Account.Gamble
             if (!amount.Equals("all")) return;
             using (var db = new DbService())
             {
-                var userdata = await db.GetOrCreateUserData(Context.User);
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
