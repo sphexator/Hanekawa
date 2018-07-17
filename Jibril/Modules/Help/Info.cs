@@ -19,7 +19,7 @@ namespace Jibril.Modules.Help
             var application = await Context.Client.GetApplicationInfoAsync();
             var embed = new EmbedBuilder
             {
-                Color = new Color(Colours.DefaultColour)
+                Color = Color.DarkPurple
             };
             var host = new EmbedFieldBuilder
             {

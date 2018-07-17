@@ -72,10 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Images\Game\Enemy\" />
-    <Folder Include="Data\Images\Profile\Backgrounds\" />
-    <Folder Include="Data\Images\Profile\ShipClass\" />
-    <Folder Include="Data\Images\Profile\Template\" />
     <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
@@ -225,9 +221,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Class\Light Cruiser.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Profile\ShipClass\Ship Girl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Template.png">

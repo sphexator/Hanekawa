@@ -143,7 +143,7 @@ namespace Jibril.Services.Automate
             var embed = new EmbedBuilder
             {
                 Title = "Kai Ni Update!",
-                Color = new Color(Colours.DefaultColour),
+                Color = Color.DarkPurple,
                 Description = desc
             };
             return embed;
