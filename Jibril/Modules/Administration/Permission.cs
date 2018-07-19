@@ -37,7 +37,7 @@ namespace Jibril.Modules.Administration
             }
         }
 
-        [Group("add")]
+        [Group("drop")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public class AddPermission : ModuleBase<SocketCommandContext>
         {
@@ -47,7 +47,8 @@ namespace Jibril.Modules.Administration
             {
                 _loot = loot;
             }
-            [Command("drop", RunMode = RunMode.Async)]
+
+            [Command("Add", RunMode = RunMode.Async)]
             public async Task AddDropChannel(ITextChannel channel = null)
             {
                 try
@@ -65,20 +66,8 @@ namespace Jibril.Modules.Administration
                             .Build());
                 }
             }
-        }
 
-        [Group("remove")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public class RemovedPermission : ModuleBase<SocketCommandContext>
-        {
-            private readonly LootCrates _loot;
-
-            public RemovedPermission(LootCrates loot)
-            {
-                _loot = loot;
-            }
-
-            [Command("drop", RunMode = RunMode.Async)]
+            [Command("remove", RunMode = RunMode.Async)]
             public async Task RemoveDropChannel(ITextChannel channel = null)
             {
                 try
