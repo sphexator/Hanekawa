@@ -102,10 +102,16 @@ namespace Jibril.Extensions
             return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<Report> CreateReport(this DbService context, IUser user, DateTime time)
+        public static async Task<Report> CreateReport(this DbService context, SocketGuildUser user, DateTime time)
         {
+            var counter = await context.Reports.CountAsync(x => x.GuildId == user.Guild.Id);
+            uint nr;
+            if (counter == 0) nr = 1;
+            else nr = (uint)counter + 1;
             var data = new Report
             {
+                Id = nr,
+                GuildId = user.Guild.Id,
                 UserId = user.Id,
                 Status = true,
                 Date = time

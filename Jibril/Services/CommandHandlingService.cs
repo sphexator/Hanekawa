@@ -52,7 +52,7 @@ namespace Jibril.Services
             if (message.Source != MessageSource.User) return;
             var argPos = 0;
             var prefix = message.Author is SocketGuildUser user ? Prefix.GetOrAdd(user.Guild.Id, ".") : ".";
-            if (!message.HasStringPrefix(prefix, ref argPos)) return;
+            if (!message.HasStringPrefix(prefix, ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
             
             var context = new SocketCommandContext(_discord, message);
             await _commands.ExecuteAsync(context, argPos, _provider);
