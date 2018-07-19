@@ -61,10 +61,16 @@ namespace Jibril.Extensions
             return await context.AccountGlobals.FindAsync(user.Id);
         }
 
-        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, DateTime time, ModAction action)
+        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild, DateTime time, ModAction action)
         {
+            var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
+            uint nr;
+            if (counter == 0) nr = 1;
+            else nr = (uint)counter + 1;
             var data = new ModLog
             {
+                Id = nr,
+                GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
                 Action = action.ToString()
@@ -74,12 +80,18 @@ namespace Jibril.Extensions
             return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, string name, DateTime time)
+        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild, string name, DateTime time)
         {
             var check = await context.ClubInfos.FindAsync(user.Id);
             if (check != null) return null;
+            var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
+            uint nr;
+            if (counter == 0) nr = 1;
+            else nr = (uint)counter + 1;
             var data = new ClubInfo
             {
+                Id = nr,
+                GuildId = guild.Id,
                 Leader = user.Id,
                 Name = name,
                 CreationDate = time
@@ -89,10 +101,16 @@ namespace Jibril.Extensions
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
         }
 
-        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, DateTime time)
+        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild, DateTime time)
         {
+            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
+            uint nr;
+            if (counter == 0) nr = 1;
+            else nr = (uint)counter + 1;
             var data = new Suggestion
             {
+                Id = nr,
+                GuildId = guild.Id,
                 Date = time,
                 UserId = user.Id,
                 Status = true,
@@ -102,16 +120,16 @@ namespace Jibril.Extensions
             return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<Report> CreateReport(this DbService context, SocketGuildUser user, DateTime time)
+        public static async Task<Report> CreateReport(this DbService context, IUser user, SocketGuild guild, DateTime time)
         {
-            var counter = await context.Reports.CountAsync(x => x.GuildId == user.Guild.Id);
+            var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
             else nr = (uint)counter + 1;
             var data = new Report
             {
                 Id = nr,
-                GuildId = user.Guild.Id,
+                GuildId = guild.Id,
                 UserId = user.Id,
                 Status = true,
                 Date = time

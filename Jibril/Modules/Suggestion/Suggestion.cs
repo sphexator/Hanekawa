@@ -21,7 +21,7 @@ namespace Jibril.Modules.Suggestion
             {
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 if (!cfg.SuggestionChannel.HasValue) return;
-                var caseId = await db.CreateSuggestion(Context.User, DateTime.UtcNow);
+                var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = (Context.User as SocketGuildUser).GetAvatar(),

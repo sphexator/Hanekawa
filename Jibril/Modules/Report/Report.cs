@@ -19,7 +19,7 @@ namespace Jibril.Modules.Report
             await Context.Message.DeleteAsync();
             using (var db = new DbService())
             {
-                var report = await db.CreateReport(Context.User as SocketGuildUser, DateTime.UtcNow);
+                var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 if (!cfg.ReportChannel.HasValue) return;
                 var author = new EmbedAuthorBuilder

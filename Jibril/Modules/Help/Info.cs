@@ -1,12 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Humanizer;
-using Jibril.Data.Variables;
 using Jibril.Extensions;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Help
 {
@@ -25,7 +24,7 @@ namespace Jibril.Modules.Help
             {
                 IsInline = true,
                 Name = "Instance owned by",
-                Value = $"{application.Owner.Mention}"
+                Value = $"{application.Owner.Username}#{application.Owner.Discriminator}"
             };
             var creator = new EmbedFieldBuilder
             {
@@ -39,7 +38,7 @@ namespace Jibril.Modules.Help
                 Name = "About",
                 Value =
                     "Jibril is a discord bot focused on rewarding user interactivity while keeping it clean with several services analyzing user behaviours.\n" +
-                    "Jibril is made in C# and is not open source."
+                    "Jibril is made in C# using the Discord.Net library and is not open source."
             };
             var currentProcess = Process.GetCurrentProcess();
             var uptime = new EmbedFieldBuilder
@@ -52,15 +51,15 @@ namespace Jibril.Modules.Help
             embed.AddField(creator);
             embed.AddField(about);
             embed.AddField(uptime);
-            await ReplyAsync("", false, embed.Build());
+            await ReplyAsync(null, false, embed.Build());
         }
 
         [Command("uptime")]
         [Summary("Display uptime of bot")]
         public async Task UptimeTask()
         {
-            await ReplyAndDeleteAsync("", false,
-                new EmbedBuilder().Reply($"{(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
                     .Build(), TimeSpan.FromSeconds(20));
         }
     }
