@@ -159,6 +159,7 @@ namespace Jibril.Modules.Account
                 var total = db.Accounts.CountAsync();
                 await Task.WhenAll(rank, total);
                 var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
+
                 var author = new EmbedAuthorBuilder
                 {
                     Name = user.GetName()
@@ -206,7 +207,7 @@ namespace Jibril.Modules.Account
                     Color = Color.DarkPurple,
                     Title = "Leaderboard"
                 };
-                var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
                 {

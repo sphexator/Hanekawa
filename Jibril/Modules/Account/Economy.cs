@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -12,6 +7,9 @@ using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Account
 {
@@ -114,7 +112,7 @@ namespace Jibril.Modules.Account
                     Color = Color.DarkPurple,
                     Title = "Leaderboard"
                 };
-                var users = await db.Accounts.Where(x => x.Active).OrderByDescending(account => account.Credit).Take(10).ToListAsync();
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.Credit).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
                 {
