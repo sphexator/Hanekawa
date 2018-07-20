@@ -21,7 +21,9 @@ using Quartz.Spi;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Jibril.Data;
 using Jibril.Modules.Game;
 using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Loot;
@@ -49,8 +51,14 @@ namespace Jibril
             });
             _config = BuildConfig();
 
+            _youTubeService = new YouTubeService(new BaseClientService.Initializer
+            {
+                ApiKey = _config["googleApi"],
+                ApplicationName = GetType().ToString()
+            });
+
             var services = ConfigureServices();
-            services.GetRequiredService<DbInfo>();
+            services.GetRequiredService<Config>();
             services.GetRequiredService<LogService>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
@@ -61,7 +69,7 @@ namespace Jibril
             services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
 
-            _client.Ready += _client_ReadyAsync;
+            _client.Ready += LavalinkInitiateAsync;
             
             var scheduler = services.GetService<IScheduler>();
             /*
@@ -77,7 +85,7 @@ namespace Jibril
             await Task.Delay(-1);
         }
 
-        private async Task _client_ReadyAsync()
+        private async Task LavalinkInitiateAsync()
         {
             _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
             {
@@ -96,6 +104,9 @@ namespace Jibril
             var services = new ServiceCollection();
             services.UseQuartz(typeof(MvpService));
             services.AddSingleton(_client);
+            services.AddSingleton(_lavalink);
+            services.AddSingleton(_youTubeService);
+            services.AddSingleton(_config);
 
             services.AddDistributedRedisCache(options =>
             {
@@ -123,8 +134,7 @@ namespace Jibril
             services.AddSingleton<LootCrates>();
             services.AddLogging();
             services.AddSingleton<LogService>();
-            services.AddSingleton(_config);
-            services.AddSingleton<DbInfo>();
+            services.AddSingleton<Config>();
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<QuartzJonFactory>();
             services.AddSingleton<IJobFactory, QuartzJonFactory>();

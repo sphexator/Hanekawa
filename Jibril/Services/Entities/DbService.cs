@@ -6,9 +6,7 @@ namespace Jibril.Services.Entities
 {
     public class DbService : DbContext
     {
-        public DbService()
-        {
-        }
+        public DbService() { }
 
         public DbService(DbContextOptions options) : base(options)
         {
@@ -103,17 +101,5 @@ namespace Jibril.Services.Entities
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
         }
-    }
-
-    public class DbInfo
-    {
-        public DbInfo(IConfiguration config)
-        {
-            var config1 = config;
-
-            ConnectionString = config1["connectionString"];
-        }
-
-        public static string ConnectionString { get; private set; }
     }
 }
