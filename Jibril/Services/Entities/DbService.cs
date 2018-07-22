@@ -33,6 +33,8 @@ namespace Jibril.Services.Entities
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
+        public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
+        public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -100,6 +102,8 @@ namespace Jibril.Services.Entities
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
+            modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new {e.GuildId, e.Id}));
+            modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new {e.GuildId, e.ChannelId}));
         }
     }
 }

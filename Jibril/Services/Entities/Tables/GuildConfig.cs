@@ -10,6 +10,9 @@
         public ulong? ReportChannel { get; set; }
         public ulong? EventChannel { get; set; }
         public ulong? EventSchedulerChannel { get; set; }
+        public ulong? ModChannel { get; set; }
+        public ulong? MusicChannel { get; set; }
+        public ulong? MusicVcChannel { get; set; }
         public uint WelcomeLimit { get; set; }
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }
@@ -18,5 +21,7 @@
         public uint ExpMultiplier { get; set; }
         public bool StackLvlRoles { get; set; }
         public ulong? MuteRole { get; set; }
+        public bool FilterInvites { get; set; }
+        public bool IgnoreAllChannels { get; set; }
     }
 }
