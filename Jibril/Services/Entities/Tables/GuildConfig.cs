@@ -14,6 +14,8 @@
         public ulong? MusicChannel { get; set; }
         public ulong? MusicVcChannel { get; set; }
         public uint WelcomeLimit { get; set; }
+        public bool WelcomeBanner { get; set; }
+        public string WelcomeMessage { get; set; }
         public ulong? LogJoin { get; set; }
         public ulong? LogMsg { get; set; }
         public ulong? LogBan { get; set; }

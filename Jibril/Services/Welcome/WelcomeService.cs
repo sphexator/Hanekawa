@@ -1,11 +1,5 @@
-﻿using Discord.WebSocket;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
+using Discord.WebSocket;
 using Humanizer;
 using Jibril.Extensions;
 using Jibril.Services.Entities;
@@ -14,11 +8,16 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.Primitives;
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Jibril.Services.Welcome
 {
@@ -59,6 +58,8 @@ namespace Jibril.Services.Welcome
 
             Directory.CreateDirectory("Data/Welcome/");
         }
+
+        public async Task TestBanner(ISocketMessageChannel ch, IGuildUser user) => await WelcomeBanner(ch, user);
 
         private Task WelcomeToggler(SocketGuildUser user)
         {
@@ -103,9 +104,14 @@ namespace Jibril.Services.Welcome
                 }
 
             });
-
             return Task.CompletedTask;
+        }
 
+        private static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
+        {
+            var stream = await ImageGeneratorAsync(user);
+            stream.Seek(0, SeekOrigin.Begin);
+            await ch.SendFileAsync(stream, "welcome.png");
         }
 
         private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
@@ -128,13 +134,6 @@ namespace Jibril.Services.Welcome
                 img.Save(stream, new PngEncoder());
             }
             return stream;
-        }
-
-        private static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user)
-        {
-            var stream = await ImageGeneratorAsync(user);
-            stream.Seek(0, SeekOrigin.Begin);
-            await ch.SendFileAsync(stream, "welcome.png");
         }
 
         private static string GetImage(IGuild guild)

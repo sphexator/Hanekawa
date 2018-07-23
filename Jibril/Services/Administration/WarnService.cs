@@ -43,20 +43,20 @@ namespace Jibril.Services.Administration
                 var userdata = await db.GetOrCreateUserData(user);
                 var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
                 var roles = string.Join(", ", roleList);
-                var content = $"**>User Information**\n" +
+                var content = $"**⮞ User Information**\n" +
                               $"Status: {user.Status}\n" +
                               $"Game: {user.Activity}\n" +
                               $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
                               $"\n" +
-                              $"**>Member Information**\n" +
+                              $"**⮞ Member Information**\n" +
                               $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
                               $"Roles: {roles}\n" +
                               $"\n" +
-                              $"**>Activity**\n" +
+                              $"**⮞ Activity**\n" +
                               $"Last Message: {userdata.LastMessage.Humanize()} \n" +
                               $"First Message: {userdata.LastMessage.Humanize()} \n" +
                               $"\n" +
-                              $"**>Session**\n" +
+                              $"**⮞ Session**\n" +
                               $"Amount: {userdata.Sessions}\n" +
                               $"Time: {userdata.TimeInVoice.Humanize()}";
                 var author = new EmbedAuthorBuilder
