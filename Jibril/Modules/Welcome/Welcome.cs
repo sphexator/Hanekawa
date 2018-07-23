@@ -32,7 +32,7 @@ namespace Jibril.Modules.Welcome
             [Summary("Adds a banner to the bot")]
             public async Task AddWelcomeBanner(string url)
             {
-                await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser);
+                await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
                 await ReplyAsync($"Do you want to add this banner? (Y/N");
                 var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
                 if (response.Content.ToLower() != "y")
@@ -125,7 +125,7 @@ namespace Jibril.Modules.Welcome
             [Command("test", RunMode = RunMode.Async)]
             [Summary("Tests a banner from a url to see how it looks")]
             public async Task TestWelcomeBanner(string url) =>
-                await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser);
+                await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
 
             [Command("template", RunMode = RunMode.Async)]
             [Summary("Sends banner template")]
