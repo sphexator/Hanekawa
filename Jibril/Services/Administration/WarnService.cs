@@ -58,7 +58,7 @@ namespace Jibril.Services.Administration
                               $"\n" +
                               $"**⮞ Session**\n" +
                               $"Amount: {userdata.Sessions}\n" +
-                              $"Time: {userdata.TimeInVoice.Humanize()}";
+                              $"Time: {userdata.StatVoiceTime.Humanize()}";
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = user.GetAvatar(),

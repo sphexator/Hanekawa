@@ -36,8 +36,11 @@ namespace Jibril.Extensions
                 MvpImmunity = false,
                 Level = 1,
                 Sessions = 0,
-                TimeInVoice = TimeSpan.Zero,
-                VoiceTime = DateTime.UtcNow
+                StatVoiceTime = TimeSpan.Zero,
+                ChannelVoiceTime = DateTime.UtcNow,
+                StatMessages = 0,
+                Rep = 0,
+                ProfilePic = null
             };
             await context.Accounts.AddAsync(data);
             await context.SaveChangesAsync();

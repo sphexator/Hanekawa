@@ -25,5 +25,6 @@
         public ulong? MuteRole { get; set; }
         public bool FilterInvites { get; set; }
         public bool IgnoreAllChannels { get; set; }
+        public ulong BoardEmote { get; set; }
     }
 }

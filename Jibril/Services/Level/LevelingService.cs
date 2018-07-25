@@ -171,7 +171,7 @@ namespace Jibril.Services.Level
 
                         userdata.TotalExp = userdata.TotalExp + exp;
                         userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
-                        userdata.TimeInVoice = userdata.TimeInVoice + (DateTime.UtcNow - userdata.VoiceExpTime);
+                        userdata.StatVoiceTime = userdata.StatVoiceTime + (DateTime.UtcNow - userdata.VoiceExpTime);
                         userdata.Sessions = userdata.Sessions + 1;
 
                         if (userdata.Exp + exp >= nxtLvl)

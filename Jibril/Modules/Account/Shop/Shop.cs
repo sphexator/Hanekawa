@@ -17,22 +17,7 @@ namespace Jibril.Modules.Account.Shop
         [Alias("inv")]
         public async Task InventoryAsync()
         {
-            using (var db = new DbService())
-            {
-                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var inv = $"{(Context.User as SocketGuildUser).GetName()} Inventory:\n";
-                if (userdata.Inventory.Count != 0)
-                {
-                    inv += "```\n";
-                    foreach (var x in userdata.Inventory)
-                    {
-                        var data = $"{x.Name.PadRight(22)} {x.Amount}\n";
-                        inv += data;
-                    }
-                    inv += "```";
-                }
-                await ReplyAsync(inv);
-            }
+
         }
 
         [Command("shop", RunMode = RunMode.Async)]
@@ -80,24 +65,8 @@ namespace Jibril.Modules.Account.Shop
         [Command("buy", RunMode = RunMode.Async)]
         public async Task BuyAsync(uint itemId)
         {
-            using (var db = new DbService())
-            {
-                var getItem = await db.Shops.FindAsync(itemId);
-                if (getItem == null) return;
-                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                if (userdata.Credit < getItem.Price)
-                {
-                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} don't have enough credit to buy that item!", Color.Red.RawValue).Build());
-                    return;
-                }
-
-                userdata.Credit = userdata.Credit - getItem.Price;
-                var invCheck = userdata.Inventory.FirstOrDefault(x => x.Name == getItem.Item);
-                if (invCheck == null)
-                {
-                    userdata.Inventory = userdata.Inventory;
-                }
-            }
+            await ReplyAsync(null, false,
+                new EmbedBuilder().Reply("Buy command is currently disabled for rework.", Color.Red.RawValue).Build());
         }
     }
 }
