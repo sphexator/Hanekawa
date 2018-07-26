@@ -48,6 +48,28 @@ namespace Jibril.Services.Games.ShipGame
             battles.TryRemove(context.User.Id, out var game);
         }
 
+        public async Task<Stream> CreateBanner(SocketGuildUser userOne, GameEnemy npc, string gameClass)
+        {
+            var stream = new MemoryStream();
+            using (var img = Image.Load(@"Data\Game\background.png"))
+            {
+                var border = Image.Load(GetBorder(gameClass));
+                var aviOne = await GetAvatarAsync(userOne);
+                var aviTwo = await GetAvatarAsync(npc);
+                aviOne.Seek(0, SeekOrigin.Begin);
+                aviTwo.Seek(0, SeekOrigin.Begin);
+                var playerOne = Image.Load(aviOne);
+                var playerTwo = Image.Load(aviTwo);
+                img.Mutate(x => x
+                    .DrawImage(GraphicsOptions.Default, playerOne, new Point(24, 108))
+                    .DrawImage(GraphicsOptions.Default, playerTwo, new Point(244, 108))
+                    .DrawImage(GraphicsOptions.Default, border, new Point(0, 0)));
+                img.Save(stream, new PngEncoder());
+            }
+
+            return stream;
+        }
+
         public async Task<Stream> CreateBanner(SocketGuildUser userOne, SocketGuildUser userTwo, string gameClass)
         {
             var stream = new MemoryStream();
@@ -81,6 +103,21 @@ namespace Jibril.Services.Games.ShipGame
             using (var client = new HttpClient())
             {
                 var avatar = await client.GetStreamAsync(user.GetAvatar());
+                using (var img = Image.Load(avatar))
+                {
+                    img.Mutate(x => x.Resize(126, 126));
+                    img.Save(stream, new PngEncoder());
+                }
+            }
+            return stream;
+        }
+
+        private static async Task<Stream> GetAvatarAsync(GameEnemy npc)
+        {
+            var stream = new MemoryStream();
+            using (var client = new HttpClient())
+            {
+                var avatar = await client.GetStreamAsync(npc.Image);
                 using (var img = Image.Load(avatar))
                 {
                     img.Mutate(x => x.Resize(126, 126));

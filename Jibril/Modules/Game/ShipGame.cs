@@ -108,10 +108,13 @@ namespace Jibril.Modules.Game
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 var msgLog = new LinkedList<string>();
                 msgLog.AddFirst($"**{(Context.User as SocketGuildUser).GetName()}** VS **{game.Name}**");
+
                 var userHealth = _baseStats.HealthPoint((int)userdata.Level, userdata.Class);
                 var enemyHealth = _enemyStat.HealthPoint((int)userdata.Level, (int)game.Health);
                 var usertotalHp = _baseStats.HealthPoint((int)userdata.Level, userdata.Class);
                 var enemytotalHp = _enemyStat.HealthPoint((int)userdata.Level, (int)game.Health);
+
+                var img = await _gameService.CreateBanner(Context.User as SocketGuildUser, game, game.Class);
 
                 var embed = new EmbedBuilder
                 {
@@ -130,7 +133,7 @@ namespace Jibril.Modules.Game
                     Name = $"{game.Name}",
                     Value = $"{enemyHealth}/{enemyHealth}"
                 });
-                var msg = await ReplyAsync("test message", false, embed.Build());
+                var msg = await Context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
 
                 var alive = true;
                 while (alive)
