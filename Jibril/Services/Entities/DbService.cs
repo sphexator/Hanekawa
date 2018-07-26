@@ -1,6 +1,5 @@
 ﻿using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Jibril.Services.Entities
 {
