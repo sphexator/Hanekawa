@@ -74,7 +74,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\Music\" />
     <Folder Include="Modules\Club\" />
     <Folder Include="Services\INC\Cache\Avatar\" />
     <Folder Include="Services\INC\Cache\Banner\" />
