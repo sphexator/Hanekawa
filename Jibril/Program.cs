@@ -63,7 +63,7 @@ namespace Jibril
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
             services.GetRequiredService<WelcomeService>();
-            services.GetRequiredService<ReactionService>();
+            services.GetRequiredService<BoardService>();
             services.GetRequiredService<WarnService>();
             services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<HungerGames>();
@@ -119,7 +119,7 @@ namespace Jibril
             services.AddSingleton<Calculate>();
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
-            services.AddSingleton<ReactionService>();
+            services.AddSingleton<BoardService>();
             services.AddSingleton<ModerationService>();
             services.AddSingleton<HungerGames>();
             services.AddSingleton<MvpService>();

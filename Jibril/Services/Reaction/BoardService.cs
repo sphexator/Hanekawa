@@ -9,19 +9,26 @@ using Jibril.Services.Entities;
 
 namespace Jibril.Services.Reaction
 {
-    public class ReactionService
+    public class BoardService
     {
         private readonly DiscordSocketClient _client;
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+        private ConcurrentDictionary<ulong, ulong> ReactionEmote { get; }
+            = new ConcurrentDictionary<ulong, ulong>();
 
-        public ReactionService(DiscordSocketClient client, IServiceProvider provider)
+        public BoardService(DiscordSocketClient client, IServiceProvider provider)
         {
             _client = client;
 
             _client.ReactionAdded += BoardReactionAdded;
             _client.ReactionRemoved += BoardReactionRemoved;
+        }
+
+        public void SetBoardEmote(SocketGuild guild, Emote emote)
+        {
+            ReactionEmote.AddOrUpdate(guild.Id, emote.Id, (key, old) => old = emote.Id);
         }
 
         private Task BoardReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
