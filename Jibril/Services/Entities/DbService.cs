@@ -35,6 +35,7 @@ namespace Jibril.Services.Entities
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
+        public virtual DbSet<Board> Boards { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -104,6 +105,7 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new {e.GuildId, e.Id}));
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new {e.GuildId, e.ChannelId}));
+            modelBuilder.Entity<Board>(x => x.HasKey(e => new {e.GuildId, e.MessageId}));
         }
     }
 }
