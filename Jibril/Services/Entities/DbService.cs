@@ -56,16 +56,14 @@ namespace Jibril.Services.Entities
             modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
             modelBuilder.Entity<Suggestion>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => new{e.Id, e.GuildId});
             });
             modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<Warn>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => new {e.GuildId, e.Id});
             });
             modelBuilder.Entity<WarnMsgLog>(x =>
             {
@@ -74,8 +72,7 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<Report>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => new{e.Id, e.GuildId});
             });
             modelBuilder.Entity<Shop>(x =>
             {
@@ -89,13 +86,11 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<ModLog>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => new {e.Id, e.GuildId});
             });
             modelBuilder.Entity<ClubInfo>(x =>
             {
                 x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
             modelBuilder.Entity<GameEnemy>(x =>
