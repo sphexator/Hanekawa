@@ -16,7 +16,6 @@ namespace Jibril.Modules.Welcome
 {
     public class Welcome : InteractiveBase
     {
-        //TODO: Fill all these methods
         [Group("welcome")]
         [Alias("welc")]
         [RequireUserPermission(GuildPermission.Administrator)]
