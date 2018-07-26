@@ -159,7 +159,11 @@ namespace Jibril.Extensions
                 MuteRole = null,
                 WelcomeLimit = 5,
                 Prefix = "h.",
-                BoardChannel = null
+                BoardChannel = null,
+                IgnoreAllChannels = false,
+                WelcomeBanner = true,
+                WelcomeMessage = null,
+                FilterInvites = false
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
