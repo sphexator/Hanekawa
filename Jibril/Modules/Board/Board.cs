@@ -5,6 +5,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Jibril.Extensions;
+using Jibril.Preconditions;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ namespace Jibril.Modules.Board
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
+        [RequiredChannel(339383206669320192)]
         public async Task BoardStats()
         {
             using (var db = new DbService())
@@ -41,6 +43,7 @@ namespace Jibril.Modules.Board
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
+        [RequiredChannel(339383206669320192)]
         public async Task BoardStats(IGuildUser user)
         {
             using (var db = new DbService())

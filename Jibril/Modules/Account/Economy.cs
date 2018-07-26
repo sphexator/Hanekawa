@@ -18,6 +18,7 @@ namespace Jibril.Modules.Account
         [Command("wallet")]
         [Alias("balance", "money")]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task WalletAsync(SocketGuildUser user = null)
         {
             if(user == null) user = Context.User as SocketGuildUser;
@@ -43,6 +44,7 @@ namespace Jibril.Modules.Account
         [Command("give", RunMode = RunMode.Async)]
         [Alias("transfer")]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task GiveCreditAsync(uint amount, SocketGuildUser user)
         {
             if (user == Context.User) return;
@@ -65,6 +67,7 @@ namespace Jibril.Modules.Account
 
         [Command("daily", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task DailyAsync(SocketGuildUser user = null)
         {
             using (var db = new DbService())
@@ -103,6 +106,7 @@ namespace Jibril.Modules.Account
 
         [Command("richest", RunMode = RunMode.Async)]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task LeaderboardAsync()
         {
             using (var db = new DbService())

@@ -6,6 +6,7 @@ using Jibril.Extensions;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Jibril.Preconditions;
 
 namespace Jibril.Modules.Help
 {
@@ -13,6 +14,7 @@ namespace Jibril.Modules.Help
     {
         [Command("info")]
         [Summary("General info about the bot")]
+        [RequiredChannel(339383206669320192)]
         public async Task InfoPosTask()
         {
             var application = await Context.Client.GetApplicationInfoAsync();

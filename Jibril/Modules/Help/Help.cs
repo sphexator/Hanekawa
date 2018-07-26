@@ -4,6 +4,7 @@ using Discord.Commands;
 using Jibril.Data.Variables;
 using System.Linq;
 using System.Threading.Tasks;
+using Jibril.Preconditions;
 
 namespace Jibril.Modules.Help
 {
@@ -17,7 +18,7 @@ namespace Jibril.Modules.Help
         }
 
         [Command("help")]
-        //[RequiredChannel(339383206669320192)]
+        [RequiredChannel(339383206669320192)]
         public async Task HelpAsync()
         {
             const string prefix = ".";
@@ -50,7 +51,7 @@ namespace Jibril.Modules.Help
         }
 
         [Command("help")]
-        //[RequiredChannel(339383206669320192)]
+        [RequiredChannel(339383206669320192)]
         public async Task HelpAsync(string command)
         {
             var result = _service.Search(Context, command);

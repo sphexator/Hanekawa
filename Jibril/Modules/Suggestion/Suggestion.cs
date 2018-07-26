@@ -50,6 +50,7 @@ namespace Jibril.Modules.Suggestion
         [Command("approve", RunMode = RunMode.Async)]
         [Alias("ar")]
         [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ApproveAsync(uint id, [Remainder] string response)
         {
             using (var db = new DbService())
@@ -86,6 +87,7 @@ namespace Jibril.Modules.Suggestion
         [Command("deny", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DenyAsync(uint id, [Remainder] string response)
         {
             using (var db = new DbService())
@@ -125,6 +127,7 @@ namespace Jibril.Modules.Suggestion
         [Command("comment", RunMode = RunMode.Async)]
         [Alias("rr")]
         [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task CommentAsync(uint id, [Remainder] string response)
         {
             using (var db = new DbService())

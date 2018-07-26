@@ -4,42 +4,76 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jibril.Migrations
 {
-    public partial class update : Migration
+    public partial class initialCommit : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Accounts",
+                name: "AccountGlobals",
                 columns: table => new
                 {
                     UserId = table.Column<ulong>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Level = table.Column<uint>(nullable: false),
+                    Exp = table.Column<uint>(nullable: false),
+                    TotalExp = table.Column<uint>(nullable: false),
+                    Rep = table.Column<uint>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountGlobals", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Accounts",
+                columns: table => new
+                {
+                    GuildId = table.Column<ulong>(nullable: false),
+                    UserId = table.Column<ulong>(nullable: false),
+                    Active = table.Column<bool>(nullable: false),
                     Credit = table.Column<uint>(nullable: false),
                     CreditSpecial = table.Column<uint>(nullable: false),
+                    DailyCredit = table.Column<DateTime>(nullable: false),
                     Level = table.Column<uint>(nullable: false),
                     Exp = table.Column<uint>(nullable: false),
                     TotalExp = table.Column<uint>(nullable: false),
                     VoiceExpTime = table.Column<DateTime>(nullable: false),
-                    DailyCredit = table.Column<DateTime>(nullable: false),
                     Class = table.Column<string>(nullable: true),
                     ProfilePic = table.Column<string>(nullable: true),
                     CustomRoleId = table.Column<ulong>(nullable: true),
+                    Rep = table.Column<uint>(nullable: false),
+                    RepCooldown = table.Column<DateTime>(nullable: false),
+                    GameKillAmount = table.Column<uint>(nullable: false),
                     MvpCounter = table.Column<uint>(nullable: false),
                     MvpIgnore = table.Column<bool>(nullable: false),
                     MvpImmunity = table.Column<bool>(nullable: false),
-                    Rep = table.Column<uint>(nullable: false),
-                    RepCooldown = table.Column<DateTime>(nullable: false),
-                    LastMessage = table.Column<DateTime>(nullable: false),
                     FirstMessage = table.Column<DateTime>(nullable: true),
+                    LastMessage = table.Column<DateTime>(nullable: false),
+                    StatVoiceTime = table.Column<TimeSpan>(nullable: false),
                     Sessions = table.Column<uint>(nullable: false),
-                    TimeInVoice = table.Column<TimeSpan>(nullable: false),
-                    VoiceTime = table.Column<DateTime>(nullable: false),
-                    GameKillAmount = table.Column<uint>(nullable: false),
-                    Active = table.Column<bool>(nullable: false)
+                    StatMessages = table.Column<ulong>(nullable: false),
+                    StarGiven = table.Column<uint>(nullable: false),
+                    StarReceived = table.Column<uint>(nullable: false),
+                    ChannelVoiceTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.UserId);
+                    table.PrimaryKey("PK_Accounts", x => new { x.UserId, x.GuildId });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Boards",
+                columns: table => new
+                {
+                    GuildId = table.Column<ulong>(nullable: false),
+                    UserId = table.Column<ulong>(nullable: false),
+                    MessageId = table.Column<ulong>(nullable: false),
+                    StarAmount = table.Column<uint>(nullable: false),
+                    Boarded = table.Column<DateTimeOffset>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Boards", x => new { x.GuildId, x.MessageId });
                 });
 
             migrationBuilder.CreateTable(
@@ -48,6 +82,7 @@ namespace Jibril.Migrations
                 {
                     Id = table.Column<uint>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    GuildId = table.Column<ulong>(nullable: false),
                     Leader = table.Column<ulong>(nullable: false),
                     Name = table.Column<string>(nullable: true),
                     CreationDate = table.Column<DateTime>(nullable: false),
@@ -100,16 +135,31 @@ namespace Jibril.Migrations
                 {
                     GuildId = table.Column<ulong>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Prefix = table.Column<string>(nullable: true),
+                    ReportChannel = table.Column<ulong>(nullable: true),
+                    EventChannel = table.Column<ulong>(nullable: true),
+                    EventSchedulerChannel = table.Column<ulong>(nullable: true),
+                    ModChannel = table.Column<ulong>(nullable: true),
                     WelcomeChannel = table.Column<ulong>(nullable: true),
                     WelcomeLimit = table.Column<uint>(nullable: false),
+                    WelcomeBanner = table.Column<bool>(nullable: false),
+                    WelcomeMessage = table.Column<string>(nullable: true),
                     LogJoin = table.Column<ulong>(nullable: true),
                     LogMsg = table.Column<ulong>(nullable: true),
                     LogBan = table.Column<ulong>(nullable: true),
                     LogAvi = table.Column<ulong>(nullable: true),
-                    AntiSpam = table.Column<uint>(nullable: true),
                     ExpMultiplier = table.Column<uint>(nullable: false),
                     StackLvlRoles = table.Column<bool>(nullable: false),
-                    MuteRole = table.Column<ulong>(nullable: true)
+                    MuteRole = table.Column<ulong>(nullable: true),
+                    FilterInvites = table.Column<bool>(nullable: false),
+                    IgnoreAllChannels = table.Column<bool>(nullable: false),
+                    BoardEmote = table.Column<ulong>(nullable: true),
+                    BoardChannel = table.Column<ulong>(nullable: true),
+                    SuggestionChannel = table.Column<ulong>(nullable: true),
+                    SuggestionEmoteYes = table.Column<string>(nullable: true),
+                    SuggestionEmoteNo = table.Column<string>(nullable: true),
+                    MusicChannel = table.Column<ulong>(nullable: true),
+                    MusicVcChannel = table.Column<ulong>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -195,26 +245,65 @@ namespace Jibril.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IgnoreChannels",
+                columns: table => new
+                {
+                    GuildId = table.Column<ulong>(nullable: false),
+                    ChannelId = table.Column<ulong>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IgnoreChannels", x => new { x.GuildId, x.ChannelId });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Inventory",
+                columns: table => new
+                {
+                    UserId = table.Column<ulong>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true),
+                    Amount = table.Column<uint>(nullable: false),
+                    Unique = table.Column<bool>(nullable: false),
+                    Consumable = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Inventory", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LevelRewards",
                 columns: table => new
                 {
-                    Level = table.Column<uint>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: true),
+                    GuildId = table.Column<ulong>(nullable: false),
+                    Level = table.Column<uint>(nullable: false),
                     Role = table.Column<ulong>(nullable: false),
                     Stackable = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LevelRewards", x => x.Level);
+                    table.PrimaryKey("PK_LevelRewards", x => new { x.GuildId, x.Level });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LootChannels",
+                columns: table => new
+                {
+                    GuildId = table.Column<ulong>(nullable: false),
+                    ChannelId = table.Column<ulong>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LootChannels", x => new { x.GuildId, x.ChannelId });
                 });
 
             migrationBuilder.CreateTable(
                 name: "ModLogs",
                 columns: table => new
                 {
-                    Id = table.Column<uint>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<uint>(nullable: false),
+                    GuildId = table.Column<ulong>(nullable: false),
                     UserId = table.Column<ulong>(nullable: false),
                     Action = table.Column<string>(nullable: true),
                     MessageId = table.Column<ulong>(nullable: false),
@@ -224,7 +313,7 @@ namespace Jibril.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ModLogs", x => x.Id);
+                    table.PrimaryKey("PK_ModLogs", x => new { x.Id, x.GuildId });
                 });
 
             migrationBuilder.CreateTable(
@@ -257,10 +346,10 @@ namespace Jibril.Migrations
                 name: "Reports",
                 columns: table => new
                 {
-                    Id = table.Column<uint>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<uint>(nullable: false),
+                    GuildId = table.Column<ulong>(nullable: false),
                     UserId = table.Column<ulong>(nullable: false),
-                    MessageId = table.Column<ulong>(nullable: false),
+                    MessageId = table.Column<ulong>(nullable: true),
                     Status = table.Column<bool>(nullable: false),
                     Message = table.Column<string>(nullable: true),
                     Attachment = table.Column<string>(nullable: true),
@@ -268,7 +357,7 @@ namespace Jibril.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reports", x => new { x.Id, x.MessageId, x.UserId });
+                    table.PrimaryKey("PK_Reports", x => new { x.Id, x.GuildId });
                 });
 
             migrationBuilder.CreateTable(
@@ -307,16 +396,17 @@ namespace Jibril.Migrations
                 columns: table => new
                 {
                     Id = table.Column<uint>(nullable: false),
+                    GuildId = table.Column<ulong>(nullable: false),
                     UserId = table.Column<ulong>(nullable: false),
                     Status = table.Column<bool>(nullable: false),
-                    MessageId = table.Column<ulong>(nullable: false),
-                    ResponseUser = table.Column<ulong>(nullable: false),
+                    MessageId = table.Column<ulong>(nullable: true),
+                    ResponseUser = table.Column<ulong>(nullable: true),
                     Response = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Suggestions", x => new { x.UserId, x.MessageId });
+                    table.PrimaryKey("PK_Suggestions", x => new { x.Id, x.GuildId });
                 });
 
             migrationBuilder.CreateTable(
@@ -341,8 +431,7 @@ namespace Jibril.Migrations
                 name: "Warns",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<int>(nullable: false),
                     GuildId = table.Column<ulong>(nullable: false),
                     UserId = table.Column<ulong>(nullable: false),
                     Type = table.Column<int>(nullable: false),
@@ -353,40 +442,36 @@ namespace Jibril.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Warns", x => x.Id);
+                    table.PrimaryKey("PK_Warns", x => new { x.GuildId, x.Id });
                 });
 
             migrationBuilder.CreateTable(
-                name: "Inventory",
+                name: "WelcomeBanners",
                 columns: table => new
                 {
-                    UserId = table.Column<ulong>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: true),
-                    Amount = table.Column<uint>(nullable: false),
-                    Unique = table.Column<bool>(nullable: false),
-                    Consumable = table.Column<bool>(nullable: false),
-                    AccountUserId = table.Column<ulong>(nullable: true)
+                    GuildId = table.Column<ulong>(nullable: false),
+                    Id = table.Column<int>(nullable: false),
+                    Url = table.Column<string>(nullable: true),
+                    Uploader = table.Column<ulong>(nullable: false),
+                    UploadTimeOffset = table.Column<DateTimeOffset>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Inventory", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_Inventory_Accounts_AccountUserId",
-                        column: x => x.AccountUserId,
-                        principalTable: "Accounts",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_WelcomeBanners", x => new { x.GuildId, x.Id });
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Inventory_AccountUserId",
-                table: "Inventory",
-                column: "AccountUserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AccountGlobals");
+
+            migrationBuilder.DropTable(
+                name: "Accounts");
+
+            migrationBuilder.DropTable(
+                name: "Boards");
+
             migrationBuilder.DropTable(
                 name: "ClubInfos");
 
@@ -412,10 +497,16 @@ namespace Jibril.Migrations
                 name: "HungerGameLives");
 
             migrationBuilder.DropTable(
+                name: "IgnoreChannels");
+
+            migrationBuilder.DropTable(
                 name: "Inventory");
 
             migrationBuilder.DropTable(
                 name: "LevelRewards");
+
+            migrationBuilder.DropTable(
+                name: "LootChannels");
 
             migrationBuilder.DropTable(
                 name: "ModLogs");
@@ -445,7 +536,7 @@ namespace Jibril.Migrations
                 name: "Warns");
 
             migrationBuilder.DropTable(
-                name: "Accounts");
+                name: "WelcomeBanners");
         }
     }
 }

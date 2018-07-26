@@ -39,6 +39,7 @@ namespace Jibril.Modules.Game
         [Command("search", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 1, Measure.Seconds)]
+        [RequiredChannel(346429281314013184)]
         public async Task ShipGameSearchAsync()
         {
             var check = _gameService.isInBattle(Context);
@@ -98,6 +99,7 @@ namespace Jibril.Modules.Game
         [Command("attack", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [GlobalRatelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel(346429281314013184)]
         public async Task AttackGameAsync()
         {
             var check = _gameService.isInBattle(Context);
@@ -224,6 +226,7 @@ namespace Jibril.Modules.Game
         [Command("duel", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [GlobalRatelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel(346429281314013184)]
         public async Task AttackGameAsync(IGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;

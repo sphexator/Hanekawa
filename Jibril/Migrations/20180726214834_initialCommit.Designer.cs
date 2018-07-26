@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jibril.Migrations
 {
     [DbContext(typeof(DbService))]
-    [Migration("20180714222126_boardSettings")]
-    partial class boardSettings
+    [Migration("20180726214834_initialCommit")]
+    partial class initialCommit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,10 +21,13 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Account", b =>
                 {
-                    b.Property<ulong>("UserId")
-                        .ValueGeneratedOnAdd();
+                    b.Property<ulong>("UserId");
+
+                    b.Property<ulong>("GuildId");
 
                     b.Property<bool>("Active");
+
+                    b.Property<DateTime>("ChannelVoiceTime");
 
                     b.Property<string>("Class");
 
@@ -60,17 +63,56 @@ namespace Jibril.Migrations
 
                     b.Property<uint>("Sessions");
 
-                    b.Property<TimeSpan>("TimeInVoice");
+                    b.Property<uint>("StarGiven");
+
+                    b.Property<uint>("StarReceived");
+
+                    b.Property<ulong>("StatMessages");
+
+                    b.Property<TimeSpan>("StatVoiceTime");
 
                     b.Property<uint>("TotalExp");
 
                     b.Property<DateTime>("VoiceExpTime");
 
-                    b.Property<DateTime>("VoiceTime");
+                    b.HasKey("UserId", "GuildId");
+
+                    b.ToTable("Accounts");
+                });
+
+            modelBuilder.Entity("Jibril.Services.Entities.Tables.AccountGlobal", b =>
+                {
+                    b.Property<ulong>("UserId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<uint>("Exp");
+
+                    b.Property<uint>("Level");
+
+                    b.Property<uint>("Rep");
+
+                    b.Property<uint>("TotalExp");
 
                     b.HasKey("UserId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("AccountGlobals");
+                });
+
+            modelBuilder.Entity("Jibril.Services.Entities.Tables.Board", b =>
+                {
+                    b.Property<ulong>("GuildId");
+
+                    b.Property<ulong>("MessageId");
+
+                    b.Property<DateTimeOffset>("Boarded");
+
+                    b.Property<uint>("StarAmount");
+
+                    b.Property<ulong>("UserId");
+
+                    b.HasKey("GuildId", "MessageId");
+
+                    b.ToTable("Boards");
                 });
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.ClubInfo", b =>
@@ -81,6 +123,8 @@ namespace Jibril.Migrations
                     b.Property<ulong?>("Channel");
 
                     b.Property<DateTime>("CreationDate");
+
+                    b.Property<ulong>("GuildId");
 
                     b.Property<ulong>("Leader");
 
@@ -140,11 +184,19 @@ namespace Jibril.Migrations
                     b.Property<ulong>("GuildId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<uint?>("AntiSpam");
-
                     b.Property<ulong?>("BoardChannel");
 
+                    b.Property<ulong?>("BoardEmote");
+
+                    b.Property<ulong?>("EventChannel");
+
+                    b.Property<ulong?>("EventSchedulerChannel");
+
                     b.Property<uint>("ExpMultiplier");
+
+                    b.Property<bool>("FilterInvites");
+
+                    b.Property<bool>("IgnoreAllChannels");
 
                     b.Property<ulong?>("LogAvi");
 
@@ -153,6 +205,12 @@ namespace Jibril.Migrations
                     b.Property<ulong?>("LogJoin");
 
                     b.Property<ulong?>("LogMsg");
+
+                    b.Property<ulong?>("ModChannel");
+
+                    b.Property<ulong?>("MusicChannel");
+
+                    b.Property<ulong?>("MusicVcChannel");
 
                     b.Property<ulong?>("MuteRole");
 
@@ -164,9 +222,17 @@ namespace Jibril.Migrations
 
                     b.Property<ulong?>("SuggestionChannel");
 
+                    b.Property<string>("SuggestionEmoteNo");
+
+                    b.Property<string>("SuggestionEmoteYes");
+
+                    b.Property<bool>("WelcomeBanner");
+
                     b.Property<ulong?>("WelcomeChannel");
 
                     b.Property<uint>("WelcomeLimit");
+
+                    b.Property<string>("WelcomeMessage");
 
                     b.HasKey("GuildId");
 
@@ -273,12 +339,21 @@ namespace Jibril.Migrations
                     b.ToTable("HungerGameLives");
                 });
 
+            modelBuilder.Entity("Jibril.Services.Entities.Tables.IgnoreChannel", b =>
+                {
+                    b.Property<ulong>("GuildId");
+
+                    b.Property<ulong>("ChannelId");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("IgnoreChannels");
+                });
+
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Inventory", b =>
                 {
                     b.Property<ulong>("UserId")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<ulong?>("AccountUserId");
 
                     b.Property<uint>("Amount");
 
@@ -290,23 +365,20 @@ namespace Jibril.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("AccountUserId");
-
                     b.ToTable("Inventory");
                 });
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.LevelReward", b =>
                 {
-                    b.Property<uint>("Level")
-                        .ValueGeneratedOnAdd();
+                    b.Property<ulong>("GuildId");
 
-                    b.Property<string>("Name");
+                    b.Property<uint>("Level");
 
                     b.Property<ulong>("Role");
 
                     b.Property<bool>("Stackable");
 
-                    b.HasKey("Level");
+                    b.HasKey("GuildId", "Level");
 
                     b.ToTable("LevelRewards");
                 });
@@ -324,8 +396,9 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.ModLog", b =>
                 {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<uint>("Id");
+
+                    b.Property<ulong>("GuildId");
 
                     b.Property<string>("Action");
 
@@ -339,7 +412,7 @@ namespace Jibril.Migrations
 
                     b.Property<ulong>("UserId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "GuildId");
 
                     b.ToTable("ModLogs");
                 });
@@ -372,8 +445,9 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Report", b =>
                 {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<uint>("Id");
+
+                    b.Property<ulong>("GuildId");
 
                     b.Property<string>("Attachment");
 
@@ -387,7 +461,7 @@ namespace Jibril.Migrations
 
                     b.Property<ulong>("UserId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "GuildId");
 
                     b.ToTable("Reports");
                 });
@@ -428,8 +502,9 @@ namespace Jibril.Migrations
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Suggestion", b =>
                 {
-                    b.Property<uint>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<uint>("Id");
+
+                    b.Property<ulong>("GuildId");
 
                     b.Property<DateTime>("Date");
 
@@ -443,17 +518,16 @@ namespace Jibril.Migrations
 
                     b.Property<ulong>("UserId");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "GuildId");
 
                     b.ToTable("Suggestions");
                 });
 
             modelBuilder.Entity("Jibril.Services.Entities.Tables.Warn", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
                     b.Property<ulong>("GuildId");
+
+                    b.Property<int>("Id");
 
                     b.Property<ulong>("Moderator");
 
@@ -467,7 +541,7 @@ namespace Jibril.Migrations
 
                     b.Property<bool>("Valid");
 
-                    b.HasKey("Id");
+                    b.HasKey("GuildId", "Id");
 
                     b.ToTable("Warns");
                 });
@@ -494,11 +568,21 @@ namespace Jibril.Migrations
                     b.ToTable("WarnMsgLogs");
                 });
 
-            modelBuilder.Entity("Jibril.Services.Entities.Tables.Inventory", b =>
+            modelBuilder.Entity("Jibril.Services.Entities.Tables.WelcomeBanner", b =>
                 {
-                    b.HasOne("Jibril.Services.Entities.Tables.Account")
-                        .WithMany("Inventory")
-                        .HasForeignKey("AccountUserId");
+                    b.Property<ulong>("GuildId");
+
+                    b.Property<int>("Id");
+
+                    b.Property<DateTimeOffset>("UploadTimeOffset");
+
+                    b.Property<ulong>("Uploader");
+
+                    b.Property<string>("Url");
+
+                    b.HasKey("GuildId", "Id");
+
+                    b.ToTable("WelcomeBanners");
                 });
 #pragma warning restore 612, 618
         }

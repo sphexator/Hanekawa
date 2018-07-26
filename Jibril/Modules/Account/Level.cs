@@ -149,6 +149,7 @@ namespace Jibril.Modules.Account
 
         [Command("rank", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task RankAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
@@ -198,6 +199,7 @@ namespace Jibril.Modules.Account
 
         [Command("top", RunMode = RunMode.Async)]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task LeaderboardAsync()
         {
             using (var db = new DbService())
@@ -226,6 +228,7 @@ namespace Jibril.Modules.Account
 
         [Command("rep", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel(339383206669320192)]
         public async Task RepAsync(SocketGuildUser user = null)
         {
             using (var db = new DbService())
