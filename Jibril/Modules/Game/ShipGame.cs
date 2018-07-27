@@ -98,7 +98,7 @@ namespace Jibril.Modules.Game
 
         [Command("attack", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [GlobalRatelimit(1, 5, Measure.Seconds)]
+        [GlobalRatelimit(1, 10, Measure.Seconds)]
         [RequiredChannel(346429281314013184)]
         public async Task AttackGameAsync()
         {
@@ -117,7 +117,7 @@ namespace Jibril.Modules.Game
                 var enemytotalHp = _enemyStat.HealthPoint((int)userdata.Level, (int)game.Health);
 
                 var img = await _gameService.CreateBanner(Context.User as SocketGuildUser, game, game.Class);
-
+                img.Seek(0, SeekOrigin.Begin);
                 var embed = new EmbedBuilder
                 {
                     Description = UpdateCombatLog(msgLog),
@@ -227,6 +227,7 @@ namespace Jibril.Modules.Game
         [RequireContext(ContextType.Guild)]
         [GlobalRatelimit(1, 5, Measure.Seconds)]
         [RequiredChannel(346429281314013184)]
+        [RequireOwner]
         public async Task AttackGameAsync(IGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;

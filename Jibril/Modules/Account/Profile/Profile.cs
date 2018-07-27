@@ -52,7 +52,7 @@ namespace Jibril.Modules.Account.Profile
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
                         .Reply(
-                            $"{Context.User.Mention} couldn't make a background with that avatar. Please use a direct image and preferably from imgur.com", Color.Red.RawValue)
+                            $"{Context.User.Mention} couldn't make a background with that picture. Please use a direct image and preferably from imgur.com", Color.Red.RawValue)
                         .Build());
             }
         }

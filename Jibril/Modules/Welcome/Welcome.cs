@@ -43,14 +43,13 @@ namespace Jibril.Modules.Welcome
                 using (var db = new DbService())
                 {
                     var number = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).CountAsync();
-                    var id = number == 0 ? 1 : number;
                     var data = new WelcomeBanner
                     {
                         GuildId = Context.Guild.Id,
                         UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
                         Uploader = Context.User.Id,
                         Url = url,
-                        Id = id
+                        Id = number + 1
                     };
                     await db.WelcomeBanners.AddAsync(data);
                     await db.SaveChangesAsync();
@@ -94,11 +93,13 @@ namespace Jibril.Modules.Welcome
                         string input = null;
                         for (var j = 0; j < 5; j++)
                         {
+                            if (i >= list.Count) continue;
                             var entry = list[i];
                             input += $"ID: {entry.Id}\n" +
-                                        $"URL: {entry.Url}\n" +
-                                        $"Uploader: {Context.Guild.GetUser(entry.Uploader).Mention ?? $"User left server ({entry.Uploader})"}\n" +
-                                        $"Added: {entry.UploadTimeOffset.DateTime}";
+                                     $"URL: {entry.Url}\n" +
+                                     $"Uploader: {Context.Guild.GetUser(entry.Uploader).Mention ?? $"User left server ({entry.Uploader})"}\n" +
+                                     $"Added: {entry.UploadTimeOffset.DateTime}\n" +
+                                     $"\n";
                             i++;
                         }
                         pages.Add(input);
@@ -114,7 +115,9 @@ namespace Jibril.Modules.Welcome
                             Back = new Emoji("◀"),
                             Next = new Emoji("▶"),
                             Last = new Emoji("⏭"),
-                            FooterFormat = $"{0}/{1}"
+                            Stop = null,
+                            Jump = null,
+                            Info = null
                         }
                     };
                     await PagedReplyAsync(paginator);

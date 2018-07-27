@@ -53,9 +53,10 @@ namespace Jibril.Modules.Suggestion
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ApproveAsync(uint id, [Remainder] string response)
         {
+            await Context.Message.DeleteAsync();
             using (var db = new DbService())
             {
-                var suggestion = await db.Suggestions.FindAsync(id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
@@ -90,9 +91,10 @@ namespace Jibril.Modules.Suggestion
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task DenyAsync(uint id, [Remainder] string response)
         {
+            await Context.Message.DeleteAsync();
             using (var db = new DbService())
             {
-                var suggestion = await db.Suggestions.FindAsync(id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
@@ -130,9 +132,10 @@ namespace Jibril.Modules.Suggestion
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task CommentAsync(uint id, [Remainder] string response)
         {
+            await Context.Message.DeleteAsync();
             using (var db = new DbService())
             {
-                var suggestion = await db.Suggestions.FindAsync(id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)

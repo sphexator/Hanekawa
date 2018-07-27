@@ -25,9 +25,11 @@ using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Jibril.Data;
 using Jibril.Modules.Game;
+using Jibril.Services.Audio;
 using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Loot;
 using Jibril.Services.Profile;
+using Microsoft.EntityFrameworkCore;
 using Quartz;
 using SharpLink;
 
@@ -55,6 +57,15 @@ namespace Jibril
             {
                 ApiKey = _config["googleApi"],
                 ApplicationName = GetType().ToString()
+            });
+
+            _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
+            {
+                RESTHost = "localhost",
+                RESTPort = 2333,
+                WebSocketHost = "localhost",
+                WebSocketPort = 80,
+                TotalShards = 1
             });
 
             var services = ConfigureServices();
@@ -85,19 +96,7 @@ namespace Jibril
             await Task.Delay(-1);
         }
 
-        private async Task LavalinkInitiateAsync()
-        {
-            _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
-            {
-                RESTHost = "localhost",
-                RESTPort = 2333,
-                WebSocketHost = "localhost",
-                WebSocketPort = 80,
-                TotalShards = await _client.GetRecommendedShardCountAsync()
-            });
-
-            await _lavalink.StartAsync();
-        }
+        private async Task LavalinkInitiateAsync() => await _lavalink.StartAsync();
 
         private IServiceProvider ConfigureServices()
         {
@@ -132,6 +131,7 @@ namespace Jibril
             services.AddSingleton<ShipGameService>();
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<LootCrates>();
+            services.AddSingleton<AudioService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();

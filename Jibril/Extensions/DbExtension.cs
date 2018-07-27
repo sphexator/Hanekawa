@@ -14,7 +14,7 @@ namespace Jibril.Extensions
     {
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
-            var userdata = await context.Accounts.FindAsync(user.Id);
+            var userdata = await context.Accounts.FindAsync(user.Id, user.Guild.Id);
             if (userdata != null) return userdata;
             var data = new Account
             {
@@ -44,7 +44,7 @@ namespace Jibril.Extensions
             };
             await context.Accounts.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.Accounts.FindAsync(user.Id);
+            return await context.Accounts.FindAsync(user.Id, user.Guild.Id);
         }
 
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user)

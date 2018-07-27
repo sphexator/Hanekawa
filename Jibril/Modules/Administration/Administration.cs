@@ -198,7 +198,7 @@ namespace Jibril.Modules.Administration
         {
             using (var db = new DbService())
             {
-                var actionCase = await db.ModLogs.FindAsync(id);
+                var actionCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
                 var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
                 var embed = updMsg?.Embeds.First().ToEmbedBuilder();
                 if (embed == null) return;

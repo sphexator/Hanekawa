@@ -103,7 +103,7 @@ namespace Jibril.Services.Reaction
 
         private static SocketRole GetBoardColor(SocketGuildUser user)
         {
-            return user.Roles.FirstOrDefault(x => x.Color.RawValue != 0);
+            return user.Roles.LastOrDefault(x => x.Color.RawValue != 0);
         }
     }
 }

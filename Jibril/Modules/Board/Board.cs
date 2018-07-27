@@ -75,17 +75,17 @@ namespace Jibril.Modules.Board
                 await ReplyAsync(null, false, embed.Build());
             }
         }
-
+        
         [Command("emote")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Sets a custom emote to be used toward the board")]
-        public async Task BoardEmote(Emote emote)
+        public async Task BoardEmote(string emote)
         {
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                cfg.BoardEmote = emote.Id;
+                //cfg.BoardEmote = emote;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Changed board emote to {emote}", Color.Green.RawValue).Build());
                 //TODO: Make concurrentDictionary on boardService and update emote to this

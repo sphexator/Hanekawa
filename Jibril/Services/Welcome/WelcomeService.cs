@@ -16,8 +16,11 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using Quartz.Util;
 using SixLabors.ImageSharp.Processing.Transforms;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -63,7 +66,29 @@ namespace Jibril.Services.Welcome
 
         public async Task TestBanner(ISocketMessageChannel ch, IGuildUser user, string backgroundUrl)
         {
-            await WelcomeBanner(ch, user, backgroundUrl);
+            var stream = new MemoryStream();
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetStreamAsync(backgroundUrl);
+                var avatar = await GetAvatarAsync(user);
+                using (var img = Image.Load(response))
+                {
+                    img.Mutate(x => x.Resize(600, 78));
+                    var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
+                    var text = user.Username.Truncate(15);
+                    var optionsCenter = new TextGraphicsOptions
+                    {
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    img.Mutate(ctx => ctx
+                        .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
+                        .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
+                    img.Save(stream, new PngEncoder());
+                }
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+            await ch.SendFileAsync(stream, "testBanner.png");
         }
 
         private Task WelcomeToggler(SocketGuildUser user)
@@ -96,36 +121,42 @@ namespace Jibril.Services.Welcome
         {
             var _ = Task.Run(async () =>
             {
-                if (user.IsBot) return;
-                if (!CheckCooldown(user)) return;
-                var status = AntiRaidDisable.GetOrAdd(user.Guild.Id, false);
-                if (status) return;
-                using (var db = new DbService())
+                try
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    if (cfg.WelcomeChannel == null) return;
-                    await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user)
-                        .ConfigureAwait(false);
+                    if (user.IsBot) return;
+                    if (!CheckCooldown(user)) return;
+                    var status = AntiRaidDisable.GetOrAdd(user.Guild.Id, false);
+                    if (status) return;
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                        if (!cfg.WelcomeChannel.HasValue) return;
+                        await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user, cfg)
+                            .ConfigureAwait(false);
+                    }
                 }
-
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             });
             return Task.CompletedTask;
         }
 
-        private static async Task WelcomeBanner(ISocketMessageChannel ch, IGuildUser user, string backgroundUrl = null)
+        private static async Task WelcomeBanner(ISocketMessageChannel ch, SocketGuildUser user, GuildConfig cfg)
         {
             var stream = await ImageGeneratorAsync(user);
+            var msg = WelcomeMessage(cfg, user);
             stream.Seek(0, SeekOrigin.Begin);
-            await ch.SendFileAsync(stream, "welcome.png");
+            await ch.SendFileAsync(stream, "welcome.png", msg);
         }
 
-        private static async Task<Stream> ImageGeneratorAsync(IGuildUser user, string backgroundUrl = null)
+        private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
         {
             var stream = new MemoryStream();
-            var toLoad = GetImageAsync(user.Guild, backgroundUrl);
-            var avatar = GetAvatarAsync(user);
-            await Task.WhenAll(toLoad, avatar);
-            using (var img = toLoad.Result)
+            var toLoad = await GetImageAsync(user.Guild);
+            var avatar = await GetAvatarAsync(user);
+            using (var img = toLoad)
             {
                 var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
                 var text = user.Username.Truncate(15);
@@ -134,27 +165,36 @@ namespace Jibril.Services.Welcome
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 img.Mutate(ctx => ctx
-                    .DrawImage(GraphicsOptions.Default, avatar.Result, new Point(10, 10))
+                    .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
                     .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
             return stream;
         }
 
-        private static async Task<Image<Rgba32>> GetImageAsync(IGuild guild, string backgroundUrl = null)
+        private static async Task<Image<Rgba32>> GetImageAsync(IGuild guild)
         {
             using (var db = new DbService())
             using (var client = new HttpClient())
             {
                 var list = await db.WelcomeBanners.Where(x => x.GuildId == guild.Id).ToListAsync();
-                if (list.Count == 0) backgroundUrl = @"Data\Welcome\Default.png";
+                if (list.Count == 0) return GetDefaultImage();
                 var rand = new Random().Next(list.Count);
-                var response = await client.GetStreamAsync(backgroundUrl ?? list[rand].Url);
+                var response = await client.GetStreamAsync(list[rand].Url);
                 using (var img = Image.Load(response))
                 {
                     img.Mutate(x => x.Resize(600, 78));
-                    return img;
+                    return img.Clone();
                 }
+            }
+        }
+
+        private static Image<Rgba32> GetDefaultImage()
+        {
+            using (var img = Image.Load(@"Data\Welcome\Default.png"))
+            {
+                img.Mutate(x => x.Resize(600, 78));
+                return img.Clone();
             }
         }
 
@@ -170,6 +210,16 @@ namespace Jibril.Services.Welcome
                 }
             }
         }
+
+        private static string WelcomeMessage(GuildConfig cfg, SocketGuildUser user)
+        {
+            if (cfg.WelcomeMessage.IsNullOrWhiteSpace()) return null;
+            if (!UserRegex.IsMatch(cfg.WelcomeMessage)) return cfg.WelcomeMessage;
+            var msg = UserRegex.Replace(cfg.WelcomeMessage, user.Mention);
+            return msg;
+        }
+
+        private static Regex UserRegex => new Regex("%PLAYER%");
 
         private static Task BannerCleanup(SocketGuild guild)
         {

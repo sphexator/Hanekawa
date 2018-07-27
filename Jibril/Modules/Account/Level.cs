@@ -46,7 +46,7 @@ namespace Jibril.Modules.Account
                 using (var db = new DbService())
                 {
                     var check = await db.LevelRewards.FindAsync(Context.Guild.Id, level);
-                    if (check == null)
+                    if (check != null)
                     {
                         await ReplyAsync(null, false,
                             new EmbedBuilder().Reply($"There's already a level reward on that level.", Color.Red.RawValue).Build());

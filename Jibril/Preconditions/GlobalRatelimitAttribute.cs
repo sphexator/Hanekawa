@@ -85,7 +85,7 @@ namespace Jibril.Preconditions
 
             if (timeout.TimesInvoked > _invokeLimit)
                 return Task.FromResult(PreconditionResult.FromError("You are currently in Timeout."));
-            _invokeTracker[context.User.Id] = timeout;
+            _invokeTracker[context.Guild.Id] = timeout;
             return Task.FromResult(PreconditionResult.FromSuccess());
         }
 

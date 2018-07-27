@@ -79,6 +79,7 @@ namespace Jibril.Services.Administration
         {
             using (var db = new DbService())
             {
+                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
                 var data = new Warn
                 {
                     GuildId = user.GuildId,
@@ -87,7 +88,8 @@ namespace Jibril.Services.Administration
                     Time = time,
                     Reason = reason,
                     Type = type,
-                    Valid = true
+                    Valid = true,
+                    Id = number + 1
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();

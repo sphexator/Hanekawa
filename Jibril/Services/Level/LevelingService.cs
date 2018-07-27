@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jibril.Services.Level
 {
@@ -82,7 +83,7 @@ namespace Jibril.Services.Level
                     await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply($"No event channel has been setup.", Color.Red.RawValue));
             }
         }
-        
+
         private Task GiveRolesBack(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
@@ -123,7 +124,7 @@ namespace Jibril.Services.Level
                     var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
-                    if (userdata.FirstMessage < DateTime.UtcNow - TimeSpan.FromDays(900))
+                    if (userdata.FirstMessage.Value < DateTime.UtcNow - TimeSpan.FromDays(900))
                         userdata.FirstMessage = DateTime.UtcNow;
 
                     userdata.TotalExp = userdata.TotalExp + exp;
@@ -198,10 +199,11 @@ namespace Jibril.Services.Level
 
         private async Task NewLevelManager(Account userdata, IGuildUser user, DbService db)
         {
-            var role = await GetLevelUpRole(userdata.Level, user);
+            var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
+            var role = GetLevelUpRole(userdata.Level, user, roles);
             if (role == null) return;
             var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
-            if (!cfg.StackLvlRoles) await RemoveLevelRoles(user);
+            if (!cfg.StackLvlRoles) await RemoveLevelRoles(user, roles);
             await user.AddRoleAsync(role);
         }
 
@@ -232,24 +234,18 @@ namespace Jibril.Services.Level
             }
         }
 
-        private async Task<IRole> GetLevelUpRole(uint level, IGuildUser user)
+        private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
         {
-            using (var db = new DbService())
-            {
-                var roleid = await db.LevelRewards.FindAsync(level);
-                return roleid == null ? null : _client.GetGuild(user.GuildId).GetRole(roleid.Role);
-            }
+            var roleid = rolesRewards.FirstOrDefault(x => x.Level == level);
+            return roleid == null ? null : _client.GetGuild(user.GuildId).GetRole(roleid.Role);
         }
 
-        private static async Task RemoveLevelRoles(IGuildUser user)
+        private static async Task RemoveLevelRoles(IGuildUser user, IEnumerable<LevelReward> rolesRewards)
         {
-            using (var db = new DbService())
+            foreach (var x in rolesRewards)
             {
-                foreach (var x in db.LevelRewards)
-                {
-                    if (x.Stackable) continue;
-                    if (user.RoleIds.Contains(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
-                }
+                if (x.Stackable) continue;
+                if (user.RoleIds.Contains(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
             }
         }
 
