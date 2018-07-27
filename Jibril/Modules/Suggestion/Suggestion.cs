@@ -44,6 +44,10 @@ namespace Jibril.Modules.Suggestion
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
+                Emote.TryParse("<:1yes:403870491749777411>", out var yes);
+                Emote.TryParse("<:2no:403870492206825472>", out var no);
+                await msg.AddReactionAsync(yes);
+                await msg.AddReactionAsync(no);
             }
         }
 
