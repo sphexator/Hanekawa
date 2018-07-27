@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using Humanizer;
 using Jibril.Data.Constants;
@@ -69,7 +68,7 @@ namespace Jibril.Services.Log
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
-                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged}"
+                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
                     };
                     var footer = new EmbedFooterBuilder
                     {
@@ -137,7 +136,7 @@ namespace Jibril.Services.Log
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
-                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged}"
+                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
                     };
                     var footer = new EmbedFooterBuilder
                     {
@@ -197,7 +196,7 @@ namespace Jibril.Services.Log
                     if (!cfg.LogBan.HasValue) return;
                     var author = new EmbedAuthorBuilder
                     {
-                        Name = $"{ActionType.Ungagged}"
+                        Name = $"{user.Username}#{user.Discriminator} | {ActionType.Ungagged}"
                     };
                     var footer = new EmbedFooterBuilder
                     {
@@ -229,7 +228,7 @@ namespace Jibril.Services.Log
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
-                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged}"
+                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
                     };
                     var footer = new EmbedFooterBuilder
                     {
@@ -264,7 +263,7 @@ namespace Jibril.Services.Log
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
-                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged}"
+                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
                     };
                     var footer = new EmbedFooterBuilder
                     {
@@ -357,7 +356,7 @@ namespace Jibril.Services.Log
                         var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
                         var author = new EmbedAuthorBuilder
                         {
-                            Name = $"Case ID: {caseId.Id} - {ActionType.Bent}"
+                            Name = $"Case ID: {caseId.Id} - {ActionType.Bent} | {user.Username}#{user.Discriminator}"
                         };
                         var footer = new EmbedFooterBuilder
                         {
@@ -399,7 +398,7 @@ namespace Jibril.Services.Log
                         var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
                         var author = new EmbedAuthorBuilder
                         {
-                            Name = $"Case ID: {caseId.Id} - {ActionType.UnBent}"
+                            Name = $"Case ID: {caseId.Id} - {ActionType.UnBent} | {user.Username}#{user.Discriminator}"
                         };
                         var footer = new EmbedFooterBuilder
                         {
