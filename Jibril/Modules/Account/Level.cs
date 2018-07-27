@@ -157,7 +157,7 @@ namespace Jibril.Modules.Account
             {
                 var userdata = await db.GetOrCreateUserData(user);
                 var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp);
-                var total = db.Accounts.CountAsync();
+                var total = db.Accounts.CountAsync(x => x.Active);
                 await Task.WhenAll(rank, total);
                 var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
 

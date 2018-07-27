@@ -297,7 +297,7 @@ namespace Jibril.Services.Log
                     if (!cfg.LogJoin.HasValue) return;
                     var footer = new EmbedFooterBuilder
                     {
-                        Text = $"{user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
+                        Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
                     };
                     var embed = new EmbedBuilder
                     {
@@ -326,7 +326,7 @@ namespace Jibril.Services.Log
                     if (!cfg.LogJoin.HasValue) return;
                     var footer = new EmbedFooterBuilder
                     {
-                        Text = $"{user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
+                        Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
                     };
                     var embed = new EmbedBuilder
                     {
