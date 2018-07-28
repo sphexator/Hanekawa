@@ -27,7 +27,7 @@ namespace Jibril.Services.Profile
                 var userdata = await db.GetOrCreateUserData(user);
                 Image<Rgba32> bg;
                 if (userdata.ProfilePic != null) bg = await GetCustomBackgroundAsync(userdata.ProfilePic);
-                else bg = await GetBackgroundAsync();
+                else bg = GetBackgroundAsync();
                 using (var img = bg)
                 {
                     var avi = await GetAvatarAsync(user);
@@ -87,10 +87,10 @@ namespace Jibril.Services.Profile
                 }
                 
             }
-            catch { return await GetBackgroundAsync(); }
+            catch { return GetBackgroundAsync(); }
         }
 
-        private async Task<Image<Rgba32>> GetBackgroundAsync()
+        private Image<Rgba32> GetBackgroundAsync()
         {
             var rand = new Random();
             var banner = new DirectoryInfo(@"Data\Profile\Default\");

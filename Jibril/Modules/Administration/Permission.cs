@@ -47,44 +47,6 @@ namespace Jibril.Modules.Administration
             {
                 _loot = loot;
             }
-
-            [Command("Add", RunMode = RunMode.Async)]
-            public async Task AddDropChannel(ITextChannel channel = null)
-            {
-                try
-                {
-                    if (channel == null) channel = Context.Channel as ITextChannel;
-                    await _loot.AddLootChannelAsync(channel as SocketTextChannel);
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Added {channel.Mention} to loot eligable channels.", Color.Green.RawValue)
-                            .Build());
-                }
-                catch
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Couldn't add {channel.Mention} to loot eligable channels.", Color.Red.RawValue)
-                            .Build());
-                }
-            }
-
-            [Command("remove", RunMode = RunMode.Async)]
-            public async Task RemoveDropChannel(ITextChannel channel = null)
-            {
-                try
-                {
-                    if (channel == null) channel = Context.Channel as ITextChannel;
-                    await _loot.RemoveLootChannelAsync(channel as SocketTextChannel);
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Removed {channel.Mention} from loot eligable channels.", Color.Green.RawValue)
-                            .Build());
-                }
-                catch
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Couldn't remove {channel.Mention} from loot eligable channels.", Color.Red.RawValue)
-                            .Build());
-                }
-            }
         }
     }
 }

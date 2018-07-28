@@ -65,7 +65,7 @@ namespace Jibril.Services.Administration
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
             var muteRole = await GetMuteRole(user.Guild);
             if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            StopUnmuteTimerAsync(user.GuildId, user.Id);
+            await StopUnmuteTimerAsync(user.GuildId, user.Id);
         }
 
         public async Task Mute(IGuildUser user, IGuildUser staff)
@@ -73,8 +73,9 @@ namespace Jibril.Services.Administration
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
             var muteRole = await GetMuteRole(user.Guild);
             if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            StopUnmuteTimerAsync(user.GuildId, user.Id);
-            UserMuted(user as SocketGuildUser, staff as SocketGuildUser);
+            var stopTimer = StopUnmuteTimerAsync(user.GuildId, user.Id);
+            var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
+            await Task.WhenAll(stopTimer, unmute);
         }
         
         // TIMED MUTE AREA
@@ -103,7 +104,7 @@ namespace Jibril.Services.Administration
                 }
             }
             StartUnmuteTimer(user.GuildId, user.Id, after);
-            UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
+            await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
         }
 
         public async Task TimedMute(IGuildUser user, TimeSpan after)
@@ -182,7 +183,7 @@ namespace Jibril.Services.Administration
             try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}
             try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch {/*IGNORE*/}
 
-            UserUnmuted(user as SocketGuildUser);
+            await UserUnmuted(user as SocketGuildUser);
         }
 
         // GET ROLE AREA

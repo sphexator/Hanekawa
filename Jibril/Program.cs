@@ -79,6 +79,8 @@ namespace Jibril
             services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
+            services.GetRequiredService<MvpService>();
+            services.GetRequiredService<LootCrates>();
 
             _client.Ready += LavalinkInitiateAsync;
             

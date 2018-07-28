@@ -37,59 +37,80 @@ namespace Jibril.Services.Loot
                     {
                         channels.Add(y.ChannelId);
                     }
-
                     LootChannels.GetOrAdd(x.GuildId, channels);
                 }
             }
         }
 
+        public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
+        {
+
+            var triggerMsg = await ch.SendMessageAsync(
+                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
+            var emotes = ReturnEmotes().ToList();
+            var rng = new Random();
+            foreach (var x in emotes.OrderBy(x => rng.Next()).Take(emotes.Count))
+            {
+                if (x.Name == "realsip") _specialLoot.Add(triggerMsg.Id);
+                await triggerMsg.AddReactionAsync(x);
+            }
+        }
+
         private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
         {
-            if (!msg.HasValue) return Task.CompletedTask;
-            if (rct.User.Value.IsBot) return Task.CompletedTask;
-            if (rct.Emote.Name != "realsip") return Task.CompletedTask;
-            if (!_regularLoot.Contains(rct.MessageId) ||
-                !_specialLoot.Contains(rct.MessageId)) return Task.CompletedTask;
-            var _ = Task.Run(async () =>
+            try
             {
-                using (var db = new DbService())
+                if (!msg.HasValue) return Task.CompletedTask;
+                if (rct.User.Value.IsBot) return Task.CompletedTask;
+                if (rct.Emote.Name != "realsip") return Task.CompletedTask;
+                if (!_regularLoot.Contains(rct.MessageId) ||
+                    !_specialLoot.Contains(rct.MessageId)) return Task.CompletedTask;
+                var _ = Task.Run(async () =>
                 {
-                    var userdata = await db.GetOrCreateUserData(rct.User.Value as SocketGuildUser);
-                    if (_specialLoot.Contains(rct.MessageId))
+                    using (var db = new DbService())
                     {
-                        _specialLoot.Remove(rct.MessageId);
-                        if (!msg.HasValue) await msg.GetOrDownloadAsync();
-                        await msg.Value.DeleteAsync();
-                        var rand = new Random().Next(150, 250);
-                        userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
-                        userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
-                        userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
-                        await db.SaveChangesAsync();
-                        var trgMsg =
-                            await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
+                        var userdata = await db.GetOrCreateUserData(rct.User.Value as SocketGuildUser);
+                        if (_specialLoot.Contains(rct.MessageId))
+                        {
+                            _specialLoot.Remove(rct.MessageId);
+                            if (!msg.HasValue) await msg.GetOrDownloadAsync();
+                            await msg.Value.DeleteAsync();
+                            var rand = new Random().Next(150, 250);
+                            userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
+                            userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
+                            userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
+                            await db.SaveChangesAsync();
+                            var trgMsg =
+                                await channel.SendMessageAsync(
+                                    $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
+                            await Task.Delay(5000);
+                            await trgMsg.DeleteAsync();
+                        }
+                        else
+                        {
+                            _regularLoot.Remove(rct.MessageId);
+                            if (!msg.HasValue) await msg.GetOrDownloadAsync();
+                            await msg.Value.DeleteAsync();
+                            var rand = new Random().Next(15, 150);
+                            userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
+                            userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
+                            userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
+                            await db.SaveChangesAsync();
+                            var trgMsg =
+                                await channel.SendMessageAsync(
+                                    $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
+                            await Task.Delay(5000);
+                            await trgMsg.DeleteAsync();
+                        }
                     }
-                    else
-                    {
-                        _regularLoot.Remove(rct.MessageId);
-                        if (!msg.HasValue) await msg.GetOrDownloadAsync();
-                        await msg.Value.DeleteAsync();
-                        var rand = new Random().Next(15, 150);
-                        userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
-                        userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
-                        userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
-                        await db.SaveChangesAsync();
-                        var trgMsg =
-                            await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
-                    }
-                }
-            });
-            return Task.CompletedTask;
+                });
+                return Task.CompletedTask;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return Task.CompletedTask;
+            }
         }
 
         private Task CrateTrigger(SocketMessage msg)
@@ -115,20 +136,6 @@ namespace Jibril.Services.Loot
                 }
             });
             return Task.CompletedTask;
-        }
-
-        public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
-        {
-
-            var triggerMsg = await ch.SendMessageAsync(
-                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
-            var emotes = ReturnEmotes();
-            var rng = new Random();
-            foreach (var x in emotes.OrderBy(x => rng.Next()).Take(8))
-            {
-                if (x.Name == "realsip") _specialLoot.Add(triggerMsg.Id);
-                await triggerMsg.AddReactionAsync(x);
-            }
         }
 
         public async Task AddLootChannelAsync(SocketTextChannel ch)
@@ -172,24 +179,18 @@ namespace Jibril.Services.Loot
             }
         }
 
-
-        private static IEnumerable<IEmote> ReturnEmotes()
+        private static IEnumerable<Emote> ReturnEmotes()
         {
-            var emotes = new List<IEmote>();
+            var emotes = new List<Emote>();
             Emote.TryParse("<:realsip:429809346222882836>", out var real);
             Emote.TryParse("<:sip:430207651998334977>", out var sip1);
             Emote.TryParse("<:roowut:430207652061118465>", out var sip2);
             Emote.TryParse("<:rooWhine:430207965153460254>", out var sip3);
 
-            IEmote realEmote = real;
-            IEmote fake1Emote = sip1;
-            IEmote fake2Emote = sip2;
-            IEmote fake3Emote = sip3;
-
-            emotes.Add(realEmote);
-            emotes.Add(fake1Emote);
-            emotes.Add(fake2Emote);
-            emotes.Add(fake3Emote);
+            emotes.Add(real);
+            emotes.Add(sip1);
+            emotes.Add(sip2);
+            emotes.Add(sip3);
 
             return emotes;
         }

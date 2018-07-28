@@ -124,8 +124,7 @@ namespace Jibril.Services.Level
                     var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
-                    if (userdata.FirstMessage.Value < DateTime.UtcNow - TimeSpan.FromDays(900))
-                        userdata.FirstMessage = DateTime.UtcNow;
+                    if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
 
                     userdata.TotalExp = userdata.TotalExp + exp;
                     userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
@@ -140,7 +139,6 @@ namespace Jibril.Services.Level
                     {
                         userdata.Exp = userdata.Exp + exp;
                     }
-                    Console.WriteLine($"{message.Author.Username} gained {exp} exp and has {userdata.Exp}/{nxtLvl}");
                     await db.SaveChangesAsync();
                 }
             });

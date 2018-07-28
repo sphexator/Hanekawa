@@ -37,9 +37,10 @@ namespace Jibril.Services.AutoModerator
         public event AsyncEvent<SocketGuildUser, AutoModActionType, string> AutoModPermLog;
         public event AsyncEvent<SocketGuildUser, AutoModActionType, TimeSpan, string> AutoModTimedLog;
 
-        public ModerationService(DiscordSocketClient discord, IServiceProvider provider, IConfiguration config)
+        public ModerationService(DiscordSocketClient discord, IServiceProvider provider, Config config)
         {
             _discord = discord;
+            _config = config;
 
             _discord.MessageReceived += AutoModInitializer;
             _discord.UserJoined += GlobalBanChecker;

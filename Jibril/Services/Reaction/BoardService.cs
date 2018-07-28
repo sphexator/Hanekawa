@@ -41,7 +41,7 @@ namespace Jibril.Services.Reaction
                 return Task.CompletedTask;
             var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
             board.TryGetValue(reaction.MessageId, out var msg);
-            if (msg + 1 == 2)
+            if (msg + 1 == 4)
             {
                 var _ = Task.Run(async () =>
                     {
@@ -64,7 +64,7 @@ namespace Jibril.Services.Reaction
                 return Task.CompletedTask;
             var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
             board.TryGetValue(reaction.MessageId, out var msg);
-            if (msg + 1 >= 2) return Task.CompletedTask;
+            if (msg + 1 >= 4) return Task.CompletedTask;
             board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
 
             return Task.CompletedTask;

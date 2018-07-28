@@ -70,7 +70,6 @@ namespace Jibril.Services.AutoModerator
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                 var result = CalculateNudeScore(score, msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel);
                 if (result == null) return;
-                Console.WriteLine($"{msg.Author.Username} avg. toxicity of {result}% in {msg.Channel.Name}");
                 using (var db = new DbService())
                 {
                     var channel = await db.NudeServiceChannels.FindAsync(((SocketGuildUser)msg.Author).Guild.Id, msg.Channel.Id).ConfigureAwait(false);
@@ -107,7 +106,6 @@ namespace Jibril.Services.AutoModerator
             var userValue = channelValue.GetOrAdd(channel.Id, new LinkedList<double>());
 
             var result = doubleScore * 100;
-            Console.WriteLine($"{user.Nickname ?? user.Username} scored {result} toxicity score");
 
             if (channelValue.Count == 20)
             {

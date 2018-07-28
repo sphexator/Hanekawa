@@ -67,12 +67,9 @@ namespace Jibril.Extensions
         public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild, DateTime time, ModAction action)
         {
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
-            uint nr;
-            if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
             var data = new ModLog
             {
-                Id = nr,
+                Id = (uint)counter + 1,
                 GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
@@ -80,7 +77,7 @@ namespace Jibril.Extensions
             };
             await context.ModLogs.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time);
+            return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id);
         }
 
         public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild, string name, DateTime time)
