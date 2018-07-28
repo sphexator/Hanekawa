@@ -84,24 +84,24 @@ namespace Jibril.Services.Level
             }
         }
 
-        private Task GiveRolesBack(SocketGuildUser user)
+        private static Task GiveRolesBack(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
                     var userdata = await db.GetOrCreateUserData(user);
-                    if (userdata.Level <= 2) return;
+                    if (userdata.Level < 2) return;
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild);
                     if (cfg.StackLvlRoles)
                     {
-                        var roleCollection = await GetRoleCollection(user);
+                        var roleCollection = await GetRoleCollection(user, db, userdata);
                         await user.AddRolesAsync(roleCollection);
                         return;
                     }
 
-                    var singleRole = await GetRoleSingle(user);
-                    await user.AddRoleAsync(singleRole);
+                    var singleRole = await GetRoleSingle(user, db, userdata);
+                    await user.AddRolesAsync(singleRole);
                 }
             });
             return Task.CompletedTask;
@@ -204,31 +204,36 @@ namespace Jibril.Services.Level
             await user.AddRoleAsync(role);
         }
 
-        private async Task<IRole> GetRoleSingle(IGuildUser user)
+        private static async Task<List<IRole>> GetRoleSingle(IGuildUser user, DbService db, Account userdata)
         {
-            using (var db = new DbService())
-            {
-                var dbUser = await db.GetOrCreateUserData(user as SocketGuildUser);
-                ulong roleid = 0;
-                foreach (var x in db.LevelRewards)
-                    if (dbUser.Level >= x.Level)
-                        roleid = x.Role;
+            var roles = new List<IRole>();
+            ulong role = 0;
 
-                return roleid == 0 ? null : _client.GetGuild(user.GuildId).GetRole(roleid);
+            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
+            {
+                if (userdata.Level >= x.Level && x.Stackable)
+                {
+                    roles.Add(user.Guild.GetRole(x.Role));
+                }
+
+                if (userdata.Level >= x.Level) role = x.Role;
             }
+            if(role != 0) roles.Add(user.Guild.GetRole(role));
+            return roles;
         }
 
-        private async Task<List<IRole>> GetRoleCollection(IGuildUser user)
+        private static async Task<List<IRole>> GetRoleCollection(IGuildUser user, DbService db, Account userdata)
         {
-            using (var db = new DbService())
-            {
-                var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
-                var roles = Enumerable.Cast<IRole>(from x in db.LevelRewards
-                                                   where userdata.Level >= x.Level
-                                                   select _client.GetGuild(user.GuildId).GetRole(x.Role)).ToList();
+            var roles = new List<IRole>();
 
-                return roles.Count == 0 ? null : roles;
+            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
+            {
+                if (userdata.Level >= x.Level)
+                {
+                    roles.Add(user.Guild.GetRole(x.Role));
+                }
             }
+            return roles;
         }
 
         private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)

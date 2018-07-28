@@ -11,7 +11,7 @@ namespace Jibril.Extensions
 
         public static EmbedBuilder Reply(this EmbedBuilder embed, string content, uint color = 0)
         {
-            if (color == 0) color = Color.DarkPurple.RawValue;
+            if (color == 0) color = Color.Purple.RawValue;
             embed.Description = content;
             embed.Color = new Color(color);
             return embed;
