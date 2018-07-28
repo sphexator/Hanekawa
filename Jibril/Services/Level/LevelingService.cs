@@ -41,6 +41,8 @@ namespace Jibril.Services.Level
             = new ConcurrentDictionary<ulong, uint>();
         private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
             = new ConcurrentDictionary<ulong, Timer>();
+        private ConcurrentDictionary<ulong, Timer> ExpEventMessage { get; }
+            = new ConcurrentDictionary<ulong, Timer>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
@@ -68,7 +70,7 @@ namespace Jibril.Services.Level
             });
         }
 
-        private static async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
+        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
         {
             using (var db = new DbService())
             {
@@ -76,8 +78,19 @@ namespace Jibril.Services.Level
                 if (cfg.EventChannel.HasValue)
                 {
                     var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
-                    await channel.SendEmbedAsync(new EmbedBuilder().Reply($"A {multiplier}x exp event has started!\n" +
+                    var msg = await channel.SendEmbedAsync(new EmbedBuilder().Reply($"A {multiplier}x exp event has started!\n" +
                                                                           $"Duration: {after.Humanize()} ({after} minutes)"));
+                    var toAdd = new Timer(_ =>
+                    {
+                        var upd = msg.Embeds.First().ToEmbedBuilder();
+                        upd.Color = Color.Red;
+                        msg.ModifyAsync(x => x.Embed = upd.Build());
+                    }, null, after, Timeout.InfiniteTimeSpan);
+                    ExpEventMessage.AddOrUpdate(guild.Id, (key) => toAdd, (key, old) =>
+                    {
+                        old.Change(Timeout.Infinite, Timeout.Infinite);
+                        return toAdd;
+                    });
                 }
                 else
                     await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply($"No event channel has been setup.", Color.Red.RawValue));
