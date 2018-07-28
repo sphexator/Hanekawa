@@ -52,7 +52,7 @@ namespace Jibril.Modules.Account
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 var recieverData = await db.GetOrCreateUserData(user);
-                if (userdata.Credit <= amount)
+                if (userdata.Credit < amount)
                 {
                     await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have enough credit", Color.Red.RawValue).Build());
                     return;
@@ -61,7 +61,7 @@ namespace Jibril.Modules.Account
                 userdata.Credit = userdata.Credit - amount;
                 recieverData.Credit = recieverData.Credit + amount;
                 await db.SaveChangesAsync();
-                await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} transferred ${amount} to {user.Mention}", Color.Red.RawValue).Build());
+                await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} transferred ${amount} to {user.Mention}", Color.Green.RawValue).Build());
             }
         }
 
@@ -116,7 +116,7 @@ namespace Jibril.Modules.Account
                     Color = Color.DarkPurple,
                     Title = "Leaderboard"
                 };
-                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.Credit).Take(10).ToListAsync();
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
                 {

@@ -95,8 +95,9 @@ namespace Jibril.Services.Reaction
                     Footer = footer,
                     Description = message.Content,
                     Timestamp = message.Timestamp,
-                    Color = GetBoardColor(user).Color
+                    Color = GetBoardColor(user).Color,
                 };
+                if (message.Attachments.Count > 0) embed.ImageUrl = message.Attachments.First().Url;
                 await channelz.SendMessageAsync(null, false, embed.Build());
             }
         }

@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using Jibril.Events;
 using Jibril.Extensions;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
