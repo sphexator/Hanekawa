@@ -158,7 +158,7 @@
     <None Update="Data\Info\staff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Profile\Class\ShipGirl.png">
+    <None Update="Data\Profile\Class\Ship Girl.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Default\1.jpg">
