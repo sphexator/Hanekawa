@@ -119,7 +119,7 @@ namespace Jibril.Services.Loot
                 if (!(msg.Channel is SocketTextChannel ch)) return;
                 if (message.Source != MessageSource.User) return;
                 if (!LootChannels.TryGetValue(ch.Guild.Id, out var chx)) return;
-
+                if (!chx.Contains(msg.Channel.Id)) return;
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
                 {
