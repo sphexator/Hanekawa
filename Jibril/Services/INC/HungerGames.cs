@@ -23,20 +23,12 @@ namespace Jibril.Services.INC
 {
     public class HungerGames : IJob
     {
-        private readonly SocketTextChannel _ch;
         private readonly DiscordSocketClient _client;
         private List<ulong> EventStartMsg { get; }
          = new List<ulong>();
         private List<ulong> Participants { get; }
             = new List<ulong>();
-        private readonly bool ActiveEvent;
 
-        // Test
-        //private const ulong Guild = 431617676859932704;
-        //private const ulong EventChannel = 441744578920448030;
-        //private const ulong OutPutChannel = 441744578920448030;
-
-        // Real
         private const ulong Guild = 339370914724446208;
         private const ulong EventChannel = 346429829316476928;
         private const ulong OutPutChannel = 441322970485620756;
@@ -49,7 +41,6 @@ namespace Jibril.Services.INC
             using (var db = new DbService())
             {
                 var config = db.HungerGameConfigs.Find(Guild);
-                ActiveEvent = config.Live;
                 EventStartMsg.Add(config.MessageId);
                 var users = db.HungerGameLives.ToList();
                 foreach (var x in users)
@@ -61,14 +52,8 @@ namespace Jibril.Services.INC
 
         public Task Execute(IJobExecutionContext context)
         {
-            try
-            {
-                InitializeTask();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            try { InitializeTask(); }
+            catch (Exception e) { Console.WriteLine(e); }
             return Task.CompletedTask;
         }
 

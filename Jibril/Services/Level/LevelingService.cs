@@ -183,7 +183,6 @@ namespace Jibril.Services.Level
                         {
                             userdata.Exp = userdata.Exp + exp;
                         }
-                        Console.WriteLine($"{user.Username} gained {exp} exp");
                         await db.SaveChangesAsync();
                     }
                 }
