@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Google.Apis.Util;
 using Jibril.Events;
 using Jibril.Services.AutoModerator;
 using Jibril.Services.Entities;
@@ -164,7 +165,7 @@ namespace Jibril.Services.Administration
             {
                 try
                 {
-                    var data = db.MuteTimers.First(x => x.GuildId == guildId && x.UserId == userId);
+                    var data = db.MuteTimers.FirstOrDefault(x => x.GuildId == guildId && x.UserId == userId);
                     if (data == null) return;
                     db.MuteTimers.Remove(data);
                     await db.SaveChangesAsync();

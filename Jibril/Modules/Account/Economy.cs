@@ -111,12 +111,17 @@ namespace Jibril.Modules.Account
         {
             using (var db = new DbService())
             {
+                var author = new EmbedAuthorBuilder
+                {
+                    Name = $"Money leaderboard for {Context.Guild.Name}",
+                    IconUrl = Context.Guild.IconUrl
+                };
                 var embed = new EmbedBuilder
                 {
-                    Color = Color.DarkPurple,
-                    Title = "Leaderboard"
+                    Color = Color.Purple,
+                    Author = author
                 };
-                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.Credit).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
                 {
