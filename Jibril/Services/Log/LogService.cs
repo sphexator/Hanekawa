@@ -565,7 +565,7 @@ namespace Jibril.Services.Log
             return (LogLevel) Math.Abs((int) severity - 5);
         }
 
-        private static List<EmbedFieldBuilder> ModLogFieldBuilders(IGuildUser user,
+        private static List<EmbedFieldBuilder> ModLogFieldBuilders(IMentionable user,
             string reason = null,
             TimeSpan? duration = null)
         {
