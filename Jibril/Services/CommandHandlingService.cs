@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Jibril.Extensions;
 using Jibril.Services.Entities;
 
 namespace Jibril.Services
@@ -35,9 +36,15 @@ namespace Jibril.Services
             }
         }
 
-        public void UpdatePrefix(ulong guildid, string prefix)
+        public async Task UpdatePrefixAsync(SocketGuild guild, string prefix)
         {
-            Prefix.AddOrUpdate(guildid, prefix, (key, old) => prefix);
+            using (var db = new DbService())
+            {
+                Prefix.AddOrUpdate(guild.Id, prefix, (key, old) => prefix);
+                var cfg = await db.GetOrCreateGuildConfig(guild);
+                cfg.Prefix = prefix;
+                await db.SaveChangesAsync();
+            }
         }
 
         public async Task InitializeAsync(IServiceProvider provider)
@@ -48,6 +55,7 @@ namespace Jibril.Services
 
         private async Task MessageRecieved(SocketMessage rawMessage)
         {
+            if (rawMessage.Author.IsBot) return;
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
             var argPos = 0;

@@ -25,7 +25,7 @@ namespace Jibril.Modules.Administration
             {
                 try
                 {
-                    _command.UpdatePrefix(Context.Guild.Id, prefix);
+                    await _command.UpdatePrefixAsync(Context.Guild, prefix);
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Successfully changed prefix to {prefix}!", Color.Green.RawValue).Build());
                 }
@@ -34,18 +34,6 @@ namespace Jibril.Modules.Administration
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Something went wrong changing prefix to {prefix}...", Color.Red.RawValue).Build());
                 }
-            }
-        }
-
-        [Group("drop")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public class AddPermission : ModuleBase<SocketCommandContext>
-        {
-            private readonly LootCrates _loot;
-
-            public AddPermission(LootCrates loot)
-            {
-                _loot = loot;
             }
         }
     }

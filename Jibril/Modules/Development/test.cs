@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using System.Threading.Tasks;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore.Internal;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jibril.Modules.Development
 {
@@ -151,24 +150,6 @@ namespace Jibril.Modules.Development
             await Context.Channel.SendFileAsync(@"Data\Info\level_roles.png", null, false, level.Build());
         }
 
-        [Command("hier", RunMode = RunMode.Async)]
-        [RequireOwner]
-        public async Task Hierchy()
-        {
-            var user = (Context.User as SocketGuildUser).Roles;
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-            Console.WriteLine("ayyy");
-        }
+
     }
 }

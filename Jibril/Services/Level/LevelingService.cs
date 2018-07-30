@@ -126,6 +126,7 @@ namespace Jibril.Services.Level
             {
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
+                if (msg.Author.IsBot) return;
                 if (!(msg.Channel is IGuildChannel)) return;
 
                 if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
