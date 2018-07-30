@@ -24,10 +24,10 @@ namespace Jibril.Services.Entities
 
         //Bot Game
         public virtual DbSet<GameEnemy> GameEnemies { get; set; }
-        public virtual DbSet<GuildInfo> GuildInfos { get; set; }
 
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
+        public virtual DbSet<GuildInfo> GuildInfos { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
@@ -55,6 +55,7 @@ namespace Jibril.Services.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Account
             modelBuilder.Entity<Account>(x =>
             {
                 x.HasKey(e => new { e.UserId, e.GuildId });
@@ -79,34 +80,7 @@ namespace Jibril.Services.Entities
                 x.Property(c => c.Rep).HasMaxLength(999);
                 x.Property(c => c.TotalExp).HasMaxLength(999);
             });
-            modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
-            modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
-            modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
-            modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => new { e.GuildId, e.Level}); });
-            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
-            modelBuilder.Entity<Suggestion>(x =>
-            {
-                x.HasKey(e => new{e.Id, e.GuildId});
-            });
-            modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
-            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
-            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<Warn>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.Id});
-            });
-            modelBuilder.Entity<WarnMsgLog>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-            modelBuilder.Entity<Report>(x =>
-            {
-                x.HasKey(e => new{e.Id, e.GuildId});
-            });
+            modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => new { e.GuildId, e.Level }); });
             modelBuilder.Entity<Shop>(x =>
             {
                 x.HasKey(e => e.Id);
@@ -117,23 +91,60 @@ namespace Jibril.Services.Entities
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<ModLog>(x =>
-            {
-                x.HasKey(e => new {e.Id, e.GuildId});
-            });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
+            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
+
+            // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
             {
                 x.HasKey(e => e.Id);
             });
             modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
+
+            // Bot Game
             modelBuilder.Entity<GameEnemy>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new {e.GuildId, e.Id}));
-            modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new {e.GuildId, e.ChannelId}));
-            modelBuilder.Entity<Board>(x => x.HasKey(e => new {e.GuildId, e.MessageId}));
+
+            // Config
+            modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
+            modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
+            modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
+            modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
+            modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));
+            modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+
+            // Hunger Game
+            modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
+            modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });
+            modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
+
+            // Moderation
+            modelBuilder.Entity<ModLog>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.GuildId });
+            });
+            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
+            modelBuilder.Entity<Suggestion>(x =>
+            {
+                x.HasKey(e => new{e.Id, e.GuildId});
+            });
+            modelBuilder.Entity<Report>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.GuildId });
+            });
+            modelBuilder.Entity<Warn>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.Id});
+            });
+            modelBuilder.Entity<WarnMsgLog>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
         }
     }
 }
