@@ -33,7 +33,7 @@ namespace Jibril.Modules.Account
                 var embed = new EmbedBuilder
                 {
                     Author = author,
-                    Color = Color.DarkPurple,
+                    Color = Color.Purple,
                     Description = $"Credit: ${userdata.Credit}\n" +
                                   $"Event Credit: ${userdata.CreditSpecial}"
                 };
@@ -148,7 +148,7 @@ namespace Jibril.Modules.Account
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 userdata.CreditSpecial = userdata.CreditSpecial + amount;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} Event Credit to {user.Mention}").Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} Event Credit to {user.Mention}", Color.Green.RawValue).Build());
             }
         }
     }

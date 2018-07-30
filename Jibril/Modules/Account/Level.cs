@@ -140,7 +140,7 @@ namespace Jibril.Modules.Account
                     {
                         Author = author,
                         Fields = roleList,
-                        Color = Color.DarkPurple
+                        Color = Color.Purple
                     };
                     await ReplyAsync(null, false, embed.Build());
                 }
@@ -167,7 +167,7 @@ namespace Jibril.Modules.Account
                 };
                 var embed = new EmbedBuilder
                 {
-                    Color = Color.DarkPurple,
+                    Color = Color.Purple,
                     Author = author,
                     ThumbnailUrl = user.GetAvatar()
                 };
@@ -204,10 +204,15 @@ namespace Jibril.Modules.Account
         {
             using (var db = new DbService())
             {
+                var author = new EmbedAuthorBuilder
+                {
+                    Name = $"Level leaderboard for {Context.Guild.Name}",
+                    IconUrl = Context.Guild.IconUrl
+                };
                 var embed = new EmbedBuilder
                 {
-                    Color = Color.DarkPurple,
-                    Title = "Leaderboard"
+                    Color = Color.Purple,
+                    Author = author
                 };
                 var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
                 var rank = 1;

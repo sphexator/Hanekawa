@@ -27,43 +27,7 @@ namespace Jibril.Modules.Account.Shop
         [RequiredChannel(339383206669320192)]
         public async Task ShopAsync()
         {
-            using (var db = new DbService())
-            {
-                var author = new EmbedAuthorBuilder
-                {
-                    Name = "Shop"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Author = author,
-                    Color = Color.DarkPurple
-                };
-                foreach (var x in db.Shops)
-                {
-                    if (x.RoleId.HasValue)
-                    {
-                        var field = new EmbedFieldBuilder
-                        {
-                            Name = $"Role: {x.Item}",
-                            Value = $"{x.Price}",
-                            IsInline = false
-                        };
-                        embed.AddField(field);
-                    }
-                    else
-                    {
-                        var field = new EmbedFieldBuilder
-                        {
-                            Name = $"{x.Item}",
-                            Value = $"{x.Price}",
-                            IsInline = false
-                        };
-                        embed.AddField(field);
-                    }
-                }
-
-                await ReplyAsync(null, false, embed.Build());
-            }
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Shop is currently disabled").Build());
         }
 
         [Command("buy", RunMode = RunMode.Async)]
