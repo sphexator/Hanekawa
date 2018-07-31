@@ -164,7 +164,7 @@ namespace Jibril.Services.AutoModerator
                     await _warnService.AddWarning(user, 1, DateTime.UtcNow, $"High toxicity score in {channel.Name}",
                         WarnReason.Warning, (await channel.GetMessagesAsync().FlattenAsync())
                         .Where(m => m.Author.Id == user.Id)
-                        .Take(100).ToArray().ToList()).ConfigureAwait(false);
+                        .Take(100).ToArray().ToList());
                     break;
                 case 2:
                     guildWarn.AddOrUpdate(user.Id, 1, (key, old) => old = old + 1);
@@ -177,9 +177,9 @@ namespace Jibril.Services.AutoModerator
                     StartWarnTimer(user);
                     ClearChannelNudeScore(user, channel);
                     await _warnService.AddWarning(user, 1, DateTime.UtcNow, $"High toxicity score in {channel.Name}",
-                        WarnReason.Mute, (await channel.GetMessagesAsync().FlattenAsync())
+                        WarnReason.Mute, TimeSpan.FromHours(1), (await channel.GetMessagesAsync().FlattenAsync())
                         .Where(m => m.Author.Id == user.Id)
-                        .Take(100).ToArray().ToList()).ConfigureAwait(false);
+                        .Take(100).ToArray().ToList(), true);
                     await _moderationService.AutoModMute(user as SocketGuildUser, AutoModActionType.Toxicity,
                         TimeSpan.FromHours(1), $"High toxicity score in {channel.Name}");
                     break;

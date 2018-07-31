@@ -13,5 +13,6 @@ namespace Jibril.Services.Entities.Tables
         public DateTime Time { get; set; }
         public ulong Moderator { get; set; }
         public bool Valid { get; set; }
+        public TimeSpan? MuteTimer { get; set; }
     }
 }

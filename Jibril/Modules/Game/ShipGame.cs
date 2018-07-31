@@ -225,7 +225,6 @@ namespace Jibril.Modules.Game
         [RequireContext(ContextType.Guild)]
         [GlobalRatelimit(1, 5, Measure.Seconds)]
         [RequiredChannel(346429281314013184)]
-        [RequireOwner]
         public async Task AttackGameAsync(IGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;

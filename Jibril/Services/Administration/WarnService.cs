@@ -93,13 +93,45 @@ namespace Jibril.Services.Administration
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-                if (messages == null) return;
-                var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(warn.Id, user, messages);
+                }
+                await WarnUser(WarnReason.Warning, user, staff, reason);
             }
         }
 
-        public async Task AddWarning(IGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null)
+        public async Task AddWarning(IGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        {
+            using (var db = new DbService())
+            {
+                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.GuildId,
+                    UserId = user.Id,
+                    Moderator = staff.Id,
+                    Time = time,
+                    Reason = reason,
+                    Type = type,
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = after
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
+
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(warn.Id, user, messages);
+                }
+                await WarnUser(WarnReason.Mute, user, staff, reason, after);
+            }
+        }
+
+        public async Task AddWarning(IGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
@@ -115,10 +147,98 @@ namespace Jibril.Services.Administration
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-                if (messages == null) return;
-                var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(warn.Id, user, messages);
+                }
+
+                await WarnUser(WarnReason.Warning, user, "Auto-Moderator", reason);
             }
+        }
+
+        public async Task AddWarning(IGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        {
+            using (var db = new DbService())
+            {
+                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.GuildId,
+                    UserId = user.Id,
+                    Moderator = staff,
+                    Time = time,
+                    Reason = reason,
+                    Type = type,
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = after
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
+
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(warn.Id, user, messages);
+                }
+                await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
+            }
+        }
+
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, IUser staff, string reason)
+        {
+            var dm = await user.GetOrCreateDMChannelAsync();
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
+                              $"Reason:\n" +
+                              $"{reason}"
+            };
+
+            await dm.SendEmbedAsync(embed);
+        }
+
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, IUser staff, string reason, TimeSpan after)
+        {
+            var dm = await user.GetOrCreateDMChannelAsync();
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
+                              $"Reason:\n" +
+                              $"{reason}"
+            };
+            embed.AddField("Duration", $"{after.Humanize()} ({after})");
+            await dm.SendEmbedAsync(embed);
+        }
+
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason)
+        {
+            var dm = await user.GetOrCreateDMChannelAsync();
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
+                              $"Reason:\n" +
+                              $"{reason}"
+            };
+            await dm.SendEmbedAsync(embed);
+        }
+
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason, TimeSpan after)
+        {
+            var dm = await user.GetOrCreateDMChannelAsync();
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
+                              $"Reason:\n" +
+                              $"{reason}"
+            };
+            embed.AddField("Duration", $"{after.Humanize()} ({after})");
+            await dm.SendEmbedAsync(embed);
         }
 
         private static async Task<List<EmbedFieldBuilder>> GetWarnings(IGuildUser user)

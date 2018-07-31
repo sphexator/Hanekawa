@@ -152,7 +152,7 @@ namespace Jibril.Modules.Administration
         {
             await Context.Message.DeleteAsync();
             var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
-            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute);
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(timer));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
