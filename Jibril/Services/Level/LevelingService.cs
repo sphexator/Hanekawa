@@ -21,6 +21,15 @@ namespace Jibril.Services.Level
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
 
+        private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
+            = new ConcurrentDictionary<ulong, uint>();
+        private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
+            = new ConcurrentDictionary<ulong, Timer>();
+        private ConcurrentDictionary<ulong, Timer> ExpEventMessage { get; }
+            = new ConcurrentDictionary<ulong, Timer>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
@@ -36,15 +45,6 @@ namespace Jibril.Services.Level
                 foreach (var x in db.GuildConfigs) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
             }
         }
-
-        private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
-            = new ConcurrentDictionary<ulong, uint>();
-        private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
-            = new ConcurrentDictionary<ulong, Timer>();
-        private ConcurrentDictionary<ulong, Timer> ExpEventMessage { get; }
-            = new ConcurrentDictionary<ulong, Timer>();
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         public async Task AddExpMultiplierAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, SocketTextChannel fallbackChannel = null)
         {

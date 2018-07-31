@@ -244,8 +244,18 @@ namespace Jibril.Modules.Game
                 if (playerTwo.Credit < bet)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"{user.Mention} can't bet more then you already have.",
+                        new EmbedBuilder().Reply($"{Context.User.Mention}, that user can't bet that much.",
                             Color.Red.RawValue).Build());
+                    return;
+                }
+
+                if (bet == 0) { await ReplyAsync($"{user.Mention}, {Context.User.Mention} has challenged you to a duel! Do you accept?"); }
+                else await ReplyAsync($"{user.Mention}, {Context.User.Mention} has challenged you to a duel with ${bet} at stake! Do you accept?");
+
+                var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromMinutes(1));
+                if (response.Content.ToLower() != "y")
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("Duel cancelled", Color.Red.RawValue).Build());
                     return;
                 }
 
@@ -277,8 +287,7 @@ namespace Jibril.Modules.Game
                     Value = $"{playerTwoHealth}/{playerTwototalHp}"
                 });
                 var msg = await Context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
-                //var msg = await ReplyAsync("test message", false, embed.Build());
-
+                
                 var alive = true;
                 while (alive)
                 {
