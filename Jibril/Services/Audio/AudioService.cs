@@ -18,8 +18,8 @@ namespace Jibril.Services.Audio
         private readonly YouTubeService _youTubeService;
         private readonly DiscordSocketClient _client;
 
-        private ConcurrentDictionary<ulong, Queue<LavalinkTrack>> MusicQueue { get; }
-            = new ConcurrentDictionary<ulong, Queue<LavalinkTrack>>();
+        private ConcurrentDictionary<ulong, ConcurrentQueue<LavalinkTrack>> MusicQueue { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentQueue<LavalinkTrack>>();
         private ConcurrentDictionary<ulong, bool> LoopToggle { get; }
             = new ConcurrentDictionary<ulong, bool>();
 
@@ -113,7 +113,7 @@ namespace Jibril.Services.Audio
         {
             var player = _lavalinkManager.GetPlayer(guild.Id);
             if (player == null) return;
-            var queue = MusicQueue.GetOrAdd(guild.Id, new Queue<LavalinkTrack>());
+            var queue = MusicQueue.GetOrAdd(guild.Id, new ConcurrentQueue<LavalinkTrack>());
             queue.Clear();
             await player.StopAsync();
         }
@@ -198,7 +198,7 @@ namespace Jibril.Services.Audio
 
         private void AddToQueue(ulong id, LavalinkTrack track)
         {
-            var queue = MusicQueue.GetOrAdd(id, new Queue<LavalinkTrack>());
+            var queue = MusicQueue.GetOrAdd(id, new ConcurrentQueue<LavalinkTrack>());
             queue.Enqueue(track);
         }
 
@@ -223,19 +223,19 @@ namespace Jibril.Services.Audio
 
         public IEnumerable<LavalinkTrack> GetQueue(ulong guildid)
         {
-            return MusicQueue.GetOrAdd(guildid, new Queue<LavalinkTrack>());
+            return MusicQueue.GetOrAdd(guildid, new ConcurrentQueue<LavalinkTrack>());
         }
 
         public void ClearQueue(ulong guildid)
         {
-            var queue = MusicQueue.GetOrAdd(guildid, new Queue<LavalinkTrack>());
+            var queue = MusicQueue.GetOrAdd(guildid, new ConcurrentQueue<LavalinkTrack>());
             queue.Clear();
         }
 
         //playlist
         public async Task<int> AddPlaylistToQueue(string playlistString, IGuildUser user, IVoiceChannel ch)
         {
-            var queue = MusicQueue.GetOrAdd(user.GuildId, new Queue<LavalinkTrack>());
+            var queue = MusicQueue.GetOrAdd(user.GuildId, new ConcurrentQueue<LavalinkTrack>());
             var request = (await GetPlaylistIdsByKeywordsAsync(playlistString).ConfigureAwait(false)).FirstOrDefault();
             var songs = await GetPlaylistTracksAsync(request, 5000).ConfigureAwait(false);
             var songList = songs.ToList();
@@ -373,26 +373,26 @@ namespace Jibril.Services.Audio
 
         private async Task LoopSong(LavalinkPlayer player, LavalinkTrack track)
         {
-            var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new Queue<LavalinkTrack>());
-            var next = queue.Peek();
+            var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new ConcurrentQueue<LavalinkTrack>());
+            queue.TryPeek(out var next);
             if (queue.Count < 1) return;
             if (queue.Count == 1)
             {
-                var song = queue.Dequeue();
+                queue.TryDequeue(out var song);
                 queue.Enqueue(song);
                 await player.PlayAsync(next);
             }
             else if (track == next)
             {
-                queue.Dequeue();
+                queue.TryDequeue(out var song);
                 queue.Enqueue(next);
-                var getNextSong = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new Queue<LavalinkTrack>()).Dequeue();
+                MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new ConcurrentQueue<LavalinkTrack>()).TryDequeue(out var getNextSong);
                 queue.Enqueue(getNextSong);
                 await player.PlayAsync(getNextSong);
             }
             else
             {
-                var song = queue.Dequeue();
+                queue.TryDequeue(out var song);
                 queue.Enqueue(song);
                 await player.PlayAsync(song);
             }
@@ -400,8 +400,8 @@ namespace Jibril.Services.Audio
 
         private async Task ContinueSong(LavalinkPlayer player, LavalinkTrack track)
         {
-            var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new Queue<LavalinkTrack>());
-            var next = queue.Peek();
+            var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new ConcurrentQueue<LavalinkTrack>());
+            queue.TryPeek(out var next);
             if (queue.Count < 1) return;
             if (queue.Count == 1)
             {
@@ -409,13 +409,13 @@ namespace Jibril.Services.Audio
             }
             else if (track == next)
             {
-                queue.Dequeue();
-                var nextSong = queue.Peek();
+                queue.TryDequeue(out var result);
+                queue.TryPeek(out var nextSong);
                 await player.PlayAsync(nextSong);
             }
             else
             {
-                var song = queue.Dequeue();
+                queue.TryDequeue(out var song);
                 await player.PlayAsync(song);
             }
         }
