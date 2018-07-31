@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jibril.Services.Entities.Tables;
 using static Jibril.Services.AutoModerator.ModerationService;
 
 namespace Jibril.Services.AutoModerator
@@ -28,6 +29,16 @@ namespace Jibril.Services.AutoModerator
         private readonly WarnService _warnService;
         private readonly ModerationService _moderationService;
 
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>> NudeValue { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> NudeChannels { get; set; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+        private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
+            = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
+
         public NudeScoreService(DiscordSocketClient client, IConfiguration config, ModerationService moderationService, WarnService warnService, MuteService muteService)
         {
             _client = client;
@@ -39,28 +50,54 @@ namespace Jibril.Services.AutoModerator
             _perspectiveToken = _config["perspective"];
 
             _client.MessageReceived += DetermineNudeScore;
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.NudeServiceChannels)
+                {
+                    var guild = NudeChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, uint>());
+                    guild.GetOrAdd(x.ChannelId, x.Tolerance);
+                }
+            }
         }
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>>
-            NudeValue
-        { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<double>>>
-            >();
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
-
-        private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
-            = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
+        public async Task SetNudeChannel(ITextChannel ch, uint tolerance)
+        {
+            var guild = NudeChannels.GetOrAdd(ch.GuildId, new ConcurrentDictionary<ulong, uint>());
+            guild.AddOrUpdate(ch.Id, tolerance, (key, old) => old = tolerance);
+            using (var db = new DbService())
+            {
+                var check = await db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
+                if (check != null)
+                {
+                    check.Tolerance = tolerance;
+                    await db.SaveChangesAsync();
+                }
+                else
+                {
+                    var data = new NudeServiceChannel
+                    {
+                        GuildId = ch.GuildId,
+                        ChannelId = ch.Id,
+                        Tolerance = tolerance
+                    };
+                    await db.NudeServiceChannels.AddAsync(data);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
 
         private Task DetermineNudeScore(SocketMessage msg)
         {
             var _ = Task.Run(async () =>
             {
+                if (msg.Author.IsBot) return;
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
                 if (!(message.Author is SocketGuildUser)) return;
                 if (!(message.Channel is SocketTextChannel)) return;
+                if (!NudeChannels.TryGetValue((msg.Channel as SocketTextChannel).Guild.Id, out var channels)) return;
+                if (!channels.TryGetValue(msg.Channel.Id, out var channel)) return;
                 var content = msg.Content;
                 var filter = FilterMessage(content);
                 if (filter.IsNullOrWhiteSpace()) return;
@@ -70,12 +107,7 @@ namespace Jibril.Services.AutoModerator
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
                 var result = CalculateNudeScore(score, msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel);
                 if (result == null) return;
-                using (var db = new DbService())
-                {
-                    var channel = await db.NudeServiceChannels.FindAsync(((SocketGuildUser)msg.Author).Guild.Id, msg.Channel.Id).ConfigureAwait(false);
-                    if (channel == null) return;
-                    if (result < channel.Tolerance) return;
-                }
+                if (result < channel) return;
                 await NudeWarn(msg.Author as SocketGuildUser, msg.Channel as SocketTextChannel).ConfigureAwait(false);
             });
             return Task.CompletedTask;
