@@ -54,11 +54,11 @@ namespace Jibril.Services.Administration
                               $"\n" +
                               $"**⮞ Activity**\n" +
                               $"Last Message: {userdata.LastMessage.Humanize()} \n" +
-                              $"First Message: {userdata.LastMessage.Humanize()} \n" +
+                              $"First Message: {userdata.FirstMessage.Humanize()} \n" +
                               $"\n" +
                               $"**⮞ Session**\n" +
                               $"Amount: {userdata.Sessions}\n" +
-                              $"Time: {userdata.StatVoiceTime.Humanize()}";
+                              $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = user.GetAvatar(),
@@ -206,7 +206,7 @@ namespace Jibril.Services.Administration
             var embed = new EmbedBuilder
             {
                 Color = Color.Purple,
-                Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
+                Description = $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
                               $"Reason:\n" +
                               $"{reason}"
             };
@@ -233,7 +233,7 @@ namespace Jibril.Services.Administration
             var embed = new EmbedBuilder
             {
                 Color = Color.Purple,
-                Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
+                Description = $"You've been muted on {user.Guild.Name} by {staff}\n" +
                               $"Reason:\n" +
                               $"{reason}"
             };
@@ -273,13 +273,14 @@ namespace Jibril.Services.Administration
                 foreach (var x in await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id).ToListAsync())
                 {
                     var content = $"{x.Type} - <@{x.Moderator}>\n" +
-                                  $"{x.Reason ?? "I made this :)"}\n" +
+                                  $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
                                   $"{x.Time.Humanize()}\n";
+                    if (x.MuteTimer != null) content += $"{x.MuteTimer.Value.Humanize()}\n";
                     var field = new EmbedFieldBuilder
                     {
                         Name = $"Warn ID: {x.Id}",
                         IsInline = false,
-                        Value = content.Truncate(999)
+                        Value = content
                     };
                     result.Add(field);
                 }
