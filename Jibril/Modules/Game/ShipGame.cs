@@ -158,7 +158,6 @@ namespace Jibril.Modules.Game
                         var enemyField = embed.Fields.First(x => x.Name == $"{game.Name}");
                         userField.Value = $"{userHealth}/{usertotalHp}";
                         enemyField.Value = $"{enemyHealth}/{enemytotalHp}";
-                        await msg.ModifyAsync(x => x.Embed = embed.Build());
                     }
                     else
                     {
@@ -180,7 +179,6 @@ namespace Jibril.Modules.Game
                         alive = false;
                         continue;
                     }
-                    await Task.Delay(2000);
 
                     var enmyDmg = _enemyStat.Avoidance(userdata.Class, (int)userdata.Level);
                     userHealth = userHealth - enmyDmg;

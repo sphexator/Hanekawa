@@ -148,7 +148,7 @@ namespace Jibril.Modules.Administration
         [Command("mute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
-        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440, string reason = null)
+        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440,[Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
             var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
