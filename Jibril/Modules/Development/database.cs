@@ -6,7 +6,7 @@ using Jibril.Services.Entities;
 
 namespace Jibril.Modules.Development
 {
-    public class database : InteractiveBase
+    public class Database : InteractiveBase
     {
         [Command("srvcfg")]
         [RequireOwner]

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Jibril.Modules.Development
 {
-    public class test : InteractiveBase
+    public class Test : InteractiveBase
     {
         [Command("roleid", RunMode = RunMode.Async)]
         [RequireOwner]

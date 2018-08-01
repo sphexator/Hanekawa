@@ -31,30 +31,63 @@ namespace Jibril.Modules.Administration
                     Author = author
                 };
                 // Prefix
-                embed.AddField("Prefix", cfg.Prefix, true);
+                embed.AddField("Prefix", cfg.Prefix ?? ".h", true);
 
-                if (cfg.WelcomeChannel.HasValue)
-                    embed.AddField($"Welcome Channel", Context.Guild.GetTextChannel(cfg.WelcomeChannel.Value).Mention,
-                        true);
-                else embed.AddField($"Welcome Log", "Disabled", true);
+                embed.AddField("Welcome Channel",
+                    cfg.WelcomeChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.WelcomeChannel.Value).Mention
+                        : "Disabled",
+                    true);
 
-                embed.AddField($"Welcome Banner", cfg.WelcomeBanner.ToString(), true);
-                embed.AddField($"Welcome Limit", $"{cfg.WelcomeLimit}", true);
-                embed.AddField($"Welcome Message", cfg.WelcomeMessage, true);
+                embed.AddField("Welcome Banner", cfg.WelcomeBanner.ToString(), true);
+                embed.AddField("Welcome Limit", $"{cfg.WelcomeLimit}", true);
+                embed.AddField("Welcome Message", cfg.WelcomeMessage ?? "No message set", true);
 
                 // Level
                 embed.AddField("Exp Multiplier", cfg.ExpMultiplier, true);
                 embed.AddField("Level Role Stack", cfg.StackLvlRoles.ToString(), true);
 
                 // Logging
-                embed.AddField($"Join/Leave Log",
+                embed.AddField("Join/Leave Log",
                     cfg.LogJoin.HasValue ? Context.Guild.GetTextChannel(cfg.LogJoin.Value).Mention : "Disabled", true);
-                embed.AddField($"Avatar Log",
+                embed.AddField("Avatar Log",
                     cfg.LogAvi.HasValue ? Context.Guild.GetTextChannel(cfg.LogAvi.Value).Mention : "Disabled", true);
-                embed.AddField($"Ban Log",
+                embed.AddField("Ban Log",
                     cfg.LogBan.HasValue ? Context.Guild.GetTextChannel(cfg.LogBan.Value).Mention : "Disabled", true);
-                embed.AddField($"Message Log",
+                embed.AddField("Message Log",
                     cfg.LogMsg.HasValue ? Context.Guild.GetTextChannel(cfg.LogMsg.Value).Mention : "Disabled", true);
+
+                // Other channel setup
+                embed.AddField("Board Channel",
+                    cfg.BoardChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.BoardChannel.Value).Mention
+                        : "Disabled", true);
+                embed.AddField("Suggestion Channel",
+                    cfg.SuggestionChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).Mention
+                        : "Disabled", true);
+                embed.AddField("Report Channel",
+                    cfg.ReportChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.ReportChannel.Value).Mention
+                        : "Disabled",
+                    true);
+                embed.AddField("Event Channel",
+                    cfg.EventChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.EventChannel.Value).Mention
+                        : "Disabled", true);
+                embed.AddField("Staff/Mod Channel",
+                    cfg.ModChannel.HasValue ? Context.Guild.GetTextChannel(cfg.ModChannel.Value).Mention : "Disabled",
+                    true);
+                embed.AddField("Music Text Channel",
+                    cfg.MusicChannel.HasValue
+                        ? Context.Guild.GetTextChannel(cfg.MusicChannel.Value).Mention
+                        : "Disabled",
+                    true);
+                embed.AddField("Music Voice Channel",
+                    cfg.MusicVcChannel.HasValue
+                        ? Context.Guild.GetVoiceChannel(cfg.MusicVcChannel.Value).Name
+                        : "Disabled",
+                    true);
 
                 // Moderation
                 string nudeChannels = null;
@@ -63,44 +96,13 @@ namespace Jibril.Modules.Administration
                 embed.AddField("Invite Filter", cfg.FilterInvites.ToString(), true);
                 embed.AddField("Toxicity Filter", nudeChannels ?? "Disabled");
 
-                // Other channel setup
-                if (cfg.BoardChannel.HasValue)
-                    embed.AddField("Board Channel", Context.Guild.GetTextChannel(cfg.BoardChannel.Value).Mention, true);
-                else embed.AddField($"Board Channel", "Disabled", true);
-
-                if (cfg.SuggestionChannel.HasValue)
-                    embed.AddField("Suggestion Channel",
-                        Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).Mention, true);
-                else embed.AddField($"Suggestion Channel", "Disabled", true);
-
-                if (cfg.ReportChannel.HasValue)
-                    embed.AddField("Report Channel", Context.Guild.GetTextChannel(cfg.ReportChannel.Value).Mention,
-                        true);
-                else embed.AddField($"Report Channel", "Disabled", true);
-
-                if (cfg.EventChannel.HasValue)
-                    embed.AddField("Event Channel", Context.Guild.GetTextChannel(cfg.EventChannel.Value).Mention, true);
-                else embed.AddField($"Event Channel", "Disabled", true);
-
-                if (cfg.ModChannel.HasValue)
-                    embed.AddField("Staff/Mod Channel", Context.Guild.GetTextChannel(cfg.ModChannel.Value).Mention,
-                        true);
-                else embed.AddField($"Welcome Channel", "Disabled", true);
-
-                if (cfg.MusicChannel.HasValue)
-                    embed.AddField("Music Text Channel", Context.Guild.GetTextChannel(cfg.MusicChannel.Value).Mention,
-                        true);
-                else embed.AddField($"Music Text Channel", "Disabled", true);
-
-                if (cfg.MusicVcChannel.HasValue)
-                    embed.AddField("Music Voice Channel", Context.Guild.GetVoiceChannel(cfg.MusicVcChannel.Value).Name,
-                        true);
-                else embed.AddField($"Music Voice Channel", "Disabled", true);
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 
         [Group("set")]
         [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireContext(ContextType.Guild)]
         public class SetPermission : ModuleBase<SocketCommandContext>
         {
             private readonly CommandHandlingService _command;

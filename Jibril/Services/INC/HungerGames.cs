@@ -41,6 +41,7 @@ namespace Jibril.Services.INC
             using (var db = new DbService())
             {
                 var config = db.HungerGameConfigs.Find(Guild);
+                if (config == null) return;
                 EventStartMsg.Add(config.MessageId);
                 var users = db.HungerGameLives.ToList();
                 foreach (var x in users)
