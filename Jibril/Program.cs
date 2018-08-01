@@ -46,6 +46,11 @@ namespace Jibril
 
         private async Task MainASync()
         {
+            using (var db = new DbService())
+            {
+                await db.Database.MigrateAsync();
+            }
+
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,

@@ -50,7 +50,7 @@ namespace Jibril.Services.Entities
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
+                optionsBuilder.UseMySql("Server=localhost;Database=yamato_test;User=root;Password=12345;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
