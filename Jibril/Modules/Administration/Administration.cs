@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
 using Jibril.Extensions;
+using Jibril.Preconditions;
 using Jibril.Services.Administration;
 using Jibril.Services.Entities;
 using Jibril.Services.Level;
@@ -142,6 +143,47 @@ namespace Jibril.Modules.Administration
                 await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
                 var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
                 await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
+            }
+        }
+
+        [Command("softban", RunMode = RunMode.Async)]
+        [Alias("sb")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        public async Task Softban(SocketGuildUser user)
+        {
+            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                Context.Guild.Roles.Select(r => r.Position).Max())
+            {
+                await ReplyAndDeleteAsync("", false, new EmbedBuilder().Reply($"{Context.User.Mention}, you can't mute someone with same or higher role then you.", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
+                return;
+            }
+
+            var muteRole = Context.Guild.Roles.FirstOrDefault(r => r.Name == "Mute");
+            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+            try
+            {
+                await user.AddRoleAsync(muteRole);
+            }
+            catch
+            {
+                // Didn't find role
+            }
+
+            try
+            {
+                var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
+                    .Take(50).ToArray();
+
+                var bulkDeletable = msgs.ToList();
+                bulkDeletable.Add(Context.Message);
+
+                var channel = Context.Channel as ITextChannel;
+                await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignored
             }
         }
 

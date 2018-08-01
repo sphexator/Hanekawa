@@ -142,7 +142,7 @@ namespace Jibril.Services.AutoModerator
 
         private async Task LengthFilter(SocketMessage msg)
         {
-            if (msg.Content.Length >= 1500)
+            if (msg.Content.Length >= 1500 && ((SocketGuildUser) msg.Author).GuildPermissions.ManageMessages)
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
                 await AutoModTimedMute(msg.Author as SocketGuildUser, TimeSpan.FromMinutes(60));

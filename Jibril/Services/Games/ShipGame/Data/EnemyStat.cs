@@ -11,7 +11,7 @@ namespace Jibril.Services.Games.ShipGame.Data
             return baseHealth;
         }
 
-        public int DamagePoint(int level)
+        private static int DamagePoint(int level)
         {
             var baseDamage = 10 + 3 * level;
             return baseDamage;
@@ -24,7 +24,7 @@ namespace Jibril.Services.Games.ShipGame.Data
             var chance = rand.Next(1, 101);
             if (chance <= classAvoidance)
             {
-                var damageTaken = 0;
+                const int damageTaken = 0;
                 return damageTaken;
             }
 

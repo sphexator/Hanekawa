@@ -30,6 +30,7 @@ namespace Jibril.Modules.Administration
                     Color = Color.Purple,
                     Author = author
                 };
+
                 // Prefix
                 embed.AddField("Prefix", cfg.Prefix ?? ".h", true);
 
