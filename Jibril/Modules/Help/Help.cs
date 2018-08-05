@@ -1,10 +1,9 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Data.Variables;
+using Jibril.Preconditions;
 using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Preconditions;
 
 namespace Jibril.Modules.Help
 {

@@ -24,6 +24,8 @@ namespace Jibril.Services.Entities
 
         //Bot Game
         public virtual DbSet<GameEnemy> GameEnemies { get; set; }
+        public virtual DbSet<GameClass> GameClasses { get; set; }
+        public virtual DbSet<GameConfig> GameConfigs { get; set; }
 
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
@@ -71,10 +73,11 @@ namespace Jibril.Services.Entities
                 x.Property(c => c.StarReceived).HasMaxLength(999);
                 x.Property(c => c.StatMessages).HasMaxLength(999);
                 x.Property(c => c.MvpCounter).HasMaxLength(999);
+                x.Property(c => c.Class).HasDefaultValue(1);
             });
             modelBuilder.Entity<AccountGlobal>(x =>
             {
-                x.HasKey(e => e.UserId); 
+                x.HasKey(e => e.UserId);
                 x.Property(c => c.Level).HasMaxLength(999);
                 x.Property(c => c.Exp).HasMaxLength(999);
                 x.Property(c => c.Rep).HasMaxLength(999);
@@ -106,6 +109,20 @@ namespace Jibril.Services.Entities
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.Rare).HasDefaultValue(false);
+                x.Property(e => e.Elite).HasDefaultValue(false);
+            });
+            modelBuilder.Entity<GameClass>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<GameConfig>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.DefaultDamage).HasDefaultValue(10);
+                x.Property(e => e.DefaultHealth).HasDefaultValue(10);
             });
 
             // Config
@@ -127,10 +144,10 @@ namespace Jibril.Services.Entities
             {
                 x.HasKey(e => new { e.Id, e.GuildId });
             });
-            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
+            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
             modelBuilder.Entity<Suggestion>(x =>
             {
-                x.HasKey(e => new{e.Id, e.GuildId});
+                x.HasKey(e => new { e.Id, e.GuildId });
             });
             modelBuilder.Entity<Report>(x =>
             {
@@ -138,7 +155,7 @@ namespace Jibril.Services.Entities
             });
             modelBuilder.Entity<Warn>(x =>
             {
-                x.HasKey(e => new {e.GuildId, e.Id});
+                x.HasKey(e => new { e.GuildId, e.Id });
             });
             modelBuilder.Entity<WarnMsgLog>(x =>
             {

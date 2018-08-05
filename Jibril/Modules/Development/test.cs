@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -150,6 +149,17 @@ namespace Jibril.Modules.Development
             await Context.Channel.SendFileAsync(@"Data\Info\level_roles.png", null, false, level.Build());
         }
 
-
+        [Command("users", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task GetUsers()
+        {
+            await Context.Guild.DownloadUsersAsync();
+            Console.WriteLine(Context.Guild.Users.Count);
+            foreach (var x in Context.Guild.Users)
+            {
+                Console.WriteLine($"{x.Username} - {x.Id}");
+            }
+            Console.WriteLine(Context.Guild.Users.Count);
+        }
     }
 }

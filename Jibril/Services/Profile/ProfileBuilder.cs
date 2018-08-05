@@ -34,13 +34,13 @@ namespace Jibril.Services.Profile
                     avi.Seek(0, SeekOrigin.Begin);
                     var avatar = Image.Load(avi);
                     avatar.Mutate(x => x.Resize(86, 86));
-                    var shipClass = Image.Load($"Data/Profile/Class/{userdata.Class}.png");
+                    //svar shipClass = Image.Load($"Data/Profile/Class/{userdata.Class}.png");
                     var template = Image.Load("Data/Profile/Template.png");
-                    shipClass.Mutate(x => x.Resize(88, 97));
+                    //shipClass.Mutate(x => x.Resize(88, 97));
                     img.Mutate(x => x
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
-                        .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
+                        //.DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
                         .ApplyProfileText(userdata, user, new Calculate().GetNextLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }

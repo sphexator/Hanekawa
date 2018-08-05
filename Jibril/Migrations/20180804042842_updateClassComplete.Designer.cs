@@ -3,14 +3,16 @@ using System;
 using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jibril.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20180804042842_updateClassComplete")]
+    partial class updateClassComplete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,9 +29,7 @@ namespace Jibril.Migrations
 
                     b.Property<DateTime>("ChannelVoiceTime");
 
-                    b.Property<int>("Class")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(1);
+                    b.Property<int>("Class");
 
                     b.Property<uint>("Credit")
                         .HasMaxLength(999);
@@ -179,8 +179,6 @@ namespace Jibril.Migrations
                     b.Property<int>("ChanceAvoid");
 
                     b.Property<int>("ChanceCrit");
-
-                    b.Property<uint>("LevelRequirement");
 
                     b.Property<double>("ModifierAvoidance");
 

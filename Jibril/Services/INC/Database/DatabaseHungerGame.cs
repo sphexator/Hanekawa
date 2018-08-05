@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Discord;
-using Jibril.Data.Variables;
 using Jibril.Extensions;
 using Jibril.Services.INC.Data;
 using MySql.Data.MySqlClient;

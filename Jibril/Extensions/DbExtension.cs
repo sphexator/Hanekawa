@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Jibril.Data.Constants;
-using Jibril.Data.Variables;
 using Jibril.Services.Entities;
 using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +20,7 @@ namespace Jibril.Extensions
                 UserId = user.Id,
                 GuildId = user.Guild.Id,
                 Active = true,
-                Class = ClassNames.Shipgirl,
+                Class = 1,
                 Credit = 0,
                 CreditSpecial = 0,
                 CustomRoleId = null,
@@ -40,7 +39,9 @@ namespace Jibril.Extensions
                 ChannelVoiceTime = DateTime.UtcNow,
                 StatMessages = 0,
                 Rep = 0,
-                ProfilePic = null
+                ProfilePic = null,
+                StarGiven = 0,
+                StarReceived = 0
             };
             await context.Accounts.AddAsync(data);
             await context.SaveChangesAsync();
@@ -57,19 +58,23 @@ namespace Jibril.Extensions
                 Exp = 0,
                 TotalExp = 0,
                 Level = 1,
-                Rep = 0
+                Rep = 0,
+                StarGive = 0,
+                StarReceive = 0,
+                Credit = 0
             };
             await context.AccountGlobals.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.AccountGlobals.FindAsync(user.Id);
         }
 
-        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild, DateTime time, ModAction action)
+        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild,
+            DateTime time, ModAction action)
         {
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
             var data = new ModLog
             {
-                Id = (uint)counter + 1,
+                Id = (uint) counter + 1,
                 GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
@@ -77,17 +82,19 @@ namespace Jibril.Extensions
             };
             await context.ModLogs.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ModLogs.FirstOrDefaultAsync(x => x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id);
+            return await context.ModLogs.FirstOrDefaultAsync(x =>
+                x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id);
         }
 
-        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild, string name, DateTime time)
+        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
+            string name, DateTime time)
         {
             var check = await context.ClubInfos.FindAsync(user.Id);
             if (check != null) return null;
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = (uint) counter + 1;
             var data = new ClubInfo
             {
                 Id = nr,
@@ -101,12 +108,13 @@ namespace Jibril.Extensions
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
         }
 
-        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild, DateTime time)
+        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild,
+            DateTime time)
         {
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = (uint) counter + 1;
             var data = new Suggestion
             {
                 Id = nr,
@@ -120,12 +128,13 @@ namespace Jibril.Extensions
             return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<Report> CreateReport(this DbService context, IUser user, SocketGuild guild, DateTime time)
+        public static async Task<Report> CreateReport(this DbService context, IUser user, SocketGuild guild,
+            DateTime time)
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = (uint) counter + 1;
             var data = new Report
             {
                 Id = nr,
@@ -160,7 +169,15 @@ namespace Jibril.Extensions
                 IgnoreAllChannels = false,
                 WelcomeBanner = true,
                 WelcomeMessage = null,
-                FilterInvites = false
+                FilterInvites = false,
+                ReportChannel = null,
+                SuggestionChannel = null,
+                EventChannel = null,
+                MusicVcChannel = null,
+                ModChannel = null,
+                MusicChannel = null,
+                BoardEmote = null,
+                EventSchedulerChannel = null
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();

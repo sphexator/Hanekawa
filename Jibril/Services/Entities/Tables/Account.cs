@@ -18,7 +18,7 @@ namespace Jibril.Services.Entities.Tables
         public uint TotalExp { get; set; }
         public DateTime VoiceExpTime { get; set; }
         // Class Profile Role
-        public string Class { get; set; }
+        public int Class { get; set; }
         public string ProfilePic { get; set; }
         public ulong? CustomRoleId { get; set; }
         public uint Rep { get; set; }

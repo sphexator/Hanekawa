@@ -132,9 +132,7 @@ namespace Jibril
             services.AddSingleton<MuteService>();
             services.AddSingleton<WarnService>();
             services.AddSingleton<NudeScoreService>();
-            services.AddSingleton<BaseStats>();
-            services.AddSingleton<ClassStats>();
-            services.AddSingleton<EnemyStat>();
+            services.AddSingleton<GameStats>();
             services.AddSingleton<ShipGameService>();
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<LootCrates>();
