@@ -1,22 +1,22 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Jibril.Extensions;
 using Jibril.Preconditions;
 using Jibril.Services.Audio;
 using Quartz.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Jibril.Modules.Music
+namespace Jibril.Modules.Audio
 {
-    public class Audio : InteractiveBase
+    public class Music : InteractiveBase
     {
         private readonly AudioService _audioService;
 
-        public Audio(AudioService audioService)
+        public Music(AudioService audioService)
         {
             _audioService = audioService;
         }
