@@ -43,26 +43,30 @@ namespace Jibril.Services.Games.ShipGame
         public async Task<EmbedBuilder> SearchAsync(SocketCommandContext context)
         {
             if (IsInBattle(context))
+            {
                 return new EmbedBuilder().Reply($"{context.User.Mention} is already in a fight", Color.Red.RawValue);
+            }
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
                 var chance = new Random().Next(100);
                 GameEnemy enemy = null;
+                /*
                 if (chance >= 90)
                 {
                     var enemies = await db.GameEnemies.Where(x => x.Rare).ToListAsync();
-                    enemy = enemies[new Random().Next(0, enemies.Count)];
+                    enemy = enemies[new Random().Next(enemies.Count)];
                 }
                 else if (chance >= 80)
                 {
                     var enemies = await db.GameEnemies.Where(x => x.Elite).ToListAsync();
-                    enemy = enemies[new Random().Next(0, enemies.Count)];
+                    enemy = enemies[new Random().Next(enemies.Count)];
                 }
-                else if (chance >= 40)
+                */
+                if (chance >= 40)
                 {
                     var enemies = await db.GameEnemies.Where(x => x.Elite == false && x.Rare == false).ToListAsync();
-                    enemy = enemies[new Random().Next(0, enemies.Count)];
+                    enemy = enemies[new Random().Next(enemies.Count)];
                 }
                 else
                 {
@@ -81,34 +85,31 @@ namespace Jibril.Services.Games.ShipGame
                 };
 
                 embed.AddField("Type", $"{(await GetClass(db, enemy.ClassId)).Name}", true);
-                embed.AddField("Health", $"{await Health(db, context.User as SocketGuildUser, enemy)}", true);
+                embed.AddField("Health", $"{await Health(db, userdata.Level, enemy)}", true);
                 embed.AddField("Level", $"{userdata.Level}", true);
                 return embed;
             }
         }
 
-        private async Task<int> Health(DbService db, SocketGuildUser user)
+        private async Task<int> Health(DbService db, uint level, SocketGuildUser user)
         {
             var userdata = await db.GetOrCreateUserData(user);
-            return _gameStats.GetHealth(userdata, await GetClass(db, userdata.Class));
+            return _gameStats.GetHealth(level, await GetClass(db, userdata.Class));
         }
 
-        private async Task<int> Health(DbService db, SocketGuildUser user, GameEnemy enemy)
+        private async Task<int> Health(DbService db, uint level, GameEnemy enemy)
         {
-            var userdata = await db.GetOrCreateUserData(user);
-            return _gameStats.GetHealth(userdata, enemy, await GetClass(db, userdata.Class));
+            return _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
         }
 
-        private async Task<int> Damage(DbService db, SocketGuildUser user)
+        private async Task<int> Damage(uint level)
         {
-            var userdata = await db.GetOrCreateUserData(user);
-            return _gameStats.GetDamage(userdata);
+            return _gameStats.GetDamage(level);
         }
 
-        private async Task<int> Damage(DbService db, SocketGuildUser user, GameEnemy enemy)
+        private async Task<int> Damage(uint level, GameEnemy enemy)
         {
-            var userdata = await db.GetOrCreateUserData(user);
-            return _gameStats.GetDamage(userdata, enemy);
+            return _gameStats.GetDamage(level, enemy);
         }
 
         public async Task AttackAsync(SocketCommandContext context)
@@ -144,12 +145,12 @@ namespace Jibril.Services.Games.ShipGame
                 var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
                 playerOne = await GetClass(db, userdata.Class);
                 playerTwo = await GetClass(db, enemy.ClassId);
-                playerOneHp = await Health(db, context.User as SocketGuildUser);
-                playerTwoHp = await Health(db, context.User as SocketGuildUser, enemy);
-                playerOneDmg = await Damage(db, context.User as SocketGuildUser);
-                playerTwoDmg = await Damage(db, context.User as SocketGuildUser, enemy);
-                playerOneHpMax = await Health(db, context.User as SocketGuildUser);
-                playerTwoHpMax = await Health(db, context.User as SocketGuildUser, enemy);
+                playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                playerTwoHp = await Health(db, userdata.Level,  enemy);
+                playerOneDmg = await Damage(userdata.Level);
+                playerTwoDmg = await Damage(userdata.Level,  enemy);
+                playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                playerTwoHpMax = await Health(db, userdata.Level, enemy);
             }
 
             var msglog = new LinkedList<string>();
@@ -321,12 +322,12 @@ namespace Jibril.Services.Games.ShipGame
                 if (userdata2.Credit < bet) return;
                 playerOne = await GetClass(db, userdata.Class);
                 playerTwo = await GetClass(db, userdata2.Class);
-                playerOneHp = await Health(db, context.User as SocketGuildUser);
-                playerTwoHp = await Health(db, context.User as SocketGuildUser);
-                playerOneDmg = await Damage(db, context.User as SocketGuildUser);
-                playerTwoDmg = await Damage(db, context.User as SocketGuildUser);
-                playerOneHpMax = await Health(db, context.User as SocketGuildUser);
-                playerTwoHpMax = await Health(db, context.User as SocketGuildUser);
+                playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                playerTwoHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                playerOneDmg = await Damage(userdata.Level);
+                playerTwoDmg = await Damage(userdata.Level);
+                playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                playerTwoHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
             }
 
             var msglog = new LinkedList<string>();
@@ -436,7 +437,7 @@ namespace Jibril.Services.Games.ShipGame
                             userdata2.Credit = userdata.Credit + bet;
                             await db.SaveChangesAsync();
                         }
-                    else msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
+                    else msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
 
                     embed.Color = Color.Green;
                     embed.Description = UpdateCombatLog(msglog.Reverse());
@@ -506,6 +507,15 @@ namespace Jibril.Services.Games.ShipGame
         {
             var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id, out var game);
+        }
+
+        public void ClearUser(SocketCommandContext context)
+        {
+            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryRemove(context.User.Id, out var game);
+
+            var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id, false, (key, old) => old = false);
         }
 
         private static async Task<Stream> CreateBanner(IUser userOne, GameEnemy npc)

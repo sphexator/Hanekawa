@@ -2,36 +2,36 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Google.Apis.Services;
+using Google.Apis.YouTube.v3;
+using Jibril.Data;
 using Jibril.Services;
 using Jibril.Services.Administration;
+using Jibril.Services.Audio;
 using Jibril.Services.Automate;
 using Jibril.Services.Automate.Service;
 using Jibril.Services.AutoModerator;
 using Jibril.Services.Entities;
+using Jibril.Services.Games.ShipGame;
 using Jibril.Services.Games.ShipGame.Data;
 using Jibril.Services.INC;
 using Jibril.Services.Level;
 using Jibril.Services.Level.Services;
 using Jibril.Services.Log;
+using Jibril.Services.Loot;
+using Jibril.Services.Profile;
 using Jibril.Services.Reaction;
 using Jibril.Services.Welcome;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 using Quartz.Spi;
+using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Google.Apis.Services;
-using Google.Apis.YouTube.v3;
-using Jibril.Data;
-using Jibril.Modules.Game;
-using Jibril.Services.Audio;
-using Jibril.Services.Games.ShipGame;
-using Jibril.Services.Loot;
-using Jibril.Services.Profile;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
-using SharpLink;
+using Jibril.Services.Club;
 
 namespace Jibril
 {
@@ -123,6 +123,7 @@ namespace Jibril
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<Calculate>();
+            services.AddSingleton<ClubService>();
             services.AddSingleton<LevelingService>();
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<BoardService>();

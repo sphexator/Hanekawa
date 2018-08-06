@@ -1,10 +1,19 @@
 ﻿using Jibril.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Jibril.Services.Entities
 {
     public class DbService : DbContext
     {
+        public static readonly LoggerFactory MyLoggerFactory
+            = new LoggerFactory(new[]
+            {
+                new ConsoleLoggerProvider((category, level) 
+                    => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information, true)
+            });
+
         public DbService() { }
 
         public DbService(DbContextOptions options) : base(options) { }
@@ -52,7 +61,10 @@ namespace Jibril.Services.Entities
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseMySql("Server=localhost;Database=yamato_test;User=root;Password=12345;");
+                optionsBuilder
+                    .UseLoggerFactory(MyLoggerFactory)
+                    .EnableSensitiveDataLogging()
+                    .UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

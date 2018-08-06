@@ -19,25 +19,25 @@ namespace Jibril.Services.Games.ShipGame.Data
         private int DefaultHealth { get; }
         private int DefaultDamage { get; }
 
-        public int GetHealth(Account userData, GameClass ass)
+        public int GetHealth(uint level, GameClass ass)
         {
-            return Convert.ToInt32(Math.Round(DefaultHealth * userData.Level * ass.ModifierHealth));
+            return Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
         }
 
-        public int GetHealth(Account userData, GameEnemy enemyData, GameClass enemyClass)
+        public int GetHealth(uint level, GameEnemy enemyData, GameClass enemyClass)
         {
-            return Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * userData.Level *
+            return Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
                                               enemyClass.ModifierHealth));
         }
 
-        public int GetDamage(Account userData)
+        public int GetDamage(uint level)
         {
-            return Convert.ToInt32(DefaultDamage * userData.Level);
+            return Convert.ToInt32(DefaultDamage * level);
         }
 
-        public int GetDamage(Account userData, GameEnemy enemyData)
+        public int GetDamage(uint level, GameEnemy enemyData)
         {
-            return Convert.ToInt32((DefaultDamage + enemyData.Damage) * userData.Level);
+            return Convert.ToInt32((DefaultDamage + enemyData.Damage) * level);
         }
 
         public int CalculateDamage(int damage, GameClass ass)
@@ -49,6 +49,7 @@ namespace Jibril.Services.Games.ShipGame.Data
             var lowDmg = damage / 2;
             if (lowDmg <= 0) lowDmg = 5;
             var highDmg = damage * 2;
+            if (lowDmg >= highDmg) highDmg = lowDmg + 10;
             damage = new Random().Next(lowDmg, highDmg);
 
             return damage;
