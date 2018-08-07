@@ -38,6 +38,9 @@ namespace Hanekawa.Services.Games.ShipGame
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveBattles { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveDuels { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
+
         //TODO: Custom banner depending on monster type
 
         public async Task<EmbedBuilder> SearchAsync(SocketCommandContext context)
@@ -294,7 +297,7 @@ namespace Hanekawa.Services.Games.ShipGame
 
         public async Task AttackAsync(SocketCommandContext context, SocketGuildUser playerTwoUser, uint bet = 0)
         {
-            if (ActiveBattle(context))
+            if (ActiveDuel(context))
             {
                 await context.Channel.SendEmbedAsync(
                     new EmbedBuilder().Reply($"{context.User.Mention}, a fight is already in progress, please wait.",
@@ -302,7 +305,8 @@ namespace Hanekawa.Services.Games.ShipGame
                 return;
             }
 
-            UpdateBattle(context, true);
+            UpdateDuel(context, true);
+
             var p1Name = (context.User as SocketGuildUser).GetName();
             var p2Name = playerTwoUser.GetName();
             var playerOneHp = 0;
@@ -459,8 +463,8 @@ namespace Hanekawa.Services.Games.ShipGame
                 }
                 await Task.Delay(2000);
             }
-
-            UpdateBattle(context, false);
+            UpdateDuel(context, false);
+            Console.WriteLine("Completed duel");
         }
 
         private GameEnemy GetEnemyData(SocketCommandContext context)
@@ -485,6 +489,21 @@ namespace Hanekawa.Services.Games.ShipGame
         }
 
         private void UpdateBattle(SocketCommandContext context, bool status)
+        {
+            var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
+        }
+
+        private bool ActiveDuel(SocketCommandContext context)
+        {
+            var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            var check = gChannels.TryGetValue(context.Channel.Id, out var value);
+            if (check) return value;
+            gChannels.GetOrAdd(context.Channel.Id, true);
+            return false;
+        }
+
+        private void UpdateDuel(SocketCommandContext context, bool status)
         {
             var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
