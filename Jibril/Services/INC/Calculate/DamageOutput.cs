@@ -1,7 +1,7 @@
 ﻿using System;
-using Jibril.Services.INC.Data;
+using Hanekawa.Services.INC.Data;
 
-namespace Jibril.Services.INC.Calculate
+namespace Hanekawa.Services.INC.Calculate
 {
     public class DamageOutput
     {

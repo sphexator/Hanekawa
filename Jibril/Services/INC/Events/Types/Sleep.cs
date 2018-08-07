@@ -1,9 +1,7 @@
-﻿using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Database;
+﻿using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public class Sleep
     {

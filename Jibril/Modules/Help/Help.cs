@@ -1,11 +1,11 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Preconditions;
-using System.Linq;
-using System.Threading.Tasks;
+using Hanekawa.Preconditions;
 
-namespace Jibril.Modules.Help
+namespace Hanekawa.Modules.Help
 {
     public class Help : InteractiveBase
     {

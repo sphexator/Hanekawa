@@ -1,16 +1,16 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Google.Apis.YouTube.v3;
-using Jibril.Extensions;
-using SharpLink;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Google.Apis.YouTube.v3;
+using Hanekawa.Extensions;
+using SharpLink;
 
-namespace Jibril.Services.Audio
+namespace Hanekawa.Services.Audio
 {
     public class AudioService
     {

@@ -1,12 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Jibril.Services.Administration;
-using Jibril.Services.AutoModerator.Perspective.Models;
-using Jibril.Services.Entities;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Quartz.Util;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +7,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Jibril.Services.Entities.Tables;
-using static Jibril.Services.AutoModerator.ModerationService;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Services.Administration;
+using Hanekawa.Services.AutoModerator.Perspective.Models;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Quartz.Util;
 
-namespace Jibril.Services.AutoModerator
+namespace Hanekawa.Services.AutoModerator
 {
     public class NudeScoreService
     {
@@ -212,7 +211,7 @@ namespace Jibril.Services.AutoModerator
                         WarnReason.Mute, TimeSpan.FromHours(1), (await channel.GetMessagesAsync().FlattenAsync())
                         .Where(m => m.Author.Id == user.Id)
                         .Take(100).ToArray().ToList(), true);
-                    await _moderationService.AutoModMute(user as SocketGuildUser, AutoModActionType.Toxicity,
+                    await _moderationService.AutoModMute(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity,
                         TimeSpan.FromHours(1), $"High toxicity score in {channel.Name}");
                     break;
             }

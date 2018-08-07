@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Jibril.Services.Club
+﻿namespace Hanekawa.Services.Club
 {
     public class ClubService
     {

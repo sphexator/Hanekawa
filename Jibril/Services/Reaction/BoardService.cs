@@ -1,13 +1,13 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Services.Reaction
+namespace Hanekawa.Services.Reaction
 {
     public class BoardService
     {

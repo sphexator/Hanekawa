@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Services
+namespace Hanekawa.Services
 {
     public class CommandHandlingService
     {

@@ -1,4 +1,4 @@
-﻿namespace Jibril.Data.Constants
+﻿namespace Hanekawa.Data.Constants
 {
     public enum ModAction
     {

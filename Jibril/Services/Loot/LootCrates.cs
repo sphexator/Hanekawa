@@ -1,15 +1,15 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.Loot
+namespace Hanekawa.Services.Loot
 {
     public class LootCrates
     {

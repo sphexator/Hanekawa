@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Loot;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Loot;
 
-namespace Jibril.Modules.Administration
+namespace Hanekawa.Modules.Administration
 {
     [Group("drop")]
     [RequireUserPermission(GuildPermission.Administrator)]

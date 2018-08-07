@@ -1,8 +1,8 @@
 ﻿using System;
-using Discord;
 using System.Threading.Tasks;
+using Discord;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class EmbedExtension 
     {

@@ -1,10 +1,10 @@
-﻿using Discord.Addons.Interactive;
+﻿using System.Threading.Tasks;
+using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Preconditions;
-using Jibril.Services.Club;
-using System.Threading.Tasks;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Club;
 
-namespace Jibril.Modules.Club
+namespace Hanekawa.Modules.Club
 {
     [Group("club")]
     public class Club : InteractiveBase

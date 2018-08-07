@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class Extensions
     {

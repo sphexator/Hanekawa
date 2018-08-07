@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jibril.Events
+namespace Hanekawa.Events
 {
     public delegate Task AsyncEvent<in T1>(T1 arg1);
     public delegate Task AsyncEvent<in T1, in T2>(T1 arg1, T2 arg2);

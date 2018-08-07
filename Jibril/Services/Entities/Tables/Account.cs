@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Jibril.Services.Entities.Tables
+namespace Hanekawa.Services.Entities.Tables
 {
     public class Account
     {

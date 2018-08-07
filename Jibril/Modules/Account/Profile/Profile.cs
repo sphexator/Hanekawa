@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
-using Jibril.Services.Profile;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Profile;
 
-namespace Jibril.Modules.Account.Profile
+namespace Hanekawa.Modules.Account.Profile
 {
     public class Profile : InteractiveBase
     {

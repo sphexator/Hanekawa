@@ -1,13 +1,13 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Jibril.Data.Constants;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Data.Constants;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class DbExtension
     {

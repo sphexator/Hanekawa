@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Discord;
-using Discord.WebSocket;
-using Google.Apis.Util;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.INC.Calculate;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Database;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.INC.Calculate;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public static class Kill
     {

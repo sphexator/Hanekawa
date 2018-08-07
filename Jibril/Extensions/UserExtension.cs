@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class UserExtension
     {

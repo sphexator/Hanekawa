@@ -1,21 +1,21 @@
-﻿using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Level.Services;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
-using SixLabors.Primitives;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Level.Services;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
 
-namespace Jibril.Services.Profile
+namespace Hanekawa.Services.Profile
 {
     public class ProfileBuilder
     {

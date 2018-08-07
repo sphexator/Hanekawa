@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace Jibril.Data
+namespace Hanekawa.Data
 {
     public class Config
     {

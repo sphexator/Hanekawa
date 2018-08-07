@@ -1,7 +1,7 @@
 ﻿using System;
 using Quartz;
 
-namespace Jibril.Services.Automate.Service
+namespace Hanekawa.Services.Scheduler
 {
     public static class QuartzServicesUtilities
     {

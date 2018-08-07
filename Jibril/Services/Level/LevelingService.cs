@@ -1,19 +1,19 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.Level.Services;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Level.Services;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Services.Level
+namespace Hanekawa.Services.Level
 {
     public class LevelingService
     {

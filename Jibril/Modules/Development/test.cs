@@ -1,11 +1,11 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 
-namespace Jibril.Modules.Development
+namespace Hanekawa.Modules.Development
 {
     public class Test : InteractiveBase
     {

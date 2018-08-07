@@ -1,13 +1,10 @@
-﻿using Jibril.Services.INC.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Hanekawa.Services.Entities.Tables;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Jibril.Services.Entities.Tables;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
@@ -15,8 +12,10 @@ using SixLabors.ImageSharp.Processing.Drawing.Brushes;
 using SixLabors.ImageSharp.Processing.Filters;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
+using SixLabors.Shapes;
 
-namespace Jibril.Services.INC.Generator
+namespace Hanekawa.Services.INC.Generator
 {
     public class ImageGenerator
     {

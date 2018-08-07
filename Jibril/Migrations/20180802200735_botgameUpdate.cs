@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Jibril.Migrations
+namespace Hanekawa.Migrations
 {
     public partial class botgameUpdate : Migration
     {

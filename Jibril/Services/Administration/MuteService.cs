@@ -5,13 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Google.Apis.Util;
-using Jibril.Events;
-using Jibril.Services.AutoModerator;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
+using Hanekawa.Events;
+using Hanekawa.Services.AutoModerator;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.Administration
+namespace Hanekawa.Services.Administration
 {
     public class MuteService
     {

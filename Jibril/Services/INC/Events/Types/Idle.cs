@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public class Idle
     {

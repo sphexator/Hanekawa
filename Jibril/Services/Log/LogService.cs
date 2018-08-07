@@ -1,20 +1,19 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Data.Constants;
-using Jibril.Extensions;
-using Jibril.Services.Administration;
-using Jibril.Services.AutoModerator;
-using Jibril.Services.Entities;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static Jibril.Services.AutoModerator.ModerationService;
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.Data.Constants;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Administration;
+using Hanekawa.Services.AutoModerator;
+using Hanekawa.Services.Entities;
+using Humanizer;
+using Microsoft.Extensions.Logging;
 
-namespace Jibril.Services.Log
+namespace Hanekawa.Services.Log
 {
     public class LogService
     {
@@ -56,7 +55,7 @@ namespace Jibril.Services.Log
             _moderationService.AutoModTimedLog += AutoModTimedLog;
         }
 
-        private static Task AutoModTimedLog(SocketGuildUser user, AutoModActionType type, TimeSpan timer, string msg)
+        private static Task AutoModTimedLog(SocketGuildUser user, ModerationService.AutoModActionType type, TimeSpan timer, string msg)
         {
             var _ = Task.Run(async () =>
             {
@@ -124,7 +123,7 @@ namespace Jibril.Services.Log
             return Task.CompletedTask;
         }
 
-        private static Task AutoModPermLog(SocketGuildUser user, AutoModActionType type, string msg)
+        private static Task AutoModPermLog(SocketGuildUser user, ModerationService.AutoModActionType type, string msg)
         {
             var _ = Task.Run(async () =>
             {

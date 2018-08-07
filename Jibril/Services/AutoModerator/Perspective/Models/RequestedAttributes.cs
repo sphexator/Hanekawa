@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace Jibril.Services.AutoModerator.Perspective.Models
+namespace Hanekawa.Services.AutoModerator.Perspective.Models
 {
     public class RequestedAttributes
     {

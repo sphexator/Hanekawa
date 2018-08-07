@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
-using Discord.Addons.Interactive;
-using Discord.Commands;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Modules.Report
+namespace Hanekawa.Modules.Report
 {
     public class Report : InteractiveBase
     {

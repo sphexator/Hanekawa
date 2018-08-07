@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using SharpLink;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class AudioExtension
     {

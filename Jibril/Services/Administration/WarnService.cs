@@ -1,17 +1,17 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
 
-namespace Jibril.Services.Administration
+namespace Hanekawa.Services.Administration
 {
     public enum WarnReason
     {

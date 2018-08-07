@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Modules.Audio
+namespace Hanekawa.Modules.Audio
 {
     public class Move : InteractiveBase
     {

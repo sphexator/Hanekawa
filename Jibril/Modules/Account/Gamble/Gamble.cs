@@ -4,12 +4,12 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Modules.Account.Gamble
+namespace Hanekawa.Modules.Account.Gamble
 {
     public class Gamble : InteractiveBase
     {

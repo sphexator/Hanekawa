@@ -1,17 +1,17 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
 using Humanizer;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Jibril.Modules.Account
+namespace Hanekawa.Modules.Account
 {
     public class Economy : InteractiveBase
     {

@@ -1,5 +1,7 @@
-﻿using Discord.WebSocket;
-using Jibril.Services.Entities.Tables;
+﻿using System;
+using System.Numerics;
+using Discord.WebSocket;
+using Hanekawa.Services.Entities.Tables;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,10 +11,8 @@ using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
-using System;
-using System.Numerics;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class ImageExtension
     {

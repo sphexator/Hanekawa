@@ -1,14 +1,14 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Humanizer;
-using Jibril.Extensions;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Jibril.Preconditions;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Humanizer;
 
-namespace Jibril.Modules.Help
+namespace Hanekawa.Modules.Help
 {
     public class Info : InteractiveBase
     {

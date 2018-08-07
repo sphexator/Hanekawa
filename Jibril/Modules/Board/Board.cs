@@ -4,12 +4,12 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Modules.Board
+namespace Hanekawa.Modules.Board
 {
     [Group("board")]
     public class Board : InteractiveBase

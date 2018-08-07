@@ -1,16 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using System.Threading.Tasks;
-using Discord;
-using Jibril.Preconditions;
-using Jibril.Services.Entities.Tables;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
 
-namespace Jibril.Modules.Account.Shop
+namespace Hanekawa.Modules.Account.Shop
 {
     public class Shop : InteractiveBase
     {

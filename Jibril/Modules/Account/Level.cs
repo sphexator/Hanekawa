@@ -1,21 +1,21 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using Humanizer;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.Level.Services;
-using Microsoft.EntityFrameworkCore;
-using Quartz.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Level.Services;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
+using Quartz.Util;
 
-namespace Jibril.Modules.Account
+namespace Hanekawa.Modules.Account
 {
     public class Level : InteractiveBase
     {

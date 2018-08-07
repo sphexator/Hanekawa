@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
 
-namespace Jibril.Services.Automate.Service
+namespace Hanekawa.Services.Scheduler
 {
     public class QuartzJonFactory : IJobFactory
     {

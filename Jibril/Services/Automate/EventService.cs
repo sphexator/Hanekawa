@@ -1,4 +1,4 @@
-﻿namespace Jibril.Services.Automate
+﻿namespace Hanekawa.Services.Automate
 {
     public class EventService
     {

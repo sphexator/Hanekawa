@@ -1,7 +1,6 @@
 ﻿using System.Text;
-using System.Text.RegularExpressions;
 
-namespace Jibril.Extensions
+namespace Hanekawa.Extensions
 {
     public static class StringExtension
     {

@@ -1,16 +1,16 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Jibril.Events;
-using Jibril.Extensions;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Jibril.Data;
-using Jibril.Services.Entities;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Data;
+using Hanekawa.Events;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Services.AutoModerator
+namespace Hanekawa.Services.AutoModerator
 {
     public class ModerationService
     {

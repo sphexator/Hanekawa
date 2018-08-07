@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Modules.Development
+namespace Hanekawa.Modules.Development
 {
     public class Database : InteractiveBase
     {

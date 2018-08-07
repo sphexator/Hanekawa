@@ -1,8 +1,8 @@
-﻿using Jibril.Services.Entities.Tables;
-using Jibril.Services.INC.Calculate;
-using Jibril.Services.INC.Events.Types;
+﻿using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.INC.Calculate;
+using Hanekawa.Services.INC.Events.Types;
 
-namespace Jibril.Services.INC.Events
+namespace Hanekawa.Services.INC.Events
 {
     public static class EventHandler
     {

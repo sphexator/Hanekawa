@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Jibril.Services.Entities.Tables
+﻿namespace Hanekawa.Services.Entities.Tables
 {
     public class GuildStats
     {

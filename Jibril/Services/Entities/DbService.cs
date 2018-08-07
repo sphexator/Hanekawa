@@ -1,9 +1,9 @@
-﻿using Jibril.Services.Entities.Tables;
+﻿using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
-namespace Jibril.Services.Entities
+namespace Hanekawa.Services.Entities
 {
     public class DbService : DbContext
     {

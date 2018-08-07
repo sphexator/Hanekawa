@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Audio;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Audio;
 using Quartz.Util;
 
-namespace Jibril.Modules.Audio
+namespace Hanekawa.Modules.Audio
 {
     public class Music : InteractiveBase
     {

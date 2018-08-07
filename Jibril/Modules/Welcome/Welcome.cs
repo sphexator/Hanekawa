@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.Welcome;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Welcome;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 
-namespace Jibril.Modules.Welcome
+namespace Hanekawa.Modules.Welcome
 {
     public class Welcome : InteractiveBase
     {

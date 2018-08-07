@@ -1,8 +1,18 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 using Humanizer;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Microsoft.EntityFrameworkCore;
+using Quartz.Util;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -10,21 +20,11 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.Primitives;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Jibril.Services.Entities.Tables;
-using Microsoft.EntityFrameworkCore;
-using Quartz.Util;
 using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Jibril.Services.Welcome
+namespace Hanekawa.Services.Welcome
 {
     public class WelcomeService
     {

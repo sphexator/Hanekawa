@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.Games.ShipGame.Data;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Games.ShipGame.Data;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -21,7 +21,7 @@ using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Jibril.Services.Games.ShipGame
+namespace Hanekawa.Services.Games.ShipGame
 {
     public class ShipGameService
     {

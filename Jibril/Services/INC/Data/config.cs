@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Jibril.Services.INC.Data
+namespace Hanekawa.Services.INC.Data
 {
     public class Config
     {

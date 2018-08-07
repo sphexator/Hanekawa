@@ -1,4 +1,4 @@
-﻿namespace Jibril.Services.HungerGames.Data
+﻿namespace Hanekawa.Services.INC.Data
 {
     public class Coke
     {

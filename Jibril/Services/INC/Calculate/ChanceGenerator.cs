@@ -1,8 +1,7 @@
 ﻿using System;
-using Jibril.Services.Entities.Tables;
-using Jibril.Services.INC.Data;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.INC.Calculate
+namespace Hanekawa.Services.INC.Calculate
 {
     public static class ChanceGenerator
     {

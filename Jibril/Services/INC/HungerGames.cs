@@ -1,25 +1,25 @@
-using Discord;
-using Discord.WebSocket;
-using Jibril.Extensions;
-using Jibril.Services.INC.Generator;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
-using Quartz.Util;
-using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.INC.Generator;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
+using Quartz.Util;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Transforms;
-using EventHandler = Jibril.Services.INC.Events.EventHandler;
+using EventHandler = Hanekawa.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Jibril.Services.INC
+namespace Hanekawa.Services.INC
 {
     public class HungerGames : IJob
     {

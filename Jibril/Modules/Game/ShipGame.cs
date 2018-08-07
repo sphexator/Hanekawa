@@ -1,18 +1,18 @@
-﻿using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using Jibril.Preconditions;
-using Jibril.Services.Games.ShipGame;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Jibril.Extensions;
-using Jibril.Services.Entities;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Games.ShipGame;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Modules.Game
+namespace Hanekawa.Modules.Game
 {
     public class ShipGame : InteractiveBase
     {

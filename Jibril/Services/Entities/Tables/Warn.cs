@@ -1,7 +1,7 @@
 ﻿using System;
-using Jibril.Services.Administration;
+using Hanekawa.Services.Administration;
 
-namespace Jibril.Services.Entities.Tables
+namespace Hanekawa.Services.Entities.Tables
 {
     public class Warn
     {

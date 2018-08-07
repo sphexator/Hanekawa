@@ -1,7 +1,7 @@
-﻿using Discord.WebSocket;
-using System;
+﻿using System;
+using Discord.WebSocket;
 
-namespace Jibril.Services.Level.Services
+namespace Hanekawa.Services.Level.Services
 {
     public class Calculate
     {

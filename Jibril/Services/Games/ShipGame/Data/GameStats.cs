@@ -1,8 +1,8 @@
 ﻿using System;
-using Jibril.Services.Entities;
-using Jibril.Services.Entities.Tables;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.Games.ShipGame.Data
+namespace Hanekawa.Services.Games.ShipGame.Data
 {
     public class GameStats
     {

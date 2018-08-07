@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Administration;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Level;
 using Humanizer;
-using Jibril.Extensions;
-using Jibril.Preconditions;
-using Jibril.Services.Administration;
-using Jibril.Services.Entities;
-using Jibril.Services.Level;
 
-namespace Jibril.Modules.Administration
+namespace Hanekawa.Modules.Administration
 {
     public class Administration : InteractiveBase
     {

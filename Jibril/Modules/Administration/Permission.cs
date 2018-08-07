@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Jibril.Extensions;
-using Jibril.Services;
-using Jibril.Services.Entities;
+using Hanekawa.Extensions;
+using Hanekawa.Services;
+using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jibril.Modules.Administration
+namespace Hanekawa.Modules.Administration
 {
     public class Permission : ModuleBase<SocketCommandContext>
     {
