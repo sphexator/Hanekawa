@@ -5,11 +5,9 @@ namespace Hanekawa.Services.Level.Services
 {
     public class Calculate
     {
-        public uint GetNextLevelRequirement(uint currentLevel)
-        {
-            var calc = 3 * currentLevel * currentLevel + 150;
-            return calc;
-        }
+        public uint GetServerLevelRequirement(uint currentLevel) => 3 * currentLevel * currentLevel + 150;
+
+        public uint GetGlobalLevelRequirement(uint currentLevel) => 50 * currentLevel * currentLevel + 300;
 
         public uint GetMessageExp(SocketMessage msg)
         {

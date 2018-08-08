@@ -29,6 +29,8 @@ namespace Hanekawa.Services.Level
             = new ConcurrentDictionary<ulong, Timer>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+        private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
+            = new ConcurrentDictionary<ulong, DateTime>();
 
         public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
         {
@@ -36,7 +38,8 @@ namespace Hanekawa.Services.Level
             _calc = calc;
             _provider = provider;
 
-            _client.MessageReceived += MessageExp;
+            _client.MessageReceived += ServerMessageExp;
+            _client.MessageReceived += GlobalMessageExp;
             _client.UserVoiceStateUpdated += VoiceExp;
             _client.UserJoined += GiveRolesBack;
 
@@ -70,7 +73,7 @@ namespace Hanekawa.Services.Level
             });
         }
 
-        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, SocketTextChannel fallbackChannel)
+        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
         {
             using (var db = new DbService())
             {
@@ -120,22 +123,24 @@ namespace Hanekawa.Services.Level
             return Task.CompletedTask;
         }
 
-        private Task MessageExp(SocketMessage message)
+        private Task ServerMessageExp(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
                 if (msg.Author.IsBot) return;
-                if (!(msg.Channel is IGuildChannel)) return;
+                if (!(msg.Channel is ITextChannel channel)) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
 
-                if (!CheckCooldown(msg.Author as SocketGuildUser)) return;
+                if (!CheckServerCooldown(user)) return;
+
                 using (var db = new DbService())
                 {
                     ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
-                    var userdata = await db.GetOrCreateUserData(msg.Author as SocketGuildUser);
+                    var userdata = await db.GetOrCreateUserData(user);
                     var exp = _calc.GetMessageExp(msg) * multi;
-                    var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+                    var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
                     if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
@@ -147,12 +152,44 @@ namespace Hanekawa.Services.Level
                     {
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, msg.Author as IGuildUser, db);
+                        await NewLevelManager(userdata, user, db);
                     }
                     else
                     {
                         userdata.Exp = userdata.Exp + exp;
                     }
+                    await db.SaveChangesAsync();
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task GlobalMessageExp(SocketMessage message)
+        {
+            var _ = Task.Run(async () =>
+            {
+                if (!(message is SocketUserMessage msg)) return;
+                if (msg.Source != MessageSource.User) return;
+                if (msg.Author.IsBot) return;
+                if (!(msg.Channel is ITextChannel channel)) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
+
+                if (!CheckGlobalCooldown(user)) return;
+
+                using (var db = new DbService())
+                {
+                    var userdata = await db.GetOrCreateGlobalUserData(user);
+                    var exp = _calc.GetMessageExp(msg);
+                    var nextLevel = _calc.GetGlobalLevelRequirement(userdata.Level);
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+                    if (userdata.Exp + exp >= nextLevel)
+                    {
+                        userdata.Exp = userdata.Exp + exp - nextLevel;
+                        userdata.Level = userdata.Level + 1;
+                    }
+                    else userdata.Exp = userdata.Exp + exp;
+
                     await db.SaveChangesAsync();
                 }
             });
@@ -180,7 +217,7 @@ namespace Hanekawa.Services.Level
                         if (oldVc == null || newVc != null) return;
                         var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
                         var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * multi;
-                        var nxtLvl = _calc.GetNextLevelRequirement(userdata.Level);
+                        var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                         userdata.TotalExp = userdata.TotalExp + exp;
                         userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
@@ -265,7 +302,7 @@ namespace Hanekawa.Services.Level
             }
         }
 
-        private bool CheckCooldown(IGuildUser usr)
+        private bool CheckServerCooldown(IGuildUser usr)
         {
             var check = ServerExpCooldown.TryGetValue(usr.GuildId, out var cds);
             if (!check)
@@ -285,6 +322,20 @@ namespace Hanekawa.Services.Level
 
             if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
             cds.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
+            return true;
+        }
+
+        private bool CheckGlobalCooldown(IGuildUser usr)
+        {
+            var check = GlobalExpCooldown.TryGetValue(usr.Id, out var cd);
+            if (!check)
+            {
+                GlobalExpCooldown.TryAdd(usr.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
+            GlobalExpCooldown.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
             return true;
         }
     }

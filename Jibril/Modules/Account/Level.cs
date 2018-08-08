@@ -159,7 +159,7 @@ namespace Hanekawa.Modules.Account
                 var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp && x.Active);
                 var total = db.Accounts.CountAsync();
                 await Task.WhenAll(rank, total);
-                var nxtLevel = _calculate.GetNextLevelRequirement(userdata.Level);
+                var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
 
                 var author = new EmbedAuthorBuilder
                 {
