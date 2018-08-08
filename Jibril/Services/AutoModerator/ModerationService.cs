@@ -9,6 +9,7 @@ using Hanekawa.Data;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -20,6 +21,8 @@ namespace Hanekawa.Services.AutoModerator
             = new ConcurrentDictionary<ulong, List<ulong>>();
         private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
+        private ConcurrentDictionary<ulong, GuildConfig> GuildConfig { get; set; }
+            = new ConcurrentDictionary<ulong, GuildConfig>();
 
         public enum AutoModActionType
         {

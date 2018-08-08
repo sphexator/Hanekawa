@@ -1,86 +1,130 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Help
 {
     public class Help : InteractiveBase
     {
-        private readonly CommandService _service;
+        private readonly CommandService _commands;
+        private readonly IServiceProvider _map;
 
-        public Help(CommandService service)
+        public Help(IServiceProvider map, CommandService commands)
         {
-            _service = service;
+            _commands = commands;
+            _map = map;
         }
 
         [Command("help")]
-        [RequiredChannel]
-        public async Task HelpAsync()
+        [Summary("Lists this bot's commands.")]
+        public async Task HelpAsync(string path = "")
         {
-            const string prefix = ".";
-            var builder = new EmbedBuilder
+            if (path == "")
             {
-                Color = Color.DarkPurple,
-                Description = "These are the commands you can use"
-            };
-
-            foreach (var module in _service.Modules)
-            {
-                string description = null;
-                foreach (var cmd in module.Commands)
+                var content = string.Join(", ", GetModules(_commands));
+                var author = new EmbedAuthorBuilder
                 {
-                    var result = await cmd.CheckPreconditionsAsync(Context);
-                    if (result.IsSuccess)
-                        description += $"{prefix}{cmd.Aliases.First()}\n";
+                    Name = "Module list"
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = "Use `help <module>` to get help with a module"
+                };
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = content,
+                    Author = author,
+                    Footer = footer
+                };
+                await ReplyAsync(null, false, embed.Build());
+            }
+            else
+            {
+                var output = new EmbedBuilder {Color = Color.Purple};
+                var mod = _commands.Modules.FirstOrDefault(
+                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
+                if (mod == null)
+                {
+                    await ReplyAsync("No module could be found with that name.");
+                    return;
                 }
 
-                if (!string.IsNullOrWhiteSpace(description))
-                    builder.AddField(x =>
-                    {
-                        x.Name = module.Name;
-                        x.Value = description;
-                        x.IsInline = false;
-                    });
-            }
+                output.Title = mod.Name;
+                output.Description = $"{mod.Summary}\n" +
+                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
+                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
+                                     (mod.Submodules.Any()
+                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
+                                         : "") + " ";
+                AddCommands(mod, ref output);
 
-            await ReplyAsync("", false, builder.Build());
+                await ReplyAsync("", embed: output.Build());
+            }
         }
 
-        [Command("help")]
-        [RequiredChannel]
-        public async Task HelpAsync(string command)
+        private static IEnumerable<string> GetModules(CommandService commandService)
         {
-            var result = _service.Search(Context, command);
+            return commandService.Modules.Select(x => $"`{x.Name}`").ToList();
+        }
 
-            if (!result.IsSuccess)
+        private void AddCommands(ModuleInfo module, ref EmbedBuilder builder)
+        {
+            foreach (var command in module.Commands)
             {
-                await ReplyAsync($"Sorry, I couldn't find a command like **{command}**.");
-                return;
+                command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
+                AddCommand(command, ref builder);
             }
+        }
 
-            var builder = new EmbedBuilder
+        private static void AddCommand(CommandInfo command, ref EmbedBuilder builder)
+        {
+            builder.AddField(f =>
             {
-                Color = Color.DarkPurple,
-                Description = $"Here are some commands like **{command}**"
-            };
+                f.Name = $"**{command.Name}**";
+                f.Value = $"{command.Summary}\n" +
+                          (!string.IsNullOrEmpty(command.Remarks) ? $"({command.Remarks})\n" : "") +
+                          (command.Aliases.Any()
+                              ? $"**Aliases:** {string.Join(", ", command.Aliases.Select(x => $"`{x}`"))}\n"
+                              : "") +
+                          $"**Usage:** `{GetPrefix(command)} {GetAliases(command)}`";
+            });
+        }
 
-            foreach (var match in result.Commands)
-            {
-                var cmd = match.Command;
+        private static string GetAliases(CommandInfo command)
+        {
+            var output = new StringBuilder();
+            if (!command.Parameters.Any()) return output.ToString();
+            foreach (var param in command.Parameters)
+                if (param.IsOptional)
+                    output.Append($"[{param.Name} = {param.DefaultValue}] ");
+                else if (param.IsMultiple)
+                    output.Append($"|{param.Name}| ");
+                else if (param.IsRemainder)
+                    output.Append($"...{param.Name} ");
+                else
+                    output.Append($"<{param.Name}> ");
+            return output.ToString();
+        }
 
-                builder.AddField(x =>
-                {
-                    x.Name = string.Join(", ", cmd.Aliases);
-                    x.Value = $"Parameters: {string.Join(", ", cmd.Parameters.Select(p => p.Name))}\n" +
-                              $"Summary: {cmd.Summary}";
-                    x.IsInline = false;
-                });
-            }
+        private static string GetPrefix(CommandInfo command)
+        {
+            var output = GetPrefix(command.Module);
+            output += $"{command.Aliases.FirstOrDefault()} ";
+            return output;
+        }
 
-            await ReplyAsync("", false, builder.Build());
+        private static string GetPrefix(ModuleInfo module)
+        {
+            var output = "";
+            if (module.Parent != null) output = $"{GetPrefix(module.Parent)}{output}";
+            //if (module.Aliases.Any()) output += string.Concat(module.Aliases.FirstOrDefault(), " ");
+            return output;
         }
     }
 }
