@@ -86,6 +86,7 @@ namespace Hanekawa.Services.AutoModerator
             var _ = Task.Run(async () =>
             {
                 if (!(rawMessage is SocketUserMessage message)) return;
+                if (rawMessage.Author.IsBot) return;
                 if (message.Source != MessageSource.User) return;
 
                 var invite = InviteFilter(message);
@@ -102,11 +103,12 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task InviteFilter(SocketMessage msg)
         {
+            if (((SocketGuildUser) msg.Author).GuildPermissions.ManageGuild) return;
             if (msg.Content.IsDiscordInvite())
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
 
-                var invites = await (msg.Channel as SocketTextChannel)?.Guild.GetInvitesAsync();
+                //var invites = await (msg.Channel as SocketTextChannel)?.Guild.GetInvitesAsync();
                 
                 await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Invite, msg.Content);
                 await AutoModPermMute(msg.Author as SocketGuildUser);

@@ -236,6 +236,28 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task RepAsync(SocketGuildUser user = null)
         {
+            if (user == null)
+            {
+                using (var db = new DbService())
+                {
+                    var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                    if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+                    {
+                        var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
+                                Color.Red.RawValue).Build());
+                    }
+                    else
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder()
+                                .Reply($"{Context.User.Mention}, you got a reputation point point available!",
+                                    Color.Green.RawValue).Build()
+                        );
+                }
+
+                return;
+            }
             using (var db = new DbService())
             {
                 var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);

@@ -140,7 +140,7 @@ namespace Hanekawa.Modules.Administration
         [RequireUserPermission(GuildPermission.Administrator)]
         public class SetIgnoreChannel : InteractiveBase
         {
-            private RequiredChannel _requiredChannel;
+            private readonly RequiredChannel _requiredChannel;
             public SetIgnoreChannel(RequiredChannel requiredChannel)
             {
                 _requiredChannel = requiredChannel;
@@ -156,13 +156,13 @@ namespace Hanekawa.Modules.Administration
                     await ReplyAsync(null, false,
                         new EmbedBuilder()
                             .Reply(
-                                $"Couldn't add {channel.Mention} to the list. Its either already added or doesn't exist.",
+                                $"Couldn't add {channel?.Mention} to the list. Its either already added or doesn't exist.",
                                 Color.Red.RawValue).Build());
                     return;
                 }
 
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {channel.Mention} to the ignore list.", Color.Green.RawValue)
+                    new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.", Color.Green.RawValue)
                         .Build());
             }
 
