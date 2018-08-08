@@ -149,7 +149,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("rank", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task RankAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
@@ -199,7 +199,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("top", RunMode = RunMode.Async)]
         [Ratelimit(1, 5, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task LeaderboardAsync()
         {
             using (var db = new DbService())
@@ -233,7 +233,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("rep", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task RepAsync(SocketGuildUser user = null)
         {
             using (var db = new DbService())

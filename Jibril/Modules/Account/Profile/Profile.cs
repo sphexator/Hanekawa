@@ -21,7 +21,7 @@ namespace Hanekawa.Modules.Account.Profile
 
         [Command("profile", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task ProfileAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
@@ -34,7 +34,7 @@ namespace Hanekawa.Modules.Account.Profile
 
         [Command("preview", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task ProfileAsync(string url)
         {
             try

@@ -16,7 +16,8 @@ namespace Hanekawa.Extensions
 {
     public static class ImageExtension
     {
-        private static IImageProcessingContext<Rgba32> ConvertToAvatar(this IImageProcessingContext<Rgba32> processingContext, Size size, float cornerRadius)
+        private static IImageProcessingContext<Rgba32> ConvertToAvatar(
+            this IImageProcessingContext<Rgba32> processingContext, Size size, float cornerRadius)
         {
             return processingContext.Resize(new ResizeOptions
             {
@@ -24,10 +25,11 @@ namespace Hanekawa.Extensions
                 Mode = ResizeMode.Crop
             }).Apply(i => ApplyRoundedCorners(i, cornerRadius));
         }
-        
-        public static Image<Rgba32> CloneAndConvertToAvatarWithoutApply(this Image<Rgba32> image, Size size, float cornerRadius)
+
+        public static Image<Rgba32> CloneAndConvertToAvatarWithoutApply(this Image<Rgba32> image, Size size,
+            float cornerRadius)
         {
-            Image<Rgba32> result = image.Clone(
+            var result = image.Clone(
                 ctx => ctx.Resize(
                     new ResizeOptions
                     {
@@ -38,10 +40,10 @@ namespace Hanekawa.Extensions
             ApplyRoundedCorners(result, cornerRadius);
             return result;
         }
-        
+
         private static void ApplyRoundedCorners(Image<Rgba32> img, float cornerRadius)
         {
-            IPathCollection corners = BuildCorners(img.Width, img.Height, cornerRadius);
+            var corners = BuildCorners(img.Width, img.Height, cornerRadius);
 
             var graphicOptions = new GraphicsOptions(true)
             {
@@ -53,22 +55,24 @@ namespace Hanekawa.Extensions
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
         {
             var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
-            
-            IPath cornerToptLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
-            
+
+            var cornerToptLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
+
             var center = new Vector2(imageWidth / 2F, imageHeight / 2F);
 
-            float rightPos = imageWidth - cornerToptLeft.Bounds.Width + 1;
-            float bottomPos = imageHeight - cornerToptLeft.Bounds.Height + 1;
-            
-            IPath cornerTopRight = cornerToptLeft.RotateDegree(90).Translate(rightPos, 0);
-            IPath cornerBottomLeft = cornerToptLeft.RotateDegree(-90).Translate(0, bottomPos);
-            IPath cornerBottomRight = cornerToptLeft.RotateDegree(180).Translate(rightPos, bottomPos);
+            var rightPos = imageWidth - cornerToptLeft.Bounds.Width + 1;
+            var bottomPos = imageHeight - cornerToptLeft.Bounds.Height + 1;
+
+            var cornerTopRight = cornerToptLeft.RotateDegree(90).Translate(rightPos, 0);
+            var cornerBottomLeft = cornerToptLeft.RotateDegree(-90).Translate(0, bottomPos);
+            var cornerBottomRight = cornerToptLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
             return new PathCollection(cornerToptLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
         }
 
-        public static IImageProcessingContext<Rgba32> ApplyProfileText(this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user, uint xpToLevelUp)
+        public static IImageProcessingContext<Rgba32> ApplyProfileText(
+            this IImageProcessingContext<Rgba32> processingContext, Account userData, SocketGuildUser user,
+            uint xpToLevelUp)
         {
             var statFont = SystemFonts.CreateFont("Good Times Rg", 9, FontStyle.Regular);
             var nameFont = SystemFonts.CreateFont("Good Times Rg", 12, FontStyle.Regular);
@@ -122,24 +126,27 @@ namespace Hanekawa.Extensions
 
             var optionsLeft = new TextGraphicsOptions
             {
-                HorizontalAlignment = HorizontalAlignment.Left,
+                HorizontalAlignment = HorizontalAlignment.Left
             };
 
             var optionsRight = new TextGraphicsOptions
             {
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Right
             };
 
-            processingContext.DrawText(optionsName, $"{user.GetName()}", usernameFont, Rgba32.Black, new Point(198, 90));
+            processingContext.DrawText(optionsName, $"{user.GetName()}", usernameFont, Rgba32.Black,
+                new Point(198, 90));
 
             processingContext.DrawText(optionsLeft, levelstr, statFont, Rgba32.Black, new Point(114, 120));
             processingContext.DrawText(optionsRight, $"{userData.Level}", statFont, Rgba32.Black, new Point(284, 120));
 
-            processingContext.DrawText(optionsRight, $"{userData.Exp}/{xpToLevelUp}", statFont, Rgba32.Black, new Point(284, 132));
+            processingContext.DrawText(optionsRight, $"{userData.Exp}/{xpToLevelUp}", statFont, Rgba32.Black,
+                new Point(284, 132));
             processingContext.DrawText(optionsLeft, expstr, statFont, Rgba32.Black, new Point(114, 132));
 
             processingContext.DrawText(optionsLeft, totalexpstr, statFont, Rgba32.Black, new Point(114, 144));
-            processingContext.DrawText(optionsRight, $"{userData.TotalExp}", statFont, Rgba32.Black, new Point(284, 144));
+            processingContext.DrawText(optionsRight, $"{userData.TotalExp}", statFont, Rgba32.Black,
+                new Point(284, 144));
 
             processingContext.DrawText(optionsLeft, creditstr, statFont, Rgba32.Black, new Point(114, 156));
             processingContext.DrawText(optionsRight, $"{userData.Credit}", statFont, Rgba32.Black, new Point(284, 156));
@@ -151,7 +158,8 @@ namespace Hanekawa.Extensions
             processingContext.DrawText(optionsRight, "0", classFont, Rgba32.Black, new Point(284, 190));
 
             processingContext.DrawText(optionsLeft, npckillstr, classFont, Rgba32.Black, new Point(114, 200));
-            processingContext.DrawText(optionsRight, $"{userData.GameKillAmount}", classFont, Rgba32.Black, new Point(284, 200));
+            processingContext.DrawText(optionsRight, $"{userData.GameKillAmount}", classFont, Rgba32.Black,
+                new Point(284, 200));
 
             processingContext.DrawText(optionsLeft, fleetstr, classFont, Rgba32.Black, new Point(114, 210));
             processingContext.DrawText(optionsRight, "N/A", classFont, Rgba32.Black, new Point(284, 210));
@@ -162,7 +170,7 @@ namespace Hanekawa.Extensions
             processingContext.DrawText(optionsLeft, missionstr, classFont, Rgba32.Black, new Point(114, 230));
             processingContext.DrawText(optionsRight, "0", classFont, Rgba32.Black, new Point(284, 230));
 
-            processingContext.DrawText(optionsName, $"{userData.Class}", gdclassFont, Rgba32.Black, new PointF(48, 278));
+            processingContext.DrawText(optionsName, $"TBD", gdclassFont, Rgba32.Black, new PointF(48, 278));
             return processingContext;
         }
 

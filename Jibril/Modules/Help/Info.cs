@@ -14,13 +14,13 @@ namespace Hanekawa.Modules.Help
     {
         [Command("info")]
         [Summary("General info about the bot")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task InfoPosTask()
         {
             var application = await Context.Client.GetApplicationInfoAsync();
             var embed = new EmbedBuilder
             {
-                Color = Color.DarkPurple
+                Color = Color.Purple,
             };
             var host = new EmbedFieldBuilder
             {
@@ -38,9 +38,7 @@ namespace Hanekawa.Modules.Help
             {
                 IsInline = false,
                 Name = "About",
-                Value =
-                    "Jibril is a discord bot focused on rewarding user interactivity while keeping it clean with several services analyzing user behaviours.\n" +
-                    "Jibril is made in C# using the Discord.Net library and is not open source."
+                Value = application.Description
             };
             var currentProcess = Process.GetCurrentProcess();
             var uptime = new EmbedFieldBuilder

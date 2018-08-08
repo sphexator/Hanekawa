@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Hanekawa.Data;
+using Hanekawa.Preconditions;
 using Hanekawa.Services;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Audio;
@@ -138,6 +139,7 @@ namespace Hanekawa
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<LootCrates>();
             services.AddSingleton<AudioService>();
+            services.AddSingleton<RequiredChannel>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();

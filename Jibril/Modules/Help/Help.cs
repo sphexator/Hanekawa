@@ -17,7 +17,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("help")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task HelpAsync()
         {
             const string prefix = ".";
@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("help")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task HelpAsync(string command)
         {
             var result = _service.Search(Context, command);

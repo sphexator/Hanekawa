@@ -26,7 +26,7 @@ namespace Hanekawa.Modules.Game
         [Command("search", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 1, Measure.Seconds)]
-        [RequiredChannel(346429281314013184)]
+        [RequiredChannel]
         public async Task ShipGameSearchAsync()
         {
             try
@@ -42,7 +42,7 @@ namespace Hanekawa.Modules.Game
 
         [Command("attack", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequiredChannel(346429281314013184)]
+        [RequiredChannel]
         public async Task AttackGameAsync()
         {
             try
@@ -58,7 +58,7 @@ namespace Hanekawa.Modules.Game
 
         [Command("duel", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequiredChannel(346429281314013184)]
+        [RequiredChannel]
         public async Task AttackGameAsync(SocketGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;
@@ -86,7 +86,7 @@ namespace Hanekawa.Modules.Game
 
             [Command(RunMode = RunMode.Async)]
             [RequireContext(ContextType.Guild)]
-            [RequiredChannel(346429281314013184)]
+            [RequiredChannel]
             public async Task PickClassAsync()
             {
                 using (var db = new DbService())
@@ -95,7 +95,7 @@ namespace Hanekawa.Modules.Game
                     var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int)userdata.Level)
                         .ToListAsync();
                     var result = new List<string> {"Available classes\n" +
-                                                   $"You're currently {classes.FirstOrDefault(x => x.Id == userdata.Class).Name}"};
+                                                   $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"};
                     foreach (var x in classes)
                     {
                         result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
@@ -104,7 +104,9 @@ namespace Hanekawa.Modules.Game
                     result.Add("Pick a class by saying the number");
                     var content = string.Join("\n", result);
                     await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
+
                     var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+
                     int.TryParse(response.Content, out var value);
                     var ass = await db.GameClasses.FindAsync(value);
                     if (ass == null)
@@ -126,7 +128,7 @@ namespace Hanekawa.Modules.Game
 
             [Command("list", RunMode = RunMode.Async)]
             [RequireContext(ContextType.Guild)]
-            [RequiredChannel(346429281314013184)]
+            [RequiredChannel]
             public async Task ListClassesAsync()
             {
                 using (var db = new DbService())
@@ -144,7 +146,7 @@ namespace Hanekawa.Modules.Game
 
             [Command("info", RunMode = RunMode.Async)]
             [RequireContext(ContextType.Guild)]
-            [RequiredChannel(346429281314013184)]
+            [RequiredChannel]
             public async Task ClassInfoAsync(int id)
             {
                 using (var db = new DbService())

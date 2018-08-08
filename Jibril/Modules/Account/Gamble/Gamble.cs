@@ -15,7 +15,7 @@ namespace Hanekawa.Modules.Account.Gamble
     {
         [Command("bet", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task BetAsync(uint bet)
         {
             if (bet == 0) return;
@@ -35,7 +35,7 @@ namespace Hanekawa.Modules.Account.Gamble
 
         [Command("bet", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task BetAllAsync(string amount)
         {
             if (!amount.Equals("all")) return;
@@ -57,7 +57,7 @@ namespace Hanekawa.Modules.Account.Gamble
 
         [Command("roll", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task RollAsync(uint bet)
         {
             if (bet == 0) return;
@@ -77,7 +77,7 @@ namespace Hanekawa.Modules.Account.Gamble
 
         [Command("roll", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task RollAllAsync(string amount)
         {
             if (!amount.Equals("all")) return;

@@ -11,7 +11,7 @@ namespace Hanekawa.Modules.Account.Shop
     {
         [Command("inventory", RunMode = RunMode.Async)]
         [Alias("inv")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task InventoryAsync()
         {
             await ReplyAsync(null, false,
@@ -19,14 +19,14 @@ namespace Hanekawa.Modules.Account.Shop
         }
 
         [Command("shop", RunMode = RunMode.Async)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task ShopAsync()
         {
             await ReplyAsync(null, false, new EmbedBuilder().Reply("Shop is currently disabled").Build());
         }
 
         [Command("buy", RunMode = RunMode.Async)]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task BuyAsync(uint itemId)
         {
             await ReplyAsync(null, false,

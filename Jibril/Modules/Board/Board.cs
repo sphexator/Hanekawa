@@ -17,7 +17,7 @@ namespace Hanekawa.Modules.Board
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task BoardStats()
         {
             using (var db = new DbService())
@@ -43,7 +43,7 @@ namespace Hanekawa.Modules.Board
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
-        [RequiredChannel(339383206669320192)]
+        [RequiredChannel]
         public async Task BoardStats(IGuildUser user)
         {
             using (var db = new DbService())
