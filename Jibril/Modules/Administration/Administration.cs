@@ -1,164 +1,159 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
-using Jibril.Modules.Administration.Services;
-using Jibril.Preconditions;
-using Jibril.Services.Common;
-using Jibril.Services.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Administration;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Level;
+using Humanizer;
 
-namespace Jibril.Modules.Administration
+namespace Hanekawa.Modules.Administration
 {
     public class Administration : InteractiveBase
     {
-        private readonly TimedMuteService _muteService;
+        private readonly MuteService _muteService;
+        private readonly WarnService _warnService;
+        private readonly LevelingService _levelingService;
 
-        public Administration(TimedMuteService muteService)
+        public Administration(MuteService muteService, WarnService warnService, LevelingService levelingService)
         {
             _muteService = muteService;
+            _warnService = warnService;
+            _levelingService = levelingService;
+        }
+
+        [Command("exp", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ExpEventAsync(uint multiplier, uint duration = 1440)
+        {
+            try
+            {
+                var after = TimeSpan.FromMinutes(duration);
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply(
+                        $"Wanna activate a exp event with multiplier of {multiplier} for {after.Humanize()} ({duration} minutes) ? (y/n)",
+                        Color.DarkPurple.RawValue).Build());
+                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                if (response.Content.ToLower() != "y") return;
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Do you want to announce the event? (y/n)",
+                        Color.DarkPurple.RawValue).Build());
+                var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                if (announceResp.Content.ToLower() == "y")
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Okay, I'll let you announce it...",
+                            Color.Green.RawValue).Build());
+                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after);
+                }
+                else
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Announcing event into designated channel.",
+                            Color.Green.RawValue).Build());
+                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after, true, Context.Channel as SocketTextChannel);
+                }
+            }
+            catch
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Exp event setup aborted.",
+                        Color.Red.RawValue).Build());
+            }
+        }
+
+        [Command("ban", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        public async Task BanAsync(SocketGuildUser user)
+        {
+            await Context.Message.DeleteAsync().ConfigureAwait(false);
+            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
+                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
+                .Max())
+            {
+                var fembed = new EmbedBuilder().Reply(
+                    $"{Context.User.Mention}, can't ban someone that's equal or more power than you, BAKA!",
+                    Color.Red.RawValue);
+                await ReplyAndDeleteAsync(null, false, fembed.Build(), TimeSpan.FromSeconds(15));
+                return;
+            }
+
+            await Context.Guild.AddBanAsync(user, 7, $"{Context.User.Id}").ConfigureAwait(false);
+            var embed = new EmbedBuilder().Reply($"Banned {user.Mention} from {Context.Guild.Name}.",
+                Color.Green.RawValue);
+            await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
+        }
+
+        [Command("kick", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        public async Task KickAsync(IGuildUser user)
+        {
+
+            await Context.Message.DeleteAsync().ConfigureAwait(false);
+            if (Context.User.Id != user.Guild.OwnerId && ((SocketGuildUser
+            )user).Roles.Select(r => r.Position).Max() >=
+                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
+                .Max())
+            {
+                var fembed = new EmbedBuilder().Reply(
+                    $"{Context.User.Mention}, can't kick someone that's equal or more power than you, BAKA!",
+                    Color.Red.RawValue);
+                await ReplyAndDeleteAsync(null, false, fembed.Build(), TimeSpan.FromSeconds(15));
+                return;
+            }
+
+            await user.KickAsync($"{Context.User.Id}").ConfigureAwait(false);
+            var embed = new EmbedBuilder().Reply($"Kicked {user.Mention} from {Context.Guild.Name}.",
+                Color.Green.RawValue);
+            await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("prune", RunMode = RunMode.Async)]
-        [Alias("Prune")]
+        [Alias("clear")]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task ClearMessage([Remainder] int x = 0)
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        public async Task PruneAsync(int x = 5, IGuildUser user = null)
         {
-            if (x <= 2000)
+            if (x > 1000) x = 1000;
+            if (user == null)
             {
+                var msgs = await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync();
                 var channel = Context.Channel as ITextChannel;
-                var messagesToDelete = await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync();
-                await channel.DeleteMessagesAsync(messagesToDelete);
-                var embed = EmbedGenerator.DefaultEmbed($"{messagesToDelete.Count()} messages deleted!",
-                    Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
+                await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
             }
             else
             {
-                var embed = EmbedGenerator.DefaultEmbed("you cannot delete more than 1000 messages",
-                    Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                var msgs = (await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync())
+                    .Where(m => m.Author.Id == user.Id)
+                    .Take(x);
+                var channel = Context.Channel as ITextChannel;
+                await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
+                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
             }
-        }
-        [Command("Ban", RunMode = RunMode.Async)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
-        [RequireBotPermission(GuildPermission.BanMembers)]
-        [RequireRole(339371670311796736)]
-        public async Task BanAsync(SocketGuildUser user = null, [Remainder] string reason = "No Reason provided")
-        {
-            if (user == null) throw new ArgumentException("You must mention a user");
-            await Context.Message.DeleteAsync();
-            if (Context.User.Id != user.Guild.OwnerId && (user.Roles.Select(r => r.Position).Max() >= ((SocketGuildUser)Context.User).Roles.Select(r => r.Position).Max()))
-            {
-                var failEmbed = EmbedGenerator.DefaultEmbed(
-                    $"{Context.User.Mention}, you can't ban someone with same or higher role then you.",
-                    Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15)).ConfigureAwait(false);
-                return;
-            }
-
-            var guild = Context.Guild;
-            var embed = EmbedGenerator.DefaultEmbed($"Banned {user.Mention} from {Context.Guild.Name}",
-                Colours.OkColour);
-
-            await guild.AddBanAsync(user, 7, $"{Context.User}").ConfigureAwait(false);
-            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-        }
-        [Command("Kick", RunMode = RunMode.Async)]
-        [RequireBotPermission(GuildPermission.KickMembers)]
-        [RequireUserPermission(GuildPermission.KickMembers)]
-        [RequireRole(339371670311796736)]
-        public async Task KickAsync(SocketGuildUser user, [Remainder] string reason)
-        {
-            if (user == null) throw new ArgumentException("You must mention a user");
-            await Context.Message.DeleteAsync();
-            if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
-                Context.Guild.Roles.Select(r => r.Position).Max())
-            {
-                var failEmbed = EmbedGenerator.DefaultEmbed(
-                    $"{Context.User.Mention}, you can't kick someone with same or higher role then you.",
-                    Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
-                return;
-            }
-            var embed = EmbedGenerator.DefaultEmbed($"Kicked {user.Username} from {Context.Guild.Name}",
-                Colours.OkColour);
-            await ReplyAndDeleteAsync("", false, embed.Build(), TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-            await user.KickAsync().ConfigureAwait(false);
-        }
-        [Command("mute", RunMode = RunMode.Async)]
-        [Alias("m")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task DefaultMute(SocketGuildUser user)
-        {
-            try
-            {
-                await Context.Message.DeleteAsync();
-                await _muteService.TimedMute(user, TimeSpan.FromMinutes(1440));
-                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
-
-                await MuteLogResponse(Context.Guild, Context.User, user);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-        [Command("mute", RunMode = RunMode.Async)]
-        [Alias("m")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task TimedMute(int minutes, SocketGuildUser user)
-        {
-            if (minutes < 1 || minutes > 1440) return;
-            try
-            {
-                await Context.Message.DeleteAsync();
-                await _muteService.TimedMute(user, TimeSpan.FromMinutes(minutes));
-                var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} Muted {user.Mention}", Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
-
-                await MuteLogResponse(Context.Guild, Context.User, user, minutes);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-        [Command("unmute", RunMode = RunMode.Async)]
-        [Alias("Unmute", "unm")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
-        public async Task Unmute(SocketGuildUser user)
-        {
-            await Context.Message.DeleteAsync();
-            await _muteService.UnmuteUser(user);
-
-            var confirmEmbed = EmbedGenerator.DefaultEmbed($"{Context.User} unmuted {user.Mention}", Colours.OkColour);
-            await ReplyAndDeleteAsync("", false, confirmEmbed.Build(), TimeSpan.FromSeconds(5));
         }
 
         [Command("softban", RunMode = RunMode.Async)]
         [Alias("sb")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        [RequireRole(339371670311796736)]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         public async Task Softban(SocketGuildUser user)
         {
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
                 Context.Guild.Roles.Select(r => r.Position).Max())
             {
-                var failEmbed = EmbedGenerator.DefaultEmbed(
-                    $"{Context.User.Mention}, you can't mute someone with same or higher role then you.",
-                    Colours.FailColour);
-                await ReplyAndDeleteAsync("", false, failEmbed.Build(), TimeSpan.FromSeconds(15));
+                await ReplyAndDeleteAsync("", false, new EmbedBuilder().Reply($"{Context.User.Mention}, you can't mute someone with same or higher role then you.", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
                 return;
             }
 
@@ -178,9 +173,7 @@ namespace Jibril.Modules.Administration
                 var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
                     .Take(50).ToArray();
 
-                var bulkDeletable = new List<IMessage>();
-                foreach (var x in msgs)
-                    bulkDeletable.Add(x);
+                var bulkDeletable = msgs.ToList();
                 bulkDeletable.Add(Context.Message);
 
                 var channel = Context.Channel as ITextChannel;
@@ -192,55 +185,117 @@ namespace Jibril.Modules.Administration
             }
         }
 
-        private async Task MuteLogResponse(SocketGuild guild, IUser user, IUser mutedUser, int length = 1440)
+        [Command("mute", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440,[Remainder] string reason = null)
         {
-            var time = DateTime.Now;
-            AdminDb.AddActionCase(user, time);
-            var caseid = AdminDb.GetActionCaseId(time);
+            await Context.Message.DeleteAsync();
+            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(timer));
+            await Task.WhenAll(mute, warn);
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                TimeSpan.FromSeconds(15));
+        }
 
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = mutedUser.GetAvatarUrl(),
-                Name = $"Case {caseid[0]} | {ActionType.Gagged} | {mutedUser.Username}#{mutedUser.DiscriminatorValue}"
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = $"ID:{mutedUser.Id} | {DateTime.UtcNow}"
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.FailColour),
-                Author = author,
-                Footer = footer
-            };
-            embed.AddField(x =>
-            {
-                x.Name = "User";
-                x.Value = $"{mutedUser.Mention}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Moderator";
-                x.Value = $"{Context.User.Username}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Length";
-                x.Value = $"{length}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Reason";
-                x.Value = "N/A";
-                x.IsInline = true;
-            });
+        [Command("unmute", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        public async Task UnmuteAsync(SocketGuildUser user)
+        {
+            await Context.Message.DeleteAsync();
+            await _muteService.UnmuteUser(user);
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
+                TimeSpan.FromSeconds(15));
+        }
 
-            var log = guild.GetTextChannel(339381104534355970);
-            var msg = await log.SendMessageAsync("", false, embed.Build());
-            CaseNumberGenerator.UpdateCase(msg.Id.ToString(), caseid[0]);
+        [Command("warn", RunMode = RunMode.Async)]
+        [Alias("warning")]
+        [RequireUserPermission(ChannelPermission.ManageRoles)]
+        public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = "I made this :)")
+        {
+            await Context.Message.DeleteAsync();
+            var msgs = (await Context.Channel.GetMessagesAsync().FlattenAsync()).Where(m => m.Author.Id == user.Id)
+                .Take(100).ToList();
+            await _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Warning, msgs);
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Warned {user.Mention}").Build());
+        }
+
+        [Command("warnlog", RunMode = RunMode.Async)]
+        [RequireUserPermission(ChannelPermission.ManageRoles)]
+        public async Task WarnlogAsync(SocketGuildUser user)
+        {
+            var log = await _warnService.Warnlog(user);
+            await Context.Channel.SendEmbedAsync(log);
+        }
+
+        [Command("reason", RunMode = RunMode.Async)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task ApplyReason(uint id, [Remainder] string reason)
+        {
+            using (var db = new DbService())
+            {
+                var actionCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
+                var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
+                var embed = updMsg?.Embeds.First().ToEmbedBuilder();
+                if (embed == null) return;
+                var author = new EmbedAuthorBuilder
+                {
+                    Name = embed.Author?.Name,
+                    Url = embed.Author?.IconUrl
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = embed.Footer?.Text
+                };
+                var updEmbed = new EmbedBuilder
+                {
+                    Author = author,
+                    Footer = footer,
+                    Color = embed.Color,
+                    Timestamp = embed.Timestamp
+                };
+                var userField = embed.Fields.FirstOrDefault(x => x.Name == "User");
+                updEmbed.AddField(x =>
+                {
+                    if (userField == null) return;
+                    x.Name = userField.Name;
+                    x.Value = userField.Value;
+                    x.IsInline = userField.IsInline;
+                });
+                updEmbed.AddField(x =>
+                {
+                    x.Name = "Moderator";
+                    x.Value = $"{(Context.User as SocketGuildUser).GetName()}";
+                    x.IsInline = true;
+                });
+                try
+                {
+                    var length = embed.Fields.First(x => x.Name == "Duration");
+                    updEmbed.AddField(x =>
+                    {
+                        x.Name = length.Name;
+                        x.Value = length.Value;
+                        x.IsInline = length.IsInline;
+                    });
+                }
+                catch{/*ignore*/}
+
+                updEmbed.AddField(x =>
+                {
+                    x.Name = "Reason";
+                    x.Value = reason != null ? $"{reason}" : "No Reason Provided";
+                    x.IsInline = true;
+                });
+                await Context.Message.DeleteAsync();
+                await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+                actionCase.Response = reason;
+                actionCase.ModId = Context.User.Id;
+                await db.SaveChangesAsync();
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
-using Jibril.Services.INC.Data;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.INC.Calculate
+namespace Hanekawa.Services.INC.Calculate
 {
     public static class ChanceGenerator
     {
@@ -23,7 +23,7 @@ namespace Jibril.Services.INC.Calculate
         public const string SleepName = "Sleep";
         public const string EatName = "Eat";
 
-        public static string EventDeterminator(Profile profile)
+        public static string EventDeterminator(HungerGameLive profile)
         {
             var loot = LootChance(profile);
             var kill = KillChance(profile);
@@ -47,61 +47,61 @@ namespace Jibril.Services.INC.Calculate
             return generator <= loot + kill + idle + meet + hack + die + sleep + eat ? EatName : null;
         }
 
-        private static int LootChance(Profile profile)
+        private static int LootChance(HungerGameLive profile)
         {
-            if (profile.Consumables.TotalDrink == 0) return Loot + 400;
-            if (profile.Consumables.TotalFood == 0) return Loot + 400;
-            if (profile.Consumables.TotalDrink > 0 || profile.Consumables.TotalFood > 0 ||
-                profile.Weapons.TotalWeapons > 1) return Loot - 200;
+            if (profile.Water == 0) return Loot + 400;
+            if (profile.Food == 0) return Loot + 400;
+            if (profile.Water > 0 || profile.Food > 0 ||
+                profile.TotalWeapons > 1) return Loot - 200;
             return Loot;
         }
 
-        private static int KillChance(Profile profile)
+        private static int KillChance(HungerGameLive profile)
         {
-            if (profile.Consumables.TotalDrink == 0 || profile.Consumables.TotalFood == 0)
+            if (profile.Water == 0 || profile.Food == 0)
                 return Kill;
-            if (profile.Weapons.TotalWeapons >= 1 || profile.Consumables.TotalDrink > 0 ||
-                profile.Consumables.TotalFood > 0)
+            if (profile.TotalWeapons >= 1 || profile.Water > 0 ||
+                profile.Food > 0)
                 return Kill + 2500;
-            if (profile.Weapons.TotalWeapons >= 1 && profile.Consumables.TotalDrink > 0 ||
-                profile.Consumables.TotalFood > 0)
+            if (profile.TotalWeapons >= 1 && profile.Water > 0 ||
+                profile.Food > 0)
                 return Kill + 10000;
             return Kill;
         }
 
-        private static int SleepChance(Profile profile)
+        private static int SleepChance(HungerGameLive profile)
         {
-            if (profile.Player.Sleep >= 90) return Sleep + 1000;
-            if (profile.Player.Sleep >= 75) return Sleep + 750;
-            if (profile.Player.Sleep >= 50) return Sleep + 500;
+            if (profile.Sleep >= 90) return Sleep + 1000;
+            if (profile.Sleep >= 75) return Sleep + 750;
+            if (profile.Sleep >= 50) return Sleep + 500;
             return Sleep;
         }
 
-        private static int EatChance(Profile profile)
+        private static int EatChance(HungerGameLive profile)
         {
-            if (profile.Player.Hunger >= 90 || profile.Consumables.TotalFood > 0) return Eat + 1000;
-            if (profile.Player.Hunger >= 75 || profile.Consumables.TotalFood > 0) return Eat + 700;
-            if (profile.Player.Hunger >= 50 || profile.Consumables.TotalFood > 0) return Eat + 400;
-            if (profile.Player.Hunger >= 20 || profile.Consumables.TotalFood > 0) return Eat + 200;
+            if (profile.Hunger >= 90 || profile.Food > 0) return Eat + 1000;
+            if (profile.Hunger >= 75 || profile.Food > 0) return Eat + 700;
+            if (profile.Hunger >= 50 || profile.Food > 0) return Eat + 400;
+            if (profile.Hunger >= 20 || profile.Food > 0) return Eat + 200;
             return Eat;
         }
 
-        private static int IdleChance(Profile profile)
+        private static int IdleChance(HungerGameLive profile)
         {
             return Idle;
         }
 
-        private static int MeetChance(Profile profile)
+        private static int MeetChance(HungerGameLive profile)
         {
             return Meet;
         }
 
-        private static int HackChance(Profile profile)
+        private static int HackChance(HungerGameLive profile)
         {
             return Hack;
         }
 
-        private static int DieChance(Profile profile)
+        private static int DieChance(HungerGameLive profile)
         {
             return Die;
         }

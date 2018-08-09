@@ -1,40 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Services.HungerGames.Data;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Database;
+﻿using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public class Eat
     {
-        public static string EatEvent(Profile profile)
+        public static string EatEvent(HungerGameLive profile)
         {
-            if (profile.Consumables.Fish > 0)
+            using (var db = new DbService())
             {
-                DatabaseHungerGame.EatFood(profile.Player.UserId);
-                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[2]);
+                var user = db.HungerGameLives.Find(profile.UserId);
+                if (profile.Food <= 0) return null;
+                user.Hunger = 0;
+                user.Fatigue = 0;
+                user.Food = user.Food - 1;
+                db.SaveChanges();
                 return "Ate fish";
-            }
-            if (profile.Consumables.Beans > 0)
-            {
-                DatabaseHungerGame.EatFood(profile.Player.UserId);
-                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[0]);
-                return "Ate Beans";
-            }
-            if (profile.Consumables.Pasta > 0)
-            {
-                DatabaseHungerGame.EatFood(profile.Player.UserId);
-                DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[1]);
-                return "Ate Pasta";
-            }
 
-            if (profile.Consumables.Ramen <= 0) return null;
-            DatabaseHungerGame.EatSpecialFood(profile.Player.UserId, Ramen.StaminaGain);
-            DatabaseHungerGame.ConsumeFood(profile.Player.UserId, ConsumableNames.Food[3]);
-            return "Ate Ramen";
-
+            }
         }
     }
 }

@@ -1,19 +1,25 @@
-﻿using Jibril.Services.INC.Data;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Brushes;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Hanekawa.Services.Entities.Tables;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing.Filters;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
+using SixLabors.Shapes;
 
-namespace Jibril.Services.INC.Generator
+namespace Hanekawa.Services.INC.Generator
 {
     public class ImageGenerator
     {
-        public static Stream GenerateEventImage(List<Profile> profile)
+        public static Stream GenerateEventImage(List<HungerGameLive> profile)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             var result = new MemoryStream();
@@ -26,30 +32,29 @@ namespace Jibril.Services.INC.Generator
                 foreach (var x in profile)
                 {
                     var points = GetBorderPointers(width, height);
-                    var hpBar = GetHeathBar(width, height, x.Player.Damage);
-                    var aviPath = $"Services/INC/Cache/Avatar/{x.Player.UserId}.png";
+                    var hpBar = GetHeathBar(width, height, x.Health);
+                    var aviPath = $"Services/INC/Cache/Avatar/{x.UserId}.png";
                     var avi = Image.Load(aviPath);
-                    if (x.Player.Status == false)
+                    if (x.Status == false)
                     {
                         var death = Image.Load("Services/INC/Cache/DefaultAvatar/DeathIndicator.png");
                         avi.Mutate(y => y
                             .BlackWhite()
                             .Resize(80, 80)
-                            .DrawImage(death, new Size(80, 80), new Point(0, 0), GraphicsOptions.Default));
+                            .DrawImage(GraphicsOptions.Default, death, new Point(0, 0)));
                     }
 
                     img.Mutate(a => a
-                        .DrawImage(avi, new Size(80, 80), new Point(20 + 108 * width, 6 + 111 * height),
-                            GraphicsOptions.Default)
+                        .DrawImage(GraphicsOptions.Default, avi, new Point(20 + 108 * width, 6 + 111 * height))
                         .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points));
-                    if (x.Player.Status)
+                    if (x.Status)
                     {
                         img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
                     }
 
                     var path = GetHealthTextLocation(width, height);
                     var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
-                    var hp = $"       {x.Player.Health - x.Player.Damage} / 100";
+                    var hp = $"       {x.Health} / 100";
                     img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
                     width++;
                     row++;
@@ -83,7 +88,7 @@ namespace Jibril.Services.INC.Generator
             return result;
         }
 
-        private static PointF[] GetHeathBar(int seat, int row, int damage)
+        private static PointF[] GetHeathBar(int seat, int row, uint damage)
         {
             //Size of box
             const int w1 = 10 + 3;
@@ -115,7 +120,7 @@ namespace Jibril.Services.INC.Generator
             return pathBuilder.Build();
         }
 
-        private static int GetImageHeight(IReadOnlyCollection<Profile> profile)
+        private static int GetImageHeight(IReadOnlyCollection<Data.Profile> profile)
         {
             if (profile.Count <= 5) return 106;
             if (profile.Count <= 10) return 207;

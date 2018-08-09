@@ -1,393 +1,167 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Jibril.Data.Variables;
-using Jibril.Extensions;
-using Jibril.Modules.Administration.Services;
-using Jibril.Services.AutoModerator.Perspective.Models;
-using Jibril.Services.Logging;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Quartz.Util;
+using Hanekawa.Data;
+using Hanekawa.Events;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.AutoModerator
+namespace Hanekawa.Services.AutoModerator
 {
     public class ModerationService
     {
-        private readonly IConfiguration _config;
         private readonly DiscordSocketClient _discord;
-        private readonly IServiceProvider _provider;
+        private readonly Config _config;
+        private ConcurrentDictionary<ulong, List<ulong>> UrlFilterChannels { get; set; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
+        private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
 
-        public ModerationService(DiscordSocketClient discord, IServiceProvider provider, IConfiguration config)
+        public enum AutoModActionType
         {
-            _discord = discord;
-            _provider = provider;
-            _config = config;
-
-            PerspectiveToken = _config["perspective"];
-
-            _discord.MessageReceived += Filter;
-            _discord.MessageReceived += PerspectiveApi;
-            _discord.UserJoined += _discord_UserJoined;
+            Invite,
+            Spam,
+            ScamLink,
+            Url,
+            Length,
+            Toxicity
         }
 
-        private static string PerspectiveToken { get; set; }
+        public event AsyncEvent<SocketGuildUser> AutoModPermMute;
+        public event AsyncEvent<SocketGuildUser, TimeSpan> AutoModTimedMute;
+        public event AsyncEvent<SocketGuildUser, AutoModActionType, string> AutoModPermLog;
+        public event AsyncEvent<SocketGuildUser, AutoModActionType, TimeSpan, string> AutoModTimedLog;
 
-        private Task _discord_UserJoined(SocketGuildUser user)
+        public ModerationService(DiscordSocketClient discord, IServiceProvider provider, Config config)
+        {
+            _discord = discord;
+            _config = config;
+
+            _discord.MessageReceived += AutoModInitializer;
+            _discord.UserJoined += GlobalBanChecker;
+        }
+
+        public async Task AutoModMute(SocketGuildUser user, AutoModActionType type, TimeSpan time, string reason)
+        {
+            await AutoModTimedMute(user, time);
+            await AutoModTimedLog(user, type, time, reason);
+        }
+
+        public async Task AutoModMute(SocketGuildUser user, AutoModActionType type, string reason)
+        {
+            await AutoModPermMute(user);
+            await AutoModPermLog(user, type, reason);
+        }
+
+        private Task GlobalBanChecker(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
+                using (var db = new DbService())
                 using (var client = new HttpClient())
                 {
                     var values = new Dictionary<string, string>
                     {
-                        {"token", $"E7puJQIwyp"},
+                        {"token", _config.BanApi},
                         {"userid", $"{user.Id}"},
                         {"version", "3"}
                     };
 
                     var content = new FormUrlEncodedContent(values);
-                    var post = client.PostAsync("https://bans.discordlist.net/api", content).Result;
+                    var post = await client.PostAsync("https://bans.discordlist.net/api", content);
                     post.EnsureSuccessStatusCode();
-                    var response = post.Content.ReadAsStringAsync().Result;
+                    var response = await post.Content.ReadAsStringAsync();
                     if (response.ToLower() == "false") return;
-                    var embed = EmbedBuilder(response, user);
-                    await _discord.GetGuild(339370914724446208).GetTextChannel(339380827379204097)
-                        .SendMessageAsync("", false, embed.Build());
                 }
             });
             return Task.CompletedTask;
         }
 
-        private static EmbedBuilder EmbedBuilder(string x, IGuildUser u)
-        {
-            var txt = FieldBuilders(x, u);
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = u.GetAvatarUrl(),
-                Name = u.Username
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.DefaultColour),
-                Title = "Suspicious user",
-                Fields = txt,
-                Author = author
-            };
-
-            return embed;
-        }
-
-        private static List<EmbedFieldBuilder> FieldBuilders(string xx, IGuildUser usr)
-        {
-            var x = FilterString(xx);
-            var fields = new List<EmbedFieldBuilder>();
-            var tag = new EmbedFieldBuilder
-            {
-                Name = "Name",
-                Value = usr.Mention,
-                IsInline = true
-            };
-            var id = new EmbedFieldBuilder
-            {
-                Name = "User ID",
-                Value = usr.Id,
-                IsInline = true
-            };
-            var reason = new EmbedFieldBuilder
-            {
-                Name = "Reason",
-                Value = $"{x[3]}",
-                IsInline = true
-            };
-            var proof = new EmbedFieldBuilder
-            {
-                Name = "Proof",
-                Value = $"{x[4]}",
-                IsInline = true
-            };
-            fields.Add(tag);
-            fields.Add(id);
-            fields.Add(reason);
-            fields.Add(proof);
-
-            return fields;
-        }
-
-        private static string[] FilterString(string x)
-        {
-            var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            return s;
-        }
-
-        private Task Filter(SocketMessage rawMessage)
+        private Task AutoModInitializer(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
-                if (!(rawMessage is SocketUserMessage message)) return;
-                if (message.Source != MessageSource.User) return;
-                try
+                if (!(message is SocketUserMessage msg)) return;
+                if (msg.Source != MessageSource.User) return;
+                if (msg.Author.IsBot) return;
+                if (!(msg.Channel is ITextChannel channel)) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
+
+                GuildConfig cfg;
+                using (var db = new DbService())
                 {
-                    if (!(rawMessage.Author is SocketGuildUser user)) return;
-                    var staffCheck = user.GuildPermissions.ManageMessages;
-                    if (staffCheck != true)
-                    {
-                        if (rawMessage.Content.IsDiscordInvite())
-                            try
-                            {
-                                await rawMessage.DeleteAsync();
-
-                                var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
-                                var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
-                                var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
-                                await user.AddRoleAsync(role);
-                                await user.ModifyAsync(x => x.Mute = true);
-
-                                const string reason = "Discord invite link";
-                                var msg = $"{rawMessage.Content}";
-                                var embed = AutoModResponse(user, reason, msg);
-
-                                await ch.SendMessageAsync("", false, embed.Build());
-                                return;
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                                return;
-                            }
-
-                        if (rawMessage.Content.IsGoogleLink()) await rawMessage.DeleteAsync();
-                        if (rawMessage.Content.IsIpGrab()) await rawMessage.DeleteAsync();
-                        if (rawMessage.Content.IsScamLink())
-                            try
-                            {
-                                await rawMessage.DeleteAsync();
-
-                                var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
-                                var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
-
-                                var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
-                                await user.AddRoleAsync(role);
-                                await user.ModifyAsync(x => x.Mute = true);
-
-                                const string reason = "Scam/malicious link";
-                                var msg = $"{rawMessage.Content}";
-                                var embed = AutoModResponse(user, reason, msg);
-
-                                await ch.SendMessageAsync("", false, embed.Build());
-                                return;
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                                return;
-                            }
-
-                        if (rawMessage.Content.IsPornLink() && ((ITextChannel) rawMessage.Channel).IsNsfw != true)
-                            try
-                            {
-                                await rawMessage.DeleteAsync();
-
-                                var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
-                                var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
-
-                                var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
-                                await user.AddRoleAsync(role);
-                                await user.ModifyAsync(x => x.Mute = true);
-
-                                const string reason = "Porn link";
-                                var msg = $"{rawMessage.Content}";
-                                var embed = AutoModResponse(user, reason, msg);
-
-                                await ch.SendMessageAsync("", false, embed.Build());
-                                return;
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                                return;
-                            }
-
-                        if (rawMessage.Content.Length >= 1500)
-                            try
-                            {
-                                await rawMessage.DeleteAsync();
-                                var guild = _discord.Guilds.First(x => x.Id == 339370914724446208);
-                                var ch = guild.TextChannels.First(x => x.Id == 339381104534355970);
-                                var role = guild.Roles.FirstOrDefault(r => r.Name == "Mute");
-                                await user.AddRoleAsync(role);
-                                await user.ModifyAsync(x => x.Mute = true);
-                                const string reason = "Character count >= 1500";
-                                const string msg = "Too Long Didn't Read.";
-                                var embed = AutoModResponse(user, reason, msg);
-                                embed.ThumbnailUrl = "http://i0.kym-cdn.com/photos/images/original/000/834/934/f64.gif";
-
-                                await ch.SendMessageAsync("", false, embed.Build());
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                            }
-                        /*
-                        if (rawMessage.Content.IsUrl())
-                        {
-                            var userdata = DatabaseService.UserData(rawMessage.Author).FirstOrDefault();
-                            if (userdata.Level >= 10) return;
-                            await rawMessage.DeleteAsync();
-                            var ch = await _discord.GetUser(111123736660324352).GetOrCreateDMChannelAsync();
-                            await ch.SendMessageAsync(
-                                $"{rawMessage.Author.Username}#{rawMessage.Author.DiscriminatorValue} ({rawMessage.Author.Id}) - Posted in {rawMessage.Channel.Name}\n" +
-                                $"{rawMessage.Content}");
-                        }
-                        */
-                    }
+                    cfg = await db.GetOrCreateGuildConfig(user.Guild);
                 }
-                catch
-                {
-                    // ignored
-                }
+
+                var invite = InviteFilter(msg, user, cfg);
+                var scam = ScamLinkFilter(msg, user, cfg);
+                var spam = SpamFilter(msg, user, cfg);
+                var url = UrlFilter(msg, user, cfg);
+                var world = WordFilter(msg, user, cfg);
+                var length = LengthFilter(msg, user, cfg);
+
+                await Task.WhenAll(invite, scam, spam, url, world, length);
             });
             return Task.CompletedTask;
         }
 
-        private Task PerspectiveApi(SocketMessage msg)
+        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            var _ = Task.Run(() =>
+            if (!cfg.FilterInvites) return;
+            if (!user.GuildPermissions.ManageGuild) return;
+            if (msg.Content.IsDiscordInvite())
             {
-                if (!(msg is SocketUserMessage message)) return;
-                if (message.Source != MessageSource.User) return;
-                try
-                {
-                    var content = msg.Content;
-                    var emote = new Regex("((:)([a-z]).*?(:))",
-                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    var emoteLeftover = new Regex("((<)([0-9]).*?(>))",
-                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    var mention = new Regex("((<@)([0-9]).*?(>))|((<@!)([0-9]).*?(>))",
-                        RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    var emoteFilter = emote.Replace(content, "");
-                    var emoteFilterv2 = emoteLeftover.Replace(emoteFilter, "");
-                    var mentionFilter = mention.Replace(emoteFilterv2, "");
-                    if (mentionFilter.IsNullOrWhiteSpace()) return;
-                    var request = new AnalyzeCommentRequest(mentionFilter);
+                try { await msg.DeleteAsync(); } catch { /* ignored */ }
 
-                    var response = SendNudes(request);
-                    var score = response.AttributeScores.TOXICITY.SummaryScore.Value;
-                    var analyze = CalculateNudeScore(score, msg.Author).FirstOrDefault();
-                    AdminDb.AddToxicityValue(analyze.ToxicityValue, analyze.Toxicityavg, msg.Author);
-                    Console.WriteLine(
-                        $"{DateTime.Now.ToLongTimeString()} | TOXICITY SERVICE | {msg.Author.Id} | Toxicity score:{score} | {msg.Author.Username}");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine("Toxicity failed");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private AnalyzeCommentResponse SendNudes(AnalyzeCommentRequest request)
-        {
-            using (var client = new HttpClient())
-            {
-                var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8,
-                    "application/json");
-                var response = client
-                    .PostAsync(
-                        $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={PerspectiveToken}",
-                        content).Result;
-                response.EnsureSuccessStatusCode();
-                var data = response.Content.ReadAsStringAsync().Result;
-                var result = JsonConvert.DeserializeObject<AnalyzeCommentResponse>(data);
-                return result;
+                //var invites = await (msg.Channel as SocketTextChannel)?.Guild.GetInvitesAsync();
+                
+                await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Invite, msg.Content);
+                await AutoModPermMute(msg.Author as SocketGuildUser);
             }
         }
 
-        private static IEnumerable<ToxicityList> CalculateNudeScore(double score, IUser user)
+        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            var userdata = DatabaseService.UserData(user).FirstOrDefault();
-            var calculate = userdata.Toxicityvalue + score;
-            var avg = calculate / (userdata.Toxicitymsgcount + 1);
-            var result = new List<ToxicityList>
+            if (user.GuildId != 339370914724446208) return;
+            if (msg.Content.IsGoogleLink()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+            if (msg.Content.IsIpGrab()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+            if (msg.Content.IsScamLink())
             {
-                new ToxicityList
-                {
-                    ToxicityValue = calculate,
-                    Toxicitymsgcount = userdata.Toxicitymsgcount + 1,
-                    Toxicityavg = avg
-                }
-            };
-            return result;
+                try { await msg.DeleteAsync(); } catch { /* ignored */ }
+                await AutoModPermMute(msg.Author as SocketGuildUser);
+                await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.ScamLink, msg.Content);
+            }
         }
 
-        private static EmbedBuilder AutoModResponse(IUser user, string reason, string message, string length = null)
+        private async Task SpamFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            var time = DateTime.Now;
-            AdminDb.AddActionCase(user, time);
-            var caseid = AdminDb.GetActionCaseId(time);
 
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = user.GetAvatarUrl(),
-                Name = $"Case {caseid[0]} | {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = $"ID:{user.Id} | {DateTime.UtcNow}"
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = new Color(Colours.FailColour),
-                Author = author,
-                Footer = footer
-            };
-            embed.AddField(x =>
-            {
-                x.Name = "User";
-                x.Value = $"{user.Mention}";
-                x.IsInline = true;
-            });
-            embed.AddField(x =>
-            {
-                x.Name = "Moderator";
-                x.Value = $"Auto Moderator";
-                x.IsInline = true;
-            });
-            if (length != null)
-                embed.AddField(x =>
-                {
-                    x.Name = "Length";
-                    x.Value = $"{length}";
-                    x.IsInline = true;
-                });
-            embed.AddField(x =>
-            {
-                x.Name = "Reason";
-                x.Value = $"{reason}";
-                x.IsInline = true;
-            });
-            if (message.Length < 1000)
-                embed.AddField(x =>
-                {
-                    x.Name = "Message";
-                    x.Value = $"{message}";
-                    x.IsInline = false;
-                });
-            return embed;
         }
-    }
 
-    public class ToxicityList
-    {
-        public double ToxicityValue { get; set; }
-        public int Toxicitymsgcount { get; set; }
-        public double Toxicityavg { get; set; }
+        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+            //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+        }
+
+        private async Task WordFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+
+        }
+
+        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+            if (user.GuildId != 339370914724446208) return;
+            if (msg.Content.Length >= 1500 && !user.GuildPermissions.ManageMessages)
+            {
+                try { await msg.DeleteAsync(); } catch { /* ignored */ }
+                await AutoModTimedMute(msg.Author as SocketGuildUser, TimeSpan.FromMinutes(60));
+                await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Length, msg.Content);
+            }
+        }
     }
 }

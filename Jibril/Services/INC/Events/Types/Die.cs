@@ -1,19 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Database;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public class Die
     {
-        public static string DieEvent(Profile profile)
+        public static string DieEvent(HungerGameLive profile)
         {
-            var rand = new Random();
-            var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
-            DatabaseHungerGame.DieEvent(profile.Player.UserId);
-            return response;
+            using (var db = new DbService())
+            {
+                var rand = new Random();
+                var response = DieResponseStrings[rand.Next(0, DieResponseStrings.Length)];
+                var user = db.HungerGameLives.Find(profile.UserId);
+                user.Status = true;
+                user.Health = 0;
+                db.SaveChanges();
+                return response;
+            }
         }
 
         private static readonly string[] DieResponseStrings =

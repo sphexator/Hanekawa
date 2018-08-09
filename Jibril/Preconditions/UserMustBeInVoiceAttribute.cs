@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Discord.Commands;
 using Discord;
+using Discord.Commands;
 
-namespace Jibril.Preconditions
+namespace Hanekawa.Preconditions
 {
     /// <summary> Indicates that this command should only be used while the user is in a voice channel. </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]

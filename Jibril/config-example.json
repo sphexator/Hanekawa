@@ -1,10 +1,6 @@
 ﻿{
   "token": "",
   "perspective": "",
-  "dbServer": "",
-  "dbUsername": "",
-  "dbPassword": "",
-  "dbNorm": "",
-  "dbFleet": "",
-  "dbWarn": ""
+  "banlist": "",
+  "connectionString": ""
 }

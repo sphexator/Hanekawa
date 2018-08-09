@@ -1,103 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Discord;
-using Discord.WebSocket;
-using Google.Apis.Util;
-using Jibril.Services.INC.Calculate;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Database;
+using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.INC.Calculate;
 
-namespace Jibril.Services.INC.Events.Types
+namespace Hanekawa.Services.INC.Events.Types
 {
     public static class Kill
     {
-        public static string KillEvent(Profile profile)
+        public static string KillEvent(HungerGameLive profile)
         {
-            var trgt = GetTarget().FirstOrDefault();
-            if (profile.Weapons.Pistol > 0)
+            using (var db = new DbService())
             {
-                var pistolDamage = DamageOutput.PistolDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                string response;
-                if (pistolDamage + trgt.Damage >= 100)
+                var trgt = GetTarget().FirstOrDefault();
+                if (profile.Pistol> 0)
                 {
-                    DatabaseHungerGame.DieEvent(trgt.Userid);
-                    response = $"Kills {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
+                    var pistolDamage = DamageOutput.PistolDamage(profile.Stamina, profile.Bleeding);
+                    string response;
+                    if (pistolDamage + trgt.Damage >= 100)
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = true;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Kills {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
+                    }
+                    else
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = false;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
+                    }
+                    return response;
                 }
-                else
-                {
-                    DatabaseHungerGame.AddDamage(trgt.Userid, pistolDamage);
-                    response = $"Hits {trgt.Name} with his pistol inflicting {pistolDamage} damage.";
-                }
-                return response;
-            }
-            
-            if (profile.Weapons.Bow > 0)
-            {
-                var bowDamage = DamageOutput.BowDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                string response;
-                if (bowDamage + trgt.Damage >= 100)
-                {
-                    DatabaseHungerGame.DieEvent(trgt.Userid);
-                    response = $"Kills {trgt.Name} with his bow inflicting {bowDamage} damage.";
-                }
-                else
-                {
-                    DatabaseHungerGame.AddDamage(trgt.Userid, bowDamage);
-                    response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
-                }
-                return response;
-            }
 
-            if (profile.Weapons.Axe > 0)
-            {
-                var axeDamage = DamageOutput.AxeDamage(profile.Player.Stamina, profile.Player.Bleeding);
-                string response;
-                if(axeDamage + trgt.Damage >= 100)
+                if (profile.Bow > 0)
                 {
-                    DatabaseHungerGame.DieEvent(trgt.Userid);
-                    response = $"Kills {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                    var bowDamage = DamageOutput.BowDamage(profile.Stamina, profile.Bleeding);
+                    string response;
+                    if (bowDamage + trgt.Damage >= 100)
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = true;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Kills {trgt.Name} with his bow inflicting {bowDamage} damage.";
+                    }
+                    else
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = false;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Hits {trgt.Name} with his bow inflicting {bowDamage} damage.";
+                    }
+                    return response;
+                }
+
+                if (profile.Axe > 0)
+                {
+                    var axeDamage = DamageOutput.AxeDamage(profile.Stamina, profile.Bleeding);
+                    string response;
+                    if (axeDamage + trgt.Damage >= 100)
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = true;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Kills {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                    }
+                    else
+                    {
+                        var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                        user.Status = false;
+                        user.Health = 0;
+                        db.SaveChanges();
+                        response = $"Hits {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                    }
+                    return response;
+                }
+
+                var fistDamage = DamageOutput.FistDamage(profile.Stamina, profile.Bleeding);
+                string msg;
+                if (fistDamage + trgt.Damage >= 100)
+                {
+                    var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                    user.Status = true;
+                    user.Health = 0;
+                    db.SaveChanges();
+                    msg = $"Kills {trgt.Name} with his fists inflicting {fistDamage} damage.";
                 }
                 else
                 {
-                    DatabaseHungerGame.AddDamage(trgt.Userid, axeDamage);
-                    response = $"Hits {trgt.Name} with his axe inflicting {axeDamage} damage.";
+                    var user = db.HungerGameLives.Find(trgt.Userid.ToString());
+                    user.Status = false;
+                    user.Health = 0;
+                    db.SaveChanges();
+                    msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
                 }
-                return response;
+                return msg;
             }
-
-            var fistDamage = DamageOutput.FistDamage(profile.Player.Stamina, profile.Player.Bleeding);
-            string msg;
-            if(fistDamage + trgt.Damage >= 100)
-            {
-                DatabaseHungerGame.DieEvent(trgt.Userid);
-                msg = $"Kills {trgt.Name} with his fists inflicting {fistDamage} damage.";
-            }
-            else
-            {
-                DatabaseHungerGame.AddDamage(trgt.Userid, fistDamage);
-                msg = $"Hits {trgt.Name} with his fists inflicting {fistDamage} damage.";
-            }
-            return msg;
         }
 
         private static IEnumerable<KillTarget> GetTarget()
         {
-            var users = DatabaseHungerGame.GetUsers();
-            var rand = new Random();
-            var chosn = rand.Next(users.Count);
-            var user = users[chosn];
-            var result = new List<KillTarget>
+            using (var db = new DbService())
             {
-                new KillTarget
+                var users = db.HungerGameLives.ToList();
+                var rand = new Random();
+                var chosn = rand.Next(users.Count);
+                var user = users[chosn];
+                var result = new List<KillTarget>
                 {
-                    Userid = user.UserId,
-                    Name = user.Name,
-                    Damage = user.Damage
-                }
-            };
-            return result;
+                    new KillTarget
+                    {
+                        Userid = user.UserId,
+                        Name = user.Name,
+                        Damage = user.Health
+                    }
+                };
+                return result;
+            }
         }
     }
 
@@ -105,7 +131,7 @@ namespace Jibril.Services.INC.Events.Types
     {
         public string Name { get; set; }
         public ulong Userid { get; set; }
-        public int Damage { get; set; }
+        public uint Damage { get; set; }
 
         internal object ThrowIfNull()
         {

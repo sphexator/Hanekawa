@@ -1,11 +1,11 @@
 ﻿using System;
-using Jibril.Services.INC.Data;
+using Hanekawa.Services.INC.Data;
 
-namespace Jibril.Services.INC.Calculate
+namespace Hanekawa.Services.INC.Calculate
 {
     public class DamageOutput
     {
-        public static int PistolDamage(int stamina, bool bleeding)
+        public static int PistolDamage(uint stamina, bool bleeding)
         {
             var rand = new Random();
             var damage = rand.Next(Pistol.Damage - 20, Pistol.Damage);
@@ -15,7 +15,7 @@ namespace Jibril.Services.INC.Calculate
             return damage;
         }
 
-        public static int BowDamage(int stamina, bool bleeding)
+        public static int BowDamage(uint stamina, bool bleeding)
         {
             var rand = new Random();
             var damage = rand.Next(Bow.Damage - 20, Bow.Damage);
@@ -25,7 +25,7 @@ namespace Jibril.Services.INC.Calculate
             return damage;
         }
 
-        public static int AxeDamage(int stamina, bool bleeding)
+        public static int AxeDamage(uint stamina, bool bleeding)
         {
             var rand = new Random();
             var damage = rand.Next(Axe.Damage - 20, Axe.Damage);
@@ -35,7 +35,7 @@ namespace Jibril.Services.INC.Calculate
             return damage;
         }
 
-        public static int TrapDamage(int stamina, bool bleeding)
+        public static int TrapDamage(uint stamina, bool bleeding)
         {
             var rand = new Random();
             var damage = rand.Next(Trap.Damage - 20, Trap.Damage);
@@ -45,7 +45,7 @@ namespace Jibril.Services.INC.Calculate
             return damage;
         }
 
-        public static int FistDamage(int stamina, bool bleeding)
+        public static int FistDamage(uint stamina, bool bleeding)
         {
             var rand = new Random();
             var damage = rand.Next(Fist.Damage - 10, Fist.Damage);

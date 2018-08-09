@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Jibril.Services.Level.Services
+namespace Hanekawa.Services.Level.Services
 {
     public class Cooldown
     {

@@ -5,7 +5,7 @@ using Discord;
 using Discord.WebSocket;
 
 // Change this namespace if desired
-namespace Jibril.Services.Reliability
+namespace Hanekawa.Services.Reliability
 {
     // This service requires that your bot is being run by a daemon that handles
     // Exit Code 1 (or any exit code) as a restart.

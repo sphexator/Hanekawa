@@ -1,40 +1,87 @@
 ﻿using System;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Jibril.Services;
 using System.Linq;
 using System.Threading.Tasks;
-using Jibril.Modules.Report.Service;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Modules.Report
+namespace Hanekawa.Modules.Report
 {
     public class Report : InteractiveBase
     {
-        private readonly ReportService _service;
-        public Report(ReportService service)
-        {
-            _service = service;
-        }
-
         [Command("report", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        public async Task ReportGuild([Remainder] string text)
+        public async Task ReportGuildAsync([Remainder]string text)
         {
             await Context.Message.DeleteAsync();
-            var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.Level <= 10) await ReplyAndDeleteAsync("You need to be level 10 or above to use the report system.", false, null, TimeSpan.FromSeconds(30));
-            await _service.SendReport(Context.User, Context, text);
-            await ReplyAndDeleteAsync("Report sent.", false, null, TimeSpan.FromSeconds(10));
+            using (var db = new DbService())
+            {
+                var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (!cfg.ReportChannel.HasValue) return;
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
+                    Name = (Context.User as SocketGuildUser).GetName()
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = $"{report.Id}"
+                };
+                var embed = new EmbedBuilder
+                {
+                    Author = author,
+                    Footer = footer,
+                    Color = Color.DarkPurple,
+                    Description = text
+                };
+                if (Context.Message.Attachments.FirstOrDefault() != null)
+                {
+                    embed.ImageUrl = Context.Message.Attachments.First().Url;
+                }
+                await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).SendEmbedAsync(embed);
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().Reply("Report sent!", Color.Green.RawValue).Build());
+            }
         }
 
-        [Command("report", RunMode = RunMode.Async)]
-        [RequireContext(ContextType.DM)]
-        public async Task ReportDm([Remainder] string text)
+        [Command("respond", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task RespondAsync(uint id, [Remainder] string text)
         {
-            var userdata = DatabaseService.UserData(Context.User).FirstOrDefault();
-            if (userdata.Level <= 10) await ReplyAsync("You need to be level 10 or above to use the report system.");
-            await _service.SendReport(Context.User, Context, text);
-            await ReplyAsync("Report sent.");
+            using (var db = new DbService())
+            {
+                var report = await db.Reports.FindAsync(id);
+                if (report == null) return;
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
+                    .GetMessageAsync(report.MessageId.Value);
+                var embed = msg.Embeds.First().ToEmbedBuilder();
+                embed.Color = Color.Orange;
+                var field = new EmbedFieldBuilder
+                {
+                    Name = (Context.User as SocketGuildUser).GetName(),
+                    Value = text
+                };
+                embed.AddField(field);
+                try
+                {
+                    var suggestUser = Context.Guild.GetUser(report.UserId);
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                        $"Your report got a response!\n" +
+                        $"report:\n" +
+                        $"{embed.Description}\n" +
+                        $"Answer from {Context.User}:\n" +
+                        $"{text}");
+                }
+                catch{ /*IGNORE*/ }
+
+                await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
+            }
         }
     }
 }

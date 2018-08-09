@@ -1,12 +1,12 @@
-﻿using Jibril.Services.INC.Calculate;
-using Jibril.Services.INC.Data;
-using Jibril.Services.INC.Events.Types;
+﻿using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.INC.Calculate;
+using Hanekawa.Services.INC.Events.Types;
 
-namespace Jibril.Services.INC.Events
+namespace Hanekawa.Services.INC.Events
 {
     public static class EventHandler
     {
-        public static string EventManager(Profile profile)
+        public static string EventManager(HungerGameLive profile)
         {
             var evt = ChanceGenerator.EventDeterminator(profile);
             switch (evt)

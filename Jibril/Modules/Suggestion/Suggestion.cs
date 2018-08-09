@@ -4,217 +4,167 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Jibril.Data.Variables;
-using Jibril.Modules.Suggestion.Services;
-using Jibril.Preconditions;
-using Jibril.Services.Common;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 
-namespace Jibril.Modules.Suggestion
+namespace Hanekawa.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
-        [Command("suggest", RunMode = RunMode.Async)]
-        [Alias("suggestion")]
-        [RequireRole(341622220050792449)]
-        [RequiredChannel(339383206669320192)]
-        [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task ServerSuggestiong([Remainder] string content)
+        [Command("Suggest", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        public async Task SuggestAsync([Remainder] string suggestion)
         {
-            try
+            await Context.Message.DeleteAsync();
+            using (var db = new DbService())
             {
-                var confirm = EmbedGenerator.DefaultEmbed($"Suggestion sent to server requests", Colours.OkColour);
-                await ReplyAndDeleteAsync("", false, confirm.Build(), TimeSpan.FromSeconds(15));
-                await Context.Message.DeleteAsync();
-
-                var time = DateTime.Now;
-                var guild = Context.Guild;
-                var sc = guild.TextChannels.First(x => x.Id == 342519715215835136);
-
-                await Task.Delay(100);
-
-                SuggestionDB.AddSuggestion(Context.User, time);
-                var suggestionNr = SuggestionDB.GetSuggestionID(time);
-
-
-                var author = new EmbedAuthorBuilder();
-                var footer = new EmbedFooterBuilder();
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (!cfg.SuggestionChannel.HasValue) return;
+                var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
+                    Name = (Context.User as SocketGuildUser).GetName()
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = $"Suggestion ID: {caseId.Id}"
+                };
                 var embed = new EmbedBuilder
                 {
-                    Color = new Color(Colours.DefaultColour),
-                    Description = $"{content}"
+                    Author = author,
+                    Timestamp = DateTimeOffset.UtcNow,
+                    Color = Color.Purple,
+                    Description = suggestion,
+                    Footer = footer
                 };
-                if (Context.Message.Attachments.ToString() == null)
-                    embed.ImageUrl = Context.Message.Attachments.ToString();
+                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).SendEmbedAsync(embed);
+                caseId.MessageId = msg.Id;
+                await db.SaveChangesAsync();
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
+                Emote.TryParse("<:1yes:403870491749777411>", out var yes);
+                Emote.TryParse("<:2no:403870492206825472>", out var no);
+                await msg.AddReactionAsync(yes);
+                await msg.AddReactionAsync(no);
+            }
+        }
 
-                author.WithIconUrl(Context.User.GetAvatarUrl());
-                author.WithName(Context.User.Username);
-
-                footer.WithText($"Suggestion ID: {suggestionNr[0]}");
-
-                embed.WithAuthor(author);
-                embed.WithFooter(footer);
-
+        [Command("approve", RunMode = RunMode.Async)]
+        [Alias("ar")]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ApproveAsync(uint id, [Remainder] string response)
+        {
+            await Context.Message.DeleteAsync();
+            using (var db = new DbService())
+            {
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                if (suggestion == null) return;
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value);
+                var embed = msg.Embeds.First().ToEmbedBuilder();
+                embed.Color = Color.Green;
+                var field = new EmbedFieldBuilder
+                {
+                    Name = (Context.User as SocketGuildUser).GetName(),
+                    Value = response
+                };
+                embed.AddField(field);
                 try
                 {
-                    var suggestMsg = await sc.SendMessageAsync("", false, embed.Build());
-                    SuggestionDB.UpdateSuggestion(suggestMsg.Id.ToString(), suggestionNr[0]);
+                    var suggestUser = Context.Guild.GetUser(suggestion.UserId);
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                        $"Your suggestion got a response!\n" +
+                        $"Suggestion:\n" +
+                        $"{embed.Description}\n" +
+                        $"Answer from {Context.User}:\n" +
+                        $"{response}");
+                }
+                catch { /*IGNORE*/ }
 
-                    Emote.TryParse("<:1yes:403870491749777411>", out var yesEmote);
-                    Emote.TryParse("<:2no:403870492206825472>", out var noEmote);
-                    IEmote iemoteYes = yesEmote;
-                    IEmote iemoteNo = noEmote;
-                    await Task.Delay(260);
-                    await suggestMsg.AddReactionAsync(iemoteYes);
-                    await Task.Delay(260);
-                    await suggestMsg.AddReactionAsync(iemoteNo);
-                }
-                catch (Exception e)
-                {
-                    Console.Write(e);
-                    await ReplyAsync("Something went wrong");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
             }
         }
 
-        [Command("denyrequest", RunMode = RunMode.Async)]
+        [Command("deny", RunMode = RunMode.Async)]
         [Alias("dr")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task DenyRequest(uint casenr, [Remainder] string reason = null)
+        public async Task DenyAsync(uint id, [Remainder] string response)
         {
-            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
-            var msgId = Convert.ToUInt64(msgIdString[0]);
-            var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
-            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
-            var oldMsg = updMsg?.Embeds.FirstOrDefault();
-
-            if (oldMsg == null)
-            {
-                Console.Write("updmsg is null");
-                return;
-            }
-
-            var updAuthor = new EmbedAuthorBuilder
-            {
-                IconUrl = oldMsg.Author?.IconUrl,
-                Name = oldMsg.Author?.Name
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = oldMsg.Footer?.Text
-            };
-            var updEmbed = new EmbedBuilder
-            {
-                Color = new Color(Colours.FailColour),
-                Description = oldMsg.Description,
-                Title = oldMsg.Title,
-                Author = updAuthor,
-                Footer = footer
-            };
-            updEmbed.AddField(x =>
-            {
-                x.Name = $"{Context.User.Username}";
-                x.Value = reason == null ? "No reason provided" : $"{reason}";
-                x.IsInline = false;
-            });
-
             await Context.Message.DeleteAsync();
-            await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+            using (var db = new DbService())
+            {
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                if (suggestion == null) return;
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value);
+                var embed = msg.Embeds.First().ToEmbedBuilder();
+                embed.Color = Color.Red;
+                var field = new EmbedFieldBuilder
+                {
+                    Name = (Context.User as SocketGuildUser).GetName(),
+                    Value = response
+                };
+                embed.AddField(field);
+                try
+                {
+                    var suggestUser = Context.Guild.GetUser(suggestion.UserId);
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                        $"Your suggestion got a response!\n" +
+                        $"Suggestion:\n" +
+                        $"{embed.Description}\n" +
+                        $"Answer from {Context.User}:\n" +
+                        $"{response}");
+                }
+                catch
+                {
+                    /*IGNORE*/
+                }
+
+                await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
+            }
         }
 
-        [Command("approverequest", RunMode = RunMode.Async)]
-        [Alias("ar")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ApproveRequest(uint casenr, [Remainder] string reason = null)
-        {
-            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
-            var msgId = Convert.ToUInt64(msgIdString[0]);
-            var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
-            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
-            var oldMsg = updMsg.Embeds.FirstOrDefault();
-
-            if (oldMsg == null)
-            {
-                Console.Write("updmsg is null");
-                return;
-            }
-
-            var updAuthor = new EmbedAuthorBuilder
-            {
-                IconUrl = oldMsg.Author?.IconUrl,
-                Name = oldMsg.Author?.Name
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = oldMsg.Footer?.Text
-            };
-            var updEmbed = new EmbedBuilder
-            {
-                Color = new Color(Colours.OkColour),
-                Description = oldMsg.Description,
-                Title = oldMsg.Title,
-                Author = updAuthor,
-                Footer = footer
-            };
-            updEmbed.AddField(x =>
-            {
-                x.Name = $"{Context.User.Username}";
-                x.Value = reason == null ? "No reason provided" : $"{reason}";
-                x.IsInline = false;
-            });
-
-            await Context.Message.DeleteAsync();
-            await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
-        }
-
-        [Command("reviewRequest", RunMode = RunMode.Async)]
+        [Command("comment", RunMode = RunMode.Async)]
         [Alias("rr")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ReviewRequest(uint casenr, [Remainder] string reason = null)
+        public async Task CommentAsync(uint id, [Remainder] string response)
         {
-            var msgIdString = SuggestionDB.SuggestionMessage(casenr);
-            var msgId = Convert.ToUInt64(msgIdString[0]);
-            var guild = Context.Guild;
-            var ch = guild.TextChannels.First(x => x.Id == 342519715215835136);
-            var updMsg = await ch.GetMessageAsync(msgId) as IUserMessage;
-            var oldMsg = updMsg?.Embeds.FirstOrDefault();
-
-            if (oldMsg == null)
-            {
-                Console.Write("updmsg is null");
-                return;
-            }
-
-            var updAuthor = new EmbedAuthorBuilder
-            {
-                IconUrl = oldMsg.Author?.IconUrl,
-                Name = oldMsg.Author?.Name
-            };
-            var footer = new EmbedFooterBuilder
-            {
-                Text = oldMsg.Footer?.Text
-            };
-            var updEmbed = new EmbedBuilder
-            {
-                Color = new Color(Colours.ReviewColour),
-                Description = oldMsg.Description,
-                Title = oldMsg.Title,
-                Author = updAuthor,
-                Footer = footer
-            };
-            updEmbed.AddField(x =>
-            {
-                x.Name = $"{Context.User.Username}";
-                x.Value = reason == null ? "Under review." : $"{reason}";
-                x.IsInline = false;
-            });
             await Context.Message.DeleteAsync();
-            await updMsg.ModifyAsync(m => m.Embed = updEmbed.Build());
+            using (var db = new DbService())
+            {
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                if (suggestion == null) return;
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value);
+                var embed = msg.Embeds.First().ToEmbedBuilder();
+                var field = new EmbedFieldBuilder
+                {
+                    Name = (Context.User as SocketGuildUser).GetName(),
+                    Value = response
+                };
+                embed.AddField(field);
+                try
+                {
+                    var suggestUser = Context.Guild.GetUser(suggestion.UserId);
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                        $"Your suggestion got a response!\n" +
+                        $"Suggestion:\n" +
+                        $"{embed.Description}\n" +
+                        $"Answer from {Context.User}:\n" +
+                        $"{response}");
+                }
+                catch { /*IGNORE*/ }
+
+                await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
+            }
         }
     }
 }
