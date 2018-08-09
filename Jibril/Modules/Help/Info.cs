@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("uptime")]
-        [Summary("Display uptime of bot")]
+        [Summary("Display uptime of the bot")]
         public async Task UptimeTask()
         {
             await ReplyAndDeleteAsync(null, false,

@@ -32,6 +32,7 @@ namespace Hanekawa.Modules.Account
         public class LevelAdmin : InteractiveBase
         {
             [Command("add", RunMode = RunMode.Async)]
+            [Summary("Adds a role reward")]
             public async Task LevelAdd(uint level, [Remainder]string roleName)
             {
                 if (roleName.IsNullOrWhiteSpace()) return;
@@ -69,6 +70,7 @@ namespace Hanekawa.Modules.Account
             }
 
             [Command("create", RunMode = RunMode.Async)]
+            [Summary("Creates a role reward with given level and name")]
             public async Task LevelCreate(uint level, [Remainder]string roleName)
             {
                 if (roleName.IsNullOrWhiteSpace()) return;
@@ -92,6 +94,7 @@ namespace Hanekawa.Modules.Account
             }
 
             [Command("remove", RunMode = RunMode.Async)]
+            [Summary("Removes a role reward with given level")]
             public async Task LevelRemove(uint level)
             {
                 using (var db = new DbService())
@@ -115,6 +118,7 @@ namespace Hanekawa.Modules.Account
             }
 
             [Command("list", RunMode = RunMode.Async)]
+            [Summary("Lists all role rewards")]
             public async Task LevelAdd()
             {
                 using (var db = new DbService())
@@ -148,6 +152,7 @@ namespace Hanekawa.Modules.Account
         }
 
         [Command("rank", RunMode = RunMode.Async)]
+        [Summary("Displays your rank")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task RankAsync(SocketGuildUser user = null)
@@ -198,6 +203,7 @@ namespace Hanekawa.Modules.Account
         }
 
         [Command("top", RunMode = RunMode.Async)]
+        [Summary("Displays top 10 users on the level leaderboard")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task LeaderboardAsync()
