@@ -161,8 +161,8 @@ namespace Hanekawa.Modules.Account
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user);
-                var rank = db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp && x.Active);
-                var total = db.Accounts.CountAsync();
+                var rank = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
+                var total = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id);
                 await Task.WhenAll(rank, total);
                 var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
 

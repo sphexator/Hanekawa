@@ -139,7 +139,6 @@ namespace Hanekawa.Modules.Administration
         [Group("log")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
-        [RequireOwner]
         public class LogPermission : InteractiveBase
         {
             [Command("join", RunMode = RunMode.Async)]
@@ -153,11 +152,13 @@ namespace Hanekawa.Modules.Administration
                     {
                         cfg.LogJoin = null;
                         await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of join/leave!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogJoin = channel.Id;
                     await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set join/leave logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
                 }
             }
 
@@ -173,11 +174,13 @@ namespace Hanekawa.Modules.Administration
                     {
                         cfg.LogMsg = null;
                         await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of messages!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogMsg = channel.Id;
                     await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set message logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
                 }
             }
 
@@ -193,11 +196,13 @@ namespace Hanekawa.Modules.Administration
                     {
                         cfg.LogBan = null;
                         await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of moderation actions!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogBan = channel.Id;
                     await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
                 }
             }
         }
