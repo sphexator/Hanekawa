@@ -84,7 +84,7 @@ namespace Hanekawa.Modules.Account
                 }
 
                 uint reward;
-                if (user == null)
+                if (user == null || user == Context.User)
                 {
                     user = Context.User as SocketGuildUser;
                     reward = 200;

@@ -242,6 +242,7 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task RepAsync(SocketGuildUser user = null)
         {
+            if (user == Context.User) return;
             if (user == null)
             {
                 using (var db = new DbService())
