@@ -481,6 +481,7 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
+                if (newMsg.Author.IsBot) return;
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(((SocketGuildChannel)channel).Guild);
