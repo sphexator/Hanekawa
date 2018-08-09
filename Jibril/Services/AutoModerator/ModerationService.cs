@@ -21,8 +21,6 @@ namespace Hanekawa.Services.AutoModerator
             = new ConcurrentDictionary<ulong, List<ulong>>();
         private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
-        private ConcurrentDictionary<ulong, GuildConfig> GuildConfig { get; set; }
-            = new ConcurrentDictionary<ulong, GuildConfig>();
 
         public enum AutoModActionType
         {
@@ -84,29 +82,38 @@ namespace Hanekawa.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private Task AutoModInitializer(SocketMessage rawMessage)
+        private Task AutoModInitializer(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
-                if (!(rawMessage is SocketUserMessage message)) return;
-                if (rawMessage.Author.IsBot) return;
-                if (message.Source != MessageSource.User) return;
+                if (!(message is SocketUserMessage msg)) return;
+                if (msg.Source != MessageSource.User) return;
+                if (msg.Author.IsBot) return;
+                if (!(msg.Channel is ITextChannel channel)) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
 
-                var invite = InviteFilter(message);
-                var scam = ScamLinkFilter(message);
-                var spam = SpamFilter(message);
-                var url = UrlFilter(message);
-                var world = WordFilter(message);
-                var length = LengthFilter(message);
+                GuildConfig cfg;
+                using (var db = new DbService())
+                {
+                    cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                }
+
+                var invite = InviteFilter(msg, user, cfg);
+                var scam = ScamLinkFilter(msg, user, cfg);
+                var spam = SpamFilter(msg, user, cfg);
+                var url = UrlFilter(msg, user, cfg);
+                var world = WordFilter(msg, user, cfg);
+                var length = LengthFilter(msg, user, cfg);
 
                 await Task.WhenAll(invite, scam, spam, url, world, length);
             });
             return Task.CompletedTask;
         }
 
-        private async Task InviteFilter(SocketMessage msg)
+        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            if (((SocketGuildUser) msg.Author).GuildPermissions.ManageGuild) return;
+            if (!cfg.FilterInvites) return;
+            if (!user.GuildPermissions.ManageGuild) return;
             if (msg.Content.IsDiscordInvite())
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
@@ -118,8 +125,9 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task ScamLinkFilter(SocketMessage msg)
+        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
+            if (user.GuildId != 339370914724446208) return;
             if (msg.Content.IsGoogleLink()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
             if (msg.Content.IsIpGrab()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
             if (msg.Content.IsScamLink())
@@ -130,35 +138,30 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task SpamFilter(SocketMessage msg)
+        private async Task SpamFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
 
         }
 
-        private async Task UrlFilter(SocketMessage msg)
+        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
             //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
         }
 
-        private async Task WordFilter(SocketMessage msg)
+        private async Task WordFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
 
         }
 
-        private async Task LengthFilter(SocketMessage msg)
+        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            if (msg.Content.Length >= 1500 && ((SocketGuildUser) msg.Author).GuildPermissions.ManageMessages)
+            if (user.GuildId != 339370914724446208) return;
+            if (msg.Content.Length >= 1500 && !user.GuildPermissions.ManageMessages)
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
                 await AutoModTimedMute(msg.Author as SocketGuildUser, TimeSpan.FromMinutes(60));
                 await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Length, msg.Content);
             }
-        }
-
-        private static string[] FilterString(string x)
-        {
-            var s = x.Split(",", StringSplitOptions.RemoveEmptyEntries);
-            return s;
         }
     }
 }
