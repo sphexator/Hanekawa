@@ -17,6 +17,7 @@ namespace Hanekawa.Modules.Account
     {
         [Command("wallet")]
         [Alias("balance", "money")]
+        [Summary("Display how much credit you got")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task WalletAsync(SocketGuildUser user = null)
@@ -43,6 +44,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("give", RunMode = RunMode.Async)]
         [Alias("transfer")]
+        [Summary("Transfer credit between users")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task GiveCreditAsync(uint amount, SocketGuildUser user)
@@ -66,6 +68,7 @@ namespace Hanekawa.Modules.Account
         }
 
         [Command("daily", RunMode = RunMode.Async)]
+        [Summary("Daily credit command, usable once every 18hrs")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task DailyAsync(SocketGuildUser user = null)
@@ -106,6 +109,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("richest", RunMode = RunMode.Async)]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [Summary("Displays top 10 users on the money leaderboard")]
         [RequiredChannel]
         public async Task LeaderboardAsync()
         {
@@ -140,6 +144,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("reward", RunMode = RunMode.Async)]
         [Alias("award")]
+        [Summary("Rewards special credit to users (does not remove from yourself)")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RewardCreditAsync(uint amount, IGuildUser user)
         {
@@ -148,7 +153,7 @@ namespace Hanekawa.Modules.Account
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 userdata.CreditSpecial = userdata.CreditSpecial + amount;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} Event Credit to {user.Mention}", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} special Credit to {user.Mention}", Color.Green.RawValue).Build());
             }
         }
     }
