@@ -28,9 +28,10 @@ namespace Hanekawa.Modules.Audio
         [RequiredChannel]
         public async Task SummonAudio()
         {
-            var ch = (Context.User as IVoiceState).VoiceChannel;
+            var ch = (Context.User as IVoiceState)?.VoiceChannel;
             await _audioService.Summon(Context.Guild, ch);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Connected to {ch.Name}").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Connected to {ch?.Name}").Build(),
+                TimeSpan.FromSeconds(15));
             await Context.Message.DeleteAsync();
         }
 
@@ -42,7 +43,8 @@ namespace Hanekawa.Modules.Audio
         {
             var ch = (Context.User as IVoiceState).VoiceChannel;
             await _audioService.Reconnect(Context.Guild, ch);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Reconnected").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Reconnected").Build(),
+                TimeSpan.FromSeconds(15));
             await Context.Message.DeleteAsync();
         }
 
@@ -78,7 +80,8 @@ namespace Hanekawa.Modules.Audio
             if (query.IsNullOrWhiteSpace())
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply($"{Context.User.Mention} please specify a song to play", Color.Red.RawValue)
+                    new EmbedBuilder().Reply($"{Context.User.Mention} please specify a song to play",
+                            Color.Red.RawValue)
                         .Build(), TimeSpan.FromSeconds(15));
                 return;
             }
@@ -105,7 +108,8 @@ namespace Hanekawa.Modules.Audio
         {
             await _audioService.Stop(Context.Guild);
             await Context.Message.DeleteAsync();
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} Stopped player").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"{Context.User.Mention} Stopped player").Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("destroy", RunMode = RunMode.Async)]
@@ -116,7 +120,8 @@ namespace Hanekawa.Modules.Audio
         {
             await _audioService.Destroy(Context.Guild);
             await Context.Message.DeleteAsync();
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} Destroyed player").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"{Context.User.Mention} Destroyed player").Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("volume", RunMode = RunMode.Async)]
@@ -129,7 +134,9 @@ namespace Hanekawa.Modules.Audio
             if (volume < 1) volume = 1;
             await Context.Message.DeleteAsync();
             await _audioService.SetVolume(Context.Guild, volume);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} set volume to {volume}%").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"{Context.User.Mention} set volume to {volume}%").Build(),
+                TimeSpan.FromSeconds(15));
         }
 
         [Command("playlist", RunMode = RunMode.Async)]
@@ -139,10 +146,12 @@ namespace Hanekawa.Modules.Audio
         public async Task AddPlaylist(string playlist)
         {
             var ch = (Context.User as IVoiceState).VoiceChannel;
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Adding songs...").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Adding songs...").Build(),
+                TimeSpan.FromSeconds(15));
             await Task.Delay(1000);
             await Context.Message.DeleteAsync();
-            var aaaaaaaaaaaaaaaaaaaaaaaaaaah = await _audioService.AddPlaylistToQueue(playlist, Context.User as IGuildUser, ch);
+            var aaaaaaaaaaaaaaaaaaaaaaaaaaah =
+                await _audioService.AddPlaylistToQueue(playlist, Context.User as IGuildUser, ch);
             await ReplyAsync($"Added {aaaaaaaaaaaaaaaaaaaaaaaaaaah} songs to the queue");
         }
 
@@ -172,6 +181,7 @@ namespace Hanekawa.Modules.Audio
                     };
                     await ReplyAsync(null, false, embed.Build());
                 }
+
                 var pages = new List<string>();
                 for (var i = 0; i < queue.Count;)
                 {
@@ -183,6 +193,7 @@ namespace Hanekawa.Modules.Audio
                         song += $"{i + 1} - {context.Title} by {context.Author}\n";
                         i++;
                     }
+
                     pages.Add(song);
                 }
 
@@ -213,7 +224,8 @@ namespace Hanekawa.Modules.Audio
         public async Task CurrentSong()
         {
             var embed = _audioService.GetCurrentSong(Context.Guild);
-            if (embed == null) await ReplyAsync(null, false, new EmbedBuilder().Reply("Currently not playing.").Build());
+            if (embed == null)
+                await ReplyAsync(null, false, new EmbedBuilder().Reply("Currently not playing.").Build());
             await ReplyAsync(null, false, embed.Build());
         }
 
@@ -225,7 +237,8 @@ namespace Hanekawa.Modules.Audio
         {
             _audioService.ClearQueue(Context.Guild.Id);
             await Context.Message.DeleteAsync();
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} Cleared queue.").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"{Context.User.Mention} Cleared queue.").Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("skip", RunMode = RunMode.Async)]
@@ -237,13 +250,17 @@ namespace Hanekawa.Modules.Audio
             var ch = (Context.User as IVoiceState)?.VoiceChannel;
             await _audioService.SkipSong(Context.Guild, ch);
             await Context.Message.DeleteAsync();
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} Skipped song.").Build(), TimeSpan.FromSeconds(15));
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"{Context.User.Mention} Skipped song.").Build(), TimeSpan.FromSeconds(15));
         }
 
         [Command("loop", RunMode = RunMode.Async)]
         [Summary("Loops the queue")]
         [UserMustBeInVoice]
         [RequiredChannel]
-        public async Task LoopSongs() => await ReplyAsync(null, false, _audioService.ToggleLoop(Context.Guild).Build());
+        public async Task LoopSongs()
+        {
+            await ReplyAsync(null, false, _audioService.ToggleLoop(Context.Guild).Build());
+        }
     }
 }
