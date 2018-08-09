@@ -59,7 +59,7 @@ namespace Hanekawa.Services
             if (!(rawMessage is SocketUserMessage message)) return;
             if (message.Source != MessageSource.User) return;
             var argPos = 0;
-            var prefix = message.Author is SocketGuildUser user ? Prefix.GetOrAdd(user.Guild.Id, ".") : ".";
+            var prefix = message.Author is SocketGuildUser user ? Prefix.GetOrAdd(user.Guild.Id, "h.") : "h.";
             if (!message.HasStringPrefix(prefix, ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
             
             var context = new SocketCommandContext(_discord, message);

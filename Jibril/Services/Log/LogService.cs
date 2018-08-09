@@ -488,6 +488,7 @@ namespace Hanekawa.Services.Log
                     if (!((oldMsg.HasValue ? oldMsg.Value : null) is IUserMessage msg) || newMsg == null) return;
                     if (!(channel is ITextChannel chtx)) return;
                     if (msg.Author.IsBot && oldMsg.Value.Content == newMsg.Content) return;
+                    if (oldMsg.Value.Content == newMsg.Content) return;
                     var author = new EmbedAuthorBuilder
                     {
                         Name = "Message Updated"
@@ -635,9 +636,9 @@ namespace Hanekawa.Services.Log
 
     public static class ActionType
     {
-        public const string Gagged = "🔇Gagged";
-        public const string Ungagged = "🔊UnGagged";
-        public const string Bent = "❌Bent";
-        public const string UnBent = "✔UnBent";
+        public const string Gagged = "🔇Muted";
+        public const string Ungagged = "🔊UnMuted";
+        public const string Bent = "❌Banned";
+        public const string UnBent = "✔UnBanned";
     }
 }

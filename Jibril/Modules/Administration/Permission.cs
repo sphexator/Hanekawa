@@ -136,6 +136,72 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Group("log")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        [RequireOwner]
+        public class LogPermission : InteractiveBase
+        {
+            [Command("join", RunMode = RunMode.Async)]
+            [Summary("Enable/disable join/leaves logging")]
+            public async Task LogJoinAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (channel == null)
+                    {
+                        cfg.LogJoin = null;
+                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of join/leave!", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.LogJoin = channel.Id;
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set join/leave logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("message", RunMode = RunMode.Async)]
+            [Alias("msg")]
+            [Summary("Enable/Disable message logging")]
+            public async Task LogMessageAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (channel == null)
+                    {
+                        cfg.LogMsg = null;
+                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of messages!", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.LogMsg = channel.Id;
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set message logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("ban", RunMode = RunMode.Async)]
+            [Alias("ban")]
+            [Summary("Enable/Disable moderation logging")]
+            public async Task LogBanAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (channel == null)
+                    {
+                        cfg.LogBan = null;
+                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of moderation actions!", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.LogBan = channel.Id;
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                }
+            }
+        }
+
         [Group("ignore")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public class SetIgnoreChannel : InteractiveBase
