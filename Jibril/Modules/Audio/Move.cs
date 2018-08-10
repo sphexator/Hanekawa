@@ -37,7 +37,7 @@ namespace Hanekawa.Modules.Audio
                         new EmbedBuilder()
                             .Reply(
                                 $"{Context.User.Mention} can't use this command. Talk to {Context.Guild.GetUser(qual.UserId).Mention}",
-                                Color.Red.R).Build());
+                                Color.Red.RawValue).Build());
                     return;
                 }
 
@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Audio
                         new EmbedBuilder()
                             .Reply(
                                 $"{mvUser.Mention} didn't accept or respond in time.",
-                                Color.Red.R).Build());
+                                Color.Red.RawValue).Build());
                     return;
                 }
 

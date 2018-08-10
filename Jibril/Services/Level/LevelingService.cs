@@ -171,7 +171,6 @@ namespace Hanekawa.Services.Level
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
                 if (msg.Author.IsBot) return;
-                if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
                 if (!CheckGlobalCooldown(user)) return;

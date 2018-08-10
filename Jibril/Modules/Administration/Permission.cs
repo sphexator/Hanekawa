@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -17,7 +16,8 @@ namespace Hanekawa.Modules.Administration
     {
         [Command("permissions", RunMode = RunMode.Async)]
         [Alias("perm")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Permission overview")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task ViewPermissionsAsync()
         {
@@ -137,9 +137,9 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Group("log")]
+        [Summary("Manage logging settings")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
-        [RequireOwner]
         public class LogPermission : InteractiveBase
         {
             [Command("join", RunMode = RunMode.Async)]
@@ -152,12 +152,17 @@ namespace Hanekawa.Modules.Administration
                     if (channel == null)
                     {
                         cfg.LogJoin = null;
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of join/leave!", Color.Green.RawValue).Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled logging of join/leave!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogJoin = channel.Id;
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set join/leave logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set join/leave logging channel to {channel.Mention}!",
+                            Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
                 }
             }
 
@@ -172,12 +177,17 @@ namespace Hanekawa.Modules.Administration
                     if (channel == null)
                     {
                         cfg.LogMsg = null;
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of messages!", Color.Green.RawValue).Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled logging of messages!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogMsg = channel.Id;
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set message logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set message logging channel to {channel.Mention}!",
+                            Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
                 }
             }
 
@@ -192,21 +202,29 @@ namespace Hanekawa.Modules.Administration
                     if (channel == null)
                     {
                         cfg.LogBan = null;
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled logging of moderation actions!", Color.Green.RawValue).Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled logging of moderation actions!", Color.Green.RawValue)
+                                .Build());
+                        await db.SaveChangesAsync();
                         return;
                     }
 
                     cfg.LogBan = channel.Id;
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue)
+                            .Build());
+                    await db.SaveChangesAsync();
                 }
             }
         }
 
         [Group("ignore")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Manages channels its to ignore or only use common commands on")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public class SetIgnoreChannel : InteractiveBase
         {
             private readonly RequiredChannel _requiredChannel;
+
             public SetIgnoreChannel(RequiredChannel requiredChannel)
             {
                 _requiredChannel = requiredChannel;
@@ -215,7 +233,7 @@ namespace Hanekawa.Modules.Administration
             [Command("add", RunMode = RunMode.Async)]
             public async Task AddIgnoreChannel(ITextChannel channel = null)
             {
-                if(channel == null) channel = Context.Channel as ITextChannel;
+                if (channel == null) channel = Context.Channel as ITextChannel;
                 var result = await _requiredChannel.AddChannel(channel);
                 if (!result)
                 {
@@ -258,30 +276,44 @@ namespace Hanekawa.Modules.Administration
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                    var channels = new List<ITextChannel>();
-                    foreach (var x in await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync())
+                    var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                    string content = null;
+                    if (list.Count != 0)
                     {
-                        try { channels.Add(Context.Guild.GetTextChannel(x.ChannelId)); }
-                        catch {  /* ignored */ }
+                        var channels = new List<string>();
+                        foreach (var x in list)
+                            try
+                            {
+                                channels.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                            }
+                            catch
+                            {
+                                /* ignored */
+                            }
 
-                        var content = string.Join("\n", channels);
-                        string title = null;
-                        title = cfg.IgnoreAllChannels
-                            ? $"Channels commands are enabled:"
-                            : $"Channels commands are ignored on:";
-                        var author = new EmbedAuthorBuilder
-                        {
-                            IconUrl = Context.Guild.IconUrl,
-                            Name = title
-                        };
-                        var embed = new EmbedBuilder
-                        {
-                            Color = Color.Purple,
-                            Description = content,
-                            Author = author
-                        };
-                        await ReplyAsync(null, false, embed.Build());
+                        content = string.Join("\n", channels);
                     }
+                    else
+                    {
+                        content = "Commands are usable in every channel";
+                    }
+
+                    string title = null;
+                    title = cfg.IgnoreAllChannels
+                        ? $"Channels commands are enabled on:"
+                        : $"Channels commands are ignored on:";
+                    var author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = Context.Guild.IconUrl,
+                        Name = title
+                    };
+                    var embed = new EmbedBuilder
+                    {
+                        Color = Color.Purple,
+                        Description = content,
+                        Author = author
+                    };
+                    await ReplyAsync(null, false, embed.Build());
                 }
             }
 
@@ -294,12 +326,16 @@ namespace Hanekawa.Modules.Administration
                     if (cfg.IgnoreAllChannels)
                     {
                         cfg.IgnoreAllChannels = false;
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Commands are now usable in all channels beside those in the ignore list.").Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder()
+                                .Reply("Commands are now usable in all channels beside those in the ignore list.")
+                                .Build());
                     }
                     else
                     {
                         cfg.IgnoreAllChannels = true;
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
                     }
 
                     await db.SaveChangesAsync();

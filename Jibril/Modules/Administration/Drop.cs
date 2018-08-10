@@ -1,10 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Entities;
 using Hanekawa.Services.Loot;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -66,6 +70,36 @@ namespace Hanekawa.Modules.Administration
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Couldn't remove {channel.Mention} from loot eligable channels.", Color.Red.RawValue)
                         .Build());
+            }
+        }
+
+        [Command("list", RunMode = RunMode.Async)]
+        [Summary("Lists channels that're available for drops")]
+        public async Task ListDropChannelsAsync()
+        {
+            using (var db = new DbService())
+            {
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl },
+                    Color = Color.Purple
+                };
+                var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (list.Count != 0)
+                {
+                    var result = new List<string>();
+                    foreach (var x in list)
+                    {
+                        result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                    }
+
+                    embed.Description = string.Join("\n", result);
+                    await ReplyAsync(null, false, embed.Build());
+                    return;
+                }
+
+                embed.Description = "No loot channels has been added to this server";
+                await ReplyAsync(null, false, embed.Build());
             }
         }
     }

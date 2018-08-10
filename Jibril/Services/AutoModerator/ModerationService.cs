@@ -113,7 +113,7 @@ namespace Hanekawa.Services.AutoModerator
         private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (!cfg.FilterInvites) return;
-            if (!user.GuildPermissions.ManageGuild) return;
+            if (user.GuildPermissions.ManageGuild) return;
             if (msg.Content.IsDiscordInvite())
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
@@ -156,7 +156,8 @@ namespace Hanekawa.Services.AutoModerator
         private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
-            if (msg.Content.Length >= 1500 && !user.GuildPermissions.ManageMessages)
+            if (user.GuildPermissions.ManageMessages) return;
+            if (msg.Content.Length >= 1500)
             {
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
                 await AutoModTimedMute(msg.Author as SocketGuildUser, TimeSpan.FromMinutes(60));

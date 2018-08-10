@@ -50,9 +50,10 @@ namespace Hanekawa.Services.Welcome
             _provider = provider;
 
             _client.UserJoined += Welcomer;
+            _client.UserJoined += WelcomeToggler;
             _client.JoinedGuild += CreateGuildDirectory;
             _client.LeftGuild += BannerCleanup;
-            _client.UserJoined += WelcomeToggler;
+
             using (var db = new DbService())
             {
                 foreach (var x in db.GuildConfigs)
