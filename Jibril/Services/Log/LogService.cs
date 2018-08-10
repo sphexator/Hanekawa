@@ -292,21 +292,24 @@ namespace Hanekawa.Services.Log
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
                     if (!cfg.LogJoin.HasValue) return;
-                    var footer = new EmbedFooterBuilder
-                    {
-                        Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
-                    };
                     var embed = new EmbedBuilder
                     {
                         Description = $"📥 {user.Mention} has joined (*{user.Id}*)\n" +
                                       $"Account Created: {user.CreatedAt.Humanize()}",
 
                         Color = new Color(Color.Green.RawValue),
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = footer
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow)
                     };
+                    if (!user.IsBot)
+                    {
+                        var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
+                        embed.Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}" };
+                    }
+                    else
+                    {
+                        embed.Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" };
+                    }
                     await user.Guild.GetTextChannel(cfg.LogJoin.Value)
                         .SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
                 }
@@ -321,19 +324,22 @@ namespace Hanekawa.Services.Log
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
                     if (!cfg.LogJoin.HasValue) return;
-                    var footer = new EmbedFooterBuilder
-                    {
-                        Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}"
-                    };
                     var embed = new EmbedBuilder
                     {
                         Description = $"📤 {user.Mention} has left (*{user.Id}*)",
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Color = new Color(Color.Red.RawValue),
-                        Footer = footer
+                        Color = new Color(Color.Red.RawValue)
                     };
+                    if (!user.IsBot)
+                    {
+                        var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
+                        embed.Footer = new EmbedFooterBuilder{Text = $"Username: {user.Username}#{user.Discriminator} - Level: {userdata.Level}"};
+                    }
+                    else
+                    {
+                        embed.Footer = new EmbedFooterBuilder{Text = $"Username: {user.Username}#{user.Discriminator}"};
+                    }
                     await user.Guild.GetTextChannel(cfg.LogJoin.Value)
                         .SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
                 }

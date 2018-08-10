@@ -10,7 +10,7 @@ using Hanekawa.Services;
 using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hanekawa.Modules.Administration
+namespace Hanekawa.Modules.Permission
 {
     public class Permission : ModuleBase<SocketCommandContext>
     {
@@ -43,10 +43,6 @@ namespace Hanekawa.Modules.Administration
                         ? Context.Guild.GetTextChannel(cfg.WelcomeChannel.Value).Mention
                         : "Disabled",
                     true);
-
-                embed.AddField("Welcome Banner", cfg.WelcomeBanner.ToString(), true);
-                embed.AddField("Welcome Limit", $"{cfg.WelcomeLimit}", true);
-                embed.AddField("Welcome Message", cfg.WelcomeMessage ?? "No message set", true);
 
                 // Level
                 embed.AddField("Exp Multiplier", cfg.ExpMultiplier, true);
@@ -94,6 +90,11 @@ namespace Hanekawa.Modules.Administration
                         : "Disabled",
                     true);
 
+                // Welcome
+                embed.AddField("Welcome Banner", cfg.WelcomeBanner.ToString(), true);
+                embed.AddField("Welcome Limit", $"{cfg.WelcomeLimit}", true);
+                embed.AddField("Welcome Message", cfg.WelcomeMessage ?? "No message set", true);
+
                 // Moderation
                 string nudeChannels = null;
                 foreach (var x in await db.NudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync())
@@ -132,6 +133,38 @@ namespace Hanekawa.Modules.Administration
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Something went wrong changing prefix to {prefix}...",
                             Color.Red.RawValue).Build());
+                }
+            }
+        }
+
+        [Group("automod")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public class FilterPermission : InteractiveBase
+        {
+            [Command("invite")]
+            [Alias("srvfilter")]
+            [Summary("Toggles guild invite filter, auto-deletes invites")]
+            public async Task InviteFilter()
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (cfg.FilterInvites)
+                    {
+                        cfg.FilterInvites = false;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder()
+                                .Reply("Disabled auto deletion and muting users posting invite links.",
+                                    Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.FilterInvites = true;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Enabled auto deletion and muting users posting invite links.",
+                            Color.Green.RawValue).Build());
                 }
             }
         }
@@ -218,7 +251,7 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Group("ignore")]
+        [Group("channel")]
         [Summary("Manages channels its to ignore or only use common commands on")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public class SetIgnoreChannel : InteractiveBase
