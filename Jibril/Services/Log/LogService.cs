@@ -104,7 +104,7 @@ namespace Hanekawa.Services.Log
                         Value = msg.Truncate(999),
                         IsInline = false
                     };
-                    var result = new List<EmbedFieldBuilder> {userField, modField, reasonField, duration, message};
+                    var result = new List<EmbedFieldBuilder> { userField, modField, reasonField, duration, message };
 
                     var embed = new EmbedBuilder
                     {
@@ -166,7 +166,7 @@ namespace Hanekawa.Services.Log
                         Value = msg.Truncate(999),
                         IsInline = false
                     };
-                    var result = new List<EmbedFieldBuilder> {userField, modField, reasonField, message};
+                    var result = new List<EmbedFieldBuilder> { userField, modField, reasonField, message };
 
                     var embed = new EmbedBuilder
                     {
@@ -299,17 +299,10 @@ namespace Hanekawa.Services.Log
                                       $"Account Created: {user.CreatedAt.Humanize()}",
 
                         Color = new Color(Color.Green.RawValue),
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow)
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
                     };
-                    if (!user.IsBot)
-                    {
-                        var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
-                        embed.Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator} - Lvl: {userdata.Level}" };
-                    }
-                    else
-                    {
-                        embed.Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" };
-                    }
+
                     await user.Guild.GetTextChannel(cfg.LogJoin.Value)
                         .SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
                 }
@@ -329,17 +322,10 @@ namespace Hanekawa.Services.Log
                     {
                         Description = $"📤 {user.Mention} has left (*{user.Id}*)",
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Color = new Color(Color.Red.RawValue)
+                        Color = new Color(Color.Red.RawValue),
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
                     };
-                    if (!user.IsBot)
-                    {
-                        var userdata = await db.GetOrCreateUserData(user).ConfigureAwait(false);
-                        embed.Footer = new EmbedFooterBuilder{Text = $"Username: {user.Username}#{user.Discriminator} - Level: {userdata.Level}"};
-                    }
-                    else
-                    {
-                        embed.Footer = new EmbedFooterBuilder{Text = $"Username: {user.Username}#{user.Discriminator}"};
-                    }
+
                     await user.Guild.GetTextChannel(cfg.LogJoin.Value)
                         .SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
                 }
@@ -569,7 +555,7 @@ namespace Hanekawa.Services.Log
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel) Math.Abs((int) severity - 5);
+            return (LogLevel)Math.Abs((int)severity - 5);
         }
 
         private static List<EmbedFieldBuilder> ModLogFieldBuilders(IMentionable user,
@@ -594,7 +580,7 @@ namespace Hanekawa.Services.Log
                 Value = "N/A",
                 IsInline = true
             };
-            var result = new List<EmbedFieldBuilder> {userField, modField, reasonField};
+            var result = new List<EmbedFieldBuilder> { userField, modField, reasonField };
             if (duration == null) return result;
             var durationField = new EmbedFieldBuilder
             {
