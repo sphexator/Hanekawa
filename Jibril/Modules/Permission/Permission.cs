@@ -252,6 +252,7 @@ namespace Hanekawa.Modules.Permission
         }
 
         [Group("channel")]
+        [Alias("ignore")]
         [Summary("Manages channels its to ignore or only use common commands on")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public class SetIgnoreChannel : InteractiveBase
