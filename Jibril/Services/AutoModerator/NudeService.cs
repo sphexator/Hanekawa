@@ -181,9 +181,9 @@ namespace Hanekawa.Services.AutoModerator
             timer.AddFirst(toAdd);
         }
 
-        private async Task NudeWarn(IGuildUser user, SocketTextChannel channel)
+        private async Task NudeWarn(SocketGuildUser user, SocketTextChannel channel)
         {
-            var guildWarn = WarnAmount.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, uint>());
+            var guildWarn = WarnAmount.GetOrAdd(user.Guild.Id, new ConcurrentDictionary<ulong, uint>());
             var userWarn = guildWarn.GetOrAdd(user.Id, 0);
 
             switch (userWarn + 1)

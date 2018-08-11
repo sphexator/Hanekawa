@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
@@ -21,6 +22,9 @@ namespace Hanekawa.Services.Administration
 
     public class WarnService : IJob
     {
+        public event AsyncEvent<SocketGuildUser, string, string> UserWarned;
+        public event AsyncEvent<SocketGuildUser, string, string, TimeSpan> UserMuted;
+
         public async Task Execute(IJobExecutionContext context)
         {
             await VoidWarning();
@@ -75,14 +79,14 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        public async Task AddWarning(IGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null)
+        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null)
         {
             using (var db = new DbService())
             {
-                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
                 var data = new Warn
                 {
-                    GuildId = user.GuildId,
+                    GuildId = user.Guild.Id,
                     UserId = user.Id,
                     Moderator = staff.Id,
                     Time = time,
@@ -99,17 +103,18 @@ namespace Hanekawa.Services.Administration
                     await StoreMessages(warn.Id, user, messages);
                 }
                 await WarnUser(WarnReason.Warning, user, staff, reason);
+                await UserWarned(user, staff.Mention, reason);
             }
         }
 
-        public async Task AddWarning(IGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
-                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
                 var data = new Warn
                 {
-                    GuildId = user.GuildId,
+                    GuildId = user.Guild.Id,
                     UserId = user.Id,
                     Moderator = staff.Id,
                     Time = time,
@@ -131,19 +136,22 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        public async Task AddWarning(IGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
                 var data = new Warn
                 {
-                    GuildId = user.GuildId,
+                    GuildId = user.Guild.Id,
                     UserId = user.Id,
                     Moderator = staff,
                     Time = time,
                     Reason = reason,
                     Type = type,
-                    Valid = true
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = null
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -154,17 +162,18 @@ namespace Hanekawa.Services.Administration
                 }
 
                 await WarnUser(WarnReason.Warning, user, "Auto-Moderator", reason);
+                await UserWarned(user, "Auto-Moderator", reason);
             }
         }
 
-        public async Task AddWarning(IGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
-                var number = await db.Warns.Where(x => x.GuildId == user.GuildId).CountAsync();
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
                 var data = new Warn
                 {
-                    GuildId = user.GuildId,
+                    GuildId = user.Guild.Id,
                     UserId = user.Id,
                     Moderator = staff,
                     Time = time,
@@ -183,10 +192,11 @@ namespace Hanekawa.Services.Administration
                     await StoreMessages(warn.Id, user, messages);
                 }
                 await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
+                await UserMuted(user, "Auto-Moderator", reason, after);
             }
         }
 
-        private static async Task WarnUser(WarnReason warn, IGuildUser user, IUser staff, string reason)
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason)
         {
             var dm = await user.GetOrCreateDMChannelAsync();
             var embed = new EmbedBuilder
@@ -196,11 +206,10 @@ namespace Hanekawa.Services.Administration
                               $"Reason:\n" +
                               $"{reason}"
             };
-
             await dm.SendEmbedAsync(embed);
         }
 
-        private static async Task WarnUser(WarnReason warn, IGuildUser user, IUser staff, string reason, TimeSpan after)
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason, TimeSpan after)
         {
             var dm = await user.GetOrCreateDMChannelAsync();
             var embed = new EmbedBuilder

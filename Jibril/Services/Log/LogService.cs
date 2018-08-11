@@ -24,6 +24,7 @@ namespace Hanekawa.Services.Log
         private readonly ILoggerFactory _loggerFactory;
         private readonly ModerationService _moderationService;
         private readonly MuteService _muteService;
+        private readonly WarnService _warnService;
 
         public LogService(DiscordSocketClient client, CommandService commands, ILoggerFactory loggerFactory,
             ModerationService moderationService, MuteService muteService)
@@ -53,9 +54,64 @@ namespace Hanekawa.Services.Log
 
             _moderationService.AutoModPermLog += AutoModPermLog;
             _moderationService.AutoModTimedLog += AutoModTimedLog;
+
+            _warnService.UserWarned += UserWarnLog;
+            _warnService.UserMuted += UserMuteWarnLog;
         }
 
-        private static Task AutoModTimedLog(SocketGuildUser user, ModerationService.AutoModActionType type, TimeSpan timer, string msg)
+        private static Task UserMuteWarnLog(SocketGuildUser user, string staff, string reason, TimeSpan duration)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    if (!cfg.LogWarn.HasValue) return;
+                    var embed = new EmbedBuilder
+                    {
+                        Color = Color.Purple,
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                        Author = new EmbedAuthorBuilder { Name = "User Mute Warned"}
+                    };
+                    embed.AddField("User", $"{user.Mention}");
+                    embed.AddField("Staff", staff);
+                    embed.AddField("Reason", reason.Truncate(700));
+                    embed.AddField("Duration", $"{duration.Humanize()} ({duration})");
+                    embed.WithFooter($"Username: {user.Username}#{user.Discriminator} ({user.Id})");
+                    var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
+                    await ch.SendEmbedAsync(embed);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static Task UserWarnLog(SocketGuildUser user, string staff, string reason)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    if (!cfg.LogWarn.HasValue) return;
+                    var embed = new EmbedBuilder
+                    {
+                        Color = Color.Purple,
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                        Author = new EmbedAuthorBuilder { Name = "User Warned" }
+                    };
+                    embed.AddField("User", $"{user.Mention}");
+                    embed.AddField("Staff", staff);
+                    embed.AddField("Reason", reason.Truncate(700));
+                    embed.WithFooter($"Username: {user.Username}#{user.Discriminator} ({user.Id})");
+                    var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
+                    await ch.SendEmbedAsync(embed);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static Task AutoModTimedLog(SocketGuildUser user, ModerationService.AutoModActionType type,
+            TimeSpan timer, string msg)
         {
             var _ = Task.Run(async () =>
             {
@@ -65,46 +121,21 @@ namespace Hanekawa.Services.Log
                     if (!cfg.LogBan.HasValue) return;
 
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
-                    var author = new EmbedAuthorBuilder
-                    {
-                        Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
-                    };
-                    var footer = new EmbedFooterBuilder
-                    {
-                        Text = $"User ID: {user.Id}"
-                    };
-
-                    var userField = new EmbedFieldBuilder
-                    {
-                        Name = "User",
-                        Value = user.Mention,
-                        IsInline = false
-                    };
-                    var reasonField = new EmbedFieldBuilder
-                    {
-                        Name = "Reason",
-                        Value = type,
-                        IsInline = false
-                    };
-                    var modField = new EmbedFieldBuilder
-                    {
-                        Name = "Moderator",
-                        Value = "Auto-Moderator",
-                        IsInline = false
-                    };
-                    var duration = new EmbedFieldBuilder
-                    {
-                        Name = "Duration",
-                        Value = timer.Humanize(),
-                        IsInline = false
-                    };
-                    var message = new EmbedFieldBuilder
-                    {
-                        Name = "Message",
-                        Value = msg.Truncate(999),
-                        IsInline = false
-                    };
-                    var result = new List<EmbedFieldBuilder> { userField, modField, reasonField, duration, message };
+                    var author = 
+                        new EmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"};
+                    var footer = 
+                        new EmbedFooterBuilder {Text = $"User ID: {user.Id}"};
+                    var userField = 
+                        new EmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false};
+                    var reasonField = 
+                        new EmbedFieldBuilder {Name = "Reason", Value = type, IsInline = false};
+                    var modField =
+                        new EmbedFieldBuilder {Name = "Moderator", Value = "Auto-Moderator", IsInline = false};
+                    var duration =
+                        new EmbedFieldBuilder {Name = "Duration", Value = timer.Humanize(), IsInline = false};
+                    var message = 
+                        new EmbedFieldBuilder {Name = "Message", Value = msg.Truncate(999), IsInline = false};
+                    var result = new List<EmbedFieldBuilder> {userField, modField, reasonField, duration, message};
 
                     var embed = new EmbedBuilder
                     {
@@ -166,7 +197,7 @@ namespace Hanekawa.Services.Log
                         Value = msg.Truncate(999),
                         IsInline = false
                     };
-                    var result = new List<EmbedFieldBuilder> { userField, modField, reasonField, message };
+                    var result = new List<EmbedFieldBuilder> {userField, modField, reasonField, message};
 
                     var embed = new EmbedBuilder
                     {
@@ -300,7 +331,7 @@ namespace Hanekawa.Services.Log
 
                         Color = new Color(Color.Green.RawValue),
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
                     };
 
                     await user.Guild.GetTextChannel(cfg.LogJoin.Value)
@@ -420,12 +451,12 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
+                if (optMsg.HasValue && optMsg.Value.Author.IsBot) return;
                 using (var db = new DbService())
                 {
                     if (!(ch is SocketGuildChannel chx)) return;
                     var cfg = await db.GetOrCreateGuildConfig(chx.Guild).ConfigureAwait(false);
                     if (!cfg.LogMsg.HasValue) return;
-                    if (optMsg.Value.Author.IsBot) return;
                     if (!((optMsg.HasValue ? optMsg.Value : null) is IUserMessage msg)) return;
                     var author = new EmbedAuthorBuilder
                     {
@@ -439,7 +470,7 @@ namespace Hanekawa.Services.Log
                     {
                         Author = author,
                         Footer = footer,
-                        Color = new Color(Color.DarkPurple.RawValue),
+                        Color = Color.Purple,
                         Timestamp = msg.Timestamp,
                         Description = $"{msg.Author.Mention} deleted a message in {(ch as ITextChannel)?.Mention}"
                     };
@@ -462,6 +493,7 @@ namespace Hanekawa.Services.Log
                     {
                         // Ignore
                     }
+
                     await chx.Guild.GetTextChannel(cfg.LogMsg.Value).SendEmbedAsync(embed);
                 }
             });
@@ -476,7 +508,7 @@ namespace Hanekawa.Services.Log
                 if (newMsg.Author.IsBot) return;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(((SocketGuildChannel)channel).Guild);
+                    var cfg = await db.GetOrCreateGuildConfig(((SocketGuildChannel) channel).Guild);
                     if (!cfg.LogMsg.HasValue) return;
                     if (!((oldMsg.HasValue ? oldMsg.Value : null) is IUserMessage msg) || newMsg == null) return;
                     if (!(channel is ITextChannel chtx)) return;
@@ -494,7 +526,7 @@ namespace Hanekawa.Services.Log
                     {
                         Author = author,
                         Footer = footer,
-                        Color = new Color(Color.DarkPurple.RawValue),
+                        Color = Color.Purple,
                         Timestamp = newMsg.EditedTimestamp ?? newMsg.Timestamp,
                         Description = $"{newMsg.Author.Mention} updated a message in {chtx.Mention}"
                     };
@@ -544,6 +576,7 @@ namespace Hanekawa.Services.Log
                     .SendMessageAsync($"Error: {command.Message}\n" +
                                       $"{command.StackTrace}");
             }
+
             _commandsLogger.Log(
                 LogLevelFromSeverity(message.Severity),
                 0,
@@ -555,7 +588,7 @@ namespace Hanekawa.Services.Log
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel)Math.Abs((int)severity - 5);
+            return (LogLevel) Math.Abs((int) severity - 5);
         }
 
         private static List<EmbedFieldBuilder> ModLogFieldBuilders(IMentionable user,
@@ -580,41 +613,7 @@ namespace Hanekawa.Services.Log
                 Value = "N/A",
                 IsInline = true
             };
-            var result = new List<EmbedFieldBuilder> { userField, modField, reasonField };
-            if (duration == null) return result;
-            var durationField = new EmbedFieldBuilder
-            {
-                Name = "Duration",
-                Value = duration.Value.Humanize(),
-                IsInline = true
-            };
-            result.Add(durationField);
-            return result;
-        }
-
-        private static List<EmbedFieldBuilder> ModLogFieldBuilders(string user,
-            string reason = null,
-            TimeSpan? duration = null)
-        {
-            var userField = new EmbedFieldBuilder
-            {
-                Name = "User",
-                Value = user,
-                IsInline = true
-            };
-            var reasonField = new EmbedFieldBuilder
-            {
-                Name = "Reason",
-                Value = reason ?? "N/A",
-                IsInline = true
-            };
-            var modField = new EmbedFieldBuilder
-            {
-                Name = "Moderator",
-                Value = "N/A",
-                IsInline = true
-            };
-            var result = new List<EmbedFieldBuilder> { userField, modField, reasonField };
+            var result = new List<EmbedFieldBuilder> {userField, modField, reasonField};
             if (duration == null) return result;
             var durationField = new EmbedFieldBuilder
             {

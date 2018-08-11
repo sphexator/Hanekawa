@@ -175,6 +175,29 @@ namespace Hanekawa.Modules.Permission
         [RequireContext(ContextType.Guild)]
         public class LogPermission : InteractiveBase
         {
+            [Command("warn", RunMode = RunMode.Async)]
+            [Summary("Enable/disable warn logging")]
+            public async Task LogWarnAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (channel == null)
+                    {
+                        cfg.LogWarn = null;
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled logging of warnings!", Color.Green.RawValue).Build());
+                        await db.SaveChangesAsync();
+                        return;
+                    }
+
+                    cfg.LogWarn = channel.Id;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set warn logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    await db.SaveChangesAsync();
+                }
+            }
+
             [Command("join", RunMode = RunMode.Async)]
             [Summary("Enable/disable join/leaves logging")]
             public async Task LogJoinAsync(ITextChannel channel = null)
