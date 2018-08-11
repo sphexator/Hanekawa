@@ -74,7 +74,7 @@ namespace Hanekawa.Extensions
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
             var data = new ModLog
             {
-                Id = (uint) counter + 1,
+                Id = (uint)counter + 1,
                 GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
@@ -94,7 +94,7 @@ namespace Hanekawa.Extensions
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint) counter + 1;
+            else nr = (uint)counter + 1;
             var data = new ClubInfo
             {
                 Id = nr,
@@ -114,7 +114,7 @@ namespace Hanekawa.Extensions
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint) counter + 1;
+            else nr = (uint)counter + 1;
             var data = new Suggestion
             {
                 Id = nr,
@@ -134,7 +134,7 @@ namespace Hanekawa.Extensions
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint) counter + 1;
+            else nr = (uint)counter + 1;
             var data = new Report
             {
                 Id = nr,
@@ -177,7 +177,15 @@ namespace Hanekawa.Extensions
                 ModChannel = null,
                 MusicChannel = null,
                 BoardEmote = null,
-                EventSchedulerChannel = null
+                EventSchedulerChannel = null,
+                CurrencyName = "Special Credit",
+                CurrencySign = "$",
+                EmoteCurrency = false,
+                FilterAllInv = true,
+                FilterMsgLength = null,
+                FilterUrls = false,
+                LogWarn = null,
+                WelcomeDelete = null
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();

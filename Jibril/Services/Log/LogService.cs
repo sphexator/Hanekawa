@@ -357,9 +357,9 @@ namespace Hanekawa.Services.Log
                         {
                             Author = author,
                             Footer = footer,
-                            Color = new Color(Color.Red.RawValue),
+                            Color = Color.Red,
                             Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = ModLogFieldBuilders(user as IGuildUser)
+                            Fields = ModLogFieldBuilders(user)
                         };
                         var msg = await guild.GetTextChannel(cfg.LogBan.Value).SendEmbedAsync(embed);
                         caseId.MessageId = msg.Id;
@@ -401,7 +401,7 @@ namespace Hanekawa.Services.Log
                             Footer = footer,
                             Color = new Color(Color.Green.RawValue),
                             Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = ModLogFieldBuilders(user.Mention)
+                            Fields = ModLogFieldBuilders(user)
                         };
                         var msg = await guild.GetTextChannel(cfg.LogBan.Value).SendEmbedAsync(embed);
                         caseId.MessageId = msg.Id;

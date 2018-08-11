@@ -199,11 +199,12 @@ namespace Hanekawa.Services.Level
         {
             var _ = Task.Run(async () =>
             {
+                if (!(user is SocketGuildUser gusr)) return;
                 try
                 {
                     using (var db = new DbService())
                     {
-                        var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
+                        var userdata = await db.GetOrCreateUserData(gusr);
                         var oldVc = oldState.VoiceChannel;
                         var newVc = newState.VoiceChannel;
                         if (newVc != null && oldVc == null)
@@ -219,7 +220,7 @@ namespace Hanekawa.Services.Level
                         var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                         userdata.TotalExp = userdata.TotalExp + exp;
-                        userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+                        userdata.Credit = userdata.Credit + _calc.GetVoiceCredit(userdata.VoiceExpTime);
                         userdata.StatVoiceTime = userdata.StatVoiceTime + (DateTime.UtcNow - userdata.VoiceExpTime);
                         userdata.Sessions = userdata.Sessions + 1;
 
@@ -227,7 +228,7 @@ namespace Hanekawa.Services.Level
                         {
                             userdata.Level = userdata.Level + 1;
                             userdata.Exp = userdata.Exp + exp - nxtLvl;
-                            await NewLevelManager(userdata, user as IGuildUser, db);
+                            await NewLevelManager(userdata, gusr, db);
                         }
                         else
                         {

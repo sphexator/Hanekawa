@@ -62,8 +62,8 @@ namespace Hanekawa.Services.Entities
         {
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder
-                    .UseLoggerFactory(MyLoggerFactory)
-                    .EnableSensitiveDataLogging()
+                    //.UseLoggerFactory(MyLoggerFactory)
+                    //.EnableSensitiveDataLogging()
                     .UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
         }
 
