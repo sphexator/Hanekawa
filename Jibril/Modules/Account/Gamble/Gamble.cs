@@ -104,7 +104,7 @@ namespace Hanekawa.Modules.Account.Gamble
             var botRoll = new Random().Next(1, 9);
             if (userRoll == botRoll)
             {
-                userdata.Credit = userdata.Credit + bet * 5;
+                userdata.Credit = userdata.Credit + (bet * 5);
                 await db.SaveChangesAsync();
                 return new EmbedBuilder().Reply($"Congratulations {context.User.Mention}!, You made a total of **${bet * 5}** off ${bet}!\n" +
                                                 $"You rolled: {userRoll} - Bot rolled: {botRoll}", Color.Green.RawValue);
@@ -124,7 +124,7 @@ namespace Hanekawa.Modules.Account.Gamble
 
             if (rolled >= 90)
             {
-                userdata.Credit = userdata.Credit + bet * 2;
+                userdata.Credit = userdata.Credit + (bet * 2);
                 await db.SaveChangesAsync();
                 return new EmbedBuilder().Reply($"{context.User.Mention} rolled **{rolled}** and won ${bet * 2}", Color.Green.RawValue);
             }
