@@ -188,11 +188,26 @@ namespace Hanekawa.Modules.Administration
         [Command("mute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
-        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440,[Remainder] string reason = null)
+        [Priority(1)]
+        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440, [Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
             var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
             var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(timer));
+            await Task.WhenAll(mute, warn);
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                TimeSpan.FromSeconds(15));
+        }
+
+        [Command("mute", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        public async Task MuteAsync(SocketGuildUser user, [Remainder] string reason = null)
+        {
+            await Context.Message.DeleteAsync();
+            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(1440));
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(1440));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
