@@ -71,7 +71,7 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var banner = await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id);
+                var banner = await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
                 if (banner == null)
                 {
                     await ReplyAsync(null, false,

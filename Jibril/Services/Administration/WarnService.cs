@@ -49,7 +49,7 @@ namespace Hanekawa.Services.Administration
                 var roles = string.Join(", ", roleList);
                 var content = $"**⮞ User Information**\n" +
                               $"Status: {user.Status}\n" +
-                              $"Game: {user.Activity}\n" +
+                              $"Game: {user.Activity.Name ?? "N/A"}\n" +
                               $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
                               $"\n" +
                               $"**⮞ Member Information**\n" +
@@ -314,6 +314,11 @@ namespace Hanekawa.Services.Administration
                     .ToList();
                 await db.WarnMsgLogs.AddRangeAsync(result);
             }
+        }
+
+        private static void GetStatusEmote()
+        {
+
         }
     }
 }
