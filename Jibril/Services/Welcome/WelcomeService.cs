@@ -134,6 +134,7 @@ namespace Hanekawa.Services.Welcome
                         if (!cfg.WelcomeChannel.HasValue) return;
                         await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user, cfg)
                             .ConfigureAwait(false);
+
                     }
                 }
                 catch (Exception e)
@@ -149,7 +150,11 @@ namespace Hanekawa.Services.Welcome
             var stream = await ImageGeneratorAsync(user);
             var msg = WelcomeMessage(cfg, user);
             stream.Seek(0, SeekOrigin.Begin);
-            await ch.SendFileAsync(stream, "welcome.png", msg);
+            var welcMsg = await ch.SendFileAsync(stream, "welcome.png", msg);
+            if (!cfg.WelcomeDelete.HasValue) return;
+            await Task.Delay(cfg.WelcomeDelete.Value);
+            try { await welcMsg.DeleteAsync(); }
+            catch {/* IGNORE */}
         }
 
         private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
