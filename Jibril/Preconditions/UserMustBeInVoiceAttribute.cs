@@ -12,14 +12,7 @@ namespace Hanekawa.Preconditions
         /// <inheritdoc />
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            if((context.User as IVoiceState) == null) return PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.");
-            return PreconditionResult.FromSuccess();
-            /*
-            var current = (context.User as IVoiceState) == null;
-            return (await context.Guild.GetVoiceChannelsAsync()).Any(v => v.Id == current)
-                ? PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.")
-                : PreconditionResult.FromSuccess();
-            */
+            return (context.User as IVoiceState) == null ? PreconditionResult.FromError("Command must be invoked while in a voice channel in this guild.") : PreconditionResult.FromSuccess();
         }
     }
 }

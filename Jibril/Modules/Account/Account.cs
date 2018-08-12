@@ -17,11 +17,11 @@ using Quartz.Util;
 
 namespace Hanekawa.Modules.Account
 {
-    public class Level : InteractiveBase
+    public class Account : InteractiveBase
     {
         private readonly Calculate _calculate;
 
-        public Level(Calculate calculate)
+        public Account(Calculate calculate)
         {
             _calculate = calculate;
         }

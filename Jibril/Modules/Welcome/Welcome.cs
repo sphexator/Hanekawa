@@ -9,6 +9,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 using Hanekawa.Services.Welcome;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 
@@ -30,6 +31,12 @@ namespace Hanekawa.Modules.Welcome
         [Summary("Adds a banner to the bot")]
         public async Task AddWelcomeBanner(string url)
         {
+            if (!url.IsPictureUrl())
+            {
+                await ReplyAsync(null, false, new EmbedBuilder().Reply("Please use direct image urls when adding pictures!\n" +
+                                                                       "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
+                return;
+            }
             await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
             await ReplyAsync($"Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
@@ -132,6 +139,12 @@ namespace Hanekawa.Modules.Welcome
         [Summary("Tests a banner from a url to see how it looks")]
         public async Task TestWelcomeBanner(string url)
         {
+            if (!url.IsPictureUrl())
+            {
+                await ReplyAsync(null, false, new EmbedBuilder().Reply("Please use direct image urls when adding pictures!\n" +
+                                                                       "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
+                return;
+            }
             await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
         }
 
@@ -155,6 +168,35 @@ namespace Hanekawa.Modules.Welcome
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply("Updated welcome message!", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("autodelete", RunMode = RunMode.Async)]
+        [Alias("autodel")]
+        [Summary("Sets when a welcome message should delete on its own")]
+        public async Task SetAutoDeleteTimer(TimeSpan? timer = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (!(cfg.WelcomeDelete.HasValue) && timer == null) return;
+                if (timer == null)
+                {
+                    cfg.WelcomeDelete = null;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled auto-deletion of welcome messages!", Color.Green.RawValue)
+                            .Build());
+                }
+                else
+                {
+                    cfg.WelcomeDelete = timer.Value;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Enabled auto-deletion of welcome messages!\n" +
+                                                 $"I will now delete the message after {timer.Value.Humanize()}!", Color.Green.RawValue)
+                            .Build());
+                }
+
+                await db.SaveChangesAsync();
             }
         }
 

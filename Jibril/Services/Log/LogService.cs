@@ -74,10 +74,10 @@ namespace Hanekawa.Services.Log
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
                         Author = new EmbedAuthorBuilder { Name = "User Mute Warned" }
                     };
-                    embed.AddField("User", $"{user.Mention}");
-                    embed.AddField("Staff", staff);
-                    embed.AddField("Reason", reason.Truncate(700));
-                    embed.AddField("Duration", $"{duration.Humanize()} ({duration})");
+                    embed.AddField("User", $"{user.Mention}", true);
+                    embed.AddField("Staff", staff, true);
+                    embed.AddField("Reason", reason.Truncate(700), true);
+                    embed.AddField("Duration", $"{duration.Humanize()} ({duration})", true);
                     embed.WithFooter($"Username: {user.Username}#{user.Discriminator} ({user.Id})");
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     await ch.SendEmbedAsync(embed);
@@ -100,9 +100,9 @@ namespace Hanekawa.Services.Log
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
                         Author = new EmbedAuthorBuilder { Name = "User Warned" }
                     };
-                    embed.AddField("User", $"{user.Mention}");
-                    embed.AddField("Staff", staff);
-                    embed.AddField("Reason", reason.Truncate(700));
+                    embed.AddField("User", $"{user.Mention}", true);
+                    embed.AddField("Staff", staff, true);
+                    embed.AddField("Reason", reason.Truncate(700), true);
                     embed.WithFooter($"Username: {user.Username}#{user.Discriminator} ({user.Id})");
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     await ch.SendEmbedAsync(embed);
