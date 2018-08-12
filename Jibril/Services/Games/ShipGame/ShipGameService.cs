@@ -105,12 +105,12 @@ namespace Hanekawa.Services.Games.ShipGame
             return _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
         }
 
-        private async Task<int> Damage(uint level)
+        private int Damage(uint level)
         {
             return _gameStats.GetDamage(level);
         }
 
-        private async Task<int> Damage(uint level, GameEnemy enemy)
+        private int Damage(uint level, GameEnemy enemy)
         {
             return _gameStats.GetDamage(level, enemy);
         }
@@ -150,8 +150,8 @@ namespace Hanekawa.Services.Games.ShipGame
                 playerTwo = await GetClass(db, enemy.ClassId);
                 playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 playerTwoHp = await Health(db, userdata.Level,  enemy);
-                playerOneDmg = await Damage(userdata.Level);
-                playerTwoDmg = await Damage(userdata.Level,  enemy);
+                playerOneDmg = Damage(userdata.Level);
+                playerTwoDmg = Damage(userdata.Level,  enemy);
                 playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 playerTwoHpMax = await Health(db, userdata.Level, enemy);
             }
@@ -328,8 +328,8 @@ namespace Hanekawa.Services.Games.ShipGame
                 playerTwo = await GetClass(db, userdata2.Class);
                 playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 playerTwoHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
-                playerOneDmg = await Damage(userdata.Level);
-                playerTwoDmg = await Damage(userdata.Level);
+                playerOneDmg = Damage(userdata.Level);
+                playerTwoDmg = Damage(userdata.Level);
                 playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 playerTwoHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
             }
