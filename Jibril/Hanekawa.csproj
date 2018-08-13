@@ -38,15 +38,15 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00979" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00979" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00979" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00979" />
+    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00981" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00981" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-00981" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-00981" />
     <PackageReference Include="Discord.Net.Rpc" Version="2.0.0-beta-00860" />
-    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00979" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00979" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.34.0.1239" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.34.0.1226" />
+    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-00981" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-00981" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.35.1.1312" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.1.1226" />
     <PackageReference Include="Humanizer" Version="2.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" />
@@ -61,8 +61,8 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
     <PackageReference Include="Quartz" Version="3.0.6" />
     <PackageReference Include="SharpLink" Version="1.0.0-beta-0004" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0004" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0005" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>

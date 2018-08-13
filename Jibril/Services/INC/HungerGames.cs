@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
@@ -15,7 +9,12 @@ using Quartz;
 using Quartz.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Transforms;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using EventHandler = Hanekawa.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 

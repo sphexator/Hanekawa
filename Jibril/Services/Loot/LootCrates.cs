@@ -15,6 +15,10 @@ namespace Hanekawa.Services.Loot
     {
         private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
+        private ConcurrentDictionary<ulong, DateTime> GuildCooldown { get; set; }
+            = new ConcurrentDictionary<ulong, DateTime>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> UserCooldown { get; set; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         private readonly List<ulong> _regularLoot = new List<ulong>();
         private readonly List<ulong> _specialLoot = new List<ulong>();
@@ -116,13 +120,17 @@ namespace Hanekawa.Services.Loot
             var _ = Task.Run(async () =>
             {
                 if (!(msg is SocketUserMessage message)) return;
-                if (!(msg.Channel is SocketTextChannel ch)) return;
                 if (message.Source != MessageSource.User) return;
+                if (!(msg.Channel is SocketTextChannel ch)) return;
+                if (msg.Author.IsBot) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
+                if (!CheckUserCooldown(user)) return;
                 if (!LootChannels.TryGetValue(ch.Guild.Id, out var chx)) return;
                 if (!chx.Contains(msg.Channel.Id)) return;
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
                 {
+                    if (!CheckGuildCooldown(user.Guild)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
                     var emotes = ReturnEmotes().ToList();
@@ -135,7 +143,7 @@ namespace Hanekawa.Services.Loot
             });
             return Task.CompletedTask;
         }
-
+        
         public async Task AddLootChannelAsync(SocketTextChannel ch)
         {
             await AddToDatabaseAsync(ch.Guild.Id, ch.Id);
@@ -191,6 +199,42 @@ namespace Hanekawa.Services.Loot
             emotes.Add(sip3);
 
             return emotes;
+        }
+
+        private bool CheckGuildCooldown(SocketGuild guild)
+        {
+            var check = GuildCooldown.TryGetValue(guild.Id, out var cd);
+            if (!check)
+            {
+                GuildCooldown.TryAdd(guild.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
+            GuildCooldown.AddOrUpdate(guild.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
+            return true;
+        }
+
+        private bool CheckUserCooldown(SocketGuildUser user)
+        {
+            var check = UserCooldown.TryGetValue(user.Guild.Id, out var cds);
+            if (!check)
+            {
+                var guildCooldown = UserCooldown.GetOrAdd(user.Guild.Id, new ConcurrentDictionary<ulong, DateTime>());
+                guildCooldown.TryAdd(user.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            var userCheck = cds.TryGetValue(user.Id, out var cd);
+            if (!userCheck)
+            {
+                cds.TryAdd(user.Id, DateTime.UtcNow);
+                return true;
+            }
+
+            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
+            cds.AddOrUpdate(user.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
+            return true;
         }
     }
 }

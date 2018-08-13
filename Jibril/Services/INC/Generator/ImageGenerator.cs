@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Hanekawa.Services.Entities.Tables;
+﻿using Hanekawa.Services.Entities.Tables;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Drawing.Brushes;
-using SixLabors.ImageSharp.Processing.Filters;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Hanekawa.Services.INC.Generator
 {
@@ -55,7 +50,7 @@ namespace Hanekawa.Services.INC.Generator
                     var path = GetHealthTextLocation(width, height);
                     var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
                     var hp = $"       {x.Health} / 100";
-                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
+                    //img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
                     width++;
                     row++;
                     if (row != 5) continue;

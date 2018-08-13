@@ -48,19 +48,19 @@ namespace Hanekawa.Services.Administration
                 var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
                 var roles = string.Join(", ", roleList);
                 var content = $"**⮞ User Information**\n" +
-                              $"Status: {user.Status}\n" +
-                              $"Game: {user.Activity.Name ?? "N/A"}\n" +
+                              $"Status: {GetStatus(user)}\n" +
+                              $"{GetGame(user)}\n" +
                               $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
-                              $"\n" +
-                              $"**⮞ Member Information**\n" +
+                              "\n" +
+                              "**⮞ Member Information**\n" +
                               $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
                               $"Roles: {roles}\n" +
-                              $"\n" +
-                              $"**⮞ Activity**\n" +
+                              "\n" +
+                              "**⮞ Activity**\n" +
                               $"Last Message: {userdata.LastMessage.Humanize()} \n" +
                               $"First Message: {userdata.FirstMessage.Humanize()} \n" +
-                              $"\n" +
-                              $"**⮞ Session**\n" +
+                              "\n" +
+                              "**⮞ Session**\n" +
                               $"Amount: {userdata.Sessions}\n" +
                               $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
                 var author = new EmbedAuthorBuilder
@@ -316,9 +316,55 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        private static void GetStatusEmote()
+        private static string GetStatus(IPresence user)
         {
+            var result = "N/A";
+            switch (user.Status)
+            {
+                case UserStatus.Online:
+                    result = "Online";
+                    break;
+                case UserStatus.Idle:
+                    result = "Idle";
+                    break;
+                case UserStatus.AFK:
+                    result = "AFK";
+                    break;
+                case UserStatus.DoNotDisturb:
+                    result = "DND";
+                    break;
+                case UserStatus.Invisible:
+                    result = "Invisible";
+                    break;
+                case UserStatus.Offline:
+                    result = "Offline";
+                    break;
+            }
 
+            return result;
+        }
+
+        private static string GetGame(IPresence user)
+        {
+            if (user.Activity == null) return "Currently not playing";
+            var result = "Currently not playing";
+            switch (user.Activity.Type)
+            {
+                case ActivityType.Listening:
+                    result = $"Listening: {user.Activity.Name}";
+                    break;
+                case ActivityType.Playing:
+                    result = $"Playing: {user.Activity.Name}";
+                    break;
+                case ActivityType.Streaming:
+                    result = $"Streaming: {user.Activity.Name}";
+                    break;
+                case ActivityType.Watching:
+                    result = $"Watching: {user.Activity.Name}";
+                    break;
+            }
+
+            return result;
         }
     }
 }

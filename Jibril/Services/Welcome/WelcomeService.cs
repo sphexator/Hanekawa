@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
@@ -18,10 +11,15 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
@@ -51,7 +49,6 @@ namespace Hanekawa.Services.Welcome
 
             _client.UserJoined += Welcomer;
             _client.UserJoined += WelcomeToggler;
-            _client.JoinedGuild += CreateGuildDirectory;
             _client.LeftGuild += BannerCleanup;
 
             using (var db = new DbService())
@@ -61,8 +58,6 @@ namespace Hanekawa.Services.Welcome
                     DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
                 }
             }
-
-            Directory.CreateDirectory("Data/Welcome/");
         }
 
         public async Task TestBanner(ISocketMessageChannel ch, IGuildUser user, string backgroundUrl)
@@ -229,13 +224,15 @@ namespace Hanekawa.Services.Welcome
 
         private static Task BannerCleanup(SocketGuild guild)
         {
-            Directory.Delete($"Data/Welcome/{guild.Id}");
-            return Task.CompletedTask;
-        }
-
-        private static Task CreateGuildDirectory(SocketGuild guild)
-        {
-            Directory.CreateDirectory($"Data/Welcome/{guild.Id}");
+            var _ = Task.Run(() =>
+            {
+                using (var db = new DbService())
+                {
+                    var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
+                    db.WelcomeBanners.RemoveRange(banners);
+                    db.SaveChanges();
+                }
+            });
             return Task.CompletedTask;
         }
 
