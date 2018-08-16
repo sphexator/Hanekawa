@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.Report
         {
             using (var db = new DbService())
             {
-                var report = await db.Reports.FindAsync(id);
+                var report = await db.Reports.FindAsync(id, Context.Guild.Id);
                 if (report == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
