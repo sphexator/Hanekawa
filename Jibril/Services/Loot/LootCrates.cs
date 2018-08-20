@@ -28,8 +28,8 @@ namespace Hanekawa.Services.Loot
         public LootCrates(DiscordSocketClient client)
         {
             _client = client;
-            _client.MessageReceived += CrateTrigger;
-            _client.ReactionAdded += CrateClaimer;
+            _client.MessageReceived += CrateTriggerAsync;
+            _client.ReactionAdded += CrateClaimerAsync;
 
             using (var db = new DbService())
             {
@@ -46,7 +46,7 @@ namespace Hanekawa.Services.Loot
             }
         }
 
-        public async Task SpawnCrate(SocketTextChannel ch, SocketGuildUser user)
+        public async Task SpawnCrateAsync(SocketTextChannel ch, SocketGuildUser user)
         {
 
             var triggerMsg = await ch.SendMessageAsync(
@@ -64,7 +64,7 @@ namespace Hanekawa.Services.Loot
             }
         }
 
-        private Task CrateClaimer(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
+        private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
         {
             if (!msg.HasValue) return Task.CompletedTask;
             if (rct.User.Value.IsBot) return Task.CompletedTask;
@@ -88,10 +88,10 @@ namespace Hanekawa.Services.Loot
                         await db.SaveChangesAsync();
                         var trgMsg =
                             await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await rct.Message.Value.DeleteAsync();
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
+                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!").ConfigureAwait(false);
+                        await rct.Message.Value.DeleteAsync().ConfigureAwait(false);
+                        await Task.Delay(5000).ConfigureAwait(false);
+                        await trgMsg.DeleteAsync().ConfigureAwait(false);
                     }
                     else
                     {
@@ -105,17 +105,17 @@ namespace Hanekawa.Services.Loot
                         await db.SaveChangesAsync();
                         var trgMsg =
                             await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await rct.Message.Value.DeleteAsync();
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
+                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!").ConfigureAwait(false);
+                        await rct.Message.Value.DeleteAsync().ConfigureAwait(false);
+                        await Task.Delay(5000).ConfigureAwait(false);
+                        await trgMsg.DeleteAsync().ConfigureAwait(false);
                     }
                 }
             });
             return Task.CompletedTask;
         }
 
-        private Task CrateTrigger(SocketMessage msg)
+        private Task CrateTriggerAsync(SocketMessage msg)
         {
             var _ = Task.Run(async () =>
             {
@@ -130,7 +130,7 @@ namespace Hanekawa.Services.Loot
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
                 {
-                    if (!CheckGuildCooldown(user.Guild)) return;
+                    if (!CheckGuildCooldown((SocketTextChannel) msg.Channel)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
                     var emotes = ReturnEmotes().ToList();
@@ -201,7 +201,7 @@ namespace Hanekawa.Services.Loot
             return emotes;
         }
 
-        private bool CheckGuildCooldown(SocketGuild guild)
+        private bool CheckGuildCooldown(SocketTextChannel guild)
         {
             var check = GuildCooldown.TryGetValue(guild.Id, out var cd);
             if (!check)

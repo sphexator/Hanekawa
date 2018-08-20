@@ -56,31 +56,26 @@ namespace Hanekawa.Modules.Report
             using (var db = new DbService())
             {
                 var report = await db.Reports.FindAsync(id, Context.Guild.Id);
-                if (report == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
                 var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
                     .GetMessageAsync(report.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
                 embed.Color = Color.Orange;
-                var field = new EmbedFieldBuilder
-                {
-                    Name = (Context.User as SocketGuildUser).GetName(),
-                    Value = text
-                };
-                embed.AddField(field);
+                embed.AddField((Context.User as SocketGuildUser).GetName(), text);
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(report.UserId);
                     await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
-                        $"Your report got a response!\n" +
-                        $"report:\n" +
+                        "Your report got a response!\n" +
+                        "report:\n" +
                         $"{embed.Description}\n" +
-                        $"Answer from {Context.User}:\n" +
+                        $"Answer from {Context.User.Mention}:\n" +
                         $"{text}");
                 }
                 catch{ /*IGNORE*/ }
 
-                await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
+                await ((IUserMessage) msg).ModifyAsync(x => x.Embed = embed.Build());
             }
         }
     }

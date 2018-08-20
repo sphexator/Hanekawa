@@ -3,6 +3,9 @@
     public class GuildInfo
     {
         public ulong GuildId { get; set; }
+        public ulong RuleChannelId { get; set; }
+        public ulong OtherChannelId { get; set; }
+
         public ulong RuleMessageId { get; set; }
         public string Rules { get; set; }
 
@@ -13,6 +16,6 @@
 
         public ulong StaffMessageId { get; set; }
         public ulong LevelMessageId { get; set; }
-        public ulong InviteMessageId { get; set; }
+        public ulong LinkMessageId { get; set; }
     }
 }

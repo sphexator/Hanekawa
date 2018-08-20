@@ -29,7 +29,7 @@ namespace Hanekawa.Modules.Administration
         {
             await Context.Message.DeleteAsync();
             if (!(Context.Channel is SocketTextChannel ch)) return;
-            await _lootCrates.SpawnCrate(ch, Context.User as SocketGuildUser);
+            await _lootCrates.SpawnCrateAsync(ch, Context.User as SocketGuildUser);
         }
 
         [Command("Add", RunMode = RunMode.Async)]
