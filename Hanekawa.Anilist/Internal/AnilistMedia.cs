@@ -1,88 +1,66 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using Hanekawa.Anilist.Objects;
+using Newtonsoft.Json;
 
 namespace Hanekawa.Anilist.Internal
 {
     internal class AnilistMedia : IMedia
     {
-        [JsonProperty("id")]
-        internal int id;
+        [JsonProperty("chapters")] internal int? chapters;
 
-        [JsonProperty("idMal")]
-        internal int malId;
+        [JsonProperty("countryOfOrigin")] internal string countryCode;
 
-        [JsonProperty("title")]
-        internal AnilistTitle title;
+        [JsonProperty("coverImage")] internal AnilistImage coverImage;
 
-        [JsonProperty("coverImage")]
-        internal AnilistImage coverImage;
+        [JsonProperty("description")] internal string description;
 
-        [JsonProperty("description")]
-        internal string description;
+        [JsonProperty("duration")] internal int? duration;
 
-        [JsonProperty("countryOfOrigin")]
-        internal string countryCode;
+        [JsonProperty("endDate")] internal int endDate;
 
-        [JsonProperty("isLicensed")]
-        internal bool isLicensed;
+        [JsonProperty("episodes")] internal int? episodeCount;
 
-        [JsonProperty("source")]
-        internal string source;
+        [JsonProperty("genres")] internal List<string> genres = new List<string>();
 
-        [JsonProperty("averageScore")]
-        internal int? score;
+        [JsonProperty("hashtag")] internal string hashtag;
 
-        [JsonProperty("hashtag")]
-        internal string hashtag;
+        [JsonProperty("id")] internal int id;
 
-        [JsonProperty("startDate")]
-        internal int startDate;
+        [JsonProperty("isAdult")] internal bool isAdultContent;
 
-        [JsonProperty("endDate")]
-        internal int endDate;
+        [JsonProperty("isLicensed")] internal bool isLicensed;
 
-        [JsonProperty("season")]
-        internal string season;
+        [JsonProperty("idMal")] internal int malId;
 
-        [JsonProperty("seasonYear")]
-        internal int seasonYear;
+        [JsonProperty("format")] internal string mediaFormat;
 
-        [JsonProperty("type")]
-        internal string mediaType;
+        [JsonProperty("status")] internal string mediaStatus;
 
-        [JsonProperty("format")]
-        internal string mediaFormat;
+        [JsonProperty("type")] internal string mediaType;
 
-        [JsonProperty("status")]
-        internal string mediaStatus;
+        [JsonProperty("averageScore")] internal int? score;
 
-        [JsonProperty("siteUrl")]
-        internal string siteUrl;
+        [JsonProperty("season")] internal string season;
 
-        [JsonProperty("genres")]
-        internal List<string> genres = new List<string>();
+        [JsonProperty("seasonYear")] internal int seasonYear;
 
-        [JsonProperty("episodes")]
-        internal int? episodeCount;
+        [JsonProperty("siteUrl")] internal string siteUrl;
 
-        [JsonProperty("duration")]
-        internal int? duration;
+        [JsonProperty("source")] internal string source;
 
-        [JsonProperty("chapters")]
-        internal int? chapters;
+        [JsonProperty("startDate")] internal int startDate;
 
-        [JsonProperty("volumes")]
-        internal int? volumes;
+        [JsonProperty("title")] internal AnilistTitle title;
 
-        [JsonProperty("isAdult")]
-        internal bool isAdultContent;
+        [JsonProperty("volumes")] internal int? volumes;
 
         public string CoverImage => coverImage.Large ?? Constants.NoImageUrl;
         public string DefaultTitle => title.userPreferred;
+
         public string Description => WebUtility.HtmlDecode(description)
             .Replace("<br>", "\n");
+
         public int? Duration => duration;
         public int? Episodes => episodeCount;
         public int? Volumes => volumes;

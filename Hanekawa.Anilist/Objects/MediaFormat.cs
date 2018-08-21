@@ -15,6 +15,6 @@ namespace Hanekawa.Anilist.Objects
         ONE_SHOT,
         MUSIC,
         MOVIE,
-        NOVEL,
+        NOVEL
     }
 }

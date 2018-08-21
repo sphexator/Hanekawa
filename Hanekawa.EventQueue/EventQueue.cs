@@ -9,23 +9,18 @@ using Discord.WebSocket;
 namespace Hanekawa.EventQueue
 {
     /// <summary>
-    /// EventQueue provides a queue of Discord events to be handled sequentially on your own time
+    ///     EventQueue provides a queue of Discord events to be handled sequentially on your own time
     /// </summary>
-    /// <typeparam name="T">The type of <see cref="BaseSocketClient"/>you will be listening to events from</typeparam>
+    /// <typeparam name="T">The type of <see cref="BaseSocketClient" />you will be listening to events from</typeparam>
     public class EventQueue<T>
         where T : BaseSocketClient
     {
-        /// <summary>
-        /// Events contains a queue of <see cref="Event"/> structures, each wrapping a Discord event
-        /// </summary>
-        public ConcurrentQueue<Event> Events { get; }
-
         private readonly T _client;
-        private readonly EventInfo[] _events;
         private readonly Dictionary<string, Delegate> _eventMap;
+        private readonly EventInfo[] _events;
 
         /// <summary>
-        /// Create a new EventQueue with an instance of a client
+        ///     Create a new EventQueue with an instance of a client
         /// </summary>
         /// <param name="client"></param>
         public EventQueue(T client)
@@ -36,24 +31,29 @@ namespace Hanekawa.EventQueue
 
             Events = new ConcurrentQueue<Event>();
         }
-         
+
         /// <summary>
-        /// Register an event for listening
+        ///     Events contains a queue of <see cref="Event" /> structures, each wrapping a Discord event
+        /// </summary>
+        public ConcurrentQueue<Event> Events { get; }
+
+        /// <summary>
+        ///     Register an event for listening
         /// </summary>
         /// <param name="eventName">
-        /// The name of the event as it appears on <see cref="T"/>,
-        /// best to use <c>nameof()</c> here
+        ///     The name of the event as it appears on <see cref="T" />,
+        ///     best to use <c>nameof()</c> here
         /// </param>
         /// <exception cref="InvalidOperationException">
-        /// Throws when an event of name <paramref name="eventName"/> is already registered
+        ///     Throws when an event of name <paramref name="eventName" /> is already registered
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// Throws when an event of name <paramref name="eventName"/> could not be found on <see cref="T"/>
+        ///     Throws when an event of name <paramref name="eventName" /> could not be found on <see cref="T" />
         /// </exception>
         /// <exception cref="NotImplementedException">
-        /// Throws if the event assosciated with <paramref name="eventName"/> has more than 3 arguments.
+        ///     Throws if the event assosciated with <paramref name="eventName" /> has more than 3 arguments.
         /// </exception>
-        /// <seealso cref="Unregister(string)"/>
+        /// <seealso cref="Unregister(string)" />
         public void Register(string eventName)
         {
             if (_eventMap.ContainsKey(eventName))
@@ -61,7 +61,8 @@ namespace Hanekawa.EventQueue
 
             var ev = _events.FirstOrDefault(x => x.Name == eventName);
             if (ev == null)
-                throw new ArgumentOutOfRangeException(nameof(eventName), "The event name is not a member of BaseSocketClient");
+                throw new ArgumentOutOfRangeException(nameof(eventName),
+                    "The event name is not a member of BaseSocketClient");
 
             Delegate handler = null;
 
@@ -69,7 +70,8 @@ namespace Hanekawa.EventQueue
             switch (argCount)
             {
                 case 1:
-                    handler = (Func<Task>)(() => {
+                    handler = (Func<Task>) (() =>
+                    {
                         var e = new Event(eventName, new Unit());
                         Events.Enqueue(e);
 
@@ -77,7 +79,8 @@ namespace Hanekawa.EventQueue
                     });
                     break;
                 case 2:
-                    handler = (Func<object, Task>)((o1) => {
+                    handler = (Func<object, Task>) (o1 =>
+                    {
                         var e = new Event(eventName, o1);
                         Events.Enqueue(e);
 
@@ -85,7 +88,8 @@ namespace Hanekawa.EventQueue
                     });
                     break;
                 case 3:
-                    handler = (Func<object, object, Task>)((o1, o2) => {
+                    handler = (Func<object, object, Task>) ((o1, o2) =>
+                    {
                         var e = new Event(eventName, (o1, o2));
                         Events.Enqueue(e);
 
@@ -93,7 +97,8 @@ namespace Hanekawa.EventQueue
                     });
                     break;
                 case 4:
-                    handler = (Func<object, object, object, Task>)((o1, o2, o3) => {
+                    handler = (Func<object, object, object, Task>) ((o1, o2, o3) =>
+                    {
                         var e = new Event(eventName, (o1, o2, o3));
                         Events.Enqueue(e);
 
@@ -109,18 +114,18 @@ namespace Hanekawa.EventQueue
         }
 
         /// <summary>
-        /// Unregister an event that was already registered
+        ///     Unregister an event that was already registered
         /// </summary>
         /// <param name="eventName">
-        /// The name of the event as it appears on <see cref="T"/>,
-        /// best to use <c>nameof()</c> here.
+        ///     The name of the event as it appears on <see cref="T" />,
+        ///     best to use <c>nameof()</c> here.
         /// </param>
         /// <exception cref="InvalidOperationException">
-        /// Throws when you try to unregister an event that is not registered.
+        ///     Throws when you try to unregister an event that is not registered.
         /// </exception>
         public void Unregister(string eventName)
         {
-            if (!(_eventMap.TryGetValue(eventName, out var handler)))
+            if (!_eventMap.TryGetValue(eventName, out var handler))
                 throw new InvalidOperationException($"The event '{eventName}' is not registered.");
 
             var ev = _events.FirstOrDefault(x => x.Name == eventName);

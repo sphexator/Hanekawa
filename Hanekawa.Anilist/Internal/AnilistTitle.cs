@@ -4,16 +4,12 @@ namespace Hanekawa.Anilist.Internal
 {
     internal class AnilistTitle
     {
-        [JsonProperty("romaji")]
-        internal string romaji;
+        [JsonProperty("english")] internal string english;
 
-        [JsonProperty("english")]
-        internal string english;
+        [JsonProperty("native")] internal string native;
 
-        [JsonProperty("native")]
-        internal string native;
+        [JsonProperty("romaji")] internal string romaji;
 
-        [JsonProperty("userPreferred")]
-        internal string userPreferred;
+        [JsonProperty("userPreferred")] internal string userPreferred;
     }
 }

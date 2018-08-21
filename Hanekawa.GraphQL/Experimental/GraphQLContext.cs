@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Hanekawa.GraphQL.Experimental
+﻿namespace Hanekawa.GraphQL.Experimental
 {
     public class GraphQLContext
     {
-        public GraphQLContext()
-        {
-        }
-
         public static GraphQLContext Create<T>() where T : GraphQLContext, new()
         {
-            T t = new T();
+            var t = new T();
 
             // TODO: initialize
 

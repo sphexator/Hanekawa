@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Hanekawa.GraphQL.Experimental
+﻿namespace Hanekawa.GraphQL.Experimental
 {
     public class GraphQLSchema<T>
     {

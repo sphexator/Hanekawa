@@ -1,5 +1,5 @@
-﻿using Hanekawa.Anilist.Internal.Queries;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Hanekawa.Anilist.Internal.Queries;
 
 namespace Hanekawa.Anilist.Objects
 {

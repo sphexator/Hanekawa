@@ -1,11 +1,21 @@
-﻿using Newtonsoft.Json;
-using System.Net;
+﻿using System.Net;
 using Hanekawa.Anilist.Objects;
+using Newtonsoft.Json;
 
 namespace Hanekawa.Anilist.Internal
 {
     internal class AnilistCharacter : ICharacter
     {
+        [JsonProperty("description")] internal string Description;
+
+        [JsonProperty("id")] internal long Id;
+
+        [JsonProperty("image")] internal AnilistImage Image;
+
+        [JsonProperty("name")] internal AnilistName Name;
+
+        [JsonProperty("siteUrl")] internal string SiteUrl;
+
         public string FirstName => Name.First;
         public string LastName => Name.Last;
         public string NativeName => Name.Native;
@@ -16,20 +26,5 @@ namespace Hanekawa.Anilist.Internal
         long ICharacterSearchResult.Id => Id;
         string ICharacter.Description => WebUtility.HtmlDecode(Description);
         string ICharacter.SiteUrl => SiteUrl;
-
-        [JsonProperty("id")]
-        internal long Id;
-
-        [JsonProperty("name")]
-        internal AnilistName Name;
-
-        [JsonProperty("description")]
-        internal string Description;
-
-        [JsonProperty("siteUrl")]
-        internal string SiteUrl;
-
-        [JsonProperty("image")]
-        internal AnilistImage Image;
     }
 }
