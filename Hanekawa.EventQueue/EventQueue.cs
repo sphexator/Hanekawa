@@ -36,7 +36,7 @@ namespace Hanekawa.EventQueue
 
             Events = new ConcurrentQueue<Event>();
         }
-
+         
         /// <summary>
         /// Register an event for listening
         /// </summary>
