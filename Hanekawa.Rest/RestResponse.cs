@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
+﻿using System.Net.Http;
 
 namespace Hanekawa.Rest
 {
@@ -14,7 +11,10 @@ namespace Hanekawa.Rest
 
     public class RestResponse<T> : RestResponse
     {
-        public RestResponse() { }
+        public RestResponse()
+        {
+        }
+
         public RestResponse(RestResponse r)
         {
             Body = r.Body;

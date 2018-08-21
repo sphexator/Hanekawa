@@ -11,12 +11,8 @@ namespace Hanekawa.Rest
 {
     public class RestClient : IDisposable
     {
-        public HttpRequestHeaders Headers => _client.DefaultRequestHeaders;
-
         private readonly HttpClient _client;
         private readonly bool _ensureSuccess;
-
-        public event Action<string, string> OnRequestComplete;
 
         public RestClient(string base_address, bool ensureSuccess = false)
         {
@@ -25,25 +21,35 @@ namespace Hanekawa.Rest
             _ensureSuccess = ensureSuccess;
         }
 
-        public RestClient AddHeader(string header, string value)
-        {
-            _client.DefaultRequestHeaders.Add(header, value);
-            return this;
-        }
+        public HttpRequestHeaders Headers => _client.DefaultRequestHeaders;
 
         public void Dispose()
         {
             _client.Dispose();
         }
 
+        public event Action<string, string> OnRequestComplete;
+
+        public RestClient AddHeader(string header, string value)
+        {
+            _client.DefaultRequestHeaders.Add(header, value);
+            return this;
+        }
+
         public async Task<RestResponse> DeleteAsync(string url = "")
-            => await SendAsync(RestMethod.DELETE, url);
+        {
+            return await SendAsync(RestMethod.DELETE, url);
+        }
 
         public async Task<RestResponse> GetAsync(string url = "")
-            => await SendAsync(RestMethod.GET, url);
+        {
+            return await SendAsync(RestMethod.GET, url);
+        }
 
         public async Task<RestResponse<T>> GetAsync<T>(string url = "")
-            => await SendAsync<T>(RestMethod.GET, url);
+        {
+            return await SendAsync<T>(RestMethod.GET, url);
+        }
 
         public async Task<Stream> GetStreamAsync(string url = "")
         {
@@ -52,17 +58,21 @@ namespace Hanekawa.Rest
         }
 
         public async Task<RestResponse> PostAsync(string url = "", string value = null)
-            => await SendAsync(RestMethod.POST, url, value);
+        {
+            return await SendAsync(RestMethod.POST, url, value);
+        }
 
         public async Task<RestResponse<T>> PostAsync<T>(string url = "", string value = null)
         {
-            RestResponse<T> response = new RestResponse<T>(await PostAsync(url, value));
+            var response = new RestResponse<T>(await PostAsync(url, value));
             response.Data = JsonConvert.DeserializeObject<T>(response.Body);
             return response;
         }
 
         public async Task<RestResponse> PatchAsync(string url = "", string value = null)
-            => await SendAsync(RestMethod.PATCH, url, value);
+        {
+            return await SendAsync(RestMethod.PATCH, url, value);
+        }
 
         public async Task<RestResponse<T>> PatchAsync<T>(string url = "", string value = null)
         {
@@ -72,11 +82,13 @@ namespace Hanekawa.Rest
         }
 
         public async Task<RestResponse> PutAsync(string url = "", string value = null)
-            => await SendAsync(RestMethod.PUT, url, value);
+        {
+            return await SendAsync(RestMethod.PUT, url, value);
+        }
 
         public async Task<RestResponse<T>> PutAsync<T>(string url = "", string value = null)
         {
-            RestResponse<T> r = new RestResponse<T>(await PutAsync(url, value));
+            var r = new RestResponse<T>(await PutAsync(url, value));
             r.Data = JsonConvert.DeserializeObject<T>(r.Body);
             return r;
         }
@@ -85,7 +97,7 @@ namespace Hanekawa.Rest
         {
             var req = new HttpRequestMessage(new HttpMethod("POST"), _client.BaseAddress + url);
 
-            string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+            var boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
 
             req.Headers.Add("Connection", "keep-alive");
             req.Headers.Add("Keep-Alive", "600");
@@ -105,6 +117,7 @@ namespace Hanekawa.Rest
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(key);
             return this;
         }
+
         public RestClient SetAuthorization(string scheme, string value)
         {
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(scheme, value);
@@ -115,51 +128,46 @@ namespace Hanekawa.Rest
         {
             url = url.TrimStart('/');
 
-            HttpMethod m = new HttpMethod(method.ToString().ToUpper());
-            using (HttpRequestMessage msg = new HttpRequestMessage(m, url))
+            var m = new HttpMethod(method.ToString().ToUpper());
+            using (var msg = new HttpRequestMessage(m, url))
             {
                 if (!string.IsNullOrWhiteSpace(value))
-                {
                     msg.Content = new StringContent(value, Encoding.UTF8, "application/json");
-                }
 
                 return await SendAsync(msg);
             }
         }
+
         public async Task<RestResponse> SendAsync(HttpRequestMessage message)
         {
             var response = await _client.SendAsync(message);
 
-            RestResponse restResponse = new RestResponse();
+            var restResponse = new RestResponse();
             restResponse.HttpResponseMessage = response;
             restResponse.Body = await response.Content.ReadAsStringAsync();
             restResponse.Success = response.IsSuccessStatusCode;
 
             if (restResponse.Success)
-            {
                 OnRequestComplete?.Invoke(
-                    message.Method.Method.ToString(),
+                    message.Method.Method,
                     message.RequestUri.AbsolutePath
                 );
-            }
 
-            if (_ensureSuccess)
-            {
-                response.EnsureSuccessStatusCode();
-            }
+            if (_ensureSuccess) response.EnsureSuccessStatusCode();
 
             return restResponse;
         }
 
         public async Task<RestResponse<T>> SendAsync<T>(RestMethod method, string url, string value = null)
         {
-            RestResponse<T> response = new RestResponse<T>(await SendAsync(method, url, value));
+            var response = new RestResponse<T>(await SendAsync(method, url, value));
             response.Data = JsonConvert.DeserializeObject<T>(response.Body);
             return response;
         }
+
         public async Task<RestResponse<T>> SendAsync<T>(HttpRequestMessage message)
         {
-            RestResponse<T> response = new RestResponse<T>(await SendAsync(message));
+            var response = new RestResponse<T>(await SendAsync(message));
             response.Data = JsonConvert.DeserializeObject<T>(response.Body);
             return response;
         }
