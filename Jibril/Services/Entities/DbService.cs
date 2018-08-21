@@ -27,6 +27,9 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
 
+        // Administration
+        public virtual DbSet<Blacklist> Blacklists { get; set; }
+        
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
         public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
@@ -108,6 +111,9 @@ namespace Hanekawa.Services.Entities
             });
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
+
+            // Administration
+            modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
 
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
