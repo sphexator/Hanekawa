@@ -24,30 +24,30 @@ namespace Hanekawa.Services.Anime
             _anime.AnimeAired += AnimeAiredAsync;
         }
 
-        private Task AnimeAiredAsync(IReadOnlyCollection<AnimeData> Collection)
+        private Task AnimeAiredAsync(IReadOnlyCollection<AnimeData> collection)
         {
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
-                    var data = Collection.FirstOrDefault();
+                    var data = collection.FirstOrDefault();
                     var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync();
                     foreach (var x in premiumList)
                     {
-                        await Post(x, data);
+                        await PostAsync(x, data);
                     }
                 }
             });
             return Task.CompletedTask;
         }
 
-        private async Task Post(GuildConfig cfg, AnimeData data)
+        private async Task PostAsync(GuildConfig cfg, AnimeData data)
         {
             if (!cfg.AnimeAirChannel.HasValue) return;
             await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.AnimeAirChannel.Value).SendMessageAsync(null, false, BuildEmbed(data).Build());
         }
 
-        private EmbedBuilder BuildEmbed(AnimeData data)
+        private static EmbedBuilder BuildEmbed(AnimeData data)
         {
             var embed = new EmbedBuilder
             {

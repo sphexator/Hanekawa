@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -135,7 +136,7 @@ namespace Hanekawa.Modules.Permission
                             Color.Red.RawValue).Build());
                 }
             }
-
+            /*
             [Group("currency")]
             public class CurrencyOptions : InteractiveBase
             {
@@ -164,7 +165,7 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 [Command("emote", RunMode = RunMode.Async)]
-                public async Task SetCurrencyEmoteAsync(Emote emote = null)
+                public async Task SetCurrencyEmoteAsync(IEmote emote = null)
                 {
                     using (var db = new DbService())
                     {
@@ -180,15 +181,19 @@ namespace Hanekawa.Modules.Permission
                             return;
                         }
 
+                        Emote.TryParse(emote.Name, out var result);
+                        Console.WriteLine($"{emote} - {emote.Name}");
                         cfg.EmoteCurrency = true;
-                        cfg.CurrencySign = $"<:{emote.Name}:{emote.Id}>";
+                        cfg.CurrencySign = $"<:{result.Name}:{result.Id}>";
                         await db.SaveChangesAsync();
                         await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"Changed currency sign to {emote}",
+                            new EmbedBuilder().Reply($"Changed currency sign to {result}",
                                 Color.Green.RawValue).Build());
                     }
                 }
+                
             }
+            */
         }
 
         [Group("automod")]

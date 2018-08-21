@@ -149,6 +149,7 @@ namespace Hanekawa
             services.AddSingleton<LootCrates>();
             services.AddSingleton<AudioService>();
             services.AddSingleton<RequiredChannel>();
+            services.AddSingleton<SimulCast>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();
