@@ -7,10 +7,12 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Hanekawa.AnimeSimulCast;
 using Hanekawa.Data;
 using Hanekawa.Preconditions;
 using Hanekawa.Services;
 using Hanekawa.Services.Administration;
+using Hanekawa.Services.Anime;
 using Hanekawa.Services.Audio;
 using Hanekawa.Services.Automate;
 using Hanekawa.Services.AutoModerator;
@@ -42,6 +44,7 @@ namespace Hanekawa
         private IConfiguration _config;
         private LavalinkManager _lavalink;
         private YouTubeService _youTubeService;
+        private AnimeSimulCastClient _anime;
 
         private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
 
@@ -74,6 +77,8 @@ namespace Hanekawa
                 TotalShards = 1
             });
 
+            _anime = new AnimeSimulCastClient();
+
             var services = ConfigureServices();
             services.GetRequiredService<Config>();
             services.GetRequiredService<LogService>();
@@ -85,8 +90,9 @@ namespace Hanekawa
             services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
-            services.GetRequiredService<MvpService>();
+            //services.GetRequiredService<MvpService>();
             services.GetRequiredService<LootCrates>();
+            services.GetRequiredService<SimulCast>();
 
             _client.Ready += LavalinkInitiateAsync;
             
@@ -114,6 +120,7 @@ namespace Hanekawa
             services.AddSingleton(_lavalink);
             services.AddSingleton(_youTubeService);
             services.AddSingleton(_config);
+            services.AddSingleton(_anime);
 
             services.AddDistributedRedisCache(options =>
             {

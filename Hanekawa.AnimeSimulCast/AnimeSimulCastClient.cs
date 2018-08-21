@@ -43,12 +43,12 @@ namespace Hanekawa.AnimeSimulCast
                     var feed = SyndicationFeed.Load(reader);
                     //var result = _poll.Except(feed.Items).ToList();
                     var result = feed.Items.Intersect(_poll).ToList();
-                    
+
                     if (result.Count != 0)
                     {
                         UpdatePoll(feed.Items);
                         var collection = ParseToCollection(result);
-                        await AnimeAired(collection);
+                        _ = AnimeAired(collection);
                     }
                     
                     //AnimeAired(ParseToCollection(feed.Items.FirstOrDefault()));
@@ -62,30 +62,32 @@ namespace Hanekawa.AnimeSimulCast
             }
         }
 
-        private IReadOnlyCollection<AnimeData> ParseToCollection(
+        private static IReadOnlyCollection<AnimeData> ParseToCollection(
             IEnumerable<SyndicationItem> collection)
         {
             var result = collection.Select(x => new AnimeData
             {
                 Title = x.Title.Text.Filter(),
-                //Time = x.PublishDate,
+                Time = x.PublishDate,
                 Episode = x.Title.Text.GetEpisode(),
-                Season = x.Title.Text.GetSeason()
+                Season = x.Title.Text.GetSeason(),
+                Url = x.Links.FirstOrDefault().Uri.AbsoluteUri
             }).ToList();
 
             return result.AsReadOnly();
         }
 
-        private IReadOnlyCollection<AnimeData> ParseToCollection(SyndicationItem collection)
+        private static IReadOnlyCollection<AnimeData> ParseToCollection(SyndicationItem collection)
         {
             var result = new List<AnimeData>
             {
                 new AnimeData
                 {
                     Title = collection.Title.Text.Filter(),
-                    //Time = collection.PublishDate,
+                    Time = collection.PublishDate,
                     Episode = collection.Title.Text.GetEpisode(),
                     Season = collection.Title.Text.GetSeason(),
+                    Url = collection.Links.FirstOrDefault().Uri.AbsoluteUri
                 }
             };
             return result.AsReadOnly();

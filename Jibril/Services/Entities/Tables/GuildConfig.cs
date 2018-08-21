@@ -6,6 +6,10 @@ namespace Hanekawa.Services.Entities.Tables
     {
         public ulong GuildId { get; set; }
         public string Prefix { get; set; }
+        public bool Premium { get; set; }
+
+        // Premium
+        public ulong? AnimeAirChannel { get; set; }
 
         // Channel settings
         public ulong? ReportChannel { get; set; }

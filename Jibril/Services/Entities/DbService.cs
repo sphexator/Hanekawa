@@ -139,7 +139,11 @@ namespace Hanekawa.Services.Entities
 
             // Config
             modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
-            modelBuilder.Entity<GuildConfig>(x => { x.HasKey(e => e.GuildId); });
+            modelBuilder.Entity<GuildConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.Premium).HasDefaultValue(false);
+            });
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
             modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));

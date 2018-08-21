@@ -185,7 +185,8 @@ namespace Hanekawa.Extensions
                 FilterMsgLength = null,
                 FilterUrls = false,
                 LogWarn = null,
-                WelcomeDelete = null
+                WelcomeDelete = null,
+                Premium = false
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
