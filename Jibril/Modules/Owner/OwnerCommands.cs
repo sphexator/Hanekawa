@@ -19,7 +19,7 @@ namespace Hanekawa.Modules.Owner
         {
             [Command("add", RunMode = RunMode.Async)]
             [RequireOwner]
-            public async Task BlackListAddAsync(ulong id, [Remainder]string reason)
+            public async Task BlackListAddAsync(ulong id, [Remainder]string reason = null)
             {
                 using (var db = new DbService())
                 {

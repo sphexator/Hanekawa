@@ -127,9 +127,9 @@ namespace Hanekawa.Services.Level
         {
             var _ = Task.Run(async () =>
             {
+                if (message.Author.IsBot) return;
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
-                if (msg.Author.IsBot) return;
                 if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
@@ -168,9 +168,9 @@ namespace Hanekawa.Services.Level
         {
             var _ = Task.Run(async () =>
             {
+                if (message.Author.IsBot) return;
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
-                if (msg.Author.IsBot) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
                 if (!CheckGlobalCooldown(user)) return;
