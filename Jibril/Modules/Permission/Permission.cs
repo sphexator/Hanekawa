@@ -135,6 +135,60 @@ namespace Hanekawa.Modules.Permission
                             Color.Red.RawValue).Build());
                 }
             }
+
+            [Group("currency")]
+            public class CurrencyOptions : InteractiveBase
+            {
+                [Command("name", RunMode = RunMode.Async)]
+                public async Task SetCurrencyNameAsync([Remainder]string name = null)
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        if (name == null)
+                        {
+                            cfg.CurrencyName = "Special Currency";
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder().Reply("Changed currency name back to default (Special Currency)",
+                                    Color.Green.RawValue).Build());
+                            return;
+                        }
+
+                        cfg.CurrencyName = name;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Changed currency name to `{name}` !",
+                                Color.Green.RawValue).Build());
+                    }
+                }
+
+                [Command("emote", RunMode = RunMode.Async)]
+                public async Task SetCurrencyEmoteAsync(Emote emote = null)
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        if (emote == null)
+                        {
+                            cfg.EmoteCurrency = false;
+                            cfg.CurrencySign = "$";
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder().Reply("Changed currency sign back to default ($)",
+                                    Color.Green.RawValue).Build());
+                            return;
+                        }
+
+                        cfg.EmoteCurrency = true;
+                        cfg.CurrencySign = $"<:{emote.Name}:{emote.Id}>";
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Changed currency sign to {emote}",
+                                Color.Green.RawValue).Build());
+                    }
+                }
+            }
         }
 
         [Group("automod")]

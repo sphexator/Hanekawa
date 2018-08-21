@@ -23,7 +23,7 @@ namespace Hanekawa.Services.Automate
         {
             _client = client;
 
-            _client.MessageReceived += MessageCounter;
+            _client.MessageReceived += MessageCounterAsync;
 
             _channels.Add(339371997802790913); //General
             _channels.Add(351861569530888202); //Tea-room
@@ -35,7 +35,7 @@ namespace Hanekawa.Services.Automate
             _channels.Add(404633037884620802); //Test channel
         }
         // Message Reciever method
-        private Task MessageCounter(SocketMessage msg)
+        private Task MessageCounterAsync(SocketMessage msg)
         {
             var _ = Task.Run(async () =>
             {
@@ -47,8 +47,9 @@ namespace Hanekawa.Services.Automate
                 using (var db = new DbService())
                 {
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                    var user = await db.GetOrCreateUserData(msg.Author as SocketGuildUser);
+                    var user = await db.GetOrCreateUserData((SocketGuildUser)msg.Author);
                     user.MvpCounter = user.MvpCounter + 1;
+                    await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
@@ -90,15 +91,15 @@ namespace Hanekawa.Services.Automate
                                           $"{e}");
                     }
 
-                    await Demote(oldMvps, role).ConfigureAwait(false);
-                    await Promote(newMvps, role).ConfigureAwait(false);
+                    await DemoteAsync(oldMvps, role).ConfigureAwait(false);
+                    await PromoteAsync(newMvps, role).ConfigureAwait(false);
                     await db.Accounts.ForEachAsync(x => x.MvpCounter = 0).ConfigureAwait(false);
                     await db.SaveChangesAsync().ConfigureAwait(false);
                 }
             });
         }
 
-        private static async Task Demote(IEnumerable<IGuildUser> mvps, IRole role)
+        private static async Task DemoteAsync(IEnumerable<IGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
                 try
@@ -112,7 +113,7 @@ namespace Hanekawa.Services.Automate
                 }
         }
 
-        private static async Task Promote(IEnumerable<IGuildUser> mvps, IRole role)
+        private static async Task PromoteAsync(IEnumerable<IGuildUser> mvps, IRole role)
         {
             foreach (var x in mvps)
                 try
