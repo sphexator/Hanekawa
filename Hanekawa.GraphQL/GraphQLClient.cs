@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hanekawa.GraphQL.Internal;
+using Hanekawa.Rest;
+using Newtonsoft.Json;
 
 namespace Hanekawa.GraphQL
 {
