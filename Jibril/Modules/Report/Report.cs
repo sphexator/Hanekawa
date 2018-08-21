@@ -12,6 +12,36 @@ namespace Hanekawa.Modules.Report
 {
     public class Report : InteractiveBase
     {
+        [Group("report")]
+        public class ReportSettings : InteractiveBase
+        {
+            [Command("set", RunMode = RunMode.Async)]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            [RequireContext(ContextType.Guild)]
+            [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+            public async Task SetReportChannelAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (cfg.ReportChannel.HasValue && channel == null)
+                    {
+                        cfg.ReportChannel = null;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.ReportChannel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
+                            Color.Green.RawValue).Build());
+                }
+            }
+        }
+
         [Command("report", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         public async Task ReportGuildAsync([Remainder]string text)
@@ -29,14 +59,15 @@ namespace Hanekawa.Modules.Report
                 };
                 var footer = new EmbedFooterBuilder
                 {
-                    Text = $"{report.Id}"
+                    Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"
                 };
                 var embed = new EmbedBuilder
                 {
                     Author = author,
                     Footer = footer,
                     Color = Color.DarkPurple,
-                    Description = text
+                    Description = text,
+                    Timestamp = new DateTimeOffset(DateTime.UtcNow)
                 };
                 if (Context.Message.Attachments.FirstOrDefault() != null)
                 {
@@ -73,9 +104,9 @@ namespace Hanekawa.Modules.Report
                         $"Answer from {Context.User.Mention}:\n" +
                         $"{text}");
                 }
-                catch{ /*IGNORE*/ }
+                catch { /*IGNORE*/ }
 
-                await ((IUserMessage) msg).ModifyAsync(x => x.Embed = embed.Build());
+                await ((IUserMessage)msg).ModifyAsync(x => x.Embed = embed.Build());
             }
         }
     }
