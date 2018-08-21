@@ -12,6 +12,36 @@ namespace Hanekawa.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
+        [Group("suggestion")]
+        public class ReportSettings : InteractiveBase
+        {
+            [Command("set", RunMode = RunMode.Async)]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            [RequireContext(ContextType.Guild)]
+            [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+            public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (cfg.SuggestionChannel.HasValue && channel == null)
+                    {
+                        cfg.SuggestionChannel = null;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.SuggestionChannel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
+                            Color.Green.RawValue).Build());
+                }
+            }
+        }
+
         [Command("Suggest", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         public async Task SuggestAsync([Remainder] string suggestion)
