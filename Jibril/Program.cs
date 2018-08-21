@@ -93,6 +93,7 @@ namespace Hanekawa
             //services.GetRequiredService<MvpService>();
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<SimulCast>();
+            services.GetRequiredService<BlackListService>();
 
             _client.Ready += LavalinkInitiateAsync;
             
@@ -140,6 +141,7 @@ namespace Hanekawa
             services.AddSingleton<MvpService>();
             services.AddSingleton<MuteService>();
             services.AddSingleton<WarnService>();
+            services.AddSingleton<BlackListService>();
             services.AddSingleton<NudeScoreService>();
             services.AddSingleton<GameStats>();
             services.AddSingleton<ShipGameService>();

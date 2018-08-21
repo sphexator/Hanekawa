@@ -42,6 +42,7 @@ namespace Hanekawa.Services.Entities
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
         public virtual DbSet<GuildInfo> GuildInfos { get; set; }
+        public virtual DbSet<GuildInfoLink> GuildInfoLinks { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
@@ -150,6 +151,7 @@ namespace Hanekawa.Services.Entities
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
             });
+            modelBuilder.Entity<GuildInfoLink>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
             modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));

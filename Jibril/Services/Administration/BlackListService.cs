@@ -7,10 +7,10 @@ using Hanekawa.Services.Entities;
 
 namespace Hanekawa.Services.Administration
 {
-    public class BlackList
+    public class BlackListService
     {
         private readonly DiscordSocketClient _client;
-        public BlackList(DiscordSocketClient client)
+        public BlackListService(DiscordSocketClient client)
         {
             _client = client;
 
