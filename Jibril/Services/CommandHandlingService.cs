@@ -7,6 +7,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
+using Hanekawa.TypeReaders;
 
 namespace Hanekawa.Services
 {
@@ -50,6 +51,8 @@ namespace Hanekawa.Services
         public async Task InitializeAsync(IServiceProvider provider)
         {
             _provider = provider;
+            _commands.AddTypeReader(typeof(Emote), new EmoteTypeReader());
+
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         }
 

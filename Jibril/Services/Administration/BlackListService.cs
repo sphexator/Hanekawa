@@ -23,7 +23,7 @@ namespace Hanekawa.Services.Administration
             {
                 using (var db = new DbService())
                 {
-                    var check = db.Blacklists.FindAsync(guild.Id);
+                    var check = await db.Blacklists.FindAsync(guild.Id);
                     if (check == null) return;
                     await guild.LeaveAsync();
                 }

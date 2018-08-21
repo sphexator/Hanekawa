@@ -22,6 +22,13 @@ namespace Hanekawa.Services.Anime
             _client = client;
 
             _anime.AnimeAired += AnimeAiredAsync;
+            _client.Ready += StartClient;
+        }
+
+        private Task StartClient()
+        {
+            _anime.StartAsync();
+            return Task.CompletedTask;
         }
 
         private Task AnimeAiredAsync(IReadOnlyCollection<AnimeData> collection)
@@ -35,6 +42,7 @@ namespace Hanekawa.Services.Anime
                     foreach (var x in premiumList)
                     {
                         await PostAsync(x, data);
+                        await Task.Delay(5000);
                     }
                 }
             });
@@ -55,7 +63,7 @@ namespace Hanekawa.Services.Anime
                 Title = $"{data.Title}",
                 Url = data.Url,
                 Color = Color.Purple,
-                Timestamp = new DateTimeOffset(DateTime.UtcNow)
+                Timestamp = data.Time
             };
             embed.AddField("Season", data.Season ?? "1", true);
             embed.AddField("Episode", data.Episode, true);
