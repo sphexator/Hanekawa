@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Owner
 {
@@ -17,9 +14,11 @@ namespace Hanekawa.Modules.Owner
     public class OwnerCommands : InteractiveBase
     {
         [Group("blacklist")]
+        [RequireOwner]
         public class Blacklist : InteractiveBase
         {
             [Command("add", RunMode = RunMode.Async)]
+            [RequireOwner]
             public async Task BlackListAddAsync(ulong id, [Remainder]string reason)
             {
                 using (var db = new DbService())
@@ -52,6 +51,7 @@ namespace Hanekawa.Modules.Owner
             }
 
             [Command("remove", RunMode = RunMode.Async)]
+            [RequireOwner]
             public async Task BlackListRemoveAsync(ulong id)
             {
                 using (var db = new DbService())
