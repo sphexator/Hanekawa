@@ -15,7 +15,7 @@ namespace Hanekawa.Modules.Report
         [Group("report")]
         public class ReportSettings : InteractiveBase
         {
-            [Command("set", RunMode = RunMode.Async)]
+            [Command("channel", RunMode = RunMode.Async)]
             [RequireUserPermission(GuildPermission.ManageGuild)]
             [RequireContext(ContextType.Guild)]
             [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
@@ -81,7 +81,7 @@ namespace Hanekawa.Modules.Report
 
         [Command("respond", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RespondAsync(uint id, [Remainder] string text)
         {
             using (var db = new DbService())

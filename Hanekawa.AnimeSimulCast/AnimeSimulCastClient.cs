@@ -54,10 +54,9 @@ namespace Hanekawa.AnimeSimulCast
                     //AnimeAired(ParseToCollection(feed.Items.FirstOrDefault()));
                     await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 }
-                catch (Exception e)
+                catch
                 {
-                    Console.WriteLine(e);
-                    throw;
+                    await Task.Delay(TimeSpan.FromMinutes(15)).ConfigureAwait(false);
                 }
             }
         }
