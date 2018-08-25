@@ -12,36 +12,6 @@ namespace Hanekawa.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
-        [Group("suggestion")]
-        public class ReportSettings : InteractiveBase
-        {
-            [Command("set", RunMode = RunMode.Async)]
-            [RequireUserPermission(GuildPermission.ManageGuild)]
-            [RequireContext(ContextType.Guild)]
-            [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
-            public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
-            {
-                using (var db = new DbService())
-                {
-                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                    if (cfg.SuggestionChannel.HasValue && channel == null)
-                    {
-                        cfg.SuggestionChannel = null;
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
-                        return;
-                    }
-
-                    cfg.SuggestionChannel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
-                            Color.Green.RawValue).Build());
-                }
-            }
-        }
-
         [Command("Suggest", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         public async Task SuggestAsync([Remainder] string suggestion)
@@ -113,7 +83,10 @@ namespace Hanekawa.Modules.Suggestion
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
                 }
-                catch { /*IGNORE*/ }
+                catch
+                {
+                    /*IGNORE*/
+                }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
             }
@@ -191,9 +164,99 @@ namespace Hanekawa.Modules.Suggestion
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
                 }
-                catch { /*IGNORE*/ }
+                catch
+                {
+                    /*IGNORE*/
+                }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
+            }
+        }
+
+        [Group("suggestion")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        public class SuggestionSettings : InteractiveBase
+        {
+            [Group("set")]
+            public class SuggestionSet : InteractiveBase
+            {
+                [Command("channel", RunMode = RunMode.Async)]
+                [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+                public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        if (cfg.SuggestionChannel.HasValue && channel == null)
+                        {
+                            cfg.SuggestionChannel = null;
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
+                            return;
+                        }
+
+                        cfg.SuggestionChannel = channel.Id;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
+                                Color.Green.RawValue).Build());
+                    }
+                }
+
+                [Command("no", RunMode = RunMode.Async)]
+                [Summary("Set custom no emote for suggestions")]
+                public async Task SetSuggestionNoEmoteAsync(Emote emote = null)
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        if (emote == null)
+                        {
+                            cfg.SuggestionEmoteNo = null;
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
+                                    .Build());
+                            return;
+                        }
+
+                        cfg.SuggestionEmoteNo = ParseEmoteString(emote);
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
+                    }
+                }
+
+                [Command("yes", RunMode = RunMode.Async)]
+                [Summary("Set custom yes emote for suggestions")]
+                public async Task SetSuggestionYesEmoteAsync(Emote emote = null)
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        if (emote == null)
+                        {
+                            cfg.SuggestionEmoteYes = null;
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
+                                    .Build());
+                            return;
+                        }
+
+                        cfg.SuggestionEmoteYes = ParseEmoteString(emote);
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
+                    }
+                }
+
+                private static string ParseEmoteString(Emote emote)
+                {
+                    return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
+                }
             }
         }
     }

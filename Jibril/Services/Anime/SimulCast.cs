@@ -6,7 +6,6 @@ using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 

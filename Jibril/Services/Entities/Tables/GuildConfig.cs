@@ -49,7 +49,7 @@ namespace Hanekawa.Services.Entities.Tables
         public bool FilterAllInv { get; set; }
 
         // Board settings
-        public ulong? BoardEmote { get; set; }
+        public string BoardEmote { get; set; }
         public ulong? BoardChannel { get; set; }
 
         // Suggestion settings
