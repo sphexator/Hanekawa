@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Entities;
+using Hanekawa.Services.Reaction;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Board
@@ -14,6 +15,12 @@ namespace Hanekawa.Modules.Board
     [Group("board")]
     public class Board : InteractiveBase
     {
+        private readonly BoardService _boardService;
+        public Board(BoardService boardService)
+        {
+            _boardService = boardService;
+        }
+
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
@@ -80,16 +87,22 @@ namespace Hanekawa.Modules.Board
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Sets a custom emote to be used toward the board")]
-        public async Task BoardEmote(string emote)
+        public async Task BoardEmote(Emote emote)
         {
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                //cfg.BoardEmote = emote;
+                var emoteString = ParseEmoteString(emote);
+                _boardService.SetBoardEmote(Context.Guild, emoteString);
+                cfg.BoardEmote = emoteString;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Changed board emote to {emote}", Color.Green.RawValue).Build());
-                //TODO: Make concurrentDictionary on boardService and update emote to this
             }
+        }
+
+        private static string ParseEmoteString(Emote emote)
+        {
+            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
         }
     }
 }

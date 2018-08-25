@@ -15,57 +15,70 @@ namespace Hanekawa.Services.Reaction
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
-        private ConcurrentDictionary<ulong, ulong> ReactionEmote { get; }
-            = new ConcurrentDictionary<ulong, ulong>();
+        private ConcurrentDictionary<ulong, string> ReactionEmote { get; }
+            = new ConcurrentDictionary<ulong, string>();
 
         public BoardService(DiscordSocketClient client, IServiceProvider provider)
         {
             _client = client;
 
-            _client.ReactionAdded += BoardReactionAdded;
-            _client.ReactionRemoved += BoardReactionRemoved;
+            _client.ReactionAdded += BoardReactionAddedAsync;
+            _client.ReactionRemoved += BoardReactionRemovedAsync;
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs)
+                {
+                    ReactionEmote.TryAdd(x.GuildId, x.BoardEmote ?? "⭐");
+                }
+            }
         }
 
-        public void SetBoardEmote(SocketGuild guild, Emote emote)
+        public void SetBoardEmote(SocketGuild guild, string emote)
         {
-            ReactionEmote.AddOrUpdate(guild.Id, emote.Id, (key, old) => old = emote.Id);
+            ReactionEmote.AddOrUpdate(guild.Id, emote, (key, old) => old = emote);
         }
 
-        private Task BoardReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
+        private Task BoardReactionAddedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
             SocketReaction reaction)
         {
-            if (((ITextChannel)reaction.Channel).IsNsfw) return Task.CompletedTask;
-            if (reaction.Emote.Name != "OwO") return Task.CompletedTask;
-            if (reaction.Message.Value.Author.IsBot) return Task.CompletedTask;
-            if (reaction.User.Value.IsBot || reaction.UserId == reaction.Message.Value.Author.Id)
-                return Task.CompletedTask;
-            var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
-            board.TryGetValue(reaction.MessageId, out var msg);
-            if (msg + 1 == 4)
+            var _ = Task.Run(async () =>
             {
-                var _ = Task.Run(async () =>
-                    {
-                        board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 99);
-                        await SendBoardAsync((ITextChannel)reaction.Channel, reaction.MessageId);
-                    });
-                return Task.CompletedTask;
-            }
+                if (((ITextChannel)reaction.Channel).IsNsfw) return;
+                if (message.Value.Author.IsBot) return;
+                if (message.Value.Author.Id == reaction.UserId) return;
+                var emote = GetEmote((channel as SocketTextChannel)?.Guild);
+                if (!Equals(reaction.Emote, emote)) return;
+                var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
+                board.TryGetValue(reaction.MessageId, out var msg);
+                if (msg + 1 == 4)
+                {
+                    board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 99);
+                    await SendBoardAsync((ITextChannel)reaction.Channel, reaction.MessageId);
+                    return;
+                }
 
-            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
+                board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
+            });
             return Task.CompletedTask;
         }
 
-        private Task BoardReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
+        private Task BoardReactionRemovedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel,
             SocketReaction reaction)
         {
-            if (((ITextChannel)reaction.Channel).IsNsfw) return Task.CompletedTask;
-            if (reaction.Emote.Name != "OwO") return Task.CompletedTask;
-            if (reaction.User.Value.IsBot || reaction.UserId == reaction.Message.Value.Author.Id)
-                return Task.CompletedTask;
-            var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
-            board.TryGetValue(reaction.MessageId, out var msg);
-            if (msg + 1 >= 4) return Task.CompletedTask;
-            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
+            var _ = Task.Run(() =>
+            {
+                if (((ITextChannel)reaction.Channel).IsNsfw) return;
+                if (message.Value.Author.IsBot) return;
+                if (message.Value.Author.Id == reaction.UserId) return;
+                var emote = GetEmote((channel as SocketTextChannel)?.Guild);
+                if (!Equals(reaction.Emote, emote)) return;
+
+                var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
+                board.TryGetValue(reaction.MessageId, out var msg);
+                if (msg + 1 >= 4) return;
+                board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
+            });
 
             return Task.CompletedTask;
         }
@@ -104,7 +117,52 @@ namespace Hanekawa.Services.Reaction
 
         private static SocketRole GetBoardColor(SocketGuildUser user)
         {
-            return user.Roles.LastOrDefault(x => x.Color.RawValue != 0);
+            return user.Roles.OrderByDescending(x => x.Position).FirstOrDefault(x => x.Color.RawValue != 0);
+        }
+
+        private IEmote GetEmote(SocketGuild guild)
+        {
+            return GetDictionaryEmote(guild, out var emote) ? emote : GetDatabaseEmote(guild);
+        }
+
+        private bool GetDictionaryEmote(SocketGuild guild, out IEmote emote)
+        {
+            var check = ReactionEmote.TryGetValue(guild.Id, out var result);
+            if (!check)
+            {
+                emote = null;
+                return false;
+            }
+
+            if (Emote.TryParse(result, out var iemote))
+            {
+                emote = iemote;
+                return true;
+            }
+            emote = new Emoji("⭐");
+            return true;
+        }
+
+        private IEmote GetDatabaseEmote(SocketGuild guild)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = db.GuildConfigs.Find(guild.Id);
+                if (cfg.BoardEmote == null)
+                {
+                    ReactionEmote.TryAdd(guild.Id, "⭐");
+                    return new Emoji("⭐");
+                }
+
+                if(Emote.TryParse(cfg.BoardEmote, out var result))
+                {
+                    ReactionEmote.TryAdd(guild.Id, cfg.BoardEmote);
+                    return result;
+                }
+
+                ReactionEmote.TryAdd(guild.Id, "⭐");
+                return new Emoji("⭐");
+            }
         }
     }
 }
