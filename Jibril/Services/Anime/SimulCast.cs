@@ -31,18 +31,18 @@ namespace Hanekawa.Services.Anime
             return Task.CompletedTask;
         }
 
-        private Task AnimeAiredAsync(IReadOnlyCollection<AnimeData> collection)
+        private Task AnimeAiredAsync(AnimeData data)
         {
             var _ = Task.Run(async () =>
             {
+                Console.WriteLine("Anime air announced");
                 using (var db = new DbService())
                 {
-                    var data = collection.FirstOrDefault();
-                    var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync();
+                    var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
                     foreach (var x in premiumList)
                     {
-                        await PostAsync(x, data);
-                        await Task.Delay(5000);
+                        await PostAsync(x, data).ConfigureAwait(false);
+                        await Task.Delay(5000).ConfigureAwait(false);
                     }
                 }
             });
@@ -52,7 +52,9 @@ namespace Hanekawa.Services.Anime
         private async Task PostAsync(GuildConfig cfg, AnimeData data)
         {
             if (!cfg.AnimeAirChannel.HasValue) return;
-            await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.AnimeAirChannel.Value).SendMessageAsync(null, false, BuildEmbed(data).Build());
+            var guild = _client.GetGuild(cfg.GuildId);
+            Console.WriteLine($"Posting to {guild.Name}");
+            await guild.GetTextChannel(cfg.AnimeAirChannel.Value).SendMessageAsync(null, false, BuildEmbed(data).Build());
         }
 
         private static EmbedBuilder BuildEmbed(AnimeData data)

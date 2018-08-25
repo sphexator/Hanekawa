@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hanekawa.GraphQL\Hanekawa.GraphQL.csproj" />
-    <ProjectReference Include="..\Hanekawa.Rest\Hanekawa.Rest.csproj" />
   </ItemGroup>
 
 </Project>

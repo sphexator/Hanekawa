@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel.Syndication;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Hanekawa.AnimeSimulCast.Entity;
@@ -12,90 +13,64 @@ namespace Hanekawa.AnimeSimulCast
 {
     public class AnimeSimulCastClient
     {
-        public event AsyncEvent<IReadOnlyCollection<AnimeData>> AnimeAired;
-        private List<SyndicationItem> _poll = new List<SyndicationItem>();
+        private SyndicationItem LastItem;
 
         public AnimeSimulCastClient()
         {
             Initialize();
         }
 
+        public event AsyncEvent<AnimeData> AnimeAired;
+
         public Task StartAsync()
         {
-            _ = MainAsync();
+            _ = MainAsync(new CancellationToken());
             return Task.CompletedTask;
         }
 
         private void Initialize()
         {
             var reader = XmlReader.Create(Constants.RssFeed);
-            var feed = SyndicationFeed.Load(reader);
-            _poll.AddRange(feed.Items);
+            var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
+            LastItem = feed;
         }
 
-        private async Task MainAsync()
+        private async Task MainAsync(CancellationToken token)
         {
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    var reader = XmlReader.Create(Constants.RssFeed);
-                    var feed = SyndicationFeed.Load(reader);
-                    //var result = _poll.Except(feed.Items).ToList();
-                    var result = feed.Items.Intersect(_poll).ToList();
+                    var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
 
-                    if (result.Count != 0)
+                    if (feed != LastItem)
                     {
-                        UpdatePoll(feed.Items);
-                        var collection = ParseToCollection(result);
-                        _ = AnimeAired(collection);
+                        UpdatePoll(feed);
+                        _ = AnimeAired(ToReturnType(feed));
                     }
-                    
-                    //AnimeAired(ParseToCollection(feed.Items.FirstOrDefault()));
+
                     await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 }
                 catch
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(15)).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
                 }
             }
         }
 
-        private static IReadOnlyCollection<AnimeData> ParseToCollection(
-            IEnumerable<SyndicationItem> collection)
+        private static AnimeData ToReturnType(SyndicationItem collection)
         {
-            var result = collection.Select(x => new AnimeData
+            var data = new AnimeData
             {
-                Title = x.Title.Text.Filter(),
-                Time = x.PublishDate,
-                Episode = x.Title.Text.GetEpisode(),
-                Season = x.Title.Text.GetSeason(),
-                Url = x.Links.FirstOrDefault().Uri.AbsoluteUri
-            }).ToList();
-
-            return result.AsReadOnly();
-        }
-
-        private static IReadOnlyCollection<AnimeData> ParseToCollection(SyndicationItem collection)
-        {
-            var result = new List<AnimeData>
-            {
-                new AnimeData
-                {
-                    Title = collection.Title.Text.Filter(),
-                    Time = collection.PublishDate,
-                    Episode = collection.Title.Text.GetEpisode(),
-                    Season = collection.Title.Text.GetSeason(),
-                    Url = collection.Links.FirstOrDefault().Uri.AbsoluteUri
-                }
+                Title = collection.Title.Text.Filter(),
+                Time = collection.PublishDate,
+                Episode = collection.Title.Text.GetEpisode(),
+                Season = collection.Title.Text.GetSeason(),
+                Url = collection.Links.FirstOrDefault().Uri.AbsoluteUri
             };
-            return result.AsReadOnly();
+            return data;
         }
 
-        private void UpdatePoll(IEnumerable<SyndicationItem> collection)
-        {
-            _poll.Clear();
-            _poll.AddRange(collection);
-        }
+        private void UpdatePoll(SyndicationItem item) => LastItem = item;
     }
 }
