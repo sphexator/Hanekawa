@@ -1,14 +1,14 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Suggestion
 {
@@ -46,10 +46,7 @@ namespace Hanekawa.Modules.Suggestion
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
-                foreach (var x in GetEmotes(cfg))
-                {
-                    await msg.AddReactionAsync(x);
-                }
+                foreach (var x in GetEmotes(cfg)) await msg.AddReactionAsync(x);
             }
         }
 
@@ -175,6 +172,32 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
+        {
+            var result = new List<IEmote>();
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yes))
+            {
+                result.Add(yes);
+            }
+            else
+            {
+                Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes);
+                result.Add(defaultyes);
+            }
+
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no))
+            {
+                result.Add(no);
+            }
+            else
+            {
+                Emote.TryParse("<:2no:403870492206825472>", out var defaultno);
+                result.Add(defaultno);
+            }
+
+            return result;
+        }
+
         [Group("suggestion")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
@@ -260,25 +283,6 @@ namespace Hanekawa.Modules.Suggestion
                     return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
                 }
             }
-        }
-
-        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
-        {
-            var result = new List<IEmote>();
-            if(Emote.TryParse(cfg.SuggestionEmoteYes, out var yes)) result.Add(yes);
-            else
-            {
-                Emote.TryParse("<:1yes:403870491749777411>", out var Defaultyes);
-                result.Add(Defaultyes);
-            }
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no)) result.Add(no);
-            else
-            {
-                Emote.TryParse("<:2no:403870492206825472>", out var Defaultno);
-                result.Add(Defaultno);
-            }
-
-            return result;
         }
     }
 }
