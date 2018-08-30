@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.Processing.Transforms;
 using EventHandler = Hanekawa.Services.INC.Events.EventHandler;
 using Image = SixLabors.ImageSharp.Image;
 

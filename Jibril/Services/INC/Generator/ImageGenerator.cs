@@ -9,6 +9,10 @@ using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing.Filters;
+using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Hanekawa.Services.INC.Generator
 {

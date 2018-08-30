@@ -8,6 +8,9 @@ using SixLabors.Primitives;
 using SixLabors.Shapes;
 using System;
 using System.Numerics;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Hanekawa.Extensions
 {

@@ -17,6 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Games.ShipGame

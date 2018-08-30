@@ -19,6 +19,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
