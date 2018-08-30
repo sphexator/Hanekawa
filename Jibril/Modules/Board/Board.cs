@@ -25,7 +25,7 @@ namespace Hanekawa.Modules.Board
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
         [RequiredChannel]
-        public async Task BoardStats()
+        public async Task BoardStatsAsync()
         {
             using (var db = new DbService())
             {
@@ -44,6 +44,7 @@ namespace Hanekawa.Modules.Board
                     Author = author,
                     Color = Color.DarkPurple
                 };
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 
@@ -51,7 +52,7 @@ namespace Hanekawa.Modules.Board
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
         [RequiredChannel]
-        public async Task BoardStats(IGuildUser user)
+        public async Task BoardStatsAsync(IGuildUser user)
         {
             using (var db = new DbService())
             {
@@ -87,7 +88,7 @@ namespace Hanekawa.Modules.Board
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Sets a custom emote to be used toward the board")]
-        public async Task BoardEmote(Emote emote)
+        public async Task BoardEmoteAsync(Emote emote)
         {
             using (var db = new DbService())
             {

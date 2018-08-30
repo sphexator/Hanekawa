@@ -66,13 +66,13 @@ namespace Hanekawa.Services.Loot
 
         private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
         {
-            if (!msg.HasValue) return Task.CompletedTask;
-            if (rct.User.Value.IsBot) return Task.CompletedTask;
-            if (rct.Emote.Name != "realsip") return Task.CompletedTask;
-            if (!_regularLoot.Contains(rct.MessageId) &&
-                !_specialLoot.Contains(rct.MessageId)) return Task.CompletedTask;
             var _ = Task.Run(async () =>
             {
+                if (!msg.HasValue) return;
+                if (rct.User.Value.IsBot) return;
+                if (rct.Emote.Name != "realsip") return;
+                if (!_regularLoot.Contains(rct.MessageId) &&
+                    !_specialLoot.Contains(rct.MessageId)) return;
                 using (var db = new DbService())
                 {
                     var userdata = await db.GetOrCreateUserData(rct.User.Value as SocketGuildUser);
@@ -130,7 +130,7 @@ namespace Hanekawa.Services.Loot
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
                 {
-                    if (!CheckGuildCooldown((SocketTextChannel) msg.Channel)) return;
+                    if (!CheckGuildCooldown((SocketTextChannel)msg.Channel)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
                     var emotes = ReturnEmotes().ToList();
@@ -143,7 +143,7 @@ namespace Hanekawa.Services.Loot
             });
             return Task.CompletedTask;
         }
-        
+
         public async Task AddLootChannelAsync(SocketTextChannel ch)
         {
             await AddToDatabaseAsync(ch.Guild.Id, ch.Id);

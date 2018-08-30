@@ -88,7 +88,7 @@ namespace Hanekawa
             services.GetRequiredService<BoardService>();
             services.GetRequiredService<WarnService>();
             services.GetRequiredService<NudeScoreService>();
-            services.GetRequiredService<HungerGames>();
+            //services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
             //services.GetRequiredService<MvpService>();
             services.GetRequiredService<LootCrates>();
