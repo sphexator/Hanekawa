@@ -12,11 +12,148 @@ using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Account
 {
     public class Economy : InteractiveBase
     {
+        [Group("currency")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        public class AdminEconomy : InteractiveBase
+        {
+            [Command("regular name", RunMode = RunMode.Async)]
+            [Alias("rn")]
+            public async Task SetCurrencyNameAsync([Remainder] string name = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (name.IsNullOrWhiteSpace())
+                    {
+                        cfg.CurrencyName = "Credit";
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Set regular back to default `Credit`", Color.Green.RawValue).Build());
+                        return;
+                    }
+                    cfg.CurrencyName = name;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set regular currency name to {name}", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("regular symbol", RunMode = RunMode.Async)]
+            [Alias("rs")]
+            [Priority(1)]
+            public async Task SetCurrencySignAsync(Emote emote)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    cfg.EmoteCurrency = true;
+                    cfg.CurrencySign = ParseEmoteString(emote);
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set currency sign to {emote}", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("regular symbol", RunMode = RunMode.Async)]
+            [Alias("rs")]
+            public async Task SetCurrencySignAsync([Remainder] string name = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (name.IsNullOrWhiteSpace())
+                    {
+                        cfg.EmoteCurrency = false;
+                        cfg.CurrencyName = "$";
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Set currency sign back to default `$`", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.EmoteCurrency = false;
+                    cfg.CurrencySign = name;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set regular currency sign to {name}", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("special name", RunMode = RunMode.Async)]
+            [Alias("sn")]
+            public async Task SetSpecialCurrencyNameAsync([Remainder] string name = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (name.IsNullOrWhiteSpace())
+                    {
+                        cfg.SpecialCurrencyName = "Special Credit";
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Set regular back to default `Special Credit`", Color.Green.RawValue).Build());
+                        return;
+                    }
+                    cfg.SpecialCurrencyName = name;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set regular currency name to {name}", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("special symbol", RunMode = RunMode.Async)]
+            [Alias("ss")]
+            [Priority(1)]
+            public async Task SetSpecialCurrencySignAsync(Emote emote)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    cfg.SpecialEmoteCurrency = true;
+                    cfg.SpecialCurrencySign = ParseEmoteString(emote);
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set currency sign to {emote}", Color.Green.RawValue).Build());
+                }
+            }
+
+            [Command("special symbol", RunMode = RunMode.Async)]
+            [Alias("ss")]
+            public async Task SetSpecialCurrencySignAsync([Remainder] string name = null)
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (name.IsNullOrWhiteSpace())
+                    {
+                        cfg.SpecialEmoteCurrency = false;
+                        cfg.SpecialCurrencySign = "$";
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Set currency sign back to default `$`", Color.Green.RawValue).Build());
+                        return;
+                    }
+
+                    cfg.SpecialEmoteCurrency = false;
+                    cfg.SpecialCurrencySign = name;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set regular currency sign to {name}", Color.Green.RawValue).Build());
+                }
+            }
+
+            private static string ParseEmoteString(Emote emote)
+            {
+                return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
+            }
+        }
         [Command("wallet")]
         [Alias("balance", "money")]
         [Summary("Display how much credit you got")]
