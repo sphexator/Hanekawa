@@ -48,6 +48,80 @@ namespace Hanekawa.Extensions
             return await context.Accounts.FindAsync(user.Id, user.Guild.Id);
         }
 
+        public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user)
+        {
+            var userdata = await context.Accounts.FindAsync(user.Id, guild.Id);
+            if (userdata != null) return userdata;
+            var data = new Account
+            {
+                UserId = user.Id,
+                GuildId = guild.Id,
+                Active = true,
+                Class = 1,
+                Credit = 0,
+                CreditSpecial = 0,
+                CustomRoleId = null,
+                DailyCredit = DateTime.UtcNow,
+                GameKillAmount = 0,
+                MvpCounter = 0,
+                RepCooldown = DateTime.UtcNow,
+                Exp = 0,
+                VoiceExpTime = DateTime.UtcNow,
+                TotalExp = 0,
+                MvpIgnore = false,
+                MvpImmunity = false,
+                Level = 1,
+                Sessions = 0,
+                StatVoiceTime = TimeSpan.Zero,
+                ChannelVoiceTime = DateTime.UtcNow,
+                StatMessages = 0,
+                Rep = 0,
+                ProfilePic = null,
+                StarGiven = 0,
+                StarReceived = 0
+            };
+            await context.Accounts.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.Accounts.FindAsync(user.Id, guild.Id);
+        }
+
+        public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user)
+        {
+            var userdata = await context.Accounts.FindAsync(user, guild);
+            if (userdata != null) return userdata;
+            var data = new Account
+            {
+                UserId = user,
+                GuildId = guild,
+                Active = true,
+                Class = 1,
+                Credit = 0,
+                CreditSpecial = 0,
+                CustomRoleId = null,
+                DailyCredit = DateTime.UtcNow,
+                GameKillAmount = 0,
+                MvpCounter = 0,
+                RepCooldown = DateTime.UtcNow,
+                Exp = 0,
+                VoiceExpTime = DateTime.UtcNow,
+                TotalExp = 0,
+                MvpIgnore = false,
+                MvpImmunity = false,
+                Level = 1,
+                Sessions = 0,
+                StatVoiceTime = TimeSpan.Zero,
+                ChannelVoiceTime = DateTime.UtcNow,
+                StatMessages = 0,
+                Rep = 0,
+                ProfilePic = null,
+                StarGiven = 0,
+                StarReceived = 0
+            };
+            await context.Accounts.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.Accounts.FindAsync(user, guild);
+        }
+
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user)
         {
             var userdata = await context.AccountGlobals.FindAsync(user.Id);
@@ -106,6 +180,22 @@ namespace Hanekawa.Extensions
             await context.ClubInfos.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
+        }
+
+        public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
+        {
+            var check = await context.Boards.FindAsync(guild.Id, msg.Id);
+            if (check != null) return null;
+            var data = new Board
+            {
+                GuildId = guild.Id,
+                MessageId = msg.Id,
+                StarAmount = 0,
+                Boarded = null
+            };
+            await context.Boards.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.Boards.FindAsync(guild.Id, msg.Id);
         }
 
         public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild,
