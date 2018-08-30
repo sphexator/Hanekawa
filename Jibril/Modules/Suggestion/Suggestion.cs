@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Suggestion
 {
@@ -47,7 +46,7 @@ namespace Hanekawa.Modules.Suggestion
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
-                foreach (var x in GetEmotes(cfg, Context.Guild))
+                foreach (var x in GetEmotes(cfg))
                 {
                     await msg.AddReactionAsync(x);
                 }
@@ -263,7 +262,7 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
-        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg, SocketGuild guild)
+        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
         {
             var result = new List<IEmote>();
             if(Emote.TryParse(cfg.SuggestionEmoteYes, out var yes)) result.Add(yes);
