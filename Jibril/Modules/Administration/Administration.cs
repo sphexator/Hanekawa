@@ -214,6 +214,24 @@ namespace Hanekawa.Modules.Administration
                 TimeSpan.FromSeconds(15));
         }
 
+        [Command("mute", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Priority(2)]
+        public async Task MuteAsync(SocketGuildUser user, TimeSpan? timer = null, [Remainder] string reason = null)
+        {
+            await Context.Message.DeleteAsync();
+            if (!timer.HasValue) timer = TimeSpan.FromHours(12);
+            if (timer.Value > TimeSpan.FromDays(1)) timer = TimeSpan.FromDays(1);
+            if (timer.Value < TimeSpan.FromMinutes(10)) timer = TimeSpan.FromMinutes(10);
+            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, timer.Value);
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, timer.Value);
+            await Task.WhenAll(mute, warn);
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                TimeSpan.FromSeconds(15));
+        }
+
         [Command("unmute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
