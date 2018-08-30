@@ -39,6 +39,9 @@ namespace Hanekawa.Services.Entities.Tables
         public bool EmoteCurrency { get; set; }
         public string CurrencyName { get; set; }
         public string CurrencySign { get; set; }
+        public bool SpecialEmoteCurrency { get; set; }
+        public string SpecialCurrencyName { get; set; }
+        public string SpecialCurrencySign { get; set; }
 
         // Admin settings
         public ulong? MuteRole { get; set; }

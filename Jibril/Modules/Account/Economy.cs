@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -8,6 +9,7 @@ using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +28,7 @@ namespace Hanekawa.Modules.Account
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user);
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = user.GetAvatar(),
@@ -35,8 +38,8 @@ namespace Hanekawa.Modules.Account
                 {
                     Author = author,
                     Color = Color.Purple,
-                    Description = $"Credit: ${userdata.Credit}\n" +
-                                  $"Event Credit: ${userdata.CreditSpecial}"
+                    Description = $"{GetRegularCurrency(userdata, cfg)}\n" +
+                                  $"{GetSpecialCurrency(userdata, cfg)}"
                 };
                 await ReplyAsync(null, false, embed.Build());
             }
@@ -125,6 +128,7 @@ namespace Hanekawa.Modules.Account
                     Color = Color.Purple,
                     Author = author
                 };
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.Credit).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
@@ -133,7 +137,7 @@ namespace Hanekawa.Modules.Account
                     {
                         IsInline = false,
                         Name = $"Rank: {rank}",
-                        Value = $"<@{x.UserId}> - Credit:{x.Credit}"
+                        Value = $"<@{x.UserId}> - {cfg.CurrencyName}:{x.Credit}"
                     };
                     embed.AddField(field);
                     rank++;
@@ -145,15 +149,62 @@ namespace Hanekawa.Modules.Account
         [Command("reward", RunMode = RunMode.Async)]
         [Alias("award")]
         [Summary("Rewards special credit to users (does not remove from yourself)")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RewardCreditAsync(uint amount, IGuildUser user)
         {
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 userdata.CreditSpecial = userdata.CreditSpecial + amount;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded ${amount} special Credit to {user.Mention}", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Rewarded {SpecialCurrencyResponse(cfg)}{amount} {cfg.SpecialCurrencyName} to {user.Mention}", Color.Green.RawValue).Build());
+            }
+        }
+
+        private static string SpecialCurrencyResponse(GuildConfig cfg)
+        {
+            return cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
+        }
+
+        private static string GetRegularCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return cfg.EmoteCurrency ? RegularEmoteCurrency(userdata, cfg) : RegularTextCurrency(userdata, cfg);
+        }
+
+        private static string RegularEmoteCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return $"{cfg.CurrencyName}: {CurrencySignEmote(cfg.CurrencySign)}{userdata.Credit}";
+        }
+
+        private static string RegularTextCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return $"{cfg.CurrencyName}: {cfg.CurrencySign}{userdata.Credit}";
+        }
+
+        private static string GetSpecialCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return cfg.SpecialEmoteCurrency ? SpecialEmoteCurrency(userdata, cfg) : SpecialTextCurrency(userdata, cfg);
+        }
+
+        private static string SpecialEmoteCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return $"{cfg.CurrencyName}: {CurrencySignEmote(cfg.CurrencySign)}{userdata.CreditSpecial}";
+        }
+
+        private static string SpecialTextCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        {
+            return $"{cfg.CurrencyName}: {cfg.CurrencySign}{userdata.CreditSpecial}";
+        }
+
+        private static IEmote CurrencySignEmote(string emoteString)
+        {
+            if (Emote.TryParse(emoteString, out var emote)) return emote;
+            else
+            {
+                Emote.TryParse("<a:wawa:475462796214009856>", out var defaultEmote);
+                return defaultEmote;
             }
         }
     }

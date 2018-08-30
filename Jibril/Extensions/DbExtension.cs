@@ -268,15 +268,21 @@ namespace Hanekawa.Extensions
                 MusicChannel = null,
                 BoardEmote = null,
                 EventSchedulerChannel = null,
-                CurrencyName = "Special Credit",
-                CurrencySign = "$",
-                EmoteCurrency = false,
                 FilterAllInv = true,
                 FilterMsgLength = null,
                 FilterUrls = false,
                 LogWarn = null,
                 WelcomeDelete = null,
-                Premium = false
+                Premium = false,
+                SpecialCurrencySign = "$",
+                SpecialCurrencyName = "Special Credit",
+                SpecialEmoteCurrency = false,
+                CurrencyName = "Special Credit",
+                CurrencySign = "$",
+                EmoteCurrency = false,
+                AnimeAirChannel = null,
+                SuggestionEmoteYes = null,
+                SuggestionEmoteNo = null
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
