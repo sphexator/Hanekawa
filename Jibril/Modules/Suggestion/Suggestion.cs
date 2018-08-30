@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -7,6 +9,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
+using Hanekawa.Services.Entities.Tables;
 
 namespace Hanekawa.Modules.Suggestion
 {
@@ -44,10 +47,10 @@ namespace Hanekawa.Modules.Suggestion
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
-                Emote.TryParse("<:1yes:403870491749777411>", out var yes);
-                Emote.TryParse("<:2no:403870492206825472>", out var no);
-                await msg.AddReactionAsync(yes);
-                await msg.AddReactionAsync(no);
+                foreach (var x in GetEmotes(cfg, Context.Guild))
+                {
+                    await msg.AddReactionAsync(x);
+                }
             }
         }
 
@@ -193,14 +196,14 @@ namespace Hanekawa.Modules.Suggestion
                             cfg.SuggestionChannel = null;
                             await db.SaveChangesAsync();
                             await ReplyAsync(null, false,
-                                new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
+                                new EmbedBuilder().Reply("Disabled suggestion channel", Color.Green.RawValue).Build());
                             return;
                         }
 
                         cfg.SuggestionChannel = channel.Id;
                         await db.SaveChangesAsync();
                         await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
+                            new EmbedBuilder().Reply($"All suggestions will now be sent to {channel.Mention} !",
                                 Color.Green.RawValue).Build());
                     }
                 }
@@ -258,6 +261,25 @@ namespace Hanekawa.Modules.Suggestion
                     return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
                 }
             }
+        }
+
+        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg, SocketGuild guild)
+        {
+            var result = new List<IEmote>();
+            if(Emote.TryParse(cfg.SuggestionEmoteYes, out var yes)) result.Add(yes);
+            else
+            {
+                Emote.TryParse("<:1yes:403870491749777411>", out var Defaultyes);
+                result.Add(Defaultyes);
+            }
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no)) result.Add(no);
+            else
+            {
+                Emote.TryParse("<:2no:403870492206825472>", out var Defaultno);
+                result.Add(Defaultno);
+            }
+
+            return result;
         }
     }
 }
