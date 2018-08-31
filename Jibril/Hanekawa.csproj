@@ -37,6 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20180831131924_customemoteadditions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
     <PackageReference Include="Discord.Net" Version="2.0.0-beta2-00984" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-00984" />

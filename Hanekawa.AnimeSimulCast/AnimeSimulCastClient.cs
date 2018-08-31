@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Hanekawa.AnimeSimulCast.Entity;
+using Hanekawa.AnimeSimulCast.Events;
+using Hanekawa.AnimeSimulCast.Extensions;
+using System;
 using System.Linq;
 using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Hanekawa.AnimeSimulCast.Entity;
-using Hanekawa.AnimeSimulCast.Events;
-using Hanekawa.AnimeSimulCast.Extensions;
 
 namespace Hanekawa.AnimeSimulCast
 {
@@ -43,7 +42,7 @@ namespace Hanekawa.AnimeSimulCast
                 {
                     var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
 
-                    if (feed != LastItem)
+                    if (feed?.Id != LastItem.Id)
                     {
                         UpdatePoll(feed);
                         _ = AnimeAired(ToReturnType(feed));
