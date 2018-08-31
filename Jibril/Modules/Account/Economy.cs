@@ -154,6 +154,7 @@ namespace Hanekawa.Modules.Account
                 return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
             }
         }
+
         [Command("wallet")]
         [Alias("balance", "money")]
         [Summary("Display how much credit you got")]
