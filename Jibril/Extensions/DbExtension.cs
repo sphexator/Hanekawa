@@ -191,7 +191,8 @@ namespace Hanekawa.Extensions
                 GuildId = guild.Id,
                 MessageId = msg.Id,
                 StarAmount = 0,
-                Boarded = null
+                Boarded = null,
+                UserId = msg.Author.Id
             };
             await context.Boards.AddAsync(data);
             await context.SaveChangesAsync();

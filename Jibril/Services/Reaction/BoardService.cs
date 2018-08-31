@@ -47,39 +47,46 @@ namespace Hanekawa.Services.Reaction
         {
             var _ = Task.Run(async () =>
             {
-                if (!(channel is ITextChannel ch)) return;
-                if (ch.IsNsfw) return;
-                var message = await msges.GetOrDownloadAsync();
-                if (message.Author.IsBot) return;
-                if (message.Author.Id == reaction.UserId) return;
-
-                var emote = GetEmote((channel as SocketTextChannel)?.Guild);
-
-                if (!Equals(reaction.Emote, emote)) return;
-                using (var db = new DbService())
+                try
                 {
-                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                    stat.StarAmount = stat.StarAmount + 1;
+                    if (!(channel is ITextChannel ch)) return;
+                    if (ch.IsNsfw) return;
+                    var message = await msges.GetOrDownloadAsync();
+                    if (message.Author.IsBot) return;
+                    if (message.Author.Id == reaction.UserId) return;
 
-                    var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
-                    var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
-                    giver.StarGiven = giver.StarGiven + 1;
-                    reciever.StarReceived = reciever.StarReceived + 1;
+                    var emote = GetEmote((channel as SocketTextChannel)?.Guild);
 
-                    var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
-                    var msg = board.GetOrAdd(message.Id, 0);
-                    if (msg + 1 == 4 && !stat.Boarded.HasValue)
+                    if (!Equals(reaction.Emote, emote)) return;
+                    using (var db = new DbService())
                     {
-                        board.TryRemove(reaction.MessageId, out var value);
-                        stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
-                        await db.SaveChangesAsync();
-                        await SendBoardAsync(db, (ITextChannel) reaction.Channel, reaction.MessageId);
+                        var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                        stat.StarAmount = stat.StarAmount + 1;
+
+                        var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
+                        var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
+                        giver.StarGiven = giver.StarGiven + 1;
+                        reciever.StarReceived = reciever.StarReceived + 1;
+
+                        var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
+                        var msg = board.GetOrAdd(message.Id, 0);
+                        if (msg + 1 == 4 && !stat.Boarded.HasValue)
+                        {
+                            board.TryRemove(reaction.MessageId, out var value);
+                            stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
+                            await db.SaveChangesAsync();
+                            await SendBoardAsync(db, (ITextChannel)reaction.Channel, reaction.MessageId);
+                        }
+                        else
+                        {
+                            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
+                            await db.SaveChangesAsync();
+                        }
                     }
-                    else
-                    {
-                        board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
-                        await db.SaveChangesAsync();
-                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             });
             return Task.CompletedTask;
@@ -90,41 +97,48 @@ namespace Hanekawa.Services.Reaction
         {
             var _ = Task.Run(async () =>
             {
-                if (!(channel is ITextChannel ch)) return;
-                if (ch.IsNsfw) return;
-                var message = await msges.GetOrDownloadAsync();
-                if (message.Author.IsBot) return;
-                if (message.Author.Id == reaction.UserId) return;
-
-                var emote = GetEmote((channel as SocketTextChannel)?.Guild);
-
-                if (!Equals(reaction.Emote, emote)) return;
-
-                using (var db = new DbService())
+                try
                 {
-                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                    if ((int) stat.StarAmount - 1 < 0)
-                        stat.StarAmount = 0;
-                    else stat.StarAmount = stat.StarAmount - 1;
+                    if (!(channel is ITextChannel ch)) return;
+                    if (ch.IsNsfw) return;
+                    var message = await msges.GetOrDownloadAsync();
+                    if (message.Author.IsBot) return;
+                    if (message.Author.Id == reaction.UserId) return;
 
-                    var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
-                    var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
+                    var emote = GetEmote((channel as SocketTextChannel)?.Guild);
 
-                    if ((int) giver.StarGiven - 1 < 0)
-                        giver.StarGiven = 0;
-                    else giver.StarGiven = giver.StarGiven - 1;
+                    if (!Equals(reaction.Emote, emote)) return;
 
-                    if ((int) reciever.StarReceived - 1 < 0)
-                        reciever.StarReceived = 0;
-                    else reciever.StarReceived = reciever.StarReceived - 1;
-                    await db.SaveChangesAsync();
-
-                    var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
-                    if (board.TryGetValue(reaction.MessageId, out var msg))
+                    using (var db = new DbService())
                     {
-                        if ((int) msg - 1 < 0) return;
-                        board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
+                        var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                        if ((int)stat.StarAmount - 1 < 0)
+                            stat.StarAmount = 0;
+                        else stat.StarAmount = stat.StarAmount - 1;
+
+                        var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
+                        var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
+
+                        if ((int)giver.StarGiven - 1 < 0)
+                            giver.StarGiven = 0;
+                        else giver.StarGiven = giver.StarGiven - 1;
+
+                        if ((int)reciever.StarReceived - 1 < 0)
+                            reciever.StarReceived = 0;
+                        else reciever.StarReceived = reciever.StarReceived - 1;
+                        await db.SaveChangesAsync();
+
+                        var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
+                        if (board.TryGetValue(reaction.MessageId, out var msg))
+                        {
+                            if ((int)msg - 1 < 0) return;
+                            board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
             });
 

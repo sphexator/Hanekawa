@@ -33,13 +33,10 @@ namespace Hanekawa.Modules.Board
                 var amount = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.StarAmount)
                     .Take(3).ToListAsync();
-                var topGive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.StarGiven).Take(3).ToListAsync();
                 var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.StarReceived).Take(3).ToListAsync();
 
-                string topG = null;
                 string topR = null;
                 string topM = null;
-                var topGr = 1;
                 var topRr = 1;
                 var topMr = 1;
                 uint stars = 0;
@@ -51,19 +48,13 @@ namespace Hanekawa.Modules.Board
 
                 foreach (var x in topRecieve)
                 {
-                    topR += $"{topRr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
+                    topR += $"{topRr}: {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
                     topRr++;
-                }
-
-                foreach (var x in topGive)
-                {
-                    topG += $"{topGr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
-                    topGr++;
                 }
 
                 foreach (var x in topStars)
                 {
-                    topM += $"{topMr} > {x.MessageId} ({x.StarAmount} {emote})\n";
+                    topM += $"{topMr}: {x.MessageId} ({x.StarAmount} {emote})\n";
                     topMr++;
                 }
 
@@ -80,7 +71,6 @@ namespace Hanekawa.Modules.Board
                 };
                 embed.AddField($"Top {emote} Posts", $"{topM ?? "N/A"}");
                 embed.AddField($"Top {emote} Receivers", $"{topR ?? "N/A"}");
-                embed.AddField($"Top {emote} Givers", $"{topG ?? "N/A"}");
                 await ReplyAsync(null, false, embed.Build());
             }
         }
