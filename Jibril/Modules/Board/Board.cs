@@ -51,19 +51,19 @@ namespace Hanekawa.Modules.Board
 
                 foreach (var x in topRecieve)
                 {
-                    topR += $"{topRr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})";
+                    topR += $"{topRr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
                     topRr++;
                 }
 
                 foreach (var x in topGive)
                 {
-                    topG += $"{topGr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})";
+                    topG += $"{topGr} > {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
                     topGr++;
                 }
 
                 foreach (var x in topStars)
                 {
-                    topM += $"{topMr} > {x.MessageId} ({x.StarAmount} {emote})";
+                    topM += $"{topMr} > {x.MessageId} ({x.StarAmount} {emote})\n";
                     topMr++;
                 }
 
@@ -78,9 +78,9 @@ namespace Hanekawa.Modules.Board
                     Color = Color.Purple,
                     Description = $"{amount.Count} messages boarded with a total of {stars} {emote} given"
                 };
-                embed.AddField($"Top {emote} Posts", topM);
-                embed.AddField($"Top {emote} Receivers", topR);
-                embed.AddField($"Top {emote} Givers", topG);
+                embed.AddField($"Top {emote} Posts", $"{topM ?? "N/A"}");
+                embed.AddField($"Top {emote} Receivers", $"{topR ?? "N/A"}");
+                embed.AddField($"Top {emote} Givers", $"{topG ?? "N/A"}");
                 await ReplyAsync(null, false, embed.Build());
             }
         }
@@ -122,7 +122,7 @@ namespace Hanekawa.Modules.Board
                 embed.AddField("Boarded Messages", $"{boardData.Count}", true);
                 embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
                 embed.AddField($"{emote} Given", $"{userData.StarGiven}", true);
-                embed.AddField($"Top {emote} Posts", topStar);
+                embed.AddField($"Top {emote} Posts", $"{topStar ?? "N/A"}");
                 await ReplyAsync(null, false, embed.Build());
             }
         }

@@ -66,8 +66,8 @@ namespace Hanekawa.Services.Reaction
                     giver.StarGiven = giver.StarGiven + 1;
                     reciever.StarReceived = reciever.StarReceived + 1;
 
-                    var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
-                    board.TryGetValue(reaction.MessageId, out var msg);
+                    var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
+                    var msg = board.GetOrAdd(message.Id, 0);
                     if (msg + 1 == 4 && !stat.Boarded.HasValue)
                     {
                         board.TryRemove(reaction.MessageId, out var value);
@@ -78,6 +78,7 @@ namespace Hanekawa.Services.Reaction
                     else
                     {
                         board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg + 1);
+                        await db.SaveChangesAsync();
                     }
                 }
             });
@@ -118,7 +119,7 @@ namespace Hanekawa.Services.Reaction
                     else reciever.StarReceived = reciever.StarReceived - 1;
                     await db.SaveChangesAsync();
 
-                    var board = ReactionMessages.GetOrAdd(reaction.Channel.Id, new ConcurrentDictionary<ulong, uint>());
+                    var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
                     if (board.TryGetValue(reaction.MessageId, out var msg))
                     {
                         if ((int) msg - 1 < 0) return;

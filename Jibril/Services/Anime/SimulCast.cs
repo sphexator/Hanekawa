@@ -60,7 +60,7 @@ namespace Hanekawa.Services.Anime
         {
             var embed = new EmbedBuilder
             {
-                Author = new EmbedAuthorBuilder { Name = "New Episode Aired!" },
+                Author = new EmbedAuthorBuilder { Name = "New Episode Available!" },
                 Title = $"{data.Title}",
                 Url = data.Url,
                 Color = Color.Purple,
