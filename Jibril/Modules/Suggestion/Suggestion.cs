@@ -280,7 +280,7 @@ namespace Hanekawa.Modules.Suggestion
 
                 private static string ParseEmoteString(Emote emote)
                 {
-                    return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
+                    return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
                 }
             }
         }

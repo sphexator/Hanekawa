@@ -3,14 +3,16 @@ using System;
 using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hanekawa.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20180831115838_customCurrencyBoardSuggestion")]
+    partial class customCurrencyBoardSuggestion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,17 +282,11 @@ namespace Hanekawa.Migrations
 
                     b.Property<string>("BoardEmote");
 
-                    b.Property<string>("CurrencyName")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("Credit");
+                    b.Property<string>("CurrencyName");
 
-                    b.Property<string>("CurrencySign")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("$");
+                    b.Property<string>("CurrencySign");
 
-                    b.Property<bool>("EmoteCurrency")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
+                    b.Property<bool>("EmoteCurrency");
 
                     b.Property<ulong?>("EventChannel");
 
@@ -334,29 +330,19 @@ namespace Hanekawa.Migrations
 
                     b.Property<ulong?>("ReportChannel");
 
-                    b.Property<string>("SpecialCurrencyName")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("Special Credit");
+                    b.Property<string>("SpecialCurrencyName");
 
-                    b.Property<string>("SpecialCurrencySign")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("$");
+                    b.Property<string>("SpecialCurrencySign");
 
-                    b.Property<bool>("SpecialEmoteCurrency")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
+                    b.Property<bool>("SpecialEmoteCurrency");
 
                     b.Property<bool>("StackLvlRoles");
 
                     b.Property<ulong?>("SuggestionChannel");
 
-                    b.Property<string>("SuggestionEmoteNo")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("<:2no:403870492206825472>");
+                    b.Property<string>("SuggestionEmoteNo");
 
-                    b.Property<string>("SuggestionEmoteYes")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue("<:1yes:403870491749777411>");
+                    b.Property<string>("SuggestionEmoteYes");
 
                     b.Property<bool>("WelcomeBanner");
 

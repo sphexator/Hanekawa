@@ -150,6 +150,14 @@ namespace Hanekawa.Services.Entities
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
+                x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
+                x.Property(e => e.CurrencyName).HasDefaultValue("Credit");
+                x.Property(e => e.CurrencySign).HasDefaultValue("$");
+                x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
+                x.Property(e => e.SpecialCurrencyName).HasDefaultValue("Special Credit");
+                x.Property(e => e.SpecialCurrencySign).HasDefaultValue("$");
+                x.Property(e => e.SuggestionEmoteYes).HasDefaultValue("<:1yes:403870491749777411>");
+                x.Property(e => e.SuggestionEmoteNo).HasDefaultValue("<:2no:403870492206825472>");
             });
             modelBuilder.Entity<GuildInfoLink>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
