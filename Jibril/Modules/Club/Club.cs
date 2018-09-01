@@ -16,6 +16,7 @@ namespace Hanekawa.Modules.Club
 {
     [Group("club")]
     [RequireContext(ContextType.Guild)]
+    [RequireOwner]
     public class Club : InteractiveBase
     {
         private readonly ClubService _clubService;
