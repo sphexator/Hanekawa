@@ -42,22 +42,38 @@ namespace Hanekawa.Modules.Audio
                 }
 
                 await ReplyAsync(
-                    $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}, do you accept? (y/n)");
-                var response = await NextMessageAsync(new EnsureFromUserCriterion(mvUser.Id), TimeSpan.FromSeconds(60));
-                if (response.Content.ToLower() != "y")
+                    $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState)Context.User).VoiceChannel.Name}, do you accept? (y/n)");
+                var status = true;
+                while (status)
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply(
-                                $"{mvUser.Mention} didn't accept or respond in time.",
-                                Color.Red.RawValue).Build());
-                    return;
+                    try
+                    {
+                        var response = await NextMessageAsync(new EnsureFromUserCriterion(mvUser.Id),
+                            TimeSpan.FromSeconds(60));
+                        if (response.Content.ToLower() != "y")
+                        {
+                            status = false;
+                        }
+                        else if (response.Content.ToLower() == "n")
+                        {
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder()
+                                    .Reply(
+                                        $"{mvUser.Mention} didn't accept or respond in time.",
+                                        Color.Red.RawValue).Build());
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Move request timed out", Color.Red.RawValue).Build());
+                    }
                 }
-
-                await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState) Context.User).VoiceChannel.Id);
+                await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState)Context.User).VoiceChannel.Id);
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
-                        .Reply($"Moved {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}",
+                        .Reply($"Moved {mvUser.Mention} to {((IVoiceState)Context.User).VoiceChannel.Name}",
                             Color.Green.RawValue).Build());
             }
         }
