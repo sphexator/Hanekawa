@@ -68,10 +68,10 @@ namespace Hanekawa.Modules.Game
             await ReplyAsync(msg);
             var status = true;
             while (status)
-            {
                 try
                 {
-                    var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
+                    var response =
+                        await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
                     switch (response.Content.ToLower())
                     {
                         case "y":
@@ -88,7 +88,7 @@ namespace Hanekawa.Modules.Game
                         new EmbedBuilder().Reply("Duel request timed out.", Color.Red.RawValue).Build());
                     return;
                 }
-            }
+
             await _gameService.AttackAsync(Context, user, bet);
         }
 
@@ -96,6 +96,7 @@ namespace Hanekawa.Modules.Game
         public class ShipGameClass : InteractiveBase
         {
             private readonly ShipGameService _gameService;
+
             public ShipGameClass(ShipGameService gameService)
             {
                 _gameService = gameService;
@@ -109,14 +110,14 @@ namespace Hanekawa.Modules.Game
                 using (var db = new DbService())
                 {
                     var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                    var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int)userdata.Level)
+                    var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int) userdata.Level)
                         .ToListAsync();
-                    var result = new List<string> {"Available classes\n" +
-                                                   $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"};
-                    foreach (var x in classes)
+                    var result = new List<string>
                     {
-                        result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
-                    }
+                        "Available classes\n" +
+                        $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"
+                    };
+                    foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
 
                     result.Add("Pick a class by saying the number");
                     var content = string.Join("\n", result);
@@ -135,6 +136,7 @@ namespace Hanekawa.Modules.Game
                                         .Build());
                                 return;
                             }
+
                             userdata.Class = value;
                             await db.SaveChangesAsync();
                             await ReplyAsync(null, false,
@@ -143,13 +145,16 @@ namespace Hanekawa.Modules.Game
                                     .Build());
                             return;
                         }
+
                         await ReplyAsync(null, false,
                             new EmbedBuilder().Reply($"Coundn't find a class with that ID.", Color.Red.RawValue)
                                 .Build());
                     }
                     catch
                     {
-                        await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Timed out", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(30));
+                        await ReplyAndDeleteAsync(null, false,
+                            new EmbedBuilder().Reply("Timed out", Color.Red.RawValue).Build(),
+                            TimeSpan.FromSeconds(30));
                     }
                 }
             }
@@ -163,10 +168,7 @@ namespace Hanekawa.Modules.Game
                 {
                     var classes = await db.GameClasses.ToListAsync();
                     var result = new List<string> {"Classes"};
-                    foreach (var x in classes)
-                    {
-                        result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
-                    }
+                    foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
                     var content = string.Join("\n", result);
                     await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
                 }
