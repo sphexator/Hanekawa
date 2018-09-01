@@ -66,11 +66,28 @@ namespace Hanekawa.Modules.Game
                 ? $"{user.Mention}, {Context.User.Mention} has challenged you to a duel, do you accept? (y/n)"
                 : $"{user.Mention}, {Context.User.Mention} has challenged you to a duel with ${bet} at stake, do you accept? (y/n)";
             await ReplyAsync(msg);
-            var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
-            if (response.Content.ToLower() != "y")
+            var status = true;
+            while (status)
             {
-                await ReplyAsync("Duel cancelled");
-                return;
+                try
+                {
+                    var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
+                    switch (response.Content.ToLower())
+                    {
+                        case "y":
+                            status = false;
+                            break;
+                        case "n":
+                            await ReplyAsync(null, false, new EmbedBuilder().Reply("Duel cancelled.").Build());
+                            return;
+                    }
+                }
+                catch
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Duel request timed out.", Color.Red.RawValue).Build());
+                    return;
+                }
             }
             await _gameService.AttackAsync(Context, user, bet);
         }
@@ -105,24 +122,35 @@ namespace Hanekawa.Modules.Game
                     var content = string.Join("\n", result);
                     await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
 
-                    var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-
-                    int.TryParse(response.Content, out var value);
-                    var ass = await db.GameClasses.FindAsync(value);
-                    if (ass == null)
+                    try
                     {
+                        var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                        if (int.TryParse(response.Content, out var value))
+                        {
+                            var ass = await db.GameClasses.FindAsync(value);
+                            if (ass == null)
+                            {
+                                await ReplyAsync(null, false,
+                                    new EmbedBuilder().Reply("Couldn't find a class with that ID.", Color.Red.RawValue)
+                                        .Build());
+                                return;
+                            }
+                            userdata.Class = value;
+                            await db.SaveChangesAsync();
+                            await ReplyAsync(null, false,
+                                new EmbedBuilder()
+                                    .Reply($"{Context.User.Mention} changed class to {ass.Name}", Color.Green.RawValue)
+                                    .Build());
+                            return;
+                        }
                         await ReplyAsync(null, false,
                             new EmbedBuilder().Reply($"Coundn't find a class with that ID.", Color.Red.RawValue)
                                 .Build());
-                        return;
                     }
-
-                    userdata.Class = value;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply($"{Context.User.Mention} changed class to {ass.Name}", Color.Green.RawValue)
-                            .Build());
+                    catch
+                    {
+                        await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Timed out", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(30));
+                    }
                 }
             }
 
