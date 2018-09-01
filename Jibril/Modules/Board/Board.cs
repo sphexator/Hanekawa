@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -23,7 +24,7 @@ namespace Hanekawa.Modules.Board
 
         [Command("stats")]
         [RequireContext(ContextType.Guild)]
-        [Summary("Shows board stats for specific user")]
+        [Summary("Shows board stats for server")]
         [RequiredChannel]
         public async Task BoardStatsAsync()
         {
@@ -31,10 +32,10 @@ namespace Hanekawa.Modules.Board
             {
                 var emote = _boardService.GetGuildEmote(Context.Guild);
                 var amount = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.StarAmount)
+                var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).OrderByDescending(x => x.StarAmount)
                     .Take(3).ToListAsync();
-                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.StarReceived).Take(3).ToListAsync();
-
+                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active).OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
+                
                 string topR = null;
                 string topM = null;
                 var topRr = 1;
@@ -48,8 +49,16 @@ namespace Hanekawa.Modules.Board
 
                 foreach (var x in topRecieve)
                 {
-                    topR += $"{topRr}: {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
-                    topRr++;
+                    try
+                    {
+                        topR += $"{topRr}: {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
+                        topRr++;
+                    }
+                    catch
+                    {
+                        topR += $"{topRr}: User left the server. ({x.UserId}) ({x.StarReceived} {emote})\n";
+                        topRr++;
+                    }
                 }
 
                 foreach (var x in topStars)
@@ -91,7 +100,7 @@ namespace Hanekawa.Modules.Board
                 var id = 1;
                 if (boardData.Count != 0)
                 {
-                    foreach (var x in boardData.OrderBy(x => x.StarAmount).Take(3))
+                    foreach (var x in boardData.OrderByDescending(x => x.StarAmount).Take(3))
                     {
                         topStar += $"{id} > {x.MessageId} ({emote} received {x.StarAmount}";
                         id++;

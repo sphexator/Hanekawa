@@ -185,7 +185,7 @@ namespace Hanekawa.Extensions
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id);
-            if (check != null) return null;
+            if (check != null) return check;
             var data = new Board
             {
                 GuildId = guild.Id,

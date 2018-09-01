@@ -63,7 +63,7 @@ namespace Hanekawa.Services.Reaction
                         var stat = await db.GetOrCreateBoard(ch.Guild, message);
                         stat.StarAmount = stat.StarAmount + 1;
 
-                        var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
+                        var giver = await db.GetOrCreateUserData(ch.Guild.Id, reaction.UserId);
                         var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
                         giver.StarGiven = giver.StarGiven + 1;
                         reciever.StarReceived = reciever.StarReceived + 1;
@@ -75,7 +75,7 @@ namespace Hanekawa.Services.Reaction
                             board.TryRemove(reaction.MessageId, out var value);
                             stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                             await db.SaveChangesAsync();
-                            await SendBoardAsync(db, (ITextChannel)reaction.Channel, reaction.MessageId);
+                            await SendBoardAsync(db, (ITextChannel) reaction.Channel, reaction.MessageId);
                         }
                         else
                         {
@@ -112,18 +112,18 @@ namespace Hanekawa.Services.Reaction
                     using (var db = new DbService())
                     {
                         var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                        if ((int)stat.StarAmount - 1 < 0)
+                        if ((int) stat.StarAmount - 1 < 0)
                             stat.StarAmount = 0;
                         else stat.StarAmount = stat.StarAmount - 1;
 
-                        var giver = await db.GetOrCreateUserData(reaction.UserId, ch.Guild.Id);
+                        var giver = await db.GetOrCreateUserData(ch.Guild.Id, reaction.UserId);
                         var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
 
-                        if ((int)giver.StarGiven - 1 < 0)
+                        if ((int) giver.StarGiven - 1 < 0)
                             giver.StarGiven = 0;
                         else giver.StarGiven = giver.StarGiven - 1;
 
-                        if ((int)reciever.StarReceived - 1 < 0)
+                        if ((int) reciever.StarReceived - 1 < 0)
                             reciever.StarReceived = 0;
                         else reciever.StarReceived = reciever.StarReceived - 1;
                         await db.SaveChangesAsync();
@@ -131,7 +131,7 @@ namespace Hanekawa.Services.Reaction
                         var board = ReactionMessages.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, uint>());
                         if (board.TryGetValue(reaction.MessageId, out var msg))
                         {
-                            if ((int)msg - 1 < 0) return;
+                            if ((int) msg - 1 < 0) return;
                             board.AddOrUpdate(reaction.MessageId, 1, (key, old) => old = msg - 1);
                         }
                     }
