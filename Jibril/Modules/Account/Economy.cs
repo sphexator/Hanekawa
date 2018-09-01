@@ -202,12 +202,12 @@ namespace Hanekawa.Modules.Account
         private static string RegularCurrencyResponse(Services.Entities.Tables.Account userdata,
             string name, string sign)
         {
-            return $"{name}: {sign}{userdata.CreditSpecial}";
+            return $"{name}: {sign}{userdata.Credit}";
         }
 
         private static string EmoteCurrencyResponse(Services.Entities.Tables.Account userdata, string name, string sign)
         {
-            return $"{name}: {userdata.CreditSpecial} {sign}";
+            return $"{name}: {userdata.Credit} {sign}";
         }
 
         private static IEmote CurrencySignEmote(string emoteString)

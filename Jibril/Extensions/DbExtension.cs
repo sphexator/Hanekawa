@@ -161,25 +161,38 @@ namespace Hanekawa.Extensions
         }
 
         public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
-            string name, DateTime time)
+            string name, DateTimeOffset time)
         {
             var check = await context.ClubInfos.FindAsync(user.Id);
             if (check != null) return null;
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
-            uint nr;
+            int nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = counter + 1;
             var data = new ClubInfo
             {
                 Id = nr,
                 GuildId = guild.Id,
                 Leader = user.Id,
                 Name = name,
-                CreationDate = time
+                CreationDate = time,
+                Channel = null,
+                Description = null,
+                AdMessage = null,
+                AutoAdd = false,
+                ImageUrl = null,
+                Public = false,
+                RoleId = null
             };
             await context.ClubInfos.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ClubInfos.FirstOrDefaultAsync(x => x.CreationDate == time);
+            return await context.ClubInfos.FindAsync(nr, guild.Id);
+        }
+
+        public static async Task<ClubInfo> GetClubAsync(this DbService context, int id, SocketGuild guild)
+        {
+            var check = await context.ClubInfos.FindAsync(id, guild.Id);
+            return check ?? null;
         }
 
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)

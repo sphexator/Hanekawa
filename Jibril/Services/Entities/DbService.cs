@@ -33,6 +33,7 @@ namespace Hanekawa.Services.Entities
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
         public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
+        public virtual DbSet<ClubBlacklist> ClubBlacklists { get; set; }
 
         //Bot Game
         public virtual DbSet<GameEnemy> GameEnemies { get; set; }
@@ -119,9 +120,14 @@ namespace Hanekawa.Services.Entities
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
             {
-                x.HasKey(e => e.Id);
+                x.HasKey(e => new {e.GuildId, e.Id, e.Leader});
             });
-            modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => e.ClubId); });
+            modelBuilder.Entity<ClubPlayer>(x =>
+            {
+                x.HasKey(e => new {e.Id, e.ClubId, e.GuildId });
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<ClubBlacklist>(x => { x.HasKey(e => new {e.ClubId, e.GuildId, e.BlackListUser}); });
 
             // Bot Game
             modelBuilder.Entity<GameEnemy>(x =>
