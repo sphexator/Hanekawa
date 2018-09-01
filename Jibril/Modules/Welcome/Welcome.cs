@@ -97,41 +97,51 @@ namespace Hanekawa.Modules.Welcome
             {
                 var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var pages = new List<string>();
-                for (var i = 0; i < list.Count;)
+                if (list.Count != 0)
                 {
-                    string input = null;
-                    for (var j = 0; j < 5; j++)
+                    for (var i = 0; i < list.Count;)
                     {
-                        if (i >= list.Count) continue;
-                        var entry = list[i];
-                        input += $"ID: {entry.Id}\n" +
-                                 $"URL: {entry.Url}\n" +
-                                 $"Uploader: {Context.Guild.GetUser(entry.Uploader).Mention ?? $"User left server ({entry.Uploader})"}\n" +
-                                 $"Added: {entry.UploadTimeOffset.DateTime}\n" +
-                                 $"\n";
-                        i++;
+                        try
+                        {
+                            string input = null;
+                            for (var j = 0; j < 5; j++)
+                            {
+                                if (i >= list.Count) continue;
+                                var entry = list[i];
+                                input += $"ID: {entry.Id}\n" +
+                                         $"URL: {entry.Url}\n" +
+                                         $"Uploader: {Context.Guild.GetUser(entry.Uploader).Mention ?? $"User left server ({entry.Uploader})"}\n" +
+                                         $"Added: {entry.UploadTimeOffset.DateTime}\n" +
+                                         $"\n";
+                                i++;
+                            }
+
+                            pages.Add(input);
+                        }
+                        catch
+                        {
+                        }
                     }
 
-                    pages.Add(input);
+                    var paginator = new PaginatedMessage
+                    {
+                        Color = Color.DarkPurple,
+                        Pages = pages,
+                        Title = $"Welcome banners for {Context.Guild.Name}",
+                        Options = new PaginatedAppearanceOptions
+                        {
+                            First = new Emoji("⏮"),
+                            Back = new Emoji("◀"),
+                            Next = new Emoji("▶"),
+                            Last = new Emoji("⏭"),
+                            Stop = null,
+                            Jump = null,
+                            Info = null
+                        }
+                    };
+                    await PagedReplyAsync(paginator);
                 }
-
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.DarkPurple,
-                    Pages = pages,
-                    Title = $"Welcome banners for {Context.Guild.Name}",
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(paginator);
+                else await ReplyAsync(null, false, new EmbedBuilder().Reply("No banners added!").Build());
             }
         }
 
