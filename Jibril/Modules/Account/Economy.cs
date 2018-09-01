@@ -188,26 +188,26 @@ namespace Hanekawa.Modules.Account
         private static string GetRegularCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
         {
             return cfg.EmoteCurrency
-                ? EmoteCurrencyResponse(userdata, cfg.CurrencyName, cfg.CurrencySign)
-                : RegularCurrencyResponse(userdata, cfg.CurrencyName, cfg.CurrencySign);
+                ? EmoteCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign)
+                : RegularCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign);
         }
 
         private static string GetSpecialCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
         {
             return cfg.SpecialEmoteCurrency
-                ? EmoteCurrencyResponse(userdata, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)
-                : RegularCurrencyResponse(userdata, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign);
+                ? EmoteCurrencyResponse(userdata.CreditSpecial, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)
+                : RegularCurrencyResponse(userdata.CreditSpecial, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign);
         }
 
-        private static string RegularCurrencyResponse(Services.Entities.Tables.Account userdata,
+        private static string RegularCurrencyResponse(uint credit,
             string name, string sign)
         {
-            return $"{name}: {sign}{userdata.Credit}";
+            return $"{name}: {sign}{credit}";
         }
 
-        private static string EmoteCurrencyResponse(Services.Entities.Tables.Account userdata, string name, string sign)
+        private static string EmoteCurrencyResponse(uint credit, string name, string sign)
         {
-            return $"{name}: {userdata.Credit} {sign}";
+            return $"{name}: {credit} {sign}";
         }
 
         private static IEmote CurrencySignEmote(string emoteString)
