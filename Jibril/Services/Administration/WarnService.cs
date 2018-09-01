@@ -198,56 +198,72 @@ namespace Hanekawa.Services.Administration
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason)
         {
-            var dm = await user.GetOrCreateDMChannelAsync();
-            var embed = new EmbedBuilder
+            try
             {
-                Color = Color.Purple,
-                Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
-                              $"Reason:\n" +
-                              $"{reason}"
-            };
-            await dm.SendEmbedAsync(embed);
+                var dm = await user.GetOrCreateDMChannelAsync();
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
+                                  $"Reason:\n" +
+                                  $"{reason}"
+                };
+                await dm.SendEmbedAsync(embed);
+            }
+            catch {/* IGNORE */ }
         }
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason, TimeSpan after)
         {
-            var dm = await user.GetOrCreateDMChannelAsync();
-            var embed = new EmbedBuilder
+            try
             {
-                Color = Color.Purple,
-                Description = $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
-                              $"Reason:\n" +
-                              $"{reason}"
-            };
-            embed.AddField("Duration", $"{after.Humanize()} ({after})");
-            await dm.SendEmbedAsync(embed);
+                var dm = await user.GetOrCreateDMChannelAsync();
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
+                                  $"Reason:\n" +
+                                  $"{reason}"
+                };
+                embed.AddField("Duration", $"{after.Humanize()} ({after})");
+                await dm.SendEmbedAsync(embed);
+            }
+            catch {/* IGNORE */ }
         }
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason)
         {
-            var dm = await user.GetOrCreateDMChannelAsync();
-            var embed = new EmbedBuilder
+            try
             {
-                Color = Color.Purple,
-                Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
-                              $"Reason:\n" +
-                              $"{reason}"
-            };
-            await dm.SendEmbedAsync(embed);
+                var dm = await user.GetOrCreateDMChannelAsync();
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
+                                  $"Reason:\n" +
+                                  $"{reason}"
+                };
+                await dm.SendEmbedAsync(embed);
+            }
+            catch {/* IGNORE */ }
         }
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason, TimeSpan after)
         {
-            var dm = await user.GetOrCreateDMChannelAsync();
-            var embed = new EmbedBuilder
+            try
             {
-                Color = Color.Purple,
-                Description = $"You've been muted on {user.Guild.Name} by {staff}\n" +
-                              $"Reason:\n" +
-                              $"{reason}"
-            };
-            embed.AddField("Duration", $"{after.Humanize()} ({after})");
-            await dm.SendEmbedAsync(embed);
+                var dm = await user.GetOrCreateDMChannelAsync();
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = $"You've been muted on {user.Guild.Name} by {staff}\n" +
+                                  $"Reason:\n" +
+                                  $"{reason}"
+                };
+                embed.AddField("Duration", $"{after.Humanize()} ({after})");
+                await dm.SendEmbedAsync(embed);
+            }
+            catch {/* IGNORE */ }
         }
 
         private static async Task<List<EmbedFieldBuilder>> GetWarnings(IGuildUser user)
