@@ -22,7 +22,7 @@ namespace Hanekawa.Modules.Board
             _boardService = boardService;
         }
 
-        [Command("stats")]
+        [Command("stats", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for server")]
         [RequiredChannel]
@@ -84,7 +84,7 @@ namespace Hanekawa.Modules.Board
             }
         }
 
-        [Command("stats")]
+        [Command("stats", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Summary("Shows board stats for specific user")]
         [RequiredChannel]
@@ -126,7 +126,7 @@ namespace Hanekawa.Modules.Board
             }
         }
         
-        [Command("emote")]
+        [Command("emote", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Sets a custom emote to be used toward the board")]
@@ -140,6 +140,29 @@ namespace Hanekawa.Modules.Board
                 cfg.BoardEmote = emoteString;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Changed board emote to {emote}", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("channel", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [Summary("Sets channel for board to be used in")]
+        public async Task BoardChannelAsync(ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (channel == null)
+                {
+                    cfg.BoardChannel = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled the board", Color.Green.RawValue).Build());
+                    return;
+                }
+
+                cfg.BoardChannel = channel.Id;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set board channel to {channel.Mention}", Color.Green.RawValue).Build());
             }
         }
 
