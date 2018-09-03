@@ -176,7 +176,7 @@ namespace Hanekawa.Modules.Audio
                     var embed = new EmbedBuilder
                     {
                         Description = "Queue is empty",
-                        Color = Color.DarkPurple,
+                        Color = Color.Purple,
                         Author = author
                     };
                     await ReplyAsync(null, false, embed.Build());
@@ -206,7 +206,7 @@ namespace Hanekawa.Modules.Audio
                         Url = $"{_audioService.GetCurrentTrack(Context.Guild).Url}"
                     },
                     Pages = pages,
-                    Color = Color.DarkPurple
+                    Color = Color.Purple
                 };
                 await PagedReplyAsync(editPaginater);
             }

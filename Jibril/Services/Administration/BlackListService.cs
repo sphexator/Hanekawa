@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Hanekawa.Services.Entities;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Administration
 {

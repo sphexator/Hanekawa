@@ -61,10 +61,8 @@ namespace Hanekawa.AnimeSimulCast
         {
             var data = new AnimeData
             {
-                Title = collection.Title.Text.Filter(),
+                Title = collection.Title.Text,
                 Time = collection.PublishDate,
-                Episode = collection.Title.Text.GetEpisode(),
-                Season = collection.Title.Text.GetSeason(),
                 Url = collection.Links.FirstOrDefault().Uri.AbsoluteUri
             };
             return data;

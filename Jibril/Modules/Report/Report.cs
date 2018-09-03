@@ -65,7 +65,7 @@ namespace Hanekawa.Modules.Report
                 {
                     Author = author,
                     Footer = footer,
-                    Color = Color.DarkPurple,
+                    Color = Color.Purple,
                     Description = text,
                     Timestamp = new DateTimeOffset(DateTime.UtcNow)
                 };

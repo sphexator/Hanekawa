@@ -1,4 +1,5 @@
-﻿using Hanekawa.Services.Entities.Tables;
+﻿using Google.Apis.YouTube.v3;
+using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -62,7 +63,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<Suggestion> Suggestions { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
-
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

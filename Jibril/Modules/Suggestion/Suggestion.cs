@@ -6,6 +6,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Google.Apis.Util;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
@@ -184,7 +185,6 @@ namespace Hanekawa.Modules.Suggestion
                 Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes);
                 result.Add(defaultyes);
             }
-
             if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no))
             {
                 result.Add(no);

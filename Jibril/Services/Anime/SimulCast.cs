@@ -66,8 +66,6 @@ namespace Hanekawa.Services.Anime
                 Color = Color.Purple,
                 Timestamp = data.Time
             };
-            embed.AddField("Season", data.Season ?? "1", true);
-            embed.AddField("Episode", data.Episode, true);
             return embed;
         }
     }

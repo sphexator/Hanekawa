@@ -51,6 +51,8 @@ namespace Hanekawa.Services.Reaction
                 {
                     if (!(channel is ITextChannel ch)) return;
                     if (ch.IsNsfw) return;
+                    if (reaction.User.IsSpecified && reaction.User.Value.IsBot) return;
+                    if (msges.HasValue && msges.Value.Author.IsBot) return;
                     var message = await msges.GetOrDownloadAsync();
                     if (message.Author.IsBot) return;
                     if (message.Author.Id == reaction.UserId) return;
@@ -101,6 +103,8 @@ namespace Hanekawa.Services.Reaction
                 {
                     if (!(channel is ITextChannel ch)) return;
                     if (ch.IsNsfw) return;
+                    if (reaction.User.IsSpecified && reaction.User.Value.IsBot) return;
+                    if (msges.HasValue && msges.Value.Author.IsBot) return;
                     var message = await msges.GetOrDownloadAsync();
                     if (message.Author.IsBot) return;
                     if (message.Author.Id == reaction.UserId) return;

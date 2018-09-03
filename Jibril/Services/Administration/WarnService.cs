@@ -47,7 +47,7 @@ namespace Hanekawa.Services.Administration
                 var userdata = await db.GetOrCreateUserData(user);
                 var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
                 var roles = string.Join(", ", roleList);
-                var content = $"**⮞ User Information**\n" +
+                var content = "**⮞ User Information**\n" +
                               $"Status: {GetStatus(user)}\n" +
                               $"{GetGame(user)}\n" +
                               $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +

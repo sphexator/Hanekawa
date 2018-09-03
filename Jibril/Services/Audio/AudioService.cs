@@ -54,7 +54,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Author = author,
-                Color = Color.DarkPurple
+                Color = Color.Purple
             };
             return embed;
         }
@@ -78,7 +78,7 @@ namespace Hanekawa.Services.Audio
                 return new EmbedBuilder
                 {
                     Footer = footer,
-                    Color = Color.DarkPurple
+                    Color = Color.Purple
                 };
             }
             catch
@@ -104,7 +104,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Footer = footer,
-                Color = Color.DarkPurple
+                Color = Color.Purple
             };
             return embed;
         }
@@ -216,7 +216,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Author = author,
-                Color = Color.DarkPurple
+                Color = Color.Purple
             };
             return embed;
         }

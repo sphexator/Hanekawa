@@ -125,7 +125,7 @@ namespace Hanekawa.Modules.Welcome
 
                     var paginator = new PaginatedMessage
                     {
-                        Color = Color.DarkPurple,
+                        Color = Color.Purple,
                         Pages = pages,
                         Title = $"Welcome banners for {Context.Guild.Name}",
                         Options = new PaginatedAppearanceOptions
@@ -163,7 +163,7 @@ namespace Hanekawa.Modules.Welcome
         public async Task TemplateWelcomeBanner()
         {
             await Context.Channel.SendFileAsync(@"Data\Welcome\WelcomeTemplate.psd", null, false,
-                new EmbedBuilder().Reply("Welcome template.", Color.DarkPurple.RawValue).Build());
+                new EmbedBuilder().Reply("Welcome template.", Color.Purple.RawValue).Build());
         }
 
         [Command("message", RunMode = RunMode.Async)]

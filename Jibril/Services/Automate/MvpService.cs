@@ -143,7 +143,7 @@ namespace Hanekawa.Services.Automate
             var embed = new EmbedBuilder
             {
                 Title = "Kai Ni Update!",
-                Color = Color.DarkPurple,
+                Color = Color.Purple,
                 Description = desc
             };
             return embed;

@@ -36,13 +36,13 @@ namespace Hanekawa.Modules.Administration
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply(
                         $"Wanna activate a exp event with multiplier of {multiplier} for {after.Humanize()} ({duration} minutes) ? (y/n)",
-                        Color.DarkPurple.RawValue).Build());
+                        Color.Purple.RawValue).Build());
                 var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
                 if (response.Content.ToLower() != "y") return;
 
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Do you want to announce the event? (y/n)",
-                        Color.DarkPurple.RawValue).Build());
+                        Color.Purple.RawValue).Build());
                 var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
                 if (announceResp.Content.ToLower() == "y")
                 {

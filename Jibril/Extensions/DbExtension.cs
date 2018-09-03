@@ -195,6 +195,13 @@ namespace Hanekawa.Extensions
             return check ?? null;
         }
 
+        public static async Task<ClubInfo> IsClubLeader(this DbService context, ulong guild, ulong user)
+        {
+            var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == guild && x.Leader == user);
+            return leader;
+        }
+
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id);
@@ -252,7 +259,7 @@ namespace Hanekawa.Extensions
             return await context.Reports.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuild guild)
+        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, IGuild guild)
         {
             var response = await context.GuildConfigs.FindAsync(guild.Id);
             if (response != null) return response;
@@ -295,8 +302,8 @@ namespace Hanekawa.Extensions
                 CurrencySign = "$",
                 EmoteCurrency = false,
                 AnimeAirChannel = null,
-                SuggestionEmoteYes = null,
-                SuggestionEmoteNo = null
+                SuggestionEmoteYes = "<:1yes:403870491749777411>",
+                SuggestionEmoteNo = "<:2no:403870492206825472>"
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
