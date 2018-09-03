@@ -554,4 +554,90 @@ namespace Hanekawa.Modules.Club
             }
         }
     }
+
+    [Group("club settings")]
+    [RequireContext(ContextType.Guild)]
+    [RequireOwner]
+    public class ClubAdmin : InteractiveBase
+    {
+        [Command("advertisement", RunMode = RunMode.Async)]
+        [Summary("Sets channel where club advertisements will be posted")]
+        public async Task ClubSetAdvertismentChannel(ITextChannel channel)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.ClubAdvertisementChannel.HasValue && cfg.ClubAdvertisementChannel.Value == channel.Id)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Advertisement channel has already been set to {channel.Mention}",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
+
+                cfg.ClubAdvertisementChannel = channel.Id;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Advertisement channel set has been been set to {channel.Mention}",
+                        Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("category", RunMode = RunMode.Async)]
+        [Summary("Sets location in where club channels will be created")]
+        public async Task ClubSetCategory(ICategoryChannel category)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.ClubChannelCategory.HasValue && cfg.ClubChannelCategory.Value == category.Id)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Club category channel has already been set to {category.Name}",
+                            Color.Red.RawValue).Build());
+                    return;
+                }
+
+                cfg.ClubChannelCategory = category.Id;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Club category channel set has been been set to {category.Name}",
+                        Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("channel level", RunMode = RunMode.Async)]
+        [Summary("Sets level requirement for people to create a channel")]
+        public async Task ClubSetLevelRequirement(uint level)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                cfg.ClubChannelRequiredLevel = level;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply(
+                            $"Set required amount of club members above the level limit to create a channel to {level}",
+                            Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("channel amount", RunMode = RunMode.Async)]
+        [Summary("Sets amount required thats above the required level requirement to create a channel")]
+        public async Task ClubSetAmountRequirement(uint amount)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                cfg.ClubChannelRequiredAmount = amount;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply(
+                            $"Set required amount of club members above the level limit to create a channel to {amount}",
+                            Color.Green.RawValue).Build());
+            }
+        }
+    }
 }
