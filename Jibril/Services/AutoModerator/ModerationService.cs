@@ -67,7 +67,7 @@ namespace Hanekawa.Services.AutoModerator
                 {
                     var values = new Dictionary<string, string>
                     {
-                        {"token", _config.BanApi},
+                        {"token", Config.BanApi},
                         {"userid", $"{user.Id}"},
                         {"version", "3"}
                     };

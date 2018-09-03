@@ -1,4 +1,5 @@
 ﻿using Google.Apis.YouTube.v3;
+using Hanekawa.Data;
 using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -70,7 +71,7 @@ namespace Hanekawa.Services.Entities
                 optionsBuilder
                     //.UseLoggerFactory(MyLoggerFactory)
                     //.EnableSensitiveDataLogging()
-                    .UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
+                    .UseMySql(Config.ConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
