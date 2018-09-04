@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Level;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 
@@ -15,12 +19,18 @@ namespace Hanekawa.Modules.Account
     public partial class Account
     {
         [Group("level")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        [RequireBotPermission(ChannelPermission.ManageRoles)]
         public class LevelAdmin : InteractiveBase
         {
+            private readonly LevelingService _levelingService;
+            public LevelAdmin(LevelingService levelingService)
+            {
+                _levelingService = levelingService;
+            }
+
             [Command("add", RunMode = RunMode.Async)]
             [Summary("Adds a role reward")]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            [RequireBotPermission(ChannelPermission.ManageRoles)]
             public async Task LevelAdd(uint level, [Remainder]string roleName)
             {
                 if (roleName.IsNullOrWhiteSpace()) return;
@@ -59,6 +69,8 @@ namespace Hanekawa.Modules.Account
 
             [Command("create", RunMode = RunMode.Async)]
             [Summary("Creates a role reward with given level and name")]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            [RequireBotPermission(ChannelPermission.ManageRoles)]
             public async Task LevelCreate(uint level, [Remainder]string roleName)
             {
                 if (roleName.IsNullOrWhiteSpace()) return;
@@ -83,6 +95,8 @@ namespace Hanekawa.Modules.Account
 
             [Command("remove", RunMode = RunMode.Async)]
             [Summary("Removes a role reward with given level")]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            [RequireBotPermission(ChannelPermission.ManageRoles)]
             public async Task LevelRemove(uint level)
             {
                 using (var db = new DbService())
@@ -128,7 +142,7 @@ namespace Hanekawa.Modules.Account
                                     input += $"Name: {Context.Guild.GetRole(entry.Role).Name ?? "Role not found"}\n" +
                                              $"Level: {entry.Level}\n" +
                                              $"Stack: {entry.Stackable}\n" +
-                                             $"\n";
+                                             "\n";
                                     pages.Add(input);
                                     i++;
                                 }
@@ -145,7 +159,7 @@ namespace Hanekawa.Modules.Account
                         {
                             Color = Color.Purple,
                             Pages = pages,
-                            Title = $"Welcome banners for {Context.Guild.Name}",
+                            Title = $"Level roles for {Context.Guild.Name}",
                             Options = new PaginatedAppearanceOptions
                             {
                                 First = new Emoji("⏮"),
@@ -160,6 +174,49 @@ namespace Hanekawa.Modules.Account
                         await PagedReplyAsync(paginator);
                     }
                     else await ReplyAsync(null, false, new EmbedBuilder().Reply("No level roles added!").Build());
+                }
+            }
+
+            [Command("exp", RunMode = RunMode.Async)]
+            [RequireUserPermission(GuildPermission.Administrator)]
+            [Summary("Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
+            public async Task ExpEventAsync(uint multiplier, TimeSpan? duration = null)
+            {
+                try
+                {
+                    if (!duration.HasValue) duration = TimeSpan.FromDays(1);
+                    if (duration.Value > TimeSpan.FromDays(1)) duration = TimeSpan.FromDays(1);
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply(
+                            $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration} minutes) ? (y/n)",
+                            Color.Purple.RawValue).Build());
+                    var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                    if (response.Content.ToLower() != "y") return;
+
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Do you want to announce the event? (y/n)",
+                            Color.Purple.RawValue).Build());
+                    var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                    if (announceResp.Content.ToLower() == "y")
+                    {
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Okay, I'll let you announce it...",
+                                Color.Green.RawValue).Build());
+                        await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, duration.Value);
+                    }
+                    else
+                    {
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply($"Announcing event into designated channel.",
+                                Color.Green.RawValue).Build());
+                        await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, duration.Value, true, Context.Channel as SocketTextChannel);
+                    }
+                }
+                catch
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Exp event setup aborted.",
+                            Color.Red.RawValue).Build());
                 }
             }
         }

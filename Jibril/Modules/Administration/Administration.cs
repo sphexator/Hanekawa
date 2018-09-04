@@ -1,15 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Entities;
-using Hanekawa.Services.Level;
-using Humanizer;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -17,59 +15,17 @@ namespace Hanekawa.Modules.Administration
     {
         private readonly MuteService _muteService;
         private readonly WarnService _warnService;
-        private readonly LevelingService _levelingService;
 
-        public Administration(MuteService muteService, WarnService warnService, LevelingService levelingService)
+        public Administration(MuteService muteService, WarnService warnService)
         {
             _muteService = muteService;
             _warnService = warnService;
-            _levelingService = levelingService;
-        }
-
-        [Command("exp", RunMode = RunMode.Async)]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ExpEventAsync(uint multiplier, uint duration = 1440)
-        {
-            try
-            {
-                var after = TimeSpan.FromMinutes(duration);
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply(
-                        $"Wanna activate a exp event with multiplier of {multiplier} for {after.Humanize()} ({duration} minutes) ? (y/n)",
-                        Color.Purple.RawValue).Build());
-                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (response.Content.ToLower() != "y") return;
-
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Do you want to announce the event? (y/n)",
-                        Color.Purple.RawValue).Build());
-                var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (announceResp.Content.ToLower() == "y")
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Okay, I'll let you announce it...",
-                            Color.Green.RawValue).Build());
-                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after);
-                }
-                else
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Announcing event into designated channel.",
-                            Color.Green.RawValue).Build());
-                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, after, true, Context.Channel as SocketTextChannel);
-                }
-            }
-            catch
-            {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Exp event setup aborted.",
-                        Color.Red.RawValue).Build());
-            }
         }
 
         [Command("ban", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
+        [Summary("Bans a user")]
         public async Task BanAsync(SocketGuildUser user)
         {
             await Context.Message.DeleteAsync().ConfigureAwait(false);
@@ -93,6 +49,7 @@ namespace Hanekawa.Modules.Administration
         [Command("kick", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
+        [Summary("Kicks a user")]
         public async Task KickAsync(IGuildUser user)
         {
 
@@ -121,6 +78,7 @@ namespace Hanekawa.Modules.Administration
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(ChannelPermission.ManageMessages)]
+        [Summary("Prunes X messages, user specific is optional")]
         public async Task PruneAsync(int x = 5, IGuildUser user = null)
         {
             if (x > 1000) x = 1000;
@@ -148,6 +106,7 @@ namespace Hanekawa.Modules.Administration
         [Alias("sb")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
+        [Summary("In the last 1000 messages, deletes the messages user has sent & mutes")]
         public async Task Softban(SocketGuildUser user)
         {
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
@@ -189,11 +148,12 @@ namespace Hanekawa.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [Priority(1)]
-        public async Task MuteAsync(SocketGuildUser user, uint timer = 1440, [Remainder] string reason = null)
+        [Summary("mutes a user for a duration specified in minutes (max 1440)")]
+        public async Task MuteAsync(SocketGuildUser user, uint minutes = 1440, [Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
-            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(timer));
-            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(timer));
+            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(minutes));
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(minutes));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
@@ -203,6 +163,7 @@ namespace Hanekawa.Modules.Administration
         [Command("mute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Summary("Mutes a user for 12hrs")]
         public async Task MuteAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
@@ -217,6 +178,7 @@ namespace Hanekawa.Modules.Administration
         [Command("mute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Summary("Mutes a user for a duration (default 12hrs) with the use of 1s 2h 1d")]
         [Priority(2)]
         public async Task MuteAsync(SocketGuildUser user, TimeSpan? timer = null, [Remainder] string reason = null)
         {
@@ -235,6 +197,7 @@ namespace Hanekawa.Modules.Administration
         [Command("unmute", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Summary("Unmutes a user")]
         public async Task UnmuteAsync(SocketGuildUser user)
         {
             await Context.Message.DeleteAsync();
@@ -247,6 +210,7 @@ namespace Hanekawa.Modules.Administration
         [Command("warn", RunMode = RunMode.Async)]
         [Alias("warning")]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
+        [Summary("Sends a warning to a user, bot dms them the warning.")]
         public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = "I made this :)")
         {
             await Context.Message.DeleteAsync();
@@ -258,6 +222,7 @@ namespace Hanekawa.Modules.Administration
 
         [Command("warnlog", RunMode = RunMode.Async)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
+        [Summary("Pulls up warnlog and admin profile of a user.")]
         public async Task WarnlogAsync(SocketGuildUser user)
         {
             var log = await _warnService.Warnlog(user);
@@ -267,6 +232,7 @@ namespace Hanekawa.Modules.Administration
         [Command("reason", RunMode = RunMode.Async)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [Summary("Inputs reason for moderation log entry")]
         public async Task ApplyReason(uint id, [Remainder] string reason)
         {
             using (var db = new DbService())

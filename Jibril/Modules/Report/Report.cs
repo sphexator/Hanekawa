@@ -12,33 +12,29 @@ namespace Hanekawa.Modules.Report
 {
     public class Report : InteractiveBase
     {
-        [Group("report")]
-        public class ReportSettings : InteractiveBase
+        [Command("report channel", RunMode = RunMode.Async)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+        public async Task SetReportChannelAsync(ITextChannel channel = null)
         {
-            [Command("channel", RunMode = RunMode.Async)]
-            [RequireUserPermission(GuildPermission.ManageGuild)]
-            [RequireContext(ContextType.Guild)]
-            [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
-            public async Task SetReportChannelAsync(ITextChannel channel = null)
+            using (var db = new DbService())
             {
-                using (var db = new DbService())
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.ReportChannel.HasValue && channel == null)
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                    if (cfg.ReportChannel.HasValue && channel == null)
-                    {
-                        cfg.ReportChannel = null;
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
-                        return;
-                    }
-
-                    cfg.ReportChannel = channel.Id;
+                    cfg.ReportChannel = null;
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
-                            Color.Green.RawValue).Build());
+                        new EmbedBuilder().Reply("Disabled report channel", Color.Green.RawValue).Build());
+                    return;
                 }
+
+                cfg.ReportChannel = channel.Id;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"All reports will now be sent to {channel.Mention} !",
+                        Color.Green.RawValue).Build());
             }
         }
 

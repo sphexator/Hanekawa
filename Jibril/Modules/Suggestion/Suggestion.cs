@@ -6,7 +6,6 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Google.Apis.Util;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
@@ -173,6 +172,92 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Command("suggestion set channel", RunMode = RunMode.Async)]
+        [Alias("ssc", "sschannel", "ss channel")]
+        [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.SuggestionChannel.HasValue && channel == null)
+                {
+                    cfg.SuggestionChannel = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled suggestion channel", Color.Green.RawValue).Build());
+                    return;
+                }
+
+                cfg.SuggestionChannel = channel.Id;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"All suggestions will now be sent to {channel.Mention} !",
+                        Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("suggestion set no", RunMode = RunMode.Async)]
+        [Alias("ssn", "ssno", "ss no")]
+        [Summary("Set custom no emote for suggestions")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        public async Task SetSuggestionNoEmoteAsync(Emote emote = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (emote == null)
+                {
+                    cfg.SuggestionEmoteNo = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
+                            .Build());
+                    return;
+                }
+
+                cfg.SuggestionEmoteNo = ParseEmoteString(emote);
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("suggestion set yes", RunMode = RunMode.Async)]
+        [Alias("ssy", "ssyes", "ss yes")]
+        [Summary("Set custom yes emote for suggestions")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireContext(ContextType.Guild)]
+        public async Task SetSuggestionYesEmoteAsync(Emote emote = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (emote == null)
+                {
+                    cfg.SuggestionEmoteYes = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
+                            .Build());
+                    return;
+                }
+
+                cfg.SuggestionEmoteYes = ParseEmoteString(emote);
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
+            }
+        }
+
+        private static string ParseEmoteString(Emote emote)
+        {
+            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
+        }
+
         private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
         {
             var result = new List<IEmote>();
@@ -185,6 +270,7 @@ namespace Hanekawa.Modules.Suggestion
                 Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes);
                 result.Add(defaultyes);
             }
+
             if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no))
             {
                 result.Add(no);
@@ -196,93 +282,6 @@ namespace Hanekawa.Modules.Suggestion
             }
 
             return result;
-        }
-
-        [Group("suggestion")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        [RequireContext(ContextType.Guild)]
-        public class SuggestionSettings : InteractiveBase
-        {
-            [Group("set")]
-            public class SuggestionSet : InteractiveBase
-            {
-                [Command("channel", RunMode = RunMode.Async)]
-                [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
-                public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
-                {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                        if (cfg.SuggestionChannel.HasValue && channel == null)
-                        {
-                            cfg.SuggestionChannel = null;
-                            await db.SaveChangesAsync();
-                            await ReplyAsync(null, false,
-                                new EmbedBuilder().Reply("Disabled suggestion channel", Color.Green.RawValue).Build());
-                            return;
-                        }
-
-                        cfg.SuggestionChannel = channel.Id;
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"All suggestions will now be sent to {channel.Mention} !",
-                                Color.Green.RawValue).Build());
-                    }
-                }
-
-                [Command("no", RunMode = RunMode.Async)]
-                [Summary("Set custom no emote for suggestions")]
-                public async Task SetSuggestionNoEmoteAsync(Emote emote = null)
-                {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                        if (emote == null)
-                        {
-                            cfg.SuggestionEmoteNo = null;
-                            await db.SaveChangesAsync();
-                            await ReplyAsync(null, false,
-                                new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
-                                    .Build());
-                            return;
-                        }
-
-                        cfg.SuggestionEmoteNo = ParseEmoteString(emote);
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
-                    }
-                }
-
-                [Command("yes", RunMode = RunMode.Async)]
-                [Summary("Set custom yes emote for suggestions")]
-                public async Task SetSuggestionYesEmoteAsync(Emote emote = null)
-                {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                        if (emote == null)
-                        {
-                            cfg.SuggestionEmoteYes = null;
-                            await db.SaveChangesAsync();
-                            await ReplyAsync(null, false,
-                                new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
-                                    .Build());
-                            return;
-                        }
-
-                        cfg.SuggestionEmoteYes = ParseEmoteString(emote);
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
-                    }
-                }
-
-                private static string ParseEmoteString(Emote emote)
-                {
-                    return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
-                }
-            }
         }
     }
 }

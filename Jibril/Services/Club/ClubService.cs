@@ -22,6 +22,7 @@ namespace Hanekawa.Services.Club
 
             _client.ReactionAdded += AddClubMemberAsync;
             _client.ReactionRemoved += RemoveClubMemberAsync;
+            _client.UserLeft += ClubRemoveAsync;
         }
 
         public async Task PostAdvertisementAsync(DbService db, GuildConfig cfg, IGuild guild, ClubInfo club)
@@ -75,6 +76,33 @@ namespace Hanekawa.Services.Club
                     await message.ModifyAsync(x => x.Embed = embedImg.Build());
                     break;
             }
+        }
+
+        private static Task ClubRemoveAsync(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                        .ToListAsync();
+                    if (clubs.Count == 0) return;
+                    foreach (var x in clubs)
+                    {
+                        if (x.Rank == 1)
+                        {
+                            var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(y =>
+                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 2) ?? await db.ClubPlayers.FirstOrDefaultAsync(y =>
+                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 3);
+                            toPromote.Rank = 1;
+                        }
+                        db.ClubPlayers.Remove(x);
+                    }
+
+                    await db.SaveChangesAsync();
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private static Task RemoveClubMemberAsync(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
