@@ -50,16 +50,18 @@ namespace Hanekawa
 
         private async Task MainASync()
         {
+            using (var db = new DbService())
+            {
+                await db.Database.MigrateAsync();
+            }
+
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
                 AlwaysDownloadUsers = true
             });
             _config = BuildConfig();
-            using (var db = new DbService())
-            {
-                await db.Database.MigrateAsync();
-            }
+
             _youTubeService = new YouTubeService(new BaseClientService.Initializer
             {
                 ApiKey = _config["googleApi"],

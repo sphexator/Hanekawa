@@ -575,8 +575,8 @@ namespace Hanekawa.Modules.Club
     public class ClubAdmin : InteractiveBase
     {
         [Command("advertisement", RunMode = RunMode.Async)]
-        [Summary("Sets channel where club advertisements will be posted")]
-        public async Task ClubSetAdvertismentChannel(ITextChannel channel)
+        [Summary("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
+        public async Task ClubSetAdvertismentChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -589,17 +589,28 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                cfg.ClubAdvertisementChannel = channel.Id;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Advertisement channel set has been been set to {channel.Mention}",
-                        Color.Green.RawValue).Build());
+                if (channel == null)
+                {
+                    cfg.ClubAdvertisementChannel = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled Advertisement creation of clubs.",
+                            Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    cfg.ClubAdvertisementChannel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Advertisement channel set has been been set to {channel.Mention}",
+                            Color.Green.RawValue).Build());
+                }
             }
         }
 
         [Command("category", RunMode = RunMode.Async)]
-        [Summary("Sets location in where club channels will be created")]
-        public async Task ClubSetCategory(ICategoryChannel category)
+        [Summary("Sets location in where club channels will be created. \nLeave empty to disable")]
+        public async Task ClubSetCategory(ICategoryChannel category = null)
         {
             using (var db = new DbService())
             {
@@ -612,16 +623,27 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                cfg.ClubChannelCategory = category.Id;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Club category channel set has been been set to {category.Name}",
-                        Color.Green.RawValue).Build());
+                if (category == null)
+                {
+                    cfg.ClubChannelCategory = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled club channel creation",
+                            Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    cfg.ClubChannelCategory = category.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Club category channel set has been been set to {category.Name}",
+                            Color.Green.RawValue).Build());
+                }
             }
         }
 
-        [Command("channel level", RunMode = RunMode.Async)]
-        [Summary("Sets level requirement for people to create a channel")]
+        [Command("level", RunMode = RunMode.Async)]
+        [Summary("Sets level requirement for people to create a club")]
         public async Task ClubSetLevelRequirement(uint level)
         {
             using (var db = new DbService())
@@ -638,7 +660,7 @@ namespace Hanekawa.Modules.Club
         }
 
         [Command("channel amount", RunMode = RunMode.Async)]
-        [Summary("Sets amount required thats above the required level requirement to create a channel")]
+        [Summary("Sets amount required thats above the level requirement(club create) to create a channel")]
         public async Task ClubSetAmountRequirement(uint amount)
         {
             using (var db = new DbService())

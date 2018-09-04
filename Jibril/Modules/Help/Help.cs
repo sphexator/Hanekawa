@@ -22,7 +22,7 @@ namespace Hanekawa.Modules.Help
 
         [Command("help")]
         [Summary("Lists this bot's commands.")]
-        public async Task HelpAsync(string path = "")
+        public async Task HelpAsync([Remainder]string path = "")
         {
             if (path == "")
             {
