@@ -26,7 +26,7 @@ namespace Hanekawa.Modules.Help
         {
             if (path == "")
             {
-                var content = string.Join(", ", GetModules(_commands));
+                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var author = new EmbedAuthorBuilder
                 {
                     Name = "Module list"
@@ -68,17 +68,39 @@ namespace Hanekawa.Modules.Help
             }
         }
 
-        private static IEnumerable<string> GetModules(CommandService commandService)
+        private static async Task<IEnumerable<string>> GetModulesAsync(CommandService commandService, ICommandContext context)
         {
-            return commandService.Modules.Select(x => $"`{x.Name}`").ToList();
+            var modules = new List<string>();
+            foreach (var module in commandService.Modules)
+            {
+                var resultstringList = new List<string>();
+                foreach (var cmd in module.Commands)
+                {
+                    var result = await cmd.CheckPreconditionsAsync(context);
+                    if (result.IsSuccess)
+                    {
+                        resultstringList.Add(cmd.Name);
+                    }
+                }
+
+                if (resultstringList.Count != 0)
+                {
+                    modules.Add($"`{module.Name}`");
+                }
+            }
+
+            return modules;
         }
 
         private void AddCommands(ModuleInfo module, ref EmbedBuilder builder)
         {
             foreach (var command in module.Commands)
             {
-                command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
-                AddCommand(command, ref builder);
+                var check = command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
+                if (check.IsSuccess)
+                {
+                    AddCommand(command, ref builder);
+                }
             }
         }
 
