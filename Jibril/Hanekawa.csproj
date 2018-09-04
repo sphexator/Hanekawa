@@ -38,6 +38,9 @@
 
   <ItemGroup>
     <Compile Remove="Migrations\20180831131924_customemoteadditions.cs" />
+    <Compile Remove="Migrations\20180903152543_clubAddition.cs" />
+    <Compile Remove="Migrations\20180903152726_clubAddition.cs" />
+    <Compile Remove="Migrations\20180903153349_clubAddition.cs" />
   </ItemGroup>
 
   <ItemGroup>

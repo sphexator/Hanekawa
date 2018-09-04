@@ -55,7 +55,18 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                await db.CreateClub(Context.User, Context.Guild, name, DateTimeOffset.UtcNow);
+                var club = await db.CreateClub(Context.User, Context.Guild, name, DateTimeOffset.UtcNow);
+                var data = new ClubPlayer
+                {
+                    ClubId = club.Id,
+                    GuildId = Context.Guild.Id,
+                    JoinDate = DateTimeOffset.UtcNow,
+                    Rank = 1,
+                    UserId = Context.User.Id,
+                    Id = (await db.ClubPlayers.CountAsync()) + 1
+                };
+                await db.ClubPlayers.AddAsync(data);
+                await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Successfully created club {name} !", Color.Green.RawValue).Build());
             }
@@ -88,7 +99,8 @@ namespace Hanekawa.Modules.Club
                     GuildId = Context.Guild.Id,
                     JoinDate = DateTimeOffset.UtcNow,
                     Rank = 3,
-                    UserId = user.Id
+                    UserId = user.Id,
+                    Id = (await db.ClubPlayers.CountAsync()) + 1
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -444,6 +456,7 @@ namespace Hanekawa.Modules.Club
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader == null) return;
+                await Context.Message.DeleteAsync();
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 leader.Description = content;
                 await db.SaveChangesAsync();
@@ -469,6 +482,7 @@ namespace Hanekawa.Modules.Club
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader == null) return;
+                await Context.Message.DeleteAsync();
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 leader.ImageUrl = image;
                 await db.SaveChangesAsync();

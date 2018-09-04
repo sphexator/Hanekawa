@@ -68,6 +68,7 @@ namespace Hanekawa.Modules.Audio
                     {
                         await ReplyAsync(null, false,
                             new EmbedBuilder().Reply("Move request timed out", Color.Red.RawValue).Build());
+                        return;
                     }
                 }
                 await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState)Context.User).VoiceChannel.Id);

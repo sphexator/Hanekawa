@@ -14,7 +14,7 @@ namespace Hanekawa.Services.Club
     public class ClubService
     {
         public enum UpdateType { Image, Description}
-        private DiscordSocketClient _client;
+        private readonly DiscordSocketClient _client;
 
         public ClubService(DiscordSocketClient client)
         {

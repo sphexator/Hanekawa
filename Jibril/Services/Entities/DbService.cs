@@ -71,7 +71,8 @@ namespace Hanekawa.Services.Entities
                 optionsBuilder
                     //.UseLoggerFactory(MyLoggerFactory)
                     //.EnableSensitiveDataLogging()
-                    .UseMySql(Config.ConnectionString);
+                    //.UseMySql(Config.ConnectionString);
+                    .UseMySql("Server=localhost;Database=yamato_test;User=root;Password=12345;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -122,12 +123,11 @@ namespace Hanekawa.Services.Entities
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
             {
-                x.HasKey(e => new {e.GuildId, e.Id, e.Leader});
+                x.HasKey(e => new { e.Id, e.GuildId, e.Leader});
             });
             modelBuilder.Entity<ClubPlayer>(x =>
             {
                 x.HasKey(e => new {e.Id, e.ClubId, e.GuildId });
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<ClubBlacklist>(x => { x.HasKey(e => new {e.ClubId, e.GuildId, e.BlackListUser}); });
 
@@ -159,13 +159,7 @@ namespace Hanekawa.Services.Entities
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
-                x.Property(e => e.CurrencyName).HasDefaultValue("Credit");
-                x.Property(e => e.CurrencySign).HasDefaultValue("$");
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
-                x.Property(e => e.SpecialCurrencyName).HasDefaultValue("Special Credit");
-                x.Property(e => e.SpecialCurrencySign).HasDefaultValue("$");
-                x.Property(e => e.SuggestionEmoteYes).HasDefaultValue("<:1yes:403870491749777411>");
-                x.Property(e => e.SuggestionEmoteNo).HasDefaultValue("<:2no:403870492206825472>");
             });
             modelBuilder.Entity<GuildInfoLink>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));

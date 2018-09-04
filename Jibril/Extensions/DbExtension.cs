@@ -163,8 +163,6 @@ namespace Hanekawa.Extensions
         public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
             string name, DateTimeOffset time)
         {
-            var check = await context.ClubInfos.FindAsync(user.Id);
-            if (check != null) return null;
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
             int nr;
             if (counter == 0) nr = 1;
@@ -186,12 +184,12 @@ namespace Hanekawa.Extensions
             };
             await context.ClubInfos.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ClubInfos.FindAsync(nr, guild.Id);
+            return await context.ClubInfos.FindAsync(nr, guild.Id, user.Id);
         }
 
         public static async Task<ClubInfo> GetClubAsync(this DbService context, int id, SocketGuild guild)
         {
-            var check = await context.ClubInfos.FindAsync(id, guild.Id);
+            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == guild.Id);
             return check ?? null;
         }
 
