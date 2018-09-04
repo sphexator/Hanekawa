@@ -83,15 +83,32 @@ namespace Hanekawa.Modules.Club
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
                         x.GuildId == Context.Guild.Id && x.UserId == Context.Guild.Id && x.Rank <= 2);
-                if (clubUser == null)
+                if (clubUser == null) return;
+                if (clubUser.Rank > 2)
                 {
                     await ReplyAsync(null, false,
                         new EmbedBuilder()
                             .Reply("You're not high enough rank to use that command!", Color.Red.RawValue).Build());
                     return;
                 }
-
                 var clubData = await db.GetClubAsync(clubUser.ClubId, Context.Guild);
+                await ReplyAsync(
+                    $"{user.Mention}, {Context.User.Mention} has invited you to {clubData.Name}, do you accept? (y/n)");
+                var status = true;
+                while (status)
+                {
+                    try
+                    {
+                        var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
+                        if (response.Content.ToLower() == "y") status = false;
+                        if (response.Content.ToLower() == "n") return;
+                    }
+                    catch
+                    {
+                        return;
+                    }
+                }
+
                 var data = new ClubPlayer
                 {
                     ClubId = clubUser.ClubId,
@@ -99,7 +116,7 @@ namespace Hanekawa.Modules.Club
                     JoinDate = DateTimeOffset.UtcNow,
                     Rank = 3,
                     UserId = user.Id,
-                    Id = (await db.ClubPlayers.CountAsync()) + 1
+                    Id = (await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id)) + 1
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
