@@ -28,7 +28,6 @@ namespace Hanekawa.Modules.Club
             _clubService = clubService;
         }
 
-        //TODO: Club, do this.
         [Command("create", RunMode = RunMode.Async)]
         [Summary("Creates a club")]
         [Ratelimit(1, 5, Measure.Seconds)]

@@ -37,7 +37,7 @@ namespace Hanekawa.Services.Club
                 false, embed.Build());
             club.AdMessage = msg.Id;
             await db.SaveChangesAsync();
-            if (club.Public) await msg.AddReactionAsync(new Emoji("✔️"));
+            if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
         }
 
         public async Task UpdatePostAsync(GuildConfig cfg, IUserMessage msg, ClubInfo club, UpdateType type, string content)
@@ -93,7 +93,7 @@ namespace Hanekawa.Services.Club
                     if (!club.Public || club == null) return;
 
                     var Clubuser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                        x.GuildId == channel.Guild.Id && x.ClubId == club.Id);
+                        x.GuildId == channel.Guild.Id && x.ClubId == club.Id && x.UserId == arg3.UserId);
                     if (Clubuser == null) return;
 
                     var user = arg3.User.Value as IGuildUser;
@@ -120,10 +120,10 @@ namespace Hanekawa.Services.Club
 
                     var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.AdMessage == arg3.MessageId);
-                    if (!club.Public || club == null) return;
+                    if (!club.Public || club.AdMessage == null) return;
 
                     var Clubuser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                        x.GuildId == channel.Guild.Id && x.ClubId == club.Id);
+                        x.GuildId == channel.Guild.Id && x.ClubId == club.Id && x.UserId == arg3.UserId);
                     if (Clubuser != null) return;
 
                     var user = arg3.User.Value as IGuildUser;
@@ -136,7 +136,8 @@ namespace Hanekawa.Services.Club
                         GuildId = channel.Guild.Id,
                         JoinDate = DateTimeOffset.UtcNow,
                         Rank = 3,
-                        UserId = user.Id
+                        UserId = user.Id,
+                        Id = (await db.ClubPlayers.CountAsync(x => x.GuildId == channel.Guild.Id)) + 1
                     };
                     db.ClubPlayers.Add(data);
                     await db.SaveChangesAsync();
