@@ -72,7 +72,7 @@ namespace Hanekawa.Services.Entities
                     //.UseLoggerFactory(MyLoggerFactory)
                     //.EnableSensitiveDataLogging()
                     //.UseMySql(Config.ConnectionString);
-                    .UseMySql("Server=localhost;Database=yamato_test;User=root;Password=12345;");
+                    .UseMySql("Server=localhost;Database=yamato;User=root;Password=12345;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

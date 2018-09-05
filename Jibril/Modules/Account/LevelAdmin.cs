@@ -27,6 +27,34 @@ namespace Hanekawa.Modules.Account
                 _levelingService = levelingService;
             }
 
+            [Command("role stack", RunMode = RunMode.Async)]
+            [Alias("stack", "rolestack", "rs")]
+            [Summary("Toggles between level roles stacking or keep the highest earned one")]
+            [RequireUserPermission(GuildPermission.ManageGuild)]
+            public async Task LevelStack()
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                    if (cfg.StackLvlRoles)
+                    {
+                        cfg.StackLvlRoles = false;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Users will now only keep the highest earned role.",
+                                Color.Green.RawValue).Build());
+                    }
+                    else
+                    {
+                        cfg.StackLvlRoles = true;
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Level roles does now stack.",
+                                Color.Green.RawValue).Build());
+                    }
+                }
+            }
+
             [Command("add", RunMode = RunMode.Async)]
             [Summary("Adds a role reward")]
             [RequireUserPermission(GuildPermission.ManageGuild)]
