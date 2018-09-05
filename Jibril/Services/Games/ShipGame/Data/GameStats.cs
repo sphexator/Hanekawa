@@ -40,12 +40,12 @@ namespace Hanekawa.Services.Games.ShipGame.Data
             return Convert.ToInt32((DefaultDamage + enemyData.Damage) * level);
         }
 
-        public int CalculateDamage(int damage, GameClass ass)
+        public int CalculateDamage(int damage, GameClass AttackerClass, GameClass EnemyClass, EnemyType type)
         {
             var avoid = new Random().Next(100);
             var crit = new Random().Next(100);
-            if (avoid <= ass.ChanceAvoid) return 0;
-            if (crit <= ass.ChanceCrit) damage = Convert.ToInt32(damage * ass.ModifierCriticalChance);
+            if(type == EnemyType.Player) if (avoid <= EnemyClass.ChanceAvoid) return 0;
+            if (crit <= AttackerClass.ChanceCrit) damage = Convert.ToInt32(damage * AttackerClass.ModifierCriticalChance);
             var lowDmg = damage / 2;
             if (lowDmg <= 0) lowDmg = 5;
             var highDmg = damage * 2;
@@ -54,5 +54,11 @@ namespace Hanekawa.Services.Games.ShipGame.Data
 
             return damage;
         }
+    }
+
+    public enum EnemyType
+    {
+        NPC,
+        Player
     }
 }

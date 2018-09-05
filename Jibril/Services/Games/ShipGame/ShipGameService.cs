@@ -173,8 +173,8 @@ namespace Hanekawa.Services.Games.ShipGame
             await Task.Delay(2000);
             while (alive)
             {
-                var usrDmg = _gameStats.CalculateDamage(playerOneDmg, playerOne);
-                var npcDmg = _gameStats.CalculateDamage(playerTwoDmg, playerTwo);
+                var usrDmg = _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.NPC);
+                var npcDmg = _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
 
                 playerTwoHp = playerTwoHp - usrDmg;
                 if (playerTwoHp > 0)
@@ -350,8 +350,8 @@ namespace Hanekawa.Services.Games.ShipGame
             var alive = true;
             while (alive)
             {
-                var playerOneDamage = _gameStats.CalculateDamage(playerOneDmg, playerOne);
-                var playerTwoDamage = _gameStats.CalculateDamage(playerTwoDmg, playerTwo);
+                var playerOneDamage = _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.Player);
+                var playerTwoDamage = _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
 
                 playerTwoHp = playerTwoHp - playerOneDamage;
                 if (playerTwoHp > 0)
