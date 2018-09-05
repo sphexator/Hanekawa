@@ -189,7 +189,7 @@ namespace Hanekawa.Modules.Game
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Information for {classInfo.Name}\n" +
                                              $"Health: {100 * classInfo.ModifierHealth}%\n" +
-                                             $"Damage: {100 * classInfo.ModifierHealth}%\n" +
+                                             $"Damage: {100 * classInfo.ModifierDamage}%\n" +
                                              $"Crit Chance: {classInfo.ChanceCrit}%\n" +
                                              $"Avoidance: {classInfo.ChanceAvoid}%").Build());
             }
