@@ -72,6 +72,8 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="TweetinviAPI" Version="4.0.0" />
+    <PackageReference Include="TweetinviAPI.WebhooksPlugin" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>

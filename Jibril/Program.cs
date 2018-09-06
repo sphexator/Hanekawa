@@ -28,6 +28,7 @@ using Hanekawa.Services.Loot;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
 using Hanekawa.Services.Scheduler;
+using Hanekawa.Services.Twitter;
 using Hanekawa.Services.Welcome;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,6 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
 using SharpLink;
+using Tweetinvi;
 
 namespace Hanekawa
 {
@@ -50,6 +52,11 @@ namespace Hanekawa
 
         private async Task MainASync()
         {
+            Auth.SetUserCredentials("i4LtAgk0vOlUmAdZkQwZb4fyt",
+                "bCn3BUlFfxh9jaAMo8lyFXNHvdwRkMgclktZOeGOks5nKoT0Yi",
+                "581282548-IDTNiTVtCsRdLkWHuXtJ5ZmrOobWhaA056V5N2xH",
+                "Xh8hVuj9fKltKqkC82zxflex2EnporrKgeOmccTwgS9wb");
+
             using (var db = new DbService())
             {
                 await db.Database.MigrateAsync();
@@ -60,6 +67,7 @@ namespace Hanekawa
                 MessageCacheSize = 35,
                 AlwaysDownloadUsers = true
             });
+
             _config = BuildConfig();
 
             _youTubeService = new YouTubeService(new BaseClientService.Initializer
@@ -88,6 +96,8 @@ namespace Hanekawa
             services.GetRequiredService<BoardService>();
             services.GetRequiredService<WarnService>();
             services.GetRequiredService<NudeScoreService>();
+            services.GetRequiredService<TwitterService>();
+            await services.GetRequiredService<TwitterService>().InitializeAsync();
             //services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
             //services.GetRequiredService<MvpService>();
@@ -150,6 +160,7 @@ namespace Hanekawa
             services.AddSingleton<AudioService>();
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<SimulCast>();
+            services.AddSingleton<TwitterService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();

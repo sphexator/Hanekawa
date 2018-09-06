@@ -85,7 +85,6 @@ namespace Hanekawa.Services.Loot
                         userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
                         userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
                         userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
-                        await rct.Message.Value.DeleteAsync().ConfigureAwait(false);
                         await db.SaveChangesAsync();
                         var trgMsg =
                             await channel.SendMessageAsync(
@@ -103,10 +102,7 @@ namespace Hanekawa.Services.Loot
                         userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
                         userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
                         await db.SaveChangesAsync();
-                        await rct.Message.Value.DeleteAsync().ConfigureAwait(false);
-                        var trgMsg =
-                            await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
+                        var trgMsg = await channel.SendMessageAsync($"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
                         await Task.Delay(5000);
                         await trgMsg.DeleteAsync();
                     }
