@@ -1,7 +1,7 @@
 ﻿using System;
 using Discord.WebSocket;
 
-namespace Hanekawa.Services.Level.Services
+namespace Hanekawa.Services.Level.Util
 {
     public class Calculate
     {
@@ -48,17 +48,5 @@ namespace Hanekawa.Services.Level.Services
 
             return Convert.ToUInt32(totalTime);
         }
-
-        // Voice Experience credit calculations = VECC
-        /*
-        public static void VECC(IUser user, DateTime vcTimer)
-        {
-            var calculateXp = GetVoiceExp(vcTimer) * 1;
-            var calculateCredit = GetVoiceCredit(vcTimer);
-
-            if (calculateXp > 0)
-                LevelDatabase.AddExperience(user, calculateXp, calculateCredit);
-        }
-        */
     }
 }

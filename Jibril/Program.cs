@@ -19,7 +19,6 @@ using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.INC;
 using Hanekawa.Services.Level;
-using Hanekawa.Services.Level.Services;
 using Hanekawa.Services.Log;
 using Hanekawa.Services.Loot;
 using Hanekawa.Services.Profile;
@@ -36,6 +35,7 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa
 {

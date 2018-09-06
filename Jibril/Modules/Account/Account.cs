@@ -9,7 +9,7 @@ using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Entities;
-using Hanekawa.Services.Level.Services;
+using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Profile;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;

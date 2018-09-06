@@ -1,7 +1,6 @@
 ﻿using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
-using Hanekawa.Services.Level.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -12,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 
