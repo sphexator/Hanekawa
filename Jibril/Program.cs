@@ -19,12 +19,12 @@ using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.INC;
 using Hanekawa.Services.Level;
+using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Log;
 using Hanekawa.Services.Loot;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
 using Hanekawa.Services.Scheduler;
-using Hanekawa.Services.Twitter;
 using Hanekawa.Services.Welcome;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +35,6 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa
 {

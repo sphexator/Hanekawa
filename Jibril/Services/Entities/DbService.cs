@@ -26,6 +26,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<Inventory> Inventories { get; set; }
         public virtual DbSet<InventoryGlobal> InventoryGlobals { get; set; }
         public virtual DbSet<LevelReward> LevelRewards { get; set; }
+        public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
 
@@ -104,6 +105,7 @@ namespace Hanekawa.Services.Entities
                 x.Property(c => c.TotalExp).HasMaxLength(999);
             });
             modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => new { e.GuildId, e.Level }); });
+            modelBuilder.Entity<LevelExpEvent>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<Shop>(x =>
             {
                 x.HasKey(e => e.Id);

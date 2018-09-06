@@ -46,7 +46,11 @@ namespace Hanekawa.Services.Level
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                foreach (var x in db.GuildConfigs)
+                {
+
+                    ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                }
             }
         }
 
