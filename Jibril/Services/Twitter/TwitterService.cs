@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using Discord.WebSocket;
 using System.Threading.Tasks;
+using Tweetinvi;
 using Tweetinvi.Events;
 using Stream = Tweetinvi.Stream;
 
