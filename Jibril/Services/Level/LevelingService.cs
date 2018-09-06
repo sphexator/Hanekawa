@@ -25,6 +25,7 @@ namespace Hanekawa.Services.Level
             = new ConcurrentDictionary<ulong, uint>();
         private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
             = new ConcurrentDictionary<ulong, Timer>();
+
         private ConcurrentDictionary<ulong, Timer> ExpEventMessage { get; }
             = new ConcurrentDictionary<ulong, Timer>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
@@ -82,7 +83,7 @@ namespace Hanekawa.Services.Level
                 {
                     var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
                     var msg = await channel.SendEmbedAsync(new EmbedBuilder().Reply($"A {multiplier}x exp event has started!\n" +
-                                                                          $"Duration: {after.Humanize()} ({after} minutes)"));
+                                                                          $"Duration: {after.Humanize()} ( {after} )"));
                     var toAdd = new Timer(_ =>
                     {
                         var upd = msg.Embeds.First().ToEmbedBuilder();
@@ -96,7 +97,7 @@ namespace Hanekawa.Services.Level
                     });
                 }
                 else
-                    await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply($"No event channel has been setup.", Color.Red.RawValue));
+                    await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.", Color.Red.RawValue));
             }
         }
 

@@ -154,22 +154,21 @@ namespace Hanekawa.Modules.Account
                 var list = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.Level)
                     .ToListAsync();
                 var pages = new List<string>();
-                if (pages.Count != 0)
+                if (list.Count != 0)
                 {
-                    for (var i = 0; i < pages.Count;)
+                    for (var i = 0; i < list.Count;)
                     {
                         try
                         {
                             string input = null;
                             for (var j = 0; j < 5; j++)
                             {
-                                if (i >= pages.Count) continue;
+                                if (i >= list.Count) continue;
                                 var entry = list[i];
                                 input += $"Name: {Context.Guild.GetRole(entry.Role).Name ?? "Role not found"}\n" +
                                          $"Level: {entry.Level}\n" +
                                          $"Stack: {entry.Stackable}\n" +
                                          "\n";
-                                pages.Add(input);
                                 i++;
                             }
 
