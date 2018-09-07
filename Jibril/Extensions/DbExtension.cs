@@ -301,7 +301,12 @@ namespace Hanekawa.Extensions
                 EmoteCurrency = false,
                 AnimeAirChannel = null,
                 SuggestionEmoteYes = "<:1yes:403870491749777411>",
-                SuggestionEmoteNo = "<:2no:403870492206825472>"
+                SuggestionEmoteNo = "<:2no:403870492206825472>",
+                ClubAdvertisementChannel = null,
+                ClubChannelCategory = null,
+                ClubChannelRequiredAmount = 4,
+                ClubChannelRequiredLevel = 40,
+                ClubEnableVoiceChannel = false
             };
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
