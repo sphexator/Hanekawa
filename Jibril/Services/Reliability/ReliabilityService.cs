@@ -4,18 +4,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
-// Change this namespace if desired
 namespace Hanekawa.Services.Reliability
 {
-    // This service requires that your bot is being run by a daemon that handles
-    // Exit Code 1 (or any exit code) as a restart.
-    //
-    // If you do not have your bot setup to run in a daemon, this service will just
-    // terminate the process and the bot will not restart.
-    // 
-    // Links to daemons:
-    // [Powershell (Windows+Unix)] https://gitlab.com/snippets/21444
-    // [Bash (Unix)] https://stackoverflow.com/a/697064
     public class ReliabilityService
     {
         private const bool AttemptReset = true;

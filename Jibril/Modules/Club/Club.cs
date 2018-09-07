@@ -127,6 +127,7 @@ namespace Hanekawa.Modules.Club
         }
 
         [Command("remove", RunMode = RunMode.Async)]
+        [Alias("kick")]
         [Summary("Removes a user from your club")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
