@@ -35,6 +35,7 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Services.Reliability;
 
 namespace Hanekawa
 {
@@ -95,6 +96,7 @@ namespace Hanekawa
             services.GetRequiredService<LootCrates>();
             services.GetRequiredService<SimulCast>();
             services.GetRequiredService<BlackListService>();
+            services.GetRequiredService<ReliabilityService>();
 
             _client.Ready += LavalinkInitiateAsync;
             
@@ -150,6 +152,7 @@ namespace Hanekawa
             services.AddSingleton<LootCrates>();
             services.AddSingleton<AudioService>();
             services.AddSingleton<RequiredChannel>();
+            services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
             services.AddLogging();
             services.AddSingleton<LogService>();

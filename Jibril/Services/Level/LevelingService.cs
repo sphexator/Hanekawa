@@ -42,6 +42,7 @@ namespace Hanekawa.Services.Level
                     else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
                     {
                         ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                        RemoveFromDatabase(db, x.GuildId);
                     }
                     else
                     {
@@ -87,7 +88,7 @@ namespace Hanekawa.Services.Level
             {
                 try
                 {
-                    ExpMultiplier.AddOrUpdate(guildId, 1, (key, old) => old = defaultMult);
+                    ExpMultiplier.AddOrUpdate(guildId, defaultMult, (key, old) => old = defaultMult);
                     if (messageId != null)
                     {
                         var msg = await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
