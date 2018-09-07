@@ -30,6 +30,9 @@ namespace Hanekawa.Services.Level
             _client.UserVoiceStateUpdated += VoiceExpAsync;
             _client.UserJoined += GiveRolesBackAsync;
 
+            _client.UserJoined += UserActiveAsync;
+            _client.UserLeft += UserDeactiveAsync;
+
             using (var db = new DbService())
             {
                 foreach (var x in db.GuildConfigs)
@@ -316,6 +319,35 @@ namespace Hanekawa.Services.Level
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static Task UserActiveAsync(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var userdata = await db.Accounts.FindAsync(user.Id, user.Guild.Id);
+                    if (userdata == null) return;
+                    userdata.Active = true;
+                    await db.SaveChangesAsync();
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static Task UserDeactiveAsync(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var userdata = await db.GetOrCreateUserData(user);
+                    userdata.Active = false;
+                    await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
