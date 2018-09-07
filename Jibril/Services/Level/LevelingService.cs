@@ -26,8 +26,6 @@ namespace Hanekawa.Services.Level
         private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
             = new ConcurrentDictionary<ulong, Timer>();
 
-        private ConcurrentDictionary<ulong, Timer> ExpEventMessage { get; }
-            = new ConcurrentDictionary<ulong, Timer>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
         private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
@@ -39,96 +37,146 @@ namespace Hanekawa.Services.Level
             _calc = calc;
             _provider = provider;
 
-            _client.MessageReceived += ServerMessageExp;
-            _client.MessageReceived += GlobalMessageExp;
-            _client.UserVoiceStateUpdated += VoiceExp;
+            _client.MessageReceived += ServerMessageExpAsync;
+            _client.MessageReceived += GlobalMessageExpAsync;
+            _client.UserVoiceStateUpdated += VoiceExpAsync;
             _client.UserJoined += GiveRolesBack;
 
             using (var db = new DbService())
             {
                 foreach (var x in db.GuildConfigs)
                 {
-
-                    ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    var expEvent = db.LevelExpEvents.Find(x.GuildId);
+                    if (expEvent == null) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    else
+                    {
+                        var after = expEvent.Time - DateTime.UtcNow;
+                        ExpEventHandler(db, expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId, expEvent.ChannelId, after);
+                    }
                 }
             }
         }
 
-        public async Task AddExpMultiplierAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, SocketTextChannel fallbackChannel = null)
+        // Exp event handler
+        public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, ITextChannel fallbackChannel = null)
         {
-            ExpMultiplier.AddOrUpdate(guild.Id, multiplier, (key, old) => old = multiplier);
-            StartExpEvent(guild.Id, after);
-            if (announce)
+            using (var db = new DbService())
             {
-                await AnnounceExpEvent(guild, multiplier, after, fallbackChannel);
+                IUserMessage message = null;
+                var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
+                if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
+                ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message.Id, message.Channel.Id, after);
+                await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message.Id, message.Channel.Id, after);
             }
         }
 
-        private void StartExpEvent(ulong guildid, TimeSpan after)
+        private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMult, ulong? messageId, ulong? channelId, TimeSpan after)
         {
-            var toAdd = new Timer(_ =>
+            ExpMultiplier.AddOrUpdate(guildId, multiplier, (key, old) => old = multiplier);
+            var toAdd = new Timer(async _ =>
             {
-                ExpMultiplier.AddOrUpdate(guildid, 1, (key, old) => old = 1);
-
+                try
+                {
+                    ExpMultiplier.AddOrUpdate(guildId, 1, (key, old) => old = defaultMult);
+                    if (messageId != null)
+                    {
+                        var msg = await _client.GetGuild(guildId).GetTextChannel(channelId.Value).GetMessageAsync(messageId.Value) as IUserMessage;
+                        var upd = msg.Embeds.First().ToEmbedBuilder();
+                        upd.Color = Color.Red;
+                        await msg.ModifyAsync(x => x.Embed = upd.Build());
+                    }
+                    RemoveFromDatabase(db, guildId);
+                }
+                catch
+                {
+                    ExpMultiplier.AddOrUpdate(guildId, 1, (key, old) => old = defaultMult);
+                    RemoveFromDatabase(db, guildId);
+                }
             }, null, after, Timeout.InfiniteTimeSpan);
-            ExpEvent.AddOrUpdate(guildid, (key) => toAdd, (key, old) =>
+            ExpEvent.AddOrUpdate(guildId, (key) => toAdd, (key, old) =>
             {
                 old.Change(Timeout.Infinite, Timeout.Infinite);
                 return toAdd;
             });
         }
 
-        private async Task AnnounceExpEvent(IGuild guild, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
+        private static async Task<bool> EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier, ulong? message, ulong? channel, TimeSpan after)
         {
-            using (var db = new DbService())
+            var check = await db.LevelExpEvents.FindAsync(guildid);
+            if (check == null)
             {
-                var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
-                if (cfg.EventChannel.HasValue)
+                var data = new LevelExpEvent
                 {
-                    var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
-                    var msg = await channel.SendEmbedAsync(new EmbedBuilder().Reply($"A {multiplier}x exp event has started!\n" +
-                                                                          $"Duration: {after.Humanize()} ( {after} )"));
-                    var toAdd = new Timer(_ =>
-                    {
-                        var upd = msg.Embeds.First().ToEmbedBuilder();
-                        upd.Color = Color.Red;
-                        msg.ModifyAsync(x => x.Embed = upd.Build());
-                    }, null, after, Timeout.InfiniteTimeSpan);
-                    ExpEventMessage.AddOrUpdate(guild.Id, (key) => toAdd, (key, old) =>
-                    {
-                        old.Change(Timeout.Infinite, Timeout.Infinite);
-                        return toAdd;
-                    });
-                }
-                else
-                    await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.", Color.Red.RawValue));
+                    GuildId = guildid,
+                    MessageId = message,
+                    ChannelId = channel,
+                    Multiplier = multiplier,
+                    Time = DateTime.UtcNow + after
+                };
+                await db.LevelExpEvents.AddAsync(data);
+                await db.SaveChangesAsync();
+                return true;
             }
+
+            check.ChannelId = channel;
+            check.Time = DateTime.UtcNow + after;
+            check.Multiplier = multiplier;
+            check.MessageId = message;
+            await db.SaveChangesAsync();
+            return false;
         }
 
-        private static Task GiveRolesBack(SocketGuildUser user)
+        private static void RemoveFromDatabase(DbService db, ulong guildid)
         {
-            var _ = Task.Run(async () =>
-            {
-                using (var db = new DbService())
-                {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    if (userdata.Level < 2) return;
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
-                    if (cfg.StackLvlRoles)
-                    {
-                        var roleCollection = await GetRoleCollection(user, db, userdata);
-                        await user.AddRolesAsync(roleCollection);
-                        return;
-                    }
-
-                    var singleRole = await GetRoleSingle(user, db, userdata);
-                    await user.AddRolesAsync(singleRole);
-                }
-            });
-            return Task.CompletedTask;
+            var check = db.LevelExpEvents.FirstOrDefault(x => x.GuildId == guildid);
+            if (check == null) return;
+            db.LevelExpEvents.Remove(check);
+            db.SaveChanges();
         }
 
-        private Task ServerMessageExp(SocketMessage message)
+        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, GuildConfig cfg, IGuild guild, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
+        {
+            var check = await db.LevelExpEvents.FindAsync(guild.Id);
+            if (check == null) return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
+            try
+            {
+                var msg = await _client.GetGuild(guild.Id).GetTextChannel(check.ChannelId.Value).GetMessageAsync(check.MessageId.Value);
+                if (msg is null)
+                {
+                    return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
+                }
+
+                await msg.DeleteAsync();
+                return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
+            }
+            catch { return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel); }
+        }
+
+        private static async Task<IUserMessage> PostAnnouncementAsync(IGuild guild, GuildConfig cfg, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
+        {
+            if (cfg.EventChannel.HasValue)
+            {
+                var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Title = "Exp Event",
+                    Description = $"A {multiplier}x exp event has started!\n" +
+                                  $"Duration: {after.Humanize()} ( {after} )",
+                    Timestamp = DateTimeOffset.UtcNow + after,
+                    Footer = new EmbedFooterBuilder { Text = "Ends:"}
+                };
+                var msg = await channel.SendEmbedAsync(embed);
+                return msg;
+            }
+
+            await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.", Color.Red.RawValue));
+            return null;
+        }
+
+        // Event handlers for exp
+        private Task ServerMessageExpAsync(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
@@ -169,7 +217,7 @@ namespace Hanekawa.Services.Level
             return Task.CompletedTask;
         }
 
-        private Task GlobalMessageExp(SocketMessage message)
+        private Task GlobalMessageExpAsync(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {
@@ -200,7 +248,7 @@ namespace Hanekawa.Services.Level
             return Task.CompletedTask;
         }
 
-        private Task VoiceExp(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
+        private Task VoiceExpAsync(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
         {
             var _ = Task.Run(async () =>
             {
@@ -250,6 +298,7 @@ namespace Hanekawa.Services.Level
             return Task.CompletedTask;
         }
 
+        // Level manager & roles
         private async Task NewLevelManager(Account userdata, IGuildUser user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
@@ -274,7 +323,7 @@ namespace Hanekawa.Services.Level
 
                 if (userdata.Level >= x.Level) role = x.Role;
             }
-            if(role != 0) roles.Add(user.Guild.GetRole(role));
+            if (role != 0) roles.Add(user.Guild.GetRole(role));
             return roles;
         }
 
@@ -307,6 +356,30 @@ namespace Hanekawa.Services.Level
             }
         }
 
+        private static Task GiveRolesBack(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var userdata = await db.GetOrCreateUserData(user);
+                    if (userdata.Level < 2) return;
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    if (cfg.StackLvlRoles)
+                    {
+                        var roleCollection = await GetRoleCollection(user, db, userdata);
+                        await user.AddRolesAsync(roleCollection);
+                        return;
+                    }
+
+                    var singleRole = await GetRoleSingle(user, db, userdata);
+                    await user.AddRolesAsync(singleRole);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        // Cooldown area
         private bool CheckServerCooldown(IGuildUser usr)
         {
             var check = ServerExpCooldown.TryGetValue(usr.GuildId, out var cds);

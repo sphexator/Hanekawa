@@ -227,14 +227,14 @@ namespace Hanekawa.Modules.Account
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Okay, I'll let you announce it.",
                             Color.Green.RawValue).Build());
-                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, duration.Value);
+                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value);
                 }
                 else
                 {
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Announcing event into designated channel.",
                             Color.Green.RawValue).Build());
-                    await _levelingService.AddExpMultiplierAsync(Context.Guild, multiplier, duration.Value, true, Context.Channel as SocketTextChannel);
+                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true, Context.Channel as SocketTextChannel);
                 }
             }
             catch
