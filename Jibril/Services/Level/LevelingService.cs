@@ -20,16 +20,6 @@ namespace Hanekawa.Services.Level
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
 
-        private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
-            = new ConcurrentDictionary<ulong, uint>();
-        private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
-            = new ConcurrentDictionary<ulong, Timer>();
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
-        private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
-            = new ConcurrentDictionary<ulong, DateTime>();
-
         public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
@@ -45,19 +35,39 @@ namespace Hanekawa.Services.Level
                 foreach (var x in db.GuildConfigs)
                 {
                     var expEvent = db.LevelExpEvents.Find(x.GuildId);
-                    if (expEvent == null) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
-                    else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow) ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    if (expEvent == null)
+                    {
+                        ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    }
+                    else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
+                    {
+                        ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    }
                     else
                     {
                         var after = expEvent.Time - DateTime.UtcNow;
-                        ExpEventHandler(db, expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId, expEvent.ChannelId, after);
+                        ExpEventHandler(db, expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId,
+                            expEvent.ChannelId, after);
                     }
                 }
             }
         }
 
+        private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
+            = new ConcurrentDictionary<ulong, uint>();
+
+        private ConcurrentDictionary<ulong, Timer> ExpEvent { get; }
+            = new ConcurrentDictionary<ulong, Timer>();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> ServerExpCooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
+        private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
+            = new ConcurrentDictionary<ulong, DateTime>();
+
         // Exp event handler
-        public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false, ITextChannel fallbackChannel = null)
+        public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
+            ITextChannel fallbackChannel = null)
         {
             using (var db = new DbService())
             {
@@ -69,7 +79,8 @@ namespace Hanekawa.Services.Level
             }
         }
 
-        private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMult, ulong? messageId, ulong? channelId, TimeSpan after)
+        private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMult, ulong? messageId,
+            ulong? channelId, TimeSpan after)
         {
             ExpMultiplier.AddOrUpdate(guildId, multiplier, (key, old) => old = multiplier);
             var toAdd = new Timer(async _ =>
@@ -79,11 +90,13 @@ namespace Hanekawa.Services.Level
                     ExpMultiplier.AddOrUpdate(guildId, 1, (key, old) => old = defaultMult);
                     if (messageId != null)
                     {
-                        var msg = await _client.GetGuild(guildId).GetTextChannel(channelId.Value).GetMessageAsync(messageId.Value) as IUserMessage;
+                        var msg = await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
+                            .GetMessageAsync(messageId.Value) as IUserMessage;
                         var upd = msg.Embeds.First().ToEmbedBuilder();
                         upd.Color = Color.Red;
                         await msg.ModifyAsync(x => x.Embed = upd.Build());
                     }
+
                     RemoveFromDatabase(db, guildId);
                 }
                 catch
@@ -92,14 +105,15 @@ namespace Hanekawa.Services.Level
                     RemoveFromDatabase(db, guildId);
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
-            ExpEvent.AddOrUpdate(guildId, (key) => toAdd, (key, old) =>
+            ExpEvent.AddOrUpdate(guildId, key => toAdd, (key, old) =>
             {
                 old.Change(Timeout.Infinite, Timeout.Infinite);
                 return toAdd;
             });
         }
 
-        private static async Task<bool> EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier, ulong? message, ulong? channel, TimeSpan after)
+        private static async Task<bool> EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier,
+            ulong? message, ulong? channel, TimeSpan after)
         {
             var check = await db.LevelExpEvents.FindAsync(guildid);
             if (check == null)
@@ -133,25 +147,28 @@ namespace Hanekawa.Services.Level
             db.SaveChanges();
         }
 
-        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, GuildConfig cfg, IGuild guild, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
+        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, GuildConfig cfg, IGuild guild,
+            uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
         {
             var check = await db.LevelExpEvents.FindAsync(guild.Id);
             if (check == null) return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
             try
             {
-                var msg = await _client.GetGuild(guild.Id).GetTextChannel(check.ChannelId.Value).GetMessageAsync(check.MessageId.Value);
-                if (msg is null)
-                {
-                    return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
-                }
+                var msg = await _client.GetGuild(guild.Id).GetTextChannel(check.ChannelId.Value)
+                    .GetMessageAsync(check.MessageId.Value);
+                if (msg is null) return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
 
                 await msg.DeleteAsync();
                 return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
             }
-            catch { return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel); }
+            catch
+            {
+                return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
+            }
         }
 
-        private static async Task<IUserMessage> PostAnnouncementAsync(IGuild guild, GuildConfig cfg, uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
+        private static async Task<IUserMessage> PostAnnouncementAsync(IGuild guild, GuildConfig cfg, uint multiplier,
+            TimeSpan after, IMessageChannel fallbackChannel)
         {
             if (cfg.EventChannel.HasValue)
             {
@@ -163,13 +180,14 @@ namespace Hanekawa.Services.Level
                     Description = $"A {multiplier}x exp event has started!\n" +
                                   $"Duration: {after.Humanize()} ( {after} )",
                     Timestamp = DateTimeOffset.UtcNow + after,
-                    Footer = new EmbedFooterBuilder { Text = "Ends:"}
+                    Footer = new EmbedFooterBuilder {Text = "Ends:"}
                 };
                 var msg = await channel.SendEmbedAsync(embed);
                 return msg;
             }
 
-            await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.", Color.Red.RawValue));
+            await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.",
+                Color.Red.RawValue));
             return null;
         }
 
@@ -188,7 +206,7 @@ namespace Hanekawa.Services.Level
 
                 using (var db = new DbService())
                 {
-                    ExpMultiplier.TryGetValue(((IGuildChannel)msg.Channel).GuildId, out var multi);
+                    ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
                     var exp = _calc.GetMessageExp(msg) * multi;
                     var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
@@ -209,6 +227,7 @@ namespace Hanekawa.Services.Level
                     {
                         userdata.Exp = userdata.Exp + exp;
                     }
+
                     await db.SaveChangesAsync();
                 }
             });
@@ -238,7 +257,10 @@ namespace Hanekawa.Services.Level
                         userdata.Exp = userdata.Exp + exp - nextLevel;
                         userdata.Level = userdata.Level + 1;
                     }
-                    else userdata.Exp = userdata.Exp + exp;
+                    else
+                    {
+                        userdata.Exp = userdata.Exp + exp;
+                    }
 
                     await db.SaveChangesAsync();
                 }
@@ -251,6 +273,7 @@ namespace Hanekawa.Services.Level
             var _ = Task.Run(async () =>
             {
                 if (!(user is SocketGuildUser gusr)) return;
+                if (user.IsBot) return;
                 try
                 {
                     using (var db = new DbService())
@@ -285,6 +308,7 @@ namespace Hanekawa.Services.Level
                         {
                             userdata.Exp = userdata.Exp + exp;
                         }
+
                         await db.SaveChangesAsync();
                     }
                 }
@@ -307,6 +331,7 @@ namespace Hanekawa.Services.Level
                 await RoleCheckAsync(db, user, cfg, userdata);
                 return;
             }
+
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.AddRoleAsync(role);
         }
@@ -356,9 +381,8 @@ namespace Hanekawa.Services.Level
             else roles = await GetRoleSingleAsync(user, db, userdata);
             var missingRoles = new List<IRole>();
             foreach (var x in roles)
-            {
-                if (!user.RoleIds.Contains(x.Id)) missingRoles.Add(x);
-            }
+                if (!user.RoleIds.Contains(x.Id))
+                    missingRoles.Add(x);
 
             if (missingRoles.Count == 0) return;
             if (missingRoles.Count > 1) await user.AddRolesAsync(missingRoles);
@@ -372,13 +396,11 @@ namespace Hanekawa.Services.Level
 
             foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
             {
-                if (userdata.Level >= x.Level && x.Stackable)
-                {
-                    roles.Add(user.Guild.GetRole(x.Role));
-                }
+                if (userdata.Level >= x.Level && x.Stackable) roles.Add(user.Guild.GetRole(x.Role));
 
                 if (userdata.Level >= x.Level) role = x.Role;
             }
+
             if (role != 0) roles.Add(user.Guild.GetRole(role));
             return roles;
         }
@@ -388,12 +410,8 @@ namespace Hanekawa.Services.Level
             var roles = new List<IRole>();
 
             foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
-            {
                 if (userdata.Level >= x.Level)
-                {
                     roles.Add(user.Guild.GetRole(x.Role));
-                }
-            }
             return roles;
         }
 
