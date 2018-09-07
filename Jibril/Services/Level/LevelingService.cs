@@ -19,7 +19,6 @@ namespace Hanekawa.Services.Level
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _provider;
 
         private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }
             = new ConcurrentDictionary<ulong, uint>();
@@ -31,16 +30,15 @@ namespace Hanekawa.Services.Level
         private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
             = new ConcurrentDictionary<ulong, DateTime>();
 
-        public LevelingService(IServiceProvider provider, DiscordSocketClient discord, Calculate calc)
+        public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
             _calc = calc;
-            _provider = provider;
 
             _client.MessageReceived += ServerMessageExpAsync;
             _client.MessageReceived += GlobalMessageExpAsync;
             _client.UserVoiceStateUpdated += VoiceExpAsync;
-            _client.UserJoined += GiveRolesBack;
+            _client.UserJoined += GiveRolesBackAsync;
 
             using (var db = new DbService())
             {
@@ -205,7 +203,7 @@ namespace Hanekawa.Services.Level
                     {
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManager(userdata, user, db);
+                        await NewLevelManagerAsync(userdata, user, db);
                     }
                     else
                     {
@@ -281,7 +279,7 @@ namespace Hanekawa.Services.Level
                         {
                             userdata.Level = userdata.Level + 1;
                             userdata.Exp = userdata.Exp + exp - nxtLvl;
-                            await NewLevelManager(userdata, gusr, db);
+                            await NewLevelManagerAsync(userdata, gusr, db);
                         }
                         else
                         {
@@ -299,17 +297,75 @@ namespace Hanekawa.Services.Level
         }
 
         // Level manager & roles
-        private async Task NewLevelManager(Account userdata, IGuildUser user, DbService db)
+        private async Task NewLevelManagerAsync(Account userdata, IGuildUser user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
             var role = GetLevelUpRole(userdata.Level, user, roles);
-            if (role == null) return;
             var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
-            if (!cfg.StackLvlRoles) await RemoveLevelRoles(user, roles);
+            if (role == null)
+            {
+                await RoleCheckAsync(db, user, cfg, userdata);
+                return;
+            }
+            if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.AddRoleAsync(role);
         }
 
-        private static async Task<List<IRole>> GetRoleSingle(IGuildUser user, DbService db, Account userdata)
+        private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
+        {
+            var roleid = rolesRewards.FirstOrDefault(x => x.Level == level);
+            return roleid == null ? null : _client.GetGuild(user.GuildId).GetRole(roleid.Role);
+        }
+
+        private static async Task RemoveLevelRolesAsync(IGuildUser user, IEnumerable<LevelReward> rolesRewards)
+        {
+            foreach (var x in rolesRewards)
+            {
+                if (x.Stackable) continue;
+                if (user.RoleIds.Contains(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
+            }
+        }
+
+        private static Task GiveRolesBackAsync(SocketGuildUser user)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var userdata = await db.GetOrCreateUserData(user);
+                    if (userdata.Level < 2) return;
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    if (cfg.StackLvlRoles)
+                    {
+                        var roleCollection = await GetRoleCollectionAsync(user, db, userdata);
+                        await user.AddRolesAsync(roleCollection);
+                        return;
+                    }
+
+                    var singleRole = await GetRoleSingleAsync(user, db, userdata);
+                    await user.AddRolesAsync(singleRole);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private static async Task RoleCheckAsync(DbService db, IGuildUser user, GuildConfig cfg, Account userdata)
+        {
+            var roles = new List<IRole>();
+            if (cfg.StackLvlRoles) roles = await GetRoleCollectionAsync(user, db, userdata);
+            else roles = await GetRoleSingleAsync(user, db, userdata);
+            var missingRoles = new List<IRole>();
+            foreach (var x in roles)
+            {
+                if (!user.RoleIds.Contains(x.Id)) missingRoles.Add(x);
+            }
+
+            if (missingRoles.Count == 0) return;
+            if (missingRoles.Count > 1) await user.AddRolesAsync(missingRoles);
+            else await user.AddRoleAsync(missingRoles.FirstOrDefault());
+        }
+
+        private static async Task<List<IRole>> GetRoleSingleAsync(IGuildUser user, DbService db, Account userdata)
         {
             var roles = new List<IRole>();
             ulong role = 0;
@@ -327,7 +383,7 @@ namespace Hanekawa.Services.Level
             return roles;
         }
 
-        private static async Task<List<IRole>> GetRoleCollection(IGuildUser user, DbService db, Account userdata)
+        private static async Task<List<IRole>> GetRoleCollectionAsync(IGuildUser user, DbService db, Account userdata)
         {
             var roles = new List<IRole>();
 
@@ -339,44 +395,6 @@ namespace Hanekawa.Services.Level
                 }
             }
             return roles;
-        }
-
-        private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
-        {
-            var roleid = rolesRewards.FirstOrDefault(x => x.Level == level);
-            return roleid == null ? null : _client.GetGuild(user.GuildId).GetRole(roleid.Role);
-        }
-
-        private static async Task RemoveLevelRoles(IGuildUser user, IEnumerable<LevelReward> rolesRewards)
-        {
-            foreach (var x in rolesRewards)
-            {
-                if (x.Stackable) continue;
-                if (user.RoleIds.Contains(x.Role)) await user.RemoveRoleAsync(user.Guild.GetRole(x.Role));
-            }
-        }
-
-        private static Task GiveRolesBack(SocketGuildUser user)
-        {
-            var _ = Task.Run(async () =>
-            {
-                using (var db = new DbService())
-                {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    if (userdata.Level < 2) return;
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
-                    if (cfg.StackLvlRoles)
-                    {
-                        var roleCollection = await GetRoleCollection(user, db, userdata);
-                        await user.AddRolesAsync(roleCollection);
-                        return;
-                    }
-
-                    var singleRole = await GetRoleSingle(user, db, userdata);
-                    await user.AddRolesAsync(singleRole);
-                }
-            });
-            return Task.CompletedTask;
         }
 
         // Cooldown area
