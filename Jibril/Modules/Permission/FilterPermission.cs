@@ -13,6 +13,32 @@ namespace Hanekawa.Modules.Permission
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class FilterPermission : InteractiveBase
     {
+        [Command("Setup")]
+        [Summary("Go through a setup process to configure auto-moderator.")]
+        public async Task AutoModSetupAsync()
+        {
+            using(var db = new Dbservice())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.guild);
+                await Reply("Setting up auto-moderator. If you already have configured it beforehand, this'll overwrite those settings.\n\n Filter all discord invite links?(y/n)");
+                bool filterStatus = true;
+                while(filterStatus)
+                {
+                    var response = await NextMessageAsync();
+                    if(response.content.toLower() == "y"){
+                        cfg.FilterInvites = true;
+                        filterStatus = false;
+                        }
+                    if(response.content.toLower() == "n")
+                    {
+                        cfg.FilterInvites = false;
+                        filterStatus = false;
+                    }
+                }
+                
+            }
+        }
+
         [Command("invite")]
         [Alias("srvfilter")]
         [Summary("Toggles guild invite filter, auto-deletes invites")]
