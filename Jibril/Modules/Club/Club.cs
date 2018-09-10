@@ -691,5 +691,32 @@ namespace Hanekawa.Modules.Club
                             Color.Green.RawValue).Build());
             }
         }
+
+        [Command("Auto prune")]
+        [Alias("autoprune", "prune")]
+        [Summary("Automatically prune inactive clubs by their member count")]
+        public async Task ClubAutoPruneToggle()
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.ClubAutoPrune)
+                {
+                    cfg.ClubAutoPrune = false;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder()
+                            .Reply("Disabled automatic deletion of low member count clubs with a channel.", Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    cfg.ClubAutoPrune = true;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder()
+                            .Reply("Enabled automatic deletion of low member count clubs with a channel.", Color.Green.RawValue).Build());
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }

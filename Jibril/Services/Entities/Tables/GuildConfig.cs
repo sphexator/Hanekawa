@@ -23,6 +23,7 @@ namespace Hanekawa.Services.Entities.Tables
         public bool ClubEnableVoiceChannel { get; set; }
         public uint ClubChannelRequiredAmount { get; set; }
         public uint ClubChannelRequiredLevel { get; set; }
+        public bool ClubAutoPrune { get; set; }
 
         // Welcome Settings
         public ulong? WelcomeChannel { get; set; }

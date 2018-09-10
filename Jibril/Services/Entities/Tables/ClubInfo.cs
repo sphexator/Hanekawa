@@ -16,5 +16,6 @@ namespace Hanekawa.Services.Entities.Tables
         public bool Public { get; set; }
         public bool AutoAdd { get; set; }
         public ulong? AdMessage { get; set; }
+        public DateTime? InactiveTime { get; set; }
     }
 }
