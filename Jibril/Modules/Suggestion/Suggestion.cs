@@ -261,7 +261,9 @@ namespace Hanekawa.Modules.Suggestion
         private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
         {
             var result = new List<IEmote>();
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yes))
+            var checkYes = Emote.TryParse(cfg.SuggestionEmoteYes, out var yes);
+            var checkNo = Emote.TryParse(cfg.SuggestionEmoteNo, out var no);
+            if (checkYes)
             {
                 result.Add(yes);
             }
@@ -271,7 +273,7 @@ namespace Hanekawa.Modules.Suggestion
                 result.Add(defaultyes);
             }
 
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no))
+            if (checkNo)
             {
                 result.Add(no);
             }
