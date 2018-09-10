@@ -145,12 +145,32 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+            if (!msg.Content.IsUrl()) return; 
+            try 
+            { 
+                await msg.DeleteAsync(); 
+            } 
+            catch { /* ignored */ }
         }
 
         private async Task WordFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
 
+        }
+
+        private async Task EmoteCountFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+            if(cfg.EmoteCurrency is null) return;
+            if(msg.content.EmoteCountFilter <= cfg.EmoteCurrency) return;
+            try
+            {
+                await msg.DeleteAsync;
+            }
+            catch
+            {
+                /* IGNORE */
+            }
+            
         }
 
         private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)

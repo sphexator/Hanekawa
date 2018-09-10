@@ -61,5 +61,10 @@ namespace Hanekawa.Extensions
         {
             return IpGrab.IsMatch(str);
         }
+
+        public static int EmoteCount(this string str)
+        {
+            return EmoteRegex.Matches(str).count;
+        }
     }
 }

@@ -58,6 +58,7 @@ namespace Hanekawa.Services.Entities.Tables
         public uint? FilterMsgLength { get; set; }
         public bool FilterUrls { get; set; }
         public bool FilterAllInv { get; set; }
+        public int? FilterEmoteCount { get; set; }
 
         // Board settings
         public string BoardEmote { get; set; }
