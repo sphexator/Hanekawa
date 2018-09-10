@@ -29,9 +29,16 @@ namespace Hanekawa.AnimeSimulCast
 
         private void Initialize()
         {
-            var reader = XmlReader.Create(Constants.RssFeed);
-            var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
-            LastItem = feed;
+            try
+            {
+                var reader = XmlReader.Create(Constants.RssFeed);
+                var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
+                LastItem = feed;
+            }
+            catch
+            {
+                LastItem = null;
+            }
         }
 
         private async Task MainAsync(CancellationToken token)
@@ -41,8 +48,8 @@ namespace Hanekawa.AnimeSimulCast
                 try
                 {
                     var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-
-                    if (feed?.Id != LastItem.Id)
+                    if (LastItem == null)  UpdatePoll(feed);
+                    if (LastItem != null && feed?.Id != LastItem.Id)
                     {
                         UpdatePoll(feed);
                         _ = AnimeAired(ToReturnType(feed));

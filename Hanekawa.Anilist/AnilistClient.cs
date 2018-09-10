@@ -23,7 +23,7 @@ namespace Hanekawa.Anilist
         public async Task<IMedia> GetMediaAsync(string name, params MediaFormat[] filter)
         {
             return (await graph.QueryAsync<MediaQuery>(
-                       "query($p0: String, $p1: [MediaFormat]) { Media(search: $p0, format_not_in: $p1) { averageScore, coverImage { large }, title { romaji english native userPreferred }, description, duration, status, episodes, siteUrl, status, genres } }",
+                       "query ($p0: String) {\r\n  Media(search: $p0, type: ANIME) {\r\n    averageScore\r\n    coverImage {\r\n      large\r\n    }\r\n    title {\r\n      romaji\r\n      english\r\n      native\r\n      userPreferred\r\n    }\r\n    description\r\n    duration\r\n    status\r\n    episodes\r\n    siteUrl\r\n    status\r\n    genres\r\n  }\r\n}",
                        new GraphQLParameter(name),
                        new GraphQLParameter(filter, "[MediaFormat]")))?.Media ?? null;
         }
