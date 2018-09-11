@@ -14,6 +14,7 @@ namespace Hanekawa.Modules.Administration
     public class Event : InteractiveBase
     {
         [Command("Event add")]
+        [Summary("Add event participants to the event payout queue (handled by server admins)")]
         public async Task AddEventParticipantsAsync(IGuildUser user, int amount = 100){
             using(var db = new DbService()){
                 var userdata = await db.GetOrCreateEventParticipant(Context.User as SocketGuildUser);
@@ -24,6 +25,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("Event Remove")]
+        [Summary("Remove users from the event payout queue")]
         public async Task RemoveEventParticipantAsync(IGuildUser user){
             using(var db = new DbService()){
                 var userdata = await db.EventPayouts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id);
@@ -38,6 +40,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("Event Adjust")]
+        [Summary("Adjust the reward for a user in the event payout queue")]
         public async Task AdjustEventParticipant(IGuildUser user, int amount){
             using(var db = new DbService()){
                 var userdata = await db.GetOrCreateEventParticipant(user as SocketGuildUser);
@@ -48,6 +51,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("event list")]
+        [Summary("List all users in the event payout queue")]
         public async Task ListEventParticipantsAsync(){
             using(var db = new DbService()){
                 var users = await db.EventPayouts.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
