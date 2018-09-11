@@ -52,6 +52,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
         public virtual DbSet<Board> Boards { get; set; }
+        public virtual DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
 
         //Hunger Game
         public virtual DbSet<HungerGameConfig> HungerGameConfigs { get; set; }
@@ -169,6 +170,7 @@ namespace Hanekawa.Services.Entities
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));
             modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<SelfAssignAbleRole>(x => { x.HasKey(e => new { e.GuildId, e.RoleId }); });
 
             // Hunger Game
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });

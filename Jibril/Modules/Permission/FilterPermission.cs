@@ -7,7 +7,6 @@ using Hanekawa.Services.Entities;
 
 namespace Hanekawa.Modules.Permission
 {
-
     [Group("automoderator")]
     [Alias("automod")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -15,27 +14,27 @@ namespace Hanekawa.Modules.Permission
     {
         [Command("Setup")]
         [Summary("Go through a setup process to configure auto-moderator.")]
+        [RequireOwner]
         public async Task AutoModSetupAsync()
         {
-            using(var db = new Dbservice())
+            using(var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.guild);
-                await Reply("Setting up auto-moderator. If you already have configured it beforehand, this'll overwrite those settings.\n\n Filter all discord invite links?(y/n)");
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                await ReplyAsync("Setting up auto-moderator. If you already have configured it beforehand, this'll overwrite those settings.\n\n Filter all discord invite links?(y/n)");
                 bool filterStatus = true;
                 while(filterStatus)
                 {
                     var response = await NextMessageAsync();
-                    if(response.content.toLower() == "y"){
+                    if(response.Content.ToLower() == "y"){
                         cfg.FilterInvites = true;
                         filterStatus = false;
                         }
-                    if(response.content.toLower() == "n")
+                    if(response.Content.ToLower() == "n")
                     {
                         cfg.FilterInvites = false;
                         filterStatus = false;
                     }
                 }
-                
             }
         }
 

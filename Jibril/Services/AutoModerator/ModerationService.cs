@@ -160,11 +160,11 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task EmoteCountFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            if(cfg.EmoteCurrency is null) return;
-            if(msg.content.EmoteCountFilter <= cfg.EmoteCurrency) return;
+            if(cfg.FilterEmoteCount is null) return;
+            if(msg.Content.EmoteCount() <= cfg.FilterEmoteCount) return;
             try
             {
-                await msg.DeleteAsync;
+                await msg.DeleteAsync();
             }
             catch
             {

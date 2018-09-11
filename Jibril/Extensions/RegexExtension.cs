@@ -64,7 +64,7 @@ namespace Hanekawa.Extensions
 
         public static int EmoteCount(this string str)
         {
-            return EmoteRegex.Matches(str).count;
+            return EmoteRegex.Matches(str).Count;
         }
     }
 }
