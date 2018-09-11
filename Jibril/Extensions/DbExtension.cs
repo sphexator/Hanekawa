@@ -11,6 +11,18 @@ namespace Hanekawa.Extensions
 {
     public static class DbExtension
     {
+        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user){
+            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+            if(user != null) return userdata;
+            var data = new EventPayout{
+                GuildId = user.Guild.Id,
+                UserId = user.Id,
+                Amount = 0
+            };
+            await context.EventPayouts.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+        }
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.Accounts.FindAsync(user.Id, user.Guild.Id);

@@ -29,6 +29,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
+        public virtual DbSet<EventPayout> EventPayouts { get; set;}
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
@@ -118,6 +119,7 @@ namespace Hanekawa.Services.Entities
             });
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
+            modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
