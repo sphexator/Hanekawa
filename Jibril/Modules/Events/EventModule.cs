@@ -6,6 +6,7 @@ using Discord.Commands;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Events;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,11 @@ namespace Jibril.Modules.Events {
     [Group ("Event")]
     [RequireContext (ContextType.Guild)]
     public class EventModule : InteractiveBase {
+        private readonly EventService _service;
+        public EventModule (EventService service) {
+            _service = service;
+        }
+
         [Command ("Add")]
         public async Task AddEventAsync (DateTime time, string name) {
             using (var db = new DbService ()) {
@@ -24,14 +30,7 @@ namespace Jibril.Modules.Events {
                     await ReplyAsync (null, false, new EmbedBuilder ().Reply ("There is already an event scheduled at that time.", Color.Red.RawValue).Build ());
                     return;
                 }
-                var id = await db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id + 1);
-                var data = new EventSchedule {
-                    Id = id,
-                    GuildId = Context.Guild.Id,
-                    Host = Context.User.Id,
-                    Time = time,
-                    Name = name
-                };
+                var id = await db.EventSchedules.CountAsync (x => x.GuildId == Context.Guild.Id + 1);
                 var embed = new EmbedBuilder {
                     Title = name,
                     Timestamp = new DateTimeOffset (time),
@@ -46,49 +45,46 @@ namespace Jibril.Modules.Events {
                         return;
                     }
                     if (response.Content.ToLower () == "y") {
-                        await db.EventSchedules.AddAsync (data);
-                        await db.SaveChangesAsync ();
+                        await _service.TryAddEventAsync (db, name, Context.User as IGuildUser, time);
                         await ReplyAsync (null, false, new EmbedBuilder ().Reply ($"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!").Build ());
                     }
-                }
-                catch {}
+                } catch { }
             }
         }
 
-        [Command("Remove")]
-        public async Task RemoveEventAsync(int id){
-            using(var db = new DbService()){
-                var eventData = await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Id == id);
-                if(eventData == null) return;
-                if(eventData.Host != Context.User.Id || !(Context.User as IGuildUser).GuildPermissions.ManageGuild) {
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("You do not own or have the permission to remove events!", Color.Red.RawValue).Build());
+        [Command ("Remove")]
+        public async Task RemoveEventAsync (int id) {
+            using (var db = new DbService ()) {
+                var eventData = await db.EventSchedules.FirstOrDefaultAsync (x => x.GuildId == Context.Guild.Id && x.Id == id);
+                if (eventData == null) return;
+                if (eventData.Host != Context.User.Id || !(Context.User as IGuildUser).GuildPermissions.ManageGuild) {
+                    await ReplyAsync (null, false, new EmbedBuilder ().Reply ("You do not own or have the permission to remove events!", Color.Red.RawValue).Build ());
                     return;
-                    }
-                db.EventSchedules.Remove(eventData);
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Removed {eventData.Name} from the event schedule.", Color.Green.RawValue).Build());
+                }
+                await _service.TryRemoveEventAsync (db, id, Context.Guild);
+                await ReplyAsync (null, false, new EmbedBuilder ().Reply ($"Removed {eventData.Name} from the event schedule.", Color.Green.RawValue).Build ());
             }
         }
 
-        [Command("Description")]
-        [Alias("desc")]
-        public async Task SetEventDescriptionAsync(int id, [Remainder]string content){
-            using(var db = new DbService()){
-                var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
-                if(eventData == null) return;
+        [Command ("Description")]
+        [Alias ("desc")]
+        public async Task SetEventDescriptionAsync (int id, [Remainder] string content) {
+            using (var db = new DbService ()) {
+                var eventData = await db.EventSchedules.FindAsync (id, Context.Guild.Id);
+                if (eventData == null) return;
                 eventData.Description = content;
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Updated description for {eventData.Name}", Color.Green.RawValue).Build());
+                await ReplyAsync (null, false, new EmbedBuilder ().Reply ($"Updated description for {eventData.Name}", Color.Green.RawValue).Build ());
             }
         }
 
-        [Command("Image")]
-        [Alias("img")]
-        public async Task SetEventImageUrlAsync(int id, string url){
-            using(var db = new DbService()){
-                var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
-                if(eventData == null) return;
+        [Command ("Image")]
+        [Alias ("img")]
+        public async Task SetEventImageUrlAsync (int id, string url) {
+            using (var db = new DbService ()) {
+                var eventData = await db.EventSchedules.FindAsync (id, Context.Guild.Id);
+                if (eventData == null) return;
                 eventData.ImageUrl = url;
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Updated event image for {eventData.Name}", Color.Green.RawValue).Build());
+                await ReplyAsync (null, false, new EmbedBuilder ().Reply ($"Updated event image for {eventData.Name}", Color.Green.RawValue).Build ());
             }
         }
     }
