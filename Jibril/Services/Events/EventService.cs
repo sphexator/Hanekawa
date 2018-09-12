@@ -64,7 +64,7 @@ namespace Hanekawa.Services.Events {
                             Timestamp = new DateTimeOffset (e.Time),
                             Color = GetEventColor (e.Time)
                         };
-                        embed.AddField ("Host", _client.GetGuild (e.GuildId).GetUser (e.Host).Mention);
+                        embed.AddField ("Host", guild.GetUser (e.Host).Mention ?? ":KuuThinking:");
                         await channel.SendMessageAsync(null, false, embed.Build());
                         await Task.Delay(2000);
                     }
