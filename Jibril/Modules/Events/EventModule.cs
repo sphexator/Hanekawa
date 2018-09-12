@@ -54,7 +54,7 @@ namespace Jibril.Modules.Events {
                 catch {}
             }
         }
-        
+
         [Command("Remove")]
         public async Task RemoveEventAsync(int id){
             using(var db = new DbService()){
@@ -76,7 +76,7 @@ namespace Jibril.Modules.Events {
             using(var db = new DbService()){
                 var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
                 if(eventData == null) return;
-                eventData.Description = content);
+                eventData.Description = content;
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Updated description for {eventData.Name}", Color.Green.RawValue).Build());
             }
         }
@@ -87,7 +87,7 @@ namespace Jibril.Modules.Events {
             using(var db = new DbService()){
                 var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
                 if(eventData == null) return;
-                eventData.ImageUrl = url);
+                eventData.ImageUrl = url;
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"Updated event image for {eventData.Name}", Color.Green.RawValue).Build());
             }
         }
