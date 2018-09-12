@@ -61,7 +61,7 @@ namespace Hanekawa.Modules.Events {
                     await ReplyAsync (null, false, new EmbedBuilder ().Reply ("You do not own or have the permission to remove events!", Color.Red.RawValue).Build ());
                     return;
                 }
-                await _service.TryRemoveEventAsync (db, id, Context.Guild);|
+                await _service.TryRemoveEventAsync (db, id, Context.Guild);
                 await ReplyAsync (null, false, new EmbedBuilder ().Reply ($"Removed {eventData.Name} from the event schedule.", Color.Green.RawValue).Build ());
             }
         }
