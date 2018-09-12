@@ -32,6 +32,7 @@ namespace Hanekawa.Services.Entities
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
+        public virtual DbSet<EventSchedule> EventSchedules { get; set; }
         
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
