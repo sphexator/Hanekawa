@@ -69,7 +69,9 @@ namespace Hanekawa.Modules.Report
                 {
                     embed.ImageUrl = Context.Message.Attachments.First().Url;
                 }
-                await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).SendEmbedAsync(embed);
+                var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).SendEmbedAsync(embed);
+                report.MessageId = msg.Id;
+                await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Report sent!", Color.Green.RawValue).Build());
             }

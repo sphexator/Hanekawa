@@ -23,6 +23,7 @@ namespace Hanekawa.Modules.Events
         }
 
         [Command("Add")]
+        [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddEventAsync(DateTime time, string name)
         {
@@ -81,6 +82,7 @@ namespace Hanekawa.Modules.Events
         }
 
         [Command("Remove")]
+        [Summary("Removes a event from the list given the ID")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)
         {
@@ -106,6 +108,7 @@ namespace Hanekawa.Modules.Events
 
         [Command("Description")]
         [Alias("desc")]
+        [Summary("Sets a description to the event")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task SetEventDescriptionAsync(int id, [Remainder] string content)
         {
@@ -122,6 +125,7 @@ namespace Hanekawa.Modules.Events
 
         [Command("Image")]
         [Alias("img")]
+        [Summary("Sets a image to the event")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task SetEventImageUrlAsync(int id, string url)
         {
