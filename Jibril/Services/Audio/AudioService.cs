@@ -1,37 +1,35 @@
-﻿using System;
+﻿using Discord;
+using Hanekawa.Extensions;
+using Hanekawa.Types;
+using SharpLink;
+using SharpLink.Stats;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Google.Apis.YouTube.v3;
-using Hanekawa.Extensions;
-using SharpLink;
+using Humanizer;
 
 namespace Hanekawa.Services.Audio
 {
     public class AudioService
     {
         private readonly LavalinkManager _lavalinkManager;
-        private readonly YouTubeService _youTubeService;
-        private readonly DiscordSocketClient _client;
 
         private ConcurrentDictionary<ulong, ConcurrentQueue<LavalinkTrack>> MusicQueue { get; }
             = new ConcurrentDictionary<ulong, ConcurrentQueue<LavalinkTrack>>();
         private ConcurrentDictionary<ulong, bool> LoopToggle { get; }
             = new ConcurrentDictionary<ulong, bool>();
+        private MusicStats _stats = new MusicStats();
 
-        public AudioService(LavalinkManager lavalinkManager, YouTubeService youTubeService, DiscordSocketClient client)
+        public AudioService(LavalinkManager lavalinkManager)
         {
             _lavalinkManager = lavalinkManager;
-            _youTubeService = youTubeService;
-            _client = client;
 
-            _lavalinkManager.TrackEnd += PlayerEnd;
-            _lavalinkManager.TrackStuck += PlayerStuck;
-            _lavalinkManager.TrackException += PlayerException;
+            _lavalinkManager.TrackEnd += PlayerEndAsync;
+            _lavalinkManager.TrackStuck += PlayerStuckAsync;
+            _lavalinkManager.TrackException += PlayerExceptionAsync;
+            _lavalinkManager.Stats += PlayerStatsAsync;
         }
 
         private async Task PlayerManager(LavalinkPlayer player, LavalinkTrack track, ulong id)
@@ -54,7 +52,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Author = author,
-                Color = Color.Purple
+                Color = Color.DarkPurple
             };
             return embed;
         }
@@ -64,7 +62,7 @@ namespace Hanekawa.Services.Audio
             var player = await _lavalinkManager.GetOrCreatePlayer(guild.Id, channel);
             if (player.CurrentTrack == null)
             {
-                return new EmbedBuilder().Reply("No song qued");
+                return new EmbedBuilder().Reply("No song queued");
             }
 
             try
@@ -78,7 +76,7 @@ namespace Hanekawa.Services.Audio
                 return new EmbedBuilder
                 {
                     Footer = footer,
-                    Color = Color.Purple
+                    Color = Color.DarkPurple
                 };
             }
             catch
@@ -104,7 +102,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Footer = footer,
-                Color = Color.Purple
+                Color = Color.DarkPurple
             };
             return embed;
         }
@@ -158,20 +156,7 @@ namespace Hanekawa.Services.Audio
             await player.StopAsync();
         }
 
-        private async Task<LavalinkTrack> GetSong(string query)
-        {
-            try
-            {
-                var track = await _lavalinkManager.GetTrackAsync(query);
-                return track;
-            }
-            catch
-            {
-                var song = await GetVideoIdByKeywordsAsync(query);
-                var track = await _lavalinkManager.GetTrackAsync($"https://www.youtube.com/watch?v={song.FirstOrDefault()}");
-                return track;
-            }
-        }
+        private async Task<LavalinkTrack> GetSong(string query) => await _lavalinkManager.TryParseSong(query);
 
         public EmbedBuilder ToggleLoop(IGuild guild)
         {
@@ -181,8 +166,33 @@ namespace Hanekawa.Services.Audio
                 return old;
             });
             var value = LoopToggle.GetOrAdd(guild.Id, false);
-            var toggle = value ? "disabled" : "enabled";
+            var toggle = value ? "enabled" : "disabled";
             return new EmbedBuilder().Reply($"Loop has been {toggle}");
+        }
+
+        public EmbedBuilder MusicStats()
+        {
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+            };
+
+            embed.AddField("CPU", $"{_stats.Cpu.LavalinkLoad}%", true);
+            embed.AddField("Players", $"{_stats.Players}", true);
+            embed.AddField("PlayingPlayers", $"{_stats.PlayingPlayers}", true);
+            try
+            {
+                embed.AddField("FrameStats", $"**Deficit:** {_stats.FrameStats.Deficit}\n" +
+                                             $"**Nulled:** {_stats.FrameStats.Nulled}\n" +
+                                             $"**Sent:** {_stats.FrameStats.Sent}", true);
+            }
+            catch {/* IGNORE */}
+            embed.AddField("Memory", $"**Allocated:** {_stats.Memory.Allocated.SizeSuffix()}\n" +
+                                     $"**Free:** {_stats.Memory.Free.SizeSuffix()}\n" +
+                                     $"**Reservable:** {_stats.Memory.Reservable.SizeSuffix()}\n" +
+                                     $"**Used:** {_stats.Memory.Used.SizeSuffix()}\n", true);
+            embed.AddField("Uptime", $"{TimeSpan.FromMilliseconds(_stats.Uptime).Humanize()}");
+            return embed;
         }
 
         //Queue
@@ -216,7 +226,7 @@ namespace Hanekawa.Services.Audio
             var embed = new EmbedBuilder
             {
                 Author = author,
-                Color = Color.Purple
+                Color = Color.DarkPurple
             };
             return embed;
         }
@@ -233,26 +243,22 @@ namespace Hanekawa.Services.Audio
         }
 
         //playlist
-        public async Task<int> AddPlaylistToQueue(string playlistString, IGuildUser user, IVoiceChannel ch)
+        public async Task<int> AddPlaylistToQueueAsync(string playlistString, IGuildUser user, IVoiceChannel ch)
         {
             var queue = MusicQueue.GetOrAdd(user.GuildId, new ConcurrentQueue<LavalinkTrack>());
-            var request = (await GetPlaylistIdsByKeywordsAsync(playlistString).ConfigureAwait(false)).FirstOrDefault();
-            var songs = await GetPlaylistTracksAsync(request, 5000).ConfigureAwait(false);
-            var songList = songs.ToList();
+            var request = await _lavalinkManager.GetTracksAsync(playlistString);
             var player = await _lavalinkManager.GetOrCreatePlayer(user.GuildId, ch);
-            foreach (var x in songList)
+            foreach (var x in request.Tracks)
             {
                 try
                 {
-                    if (songList.First() == x && player.CurrentTrack == null)
+                    if (request.Tracks.First() == x && player.CurrentTrack == null)
                     {
-                        await player.PlayAsync(await _lavalinkManager.GetTrackAsync($"https://www.youtube.com/watch?v={x}")
-                            .ConfigureAwait(false));
+                        await player.PlayAsync((await _lavalinkManager.GetTracksAsync(x.Url)).Tracks.FirstOrDefault());
                     }
                     else
                     {
-                        queue.Enqueue(await _lavalinkManager.GetTrackAsync($"https://www.youtube.com/watch?v={x}")
-                            .ConfigureAwait(false));
+                        queue.Enqueue((await _lavalinkManager.GetTracksAsync($"https://www.youtube.com/watch?v={x}")).Tracks.FirstOrDefault());
                     }
                 }
                 catch
@@ -261,117 +267,52 @@ namespace Hanekawa.Services.Audio
                 }
             }
 
-            return songList.Count;
-        }
-
-        private async Task<IEnumerable<string>> GetPlaylistTracksAsync(string playlistId, int count = 50)
-        {
-            await Task.Yield();
-            if (string.IsNullOrWhiteSpace(playlistId))
-                throw new ArgumentNullException(nameof(playlistId));
-
-            if (count <= 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            string nextPageToken = null;
-
-            var toReturn = new List<string>(count);
-
-            do
-            {
-                var toGet = count > 50 ? 50 : count;
-                count -= toGet;
-
-                var query = _youTubeService.PlaylistItems.List("contentDetails");
-                query.MaxResults = toGet;
-                query.PlaylistId = playlistId;
-                query.PageToken = nextPageToken;
-
-                var data = await query.ExecuteAsync();
-
-                toReturn.AddRange(data.Items.Select(i => i.ContentDetails.VideoId));
-                nextPageToken = data.NextPageToken;
-            } while (count > 0 && !string.IsNullOrWhiteSpace(nextPageToken));
-
-            return toReturn;
-        }
-
-        private static readonly Regex PlRegex = new Regex("(?:youtu\\.be\\/|list=)(?<id>[\\da-zA-Z\\-_]*)",
-            RegexOptions.Compiled);
-
-        private async Task<IEnumerable<string>> GetPlaylistIdsByKeywordsAsync(string keywords, int count = 1)
-        {
-            await Task.Yield();
-            if (string.IsNullOrWhiteSpace(keywords))
-                throw new ArgumentNullException(nameof(keywords));
-
-            if (count <= 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            var match = PlRegex.Match(keywords);
-            if (match.Length > 1)
-            {
-                return new[] { match.Groups["id"].Value };
-            }
-
-            var query = _youTubeService.Search.List("snippet");
-            query.MaxResults = count;
-            query.Type = "playlist";
-            query.Q = keywords;
-
-            return (await query.ExecuteAsync()).Items.Select(i => i.Id.PlaylistId);
-        }
-
-        private async Task<IEnumerable<string>> GetVideoIdByKeywordsAsync(string keywords, int count = 1)
-        {
-            await Task.Yield();
-            if (string.IsNullOrWhiteSpace(keywords))
-                throw new ArgumentNullException(nameof(keywords));
-
-            if (count <= 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            var match = PlRegex.Match(keywords);
-            if (match.Length > 1)
-            {
-                return new[] { match.Groups["id"].Value };
-            }
-
-            var query = _youTubeService.Search.List("snippet");
-            query.MaxResults = count;
-            query.Type = "video";
-            query.Q = keywords;
-
-            return (await query.ExecuteAsync()).Items.Select(i => i.Id.VideoId);
+            return request.Tracks.Count;
         }
 
         // Event handlers
-        private async Task PlayerException(LavalinkPlayer player, LavalinkTrack track, string arg3)
+        private async Task PlayerExceptionAsync(LavalinkPlayer player, LavalinkTrack track, string arg3)
         {
             Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
-            if (loop) await LoopSong(player, track);
-            else await ContinueSong(player, track);
+            if (loop) await LoopQueueAsync(player, track);
+            else await ContinueQueueAsync(player, track);
 
         }
 
-        private async Task PlayerStuck(LavalinkPlayer player, LavalinkTrack track, long arg3)
+        private async Task PlayerStuckAsync(LavalinkPlayer player, LavalinkTrack track, long arg3)
         {
             Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
-            if (loop) await LoopSong(player, track);
-            else await ContinueSong(player, track);
+            if (loop) await LoopQueueAsync(player, track);
+            else await ContinueQueueAsync(player, track);
         }
 
-        private async Task PlayerEnd(LavalinkPlayer player, LavalinkTrack track, string arg3)
+        private async Task PlayerEndAsync(LavalinkPlayer player, LavalinkTrack track, string arg3)
         {
             Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
-            if (loop) await LoopSong(player, track);
-            else await ContinueSong(player, track);
+            if (loop) await LoopQueueAsync(player, track);
+            else await ContinueQueueAsync(player, track);
         }
 
-        private async Task LoopSong(LavalinkPlayer player, LavalinkTrack track)
+        private Task PlayerStatsAsync(LavalinkStats stats)
+        {
+            var result = new MusicStats
+            {
+                Cpu = stats.CPU,
+                FrameStats = stats.FrameStats,
+                Memory = stats.Memory,
+                Players = stats.Players,
+                PlayingPlayers = stats.PlayingPlayers,
+                Uptime = stats.Uptime
+            };
+            _stats = result;
+            Console.WriteLine("Updated stats");
+            return Task.CompletedTask;
+        }
+
+        private async Task LoopQueueAsync(LavalinkPlayer player, LavalinkTrack track)
         {
             var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new ConcurrentQueue<LavalinkTrack>());
             queue.TryPeek(out var next);
@@ -398,7 +339,7 @@ namespace Hanekawa.Services.Audio
             }
         }
 
-        private async Task ContinueSong(LavalinkPlayer player, LavalinkTrack track)
+        private async Task ContinueQueueAsync(LavalinkPlayer player, LavalinkTrack track)
         {
             var queue = MusicQueue.GetOrAdd(player.VoiceChannel.GuildId, new ConcurrentQueue<LavalinkTrack>());
             queue.TryPeek(out var next);

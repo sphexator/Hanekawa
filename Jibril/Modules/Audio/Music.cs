@@ -223,7 +223,7 @@ namespace Hanekawa.Modules.Audio
             await Task.Delay(1000);
             await Context.Message.DeleteAsync();
             var aaaaaaaaaaaaaaaaaaaaaaaaaaah =
-                await _audioService.AddPlaylistToQueue(playlist, Context.User as IGuildUser, ch);
+                await _audioService.AddPlaylistToQueueAsync(playlist, Context.User as IGuildUser, ch);
             await ReplyAsync($"Added {aaaaaaaaaaaaaaaaaaaaaaaaaaah} songs to the queue");
         }
 
