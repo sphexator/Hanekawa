@@ -46,14 +46,14 @@ namespace Hanekawa.Modules.Suggestion
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
-                foreach (var x in GetEmotes(cfg)) await msg.AddReactionAsync(x);
+                await SetEmotesAsync(msg, cfg);
             }
         }
 
         [Command("approve", RunMode = RunMode.Async)]
         [Alias("ar")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ApproveAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
@@ -94,7 +94,7 @@ namespace Hanekawa.Modules.Suggestion
         [Command("deny", RunMode = RunMode.Async)]
         [Alias("dr")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task DenyAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
@@ -135,7 +135,7 @@ namespace Hanekawa.Modules.Suggestion
         [Command("comment", RunMode = RunMode.Async)]
         [Alias("rr")]
         [RequireContext(ContextType.Guild)]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task CommentAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
@@ -258,30 +258,38 @@ namespace Hanekawa.Modules.Suggestion
             return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
         }
 
-        private static IEnumerable<IEmote> GetEmotes(GuildConfig cfg)
+        private async Task SetEmotesAsync(IUserMessage msg, GuildConfig cfg)
         {
             var result = new List<IEmote>();
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yes))
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yes1))
             {
+                IEmote yes = yes1;
                 result.Add(yes);
             }
             else
             {
-                Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes);
+                Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes1);
+                IEmote defaultyes = defaultyes1;
                 result.Add(defaultyes);
             }
 
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no))
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no1))
             {
+                IEmote no = no1;
                 result.Add(no);
             }
             else
             {
-                Emote.TryParse("<:2no:403870492206825472>", out var defaultno);
+                Emote.TryParse("<:2no:403870492206825472>", out var defaultno1);
+                IEmote defaultno = defaultno1;
                 result.Add(defaultno);
             }
 
-            return result;
+            foreach (var x in result)
+            {
+                await msg.AddReactionAsync(x);
+                await Task.Delay(260);
+            }
         }
     }
 }
