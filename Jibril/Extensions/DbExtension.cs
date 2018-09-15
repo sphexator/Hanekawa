@@ -11,10 +11,12 @@ namespace Hanekawa.Extensions
 {
     public static class DbExtension
     {
-        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user){
+        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
+        {
             var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
-            if(user != null) return userdata;
-            var data = new EventPayout{
+            if (userdata != null) return userdata;
+            var data = new EventPayout
+            {
                 GuildId = user.Guild.Id,
                 UserId = user.Id,
                 Amount = 0
@@ -23,6 +25,7 @@ namespace Hanekawa.Extensions
             await context.SaveChangesAsync();
             return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
         }
+
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.Accounts.FindAsync(user.Id, user.Guild.Id);
@@ -160,7 +163,7 @@ namespace Hanekawa.Extensions
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
             var data = new ModLog
             {
-                Id = (uint)counter + 1,
+                Id = (uint) counter + 1,
                 GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
@@ -235,14 +238,14 @@ namespace Hanekawa.Extensions
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = (uint) counter + 1;
             var data = new Suggestion
             {
                 Id = nr,
                 GuildId = guild.Id,
                 Date = time,
                 UserId = user.Id,
-                Status = true,
+                Status = true
             };
             await context.Suggestions.AddAsync(data);
             await context.SaveChangesAsync();
@@ -255,7 +258,7 @@ namespace Hanekawa.Extensions
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
             if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            else nr = (uint) counter + 1;
             var data = new Report
             {
                 Id = nr,
