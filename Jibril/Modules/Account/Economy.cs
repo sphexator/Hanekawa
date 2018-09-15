@@ -60,7 +60,7 @@ namespace Hanekawa.Modules.Account
                 var recieverData = await db.GetOrCreateUserData(user);
                 if (userdata.Credit < amount)
                 {
-                    await ReplyAndDeleteAsync(null, false,
+                    await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"{Context.User.Mention} doesn't have enough credit",
                             Color.Red.RawValue).Build());
                     return;
@@ -69,7 +69,7 @@ namespace Hanekawa.Modules.Account
                 userdata.Credit = userdata.Credit - amount;
                 recieverData.Credit = recieverData.Credit + amount;
                 await db.SaveChangesAsync();
-                await ReplyAndDeleteAsync(null, false,
+                await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"{Context.User.Mention} transferred ${amount} to {user.Mention}",
                         Color.Green.RawValue).Build());
             }
@@ -87,7 +87,7 @@ namespace Hanekawa.Modules.Account
                 if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
-                    await ReplyAndDeleteAsync(null, false,
+                    await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"{Context.User.Mention} daily credit refresh in {timer.Humanize()}",
                             Color.Red.RawValue).Build());
                     return;
@@ -102,7 +102,7 @@ namespace Hanekawa.Modules.Account
                     userdata.DailyCredit = DateTime.UtcNow;
                     userdata.Credit = userdata.Credit + reward;
                     await db.SaveChangesAsync();
-                    await ReplyAndDeleteAsync(null, false,
+                    await ReplyAsync(null, false,
                         new EmbedBuilder()
                             .Reply($"rewarded {user?.Mention} with ${reward} credit", Color.Green.RawValue).Build());
                 }
@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Account
                     userData.DailyCredit = DateTime.UtcNow;
                     recieverData.Credit = recieverData.Credit + reward;
                     await db.SaveChangesAsync();
-                    await ReplyAndDeleteAsync(null, false,
+                    await ReplyAsync(null, false,
                         new EmbedBuilder()
                             .Reply($"{Context.User.Mention} rewarded {user.Mention} with ${reward} credit",
                                 Color.Green.RawValue).Build());

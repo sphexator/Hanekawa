@@ -150,14 +150,14 @@ namespace Hanekawa.Modules.Account
                 if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue).Build());
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue).Build());
                     return;
                 }
                 var userdata = await db.GetOrCreateUserData(user);
                 userdata.RepCooldown = DateTime.UtcNow;
                 userdata.Rep = userdata.Rep + 1;
                 await db.SaveChangesAsync();
-                await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());
             }
         }
 
