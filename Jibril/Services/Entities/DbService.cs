@@ -122,6 +122,7 @@ namespace Hanekawa.Services.Entities
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
+            modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new {e.GuildId, e.Id}));
 
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
