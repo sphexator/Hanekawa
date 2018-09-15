@@ -306,165 +306,172 @@ namespace Hanekawa.Services.Games.ShipGame
             }
 
             UpdateDuel(context, true);
-
-            var p1Name = (context.User as SocketGuildUser).GetName();
-            var p2Name = playerTwoUser.GetName();
-            var playerOneHp = 0;
-            var playerTwoHp = 0;
-            var playerOneDmg = 0;
-            var playerTwoDmg = 0;
-            var playerOneHpMax = 0;
-            var playerTwoHpMax = 0;
-            GameClass playerOne = null;
-            GameClass playerTwo = null;
-
-            using (var db = new DbService())
+            try
             {
-                var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
-                var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
-                if (userdata.Credit < bet) return;
-                if (userdata2.Credit < bet) return;
-                playerOne = await GetClass(db, userdata.Class);
-                playerTwo = await GetClass(db, userdata2.Class);
-                playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
-                playerTwoHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
-                playerOneDmg = Damage(userdata.Level);
-                playerTwoDmg = Damage(userdata.Level);
-                playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
-                playerTwoHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
-            }
+                var p1Name = (context.User as SocketGuildUser).GetName();
+                var p2Name = playerTwoUser.GetName();
+                var playerOneHp = 0;
+                var playerTwoHp = 0;
+                var playerOneDmg = 0;
+                var playerTwoDmg = 0;
+                var playerOneHpMax = 0;
+                var playerTwoHpMax = 0;
+                GameClass playerOne = null;
+                GameClass playerTwo = null;
 
-            var msglog = new LinkedList<string>();
-            msglog.AddFirst($"**{p1Name}** VS **{p2Name}**");
-
-            var img = await CreateBanner(context.User as SocketGuildUser, playerTwoUser);
-            img.Seek(0, SeekOrigin.Begin);
-            var embed = new EmbedBuilder
-            {
-                Description = UpdateCombatLog(msglog),
-                Color = Color.Purple
-            };
-            embed.AddField($"{p1Name}", $"{playerOneHp}/{playerOneHpMax}", true);
-            embed.AddField($"{p2Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
-            var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
-            var alive = true;
-            while (alive)
-            {
-                var playerOneDamage = _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.Player);
-                var playerTwoDamage = _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
-
-                playerTwoHp = playerTwoHp - playerOneDamage;
-                if (playerTwoHp > 0)
+                using (var db = new DbService())
                 {
-                    if (msglog.Count == 5)
-                    {
-                        msglog.RemoveLast();
-                        msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
-                    }
-                    else
-                    {
-                        msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
-                    }
+                    var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
+                    var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
+                    if (userdata.Credit < bet) return;
+                    if (userdata2.Credit < bet) return;
+                    playerOne = await GetClass(db, userdata.Class);
+                    playerTwo = await GetClass(db, userdata2.Class);
+                    playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                    playerTwoHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                    playerOneDmg = Damage(userdata.Level);
+                    playerTwoDmg = Damage(userdata.Level);
+                    playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
+                    playerTwoHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 }
-                else
-                {
-                    if (msglog.Count == 5)
-                    {
-                        msglog.RemoveLast();
-                        msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
-                    }
-                    else
-                    {
-                        msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
-                    }
 
-                    // End game
-                    alive = false;
-                    if (bet != 0)
-                        using (var db = new DbService())
+                var msglog = new LinkedList<string>();
+                msglog.AddFirst($"**{p1Name}** VS **{p2Name}**");
+
+                var img = await CreateBanner(context.User as SocketGuildUser, playerTwoUser);
+                img.Seek(0, SeekOrigin.Begin);
+                var embed = new EmbedBuilder
+                {
+                    Description = UpdateCombatLog(msglog),
+                    Color = Color.Purple
+                };
+                embed.AddField($"{p1Name}", $"{playerOneHp}/{playerOneHpMax}", true);
+                embed.AddField($"{p2Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
+                var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
+                var alive = true;
+                while (alive)
+                {
+                    var playerOneDamage = _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.Player);
+                    var playerTwoDamage = _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
+
+                    playerTwoHp = playerTwoHp - playerOneDamage;
+                    if (playerTwoHp > 0)
+                    {
+                        if (msglog.Count == 5)
                         {
-                            msglog.AddFirst(
-                                $"**{context.User.Mention}** defeated **{playerTwoUser.Mention}** and won the bet of ${bet}!");
-                            var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
-                            var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
-                            userdata.Credit = userdata.Credit + bet;
-                            userdata2.Credit = userdata2.Credit - bet;
-                            await db.SaveChangesAsync();
+                            msglog.RemoveLast();
+                            msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
                         }
-                    else msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
-
-                    embed.Color = Color.Green;
-                    embed.Description = UpdateCombatLog(msglog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
-                    var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
-                    userField.Value = $"{playerOneHp}/{playerOneHpMax}";
-                    enemyField.Value = $"0/{playerTwoHpMax}";
-                    await msg.ModifyAsync(x => x.Embed = embed.Build());
-                    continue;
-                }
-
-                playerOneHp = playerOneHp - playerTwoDamage;
-                if (playerOneHp > 0 && alive)
-                {
-                    if (msglog.Count == 5)
-                    {
-                        msglog.RemoveLast();
-                        msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
-                    }
-                    else
-                    {
-                        msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
-                    }
-                }
-                else
-                {
-                    if (msglog.Count == 5)
-                    {
-                        msglog.RemoveLast();
-                        msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
-                    }
-                    else
-                    {
-                        msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
-                    }
-
-                    // End game
-                    alive = false;
-                    if (bet != 0)
-                        using (var db = new DbService())
+                        else
                         {
-                            msglog.AddFirst(
-                                $"**{playerTwoUser.Mention}** defeated **{context.User.Mention}** and won the bet of ${bet}!");
-                            var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser); // Loser
-                            var userdata2 = await db.GetOrCreateUserData(playerTwoUser); // Winner
-                            userdata.Credit = userdata.Credit - bet;
-                            userdata2.Credit = userdata.Credit + bet;
-                            await db.SaveChangesAsync();
+                            msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
                         }
-                    else msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
+                    }
+                    else
+                    {
+                        if (msglog.Count == 5)
+                        {
+                            msglog.RemoveLast();
+                            msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
+                        }
+                        else
+                        {
+                            msglog.AddFirst($"**{p1Name}** hit **{p2Name}** for **{playerOneDamage}**");
+                        }
 
-                    embed.Color = Color.Green;
-                    embed.Description = UpdateCombatLog(msglog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
-                    var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
-                    userField.Value = $"0/{playerOneHpMax}";
-                    enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
-                    await msg.ModifyAsync(x => x.Embed = embed.Build());
-                }
+                        // End game
+                        alive = false;
+                        if (bet != 0)
+                            using (var db = new DbService())
+                            {
+                                msglog.AddFirst(
+                                    $"**{context.User.Mention}** defeated **{playerTwoUser.Mention}** and won the bet of ${bet}!");
+                                var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
+                                var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
+                                userdata.Credit = userdata.Credit + bet;
+                                userdata2.Credit = userdata2.Credit - bet;
+                                await db.SaveChangesAsync();
+                            }
+                        else msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
 
-                if (!alive) continue;
-                {
-                    embed.Description = UpdateCombatLog(msglog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
-                    var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
-                    userField.Value = $"{playerOneHp}/{playerOneHpMax}";
-                    enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
-                    await msg.ModifyAsync(x => x.Embed = embed.Build());
+                        embed.Color = Color.Green;
+                        embed.Description = UpdateCombatLog(msglog.Reverse());
+                        var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
+                        var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
+                        userField.Value = $"{playerOneHp}/{playerOneHpMax}";
+                        enemyField.Value = $"0/{playerTwoHpMax}";
+                        await msg.ModifyAsync(x => x.Embed = embed.Build());
+                        continue;
+                    }
+
+                    playerOneHp = playerOneHp - playerTwoDamage;
+                    if (playerOneHp > 0 && alive)
+                    {
+                        if (msglog.Count == 5)
+                        {
+                            msglog.RemoveLast();
+                            msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
+                        }
+                        else
+                        {
+                            msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
+                        }
+                    }
+                    else
+                    {
+                        if (msglog.Count == 5)
+                        {
+                            msglog.RemoveLast();
+                            msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
+                        }
+                        else
+                        {
+                            msglog.AddFirst($"**{p2Name}** hit **{p1Name}** for **{playerTwoDamage}**");
+                        }
+
+                        // End game
+                        alive = false;
+                        if (bet != 0)
+                            using (var db = new DbService())
+                            {
+                                msglog.AddFirst(
+                                    $"**{playerTwoUser.Mention}** defeated **{context.User.Mention}** and won the bet of ${bet}!");
+                                var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser); // Loser
+                                var userdata2 = await db.GetOrCreateUserData(playerTwoUser); // Winner
+                                userdata.Credit = userdata.Credit - bet;
+                                userdata2.Credit = userdata.Credit + bet;
+                                await db.SaveChangesAsync();
+                            }
+                        else msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
+
+                        embed.Color = Color.Green;
+                        embed.Description = UpdateCombatLog(msglog.Reverse());
+                        var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
+                        var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
+                        userField.Value = $"0/{playerOneHpMax}";
+                        enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
+                        await msg.ModifyAsync(x => x.Embed = embed.Build());
+                    }
+
+                    if (!alive) continue;
+                    {
+                        embed.Description = UpdateCombatLog(msglog.Reverse());
+                        var userField = embed.Fields.First(x => x.Name == $"{p1Name}");
+                        var enemyField = embed.Fields.First(x => x.Name == $"{p2Name}");
+                        userField.Value = $"{playerOneHp}/{playerOneHpMax}";
+                        enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
+                        await msg.ModifyAsync(x => x.Embed = embed.Build());
+                    }
+                    await Task.Delay(2000);
                 }
-                await Task.Delay(2000);
+                UpdateDuel(context, false);
+                Console.WriteLine("Completed duel");
             }
-            UpdateDuel(context, false);
-            Console.WriteLine("Completed duel");
+            catch
+            {
+                UpdateDuel(context, false);
+                Console.WriteLine("Duel failed");
+            }
         }
 
         private GameEnemy GetEnemyData(SocketCommandContext context)

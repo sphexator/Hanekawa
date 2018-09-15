@@ -35,6 +35,7 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Services.Events;
 using Hanekawa.Services.Reliability;
 
 namespace Hanekawa
@@ -97,16 +98,19 @@ namespace Hanekawa
             services.GetRequiredService<SimulCast>();
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
+            services.GetRequiredService<EventService>();
 
             _client.Ready += LavalinkInitiateAsync;
             
             var scheduler = services.GetService<IScheduler>();
+            
             /*
             //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
             QuartzServicesUtilities.StartCronJob<MvpService>(scheduler, "0 0 13 ? * MON *");
             QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0 0/6 1/1 * ? *");
-
             */
+
+            QuartzServicesUtilities.StartCronJob<EventService>(scheduler, "0 0 10 1/1 * ? *");
             QuartzServicesUtilities.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
@@ -144,6 +148,7 @@ namespace Hanekawa
             services.AddSingleton<MvpService>();
             services.AddSingleton<MuteService>();
             services.AddSingleton<WarnService>();
+            services.AddSingleton<EventService>();
             services.AddSingleton<BlackListService>();
             services.AddSingleton<NudeScoreService>();
             services.AddSingleton<GameStats>();

@@ -23,6 +23,13 @@ namespace Hanekawa.Modules.Events
             _service = service;
         }
 
+        [Command("post")]
+        [RequireOwner]
+        public async Task PostEventsAsync()
+        {
+            await _service.Execute();
+        }
+
         [Command("Add")]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]

@@ -16,9 +16,28 @@ namespace Hanekawa.Modules.Audio
     {
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [RequiredChannel]
         [UserMustBeInVoice]
         public async Task MoveUser(SocketGuildUser mvUser)
         {
+            if ((Context.User as IVoiceState) == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
+            if ((mvUser as IVoiceState) == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{mvUser.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             using (var db = new DbService())
             {
                 var users = new List<Services.Entities.Tables.Account>();

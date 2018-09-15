@@ -65,6 +65,13 @@ namespace Hanekawa.Modules.Game
         public async Task AttackGameAsync(SocketGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;
+            using (var db = new DbService())
+            {
+                var playerOne = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                var playerTwo = await db.GetOrCreateUserData(user);
+                if (playerOne.Credit < bet) return;
+                if (playerTwo.Credit < bet) return;
+            }
             var msg = bet == 0
                 ? $"{user.Mention}, {Context.User.Mention} has challenged you to a duel, do you accept? (y/n)"
                 : $"{user.Mention}, {Context.User.Mention} has challenged you to a duel with ${bet} at stake, do you accept? (y/n)";

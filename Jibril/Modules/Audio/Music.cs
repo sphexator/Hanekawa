@@ -24,10 +24,18 @@ namespace Hanekawa.Modules.Audio
         [Command("summon", RunMode = RunMode.Async)]
         [Alias("connect", "join")]
         [Summary("Connects the bot to the voice channel the user is in.")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task SummonAudio()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState)?.VoiceChannel;
             await _audioService.Summon(Context.Guild, ch);
             await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Connected to {ch?.Name}").Build(),
@@ -37,10 +45,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("reconnect", RunMode = RunMode.Async)]
         [Summary("Forces the bot to disconnect and reconnect to the channel(incase of hanging up)")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task Reconnect()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState).VoiceChannel;
             await _audioService.Reconnect(Context.Guild, ch);
             await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Reconnected").Build(),
@@ -50,10 +66,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("start", RunMode = RunMode.Async)]
         [Summary("Starts the player")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task StartAudio()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState).VoiceChannel;
             var response = await _audioService.Start(Context.Guild, ch);
             await ReplyAndDeleteAsync(null, false, response.Build(), TimeSpan.FromSeconds(15));
@@ -61,10 +85,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("pause", RunMode = RunMode.Async)]
         [Summary("Pauses the player")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task PauseAudio()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState).VoiceChannel;
             var response = await _audioService.Pause(Context.Guild, ch);
             await Context.Message.DeleteAsync();
@@ -73,10 +105,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("play", RunMode = RunMode.Async)]
         [Summary("Plays a song and joins the channel the user is in")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task PlayAudio([Remainder] string query)
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             if (query.IsNullOrWhiteSpace())
             {
                 await ReplyAndDeleteAsync(null, false,
@@ -102,10 +142,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("stop", RunMode = RunMode.Async)]
         [Summary("Stops the player")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task StopAudio()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             await _audioService.Stop(Context.Guild);
             await Context.Message.DeleteAsync();
             await ReplyAndDeleteAsync(null, false,
@@ -114,10 +162,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("destroy", RunMode = RunMode.Async)]
         [Summary("Destroys the player and disconnects the bot")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task DestroyAudio()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             await _audioService.Destroy(Context.Guild);
             await Context.Message.DeleteAsync();
             await ReplyAndDeleteAsync(null, false,
@@ -126,10 +182,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("volume", RunMode = RunMode.Async)]
         [Summary("Sets volume of the bot")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task VolumeAudio(uint volume)
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             if (volume > 100) volume = 100;
             if (volume < 1) volume = 1;
             await Context.Message.DeleteAsync();
@@ -141,10 +205,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("playlist", RunMode = RunMode.Async)]
         [Summary("Adds a playlist to the queue")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task AddPlaylist(string playlist)
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState).VoiceChannel;
             await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply("Adding songs...").Build(),
                 TimeSpan.FromSeconds(15));
@@ -157,10 +229,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("queue", RunMode = RunMode.Async)]
         [Summary("Displays the current queue")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task GetQueue()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             try
             {
                 var queue = _audioService.GetQueue(Context.Guild.Id).ToList();
@@ -219,10 +299,18 @@ namespace Hanekawa.Modules.Audio
         [Command("current", RunMode = RunMode.Async)]
         [Alias("cr")]
         [Summary("Displays current playing song")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task CurrentSong()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var embed = _audioService.GetCurrentSong(Context.Guild);
             if (embed == null)
                 await ReplyAsync(null, false, new EmbedBuilder().Reply("Currently not playing.").Build());
@@ -230,11 +318,19 @@ namespace Hanekawa.Modules.Audio
         }
 
         [Command("clear", RunMode = RunMode.Async)]
-        [UserMustBeInVoice]
         [Summary("Clears queue")]
         [RequiredChannel]
         public async Task ClearQueue()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             _audioService.ClearQueue(Context.Guild.Id);
             await Context.Message.DeleteAsync();
             await ReplyAndDeleteAsync(null, false,
@@ -243,10 +339,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("skip", RunMode = RunMode.Async)]
         [Summary("Skips song")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task SkipSong()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             var ch = (Context.User as IVoiceState)?.VoiceChannel;
             await _audioService.SkipSong(Context.Guild, ch);
             await Context.Message.DeleteAsync();
@@ -256,10 +360,18 @@ namespace Hanekawa.Modules.Audio
 
         [Command("loop", RunMode = RunMode.Async)]
         [Summary("Loops the queue")]
-        [UserMustBeInVoice]
         [RequiredChannel]
         public async Task LoopSongs()
         {
+            if (Context.User as IVoiceState == null)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you need to be in a voice channel to use this command.",
+                            Color.Red.RawValue).Build());
+                return;
+            }
+
             await ReplyAsync(null, false, _audioService.ToggleLoop(Context.Guild).Build());
         }
     }

@@ -24,6 +24,11 @@ namespace Hanekawa.Services.Events
             return EventSchedulerAsync();
         }
 
+        public Task Execute()
+        {
+            return EventSchedulerAsync();
+        }
+
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
         {
             var check = await db.EventSchedules.FindAsync(
