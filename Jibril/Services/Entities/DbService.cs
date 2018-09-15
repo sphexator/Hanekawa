@@ -32,6 +32,7 @@ namespace Hanekawa.Services.Entities
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
+        public virtual DbSet<EventSchedule> EventSchedules { get; set; }
         
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
@@ -121,6 +122,7 @@ namespace Hanekawa.Services.Entities
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
+            modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new {e.GuildId, e.Id}));
 
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
