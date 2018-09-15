@@ -10,7 +10,8 @@ namespace Hanekawa.Services.Entities.Tables
 
         // Premium
         public ulong? AnimeAirChannel { get; set; }
-
+        public bool AutomaticEventSchedule { get; set; }
+        
         // Channel settings
         public ulong? ReportChannel { get; set; }
         public ulong? EventChannel { get; set; }
