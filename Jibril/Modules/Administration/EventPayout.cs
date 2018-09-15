@@ -12,7 +12,7 @@ namespace Hanekawa.Modules.Administration
 {
     [Summary("Event modules for managing events, add participants and award them all at once")]
     [RequireContext(ContextType.Guild)]
-    public class Event : InteractiveBase
+    public class EventPayout : InteractiveBase
     {
         [Command("Event add")]
         [Alias("eadd", "eventadd")]

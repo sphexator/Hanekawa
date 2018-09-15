@@ -1,6 +1,4 @@
-﻿using Google.Apis.YouTube.v3;
-using Hanekawa.Data;
-using Hanekawa.Services.Entities.Tables;
+﻿using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;

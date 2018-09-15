@@ -13,6 +13,7 @@ namespace Hanekawa.Modules.Events
 {
     [Group("Event")]
     [RequireContext(ContextType.Guild)]
+    [Summary("Event scheduler. Add, remove or manage scheduled events for your server.")]
     public class EventModule : InteractiveBase
     {
         private readonly EventService _service;
