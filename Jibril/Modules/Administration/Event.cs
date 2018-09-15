@@ -15,12 +15,14 @@ namespace Hanekawa.Modules.Administration
     public class Event : InteractiveBase
     {
         [Command("Event add")]
+        [Alias("eadd", "eventadd")]
         [Summary("Add event participants to the event payout queue (handled by server admins)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddEventParticipantsAsync(IGuildUser user, int amount = 100)
         {
             using (var db = new DbService())
             {
+                if (amount < 0) amount = 0;
                 var userdata = await db.GetOrCreateEventParticipant(Context.User as SocketGuildUser);
                 userdata.Amount = userdata.Amount + amount;
                 await db.SaveChangesAsync();
@@ -32,6 +34,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("Event Remove")]
+        [Alias("eremove", "eventremove")]
         [Summary("Remove users from the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventParticipantAsync(IGuildUser user)
@@ -60,6 +63,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("Event Adjust")]
+        [Alias("eadjust", "ea", "eventadjust")]
         [Summary("Adjust the reward for a user in the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AdjustEventParticipant(IGuildUser user, int amount)
@@ -76,6 +80,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("event list")]
+        [Alias("el", "elist", "eventlist")]
         [Summary("List all users in the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ListEventParticipantsAsync()
