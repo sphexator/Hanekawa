@@ -1,13 +1,12 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Events
 {
@@ -32,8 +31,8 @@ namespace Hanekawa.Services.Events
 
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
         {
-            var check = await db.EventSchedules.FindAsync(
-                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1, user.Guild.Id);
+            var check = await db.EventSchedules.FindAsync(user.Guild.Id,
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1);
             if (check != null) return false;
             var data = new EventSchedule
             {
@@ -67,11 +66,11 @@ namespace Hanekawa.Services.Events
                     if (!x.EventSchedulerChannel.HasValue) return;
 
                     var guild = _client.GetGuild(x.GuildId);
+                    if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
-                    await ChannelCleanup(channel);
-
                     var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time > DateTime.UtcNow)
-                        .OrderByDescending(z => z.Time).ToListAsync();
+                        .OrderByDescending(z => z.Time).Take(5).ToListAsync();
+                    if (events.Count > 0) await ChannelCleanup(channel);
                     foreach (var e in events)
                     {
                         var embed = new EmbedBuilder
@@ -84,7 +83,7 @@ namespace Hanekawa.Services.Events
                         };
                         embed.AddField("Host", guild.GetUser(e.Host).Mention ?? ":KuuThinking:");
                         await channel.SendMessageAsync(null, false, embed.Build());
-                        await Task.Delay(2000);
+                        await Task.Delay(1000);
                     }
                 }
             }
@@ -114,7 +113,7 @@ namespace Hanekawa.Services.Events
                     result = Color.Purple;
                     break;
                 case DayOfWeek.Sunday:
-                    result = Color.Red;
+                    result = Color.DarkerGrey;
                     break;
             }
 
@@ -129,7 +128,9 @@ namespace Hanekawa.Services.Events
                 var result = msgs.Where(x => x.Timestamp.Date.AddDays(10) >= DateTime.UtcNow.Date).ToList();
                 await channel.DeleteMessagesAsync(result);
             }
-            catch { }
+            catch
+            {
+            }
         }
     }
 }

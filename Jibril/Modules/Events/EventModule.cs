@@ -83,9 +83,7 @@ namespace Hanekawa.Modules.Events
                                 .Build());
                     }
                 }
-                catch
-                {
-                }
+                catch(Exception e) { Console.WriteLine(e);}
             }
         }
 

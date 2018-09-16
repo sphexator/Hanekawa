@@ -98,6 +98,8 @@ namespace Hanekawa.Modules.Administration
 
                 await db.SaveChangesAsync();
                 db.EventPayouts.RemoveRange(users);
+                await db.SaveChangesAsync();
+
                 await ReplyAsync(null, false, new EmbedBuilder().Reply(payout).Build());
             }
         }

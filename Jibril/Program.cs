@@ -124,6 +124,8 @@ namespace Hanekawa
         {
             var services = new ServiceCollection();
             services.UseQuartz(typeof(MvpService));
+            services.UseQuartz(typeof(EventService));
+            services.UseQuartz(typeof(WarnService));
             services.AddSingleton(_client);
             services.AddSingleton(_lavalink);
             services.AddSingleton(_youTubeService);

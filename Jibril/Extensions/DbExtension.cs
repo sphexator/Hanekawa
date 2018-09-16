@@ -13,7 +13,7 @@ namespace Hanekawa.Extensions
     {
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
-            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+            var userdata = await context.EventPayouts.FindAsync(user.Id, user.Guild.Id);
             if (userdata != null) return userdata;
             var data = new EventPayout
             {
@@ -23,7 +23,7 @@ namespace Hanekawa.Extensions
             };
             await context.EventPayouts.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+            return await context.EventPayouts.FindAsync(user.Id, user.Guild.Id);
         }
 
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
