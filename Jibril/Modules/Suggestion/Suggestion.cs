@@ -258,33 +258,24 @@ namespace Hanekawa.Modules.Suggestion
             return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
         }
 
-        private async Task SetEmotesAsync(IUserMessage msg, GuildConfig cfg)
+        private static async Task SetEmotesAsync(IUserMessage msg, GuildConfig cfg)
         {
-            var result = new List<IEmote>();
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yes1))
-            {
-                IEmote yes = yes1;
-                result.Add(yes);
-            }
+            IEmote iYes;
+            IEmote iNo;
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yesEmote)) iYes = yesEmote;
             else
             {
-                Emote.TryParse("<:1yes:403870491749777411>", out var defaultyes1);
-                IEmote defaultyes = defaultyes1;
-                result.Add(defaultyes);
+                Emote.TryParse("<:1yes:403870491749777411>", out var defaultYes);
+                iYes = defaultYes;
             }
 
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var no1))
-            {
-                IEmote no = no1;
-                result.Add(no);
-            }
+            if (Emote.TryParse(cfg.SuggestionEmoteNo, out var noEmote)) iNo = noEmote;
             else
             {
-                Emote.TryParse("<:2no:403870492206825472>", out var defaultno1);
-                IEmote defaultno = defaultno1;
-                result.Add(defaultno);
+                Emote.TryParse("<:2no:403870492206825472>", out var defaultNo);
+                iNo = defaultNo;
             }
-
+            var result = new List<IEmote> {iYes, iNo};
             foreach (var x in result)
             {
                 await msg.AddReactionAsync(x);
