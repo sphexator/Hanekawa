@@ -5,6 +5,7 @@ using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,14 +33,15 @@ namespace Hanekawa.Services.Events
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
         {
             var check = await db.EventSchedules.FindAsync(
-                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id + 1), user.Guild.Id);
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1, user.Guild.Id);
             if (check != null) return false;
             var data = new EventSchedule
             {
                 Id = await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
                 GuildId = user.Guild.Id,
                 Host = user.Id,
-                Time = time
+                Time = time,
+                Name = name
             };
             await db.EventSchedules.AddAsync(data);
             await db.SaveChangesAsync();
@@ -121,8 +123,13 @@ namespace Hanekawa.Services.Events
 
         private async Task ChannelCleanup(ITextChannel channel)
         {
-            var msgs = await channel.GetMessagesAsync().FlattenAsync();
-            await channel.DeleteMessagesAsync(msgs);
+            try
+            {
+                var msgs = await channel.GetMessagesAsync().FlattenAsync();
+                var result = msgs.Where(x => x.Timestamp.Date.AddDays(10) >= DateTime.UtcNow.Date).ToList();
+                await channel.DeleteMessagesAsync(result);
+            }
+            catch { }
         }
     }
 }

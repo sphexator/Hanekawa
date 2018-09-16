@@ -104,6 +104,7 @@ namespace Hanekawa.Modules.Club
                     }
                     catch
                     {
+                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Invite expired.", Color.Red.RawValue).Build());
                         return;
                     }
                 }
@@ -119,9 +120,21 @@ namespace Hanekawa.Modules.Club
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
-                await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {user.Mention} to {clubData.Name}", Color.Green.RawValue).Build(),
-                    TimeSpan.FromSeconds(15));
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {user.Mention} to {clubData.Name}", Color.Green.RawValue).Build());
+                if (clubData.RoleId.HasValue)
+                {
+                    var role = Context.Guild.GetRole(clubData.RoleId.Value);
+                    if (role == null)
+                    {
+                        clubData.RoleId = null;
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        await user.AddRoleAsync(role);
+                    }
+                }
             }
         }
 
@@ -234,7 +247,7 @@ namespace Hanekawa.Modules.Club
         [RequiredChannel]
         public async Task ClubPromoteAsync(IGuildUser user)
         {
-            if (user == Context.User) return;
+            if (user.Id == Context.User.Id) return;
             using (var db = new DbService())
             {
                 var leaderCheck = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
@@ -246,7 +259,7 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                var clubUser = await db.ClubPlayers.FindAsync(Context.Guild.Id, leaderCheck.Id, user.Id);
+                var clubUser = await db.ClubPlayers.FindAsync(leaderCheck.Id, Context.Guild.Id, user.Id);
                 if (clubUser == null)
                 {
                     await ReplyAsync(null, false,
@@ -285,7 +298,7 @@ namespace Hanekawa.Modules.Club
                         else if (response.Content.ToLower() == "y")
                         {
                             var leader =
-                                await db.ClubPlayers.FindAsync(Context.Guild.Id, leaderCheck.Id, Context.User.Id);
+                                await db.ClubPlayers.FindAsync(leaderCheck.Id, Context.Guild.Id, Context.User.Id);
                             leader.Rank = 2;
                             clubUser.Rank = 1;
                             await db.SaveChangesAsync();
