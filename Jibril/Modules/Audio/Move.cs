@@ -16,10 +16,12 @@ namespace Hanekawa.Modules.Audio
     {
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [UserMustBeInVoice]
+        [RequireContext(ContextType.Guild)]
+        [RequiredChannel]
         public async Task MoveUser(SocketGuildUser mvUser)
         {
-            if ((Context.User as IVoiceState) == null)
+            if (Context.User.Id == mvUser.Id) return;
+            if ((Context.User as IVoiceState).VoiceChannel == null)
             {
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
@@ -28,7 +30,7 @@ namespace Hanekawa.Modules.Audio
                 return;
             }
 
-            if ((mvUser as IVoiceState) == null)
+            if ((mvUser as IVoiceState).VoiceChannel == null)
             {
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
@@ -72,7 +74,7 @@ namespace Hanekawa.Modules.Audio
                         {
                             status = false;
                         }
-                        else if (response.Content.ToLower() == "n")
+                        if (response.Content.ToLower() == "n")
                         {
                             await ReplyAsync(null, false,
                                 new EmbedBuilder()

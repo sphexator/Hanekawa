@@ -14,7 +14,7 @@ namespace Hanekawa.Modules.Administration
     [RequireContext(ContextType.Guild)]
     public class EventPayout : InteractiveBase
     {
-        [Command("reward add", RunMode = RunMode.Async)]
+        [Command("reward Add", RunMode = RunMode.Async)]
         [Alias("eadd", "eventadd")]
         [Summary("Add event participants to the event payout queue (handled by server admins)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -76,6 +76,29 @@ namespace Hanekawa.Modules.Administration
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
                         .Reply($"Adjusted {user.Mention} special credit to {amount}", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("reward payout", RunMode = RunMode.Async)]
+        [Alias("rp", "rewardpayout")]
+        [Summary("Payout people that're queued up")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task PayoutEventParticipants()
+        {
+            using (var db = new DbService())
+            {
+                var users = await db.EventPayouts.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                string payout = null;
+                foreach (var x in users)
+                {
+                    var user = await db.GetOrCreateUserData(x.GuildId, x.UserId);
+                    user.CreditSpecial = user.CreditSpecial + (uint)x.Amount;
+                    payout += $"{Context.Guild.GetUser(x.UserId).Mention} rewarded {x.Amount}\n";
+                }
+
+                await db.SaveChangesAsync();
+                db.EventPayouts.RemoveRange(users);
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(payout).Build());
             }
         }
 
