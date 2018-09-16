@@ -16,7 +16,6 @@ namespace Hanekawa.Modules.Audio
     {
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [RequiredChannel]
         [UserMustBeInVoice]
         public async Task MoveUser(SocketGuildUser mvUser)
         {

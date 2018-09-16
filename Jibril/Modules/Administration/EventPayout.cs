@@ -14,7 +14,7 @@ namespace Hanekawa.Modules.Administration
     [RequireContext(ContextType.Guild)]
     public class EventPayout : InteractiveBase
     {
-        [Command("reward add")]
+        [Command("reward add", RunMode = RunMode.Async)]
         [Alias("eadd", "eventadd")]
         [Summary("Add event participants to the event payout queue (handled by server admins)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -33,7 +33,7 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("reward Remove")]
+        [Command("reward Remove", RunMode = RunMode.Async)]
         [Alias("eremove", "eventremove")]
         [Summary("Remove users from the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -62,7 +62,7 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("reward Adjust")]
+        [Command("reward Adjust", RunMode = RunMode.Async)]
         [Alias("eadjust", "ea", "eventadjust")]
         [Summary("Adjust the reward for a user in the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -79,7 +79,7 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("reward list")]
+        [Command("reward list", RunMode = RunMode.Async)]
         [Alias("el", "elist", "eventlist")]
         [Summary("List all users in the event payout queue")]
         [RequireUserPermission(GuildPermission.ManageMessages)]

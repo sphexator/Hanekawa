@@ -81,7 +81,7 @@ namespace Hanekawa.Modules.Club
             {
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                        x.GuildId == Context.Guild.Id && x.UserId == Context.Guild.Id && x.Rank <= 2);
+                        x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.Rank <= 2);
                 if (clubUser == null) return;
                 if (clubUser.Rank > 2)
                 {
@@ -177,22 +177,28 @@ namespace Hanekawa.Modules.Club
 
                 var embed = new EmbedBuilder().Reply(content);
                 embed.Title = "Reply with the ID of club you wish to leave";
+                embed.Footer = new EmbedFooterBuilder{Text = "Exit to cancel"};
                 await ReplyAsync(null, false, embed.Build());
                 var status = true;
-                while (status)
+                try
                 {
-                    var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-                    if (!int.TryParse(response.Content, out var result)) continue;
-                    var club = clubs.FirstOrDefault(x => x.ClubId == result);
-                    if (club == null) continue;
-                    db.ClubPlayers.Remove(club);
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply($"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
-                                Color.Green.RawValue).Build());
-                    status = false;
+                    while (status)
+                    {
+                        var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
+                        if (response.Content.ToLower() == "exit") return;
+                        if (!int.TryParse(response.Content, out var result)) continue;
+                        var club = clubs.FirstOrDefault(x => x.ClubId == result);
+                        if (club == null) continue;
+                        db.ClubPlayers.Remove(club);
+                        await db.SaveChangesAsync();
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder()
+                                .Reply($"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
+                                    Color.Green.RawValue).Build());
+                        status = false;
+                    }
                 }
+                catch { }
             }
         }
 

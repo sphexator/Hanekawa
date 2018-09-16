@@ -23,17 +23,17 @@ namespace Hanekawa.Modules.Events
             _service = service;
         }
 
-        [Command("post")]
+        [Command("post", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task PostEventsAsync()
         {
             await _service.Execute();
         }
 
-        [Command("Add")]
+        [Command("Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task AddEventAsync(DateTime time, string name)
+        public async Task AddEventAsync(DateTime time,[Remainder] string name)
         {
             using (var db = new DbService())
             {
@@ -89,7 +89,7 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Remove")]
+        [Command("Remove", RunMode = RunMode.Async)]
         [Summary("Removes a event from the list given the ID")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)
@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Description")]
+        [Command("Description", RunMode = RunMode.Async)]
         [Alias("desc")]
         [Summary("Sets a description to the event")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -131,7 +131,7 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Image")]
+        [Command("Image", RunMode = RunMode.Async)]
         [Alias("img")]
         [Summary("Sets a image to the event")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
