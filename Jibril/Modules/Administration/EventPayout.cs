@@ -23,7 +23,7 @@ namespace Hanekawa.Modules.Administration
             using (var db = new DbService())
             {
                 if (amount < 0) amount = 0;
-                var userdata = await db.GetOrCreateEventParticipant(Context.User as SocketGuildUser);
+                var userdata = await db.GetOrCreateEventParticipant(user as SocketGuildUser);
                 userdata.Amount = userdata.Amount + amount;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
