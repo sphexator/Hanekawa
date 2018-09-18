@@ -30,6 +30,54 @@ namespace Hanekawa.Modules.Events
             await _service.Execute();
         }
 
+        [Command("schedule", RunMode = RunMode.Async)]
+        [RequireOwner]
+        public async Task SetSchedulingChannel(ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (channel == null)
+                {
+                    cfg.EventSchedulerChannel = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Removed event scheduling channel.", Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    cfg.EventSchedulerChannel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set {channel.Mention} as event scheduling channel", Color.Green.RawValue).Build());
+                }
+            }
+        }
+
+        [Command("channel")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetEventChannel(ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (channel == null)
+                {
+                    cfg.EventChannel = null;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Removed event channel.", Color.Green.RawValue).Build());
+                }
+                else
+                {
+                    cfg.EventChannel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"Set {channel.Mention} as event channel", Color.Green.RawValue).Build());
+                }
+            }
+        }
+
         [Command("Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
