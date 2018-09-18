@@ -31,6 +31,7 @@ namespace Hanekawa.Modules.Events
         }
 
         [Command("schedule", RunMode = RunMode.Async)]
+        [Summary("Sets event scheduling channel")]
         [RequireOwner]
         public async Task SetSchedulingChannel(ITextChannel channel = null)
         {
@@ -54,7 +55,8 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("channel")]
+        [Command("channel", RunMode = RunMode.Async)]
+        [Summary("Sets event channel")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEventChannel(ITextChannel channel = null)
         {
