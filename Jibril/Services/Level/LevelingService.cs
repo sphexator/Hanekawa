@@ -116,7 +116,7 @@ namespace Hanekawa.Services.Level
             });
         }
 
-        private static async Task<bool> EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier,
+        private static async Task EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier,
             ulong? message, ulong? channel, TimeSpan after)
         {
             var check = await db.LevelExpEvents.FindAsync(guildid);
@@ -132,15 +132,15 @@ namespace Hanekawa.Services.Level
                 };
                 await db.LevelExpEvents.AddAsync(data);
                 await db.SaveChangesAsync();
-                return true;
             }
-
-            check.ChannelId = channel;
-            check.Time = DateTime.UtcNow + after;
-            check.Multiplier = multiplier;
-            check.MessageId = message;
-            await db.SaveChangesAsync();
-            return false;
+            else
+            {
+                check.ChannelId = channel.Value;
+                check.Time = DateTime.UtcNow + after;
+                check.Multiplier = multiplier;
+                check.MessageId = message.Value;
+                await db.SaveChangesAsync();
+            }
         }
 
         private static void RemoveFromDatabase(DbService db, ulong guildid)
