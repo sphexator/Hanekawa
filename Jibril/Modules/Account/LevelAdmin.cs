@@ -202,6 +202,16 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Command("multiplier")]
+        [Alias("multi")]
+        [Summary("Gets the current level multiplier")]
+        public async Task LevelMultiplier()
+        {
+            var multiplier = _levelingService.GetServerMultiplier(Context.Guild);
+            await ReplyAsync(null, false,
+                new EmbedBuilder().Reply($"Current server multiplier: x{multiplier}").Build());
+        }
+
         [Command("exp", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.Administrator)]
         [Summary("Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]

@@ -6,6 +6,7 @@ using Discord.Commands;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Events;
+using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,10 +18,12 @@ namespace Hanekawa.Modules.Events
     public class EventModule : InteractiveBase
     {
         private readonly EventService _service;
+        private readonly LevelingService _levelingService;
 
-        public EventModule(EventService service)
+        public EventModule(EventService service, LevelingService levelingService)
         {
             _service = service;
+            _levelingService = levelingService;
         }
 
         [Command("post", RunMode = RunMode.Async)]
@@ -77,6 +80,26 @@ namespace Hanekawa.Modules.Events
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Set {channel.Mention} as event channel", Color.Green.RawValue).Build());
                 }
+            }
+        }
+
+        [Command("exp")]
+        [Summary("Displays current on-going exp events if there is one.")]
+        public async Task ShowExpEvent()
+        {
+            var eventTimer = await _levelingService.GetServerEventAsync(Context.Guild);
+            if (eventTimer == null)
+            {
+                await ReplyAsync(null, false, new EmbedBuilder().Reply("There's currently no event active.").Build());
+                return;
+            }
+
+            using (var db = new DbService())
+            {
+                var expEvent = await db.LevelExpEvents.FindAsync(Context.Guild.Id);
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}")
+                        .Build());
             }
         }
 

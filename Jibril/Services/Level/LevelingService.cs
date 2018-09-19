@@ -69,6 +69,15 @@ namespace Hanekawa.Services.Level
         private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
             = new ConcurrentDictionary<ulong, DateTime>();
 
+        // Get Commands
+        public uint GetServerMultiplier(IGuild guild) => ExpMultiplier.GetOrAdd(guild.Id, 1);
+
+        public async Task<Timer> GetServerEventAsync(IGuild guild)
+        {
+            var check = ExpEvent.TryGetValue(guild.Id, out var timer);
+            return check ? timer : null;
+        }
+
         // Exp event handler
         public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
             ITextChannel fallbackChannel = null)
@@ -102,10 +111,11 @@ namespace Hanekawa.Services.Level
                     }
 
                     RemoveFromDatabase(db, guildId);
+                    ExpEvent.Remove(guildId, out var timer);
                 }
                 catch
                 {
-                    ExpMultiplier.AddOrUpdate(guildId, 1, (key, old) => old = defaultMult);
+                    ExpMultiplier.AddOrUpdate(guildId, defaultMult, (key, old) => old = defaultMult);
                     RemoveFromDatabase(db, guildId);
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
