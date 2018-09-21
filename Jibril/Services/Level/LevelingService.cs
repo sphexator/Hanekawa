@@ -72,12 +72,6 @@ namespace Hanekawa.Services.Level
         // Get Commands
         public uint GetServerMultiplier(IGuild guild) => ExpMultiplier.GetOrAdd(guild.Id, 1);
 
-        public async Task<Timer> GetServerEventAsync(IGuild guild)
-        {
-            var check = ExpEvent.TryGetValue(guild.Id, out var timer);
-            return check ? timer : null;
-        }
-
         // Exp event handler
         public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
             ITextChannel fallbackChannel = null)
@@ -222,7 +216,8 @@ namespace Hanekawa.Services.Level
                 {
                     ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
-                    var exp = _calc.GetMessageExp(msg) * multi;
+                    var cfg = await db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
+                    var exp = (_calc.GetMessageExp(msg) * cfg.ExpMultiplier) * multi;
                     var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
@@ -293,6 +288,7 @@ namespace Hanekawa.Services.Level
                     using (var db = new DbService())
                     {
                         var userdata = await db.GetOrCreateUserData(gusr);
+                        var cfg = await db.GetOrCreateGuildConfig(gusr.Guild);
                         var oldVc = oldState.VoiceChannel;
                         var newVc = newState.VoiceChannel;
                         if (newVc != null && oldVc == null)
@@ -304,7 +300,7 @@ namespace Hanekawa.Services.Level
 
                         if (oldVc == null || newVc != null) return;
                         var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
-                        var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * multi;
+                        var exp = (_calc.GetVoiceExp(userdata.VoiceExpTime) * cfg.ExpMultiplier ) * multi;
                         var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                         userdata.TotalExp = userdata.TotalExp + exp;

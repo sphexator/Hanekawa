@@ -23,6 +23,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("ban", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [Summary("Bans a user")]
@@ -47,6 +48,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("kick", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [Summary("Kicks a user")]
@@ -84,11 +86,11 @@ namespace Hanekawa.Modules.Administration
             if (x > 1000) x = 1000;
             if (user == null)
             {
-                var msgs = await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync();
                 var channel = Context.Channel as ITextChannel;
+                var msgs = await channel.GetMessagesAsync(x + 1).FlattenAsync().ConfigureAwait(false);
                 await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
                 var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
-                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(30));
             }
             else
             {
@@ -97,13 +99,14 @@ namespace Hanekawa.Modules.Administration
                     .Take(x);
                 var channel = Context.Channel as ITextChannel;
                 await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
-                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
-                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(15));
+                var embed = new EmbedBuilder().Reply($"{x} messages deleted!", Color.Green.RawValue);
+                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(30));
             }
         }
 
         [Command("softban", RunMode = RunMode.Async)]
         [Alias("sb")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("In the last 1000 messages, deletes the messages user has sent & mutes")]
@@ -145,6 +148,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("mute", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [Priority(1)]
@@ -161,6 +165,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("mute", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [Summary("Mutes a user for 12hrs")]
@@ -176,6 +181,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("mute", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [Summary("Mutes a user for a duration (default 12hrs) with the use of 1s 2h 1d")]
@@ -195,6 +201,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("unmute", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [Summary("Unmutes a user")]
@@ -209,6 +216,7 @@ namespace Hanekawa.Modules.Administration
 
         [Command("warn", RunMode = RunMode.Async)]
         [Alias("warning")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
         [Summary("Sends a warning to a user, bot dms them the warning.")]
         public async Task WarnUserAsync(SocketGuildUser user, [Remainder] string reason = "I made this :)")
@@ -221,6 +229,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("warnlog", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
         [Summary("Pulls up warnlog and admin profile of a user.")]
         public async Task WarnlogAsync(SocketGuildUser user)
@@ -230,6 +239,7 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("reason", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [Summary("Inputs reason for moderation log entry")]

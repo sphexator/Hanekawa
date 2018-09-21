@@ -87,19 +87,19 @@ namespace Hanekawa.Modules.Events
         [Summary("Displays current on-going exp events if there is one.")]
         public async Task ShowExpEvent()
         {
-            var eventTimer = await _levelingService.GetServerEventAsync(Context.Guild);
-            if (eventTimer == null)
-            {
-                await ReplyAsync(null, false, new EmbedBuilder().Reply("There's currently no event active.").Build());
-                return;
-            }
-
             using (var db = new DbService())
             {
                 var expEvent = await db.LevelExpEvents.FindAsync(Context.Guild.Id);
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}")
-                        .Build());
+                if (expEvent == null)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("There's currently no event active.").Build());
+                }
+                else
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}")
+                            .Build());
+                }
             }
         }
 

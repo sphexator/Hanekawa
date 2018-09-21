@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions;
@@ -9,12 +10,10 @@ using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Owner
 {
-    [Group("owner")]
     [RequireOwner]
     public class OwnerCommands : InteractiveBase
     {
         [Group("blacklist")]
-        [RequireOwner]
         public class Blacklist : InteractiveBase
         {
             [Command("add", RunMode = RunMode.Async)]
@@ -72,6 +71,13 @@ namespace Hanekawa.Modules.Owner
                             .Build());
                 }
             }
+        }
+
+        [Command("quit")]
+        public async Task ExitProgramAsync()
+        {
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Exiting...").Build());
+            Environment.Exit(0);
         }
     }
 }

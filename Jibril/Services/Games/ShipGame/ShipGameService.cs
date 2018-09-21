@@ -308,6 +308,8 @@ namespace Hanekawa.Services.Games.ShipGame
             UpdateDuel(context, true);
             try
             {
+                Account userdata = null;
+                Account userdata2 = null;
                 var p1Name = (context.User as SocketGuildUser).GetName();
                 var p2Name = playerTwoUser.GetName();
                 var playerOneHp = 0;
@@ -318,11 +320,13 @@ namespace Hanekawa.Services.Games.ShipGame
                 var playerTwoHpMax = 0;
                 GameClass playerOne = null;
                 GameClass playerTwo = null;
+                Account winner = null;
+                Account loser = null;
 
                 using (var db = new DbService())
                 {
-                    var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
-                    var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
+                    userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
+                    userdata2 = await db.GetOrCreateUserData(playerTwoUser);
                     if (userdata.Credit < bet) return;
                     if (userdata2.Credit < bet) return;
                     playerOne = await GetClass(db, userdata.Class);
@@ -382,16 +386,12 @@ namespace Hanekawa.Services.Games.ShipGame
                         // End game
                         alive = false;
                         if (bet != 0)
-                            using (var db = new DbService())
-                            {
-                                msglog.AddFirst(
-                                    $"**{context.User.Mention}** defeated **{playerTwoUser.Mention}** and won the bet of ${bet}!");
-                                var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
-                                var userdata2 = await db.GetOrCreateUserData(playerTwoUser);
-                                userdata.Credit = userdata.Credit + bet;
-                                userdata2.Credit = userdata2.Credit - bet;
-                                await db.SaveChangesAsync();
-                            }
+                        {
+                            msglog.AddFirst(
+                                $"**{context.User.Mention}** defeated **{playerTwoUser.Mention}** and won the bet of ${bet}!");
+                            winner = userdata;
+                            loser = userdata2;
+                        }
                         else msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
 
                         embed.Color = Color.Green;
@@ -432,16 +432,12 @@ namespace Hanekawa.Services.Games.ShipGame
                         // End game
                         alive = false;
                         if (bet != 0)
-                            using (var db = new DbService())
-                            {
-                                msglog.AddFirst(
-                                    $"**{playerTwoUser.Mention}** defeated **{context.User.Mention}** and won the bet of ${bet}!");
-                                var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser); // Loser
-                                var userdata2 = await db.GetOrCreateUserData(playerTwoUser); // Winner
-                                userdata.Credit = userdata.Credit - bet;
-                                userdata2.Credit = userdata.Credit + bet;
-                                await db.SaveChangesAsync();
-                            }
+                        {
+                            msglog.AddFirst(
+                                $"**{playerTwoUser.Mention}** defeated **{context.User.Mention}** and won the bet of ${bet}!");
+                            loser = userdata; // Loser
+                            winner = userdata2; // Winner
+                        }                          
                         else msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
 
                         embed.Color = Color.Green;
@@ -463,6 +459,16 @@ namespace Hanekawa.Services.Games.ShipGame
                         await msg.ModifyAsync(x => x.Embed = embed.Build());
                     }
                     await Task.Delay(2000);
+                }
+
+                if (bet != 0)
+                {
+                    using (var db = new DbService())
+                    {
+                        winner.Credit = winner.Credit + bet;
+                        loser.Credit = loser.Credit - bet;
+                        await db.SaveChangesAsync();
+                    }
                 }
                 UpdateDuel(context, false);
                 Console.WriteLine("Completed duel");
