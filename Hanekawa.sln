@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Jibril\Hanekawa.csproj", "{92E42F1A-A883-4643-B0C5-394D0FF2CD58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{92E42F1A-A883-4643-B0C5-394D0FF2CD58}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.EventQueue", "Hanekawa.EventQueue\Hanekawa.EventQueue.csproj", "{9F8BE26C-B384-4050-AA6A-EF058DD4143D}"
 EndProject
