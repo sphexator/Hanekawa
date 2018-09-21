@@ -5,21 +5,29 @@ VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{92E42F1A-A883-4643-B0C5-394D0FF2CD58}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.EventQueue", "Hanekawa.EventQueue\Hanekawa.EventQueue.csproj", "{9F8BE26C-B384-4050-AA6A-EF058DD4143D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Database", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.AnimeSimulCast", "Hanekawa.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj", "{A838F3AB-2E8E-40EE-BBE7-13605EF62174}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Anilist", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Anilist\Hanekawa.Addons.Anilist.csproj", "{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Patreon", "Hanekawa.Patreon\Hanekawa.Patreon.csproj", "{4A7C19E3-FD18-41CB-8C33-5F27DD2BBF44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.AnimeSimulCast", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.HungerGame", "Hanekawa.HungerGame\Hanekawa.HungerGame.csproj", "{0CCA124E-E44A-4EF1-A8EF-3AC6F58E1811}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.EventQueue", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.EventQueue\Hanekawa.Addons.EventQueue.csproj", "{9C0989E9-18BA-46F2-B239-C8C351E9201C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Rest", "Hanekawa.Rest\Hanekawa.Rest.csproj", "{99EE9440-93C3-4BF1-90C7-41D6B9722601}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.GraphQL", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.GraphQL\Hanekawa.Addons.GraphQL.csproj", "{F64A2BEB-3396-470C-B1EF-54104127342C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.GraphQL", "Hanekawa.GraphQL\Hanekawa.GraphQL.csproj", "{3E5EB195-B8E2-4FAB-816F-9B6055FD066F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.HungerGame", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.HungerGame\Hanekawa.Addons.HungerGame.csproj", "{F048F46C-E59C-4C0E-AE1F-E29B8479727D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Anilist", "Hanekawa.Anilist\Hanekawa.Anilist.csproj", "{E7348327-C1FD-4382-9F7B-942177BE9CDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Level", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Level\Hanekawa.Addons.Level.csproj", "{9A682951-D7FF-4F89-B220-4786F7137B63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Twitter", "Hanekawa.TwitterClient\Hanekawa.Twitter.csproj", "{E65B93B4-3214-4F83-BAD4-FBAC78CEB3EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Patreon", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Patreon\Hanekawa.Addons.Patreon.csproj", "{054F731A-9028-4F71-8BC4-AF6EB13E40AA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Profile", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Profile\Hanekawa.Addons.Profile.csproj", "{ACECA695-709A-4BDB-8E53-66530707A341}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Rest", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Rest\Hanekawa.Addons.Rest.csproj", "{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Twitter", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Twitter\Hanekawa.Addons.Twitter.csproj", "{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Welcome", "..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.Welcome\Hanekawa.Addons.Welcome.csproj", "{9DBB067C-705F-4D55-BC41-48E362FEE0F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,38 +39,54 @@ Global
 		{92E42F1A-A883-4643-B0C5-394D0FF2CD58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92E42F1A-A883-4643-B0C5-394D0FF2CD58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92E42F1A-A883-4643-B0C5-394D0FF2CD58}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9F8BE26C-B384-4050-AA6A-EF058DD4143D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9F8BE26C-B384-4050-AA6A-EF058DD4143D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9F8BE26C-B384-4050-AA6A-EF058DD4143D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9F8BE26C-B384-4050-AA6A-EF058DD4143D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A838F3AB-2E8E-40EE-BBE7-13605EF62174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A838F3AB-2E8E-40EE-BBE7-13605EF62174}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A838F3AB-2E8E-40EE-BBE7-13605EF62174}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A838F3AB-2E8E-40EE-BBE7-13605EF62174}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4A7C19E3-FD18-41CB-8C33-5F27DD2BBF44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4A7C19E3-FD18-41CB-8C33-5F27DD2BBF44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4A7C19E3-FD18-41CB-8C33-5F27DD2BBF44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4A7C19E3-FD18-41CB-8C33-5F27DD2BBF44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0CCA124E-E44A-4EF1-A8EF-3AC6F58E1811}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0CCA124E-E44A-4EF1-A8EF-3AC6F58E1811}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0CCA124E-E44A-4EF1-A8EF-3AC6F58E1811}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0CCA124E-E44A-4EF1-A8EF-3AC6F58E1811}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99EE9440-93C3-4BF1-90C7-41D6B9722601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99EE9440-93C3-4BF1-90C7-41D6B9722601}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99EE9440-93C3-4BF1-90C7-41D6B9722601}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99EE9440-93C3-4BF1-90C7-41D6B9722601}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E5EB195-B8E2-4FAB-816F-9B6055FD066F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E5EB195-B8E2-4FAB-816F-9B6055FD066F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E5EB195-B8E2-4FAB-816F-9B6055FD066F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E5EB195-B8E2-4FAB-816F-9B6055FD066F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E7348327-C1FD-4382-9F7B-942177BE9CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E7348327-C1FD-4382-9F7B-942177BE9CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E7348327-C1FD-4382-9F7B-942177BE9CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E7348327-C1FD-4382-9F7B-942177BE9CDB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E65B93B4-3214-4F83-BAD4-FBAC78CEB3EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E65B93B4-3214-4F83-BAD4-FBAC78CEB3EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E65B93B4-3214-4F83-BAD4-FBAC78CEB3EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E65B93B4-3214-4F83-BAD4-FBAC78CEB3EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56714493-6317-4237-B7EA-9A9A25E1C999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56714493-6317-4237-B7EA-9A9A25E1C999}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F64A2BEB-3396-470C-B1EF-54104127342C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F64A2BEB-3396-470C-B1EF-54104127342C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F64A2BEB-3396-470C-B1EF-54104127342C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F64A2BEB-3396-470C-B1EF-54104127342C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A682951-D7FF-4F89-B220-4786F7137B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A682951-D7FF-4F89-B220-4786F7137B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A682951-D7FF-4F89-B220-4786F7137B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A682951-D7FF-4F89-B220-4786F7137B63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACECA695-709A-4BDB-8E53-66530707A341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACECA695-709A-4BDB-8E53-66530707A341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACECA695-709A-4BDB-8E53-66530707A341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACECA695-709A-4BDB-8E53-66530707A341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DBB067C-705F-4D55-BC41-48E362FEE0F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DBB067C-705F-4D55-BC41-48E362FEE0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DBB067C-705F-4D55-BC41-48E362FEE0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DBB067C-705F-4D55-BC41-48E362FEE0F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

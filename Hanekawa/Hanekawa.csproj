@@ -84,10 +84,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="config-example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
