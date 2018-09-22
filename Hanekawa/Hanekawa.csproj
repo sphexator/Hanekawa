@@ -84,6 +84,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Libraries\Discord\Hanekawa.Addons\Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="config-example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

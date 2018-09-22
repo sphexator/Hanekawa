@@ -4,7 +4,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
-using Hanekawa.AnimeSimulCast;
+using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Data;
 using Hanekawa.Preconditions;
 using Hanekawa.Services;
@@ -15,6 +15,7 @@ using Hanekawa.Services.Automate;
 using Hanekawa.Services.AutoModerator;
 using Hanekawa.Services.Club;
 using Hanekawa.Services.Entities;
+using Hanekawa.Services.Events;
 using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.INC;
@@ -24,6 +25,7 @@ using Hanekawa.Services.Log;
 using Hanekawa.Services.Loot;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
+using Hanekawa.Services.Reliability;
 using Hanekawa.Services.Scheduler;
 using Hanekawa.Services.Welcome;
 using Microsoft.EntityFrameworkCore;
@@ -35,8 +37,6 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Hanekawa.Services.Events;
-using Hanekawa.Services.Reliability;
 
 namespace Hanekawa
 {

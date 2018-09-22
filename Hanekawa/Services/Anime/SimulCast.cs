@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hanekawa.AnimeSimulCast;
-using Hanekawa.AnimeSimulCast.Entity;
+using Hanekawa.Addons.AnimeSimulCast;
+using Hanekawa.Addons.AnimeSimulCast.Entity;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
