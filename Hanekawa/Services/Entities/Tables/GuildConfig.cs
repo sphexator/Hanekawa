@@ -17,6 +17,7 @@ namespace Hanekawa.Services.Entities.Tables
         public ulong? EventChannel { get; set; }
         public ulong? EventSchedulerChannel { get; set; }
         public ulong? ModChannel { get; set; }
+        public ulong? DesignChannel { get; set; }
 
         // Club settings
         public ulong? ClubChannelCategory { get; set; }

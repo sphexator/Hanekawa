@@ -28,10 +28,13 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
         public virtual DbSet<EventPayout> EventPayouts { get; set;}
+        public virtual DbSet<Item> Items { get; set; }
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
         public virtual DbSet<EventSchedule> EventSchedules { get; set; }
+        public virtual DbSet<WhitelistDesign> WhitelistDesigns { get; set; }
+        public virtual DbSet<WhitelistEvent> WhitelistEvents { get; set; }
         
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
@@ -116,13 +119,16 @@ namespace Hanekawa.Services.Entities
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new {e.GuildId, e.UserId}); });
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
-            modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
+            modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new {e.GuildId, e.UserId}); });
+            modelBuilder.Entity<Item>(x => x.HasKey(e => e.ItemId));
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new {e.GuildId, e.Id}));
+            modelBuilder.Entity<WhitelistDesign>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
+            modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>

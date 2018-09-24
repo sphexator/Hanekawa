@@ -34,6 +34,7 @@ namespace Hanekawa.Services.Automate
 
             _channels.Add(404633037884620802); //Test channel
         }
+
         // Message Reciever method
         private Task MessageCounterAsync(SocketMessage msg)
         {
@@ -42,8 +43,7 @@ namespace Hanekawa.Services.Automate
                 if (!(msg is SocketUserMessage message)) return;
                 if (message.Source != MessageSource.User) return;
                 if (!_channels.Contains(msg.Channel.Id)) return;
-                var cd = CheckCooldownAsync(msg.Author as SocketGuildUser);
-                if (cd == false) return;
+                if (!CheckCooldownAsync(msg.Author as SocketGuildUser)) return;
                 using (var db = new DbService())
                 {
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");

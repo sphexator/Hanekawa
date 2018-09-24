@@ -14,12 +14,16 @@ namespace Hanekawa.Preconditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class RequiredChannel : RequireContextAttribute
     {
-        private ConcurrentDictionary<ulong, bool> IgnoreAll { get; set; }
+        public RequiredChannel() : base(ContextType.Guild)
+        {
+        }
+
+        private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ChannelEnable { get; set; }
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ChannelEnable { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        public RequiredChannel() : base(ContextType.Guild) { }
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
             CommandInfo command, IServiceProvider services)
         {
@@ -105,7 +109,9 @@ namespace Hanekawa.Preconditions
                 var ch = ChannelEnable.GetOrAdd(channel.GuildId, new ConcurrentDictionary<ulong, bool>());
                 ch.TryRemove(channel.Id, out var value);
 
-                var result = await db.IgnoreChannels.FirstOrDefaultAsync(x => x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
+                var result =
+                    await db.IgnoreChannels.FirstOrDefaultAsync(x =>
+                        x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
                 db.IgnoreChannels.Remove(result);
                 await db.SaveChangesAsync();
                 return true;

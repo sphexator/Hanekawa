@@ -75,7 +75,6 @@ namespace Hanekawa.Modules.Administration
         }
 
         [Command("prune", RunMode = RunMode.Async)]
-        [Alias("clear")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
