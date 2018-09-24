@@ -1,4 +1,5 @@
 ﻿using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Services.Entities.Tables.Stats;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -10,13 +11,17 @@ namespace Hanekawa.Services.Entities
         public static readonly LoggerFactory MyLoggerFactory
             = new LoggerFactory(new[]
             {
-                new ConsoleLoggerProvider((category, level) 
+                new ConsoleLoggerProvider((category, level)
                     => category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information, true)
             });
 
-        public DbService() { }
+        public DbService()
+        {
+        }
 
-        public DbService(DbContextOptions options) : base(options) { }
+        public DbService(DbContextOptions options) : base(options)
+        {
+        }
 
         // Account
         public virtual DbSet<Account> Accounts { get; set; }
@@ -27,15 +32,24 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public virtual DbSet<Shop> Shops { get; set; }
         public virtual DbSet<ShopEvent> ShopEvents { get; set; }
-        public virtual DbSet<EventPayout> EventPayouts { get; set;}
+        public virtual DbSet<EventPayout> EventPayouts { get; set; }
         public virtual DbSet<Item> Items { get; set; }
+
+        // Stats
+        public virtual DbSet<BanStat> BanStats { get; set; }
+        public virtual DbSet<BotUsageStat> BotUsageStats { get; set; }
+        public virtual DbSet<EmoteStat> EmoteStats { get; set; }
+        public virtual DbSet<JoinStat> JoinStats { get; set; }
+        public virtual DbSet<MessageStat> MessageStats { get; set; }
+        public virtual DbSet<MuteStat> MuteStats { get; set; }
+        public virtual DbSet<WarnStat> WarnStats { get; set; }
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
         public virtual DbSet<EventSchedule> EventSchedules { get; set; }
         public virtual DbSet<WhitelistDesign> WhitelistDesigns { get; set; }
         public virtual DbSet<WhitelistEvent> WhitelistEvents { get; set; }
-        
+
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
         public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
@@ -68,7 +82,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<Suggestion> Suggestions { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
-        
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -84,7 +98,7 @@ namespace Hanekawa.Services.Entities
             // Account
             modelBuilder.Entity<Account>(x =>
             {
-                x.HasKey(e => new { e.UserId, e.GuildId });
+                x.HasKey(e => new {e.UserId, e.GuildId});
                 x.Property(c => c.Credit).HasMaxLength(999);
                 x.Property(c => c.CreditSpecial).HasMaxLength(999);
                 x.Property(c => c.Exp).HasMaxLength(999);
@@ -107,7 +121,7 @@ namespace Hanekawa.Services.Entities
                 x.Property(c => c.Rep).HasMaxLength(999);
                 x.Property(c => c.TotalExp).HasMaxLength(999);
             });
-            modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => new { e.GuildId, e.Level }); });
+            modelBuilder.Entity<LevelReward>(x => { x.HasKey(e => new {e.GuildId, e.Level}); });
             modelBuilder.Entity<LevelExpEvent>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<Shop>(x =>
             {
@@ -127,18 +141,12 @@ namespace Hanekawa.Services.Entities
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new {e.GuildId, e.Id}));
-            modelBuilder.Entity<WhitelistDesign>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
-            modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
+            modelBuilder.Entity<WhitelistDesign>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
+            modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
 
             // Clubs
-            modelBuilder.Entity<ClubInfo>(x =>
-            {
-                x.HasKey(e => new { e.Id, e.GuildId, e.Leader});
-            });
-            modelBuilder.Entity<ClubPlayer>(x =>
-            {
-                x.HasKey(e => new {e.Id, e.ClubId, e.GuildId });
-            });
+            modelBuilder.Entity<ClubInfo>(x => { x.HasKey(e => new {e.Id, e.GuildId, e.Leader}); });
+            modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => new {e.Id, e.ClubId, e.GuildId}); });
             modelBuilder.Entity<ClubBlacklist>(x => { x.HasKey(e => new {e.ClubId, e.GuildId, e.BlackListUser}); });
 
             // Bot Game
@@ -172,11 +180,11 @@ namespace Hanekawa.Services.Entities
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
             });
             modelBuilder.Entity<GuildInfoLink>(x => x.HasKey(e => e.GuildId));
-            modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
-            modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
-            modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));
-            modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
-            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new {e.GuildId, e.ChannelId}));
+            modelBuilder.Entity<Board>(x => x.HasKey(e => new {e.GuildId, e.MessageId}));
+            modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new {e.GuildId, e.Id}));
+            modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
+            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
 
             // Hunger Game
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
@@ -184,23 +192,11 @@ namespace Hanekawa.Services.Entities
             modelBuilder.Entity<HungerGameLive>(x => { x.HasKey(e => e.UserId); });
 
             // Moderation
-            modelBuilder.Entity<ModLog>(x =>
-            {
-                x.HasKey(e => new { e.Id, e.GuildId });
-            });
-            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
-            modelBuilder.Entity<Suggestion>(x =>
-            {
-                x.HasKey(e => new { e.Id, e.GuildId });
-            });
-            modelBuilder.Entity<Report>(x =>
-            {
-                x.HasKey(e => new { e.Id, e.GuildId });
-            });
-            modelBuilder.Entity<Warn>(x =>
-            {
-                x.HasKey(e => new { e.GuildId, e.Id });
-            });
+            modelBuilder.Entity<ModLog>(x => { x.HasKey(e => new {e.Id, e.GuildId}); });
+            modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new {e.UserId, e.GuildId}); });
+            modelBuilder.Entity<Suggestion>(x => { x.HasKey(e => new {e.Id, e.GuildId}); });
+            modelBuilder.Entity<Report>(x => { x.HasKey(e => new {e.Id, e.GuildId}); });
+            modelBuilder.Entity<Warn>(x => { x.HasKey(e => new {e.GuildId, e.Id}); });
             modelBuilder.Entity<WarnMsgLog>(x =>
             {
                 x.HasKey(e => e.Id);
