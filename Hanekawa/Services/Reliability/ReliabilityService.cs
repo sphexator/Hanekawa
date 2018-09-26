@@ -33,24 +33,28 @@ namespace Hanekawa.Services.Reliability
 
         private Task ConnectedAsync()
         {
-            _ = DebugAsync("Client reconnected, resetting cancel tokens...");
-            _cts.Cancel();
-            _cts = new CancellationTokenSource();
-            _ = DebugAsync("Client reconnected, cancel tokens reset.");
-
+            var __ = Task.Run(async () =>
+            {
+                _ = DebugAsync("Client reconnected, resetting cancel tokens...");
+                _cts.Cancel();
+                _cts = new CancellationTokenSource();
+                _ = DebugAsync("Client reconnected, cancel tokens reset.");
+            });
             return Task.CompletedTask;
         }
 
         private Task DisconnectedAsync(Exception _e)
         {
-            _ = InfoAsync("Client disconnected, starting timeout task...");
-            _ = Task.Delay(Timeout, _cts.Token).ContinueWith(async _ =>
+            var __ = Task.Run(async () =>
             {
-                await DebugAsync("Timeout expired, continuing to check client state...");
-                await CheckStateAsync();
-                await DebugAsync("State came back okay");
+                _ = InfoAsync("Client disconnected, starting timeout task...");
+                _ = Task.Delay(Timeout, _cts.Token).ContinueWith(async _ =>
+                {
+                    await DebugAsync("Timeout expired, continuing to check client state...");
+                    await CheckStateAsync();
+                    await DebugAsync("State came back okay");
+                });
             });
-
             return Task.CompletedTask;
         }
 
