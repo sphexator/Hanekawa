@@ -273,16 +273,13 @@ namespace Hanekawa.Services.Audio
         // Event handlers
         private async Task PlayerExceptionAsync(LavalinkPlayer player, LavalinkTrack track, string arg3)
         {
-            Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
             if (loop) await LoopQueueAsync(player, track);
             else await ContinueQueueAsync(player, track);
-
         }
 
         private async Task PlayerStuckAsync(LavalinkPlayer player, LavalinkTrack track, long arg3)
         {
-            Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
             if (loop) await LoopQueueAsync(player, track);
             else await ContinueQueueAsync(player, track);
@@ -290,7 +287,6 @@ namespace Hanekawa.Services.Audio
 
         private async Task PlayerEndAsync(LavalinkPlayer player, LavalinkTrack track, string arg3)
         {
-            Console.WriteLine(arg3);
             var loop = LoopToggle.GetOrAdd(player.VoiceChannel.GuildId, false);
             if (loop) await LoopQueueAsync(player, track);
             else await ContinueQueueAsync(player, track);
@@ -308,7 +304,6 @@ namespace Hanekawa.Services.Audio
                 Uptime = stats.Uptime
             };
             _stats = result;
-            Console.WriteLine("Updated stats");
             return Task.CompletedTask;
         }
 
