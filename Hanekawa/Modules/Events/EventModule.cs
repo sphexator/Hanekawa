@@ -203,7 +203,7 @@ namespace Hanekawa.Modules.Events
                 }
             }
         }
-
+        
         [Command("Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [WhiteListedEventOrg]
@@ -267,7 +267,7 @@ namespace Hanekawa.Modules.Events
                 catch(Exception e) { Console.WriteLine(e);}
             }
         }
-
+        
         [Command("Remove", RunMode = RunMode.Async)]
         [Summary("Removes a event from the list given the ID")]
         [RequireUserPermission(GuildPermission.ManageGuild)]

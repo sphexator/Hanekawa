@@ -43,7 +43,7 @@ namespace Hanekawa.Services.Entities
         public virtual DbSet<MessageStat> MessageStats { get; set; }
         public virtual DbSet<MuteStat> MuteStats { get; set; }
         public virtual DbSet<WarnStat> WarnStats { get; set; }
-
+        
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
         public virtual DbSet<EventSchedule> EventSchedules { get; set; }

@@ -37,6 +37,10 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using GiphyApiClient.NetCore.Client;
+using GiphyApiClient.NetCore.Config;
+using Hanekawa.Services.Giphy;
+using RestSharp;
 
 namespace Hanekawa
 {
@@ -47,6 +51,7 @@ namespace Hanekawa
         private LavalinkManager _lavalink;
         private YouTubeService _youTubeService;
         private AnimeSimulCastClient _anime;
+        private GiphyClient _giphy;
 
         private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
 
@@ -64,6 +69,10 @@ namespace Hanekawa
             });
 
             _config = BuildConfig();
+
+            var giphyApiClientConfig = new GiphyApiClientConfig(_config);
+            var giphyRestCleint = new RestClient(giphyApiClientConfig.BaseUrl);
+            _giphy = new GiphyClient(giphyRestCleint, giphyApiClientConfig);
 
             _youTubeService = new YouTubeService(new BaseClientService.Initializer
             {
@@ -99,6 +108,7 @@ namespace Hanekawa
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
+            services.GetRequiredService<GiphyService>();
 
             _client.Ready += LavalinkInitiateAsync;
             
@@ -131,6 +141,7 @@ namespace Hanekawa
             services.AddSingleton(_youTubeService);
             services.AddSingleton(_config);
             services.AddSingleton(_anime);
+            services.AddSingleton(_giphy);
 
             services.AddDistributedRedisCache(options =>
             {
@@ -161,6 +172,7 @@ namespace Hanekawa
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
+            services.AddSingleton<GiphyService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();
@@ -176,6 +188,18 @@ namespace Hanekawa
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
+        }
+
+        private class GiphyApiClientConfig : IGiphyApiClientConfig
+        {
+            public GiphyApiClientConfig(IConfiguration config)
+            {
+                ApiKey = config["giphy"];
+                BaseUrl = "http://api.giphy.com/v1/";
+            }
+
+            public string ApiKey { get; }
+            public string BaseUrl { get; }
         }
     }
 }
