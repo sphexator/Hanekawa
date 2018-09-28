@@ -120,7 +120,7 @@ namespace Hanekawa.Services.Events
             return result;
         }
 
-        private async Task ChannelCleanup(ITextChannel channel)
+        private static async Task ChannelCleanup(ITextChannel channel)
         {
             try
             {

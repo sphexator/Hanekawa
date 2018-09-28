@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Hanekawa.Services.Entities.Tables
+﻿namespace Hanekawa.Services.Entities.Tables.Stats
 {
     public class MessageStat
     {

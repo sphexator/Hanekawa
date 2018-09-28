@@ -22,7 +22,6 @@ using Hanekawa.Services.INC;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Log;
-using Hanekawa.Services.Loot;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
 using Hanekawa.Services.Reliability;
@@ -39,6 +38,7 @@ using System.IO;
 using System.Threading.Tasks;
 using GiphyApiClient.NetCore.Client;
 using GiphyApiClient.NetCore.Config;
+using Hanekawa.Services.Drop;
 using Hanekawa.Services.Giphy;
 using RestSharp;
 
@@ -103,7 +103,7 @@ namespace Hanekawa
             //services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
             //services.GetRequiredService<MvpService>();
-            services.GetRequiredService<LootCrates>();
+            services.GetRequiredService<DropService>();
             services.GetRequiredService<SimulCast>();
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
@@ -167,7 +167,7 @@ namespace Hanekawa
             services.AddSingleton<GameStats>();
             services.AddSingleton<ShipGameService>();
             services.AddSingleton<ProfileBuilder>();
-            services.AddSingleton<LootCrates>();
+            services.AddSingleton<DropService>();
             services.AddSingleton<AudioService>();
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();

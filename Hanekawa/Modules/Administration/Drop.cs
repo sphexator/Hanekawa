@@ -6,8 +6,8 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Drop;
 using Hanekawa.Services.Entities;
-using Hanekawa.Services.Loot;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
@@ -17,8 +17,8 @@ namespace Hanekawa.Modules.Administration
     [RequireContext(ContextType.Guild)]
     public class Drop : InteractiveBase
     {
-        private readonly LootCrates _lootCrates;
-        public Drop(LootCrates lootCrates)
+        private readonly DropService _lootCrates;
+        public Drop(DropService lootCrates)
         {
             _lootCrates = lootCrates;
         }

@@ -9,9 +9,9 @@ using Hanekawa.Extensions;
 using Hanekawa.Services.Entities;
 using Hanekawa.Services.Entities.Tables;
 
-namespace Hanekawa.Services.Loot
+namespace Hanekawa.Services.Drop
 {
-    public class LootCrates
+    public class DropService
     {
         private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
@@ -25,7 +25,7 @@ namespace Hanekawa.Services.Loot
 
         private readonly DiscordSocketClient _client;
 
-        public LootCrates(DiscordSocketClient client)
+        public DropService(DiscordSocketClient client)
         {
             _client = client;
             _client.MessageReceived += CrateTriggerAsync;
