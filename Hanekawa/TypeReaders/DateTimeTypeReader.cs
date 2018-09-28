@@ -8,9 +8,9 @@ namespace Hanekawa.TypeReaders
     public class DateTimeTypeReader : TypeReader
     {
         private static readonly string[] Formats = {
-            "dd/MM//yyyy HH/mm",
+            "HH:mm dd/MM//yyyy HH/mm",
             "d/M/yyyy HH:mm",
-            "d/M HH:mm",
+            "d/M HH:mm"
         };
 
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
