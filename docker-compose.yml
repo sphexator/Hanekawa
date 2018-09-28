@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  jibril:
-    image: jibril
-    build:
-      context: ./Jibril
-      dockerfile: Dockerfile
