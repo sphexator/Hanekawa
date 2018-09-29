@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -91,7 +92,7 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff.Id,
                     Time = time,
                     Reason = reason,
-                    Type = type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1
                 };
@@ -119,7 +120,7 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff.Id,
                     Time = time,
                     Reason = reason,
-                    Type = type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = after
@@ -148,7 +149,7 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff,
                     Time = time,
                     Reason = reason,
-                    Type = type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = null
@@ -178,7 +179,7 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff,
                     Time = time,
                     Reason = reason,
-                    Type = type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = after

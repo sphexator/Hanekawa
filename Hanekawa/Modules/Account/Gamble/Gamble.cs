@@ -4,9 +4,10 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Account.Gamble
@@ -96,7 +97,7 @@ namespace Hanekawa.Modules.Account.Gamble
             }
         }
 
-        private static async Task<EmbedBuilder> GambleBetAsync(SocketCommandContext context, DbContext db, Services.Entities.Tables.Account userdata, uint bet, bool allin = false)
+        private static async Task<EmbedBuilder> GambleBetAsync(SocketCommandContext context, DbContext db, Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -115,7 +116,7 @@ namespace Hanekawa.Modules.Account.Gamble
                                             $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red.RawValue);
         }
 
-        private static async Task<EmbedBuilder> GambleRollAsync(SocketCommandContext context, DbContext db, Services.Entities.Tables.Account userdata, uint bet, bool allin = false)
+        private static async Task<EmbedBuilder> GambleRollAsync(SocketCommandContext context, DbContext db, Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -141,7 +142,7 @@ namespace Hanekawa.Modules.Account.Gamble
             return new EmbedBuilder().Reply($"Sorry **{context.User.Mention}**, You have lost ${bet} Off a roll of **{rolled}**", Color.Red.RawValue);
         }
 
-        private static uint BetAdjust(Services.Entities.Tables.Account userdata)
+        private static uint BetAdjust(Addons.Database.Tables.Account.Account userdata)
         {
             return userdata.Credit;
         }

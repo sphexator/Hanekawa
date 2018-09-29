@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
-using Discord.Addons.Interactive;
+﻿using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Development
 {

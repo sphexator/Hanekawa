@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Club;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Club;
 using static Hanekawa.Services.Club.ClubService;
 
 namespace Hanekawa.Modules.Club

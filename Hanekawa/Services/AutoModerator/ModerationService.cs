@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Hanekawa.Events;
+using Hanekawa.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Data;
-using Hanekawa.Events;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa.Services.AutoModerator
 {

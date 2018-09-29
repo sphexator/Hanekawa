@@ -1,6 +1,6 @@
-﻿using System;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
+﻿using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables.BotGame;
+using System;
 
 namespace Hanekawa.Services.Games.ShipGame.Data
 {

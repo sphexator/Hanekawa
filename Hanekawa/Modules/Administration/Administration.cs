@@ -4,10 +4,10 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
-using Hanekawa.Services.Entities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
 
 namespace Hanekawa.Modules.Administration
 {

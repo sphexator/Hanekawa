@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Modules.Account
 {

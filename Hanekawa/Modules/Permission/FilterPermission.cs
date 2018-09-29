@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {

@@ -1,5 +1,4 @@
 ﻿using Discord.WebSocket;
-using Hanekawa.Services.Entities.Tables;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,6 +7,7 @@ using SixLabors.Primitives;
 using SixLabors.Shapes;
 using System;
 using System.Numerics;
+using Hanekawa.Addons.Database.Tables.Account;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;

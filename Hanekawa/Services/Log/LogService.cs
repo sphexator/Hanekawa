@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Data.Constants;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
-using Hanekawa.Services.Entities;
 using Humanizer;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Services.Log
 {
@@ -210,7 +211,7 @@ namespace Hanekawa.Services.Log
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
                     var author =
                         new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}" };
                     var footer =
@@ -253,7 +254,7 @@ namespace Hanekawa.Services.Log
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
                         Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
@@ -345,7 +346,7 @@ namespace Hanekawa.Services.Log
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
                         Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
@@ -380,7 +381,7 @@ namespace Hanekawa.Services.Log
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
                     var author = new EmbedAuthorBuilder
                     {
                         Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.Discriminator}"
@@ -465,7 +466,7 @@ namespace Hanekawa.Services.Log
                         var cfg = await db.GetOrCreateGuildConfig(guild).ConfigureAwait(false);
                         if (!cfg.LogBan.HasValue) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Ban);
                         var author = new EmbedAuthorBuilder
                         {
                             Name = $"Case ID: {caseId.Id} - {ActionType.Bent} | {user.Username}#{user.Discriminator}"
@@ -507,7 +508,7 @@ namespace Hanekawa.Services.Log
                         if (!cfg.LogBan.HasValue) return;
 
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Unban);
                         var author = new EmbedAuthorBuilder
                         {
                             Name = $"Case ID: {caseId.Id} - {ActionType.UnBent} | {user.Username}#{user.Discriminator}"

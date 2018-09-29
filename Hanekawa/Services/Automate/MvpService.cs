@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Services.Automate
 {

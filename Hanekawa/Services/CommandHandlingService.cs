@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.TypeReaders;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.TypeReaders;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Services
 {

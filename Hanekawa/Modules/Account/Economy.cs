@@ -1,14 +1,17 @@
-﻿using System;
+﻿
+
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -210,14 +213,14 @@ namespace Hanekawa.Modules.Account
             return cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
         }
 
-        private static string GetRegularCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        private static string GetRegularCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg)
         {
             return cfg.EmoteCurrency
                 ? EmoteCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign)
                 : RegularCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign);
         }
 
-        private static string GetSpecialCurrency(Services.Entities.Tables.Account userdata, GuildConfig cfg)
+        private static string GetSpecialCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg)
         {
             return cfg.SpecialEmoteCurrency
                 ? EmoteCurrencyResponse(userdata.CreditSpecial, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)

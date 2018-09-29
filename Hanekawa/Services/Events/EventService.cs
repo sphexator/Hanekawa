@@ -1,12 +1,12 @@
+using Discord;
+using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables.Administration;
 
 namespace Hanekawa.Services.Events
 {

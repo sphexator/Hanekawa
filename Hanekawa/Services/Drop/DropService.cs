@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Services.Drop
 {

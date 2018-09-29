@@ -1,17 +1,19 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Level.Util;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
-using Hanekawa.Services.Level.Util;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Services.Level
 {

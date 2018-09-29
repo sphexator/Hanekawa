@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Drop;
-using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
 
 namespace Hanekawa.Modules.Administration
 {

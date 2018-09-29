@@ -2,13 +2,13 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using System;
 using System.Collections.Concurrent;
@@ -17,9 +17,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.BotGame;
 using Image = SixLabors.ImageSharp.Image;
+using Hanekawa.Addons.Database.Tables.Account;
 
 namespace Hanekawa.Services.Games.ShipGame
 {

@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Audio
 {
@@ -41,7 +42,7 @@ namespace Hanekawa.Modules.Audio
 
             using (var db = new DbService())
             {
-                var users = new List<Services.Entities.Tables.Account>();
+                var users = new List<Addons.Database.Tables.Account.Account>();
                 foreach (var x in await ((IVoiceState)Context.User).VoiceChannel.GetUsersAsync().ToArray())
                 {
                     var user = x.FirstOrDefault();

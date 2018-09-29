@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Preconditions
 {

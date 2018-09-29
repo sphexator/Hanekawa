@@ -2,12 +2,13 @@
 using Discord.WebSocket;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.AnimeSimulCast.Entity;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
+
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Services.Anime
 {

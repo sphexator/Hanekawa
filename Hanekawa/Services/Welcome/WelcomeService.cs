@@ -1,8 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -11,6 +9,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Text;
+using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using System;
 using System.Collections.Concurrent;
@@ -19,9 +20,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome

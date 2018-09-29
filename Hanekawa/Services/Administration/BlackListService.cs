@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using Hanekawa.Services.Entities;
+using Hanekawa.Addons.Database;
 using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Administration

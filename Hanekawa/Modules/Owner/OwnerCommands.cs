@@ -1,12 +1,12 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database;
 
 namespace Hanekawa.Modules.Owner
 {
@@ -30,7 +30,7 @@ namespace Hanekawa.Modules.Owner
                         return;
                     }
 
-                    var data = new Services.Entities.Tables.Blacklist
+                    var data = new Addons.Database.Tables.Administration.Blacklist
                     {
                         GuildId = id,
                         Reason = reason,

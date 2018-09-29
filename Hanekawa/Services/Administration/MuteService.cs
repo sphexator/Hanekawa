@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Events;
 using Hanekawa.Services.AutoModerator;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 
 namespace Hanekawa.Services.Administration
 {

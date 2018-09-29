@@ -1,15 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
 using Hanekawa.Data.Constants;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
 using Microsoft.EntityFrameworkCore;
-
+using System;
+using System.Threading.Tasks;
+/*
 namespace Hanekawa.Extensions
 {
-    public static class DbExtension
+    static class DbExtensionDepricated
     {
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
@@ -329,3 +328,4 @@ namespace Hanekawa.Extensions
         }
     }
 }
+*/

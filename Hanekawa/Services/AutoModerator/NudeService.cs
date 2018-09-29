@@ -1,4 +1,11 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using Hanekawa.Services.Administration;
+using Hanekawa.Services.AutoModerator.Perspective.Models;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Quartz.Util;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +14,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Services.Administration;
-using Hanekawa.Services.AutoModerator.Perspective.Models;
-using Hanekawa.Services.Entities;
-using Hanekawa.Services.Entities.Tables;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Quartz.Util;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Services.AutoModerator
 {
