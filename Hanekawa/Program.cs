@@ -51,6 +51,7 @@ namespace Hanekawa
         private YouTubeService _youTubeService;
         private AnimeSimulCastClient _anime;
         private GiphyClient _giphy;
+        private DatabaseClient _databaseClient;
 
         private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
 
@@ -68,6 +69,8 @@ namespace Hanekawa
             });
 
             _config = BuildConfig();
+
+            _databaseClient = new DatabaseClient(_config["connectionstring"]);
 
             var giphyApiClientConfig = new GiphyApiClientConfig(_config);
             var giphyRestCleint = new RestClient(giphyApiClientConfig.BaseUrl);
