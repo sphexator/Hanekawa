@@ -12,7 +12,6 @@ using Hanekawa.Preconditions;
 using Hanekawa.Services;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Anime;
-using Hanekawa.Services.Audio;
 using Hanekawa.Services.Automate;
 using Hanekawa.Services.AutoModerator;
 using Hanekawa.Services.Club;
@@ -20,7 +19,6 @@ using Hanekawa.Services.Drop;
 using Hanekawa.Services.Events;
 using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Games.ShipGame.Data;
-using Hanekawa.Services.Giphy;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Log;
@@ -35,10 +33,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
 using RestSharp;
-using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Handler;
+using Hanekawa.Modules.Audio.Service;
+using Victoria;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa
@@ -47,51 +47,32 @@ namespace Hanekawa
     {
         private DiscordSocketClient _client;
         private IConfiguration _config;
-        private LavalinkManager _lavalink;
         private YouTubeService _youTubeService;
         private AnimeSimulCastClient _anime;
-        private GiphyClient _giphy;
         private DatabaseClient _databaseClient;
 
         private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
 
         private async Task MainASync()
         {
-            using (var db = new DbService())
-            {
-                await db.Database.MigrateAsync();
-            }
-
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
                 AlwaysDownloadUsers = true
             });
-
             _config = BuildConfig();
-
             _databaseClient = new DatabaseClient(_config["connectionstring"]);
-
-            var giphyApiClientConfig = new GiphyApiClientConfig(_config);
-            var giphyRestCleint = new RestClient(giphyApiClientConfig.BaseUrl);
-            _giphy = new GiphyClient(giphyRestCleint, giphyApiClientConfig);
-
             _youTubeService = new YouTubeService(new BaseClientService.Initializer
             {
                 ApiKey = _config["googleApi"],
                 ApplicationName = GetType().ToString()
             });
-
-            _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
-            {
-                RESTHost = "localhost",
-                RESTPort = 2333,
-                WebSocketHost = "localhost",
-                WebSocketPort = 80,
-                TotalShards = 1
-            });
-
             _anime = new AnimeSimulCastClient();
+
+            using (var db = new DbService())
+            {
+                await db.Database.MigrateAsync();
+            }
 
             var services = ConfigureServices();
             services.GetRequiredService<Config>();
@@ -102,25 +83,15 @@ namespace Hanekawa
             services.GetRequiredService<BoardService>();
             services.GetRequiredService<WarnService>();
             services.GetRequiredService<NudeScoreService>();
-            //services.GetRequiredService<HungerGames>();
             services.GetRequiredService<ShipGameService>();
-            //services.GetRequiredService<MvpService>();
             services.GetRequiredService<DropService>();
             services.GetRequiredService<SimulCast>();
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
-            services.GetRequiredService<GiphyService>();
+            services.GetRequiredService<LavalinkInitialize>();
 
-            _client.Ready += LavalinkInitiateAsync;
-            
             var scheduler = services.GetService<IScheduler>();
-            
-            /*
-            //QuartzServicesUtilities.StartCronJob<PostPictures>(scheduler, "0 10 18 ? * SAT *");
-            QuartzServicesUtilities.StartCronJob<MvpService>(scheduler, "0 0 13 ? * MON *");
-            QuartzServicesUtilities.StartCronJob<HungerGames>(scheduler, "0 0 0/6 1/1 * ? *");
-            */
 
             QuartzServicesUtilities.StartCronJob<EventService>(scheduler, "0 0 10 1/1 * ? *");
             QuartzServicesUtilities.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
@@ -130,8 +101,6 @@ namespace Hanekawa
             await Task.Delay(-1);
         }
 
-        private async Task LavalinkInitiateAsync() => await _lavalink.StartAsync();
-
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
@@ -139,11 +108,9 @@ namespace Hanekawa
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
             services.AddSingleton(_client);
-            services.AddSingleton(_lavalink);
             services.AddSingleton(_youTubeService);
             services.AddSingleton(_config);
             services.AddSingleton(_anime);
-            services.AddSingleton(_giphy);
 
             services.AddDistributedRedisCache(options =>
             {
@@ -151,6 +118,8 @@ namespace Hanekawa
                 options.InstanceName = "db2";
             });
 
+            services.AddSingleton<Lavalink>();
+            services.AddSingleton<LavalinkInitialize>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<Calculate>();
@@ -170,10 +139,10 @@ namespace Hanekawa
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<DropService>();
             services.AddSingleton<AudioService>();
+            services.AddSingleton<PlaylistService>();
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
-            services.AddSingleton<GiphyService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();
@@ -189,18 +158,6 @@ namespace Hanekawa
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
-        }
-
-        private class GiphyApiClientConfig : IGiphyApiClientConfig
-        {
-            public GiphyApiClientConfig(IConfiguration config)
-            {
-                ApiKey = config["giphy"];
-                BaseUrl = "http://api.giphy.com/v1/";
-            }
-
-            public string ApiKey { get; }
-            public string BaseUrl { get; }
         }
     }
 }

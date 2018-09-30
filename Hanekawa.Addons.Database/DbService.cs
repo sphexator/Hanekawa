@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.Administration;
+using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Addons.Database.Tables.Club;
@@ -84,6 +85,9 @@ namespace Hanekawa.Addons.Database
         //Profiles
         public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
+
+        //Audio
+        public virtual DbSet<Playlist> Playlists { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -205,6 +209,9 @@ namespace Hanekawa.Addons.Database
             // Profiles
             modelBuilder.Entity<Background>(x => x.HasKey(e => e.Id));
             modelBuilder.Entity<ProfileConfig>(x => x.HasKey(e => e.Id));
+
+            // Audio
+            modelBuilder.Entity<Playlist>(x => x.HasKey(e => new {e.GuildId, e.Id}));
         }
     }
 }

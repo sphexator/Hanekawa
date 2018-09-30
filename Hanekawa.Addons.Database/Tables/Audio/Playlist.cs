@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Hanekawa.Addons.Database.Tables.Audio
+{
+    public class Playlist
+    {
+        public string Id { get; set; }
+        public ulong GuildId { get; set; }
+        public int Streams { get; set; }
+        public bool IsPrivate { get; set; }
+        public ulong OwnerId { get; set; }
+        public TimeSpan Playtime { get; set; }
+        public HashSet<string> Tracks { get; set; }
+    }
+}
