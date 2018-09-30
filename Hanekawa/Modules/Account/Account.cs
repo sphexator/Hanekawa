@@ -155,7 +155,7 @@ namespace Hanekawa.Modules.Account
                     return;
                 }
                 var userdata = await db.GetOrCreateUserData(user);
-                userdata.RepCooldown = DateTime.UtcNow;
+                cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
                 userdata.Rep = userdata.Rep + 1;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());

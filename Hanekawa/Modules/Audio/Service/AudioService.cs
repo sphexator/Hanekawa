@@ -24,7 +24,7 @@ namespace Hanekawa.Modules.Audio.Service
             _voteSkip = new ConcurrentDictionary<ulong, (LavaTrack Track, List<ulong> Votes)>();
         }
 
-        public async Task<string> PlayAsync(ulong guildId, string query)
+        public async Task<string> PlayAsync(ulong guildId, string query, IVoiceState state, IMessageChannel channel)
         {
             var search = Uri.IsWellFormedUriString(query, UriKind.RelativeOrAbsolute)
                 ? await _lavaNode.GetTracksAsync(new Uri(query))
@@ -32,6 +32,12 @@ namespace Hanekawa.Modules.Audio.Service
 
             var track = search.Tracks.FirstOrDefault();
             var player = _lavaNode.GetPlayer(guildId);
+            if (player == null)
+            {
+                player = await _lavaNode.JoinAsync(state.VoiceChannel, channel);
+                player.Play(track);
+                return $"**Playing:** {track.Title}";
+            }
             if (player.CurrentTrack != null)
             {
                 player.Enqueue(track);

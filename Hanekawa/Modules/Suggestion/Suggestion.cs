@@ -76,12 +76,12 @@ namespace Hanekawa.Modules.Suggestion
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, new EmbedBuilder().Reply(
                         $"Your suggestion got a response!\n" +
                         $"Suggestion:\n" +
                         $"{embed.Description}\n" +
                         $"Answer from {Context.User}:\n" +
-                        $"{response}");
+                        $"{response}").Build());
                 }
                 catch
                 {

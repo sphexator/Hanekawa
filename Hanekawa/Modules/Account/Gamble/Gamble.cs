@@ -144,7 +144,7 @@ namespace Hanekawa.Modules.Account.Gamble
 
         private static uint BetAdjust(Addons.Database.Tables.Account.Account userdata)
         {
-            return userdata.Credit;
+            return userdata.Credit >= 25000 ? (uint) 25000 : userdata.Credit;
         }
 
         private static uint BetAdjust()

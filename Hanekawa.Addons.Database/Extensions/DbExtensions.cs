@@ -9,6 +9,7 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Moderation;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -292,6 +293,26 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.Suggestions.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
+        }
+
+        public static async Task<QuestionAndAnswer> CreateQnA(this DbService context, IUser user, SocketGuild guild,
+            DateTime time)
+        {
+            var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id);
+            uint nr;
+            if (counter == 0) nr = 1;
+            else nr = (uint)counter + 1;
+            var data = new QuestionAndAnswer
+            {
+                Id = nr,
+                GuildId = guild.Id,
+                Date = time,
+                UserId = user.Id,
+                Status = true
+            };
+            await context.QuestionAndAnswers.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time);
         }
 
         public static async Task<Report> CreateReport(this DbService context, IUser user, SocketGuild guild,

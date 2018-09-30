@@ -7,6 +7,7 @@ using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Addons.Database.Tables.Profile;
 using Hanekawa.Addons.Database.Tables.Stats;
 
@@ -79,6 +80,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<MuteTimer> MuteTimers { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
         public virtual DbSet<Suggestion> Suggestions { get; set; }
+        public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
 
@@ -210,6 +212,7 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<ModLog>(x => { x.HasKey(e => new { e.Id, e.GuildId }); });
             modelBuilder.Entity<MuteTimer>(x => { x.HasKey(e => new { e.UserId, e.GuildId }); });
             modelBuilder.Entity<Suggestion>(x => { x.HasKey(e => new { e.Id, e.GuildId }); });
+            modelBuilder.Entity<QuestionAndAnswer>(x => { x.HasKey(e => new { e.Id, e.GuildId }); });
             modelBuilder.Entity<Report>(x => { x.HasKey(e => new { e.Id, e.GuildId }); });
             modelBuilder.Entity<Warn>(x => { x.HasKey(e => new { e.GuildId, e.Id }); });
             modelBuilder.Entity<WarnMsgLog>(x =>

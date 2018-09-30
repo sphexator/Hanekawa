@@ -1,14 +1,13 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Modules.Audio.Service;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Audio
 {
+    [RequireContext(ContextType.Guild)]
     public class Music : InteractiveBase
     {
         private readonly AudioService _audio;
@@ -34,7 +33,7 @@ namespace Hanekawa.Modules.Audio
 
         [Command("Play", RunMode = RunMode.Async)]
         public async Task PlayAsync([Remainder] string query)
-            => await ReplyAsync(await _audio.PlayAsync(Context.Guild.Id, query));
+            => await ReplyAsync(await _audio.PlayAsync(Context.Guild.Id, query, Context.User as IGuildUser, Context.Channel));
 
         [Command("Pause", RunMode = RunMode.Async)]
         public async Task Pause()

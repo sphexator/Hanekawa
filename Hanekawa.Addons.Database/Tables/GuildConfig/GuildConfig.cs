@@ -18,6 +18,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong? EventSchedulerChannel { get; set; }
         public ulong? ModChannel { get; set; }
         public ulong? DesignChannel { get; set; }
+        public ulong? QuestionAndAnswerChannel { get; set; }
 
         // Club settings
         public ulong? ClubChannelCategory { get; set; }
