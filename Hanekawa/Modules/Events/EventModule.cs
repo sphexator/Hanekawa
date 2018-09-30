@@ -230,7 +230,7 @@ namespace Hanekawa.Modules.Events
 
             if (currentTime.Month > month) year = currentTime.Year + 1;
             else year = currentTime.Year;
-            await ReplyAsync(null, false, new EmbedBuilder().Reply("Timezone? (eg. UTC-5)").Build());
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Timezone? (eg. -5)").Build());
             timezone = (await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content;
             await ReplyAsync(null, false, new EmbedBuilder().Reply("Time? (eg. 15:00)").Build());
             time = (await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content;
@@ -259,7 +259,7 @@ namespace Hanekawa.Modules.Events
                     return;
                 }
 
-                var id = await db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id + 1);
+                var id = await db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id) + 1;
                 var embed = new EmbedBuilder
                 {
                     Title = name,

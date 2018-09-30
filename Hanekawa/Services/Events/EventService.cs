@@ -31,8 +31,9 @@ namespace Hanekawa.Services.Events
 
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
         {
-            var check = await db.EventSchedules.FindAsync(user.Guild.Id,
-                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1);
+            var check = await db.EventSchedules.FindAsync(
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1, 
+                user.Guild.Id);
             if (check != null) return false;
             var data = new EventSchedule
             {

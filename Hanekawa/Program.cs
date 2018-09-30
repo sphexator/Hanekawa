@@ -61,7 +61,7 @@ namespace Hanekawa
                 AlwaysDownloadUsers = true
             });
             _config = BuildConfig();
-            _databaseClient = new DatabaseClient(_config["connectionstring"]);
+            _databaseClient = new DatabaseClient(_config["connectionString"]);
             _youTubeService = new YouTubeService(new BaseClientService.Initializer
             {
                 ApiKey = _config["googleApi"],

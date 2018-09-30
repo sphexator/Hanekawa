@@ -157,7 +157,7 @@ namespace Hanekawa.Addons.Database
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
-            modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new { e.GuildId, e.Id }));
+            modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new { e.Id, e.GuildId }));
             modelBuilder.Entity<WhitelistDesign>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
             modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
