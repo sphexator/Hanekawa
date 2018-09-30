@@ -2,6 +2,7 @@
 {
     public class MessageStat
     {
+        public ulong GuildId { get; set; }
         public int Monday { get; set; }
         public int Tuesday { get; set; }
         public int Wednesday { get; set; }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Hanekawa.Addons.Database.Tables.Audio
 {
@@ -11,6 +10,5 @@ namespace Hanekawa.Addons.Database.Tables.Audio
         public bool IsPrivate { get; set; }
         public ulong OwnerId { get; set; }
         public TimeSpan Playtime { get; set; }
-        public HashSet<string> Tracks { get; set; }
     }
 }

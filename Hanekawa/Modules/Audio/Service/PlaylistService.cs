@@ -12,6 +12,7 @@ namespace Hanekawa.Modules.Audio.Service
 {
     public class PlaylistService
     {
+        /*
         private readonly LavaNode LavaNode;
 
         public Lavalink Lavalink { get; }
@@ -130,5 +131,6 @@ namespace Hanekawa.Modules.Audio.Service
                 return $"Enqueued {load.Tracks.Count} tracks.";
             }
         }
+        */
     }
 }

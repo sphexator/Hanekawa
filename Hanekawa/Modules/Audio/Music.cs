@@ -12,12 +12,12 @@ namespace Hanekawa.Modules.Audio
     public class Music : InteractiveBase
     {
         private readonly AudioService _audio;
-        private readonly PlaylistService _playlist;
+        //private readonly PlaylistService _playlist;
 
-        public Music(AudioService audioService, PlaylistService playlist)
+        public Music(AudioService audioService)
         {
             _audio = audioService;
-            _playlist = playlist;
+            //_playlist = playlist;
         }
 
         [Command("Join", RunMode = RunMode.Async)]
@@ -59,7 +59,7 @@ namespace Hanekawa.Modules.Audio
         [Command("Volume", RunMode = RunMode.Async)]
         public async Task Volume(int volume)
             => await ReplyAsync(_audio.Volume(Context.Guild.Id, volume));
-
+        /*
         [Command("playlist Create", RunMode = RunMode.Async), Alias("plNew")]
         public async Task CreateAsync(string name, bool isPrivate)
         {
@@ -69,7 +69,7 @@ namespace Hanekawa.Modules.Audio
                 GuildId = Context.Guild.Id,
                 IsPrivate = isPrivate,
                 OwnerId = Context.User.Id,
-                Tracks = new HashSet<string>()
+                Tracks = new List<string>()
             };
 
             var message = await _playlist.TryCreate(playlist);
@@ -106,5 +106,6 @@ namespace Hanekawa.Modules.Audio
             var message = await _playlist.TryPlay(name, Context.Guild.Id, Context.User.Id, Context.Channel);
             await ReplyAsync(message);
         }
+        */
     }
 }

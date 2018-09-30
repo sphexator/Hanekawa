@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -32,9 +35,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Victoria;
 using Config = Hanekawa.Data.Config;
 
@@ -42,13 +42,16 @@ namespace Hanekawa
 {
     public class Program
     {
+        private AnimeSimulCastClient _anime;
         private DiscordSocketClient _client;
         private IConfiguration _config;
-        private YouTubeService _youTubeService;
-        private AnimeSimulCastClient _anime;
         private DatabaseClient _databaseClient;
+        private YouTubeService _youTubeService;
 
-        private static void Main() => new Program().MainASync().GetAwaiter().GetResult();
+        private static void Main()
+        {
+            new Program().MainASync().GetAwaiter().GetResult();
+        }
 
         private async Task MainASync()
         {
@@ -135,7 +138,7 @@ namespace Hanekawa
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<DropService>();
             services.AddSingleton<AudioService>();
-            services.AddSingleton<PlaylistService>();
+            //services.AddSingleton<PlaylistService>();
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();

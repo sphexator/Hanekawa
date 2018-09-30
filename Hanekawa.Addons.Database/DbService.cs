@@ -36,8 +36,8 @@ namespace Hanekawa.Addons.Database
 
         // Stats
         public virtual DbSet<BanStat> BanStats { get; set; }
-        public virtual DbSet<BotUsageStat> BotUsageStats { get; set; }
-        public virtual DbSet<EmoteStat> EmoteStats { get; set; }
+        //public virtual DbSet<BotUsageStat> BotUsageStats { get; set; }
+        //public virtual DbSet<EmoteStat> EmoteStats { get; set; }
         public virtual DbSet<JoinStat> JoinStats { get; set; }
         public virtual DbSet<MessageStat> MessageStats { get; set; }
         public virtual DbSet<MuteStat> MuteStats { get; set; }
@@ -91,6 +91,9 @@ namespace Hanekawa.Addons.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+#if DEBUG
+            Config.ConnectionString = "Server=localhost;Database=yamato_test;User=root;Password=12345;";
+#endif
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder
                 .UseMySql(Config.ConnectionString);
@@ -140,6 +143,15 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
             modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new { e.GuildId, e.UserId }); });
             modelBuilder.Entity<Item>(x => x.HasKey(e => e.ItemId));
+
+            // Stats
+            modelBuilder.Entity<BanStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
+            //modelBuilder.Entity<BotUsageStat>(x => x.HasKey(e => e))
+            //modelBuilder.Entity<EmoteStat>(x => x.HasKey(e => e))
+            modelBuilder.Entity<JoinStat>(x => x.HasKey(e => e.GuildId));
+            modelBuilder.Entity<MessageStat>(x => x.HasKey(e => e.GuildId));
+            modelBuilder.Entity<MuteStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
+            modelBuilder.Entity<WarnStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));
