@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Account
 {
@@ -148,6 +149,8 @@ namespace Hanekawa.Modules.Account
 
         [Command("list", RunMode = RunMode.Async)]
         [Summary("Lists all role rewards")]
+        [RequiredChannel]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LevelAdd()
         {
             using (var db = new DbService())

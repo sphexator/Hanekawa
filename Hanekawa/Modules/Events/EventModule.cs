@@ -208,16 +208,49 @@ namespace Hanekawa.Modules.Events
         [Command("Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
         [WhiteListedEventOrg]
-        public async Task AddEventAsync(DateTime time,[Remainder] string name)
+        public async Task AddEventAsync()
         {
+            var currentTime = DateTime.UtcNow;
+            string name = null;
+            var day = 1;
+            var month = 1;
+            string time = null;
+            string timezone = null;
+            var year = 1;
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Name of event?").Build());
+            name = (await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content;
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Which day is this event? (In numbers: 1-31)").Build());
+            day = Convert.ToInt32((await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content);
+            if (currentTime.Day >= day)
+            {
+                if (currentTime.Month == 12) month = 1;
+                else month = currentTime.Month + 1;
+            }
+            else month = currentTime.Month;
+
+            if (currentTime.Month > month) year = currentTime.Year + 1;
+            else year = currentTime.Year;
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Timezone? (eg. UTC-5)").Build());
+            timezone = (await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content;
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Time? (eg. 15:00)").Build());
+            time = (await NextMessageAsync(true, true, TimeSpan.FromMinutes(5))).Content;
+
+            var parseCheck = DateTime.TryParse($"{year}-{month}-{day} {time} {timezone}", out var date);
+            if (!parseCheck)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply("Couldn't parse input into a timestamp", Color.Red.RawValue).Build());
+                return;
+            }
+
             using (var db = new DbService())
             {
-                if (time.Date == DateTime.UtcNow.Date)
+                if (date == DateTime.UtcNow.Date)
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Can't schedule an event on the same day.", Color.Red.RawValue)
                             .Build());
                 var check = await db.EventSchedules.FirstOrDefaultAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.Time == time);
+                    x.GuildId == Context.Guild.Id && x.Time == date);
                 if (check != null)
                 {
                     await ReplyAsync(null, false,
@@ -230,7 +263,7 @@ namespace Hanekawa.Modules.Events
                 var embed = new EmbedBuilder
                 {
                     Title = name,
-                    Timestamp = new DateTimeOffset(time),
+                    Timestamp = new DateTimeOffset(date),
                     Color = Color.Purple
                 };
 
@@ -251,7 +284,7 @@ namespace Hanekawa.Modules.Events
 
                     if (response.Content.ToLower() == "y")
                     {
-                        await _service.TryAddEventAsync(db, name, Context.User as IGuildUser, time);
+                        await _service.TryAddEventAsync(db, name, Context.User as IGuildUser, date);
                         var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                         await ReplyAsync(null, false,
                             new EmbedBuilder()

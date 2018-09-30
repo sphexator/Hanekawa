@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Report
 {
@@ -41,6 +42,7 @@ namespace Hanekawa.Modules.Report
 
         [Command("report", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
+        [Ratelimit(1, 30, Measure.Seconds)]
         public async Task ReportGuildAsync([Remainder]string text)
         {
             await Context.Message.DeleteAsync();

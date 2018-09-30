@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Help
 {
@@ -22,6 +23,7 @@ namespace Hanekawa.Modules.Help
 
         [Command("help")]
         [Summary("Lists this bot's commands.")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task HelpAsync([Remainder]string path = "")
         {
             if (path == "")

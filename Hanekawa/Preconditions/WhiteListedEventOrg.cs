@@ -2,6 +2,7 @@
 using Hanekawa.Addons.Database;
 using System;
 using System.Threading.Tasks;
+using Discord;
 
 namespace Hanekawa.Preconditions
 {
@@ -15,6 +16,8 @@ namespace Hanekawa.Preconditions
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
             CommandInfo command, IServiceProvider services)
         {
+            if (!(context.User is IGuildUser user)) return PreconditionResult.FromError("not in a guild");
+            if (user.GuildPermissions.ManageGuild) return PreconditionResult.FromSuccess();
             using (var db = new DbService())
             {
                 var check = await db.WhitelistEvents.FindAsync(context.Guild.Id, context.User.Id);

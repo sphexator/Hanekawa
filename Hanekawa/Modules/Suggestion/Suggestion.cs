@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Suggestion
 {
@@ -17,6 +18,7 @@ namespace Hanekawa.Modules.Suggestion
     {
         [Command("Suggest", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
+        [Ratelimit(1, 30, Measure.Seconds)]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.DeleteAsync();

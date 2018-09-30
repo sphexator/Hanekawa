@@ -219,6 +219,7 @@ namespace Hanekawa.Modules.Club
         [Command("leave", RunMode = RunMode.Async)]
         [Summary("Leaves a club you're part of")]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
         public async Task LeaveClubAsync(uint id)
         {
             using (var db = new DbService())

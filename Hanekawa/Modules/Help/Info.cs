@@ -18,6 +18,7 @@ namespace Hanekawa.Modules.Help
         [Command("bot info")]
         [Alias("botinfo")]
         [Summary("General info about the bot")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task InfoPosTask()
         {
@@ -60,6 +61,7 @@ namespace Hanekawa.Modules.Help
 
         [Command("uptime")]
         [Summary("Display uptime of the bot")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         public async Task UptimeTask()
         {
             await ReplyAndDeleteAsync(null, false,
@@ -70,6 +72,7 @@ namespace Hanekawa.Modules.Help
         [Command("server info", RunMode = RunMode.Async)]
         [Alias("serverinfo", "sinfo")]
         [Summary("Displays information about the guild/server")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ServerInformation()
         {
@@ -96,6 +99,7 @@ namespace Hanekawa.Modules.Help
         [Command("server roles", RunMode = RunMode.Async)]
         [Alias("serverroles", "sroles")]
         [Summary("Displays all roles in the guild/server")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ServerRoles()
         {
@@ -112,6 +116,7 @@ namespace Hanekawa.Modules.Help
         [Command("latency", RunMode = RunMode.Async)]
         [Alias("ping", "pong", "rtt")]
         [Summary("Returns the current estimated round-trip latency over WebSocket and REST")]
+        [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task LatencyAsync()
         {
