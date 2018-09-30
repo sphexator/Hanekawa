@@ -2,12 +2,12 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using GiphyApiClient.NetCore.Client;
-using GiphyApiClient.NetCore.Config;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
+using Hanekawa.Handler;
+using Hanekawa.Modules.Audio.Service;
 using Hanekawa.Preconditions;
 using Hanekawa.Services;
 using Hanekawa.Services.Administration;
@@ -32,12 +32,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
-using RestSharp;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Hanekawa.Handler;
-using Hanekawa.Modules.Audio.Service;
 using Victoria;
 using Config = Hanekawa.Data.Config;
 
@@ -104,7 +101,6 @@ namespace Hanekawa
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
-            services.UseQuartz(typeof(MvpService));
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
             services.AddSingleton(_client);
