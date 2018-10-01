@@ -12,5 +12,6 @@ namespace Hanekawa.Addons.Database.Tables.Administration
         public string ImageUrl { get; set; }
         public string Description { get; set; }
         public DateTime Time { get; set; }
+        public bool Posted { get; set; }
     }
 }

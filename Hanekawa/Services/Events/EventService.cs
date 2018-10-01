@@ -24,9 +24,9 @@ namespace Hanekawa.Services.Events
             return EventSchedulerAsync();
         }
 
-        public Task Execute()
+        public async Task Execute()
         {
-            return EventSchedulerAsync();
+            await EventSchedulerAsync();
         }
 
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
@@ -71,6 +71,7 @@ namespace Hanekawa.Services.Events
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
                     var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time > DateTime.UtcNow)
                         .OrderByDescending(z => z.Time).Take(5).ToListAsync();
+                    if (events.All(z => z.Posted)) return;
                     if (events.Count > 0) await ChannelCleanup(channel);
                     foreach (var e in events)
                     {
@@ -129,9 +130,7 @@ namespace Hanekawa.Services.Events
                 var result = msgs.Where(x => x.Timestamp.Date.AddDays(10) >= DateTime.UtcNow.Date).ToList();
                 await channel.DeleteMessagesAsync(result);
             }
-            catch
-            {
-            }
+            catch { }
         }
     }
 }

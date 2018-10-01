@@ -363,6 +363,7 @@ namespace Hanekawa.Modules.Events
                 var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
                 if (eventData == null) return;
                 eventData.Description = content;
+                await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Updated description for {eventData.Name}", Color.Green.RawValue)
                         .Build());
@@ -381,6 +382,7 @@ namespace Hanekawa.Modules.Events
                 if (eventData == null) return;
                 if (!eventData.DesignerClaim.HasValue) eventData.DesignerClaim = Context.User.Id;
                 eventData.ImageUrl = url;
+                await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Updated event image for {eventData.Name}", Color.Green.RawValue)
                         .Build());

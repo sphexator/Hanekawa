@@ -3,14 +3,16 @@ using System;
 using Hanekawa.Addons.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hanekawa.Addons.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20181001095426_EventScheduleAddPosterBool")]
+    partial class EventScheduleAddPosterBool
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
