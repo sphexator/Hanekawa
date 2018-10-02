@@ -106,7 +106,7 @@ namespace Hanekawa.Modules.Account.Profile
         {
             if (userdata != null)
             {
-                var total = await db.Accounts.CountAsync();
+                var total = await db.Accounts.CountAsync(x => x.GuildId == guildId.Value);
                 var rank = await db.Accounts.CountAsync(x => x.TotalExp >= userdata.TotalExp && x.GuildId == guildId.Value);
                 return $"{rank.FormatNumber()}/{total.FormatNumber()}";
             }
