@@ -1,14 +1,24 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.WebSocket;
+using Hanekawa.Modules.Account.Profile;
 
 namespace Hanekawa.Modules.Development
 {
     public class Test : InteractiveBase
     {
+        private readonly ProfileGenerator _generator;
+
+        public Test(ProfileGenerator generator)
+        {
+            _generator = generator;
+        }
+
         [Command("roleid", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task GetRoleID([Remainder] string roleName)
@@ -22,12 +32,14 @@ namespace Hanekawa.Modules.Development
 
         [Command("test", RunMode = RunMode.Async)]
         [RequireOwner]
-        public async Task TestRules(Emote emote)
+        [RequireContext(ContextType.Guild)]
+        public async Task TestRules(int size)
         {
-            var result = ParseEmoteString(emote);
-            await ReplyAsync(result);
-            Emote.TryParse(result, out var resultEmote);
-            await ReplyAsync($"{resultEmote}");
+            using (var profile = await _generator.Create(Context.User as SocketGuildUser))
+            {
+                profile.Seek(0, SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(profile, "banner.png");
+            }
         }
 
         private string ParseEmoteString(Emote emote)

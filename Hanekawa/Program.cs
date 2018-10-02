@@ -10,6 +10,7 @@ using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
 using Hanekawa.Handler;
+using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Modules.Audio.Service;
 using Hanekawa.Preconditions;
 using Hanekawa.Services;
@@ -142,6 +143,7 @@ namespace Hanekawa
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
+            services.AddSingleton<ProfileGenerator>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();
