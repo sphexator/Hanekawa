@@ -75,7 +75,7 @@ namespace Hanekawa.Services.Log
                     if (!cfg.LogAvi.HasValue) return;
                     var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
                     if (ch == null) return;
-                    var embed = new EmbedBuilder();
+                    var embed = new EmbedBuilder {Color = Color.Purple};
                     if (oldUsr.Username != newUsr.Username)
                     {
                         embed.WithTitle("Username Change")
@@ -88,10 +88,10 @@ namespace Hanekawa.Services.Log
                         embed.WithTitle("Avatar Change")
                             .WithDescription($"{oldUsr.Username}#{oldUsr.Discriminator} | {oldUsr.Id}");
 
-                        if (Uri.IsWellFormedUriString(oldUsr.GetAvatarUrl(), UriKind.Absolute))
-                            embed.WithThumbnailUrl(oldUsr.GetAvatarUrl());
-                        if (Uri.IsWellFormedUriString(newUsr.GetAvatarUrl(), UriKind.Absolute))
-                            embed.WithImageUrl(newUsr.GetAvatarUrl());
+                        if (Uri.IsWellFormedUriString(oldUsr.GetAvatarUrl(ImageFormat.Auto, 1024), UriKind.Absolute))
+                            embed.WithThumbnailUrl(oldUsr.GetAvatarUrl(ImageFormat.Auto, 1024));
+                        if (Uri.IsWellFormedUriString(newUsr.GetAvatarUrl(ImageFormat.Auto, 1024), UriKind.Absolute))
+                            embed.WithImageUrl(newUsr.GetAvatarUrl(ImageFormat.Auto, 1024));
                     }
                     else return;
 

@@ -30,8 +30,8 @@ namespace Hanekawa.Modules.Permission
 
                 var data = new WhitelistEvent
                 {
-                    GuildId = Context.Guild.Id,
-                    UserId = Context.User.Id
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id
                 };
                 await db.WhitelistEvents.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -112,8 +112,8 @@ namespace Hanekawa.Modules.Permission
 
                 var data = new WhitelistDesign
                 {
-                    GuildId = Context.Guild.Id,
-                    UserId = Context.User.Id
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id
                 };
                 await db.WhitelistDesigns.AddAsync(data);
                 await db.SaveChangesAsync();

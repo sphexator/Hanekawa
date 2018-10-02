@@ -70,10 +70,10 @@ namespace Hanekawa.Services.Events
                     if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
                     var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time > DateTime.UtcNow)
-                        .OrderByDescending(z => z.Time).Take(5).ToListAsync();
+                        .OrderBy(z => z.Time).Take(5).ToListAsync();
                     if (events.All(z => z.Posted)) return;
-                    if (events.Count > 0) await ChannelCleanup(channel);
-                    foreach (var e in events)
+                    if (events.Any()) await ChannelCleanup(channel);
+                    foreach (var e in events.OrderByDescending(t => t.Time))
                     {
                         var embed = new EmbedBuilder
                         {
@@ -81,12 +81,15 @@ namespace Hanekawa.Services.Events
                             ImageUrl = e.ImageUrl,
                             Title = e.Name,
                             Timestamp = new DateTimeOffset(e.Time),
-                            Color = GetEventColor(e.Time)
+                            Color = GetEventColor(e.Time),
+                            Footer = new EmbedFooterBuilder { Text = "Scheduled:"}
                         };
                         embed.AddField("Host", guild.GetUser(e.Host).Mention ?? ":KuuThinking:");
                         await channel.SendMessageAsync(null, false, embed.Build());
                         await Task.Delay(1000);
+                        e.Posted = true;
                     }
+                    await db.SaveChangesAsync();
                 }
             }
         }

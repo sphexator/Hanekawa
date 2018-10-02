@@ -18,7 +18,7 @@ namespace Hanekawa.Modules.QA
         [Command("question", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Summary("Sends a question to server owners to answer (QnA)")]
-        public async Task SuggestAsync([Remainder] string suggestion)
+        public async Task QuestionAsync([Remainder] string suggestion)
         {
             await Context.Message.DeleteAsync();
             using (var db = new DbService())
@@ -97,7 +97,7 @@ namespace Hanekawa.Modules.QA
         [Summary("Sets a channel for QnA. Leave empty channel to disable QnA.")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
-        public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
+        public async Task SetQuestionChannelAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
