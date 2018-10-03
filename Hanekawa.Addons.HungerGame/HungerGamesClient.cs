@@ -6,20 +6,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using EventHandler = Hanekawa.Addons.HungerGame.Events.EventHandler;
 
 namespace Hanekawa.Addons.HungerGame
 {
     public class HungerGamesClient
     {
+        public HungerGamesClient(DiscordSocketClient client)
+        {
+            _client = client;
+        }
+
+        private DiscordSocketClient _client { get; }
+
         public async Task<HungerGameResult> HungerGameRoundAsync(DbService db, IEnumerable<HungerGameLive> profiles)
         {
-            var imgGenerator = new ImageGenerator();
+            var imgGenerator = new ImageGenerator(_client);
             var hungerGameProfiles = profiles.ToList();
             string output = null;
             foreach (var x in hungerGameProfiles)
             {
-                output += $"{x.Name.PadRight(20)} {EventHandler.EventManager(x, db)}\n";
+                if(!x.Status) continue;
+                var eventString = EventHandler.EventManager(x, db);
+                if(eventString == null) continue;
+                output += $"{x.Name.PadRight(20)} {eventString}\n";
             }
 
             Fatigue(hungerGameProfiles);

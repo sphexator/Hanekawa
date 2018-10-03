@@ -117,7 +117,7 @@ namespace Hanekawa.Modules.Administration
                 if (users.Count <= 0)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"No users in the queue.", Color.Red.RawValue).Build());
+                        new EmbedBuilder().Reply("No users in the queue.", Color.Red.RawValue).Build());
                     return;
                 }
 

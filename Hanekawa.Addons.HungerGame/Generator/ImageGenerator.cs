@@ -24,7 +24,12 @@ namespace Hanekawa.Addons.HungerGame.Generator
 {
     public class ImageGenerator
     {
-        private DiscordSocketClient _client { get; }
+        public ImageGenerator(DiscordSocketClient client)
+        {
+            _client = client;
+        }
+
+        private DiscordSocketClient _client;
 
         public async Task<Stream> GenerateEventImageAsync(IEnumerable<HungerGameLive> profile)
         {
@@ -41,35 +46,33 @@ namespace Hanekawa.Addons.HungerGame.Generator
                 {
                     var points = GetBorderPointers(width, height);
                     var hpBar = GetHeathBar(width, height, x.Health);
-                    //var aviPath = $"Services/INC/Cache/Avatar/{x.UserId}.png";
-                    var aviPath = await client.GetStreamAsync(GetUserAvatar(x.UserId));
-                    var avi = Image.Load(aviPath);
+                    var avi = await GetUserAvatar(x.UserId);
+                    if (x.Health <= 0 && x.Status) x.Status = false;
+
+                    // Profile picture drawing
                     if (x.Status == false)
                     {
                         var death = Image.Load((await client.GetStreamAsync("https://i.imgur.com/eONxWtN.png")));
+                        death.Mutate(z => z.Resize(80, 80));
                         avi.Mutate(y => y
                             .BlackWhite()
                             .Resize(80, 80)
                             .DrawImage(GraphicsOptions.Default, death, new Point(0, 0)));
                     }
+                    else avi.Mutate(y => y .Resize(80, 80)); 
 
+                    // Healthbar drawing
                     img.Mutate(a => a
                         .DrawImage(GraphicsOptions.Default, avi, new Point(20 + 108 * width, 6 + 111 * height))
                         .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points));
-                    if (x.Status)
-                    {
-                        img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(0, 255, 0)), hpBar));
-                    }
-
-                    var path = GetHealthTextLocation(width, height);
+                    if (x.Status) img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(46, 204, 113)), hpBar));
+                    
+                    // Health text drawing
+                    var healthTextLocation = GetHealthTextLocation(width, height);
                     var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
                     var hp = $"       {x.Health} / 100";
-                    var optionsCenter = new TextGraphicsOptions
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    };
-                    img.Mutate(a => a.DrawText(optionsCenter, hp, font, Rgba32.White, path));
-                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, path));
+                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, healthTextLocation));
+
                     width++;
                     row++;
                     if (row != 5) continue;
@@ -91,7 +94,7 @@ namespace Hanekawa.Addons.HungerGame.Generator
             const int w2 = 110;
             const int h1 = 86;
             const int h2 = 101;
-
+            
             var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
             var point2 = new PointF(w2 + seat * 108, h1 + row * 111);
 
@@ -107,8 +110,12 @@ namespace Hanekawa.Addons.HungerGame.Generator
             //Size of box
             const int w1 = 10 + 3;
             const int w2 = 110 - 3;
-            const int h1 = 86 + 3;
-            const int h2 = 101 - 3;
+            const int h1 = 86 + 2;
+            const int h2 = 101 - 2;
+
+            damage = 100 - damage;
+            if (damage < 0) damage = 1;
+            if (damage >= 100) damage = 100;
 
             var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
             var point2 = new PointF(w2 + seat * 108 - damage, h1 + row * 111);
@@ -124,7 +131,7 @@ namespace Hanekawa.Addons.HungerGame.Generator
         {
             const int starterWidth = 10;
             const int spacerWidth = 108;
-            const int starterHeight = 99;
+            const int starterHeight = 88;
             const int spacerHeight = 111;
             
             return new PointF(starterWidth + (seat * spacerWidth), starterHeight + (row * spacerHeight));
@@ -138,11 +145,11 @@ namespace Hanekawa.Addons.HungerGame.Generator
             return profile.Count <= 20 ? 409 : 510;
         }
 
-        private string GetUserAvatar(ulong userid)
+        private async Task<Image<Rgba32>> GetUserAvatar(ulong userid)
         {
+            if(userid < 100) return Image.Load($"Cache/DefaultAvatar/{userid}.png").Clone();
             var user = _client.GetUser(userid);
-            if (user != null) return user.GetAvatarUrl(ImageFormat.Auto, 1024) ?? user.GetDefaultAvatarUrl();
-            else return null;
+            return user != null ? Image.Load(await (new HttpClient()).GetStreamAsync(user.GetAvatarUrl(ImageFormat.Auto, 1024) ?? user.GetDefaultAvatarUrl())).Clone() : null;
         }
     }
 }

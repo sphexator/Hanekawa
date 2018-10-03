@@ -31,7 +31,11 @@ namespace Hanekawa.Addons.Database.Extensions
                 MessageId = 0,
                 Round = 0,
                 SignupStage = false,
-                SignupTime = DateTime.UtcNow - TimeSpan.FromDays(2)
+                SignupTime = DateTime.UtcNow - TimeSpan.FromDays(2),
+                WinSpecialCredit = 500,
+                WinnerRoleId = null,
+                WinExp = 1000,
+                WinCredit = 1000
             };
             await context.HungerGameConfigs.AddAsync(data);
             await context.SaveChangesAsync();
@@ -40,7 +44,7 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
-            var userdata = await context.EventPayouts.FindAsync(user.Id, user.Guild.Id);
+            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
             if (userdata != null)
             {
                 return userdata;

@@ -15,21 +15,22 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             {
                 var pistolDamage = DamageOutput.PistolDamage(profile.Stamina, profile.Bleeding);
                 string response;
-                if (pistolDamage + trgt.Damage >= 100)
+                if (trgt.Health - pistolDamage <= 0)
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
                     user.Status = true;
                     user.Health = 0;
                     db.SaveChanges();
-                    response = $"Kills {trgt.Name} with a pistol inflicting {pistolDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Kills {trgt.Name} with a pistol inflicting {pistolDamage} damage.";
                 }
                 else
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
-                    user.Status = false;
-                    user.Health = 0;
+                    user.Health = user.Health - pistolDamage;
                     db.SaveChanges();
-                    response = $"Hits {trgt.Name} with a pistol inflicting {pistolDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Hits {trgt.Name} with a pistol inflicting {pistolDamage} damage.";
                 }
                 return response;
             }
@@ -38,21 +39,22 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             {
                 var bowDamage = DamageOutput.BowDamage(profile.Stamina, profile.Bleeding);
                 string response;
-                if (bowDamage + trgt.Damage >= 100)
+                if (trgt.Health - bowDamage <= 0)
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
                     user.Status = true;
                     user.Health = 0;
                     db.SaveChanges();
-                    response = $"Kills {trgt.Name} with a bow inflicting {bowDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Kills {trgt.Name} with a bow inflicting {bowDamage} damage.";
                 }
                 else
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
-                    user.Status = false;
-                    user.Health = 0;
+                    user.Health = user.Health - bowDamage;
                     db.SaveChanges();
-                    response = $"Hits {trgt.Name} with a bow inflicting {bowDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Hits {trgt.Name} with a bow inflicting {bowDamage} damage.";
                 }
                 return response;
             }
@@ -61,49 +63,51 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             {
                 var axeDamage = DamageOutput.AxeDamage(profile.Stamina, profile.Bleeding);
                 string response;
-                if (axeDamage + trgt.Damage >= 100)
+                if (trgt.Health - axeDamage <= 0)
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
                     user.Status = true;
                     user.Health = 0;
                     db.SaveChanges();
-                    response = $"Kills {trgt.Name} with a axe inflicting {axeDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Kills {trgt.Name} with a axe inflicting {axeDamage} damage.";
                 }
                 else
                 {
                     var user = db.HungerGameLives.Find(trgt.Userid);
-                    user.Status = false;
-                    user.Health = 0;
+                    user.Health = user.Health - axeDamage;
                     db.SaveChanges();
-                    response = $"Hits {trgt.Name} with a axe inflicting {axeDamage} damage.";
+                    if (trgt.Userid == profile.UserId) response = "Commits sudoku";
+                    else response = $"Hits {trgt.Name} with a axe inflicting {axeDamage} damage.";
                 }
                 return response;
             }
 
             var fistDamage = DamageOutput.FistDamage(profile.Stamina, profile.Bleeding);
             string msg;
-            if (fistDamage + trgt.Damage >= 100)
+            if (trgt.Health - fistDamage <= 0)
             {
                 var user = db.HungerGameLives.Find(trgt.Userid);
                 user.Status = true;
                 user.Health = 0;
                 db.SaveChanges();
+                if (trgt.Userid == profile.UserId) msg = "Commits sudoku";
                 msg = $"Kills {trgt.Name} with fists inflicting {fistDamage} damage.";
             }
             else
             {
                 var user = db.HungerGameLives.Find(trgt.Userid);
-                user.Status = false;
-                user.Health = 0;
+                user.Health = user.Health - fistDamage;
                 db.SaveChanges();
-                msg = $"Hits {trgt.Name} with fists inflicting {fistDamage} damage.";
+                if (trgt.Userid == profile.UserId) msg = "Commits sudoku";
+                else msg = $"Hits {trgt.Name} with fists inflicting {fistDamage} damage.";
             }
             return msg;
         }
 
         private static KillTarget GetTarget(DbService db)
         {
-            var users = db.HungerGameLives.ToList();
+            var users = db.HungerGameLives.Where(x => x.Status && x.Health > 0).ToList();
             var rand = new Random();
             var chosn = rand.Next(users.Count);
             var user = users[chosn];
@@ -111,7 +115,7 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             {
                 Userid = user.UserId,
                 Name = user.Name,
-                Damage = user.Health
+                Health = user.Health
             };
             return result;
         }
@@ -121,7 +125,7 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
     {
         public string Name { get; set; }
         public ulong Userid { get; set; }
-        public int Damage { get; set; }
+        public int Health { get; set; }
 
         internal object ThrowIfNull()
         {
