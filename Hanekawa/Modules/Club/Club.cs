@@ -430,13 +430,17 @@ namespace Hanekawa.Modules.Club
                     string clubString = null;
                     for (var j = 0; j < 5; j++)
                     {
-                        if (i == clubs.Count) continue;
-                        var club = clubs[i];
-                        var leader = Context.Guild.GetUser(club.Leader).Mention ?? "Couldn't find user or left server.";
-                        clubString += $"**{club.Name} (id: {club.Id})**\n" +
-                                      $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
-                                      $"Leader {leader}\n\n";
-                        i++;
+                        try
+                        {
+                            if (i == clubs.Count) continue;
+                            var club = clubs[i];
+                            var leader = Context.Guild.GetUser(club.Leader).Mention ?? "Couldn't find user or left server.";
+                            clubString += $"**{club.Name} (id: {club.Id})**\n" +
+                                          $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
+                                          $"Leader {leader}\n\n";
+                            i++;
+                        }
+                        catch { i++; }
                     }
 
                     pages.Add(clubString);
