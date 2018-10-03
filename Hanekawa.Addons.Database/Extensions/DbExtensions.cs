@@ -6,10 +6,10 @@ using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.Moderation;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -19,7 +19,11 @@ namespace Hanekawa.Addons.Database.Extensions
             SocketGuild guild)
         {
             var config = await context.HungerGameConfigs.FindAsync(guild.Id);
-            if (config != null)return config;
+            if (config != null)
+            {
+                return config;
+            }
+
             var data = new HungerGameConfig
             {
                 GuildId = guild.Id,
@@ -37,7 +41,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.EventPayouts.FindAsync(user.Id, user.Guild.Id);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new EventPayout
             {
                 GuildId = user.Guild.Id,
@@ -52,7 +60,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.Accounts.FindAsync(user.Id, user.Guild.Id);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new Account
             {
                 UserId = user.Id,
@@ -89,7 +101,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user)
         {
             var userdata = await context.Accounts.FindAsync(user.Id, guild.Id);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new Account
             {
                 UserId = user.Id,
@@ -126,7 +142,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user)
         {
             var userdata = await context.Accounts.FindAsync(user, guild);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new Account
             {
                 UserId = user,
@@ -163,7 +183,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user)
         {
             var userdata = await context.AccountGlobals.FindAsync(user.Id);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new AccountGlobal
             {
                 UserId = user.Id,
@@ -183,7 +207,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, ulong userId)
         {
             var userdata = await context.AccountGlobals.FindAsync(userId);
-            if (userdata != null)return userdata;
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
             var data = new AccountGlobal
             {
                 UserId = userId,
@@ -223,11 +251,18 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
             int nr;
-            if (counter == 0)nr = 1;
-            else nr = counter + 1;
+            if (counter == 0)
+            {
+                nr = 1;
+            }
+            else
+            {
+                nr = counter + 1;
+            }
+
             var data = new ClubInfo
             {
-                Id = nr,
+                Id = DateTime.UnixEpoch.Millisecond,
                 GuildId = guild.Id,
                 Leader = user.Id,
                 Name = name,
@@ -253,15 +288,23 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<ClubInfo> IsClubLeader(this DbService context, ulong guild, ulong user)
         {
-            var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
-                x.GuildId == guild && x.Leader == user);
-            return leader;
+            try
+            {
+                var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
+                    x.GuildId == guild && x.Leader == user);
+                return leader;
+            }
+            catch { return null; }
         }
 
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id);
-            if (check != null)return check;
+            if (check != null)
+            {
+                return check;
+            }
+
             var data = new Board
             {
                 GuildId = guild.Id,
@@ -280,8 +323,15 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
-            if (counter == 0)nr = 1;
-            else nr = (uint)counter + 1;
+            if (counter == 0)
+            {
+                nr = 1;
+            }
+            else
+            {
+                nr = (uint)counter + 1;
+            }
+
             var data = new Suggestion
             {
                 Id = nr,
@@ -300,8 +350,15 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
-            if (counter == 0) nr = 1;
-            else nr = (uint)counter + 1;
+            if (counter == 0)
+            {
+                nr = 1;
+            }
+            else
+            {
+                nr = (uint)counter + 1;
+            }
+
             var data = new QuestionAndAnswer
             {
                 Id = nr,
@@ -320,8 +377,15 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             uint nr;
-            if (counter == 0)nr = 1;
-            else nr = (uint)counter + 1;
+            if (counter == 0)
+            {
+                nr = 1;
+            }
+            else
+            {
+                nr = (uint)counter + 1;
+            }
+
             var data = new Report
             {
                 Id = nr,
@@ -338,7 +402,11 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, IGuild guild)
         {
             var response = await context.GuildConfigs.FindAsync(guild.Id);
-            if (response != null)return response;
+            if (response != null)
+            {
+                return response;
+            }
+
             var data = new GuildConfig
             {
                 GuildId = guild.Id,

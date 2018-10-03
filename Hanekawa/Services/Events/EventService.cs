@@ -69,7 +69,7 @@ namespace Hanekawa.Services.Events
                     var guild = _client.GetGuild(x.GuildId);
                     if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
-                    var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time > DateTime.UtcNow)
+                    var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date)
                         .OrderBy(z => z.Time).Take(5).ToListAsync();
                     if (events.All(z => z.Posted)) return;
                     if (events.Any()) await ChannelCleanup(channel);

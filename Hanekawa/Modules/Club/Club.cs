@@ -117,7 +117,7 @@ namespace Hanekawa.Modules.Club
                     JoinDate = DateTimeOffset.UtcNow,
                     Rank = 3,
                     UserId = user.Id,
-                    Id = (await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id)) + 1
+                    Id = DateTime.UnixEpoch.Millisecond
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -261,7 +261,7 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                var clubUser = await db.ClubPlayers.FindAsync(leaderCheck.Id, Context.Guild.Id, user.Id);
+                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.ClubId == leaderCheck.Id && x.UserId == user.Id);
                 if (clubUser == null)
                 {
                     await ReplyAsync(null, false,
@@ -271,7 +271,7 @@ namespace Hanekawa.Modules.Club
                 }
 
                 if (await db.ClubPlayers
-                        .Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id && x.Rank <= 3).CountAsync() >=
+                        .Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id && x.Rank < 3).CountAsync() >=
                     1)
                 {
                     await ReplyAsync(null, false,
@@ -334,7 +334,7 @@ namespace Hanekawa.Modules.Club
             using (var db = new DbService())
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                var clubUser = await db.ClubPlayers.FindAsync(Context.User.Id, Context.Guild.Id, leader.Id);
+                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.ClubId == leader.Id && x.UserId == user.Id);
                 if (clubUser == null)
                 {
                     await ReplyAsync(null, false,
@@ -418,6 +418,13 @@ namespace Hanekawa.Modules.Club
             {
                 var clubs = await db.ClubInfos.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var pages = new List<string>();
+
+                if (clubs.Count == 0)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No clubs on this server").Build());
+                    return;
+                }
+
                 for (var i = 0; i < clubs.Count;)
                 {
                     string clubString = null;
@@ -426,9 +433,9 @@ namespace Hanekawa.Modules.Club
                         if (i == clubs.Count) continue;
                         var club = clubs[i];
                         var leader = Context.Guild.GetUser(club.Leader).Mention ?? "Couldn't find user or left server.";
-                        clubString += $"**{club.Name} (ID:{club.Id}**\n" +
+                        clubString += $"**{club.Name} (id: {club.Id})**\n" +
                                       $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
-                                      $"Leader {leader}";
+                                      $"Leader {leader}\n\n";
                         i++;
                     }
 
@@ -558,6 +565,13 @@ namespace Hanekawa.Modules.Club
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Set club as public. Anyone can join!", Color.Green.RawValue).Build());
+                    if (leader.AdMessage.HasValue)
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
+                            .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
+                        await msg.AddReactionAsync(new Emoji("\u2714"));
+                    }
                 }
             }
         }
