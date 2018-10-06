@@ -9,7 +9,6 @@ using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
-using Hanekawa.Handler;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Modules.Audio.Service;
 using Hanekawa.Preconditions;
@@ -83,6 +82,7 @@ namespace Hanekawa
             services.GetRequiredService<WelcomeService>();
             services.GetRequiredService<BoardService>();
             services.GetRequiredService<WarnService>();
+            services.GetRequiredService<AudioService>();
             services.GetRequiredService<NudeScoreService>();
             services.GetRequiredService<ShipGameService>();
             services.GetRequiredService<DropService>();
@@ -90,7 +90,6 @@ namespace Hanekawa
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
-            services.GetRequiredService<LavalinkInitialize>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -119,7 +118,6 @@ namespace Hanekawa
             });
 
             services.AddSingleton<Lavalink>();
-            services.AddSingleton<LavalinkInitialize>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<Calculate>();

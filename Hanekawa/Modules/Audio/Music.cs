@@ -4,6 +4,7 @@ using Discord.Commands;
 using Hanekawa.Modules.Audio.Service;
 using System;
 using System.Threading.Tasks;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Audio
 {
@@ -20,91 +21,64 @@ namespace Hanekawa.Modules.Audio
         }
 
         [Command("Join", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Join()
             => await _audio.ConnectAsync(Context.Guild.Id, Context.User as IGuildUser, Context.Channel);
 
         [Command("Leave", RunMode = RunMode.Async), Alias("Stop")]
+        [RequiredChannel]
         public async Task StopAsync()
-            => await ReplyAsync(await _audio.StopAsync(Context.Guild.Id));
+            => await ReplyAsync(null, false, (await _audio.StopAsync(Context.Guild.Id)).Build());
 
         [Command("Leave", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Leave()
-            => await ReplyAsync(await _audio.DisconnectAsync(Context.Guild.Id));
+            => await ReplyAsync(null, false, (await _audio.DisconnectAsync(Context.Guild.Id)).Build());
 
         [Command("Play", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task PlayAsync([Remainder] string query)
-            => await ReplyAsync(await _audio.PlayAsync(Context.Guild.Id, query, Context.User as IGuildUser, Context.Channel));
+            => await ReplyAsync(null, false, (await _audio.PlayAsync(Context.User as IGuildUser, query, Context.User as IGuildUser, Context.Channel)).Build());
 
         [Command("Pause", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Pause()
-            => await ReplyAsync(_audio.Pause(Context.Guild.Id));
+            => await ReplyAsync(null, false, _audio.Pause(Context.Guild.Id).Build());
 
         [Command("Resume", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Resume()
-            => await ReplyAsync(_audio.Resume(Context.Guild.Id));
+            => await ReplyAsync(null, false, _audio.Resume(Context.Guild.Id).Build());
 
         [Command("Queue", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Queue()
-            => await ReplyAsync(_audio.DisplayQueue(Context.Guild.Id));
+            => await ReplyAsync(null, false, _audio.DisplayQueue(Context.Guild.Id).Build());
 
         [Command("Seek", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Seek(TimeSpan span)
-            => await ReplyAsync(_audio.Seek(Context.Guild.Id, span));
+            => await ReplyAsync(null, false, _audio.Seek(Context.Guild.Id, span).Build());
 
         [Command("Skip", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task SkipAsync()
-            => await ReplyAsync(await _audio.SkipAsync(Context.Guild.Id, Context.User.Id));
+            => await ReplyAsync(null, false, (await _audio.SkipAsync(Context.Guild.Id, Context.User.Id)).Build());
 
         [Command("Volume", RunMode = RunMode.Async)]
+        [RequiredChannel]
         public async Task Volume(int volume)
-            => await ReplyAsync(_audio.Volume(Context.Guild.Id, volume));
-        /*
-        [Command("playlist Create", RunMode = RunMode.Async), Alias("plNew")]
-        public async Task CreateAsync(string name, bool isPrivate)
-        {
-            var playlist = new Playlist
-            {
-                Id = name,
-                GuildId = Context.Guild.Id,
-                IsPrivate = isPrivate,
-                OwnerId = Context.User.Id,
-                Tracks = new List<string>()
-            };
+            => await ReplyAsync(null, false, _audio.Volume(Context.Guild.Id, volume).Build());
 
-            var message = await _playlist.TryCreate(playlist);
-            await ReplyAsync(message);
-        }
+        [Command("repeat", RunMode = RunMode.Async)]
+        [RequiredChannel]
+        public async Task Repeat()
+            => await ReplyAsync(null, false, _audio.Repeat(Context.Guild.Id).Build());
 
-        [Command("playlist Delete", RunMode = RunMode.Async), Alias("plRemove")]
-        public async Task Delete(string name)
-        {
-            var message = await _playlist.TryDelete(name, Context.User.Id, Context.Guild.Id);
-            await ReplyAsync(message);
-        }
-
-        [Command("playlist", RunMode = RunMode.Async), Alias("pl")]
-        public async Task Info(string name)
-        {
-            if (_playlist.TryGet(name, Context.Guild.Id, out var playlist))
-            {
-                await ReplyAsync($"{name} is an unknown playlist.");
-            }
-
-            var message =
-                "```diff" +
-                $"- Name: {playlist.Id}      |      Owner: " +
-                $"- Streams: {playlist.Streams}\n" +
-                $"- Tracks: {playlist.Tracks.Count}\n" +
-                $"- Playtime: {playlist.Playtime}";
-            await ReplyAsync(message);
-        }
-
-        [Command("playlist Play", RunMode = RunMode.Async), Alias("plplay")]
-        public async Task Play(string name)
-        {
-            var message = await _playlist.TryPlay(name, Context.Guild.Id, Context.User.Id, Context.Channel);
-            await ReplyAsync(message);
-        }
-        */
+        [Command("audio fix", RunMode = RunMode.Async)]
+        [RequiredChannel]
+        public async Task FixPlayer()
+            => await ReplyAsync(null, false,
+                (await _audio.FixPlayer(Context.Guild.Id, Context.User as IGuildUser, Context.Channel)).Build());
     }
 }
