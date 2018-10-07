@@ -20,8 +20,7 @@ namespace Hanekawa.Modules.Giveaway
             await Context.Message.DeleteAsync();
             var stream = new MemoryStream();
             if(channel == null) channel = Context.Channel as ITextChannel;
-            var message = (await channel.GetMessageAsync(messageId, CacheMode.AllowDownload)) as IUserMessage;
-            if (message == null)
+            if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 await ReplyAsync(null, false,
                     new EmbedBuilder().Reply($"Couldn't find a message with that ID in {channel.Mention}",
@@ -52,7 +51,7 @@ namespace Hanekawa.Modules.Giveaway
                 }
                 await file.FlushAsync();
                 stream.Seek(0, SeekOrigin.Begin);
-                await Context.Channel.SendFileAsync(stream, "participants.txt", $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
+                await channel.SendFileAsync(stream, "participants.txt", $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
             }
         }
     }

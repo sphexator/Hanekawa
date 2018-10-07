@@ -34,7 +34,7 @@ namespace Hanekawa.Modules.Audio.Service
             Initialize(node);
         }
 
-        public void Initialize(LavaNode node)
+        private void Initialize(LavaNode node)
         {
             _lavaNode = node;
             node.Stuck += OnStuck;
@@ -117,6 +117,20 @@ namespace Hanekawa.Modules.Audio.Service
             {
                 return new EmbedBuilder().Reply("Your queue is empty.");
             }
+        }
+
+        public EmbedBuilder ClearQueue(ulong guildId)
+        {
+            var player = _lavaNode.GetPlayer(guildId);
+            if (player == null)
+            {
+                return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
+            }
+            if (player.CurrentTrack != null) player.Stop();
+            player.Queue.TryGetValue(guildId, out var queue);
+            if (queue == null) return new EmbedBuilder().Reply("Cleared queue");
+            queue.Clear();
+            return new EmbedBuilder().Reply("Cleared queue");
         }
 
         public EmbedBuilder Volume(ulong guildId, int vol)
