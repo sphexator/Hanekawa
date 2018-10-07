@@ -27,7 +27,9 @@ namespace Hanekawa.Modules.Giveaway
                         Color.Red.RawValue).Build());
                 return;
             }
-            var users = await message.GetReactionUsersAsync(emote, message.Reactions.Count).FlattenAsync();
+
+            var reactionAmount = GetReactionAmount(message, emote);
+            var users = await message.GetReactionUsersAsync(emote, reactionAmount).FlattenAsync();
             if (users == null)
             {
                 await ReplyAsync(null, false,
@@ -53,6 +55,12 @@ namespace Hanekawa.Modules.Giveaway
                 stream.Seek(0, SeekOrigin.Begin);
                 await channel.SendFileAsync(stream, "participants.txt", $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
             }
+        }
+
+        private static int GetReactionAmount(IUserMessage message, Emote emote)
+        {
+            message.Reactions.TryGetValue(emote as IEmote, out var reactionData);
+            return reactionData.ReactionCount;
         }
     }
 }
