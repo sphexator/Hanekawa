@@ -9,7 +9,6 @@ using Hanekawa.Preconditions;
 namespace Hanekawa.Modules.Audio
 {
     [RequireContext(ContextType.Guild)]
-    [RequireOwner]
     public class Music : InteractiveBase
     {
         private readonly AudioService _audio;
@@ -43,19 +42,19 @@ namespace Hanekawa.Modules.Audio
         [Summary("Plays or queues a song")]
         [RequiredChannel]
         public async Task PlayAsync([Remainder] string query)
-            => await ReplyAsync(null, false, (await _audio.PlayAsync(Context.User as IGuildUser, query, Context.User as IGuildUser, Context.Channel)).Build());
+            => await ReplyAsync(null, false, (await _audio.PlayAsync(Context.User as IGuildUser, query, Context.User as IGuildUser, Context.Channel as ITextChannel)).Build());
 
         [Command("Pause", RunMode = RunMode.Async)]
         [Summary("Pauses the player")]
         [RequiredChannel]
         public async Task Pause()
-            => await ReplyAsync(null, false, _audio.Pause(Context.Guild.Id).Build());
+            => await ReplyAsync(null, false, (await _audio.PauseAsync(Context.Guild.Id)).Build());
 
         [Command("Resume", RunMode = RunMode.Async)]
         [Summary("Resumes the player")]
         [RequiredChannel]
         public async Task Resume()
-            => await ReplyAsync(null, false, _audio.Resume(Context.Guild.Id).Build());
+            => await ReplyAsync(null, false, (await _audio.ResumeAsync(Context.Guild.Id)).Build());
 
         [Command("Queue", RunMode = RunMode.Async)]
         [Alias("q")]
@@ -68,14 +67,14 @@ namespace Hanekawa.Modules.Audio
         [Summary("Clears the queue")]
         [RequiredChannel]
         public async Task ClearQueue()
-            => await ReplyAsync(null, false, _audio.ClearQueue(Context.Guild.Id).Build());
+            => await ReplyAsync(null, false, (await _audio.ClearQueueAsync(Context.Guild.Id)).Build());
 
 
         [Command("Seek", RunMode = RunMode.Async)]
         [Summary("Jumps to a certain part in the song/video")]
         [RequiredChannel]
         public async Task Seek(TimeSpan span)
-            => await ReplyAsync(null, false, _audio.Seek(Context.Guild.Id, span).Build());
+            => await ReplyAsync(null, false, (await _audio.SeekAsync(Context.Guild.Id, span)).Build());
 
         [Command("Skip", RunMode = RunMode.Async)]
         [Alias("next")]
@@ -88,7 +87,7 @@ namespace Hanekawa.Modules.Audio
         [Summary("Sets volume of song, based on the volume of the video/source")]
         [RequiredChannel]
         public async Task Volume(int volume)
-            => await ReplyAsync(null, false, _audio.Volume(Context.Guild.Id, volume).Build());
+            => await ReplyAsync(null, false, (await _audio.VolumeAsync(Context.Guild.Id, volume)).Build());
 
         [Command("repeat", RunMode = RunMode.Async)]
         [Summary("Repeats the queue")]

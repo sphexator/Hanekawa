@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.QA
 {
@@ -18,7 +16,7 @@ namespace Hanekawa.Modules.QA
         [Command("question", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Summary("Sends a question to server owners to answer (QnA)")]
-        public async Task QuestionAsync([Remainder] string suggestion)
+        public async Task QuestionAsync([Remainder] string question)
         {
             await Context.Message.DeleteAsync();
             using (var db = new DbService())
@@ -40,7 +38,7 @@ namespace Hanekawa.Modules.QA
                     Author = author,
                     Timestamp = DateTimeOffset.UtcNow,
                     Color = Color.Purple,
-                    Description = suggestion,
+                    Description = question,
                     Footer = footer
                 };
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value).SendEmbedAsync(embed);
@@ -64,7 +62,13 @@ namespace Hanekawa.Modules.QA
                 var question = await db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
                 if (question == null) return;
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                if (!cfg.QuestionAndAnswerChannel.HasValue)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("No QnA channel has been setup", Color.Red.RawValue).Build());
+                    return;
+                }
+                var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value)
                     .GetMessageAsync(question.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
                 var field = new EmbedFieldBuilder
@@ -107,7 +111,7 @@ namespace Hanekawa.Modules.QA
                     cfg.QuestionAndAnswerChannel = null;
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Disabled suggestion channel", Color.Green.RawValue).Build());
+                        new EmbedBuilder().Reply("Disabled QnA channel", Color.Green.RawValue).Build());
                     return;
                 }
 
@@ -116,7 +120,7 @@ namespace Hanekawa.Modules.QA
                 cfg.QuestionAndAnswerChannel = channel?.Id;
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"All suggestions will now be sent to {channel.Mention} !",
+                    new EmbedBuilder().Reply($"All questions will now be sent to {channel.Mention} !",
                         Color.Green.RawValue).Build());
             }
         }

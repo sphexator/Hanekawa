@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -35,7 +32,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
-using Victoria;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using SharpLink;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa
@@ -47,6 +47,7 @@ namespace Hanekawa
         private IConfiguration _config;
         private DatabaseClient _databaseClient;
         private YouTubeService _youTubeService;
+        private LavalinkManager _lavalink;
 
         private static void Main()
         {
@@ -66,6 +67,14 @@ namespace Hanekawa
             {
                 ApiKey = _config["googleApi"],
                 ApplicationName = GetType().ToString()
+            });
+            _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
+            {
+                RESTHost = "localhost",
+                RESTPort = 2333,
+                WebSocketHost = "localhost",
+                WebSocketPort = 80,
+                TotalShards = 1
             });
             _anime = new AnimeSimulCastClient();
 
@@ -110,6 +119,7 @@ namespace Hanekawa
             services.AddSingleton(_youTubeService);
             services.AddSingleton(_config);
             services.AddSingleton(_anime);
+            services.AddSingleton(_lavalink);
 
             services.AddDistributedRedisCache(options =>
             {
@@ -117,7 +127,6 @@ namespace Hanekawa
                 options.InstanceName = "db2";
             });
 
-            services.AddSingleton<Lavalink>();
             services.AddSingleton<CommandService>();
             services.AddSingleton<CommandHandlingService>();
             services.AddSingleton<Calculate>();

@@ -162,9 +162,21 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Clubs
-            modelBuilder.Entity<ClubInfo>(x => { x.HasKey(e => new { e.Id, e.GuildId, e.Leader }); });
-            modelBuilder.Entity<ClubPlayer>(x => { x.HasKey(e => new { e.Id, e.ClubId, e.GuildId }); });
-            modelBuilder.Entity<ClubBlacklist>(x => { x.HasKey(e => new { e.ClubId, e.GuildId, e.BlackListUser }); });
+            modelBuilder.Entity<ClubInfo>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.GuildId, e.Leader });
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<ClubPlayer>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.ClubId, e.GuildId });
+
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<ClubBlacklist>(x =>
+            {
+                x.HasKey(e => new { e.ClubId, e.GuildId, e.BlackListUser });
+            });
 
             // Bot Game
             modelBuilder.Entity<GameEnemy>(x =>

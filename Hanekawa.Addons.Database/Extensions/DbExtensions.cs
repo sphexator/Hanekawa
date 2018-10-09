@@ -58,7 +58,7 @@ namespace Hanekawa.Addons.Database.Extensions
             };
             await context.EventPayouts.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.EventPayouts.FindAsync(user.Id, user.Guild.Id);
+            return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
         }
 
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
@@ -253,20 +253,8 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
             string name, DateTimeOffset time)
         {
-            var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
-            int nr;
-            if (counter == 0)
-            {
-                nr = 1;
-            }
-            else
-            {
-                nr = counter + 1;
-            }
-
             var data = new ClubInfo
             {
-                Id = DateTime.UnixEpoch.Millisecond,
                 GuildId = guild.Id,
                 Leader = user.Id,
                 Name = name,
@@ -281,7 +269,7 @@ namespace Hanekawa.Addons.Database.Extensions
             };
             await context.ClubInfos.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ClubInfos.FindAsync(nr, guild.Id, user.Id);
+            return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Leader == user.Id);
         }
 
         public static async Task<ClubInfo> GetClubAsync(this DbService context, int id, SocketGuild guild)

@@ -1,14 +1,4 @@
-﻿using System;
-using Discord;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Tables.Audio;
-using Humanizer;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Victoria;
-
-namespace Hanekawa.Modules.Audio.Service
+﻿namespace Hanekawa.Modules.Audio.Service
 {
     public class PlaylistService
     {
