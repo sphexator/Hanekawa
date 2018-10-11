@@ -36,7 +36,7 @@ namespace Hanekawa.Modules.Account.Storage
 
                     result.Add(page);
                 }
-
+                if(result.Count == 0) result.Add("Store is empty");
                 return result;
             }
         }

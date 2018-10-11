@@ -238,7 +238,7 @@ namespace Hanekawa.Modules.Account
             {
                 Color = Color.Purple,
                 Pages = await _shopManager.GetServerStoreAsync(Context.User as IGuildUser),
-                Title = $"Global store",
+                Title = "Global store",
                 Options = new PaginatedAppearanceOptions
                 {
                     First = new Emoji("⏮"),
