@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -9,8 +7,11 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Stores;
 using Hanekawa.Extensions;
+using Hanekawa.Modules.Account.Storage;
 using Hanekawa.Preconditions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,14 @@ namespace Hanekawa.Modules.Account
     [RequireContext(ContextType.Guild)]
     public class Economy : InteractiveBase
     {
+        private readonly ShopManager _shopManager;
+        private readonly InventoryManager _inventoryManager;
+        public Economy(ShopManager shopManager, InventoryManager inventoryManager)
+        {
+            _shopManager = shopManager;
+            _inventoryManager = inventoryManager;
+        }
+
         [Command("wallet")]
         [Alias("balance", "money")]
         [Summary("Display how much credit you got")]
@@ -165,6 +174,7 @@ namespace Hanekawa.Modules.Account
 
         [Command("reward", RunMode = RunMode.Async)]
         [Alias("award")]
+        [Ratelimit(1, 2, Measure.Seconds)]
         [Summary("Rewards special credit to users (does not remove from yourself)")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -186,26 +196,208 @@ namespace Hanekawa.Modules.Account
 
         [Command("inventory", RunMode = RunMode.Async)]
         [Alias("inv")]
+        [Summary("Inventory of user")]
+        [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task InventoryAsync()
+         => await ReplyAsync(null, false, (await _inventoryManager.GetInventory(Context.User as IGuildUser)).Build());
+        
+        [Command("store", RunMode = RunMode.Async)]
+        [Alias("shop")]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Displays the server store")]
+        [RequiredChannel]
+        public async Task ServerShopAsync()
         {
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply("Inventory is currently disabled", Color.Red.RawValue).Build());
+            var paginator = new PaginatedMessage
+            {
+                Color = Color.Purple,
+                Pages = await _shopManager.GetServerStoreAsync(Context.User as IGuildUser),
+                Title = $"Store for {Context.Guild.Name}",
+                Options = new PaginatedAppearanceOptions
+                {
+                    First = new Emoji("⏮"),
+                    Back = new Emoji("◀"),
+                    Next = new Emoji("▶"),
+                    Last = new Emoji("⏭"),
+                    Stop = null,
+                    Jump = null,
+                    Info = null
+                }
+            };
+            await PagedReplyAsync(paginator);
         }
 
-        [Command("shop", RunMode = RunMode.Async)]
+        [Command("global store", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Displays the global store")]
         [RequiredChannel]
-        public async Task ShopAsync()
+        public async Task GlobalShopAsync()
         {
-            await ReplyAsync(null, false, new EmbedBuilder().Reply("Shop is currently disabled").Build());
+            var paginator = new PaginatedMessage
+            {
+                Color = Color.Purple,
+                Pages = await _shopManager.GetServerStoreAsync(Context.User as IGuildUser),
+                Title = $"Global store",
+                Options = new PaginatedAppearanceOptions
+                {
+                    First = new Emoji("⏮"),
+                    Back = new Emoji("◀"),
+                    Next = new Emoji("▶"),
+                    Last = new Emoji("⏭"),
+                    Stop = null,
+                    Jump = null,
+                    Info = null
+                }
+            };
+            await PagedReplyAsync(paginator);
         }
 
         [Command("buy", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Purchase an item from the store")]
         [RequiredChannel]
-        public async Task BuyAsync(uint itemId)
+        public async Task BuyAsync(int itemId)
         {
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply("Buy command is currently disabled for rework.", Color.Red.RawValue).Build());
+            using (var db = new DbService())
+            {
+                var item = await db.Shops.FindAsync(Context.Guild.Id, itemId);
+                var globalItem = await db.StoreGlobals.FindAsync(Context.Guild.Id, itemId);
+                if (item == null && globalItem == null)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No item with said id").Build());
+                    return;
+                }
+
+                EmbedBuilder embed;
+                if(item != null) embed = await _shopManager.PurchaseItem(db, item, Context.User as IGuildUser);
+                else embed = await _shopManager.PurchaseItem(db, globalItem, Context.User as IGuildUser);
+                await ReplyAsync(null, false, embed.Build());
+            }
+        }
+
+        [Command("store add", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Purchase an item from the store")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task AddStoreItemAsync(IRole role, int price, bool special = false)
+        {
+            using (var db = new DbService())
+            {
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = role.Name,
+                    Role = role.Id,
+                    Secret = false,
+                    SecretValue = null,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = false,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
+
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new Shop
+                {
+                    GuildId = Context.Guild.Id,
+                    ItemId = getItem.ItemId,
+                    Price = price,
+                    SpecialCredit = special
+                };
+                await db.Shops.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {role.Name} to the shop for {price}", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("store add", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Add an item to the store")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task AddStoreItemAsync(string name, string value, int price, bool special = false)
+        {
+            using (var db = new DbService())
+            {
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = name,
+                    Role = null,
+                    Secret = true,
+                    SecretValue = value,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = true,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
+
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new Shop
+                {
+                    GuildId = Context.Guild.Id,
+                    ItemId = getItem.ItemId,
+                    Price = price,
+                    SpecialCredit = special
+                };
+                await db.Shops.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {name} to the shop for {price}", Color.Green.RawValue).Build());
+            }
+        }
+
+        [Command("store global add", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Add an item to the store")]
+        [RequireOwner]
+        public async Task AddGlobalStoreItemAsync(string name, string value, int price)
+        {
+            using (var db = new DbService())
+            {
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = name,
+                    Role = null,
+                    Secret = true,
+                    SecretValue = value,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = true,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
+
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new StoreGlobal
+                {
+                    ItemId = getItem.ItemId,
+                    Price = price,
+                };
+                await db.StoreGlobals.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {name} to the shop for {price}", Color.Green.RawValue).Build());
+            }
         }
 
         private static string SpecialCurrencyResponse(GuildConfig cfg)

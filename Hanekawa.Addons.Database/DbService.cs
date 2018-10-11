@@ -10,7 +10,7 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Addons.Database.Tables.Profile;
 using Hanekawa.Addons.Database.Tables.Stats;
-
+using Hanekawa.Addons.Database.Tables.Stores;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Addons.Database
@@ -31,7 +31,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<LevelReward> LevelRewards { get; set; }
         public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public virtual DbSet<Shop> Shops { get; set; }
-        public virtual DbSet<ShopEvent> ShopEvents { get; set; }
+        public virtual DbSet<StoreGlobal> StoreGlobals { get; set; }
         public virtual DbSet<EventPayout> EventPayouts { get; set; }
         public virtual DbSet<Item> Items { get; set; }
 
@@ -106,7 +106,7 @@ namespace Hanekawa.Addons.Database
             // Account
             modelBuilder.Entity<Account>(x =>
             {
-                x.HasKey(e => new { e.UserId, e.GuildId });
+                x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(c => c.Credit).HasMaxLength(999);
                 x.Property(c => c.CreditSpecial).HasMaxLength(999);
                 x.Property(c => c.Exp).HasMaxLength(999);
@@ -133,18 +133,16 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<LevelExpEvent>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<Shop>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => new {e.GuildId, e.ItemId});
             });
-            modelBuilder.Entity<ShopEvent>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.GuildId, e.UserId }); });
-            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => e.UserId); });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.GuildId, e.UserId, e.ItemId }); });
+            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new{e.UserId, e.ItemId}); });
             modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new { e.GuildId, e.UserId }); });
-            modelBuilder.Entity<Item>(x => x.HasKey(e => e.ItemId));
+            modelBuilder.Entity<Item>(x =>
+            {
+                x.HasKey(e => e.ItemId);
+                x.Property(e => e.ItemId).ValueGeneratedOnAdd();
+            });
 
             // Stats
             modelBuilder.Entity<BanStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
@@ -170,7 +168,6 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<ClubPlayer>(x =>
             {
                 x.HasKey(e => new { e.Id, e.ClubId, e.GuildId });
-
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<ClubBlacklist>(x =>

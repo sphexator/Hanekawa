@@ -10,6 +10,7 @@ using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Stores;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -63,7 +64,7 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
         {
-            var userdata = await context.Accounts.FindAsync(user.Id, user.Guild.Id);
+            var userdata = await context.Accounts.FindAsync(user.Guild.Id, user.Id);
             if (userdata != null)
             {
                 return userdata;
@@ -104,7 +105,7 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user)
         {
-            var userdata = await context.Accounts.FindAsync(user.Id, guild.Id);
+            var userdata = await context.Accounts.FindAsync(guild.Id, user.Id);
             if (userdata != null)
             {
                 return userdata;
@@ -145,7 +146,7 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user)
         {
-            var userdata = await context.Accounts.FindAsync(user, guild);
+            var userdata = await context.Accounts.FindAsync(guild, user);
             if (userdata != null)
             {
                 return userdata;
@@ -230,6 +231,45 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.AccountGlobals.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.AccountGlobals.FindAsync(userId);
+        }
+
+        public static async Task PurchaseServerItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
+        {
+            var check = await context.Inventories.FindAsync(user.GuildId, user.Id, shop.ItemId);
+            if (check != null)
+            {
+                check.Amount = check.Amount + amount;
+                await context.SaveChangesAsync();
+                return;
+            }
+            var data = new Inventory
+            {
+                GuildId = user.GuildId,
+                UserId = user.Id,
+                ItemId = shop.ItemId,
+                Amount = amount
+            };
+            await context.Inventories.AddAsync(data);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task PurchaseGlobalItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
+        {
+            var check = await context.InventoryGlobals.FindAsync(user.Id, shop.ItemId);
+            if (check != null)
+            {
+                check.Amount = check.Amount + amount;
+                await context.SaveChangesAsync();
+                return;
+            }
+            var data = new InventoryGlobal
+            {
+                UserId = user.Id,
+                ItemId = shop.ItemId,
+                Amount = amount
+            };
+            await context.InventoryGlobals.AddAsync(data);
+            await context.SaveChangesAsync();
         }
 
         public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild,

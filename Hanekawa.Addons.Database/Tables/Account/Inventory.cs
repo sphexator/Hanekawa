@@ -4,7 +4,7 @@
     {
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
-        public uint ItemId { get; set; }
-        public uint Amount { get; set; }
+        public int ItemId { get; set; }
+        public int Amount { get; set; }
     }
 }
