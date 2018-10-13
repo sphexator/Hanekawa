@@ -3,14 +3,16 @@ using System;
 using Hanekawa.Addons.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hanekawa.Addons.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20181012120013_ShopUpdateU")]
+    partial class ShopUpdateU
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,8 +158,6 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.Property<bool>("ConsumeOnUse");
 
                     b.Property<DateTime>("DateAdded");
-
-                    b.Property<string>("Description");
 
                     b.Property<bool>("Global");
 

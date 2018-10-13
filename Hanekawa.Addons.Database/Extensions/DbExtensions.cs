@@ -9,7 +9,9 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.Stores;
 
 namespace Hanekawa.Addons.Database.Extensions
@@ -474,7 +476,7 @@ namespace Hanekawa.Addons.Database.Extensions
                 SpecialCurrencySign = "$",
                 SpecialCurrencyName = "Special Credit",
                 SpecialEmoteCurrency = false,
-                CurrencyName = "Special Credit",
+                CurrencyName = "Credit",
                 CurrencySign = "$",
                 EmoteCurrency = false,
                 AnimeAirChannel = null,
@@ -489,6 +491,13 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.GuildConfigs.FindAsync(guild.Id);
+        }
+
+        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, AchievementType type)
+        {
+            var check = await context.Achievements.Where(x => x.Type == type.ToString()).ToListAsync();
+
+
         }
     }
 }

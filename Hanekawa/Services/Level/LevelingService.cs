@@ -14,6 +14,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Events;
 
 namespace Hanekawa.Services.Level
 {
@@ -21,6 +22,9 @@ namespace Hanekawa.Services.Level
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
+
+        public event AsyncEvent<SocketGuildUser, Account> Level;
+        public event AsyncEvent<SocketGuildUser, TimeSpan> InVoice;
 
         public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
@@ -322,6 +326,7 @@ namespace Hanekawa.Services.Level
                         }
 
                         await db.SaveChangesAsync();
+                        await InVoice?.Invoke(gusr, (DateTime.UtcNow - userdata.VoiceExpTime));
                     }
                 }
                 catch (Exception e)
@@ -338,7 +343,7 @@ namespace Hanekawa.Services.Level
             {
                 using (var db = new DbService())
                 {
-                    var userdata = await db.Accounts.FindAsync(user.Id, user.Guild.Id);
+                    var userdata = await db.Accounts.FindAsync(user.Guild.Id, user.Id);
                     if (userdata == null) return;
                     userdata.Active = true;
                     await db.SaveChangesAsync();
@@ -367,14 +372,17 @@ namespace Hanekawa.Services.Level
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
             var role = GetLevelUpRole(userdata.Level, user, roles);
             var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
+
             if (role == null)
             {
                 await RoleCheckAsync(db, user, cfg, userdata);
+                Level(user as SocketGuildUser, userdata);
                 return;
             }
 
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.AddRoleAsync(role);
+            Level(user as SocketGuildUser, userdata);
         }
 
         private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)

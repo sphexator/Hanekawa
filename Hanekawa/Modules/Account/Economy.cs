@@ -237,7 +237,7 @@ namespace Hanekawa.Modules.Account
             var paginator = new PaginatedMessage
             {
                 Color = Color.Purple,
-                Pages = await _shopManager.GetServerStoreAsync(Context.User as IGuildUser),
+                Pages = await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser),
                 Title = "Global store",
                 Options = new PaginatedAppearanceOptions
                 {
@@ -276,8 +276,53 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Command("item description", RunMode = RunMode.Async)]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Sets a description of item")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetItemDescription(int id, [Remainder] string description)
+        {
+            using (var db = new DbService())
+            {
+                var item = await db.Items.FindAsync(id);
+                if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
+                item.Description = description;
+                await db.SaveChangesAsync();
+                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Updated description of {item.Name}").Build());
+            }
+        }
+
+        [Command("item inspect", RunMode = RunMode.Async)]
+        [Alias("inspect item", "inspect")]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        [Summary("Sets a description of item")]
+        [RequiredChannel]
+        public async Task InspectItem(int id)
+        {
+            using (var db = new DbService())
+            {
+                var item = await db.Items.FindAsync(id);
+                if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { Name = item.Name},
+                    Description = item.Description,
+                    Color = Color.Purple,
+                };
+                embed.AddField("Role", item.Role.HasValue, true);
+                embed.AddField("Unique", item.Unique, true);
+                if (item.Role.HasValue)
+                {
+                    var role = Context.Guild.GetRole(item.Role.Value);
+                    embed.AddField("Color", $"{role.Color}");
+                    embed.AddField("Hoisted", $"{role.IsHoisted}", true);
+                }
+            }
+        }
+
         [Command("store add", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
+        [Priority(1)]
         [Summary("Purchase an item from the store")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(IRole role, int price, bool special = false)
@@ -314,7 +359,7 @@ namespace Hanekawa.Modules.Account
                 await db.SaveChangesAsync();
 
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {role.Name} to the shop for {price}", Color.Green.RawValue).Build());
+                    new EmbedBuilder().Reply($"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`", Color.Green.RawValue).Build());
             }
         }
 

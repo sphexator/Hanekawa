@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Events;
 
 namespace Hanekawa.Services.Drop
 {
@@ -19,6 +20,8 @@ namespace Hanekawa.Services.Drop
             = new ConcurrentDictionary<ulong, DateTime>();
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> UserCooldown { get; set; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
+        public event AsyncEvent<SocketGuildUser> DropClaimed;
 
         private readonly List<ulong> _regularLoot = new List<ulong>();
         private readonly List<ulong> _specialLoot = new List<ulong>();
@@ -105,6 +108,7 @@ namespace Hanekawa.Services.Drop
                         var trgMsg = await channel.SendMessageAsync($"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
                         await Task.Delay(5000);
                         await trgMsg.DeleteAsync();
+                        await DropClaimed(rct.User.Value as SocketGuildUser);
                     }
                 }
             });

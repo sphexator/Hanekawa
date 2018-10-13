@@ -30,7 +30,7 @@ namespace Hanekawa.Modules.Account.Storage
                         if (i == store.Count) continue;
 
                         var storeContent = store[i];
-                        page += $"Item: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - Price: {GetPrice(cfg, storeContent, storeContent.Price)}\n";
+                        page += $"Name: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - {GetPrice(cfg, storeContent, storeContent.Price)}\n";
                         i++;
                     }
 

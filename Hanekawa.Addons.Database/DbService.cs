@@ -1,5 +1,6 @@
 ﻿using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.Administration;
 using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
@@ -43,6 +44,11 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<MessageStat> MessageStats { get; set; }
         public virtual DbSet<MuteStat> MuteStats { get; set; }
         public virtual DbSet<WarnStat> WarnStats { get; set; }
+
+        // Achievements
+        public virtual DbSet<Achievement> Achievements { get; set; }
+        public virtual DbSet<AchievementTracker> AchievementTrackers { get; set; }
+        public virtual DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
@@ -135,6 +141,7 @@ namespace Hanekawa.Addons.Database
             {
                 x.HasKey(e => new {e.GuildId, e.ItemId});
             });
+            modelBuilder.Entity<StoreGlobal>(x => x.HasKey(e => e.ItemId));
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.GuildId, e.UserId, e.ItemId }); });
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new{e.UserId, e.ItemId}); });
             modelBuilder.Entity<EventPayout>(x => { x.HasKey(e => new { e.GuildId, e.UserId }); });
@@ -152,6 +159,11 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<MessageStat>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<MuteStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
             modelBuilder.Entity<WarnStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
+
+            // Achievement
+            modelBuilder.Entity<Achievement>(x => x.HasKey(e => e.AchievementId));
+            modelBuilder.Entity<AchievementTracker>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
+            modelBuilder.Entity<AchievementUnlock>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));

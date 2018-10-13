@@ -35,6 +35,7 @@ using Quartz.Spi;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Modules.Account.Storage;
 using SharpLink;
 using Config = Hanekawa.Data.Config;
 
@@ -141,6 +142,8 @@ namespace Hanekawa
             services.AddSingleton<EventService>();
             services.AddSingleton<BlackListService>();
             services.AddSingleton<NudeScoreService>();
+            services.AddSingleton<ShopManager>();
+            services.AddSingleton<InventoryManager>();
             services.AddSingleton<GameStats>();
             services.AddSingleton<ShipGameService>();
             services.AddSingleton<ProfileBuilder>();
