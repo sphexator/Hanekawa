@@ -161,18 +161,22 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<WarnStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Achievement
-            modelBuilder.Entity<Achievement>(x => x.HasKey(e => e.AchievementId));
+            modelBuilder.Entity<Achievement>(x =>
+            {
+                x.HasKey(e => e.AchievementId);
+                x.Property(e => e.AchievementId).ValueGeneratedOnAdd();
+            });
             modelBuilder.Entity<AchievementTracker>(x => x.HasKey(e => new {e.Type, e.UserId}));
             modelBuilder.Entity<AchievementUnlock>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
             modelBuilder.Entity<AchievementType>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => e.TypeId);
+                x.Property(e => e.TypeId).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<AchievementDifficulty>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasKey(e => e.DifficultyId);
+                x.Property(e => e.DifficultyId).ValueGeneratedOnAdd();
             });
 
             // Administration

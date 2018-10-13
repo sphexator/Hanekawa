@@ -3,16 +3,14 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.Achievement;
-using Hanekawa.Addons.Database.Tables.Stores;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -493,9 +491,34 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.GuildConfigs.FindAsync(guild.Id);
         }
 
-        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, AchievementType type)
+        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, int type)
         {
-            var check = await context.AchievementTrackers.Where(x => x.UserId == user.Id && x.Achieved == false).ToListAsync();
+            var check = await context.AchievementTrackers.FindAsync(type, user.Id);
+            if (check != null) return check;
+            var data = new AchievementTracker
+            {
+                Count = 0,
+                Type = type,
+                UserId = user.Id
+            };
+            await context.AchievementTrackers.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.AchievementTrackers.FindAsync(type, user.Id);
+        }
+
+        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, ulong userId, int type)
+        {
+            var check = await context.AchievementTrackers.FindAsync(type, userId);
+            if (check != null) return check;
+            var data = new AchievementTracker
+            {
+                Count = 0,
+                Type = type,
+                UserId = userId
+            };
+            await context.AchievementTrackers.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.AchievementTrackers.FindAsync(type, userId);
         }
     }
 }

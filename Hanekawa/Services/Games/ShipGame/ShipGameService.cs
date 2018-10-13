@@ -22,12 +22,16 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.BotGame;
 using Image = SixLabors.ImageSharp.Image;
 using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Events;
 
 namespace Hanekawa.Services.Games.ShipGame
 {
     public class ShipGameService
     {
         private readonly GameStats _gameStats;
+
+        public event AsyncEvent<ulong> NpcKill;
+        public event AsyncEvent<ulong> PvpKill;
 
         public ShipGameService(GameStats gameStats)
         {
@@ -232,6 +236,7 @@ namespace Hanekawa.Services.Games.ShipGame
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"0/{playerTwoHpMax}";
                     await msg.ModifyAsync(x => x.Embed = embed.Build());
+                    NpcKill(context.User.Id);
                     continue;
                 }
 
@@ -474,6 +479,7 @@ namespace Hanekawa.Services.Games.ShipGame
                 }
                 UpdateDuel(context, false);
                 Console.WriteLine("Completed duel");
+                PvpKill(winner.UserId);
             }
             catch
             {

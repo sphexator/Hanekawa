@@ -2,7 +2,7 @@
 {
     public class AchievementTracker
     {
-        public string Type { get; set; }
+        public int Type { get; set; }
         public ulong UserId { get; set; }
         public int Count { get; set; }
     }
