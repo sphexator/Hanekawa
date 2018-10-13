@@ -495,9 +495,7 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, AchievementType type)
         {
-            var check = await context.Achievements.Where(x => x.Type == type.ToString()).ToListAsync();
-
-
+            var check = await context.AchievementTrackers.Where(x => x.UserId == user.Id && x.Achieved == false).ToListAsync();
         }
     }
 }

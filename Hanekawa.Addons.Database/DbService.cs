@@ -152,18 +152,28 @@ namespace Hanekawa.Addons.Database
             });
 
             // Stats
-            modelBuilder.Entity<BanStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
+            modelBuilder.Entity<BanStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
             //modelBuilder.Entity<BotUsageStat>(x => x.HasKey(e => e))
             //modelBuilder.Entity<EmoteStat>(x => x.HasKey(e => e))
             modelBuilder.Entity<JoinStat>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<MessageStat>(x => x.HasKey(e => e.GuildId));
-            modelBuilder.Entity<MuteStat>(x => x.HasKey(e => new {e.GuildId, e.UserId}));
+            modelBuilder.Entity<MuteStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
             modelBuilder.Entity<WarnStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Achievement
             modelBuilder.Entity<Achievement>(x => x.HasKey(e => e.AchievementId));
-            modelBuilder.Entity<AchievementTracker>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
+            modelBuilder.Entity<AchievementTracker>(x => x.HasKey(e => new {e.Type, e.UserId}));
             modelBuilder.Entity<AchievementUnlock>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
+            modelBuilder.Entity<AchievementType>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<AchievementDifficulty>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
 
             // Administration
             modelBuilder.Entity<Blacklist>(x => x.HasKey(e => e.GuildId));

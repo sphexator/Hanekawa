@@ -2,10 +2,8 @@
 {
     public class AchievementTracker
     {
-        public int AchievementTrackId { get; set; }
-        public int AchievementId { get; set; }
+        public string Type { get; set; }
         public ulong UserId { get; set; }
-        public int CountToUnlock { get; set; }
-        public bool Achieved { get; set; }
+        public int Count { get; set; }
     }
 }
