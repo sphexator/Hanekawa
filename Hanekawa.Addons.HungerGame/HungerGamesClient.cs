@@ -1,12 +1,12 @@
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Tables;
-using Hanekawa.Addons.HungerGame.Data;
-using Hanekawa.Addons.HungerGame.Generator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Tables;
+using Hanekawa.Addons.HungerGame.Data;
+using Hanekawa.Addons.HungerGame.Generator;
 using EventHandler = Hanekawa.Addons.HungerGame.Events.EventHandler;
 
 namespace Hanekawa.Addons.HungerGame
@@ -27,9 +27,9 @@ namespace Hanekawa.Addons.HungerGame
             string output = null;
             foreach (var x in hungerGameProfiles)
             {
-                if(!x.Status) continue;
+                if (!x.Status) continue;
                 var eventString = EventHandler.EventManager(x, db);
-                if(eventString == null) continue;
+                if (eventString == null) continue;
                 output += $"{x.Name.PadRight(20)} {eventString}\n";
             }
 

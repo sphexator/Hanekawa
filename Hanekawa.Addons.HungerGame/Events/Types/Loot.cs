@@ -1,12 +1,16 @@
-﻿using Hanekawa.Addons.Database;
+﻿using System;
+using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.HungerGame.Data;
-using System;
 
 namespace Hanekawa.Addons.HungerGame.Events.Types
 {
     public class Loot
     {
+        private const int FoodAndWater = 100;
+        private const int Weapons = 15;
+        private const int Bandages = 50;
+
         public static string LootEvent(HungerGameLive profile, DbService db)
         {
             var rand = new Random();
@@ -36,16 +40,11 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
                         toReturn = "Obtained Water and Food";
                         break;
                 }
-                return toReturn;
 
+                return toReturn;
             }
-            if (result <= FoodAndWater + Bandages)
-            {
-                //TODO: Add bandages
-                //user.b = user.Bandages + 1;
-                //db.SaveChanges();
-                return $"Obtained {ConsumableNames.Bandages}";
-            }
+
+            if (result <= FoodAndWater + Bandages) return $"Obtained {ConsumableNames.Bandages}";
 
             if (result > FoodAndWater + Bandages + Weapons) return WeaponNames.WeaponStrings[1];
             var weapon = rand.Next(0, 100);
@@ -56,6 +55,7 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
                 return "Obtained bow";
                 //Add Bow
             }
+
             if (weapon <= 50 + 30)
             {
                 user.Axe = user.Axe + 1;
@@ -63,6 +63,7 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
                 return "Obtained axe";
                 //Add Axe
             }
+
             if (weapon <= 50 + 30 + 15)
             {
                 user.Pistol = user.Pistol + 1;
@@ -71,16 +72,11 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
                 //Add Pistol
             }
 
-            if (weapon <= 50 + 30 + 15 + 15)
-            {
-                return $"Obtained {WeaponNames.WeaponStrings[4]}";
-                //Add Trap
-            }
+            if (weapon <= 50 + 30 + 15 + 15) return $"Obtained {WeaponNames.WeaponStrings[4]}";
 
             user.Bow = user.Bow + 1;
             db.SaveChanges();
-            return $"Obtained bow";
-
+            return "Obtained bow";
         }
 
         private static int IsFood()
@@ -89,9 +85,5 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             var result = rand.Next(1, 3);
             return result;
         }
-
-        private const int FoodAndWater = 100;
-        private const int Weapons = 15;
-        private const int Bandages = 50;
     }
 }

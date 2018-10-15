@@ -1,5 +1,5 @@
-﻿using Hanekawa.Addons.Database.Tables;
-using System;
+﻿using System;
+using Hanekawa.Addons.Database.Tables;
 
 namespace Hanekawa.Addons.HungerGame.Calculate
 {
