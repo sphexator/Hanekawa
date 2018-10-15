@@ -23,7 +23,8 @@ namespace Hanekawa.Services.Level
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
 
-        public event AsyncEvent<SocketGuildUser, Account> Level;
+        public event AsyncEvent<IGuildUser, Account> ServerLevel;
+        public event AsyncEvent<IGuildUser, AccountGlobal> GlobalLevel; 
         public event AsyncEvent<SocketGuildUser, TimeSpan> InVoice;
 
         public LevelingService(DiscordSocketClient discord, Calculate calc)
@@ -237,6 +238,7 @@ namespace Hanekawa.Services.Level
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
                         await NewLevelManagerAsync(userdata, user, db);
+                        ServerLevel(user, userdata);
                     }
                     else
                     {
@@ -271,6 +273,7 @@ namespace Hanekawa.Services.Level
                     {
                         userdata.Exp = userdata.Exp + exp - nextLevel;
                         userdata.Level = userdata.Level + 1;
+                        GlobalLevel(user, userdata);
                     }
                     else
                     {
@@ -376,13 +379,11 @@ namespace Hanekawa.Services.Level
             if (role == null)
             {
                 await RoleCheckAsync(db, user, cfg, userdata);
-                Level(user as SocketGuildUser, userdata);
                 return;
             }
 
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.AddRoleAsync(role);
-            Level(user as SocketGuildUser, userdata);
         }
 
         private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
