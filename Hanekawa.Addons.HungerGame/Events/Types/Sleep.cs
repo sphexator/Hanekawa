@@ -10,6 +10,7 @@ namespace Hanekawa.Addons.HungerGame.Events.Types
             var user = db.HungerGameLives.Find(profile.UserId);
             user.Sleep = 0;
             user.Fatigue = 0;
+            db.SaveChanges();
             return "Fell asleep";
         }
     }

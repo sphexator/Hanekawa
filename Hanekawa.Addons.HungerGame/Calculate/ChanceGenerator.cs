@@ -60,12 +60,11 @@ namespace Hanekawa.Addons.HungerGame.Calculate
         {
             if (profile.Water == 0 || profile.Food == 0)
                 return Kill;
-            if (profile.TotalWeapons >= 1 || profile.Water > 0 ||
-                profile.Food > 0)
-                return Kill + 2500;
             if (profile.TotalWeapons >= 1 && profile.Water > 0 ||
                 profile.Food > 0)
                 return Kill + 10000;
+            if (profile.Water > 0 || profile.Food > 0)
+                return Kill + 2500;
             return Kill;
         }
 
@@ -79,10 +78,10 @@ namespace Hanekawa.Addons.HungerGame.Calculate
 
         private static int EatChance(HungerGameLive profile)
         {
-            if (profile.Hunger >= 90 || profile.Food > 0) return Eat + 1000;
-            if (profile.Hunger >= 75 || profile.Food > 0) return Eat + 700;
-            if (profile.Hunger >= 50 || profile.Food > 0) return Eat + 400;
-            if (profile.Hunger >= 20 || profile.Food > 0) return Eat + 200;
+            if (profile.Hunger >= 90 && profile.Food > 0) return Eat + 1000;
+            if (profile.Hunger >= 75 && profile.Food > 0) return Eat + 700;
+            if (profile.Hunger >= 50 && profile.Food > 0) return Eat + 400;
+            if (profile.Hunger >= 20 && profile.Food > 0) return Eat + 200;
             return Eat;
         }
 

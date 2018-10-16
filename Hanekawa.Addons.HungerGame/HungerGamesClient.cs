@@ -30,9 +30,11 @@ namespace Hanekawa.Addons.HungerGame
                 if (!x.Status) continue;
                 var eventString = EventHandler.EventManager(x, db);
                 if (eventString == null) continue;
-                output += $"{x.Name.PadRight(20)} {eventString}\n";
+                var name = _client.GetUser(x.UserId).Username ?? x.Name;
+                output += $"{name.PadRight(20)} {eventString}\n";
             }
 
+            SelfHarm(hungerGameProfiles);
             Fatigue(hungerGameProfiles);
             await db.SaveChangesAsync();
             var image = await imgGenerator.GenerateEventImageAsync(hungerGameProfiles);
@@ -50,10 +52,31 @@ namespace Hanekawa.Addons.HungerGame
             var rand = new Random();
             foreach (var x in profiles)
             {
-                x.Fatigue = x.Fatigue + rand.Next(10, 15);
+                if (!x.Status) continue;
                 x.Hunger = x.Hunger + rand.Next(5, 10);
-                x.Thirst = x.Thirst + rand.Next(10, 20);
                 x.Sleep = x.Sleep + rand.Next(20, 30);
+            }
+        }
+
+        private static void SelfHarm(IEnumerable<HungerGameLive> profiles)
+        {
+            var rand = new Random();
+            foreach (var x in profiles)
+            {
+                if (!x.Status) continue;
+                int dmg;
+                if (x.Hunger >= 90 || x.Sleep >= 100) dmg = rand.Next(20, 30);
+                else if (x.Hunger >= 80 || x.Sleep >= 90) dmg = rand.Next(5, 10);
+                else continue;
+                if (x.Health - dmg <= 0)
+                {
+                    x.Status = false;
+                    x.Health = 0;
+                }
+                else
+                {
+                    x.Health = x.Health - dmg;
+                }
             }
         }
     }

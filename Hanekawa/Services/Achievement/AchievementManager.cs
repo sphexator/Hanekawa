@@ -86,14 +86,12 @@ namespace Hanekawa.Services.Achievement
                 using (var db = new DbService())
                 {
                     var achievements = await db.Achievements.Where(x => x.TypeId == Voice).ToListAsync();
-                    var progress = await db.GetAchievementProgress(user, Voice);
-                    if (progress == null) return;
                     if (achievements == null) return;
 
                     var totalTime = Convert.ToInt32(time.TotalMinutes);
-                    if (achievements.Any(x => x.Requirement == progress.Count + totalTime && x.Once))
+                    if (achievements.Any(x => x.Requirement == totalTime && x.Once))
                     {
-                        var achieve = achievements.First(x => x.Requirement == progress.Count + totalTime && x.Once);
+                        var achieve = achievements.First(x => x.Requirement == totalTime && x.Once);
                         var unlockCheck = await db.AchievementUnlocks.FindAsync(achieve.AchievementId, user.Id);
                         if (unlockCheck != null) return;
                         var data = new AchievementUnlock
@@ -131,6 +129,27 @@ namespace Hanekawa.Services.Achievement
                         await db.AchievementUnlocks.AddAsync(data);
                         await db.SaveChangesAsync();
                     }
+                    else
+                    {
+                        var belowAchieves = await db.Achievements
+                            .Where(x => x.TypeId == Level && !x.Global && x.Requirement < (int) userData.Level)
+                            .ToListAsync();
+                        if (belowAchieves != null && belowAchieves.Count > 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                            foreach (var x in belowAchieves)
+                            {
+                                if(unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
+                        }
+                    }
                     await db.SaveChangesAsync();
                 }
             });
@@ -157,6 +176,27 @@ namespace Hanekawa.Services.Achievement
                         };
                         await db.AchievementUnlocks.AddAsync(data);
                         await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var belowAchieves = await db.Achievements
+                            .Where(x => x.TypeId == Level && x.Global && x.Requirement < (int)userData.Level)
+                            .ToListAsync();
+                        if (belowAchieves != null && belowAchieves.Count > 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                            foreach (var x in belowAchieves)
+                            {
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
+                        }
                     }
                     await db.SaveChangesAsync();
                 }
