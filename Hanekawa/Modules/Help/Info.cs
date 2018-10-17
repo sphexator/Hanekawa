@@ -1,15 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Humanizer;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Help
 {
@@ -19,6 +18,53 @@ namespace Hanekawa.Modules.Help
         [Alias("botinfo")]
         [Summary("General info about the bot")]
         [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task DmInfoPosTask()
+        {
+            await Context.Message.DeleteAsync();
+            var application = await Context.Client.GetApplicationInfoAsync();
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+            };
+            var host = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Instance owned by",
+                Value = $"{application.Owner.Username}#{application.Owner.Discriminator}"
+            };
+            var creator = new EmbedFieldBuilder
+            {
+                IsInline = true,
+                Name = "Creator",
+                Value = "[Sphexator](https://github.com/sphexator)"
+            };
+            var about = new EmbedFieldBuilder
+            {
+                IsInline = false,
+                Name = "About",
+                Value = application.Description
+            };
+            var currentProcess = Process.GetCurrentProcess();
+            var uptime = new EmbedFieldBuilder
+            {
+                IsInline = false,
+                Name = "Uptime",
+                Value = $"{(DateTime.Now - currentProcess.StartTime).Humanize()}"
+            };
+            embed.AddField(host);
+            embed.AddField(creator);
+            embed.AddField(about);
+            embed.AddField(uptime);
+            embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
+            embed.AddField("Invite link", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
+            await (await Context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, embed.Build());
+        }
+
+        [Command("bot info")]
+        [Alias("botinfo")]
+        [Summary("General info about the bot")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [Priority(1)]
         [RequiredChannel]
         public async Task InfoPosTask()
         {
@@ -56,12 +102,15 @@ namespace Hanekawa.Modules.Help
             embed.AddField(creator);
             embed.AddField(about);
             embed.AddField(uptime);
+            embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
+            embed.AddField("Invite link", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
             await ReplyAsync(null, false, embed.Build());
         }
 
         [Command("uptime")]
         [Summary("Display uptime of the bot")]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
         public async Task UptimeTask()
         {
             await ReplyAndDeleteAsync(null, false,

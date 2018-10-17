@@ -22,8 +22,10 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("help")]
-        [Summary("Lists this bot's commands.")]
+        [Summary("Lists this bots commands.")]
         [Ratelimit(1, 5, Measure.Seconds)]
+        [Priority(1)]
+        [RequiredChannel]
         public async Task HelpAsync([Remainder]string path = "")
         {
             if (path == "")
@@ -35,7 +37,7 @@ namespace Hanekawa.Modules.Help
                 };
                 var footer = new EmbedFooterBuilder
                 {
-                    Text = "Use `help <module>` to get help with a module"
+                    Text = "Use `h.help <module>` to get help with a module"
                 };
                 var embed = new EmbedBuilder
                 {
@@ -45,6 +47,58 @@ namespace Hanekawa.Modules.Help
                     Footer = footer
                 };
                 await ReplyAsync(null, false, embed.Build());
+            }
+            else
+            {
+                var output = new EmbedBuilder { Color = Color.Purple };
+                var mod = _commands.Modules.FirstOrDefault(
+                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
+                if (mod == null)
+                {
+                    await ReplyAsync("No module could be found with that name.");
+                    return;
+                }
+
+                output.Title = mod.Name;
+                output.Description = $"{mod.Summary}\n" +
+                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
+                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
+                                     (mod.Submodules.Any()
+                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
+                                         : "") + " ";
+                AddCommands(mod, ref output);
+
+                await ReplyAsync(null, false, output.Build());
+            }
+        }
+
+        [Command("help")]
+        [Summary("Lists this bots commands.")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task DmHelpAsync([Remainder]string path = "")
+        {
+            if (path == "")
+            {
+                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
+                var author = new EmbedAuthorBuilder
+                {
+                    Name = "Module list"
+                };
+                var footer = new EmbedFooterBuilder
+                {
+                    Text = "Use `h.help <module>` to get help with a module"
+                };
+                var embed = new EmbedBuilder
+                {
+                    Color = Color.Purple,
+                    Description = content,
+                    Author = author,
+                    Footer = footer
+                };
+                embed.AddField("Support", "[Discord](https://discord.gg/9tq4xNT)", true);
+                embed.AddField("Bot Invite", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
+                var eng = await Context.User.GetOrCreateDMChannelAsync();
+                await eng.SendMessageAsync(null, false, embed.Build());
             }
             else
             {
@@ -66,7 +120,7 @@ namespace Hanekawa.Modules.Help
                                          : "") + " ";
                 AddCommands(mod, ref output);
 
-                await ReplyAsync("", embed: output.Build());
+                await (await Context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, output.Build());
             }
         }
 

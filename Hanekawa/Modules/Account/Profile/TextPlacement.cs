@@ -1,4 +1,5 @@
-﻿using Hanekawa.Addons.Database;
+﻿using System.Linq;
+using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.Primitives;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Level.Util;
 using SixLabors.ImageSharp;
@@ -50,7 +52,7 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle)
+        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle, SocketGuildUser user)
         {
             const int width = 22;
             const int height = 306;
@@ -116,6 +118,12 @@ namespace Hanekawa.Modules.Account.Profile
                 var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp);
                 return $"{rank.FormatNumber()}/{total.FormatNumber()}";
             }
+        }
+
+        private static async Task<int> GetAchievementPoints(DbService db, SocketGuildUser user)
+        {
+            var achievements = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+            return 10 * achievements.Count;
         }
     }
 }
