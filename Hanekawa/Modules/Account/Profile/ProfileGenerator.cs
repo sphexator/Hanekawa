@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -13,6 +14,8 @@ using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -45,7 +48,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x => x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
-                img.Mutate(x => x.ApplyAchievementCircles(circle));
+                img.Mutate(x => x.ApplyAchievementCircles(circle, user));
                 img.Save(stream, new PngEncoder());
             }
 
@@ -74,7 +77,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x => x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
-                img.Mutate(x => x.ApplyAchievementCircles(circle));
+                img.Mutate(x => x.ApplyAchievementCircles(circle, user));
                 img.Save(stream, new PngEncoder());
             }
 
@@ -142,6 +145,22 @@ namespace Hanekawa.Modules.Account.Profile
             {
                 return img.CloneAndConvertToAvatarWithoutApply(new Size(110, 110), 61).Clone();
             }
+        }
+
+        private async Task GetAchievementIcons(IGuildUser user, DbService db){
+
+        }
+
+        private void GetIcon(){
+
+        }
+        private void LocalIcon(){
+
+        }
+
+        private async Task<Stream> OnlineIcon(string url){
+            var client = new HttpClient();
+            return await client.GetStreamAsync(url);
         }
     }
 }

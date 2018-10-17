@@ -39,9 +39,14 @@ namespace Hanekawa.Modules.Account
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user);
+                var glUserData = await db.GetOrCreateGlobalUserData(user);
                 var rank = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
                 var total = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id);
-                await Task.WhenAll(rank, total);
+
+                var globalRank = db.AccountGlobals.CountAsync();
+                var globalUserRank = db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
+
+                await Task.WhenAll(rank, total, globalRank, globalUserRank);
                 var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
 
                 var author = new EmbedAuthorBuilder
@@ -76,6 +81,7 @@ namespace Hanekawa.Modules.Account
                 embed.AddField(level);
                 embed.AddField(exp);
                 embed.AddField(ranking);
+                embed.AddField("Global Rank", $"{globalUserRank}/{globalRank}", true);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }
