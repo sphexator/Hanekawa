@@ -293,7 +293,7 @@ namespace Hanekawa.Modules.Account
         }
 
         [Command("item inspect", RunMode = RunMode.Async)]
-        [Alias("inspect item", "inspect")]
+        [Alias("inspect item")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [Summary("Sets a description of item")]
         [RequiredChannel]

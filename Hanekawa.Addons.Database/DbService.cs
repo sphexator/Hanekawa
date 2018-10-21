@@ -46,9 +46,12 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<WarnStat> WarnStats { get; set; }
 
         // Achievements
-        public virtual DbSet<Achievement> Achievements { get; set; }
+        public virtual DbSet<AchievementMeta> Achievements { get; set; }
+        public virtual DbSet<AchievementName> AchievementNames { get; set; }
         public virtual DbSet<AchievementTracker> AchievementTrackers { get; set; }
         public virtual DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
+        public virtual DbSet<AchievementDifficulty> AchievementDifficulties { get; set; }
+        public virtual DbSet<AchievementType> AchievementTypes { get; set; }
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
@@ -161,13 +164,25 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<WarnStat>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
 
             // Achievement
-            modelBuilder.Entity<Achievement>(x =>
+            modelBuilder.Entity<AchievementMeta>(x =>
             {
                 x.HasKey(e => e.AchievementId);
                 x.Property(e => e.AchievementId).ValueGeneratedOnAdd();
+                x.HasOne(p => p.AchievementName).WithMany();
+                x.HasOne(p => p.AchievementDifficulty).WithMany();
+                x.HasOne(p => p.AchievementType).WithMany();
+            });
+            modelBuilder.Entity<AchievementName>(x =>
+            {
+                x.HasKey(e => e.AchievementNameId);
+                x.Property(e => e.AchievementNameId).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<AchievementTracker>(x => x.HasKey(e => new {e.Type, e.UserId}));
-            modelBuilder.Entity<AchievementUnlock>(x => x.HasKey(e => new {e.AchievementId, e.UserId}));
+            modelBuilder.Entity<AchievementUnlock>(x =>
+            {
+                x.HasKey(e => new {e.AchievementId, e.UserId});
+                x.HasOne(p => p.Achievement).WithMany();
+            });
             modelBuilder.Entity<AchievementType>(x =>
             {
                 x.HasKey(e => e.TypeId);

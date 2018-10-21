@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Hanekawa.Addons.Database.Migrations
 {
-    public partial class ShopUpdateU : Migration
+    public partial class UpdateAchievement : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -84,6 +84,11 @@ namespace Hanekawa.Addons.Database.Migrations
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
 
+            migrationBuilder.AddColumn<string>(
+                name: "Description",
+                table: "Items",
+                nullable: true);
+
             migrationBuilder.AddColumn<bool>(
                 name: "Global",
                 table: "Items",
@@ -162,6 +167,60 @@ namespace Hanekawa.Addons.Database.Migrations
                 columns: new[] { "GuildId", "UserId" });
 
             migrationBuilder.CreateTable(
+                name: "AchievementDifficulties",
+                columns: table => new
+                {
+                    DifficultyId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementDifficulties", x => x.DifficultyId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AchievementNames",
+                columns: table => new
+                {
+                    AchievementNameId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    Stackable = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementNames", x => x.AchievementNameId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AchievementTrackers",
+                columns: table => new
+                {
+                    Type = table.Column<int>(nullable: false),
+                    UserId = table.Column<ulong>(nullable: false),
+                    Count = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementTrackers", x => new { x.Type, x.UserId });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AchievementTypes",
+                columns: table => new
+                {
+                    TypeId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementTypes", x => x.TypeId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StoreGlobals",
                 columns: table => new
                 {
@@ -173,12 +232,106 @@ namespace Hanekawa.Addons.Database.Migrations
                 {
                     table.PrimaryKey("PK_StoreGlobals", x => x.ItemId);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Achievements",
+                columns: table => new
+                {
+                    AchievementId = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true),
+                    Description = table.Column<string>(nullable: true),
+                    Requirement = table.Column<int>(nullable: false),
+                    Once = table.Column<bool>(nullable: false),
+                    Reward = table.Column<int>(nullable: true),
+                    Points = table.Column<int>(nullable: false),
+                    ImageUrl = table.Column<string>(nullable: true),
+                    Hidden = table.Column<bool>(nullable: false),
+                    Global = table.Column<bool>(nullable: false),
+                    AchievementNameId = table.Column<int>(nullable: false),
+                    TypeId = table.Column<int>(nullable: false),
+                    DifficultyId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Achievements", x => x.AchievementId);
+                    table.ForeignKey(
+                        name: "FK_Achievements_AchievementNames_AchievementNameId",
+                        column: x => x.AchievementNameId,
+                        principalTable: "AchievementNames",
+                        principalColumn: "AchievementNameId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Achievements_AchievementDifficulties_DifficultyId",
+                        column: x => x.DifficultyId,
+                        principalTable: "AchievementDifficulties",
+                        principalColumn: "DifficultyId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Achievements_AchievementTypes_TypeId",
+                        column: x => x.TypeId,
+                        principalTable: "AchievementTypes",
+                        principalColumn: "TypeId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AchievementUnlocks",
+                columns: table => new
+                {
+                    AchievementId = table.Column<int>(nullable: false),
+                    TypeId = table.Column<int>(nullable: false),
+                    UserId = table.Column<ulong>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AchievementUnlocks", x => new { x.AchievementId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_AchievementUnlocks_Achievements_AchievementId",
+                        column: x => x.AchievementId,
+                        principalTable: "Achievements",
+                        principalColumn: "AchievementId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Achievements_AchievementNameId",
+                table: "Achievements",
+                column: "AchievementNameId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Achievements_DifficultyId",
+                table: "Achievements",
+                column: "DifficultyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Achievements_TypeId",
+                table: "Achievements",
+                column: "TypeId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AchievementTrackers");
+
+            migrationBuilder.DropTable(
+                name: "AchievementUnlocks");
+
+            migrationBuilder.DropTable(
                 name: "StoreGlobals");
+
+            migrationBuilder.DropTable(
+                name: "Achievements");
+
+            migrationBuilder.DropTable(
+                name: "AchievementNames");
+
+            migrationBuilder.DropTable(
+                name: "AchievementDifficulties");
+
+            migrationBuilder.DropTable(
+                name: "AchievementTypes");
 
             migrationBuilder.DropPrimaryKey(
                 name: "PK_Shops",
@@ -214,6 +367,10 @@ namespace Hanekawa.Addons.Database.Migrations
 
             migrationBuilder.DropColumn(
                 name: "DateAdded",
+                table: "Items");
+
+            migrationBuilder.DropColumn(
+                name: "Description",
                 table: "Items");
 
             migrationBuilder.DropColumn(

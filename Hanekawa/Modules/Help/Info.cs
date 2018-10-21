@@ -73,6 +73,12 @@ namespace Hanekawa.Modules.Help
             {
                 Color = Color.Purple,
             };
+            var about = new EmbedFieldBuilder
+            {
+                IsInline = false,
+                Name = "About",
+                Value = application.Description
+            };
             var host = new EmbedFieldBuilder
             {
                 IsInline = true,
@@ -84,12 +90,6 @@ namespace Hanekawa.Modules.Help
                 IsInline = true,
                 Name = "Creator",
                 Value = "[Sphexator](https://github.com/sphexator)"
-            };
-            var about = new EmbedFieldBuilder
-            {
-                IsInline = false,
-                Name = "About",
-                Value = application.Description
             };
             var currentProcess = Process.GetCurrentProcess();
             var uptime = new EmbedFieldBuilder

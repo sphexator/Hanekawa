@@ -399,7 +399,12 @@ namespace Hanekawa.Services.Games.ShipGame
                             winner = userdata;
                             loser = userdata2;
                         }
-                        else msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
+                        else
+                        {
+                            winner = userdata;
+                            loser = userdata2;
+                            msglog.AddFirst($"**{context.User.Mention}** defeated **{playerTwoUser.Mention}**!");
+                        }
 
                         embed.Color = Color.Green;
                         embed.Description = UpdateCombatLog(msglog.Reverse());
@@ -444,8 +449,13 @@ namespace Hanekawa.Services.Games.ShipGame
                                 $"**{playerTwoUser.Mention}** defeated **{context.User.Mention}** and won the bet of ${bet}!");
                             loser = userdata; // Loser
                             winner = userdata2; // Winner
-                        }                          
-                        else msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
+                        }
+                        else
+                        {
+                            winner = userdata;
+                            loser = userdata2;
+                            msglog.AddFirst($"**{playerTwoUser.Mention}** defeated **{context.User.Mention}**!");
+                        }
 
                         embed.Color = Color.Green;
                         embed.Description = UpdateCombatLog(msglog.Reverse());
@@ -479,7 +489,7 @@ namespace Hanekawa.Services.Games.ShipGame
                 }
                 UpdateDuel(context, false);
                 Console.WriteLine("Completed duel");
-                PvpKill(winner.UserId);
+                PvpKill?.Invoke(winner.UserId);
             }
             catch
             {

@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hanekawa.Addons.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    [Migration("20181013213522_AddAchievements")]
-    partial class AddAchievements
+    [Migration("20181018213246_UpdateAchievement")]
+    partial class UpdateAchievement
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -182,34 +182,6 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("Items");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.Achievement", b =>
-                {
-                    b.Property<int>("AchievementId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Description");
-
-                    b.Property<int>("DifficultyId");
-
-                    b.Property<string>("ImageUrl");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int>("Requirement");
-
-                    b.Property<int?>("Reward");
-
-                    b.Property<int>("TypeId");
-
-                    b.HasKey("AchievementId");
-
-                    b.HasIndex("DifficultyId");
-
-                    b.HasIndex("TypeId");
-
-                    b.ToTable("Achievements");
-                });
-
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementDifficulty", b =>
                 {
                     b.Property<int>("DifficultyId")
@@ -219,7 +191,63 @@ namespace Hanekawa.Addons.Database.Migrations
 
                     b.HasKey("DifficultyId");
 
-                    b.ToTable("AchievementDifficulty");
+                    b.ToTable("AchievementDifficulties");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementMeta", b =>
+                {
+                    b.Property<int>("AchievementId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("AchievementNameId");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int>("DifficultyId");
+
+                    b.Property<bool>("Global");
+
+                    b.Property<bool>("Hidden");
+
+                    b.Property<string>("ImageUrl");
+
+                    b.Property<string>("Name");
+
+                    b.Property<bool>("Once");
+
+                    b.Property<int>("Points");
+
+                    b.Property<int>("Requirement");
+
+                    b.Property<int?>("Reward");
+
+                    b.Property<int>("TypeId");
+
+                    b.HasKey("AchievementId");
+
+                    b.HasIndex("AchievementNameId");
+
+                    b.HasIndex("DifficultyId");
+
+                    b.HasIndex("TypeId");
+
+                    b.ToTable("Achievements");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementName", b =>
+                {
+                    b.Property<int>("AchievementNameId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("Name");
+
+                    b.Property<bool>("Stackable");
+
+                    b.HasKey("AchievementNameId");
+
+                    b.ToTable("AchievementNames");
                 });
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementTracker", b =>
@@ -244,7 +272,7 @@ namespace Hanekawa.Addons.Database.Migrations
 
                     b.HasKey("TypeId");
 
-                    b.ToTable("AchievementType");
+                    b.ToTable("AchievementTypes");
                 });
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementUnlock", b =>
@@ -1166,8 +1194,13 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("WarnMsgLogs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.Achievement", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementMeta", b =>
                 {
+                    b.HasOne("Hanekawa.Addons.Database.Tables.Achievement.AchievementName", "AchievementName")
+                        .WithMany()
+                        .HasForeignKey("AchievementNameId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Hanekawa.Addons.Database.Tables.Achievement.AchievementDifficulty", "AchievementDifficulty")
                         .WithMany()
                         .HasForeignKey("DifficultyId")
@@ -1176,6 +1209,14 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.HasOne("Hanekawa.Addons.Database.Tables.Achievement.AchievementType", "AchievementType")
                         .WithMany()
                         .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementUnlock", b =>
+                {
+                    b.HasOne("Hanekawa.Addons.Database.Tables.Achievement.AchievementMeta", "Achievement")
+                        .WithMany()
+                        .HasForeignKey("AchievementId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

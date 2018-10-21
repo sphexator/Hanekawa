@@ -81,7 +81,7 @@ namespace Hanekawa.Modules.Account
                 embed.AddField(level);
                 embed.AddField(exp);
                 embed.AddField(ranking);
-                embed.AddField("Global Rank", $"{globalUserRank}/{globalRank}", true);
+                embed.AddField("Global Rank", $"{globalUserRank.Result}/{globalRank.Result}", true);
                 await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
             }
         }

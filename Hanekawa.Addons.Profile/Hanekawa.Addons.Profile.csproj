@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0004"/>
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004"/>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.3"/>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0004" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj"/>
+    <ProjectReference Include="..\Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj" />
   </ItemGroup>
 </Project>

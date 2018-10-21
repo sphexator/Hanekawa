@@ -36,6 +36,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Hanekawa.Modules.Account.Storage;
+using Hanekawa.Services.Achievement;
 using SharpLink;
 using Config = Hanekawa.Data.Config;
 
@@ -100,6 +101,7 @@ namespace Hanekawa
             services.GetRequiredService<BlackListService>();
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
+            services.GetRequiredService<AchievementManager>();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -154,6 +156,7 @@ namespace Hanekawa
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
             services.AddSingleton<ProfileGenerator>();
+            services.AddSingleton<AchievementManager>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();

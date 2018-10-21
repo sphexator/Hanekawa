@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hanekawa.Addons.Database.Tables.Achievement
 {
-    public class Achievement
+    public class AchievementMeta
     {
         public int AchievementId { get; set; }
         public string Name { get; set; }
@@ -16,11 +16,12 @@ namespace Hanekawa.Addons.Database.Tables.Achievement
         public bool Hidden { get; set; }
         public bool Global { get; set; }
 
-        [ForeignKey("AchievementType")]
+        public int AchievementNameId { get; set; }
+        public AchievementName AchievementName { get; set; }
+
         public int TypeId { get; set; }
         public AchievementType AchievementType { get; set; }
 
-        [ForeignKey("AchievementDifficulty")]
         public int DifficultyId { get; set; }
         public AchievementDifficulty AchievementDifficulty { get; set; }
     }

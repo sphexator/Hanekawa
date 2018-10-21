@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
@@ -9,11 +10,11 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.Primitives;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Level.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Transforms;
 
 namespace Hanekawa.Modules.Account.Profile
 {
@@ -52,15 +53,49 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle, SocketGuildUser user)
+        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle, IEnumerable<Image<Rgba32>> icons)
         {
-            const int width = 22;
             const int height = 306;
-            for (var i = 0; i < 3; i++)
+            const int width = 22;
+            var images = icons.ToList();
+            if (images.Count > 4)
             {
-                for (var j = 0; j < 12; j++)
+                circle.Mutate(x => x.Resize(39, 39));
+                const int spacerW = 45;
+                const int spacerH = 45;
+                var amount = 0;
+                for (var i = 0; i < 2; i++)
                 {
-                    image.DrawImage(new GraphicsOptions(false), circle, new Point(width + (30 * j), height + (27 * i)));
+                    for (var j = 0; j <8; j++)
+                    {
+                        if (amount >= images.Count) continue;
+                        var icon = images[amount];
+                        icon.Mutate(y => y.Resize(39, 39));
+                        image.DrawImage(new GraphicsOptions(false), icon, new Point(width + (spacerW * j), height + spacerH * i));
+                        amount++;
+                    }
+                }
+                for (var i = 0; i < 2; i++)
+                {
+                    for (var j = 0; j < 8; j++)
+                    {
+                        image.DrawImage(new GraphicsOptions(false), circle, new Point(width + (spacerW * j), height + (spacerH * i)));
+                    }
+                }
+            }
+            else
+            {
+                const int spacerW = 93;
+                var amount = 0;
+                foreach (var x in images)
+                {
+                    image.DrawImage(new GraphicsOptions(false), x, new Point(width + (spacerW * amount), height));
+                    amount++;
+                }
+
+                for (var i = 0; i < 4; i++)
+                {
+                    image.DrawImage(new GraphicsOptions(false), circle, new Point(width + (spacerW * i), height));
                 }
             }
         }
@@ -87,7 +122,7 @@ namespace Hanekawa.Modules.Account.Profile
                 case "Special Credit":
                     return $"{userdata.CreditSpecial.FormatNumber()}";
                 case "Achievement Points":
-                    return "0";
+                    return $"{GetAchievementPoints(db, userdata.UserId)}";
                 case "Global Rank":
                     return await GetRankAsync(db, null, globalData);
                 case "Global Credit":
@@ -120,10 +155,10 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        private static async Task<int> GetAchievementPoints(DbService db, SocketGuildUser user)
+        private static async Task<int> GetAchievementPoints(DbService db, ulong userid)
         {
-            var achievements = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
-            return 10 * achievements.Count;
+            var achievements = await db.AchievementUnlocks.CountAsync(x => x.UserId == userid);
+            return 10 * achievements;
         }
     }
 }

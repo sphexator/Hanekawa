@@ -94,6 +94,7 @@ namespace Hanekawa.Services.Drop
                                 $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
                         await Task.Delay(5000);
                         await trgMsg.DeleteAsync();
+                        await DropClaimed(rct.User.Value as SocketGuildUser);
                     }
                     else
                     {

@@ -153,12 +153,18 @@ namespace Hanekawa.Addons.HungerGame.Generator
 
         private async Task<Image<Rgba32>> GetUserAvatar(ulong userid)
         {
-            if (userid < 100) return Image.Load($"Cache/DefaultAvatar/{userid}.png").Clone();
-            var user = _client.GetUser(userid);
-            if (user == null) return Image.Load(@"Cache\DefaultAvatar\Default.png").Clone();
-            return Image.Load(
-                await new HttpClient().GetStreamAsync(user.GetAvatarUrl(ImageFormat.Auto, 1024) ??
-                                                      user.GetDefaultAvatarUrl())).Clone();
+            try
+            {
+                if (userid < 100) return Image.Load($"Cache/DefaultAvatar/{userid}.png").Clone();
+                var user = _client.GetUser(userid);
+                if (user == null && user.GetAvatarUrl() == null) return Image.Load(@"Cache\DefaultAvatar\Default.png").Clone();
+                return Image.Load(
+                    await new HttpClient().GetStreamAsync(user.GetAvatarUrl(ImageFormat.Png, 1024))).Clone();
+            }
+            catch
+            {
+                return Image.Load(@"Cache\DefaultAvatar\Default.png").Clone();
+            }
         }
     }
 }

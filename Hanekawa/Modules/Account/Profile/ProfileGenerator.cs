@@ -1,4 +1,10 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
@@ -13,13 +19,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Tweetinvi.Core.Extensions;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Modules.Account.Profile
@@ -40,6 +40,7 @@ namespace Hanekawa.Modules.Account.Profile
                 var templateBg = GetTemplateBackground();
                 var pfpCircle = GetPfpCircle();
                 var circle = GetCircle();
+                var achievIcons = await GetAchievementIcons(user, db);
                 var avi = await GetAvatar(user, client);
 
                 img.Mutate(x => x
@@ -47,8 +48,9 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(gpOptions, templateBg, new Point(0, 0))
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
-                img.Mutate(x => x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
-                img.Mutate(x => x.ApplyAchievementCircles(circle, user));
+                img.Mutate(x =>
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
+                img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
             }
 
@@ -69,6 +71,7 @@ namespace Hanekawa.Modules.Account.Profile
                 var templateBg = GetTemplateBackground();
                 var pfpCircle = GetPfpCircle();
                 var circle = GetCircle();
+                var achievIcons = await GetAchievementIcons(user, db);
                 var avi = await GetAvatar(user, client);
 
                 img.Mutate(x => x
@@ -76,25 +79,23 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(gpOptions, templateBg, new Point(0, 0))
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
-                img.Mutate(x => x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
-                img.Mutate(x => x.ApplyAchievementCircles(circle, user));
+                img.Mutate(x =>
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
+                img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
             }
 
             return stream;
         }
 
-        private static async Task<Image<Rgba32>> GetBackground(DbService db, HttpClient client, Addons.Database.Tables.Account.Account userdata)
+        private static async Task<Image<Rgba32>> GetBackground(DbService db, HttpClient client,
+            Addons.Database.Tables.Account.Account userdata)
         {
             Stream stream;
             if (!userdata.ProfilePic.IsNullOrWhiteSpace())
-            {
                 stream = await client.GetStreamAsync(userdata.ProfilePic);
-            }
             else
-            {
                 stream = await GetDefaultBackground(client, db);
-            }
 
             using (var img = Image.Load(stream))
             {
@@ -132,8 +133,9 @@ namespace Hanekawa.Modules.Account.Profile
 
         private static Image<Rgba32> GetCircle()
         {
-            using (var img = Image.Load(@"Data\Profile\Template\AchievementCircle.png"))
+            using (var img = Image.Load(@"Data\Profile\Template\ProfileCircle.png"))
             {
+                img.Mutate(x => x.Resize(80, 80));
                 return img.Clone();
             }
         }
@@ -147,20 +149,76 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        private async Task GetAchievementIcons(IGuildUser user, DbService db){
-
+        private static async Task<IEnumerable<Image<Rgba32>>> GetAchievementIcons(IGuildUser user, DbService db)
+        {
+            var achievements = new Dictionary<int, Image<Rgba32>>();
+            var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+            var list = await UnlockToAchieve(db, unlocks);
+            foreach (var x in list)
+            {
+                if (achievements.Count != 0 && achievements.ContainsKey(x.AchievementNameId)) continue;
+                var achiev = await db.Achievements.FindAsync(x.AchievementId);
+                var nAchiev = await db.AchievementNames.FindAsync(achiev.AchievementNameId);
+                if (nAchiev.Stackable)
+                {
+                    var image = await GetHighestStackable(x, list, db);
+                    achievements.TryAdd(nAchiev.AchievementNameId, image);
+                }
+                else
+                {
+                    var image = await GetIcon(achiev);
+                    achievements.TryAdd(nAchiev.AchievementNameId, image);
+                }
+            }
+            var result = new List<Image<Rgba32>>();
+            achievements.ForEach(pair => result.Add(pair.Value));
+            return result;
         }
 
-        private void GetIcon(){
+        private static async Task<List<AchievementMeta>> UnlockToAchieve(DbService db, IEnumerable<AchievementUnlock> list)
+        {
+            var result = new List<AchievementMeta>();
+            foreach (var x in list)
+            {
+                result.Add(await db.Achievements.FindAsync(x.AchievementId));
+            }
 
+            return result;
         }
-        private void LocalIcon(){
 
+        private static async Task<Image<Rgba32>> GetIcon(AchievementMeta achiev)
+        {
+            var dir = Directory.CreateDirectory($"Data/Achievement/Image/{achiev.AchievementNameId}/");
+            var file = dir.GetFiles($"{achiev.AchievementId}.png");
+            if (file.Length == 0) return await OnlineIcon(achiev);
+            using (var image = Image.Load($"Data/Achievement/Image/{achiev.AchievementNameId}/{achiev.AchievementId}.png"))
+            {
+                return image.CloneAndConvertToAvatarWithoutApply(new Size(80, 80), 50).Clone();
+            }
         }
 
-        private async Task<Stream> OnlineIcon(string url){
+        private static async Task<Image<Rgba32>> OnlineIcon(AchievementMeta achiev)
+        {
             var client = new HttpClient();
-            return await client.GetStreamAsync(url);
+            using (var image = Image.Load(await client.GetStreamAsync(achiev.ImageUrl)))
+            {
+                DownloadIcon(image, achiev);
+                return image.CloneAndConvertToAvatarWithoutApply(new Size(80, 80), 50).Clone();
+            }
+        }
+
+        private static void DownloadIcon(Image<Rgba32> image, AchievementMeta achiev)
+        {
+            image.Save($"Data/Achievement/Image/{achiev.AchievementNameId}/{achiev.AchievementId}.png");
+        }
+
+        private static async Task<Image<Rgba32>> GetHighestStackable(AchievementMeta achiev, IEnumerable<AchievementMeta> list, DbService db)
+        {
+            var achievementUnlocks = list.ToList();
+            var max = achievementUnlocks.Where(x => x.AchievementNameId == achiev.AchievementNameId)
+                .Max(x => x.Requirement);
+            var result = achievementUnlocks.First(x => x.AchievementNameId == achiev.AchievementNameId && x.Requirement == max);            
+            return await GetIcon(result);
         }
     }
 }
