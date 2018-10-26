@@ -59,12 +59,13 @@ namespace Hanekawa.Addons.HungerGame.Calculate
         private static int KillChance(HungerGameLive profile)
         {
             if (profile.Water == 0 || profile.Food == 0)
-                return Kill;
-            if (profile.TotalWeapons >= 1 && profile.Water > 0 ||
-                profile.Food > 0)
+                return 0;
+            if (profile.Water == 1 || profile.Food == 1) return Kill;
+            if (profile.TotalWeapons >= 1 && (profile.Water > 2 ||
+                profile.Food > 2))
                 return Kill + 10000;
-            if (profile.Water > 0 || profile.Food > 0)
-                return Kill + 2500;
+            if (profile.Water > 1 || profile.Food > 1)
+                return Kill + 1500;
             return Kill;
         }
 

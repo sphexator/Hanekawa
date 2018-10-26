@@ -98,7 +98,9 @@ namespace Hanekawa
             services.GetRequiredService<ShipGameService>();
             services.GetRequiredService<DropService>();
             services.GetRequiredService<SimulCast>();
+            services.GetRequiredService<InfluxDbService>();
             services.GetRequiredService<BlackListService>();
+            services.GetRequiredService<PlayStatusService>();
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
             services.GetRequiredService<AchievementManager>();
@@ -144,12 +146,14 @@ namespace Hanekawa
             services.AddSingleton<EventService>();
             services.AddSingleton<BlackListService>();
             services.AddSingleton<NudeScoreService>();
+            services.AddSingleton<PlayStatusService>();
             services.AddSingleton<ShopManager>();
             services.AddSingleton<InventoryManager>();
             services.AddSingleton<GameStats>();
             services.AddSingleton<ShipGameService>();
             services.AddSingleton<ProfileBuilder>();
             services.AddSingleton<DropService>();
+            services.AddSingleton<InfluxDbService>();
             services.AddSingleton<AudioService>();
             //services.AddSingleton<PlaylistService>();
             services.AddSingleton<RequiredChannel>();

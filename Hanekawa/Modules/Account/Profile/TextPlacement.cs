@@ -45,9 +45,9 @@ namespace Hanekawa.Modules.Account.Profile
                     }
                     else
                     {
-                        image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height + 15));
+                        image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height));
                         image.DrawText(rightOptions, await GetValueAsync(x.Name, db, userdata, globalData.Result, calc, guildId), font, Rgba32.White,
-                            new PointF(x.ValueWidth, x.Height + 15));
+                            new PointF(x.ValueWidth, x.Height));
                     }
                 }
             }
@@ -122,7 +122,7 @@ namespace Hanekawa.Modules.Account.Profile
                 case "Special Credit":
                     return $"{userdata.CreditSpecial.FormatNumber()}";
                 case "Achievement Points":
-                    return $"{GetAchievementPoints(db, userdata.UserId)}";
+                    return $"{await GetAchievementPoints(db, userdata.UserId)}";
                 case "Global Rank":
                     return await GetRankAsync(db, null, globalData);
                 case "Global Credit":

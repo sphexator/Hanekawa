@@ -18,7 +18,7 @@ namespace Hanekawa.Modules.Account.Achievement
         [Command("achievement", RunMode = RunMode.Async)]
         [Alias("achiev")]
         [RequiredChannel]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievementLog([Remainder] string tab = null)
         {
             var user = Context.User as IGuildUser;
@@ -59,7 +59,6 @@ namespace Hanekawa.Modules.Account.Achievement
                         return;
                     }
                     var achievements = await db.Achievements.Where(x => !x.Hidden && x.TypeId == type.TypeId).ToListAsync();
-                    var done = await db.AchievementUnlocks.Where(x => x.UserId == user.Id && x.TypeId == type.TypeId).ToListAsync();
                     var pages = new List<string>();
                     for (var i = 0; i < achievements.Count;)
                     {
@@ -71,7 +70,7 @@ namespace Hanekawa.Modules.Account.Achievement
                                 if (i == achievements.Count) continue;
                                 var Achiev = achievements[i];
                                 achievString +=
-                                    $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement} ({AchievType(done, achievements, done.FirstOrDefault(y => y.AchievementId == Achiev.AchievementId))})\n"; ;
+                                    $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
                                 i++;
                             }
                             catch { i++; }
@@ -84,7 +83,7 @@ namespace Hanekawa.Modules.Account.Achievement
                     {
                         Color = Color.Purple,
                         Pages = pages,
-                        Title = $"Achievements for {Context.User.Username} in {type.Name}",
+                        Title = $"Achievements in {type.Name}",
                         Options = new PaginatedAppearanceOptions
                         {
                             First = new Emoji("⏮"),
@@ -118,6 +117,62 @@ namespace Hanekawa.Modules.Account.Achievement
                     ThumbnailUrl = achiv.ImageUrl
                 };
                 await ReplyAsync(null, false, embed.Build());
+            }
+        }
+
+        [Command("achieved")]
+        [RequiredChannel]
+        [Ratelimit(1, 2, Measure.Seconds)]
+        public async Task AchievedList()
+        {
+            using (var db = new DbService())
+            {
+                var unlock = await db.AchievementUnlocks.Where(x => x.UserId == Context.User.Id).ToListAsync();
+                if (unlock.Count == 0)
+                {
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("No achievements found.", Color.Red.RawValue).Build());
+                    return;
+                }
+                var achievements = new List<AchievementMeta>();
+                unlock.ForEach(x => achievements.Add(db.Achievements.Find(x.AchievementId)));
+                var pages = new List<string>();
+                for (var i = 0; i < achievements.Count;)
+                {
+                    string achievString = null;
+                    for (var j = 0; j < 5; j++)
+                    {
+                        try
+                        {
+                            if (i == achievements.Count) continue;
+                            var Achiev = achievements[i];
+                            achievString +=
+                                $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
+                            i++;
+                        }
+                        catch { i++; }
+                    }
+
+                    pages.Add(achievString);
+                }
+
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Title = $"Unlocked Achievements for {Context.User.Username}",
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
             }
         }
 

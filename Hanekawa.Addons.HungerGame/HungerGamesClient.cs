@@ -27,11 +27,18 @@ namespace Hanekawa.Addons.HungerGame
             string output = null;
             foreach (var x in hungerGameProfiles)
             {
-                if (!x.Status) continue;
-                var eventString = EventHandler.EventManager(x, db);
-                if (eventString == null) continue;
-                var name = _client.GetUser(x.UserId).Username ?? x.Name;
-                output += $"{name.PadRight(20)} {eventString}\n";
+                    if (!x.Status) continue;
+                    var eventString = EventHandler.EventManager(x, db);
+                    if (eventString == null) continue;
+                try
+                {
+                    var name = x.Name;
+                    output += $"{name.PadRight(20)} {eventString}\n";
+                }
+                catch
+                {
+                    output += $"{x.Name.PadRight(20)} {eventString}\n";
+                }
             }
 
             SelfHarm(hungerGameProfiles);
