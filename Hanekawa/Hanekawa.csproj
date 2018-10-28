@@ -94,6 +94,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj" />
     <ProjectReference Include="..\Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj" />
+    <ProjectReference Include="..\Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj" />
   </ItemGroup>
 
   <ItemGroup>
