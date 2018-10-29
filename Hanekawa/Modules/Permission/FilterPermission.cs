@@ -126,5 +126,28 @@ namespace Hanekawa.Modules.Permission
                 await db.SaveChangesAsync();
             }
         }
+
+        [Command("mention filter")]
+        [Alias("mention")]
+        [Summary("Sets an amount of mentions, if more it'll deleted the message, 0 or empty to disable")]
+        public async Task MentionFilter(int amount = 0)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (amount > 0)
+                {
+                    cfg.MentionCountFilter = amount;
+                    await ReplyAsync(null,false,new EmbedBuilder().Reply($"Set mention filter to {amount}").Build());
+                }
+                else
+                {
+                    cfg.MentionCountFilter = null;
+                    await ReplyAsync(null,false,new EmbedBuilder().Reply("Disabled mention filter").Build());
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }
