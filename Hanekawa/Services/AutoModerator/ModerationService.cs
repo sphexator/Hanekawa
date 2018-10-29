@@ -11,6 +11,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Config = Hanekawa.Data.Config;
+using System.Text.RegularExpressions;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -22,6 +23,10 @@ namespace Hanekawa.Services.AutoModerator
             = new ConcurrentDictionary<ulong, List<ulong>>();
         private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
+        private readonly Regex Emote = new Regex(@"/^<a?:(\w+):(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex Channel = new Regex(@"/^<#(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex Mention = new Regex(@"/^<@!?(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex Role = new Regex(@"/^<@&(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public enum AutoModActionType
         {
@@ -111,7 +116,7 @@ namespace Hanekawa.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task InviteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (!cfg.FilterInvites) return;
             if (user.GuildPermissions.ManageGuild) return;
@@ -126,7 +131,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task ScamLinkFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
             if (msg.Content.IsGoogleLink()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
@@ -139,22 +144,22 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task SpamFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task SpamFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
 
         }
 
-        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task UrlFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
             //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
         }
 
-        private async Task WordFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
 
         }
 
-        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task LengthFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -163,6 +168,28 @@ namespace Hanekawa.Services.AutoModerator
                 try { await msg.DeleteAsync(); } catch { /* ignored */ }
                 await AutoModTimedMute(msg.Author as SocketGuildUser, TimeSpan.FromMinutes(60));
                 await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.Length, msg.Content);
+            }
+        }
+
+        private async Task MentionFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+            if (cfg.MentionCountFilter == null || cfg.MentionCountFilter == 0) return;
+            if (!Mention.IsMatch(msg.Content)) return;
+            var amount = Mention.Matches(msg.Content).Count;
+            if (amount >= cfg.MentionCountFilter)
+            {
+                try { await msg.DeleteAsync(); } catch{ }
+            }
+        }
+
+        private async Task EmoteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        {
+            if (cfg.EmoteCountFilter == null || cfg.EmoteCountFilter == 0) return;
+            if (!Emote.IsMatch(msg.Content)) return;
+            var amount = Emote.Matches(msg.Content).Count;
+            if (amount >= cfg.EmoteCountFilter)
+            {
+                try {await msg.DeleteAsync(); } catch{ }
             }
         }
     }

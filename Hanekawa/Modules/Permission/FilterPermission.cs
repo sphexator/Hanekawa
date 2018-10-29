@@ -103,5 +103,28 @@ namespace Hanekawa.Modules.Permission
                 await ReplyAsync(null,false,embed.Build());
             }
         }
+
+        [Command("emote filter")]
+        [Alias("emote")]
+        [Summary("Sets an amount of emotes, if more it'll deleted the message, 0 or empty to disable")]
+        public async Task EmoteFilter(int amount = 0)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (amount > 0)
+                {
+                    cfg.EmoteCountFilter = amount;
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set emote filter to {amount}").Build());
+                }
+                else
+                {
+                    cfg.EmoteCountFilter = null;
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled emote filter").Build());
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }
