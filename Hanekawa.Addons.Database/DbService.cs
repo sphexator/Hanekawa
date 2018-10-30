@@ -74,6 +74,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<GuildInfo> GuildInfos { get; set; }
         public virtual DbSet<GuildInfoLink> GuildInfoLinks { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
+        public virtual DbSet<UrlFilter> UrlFilters { get; set; }
         public virtual DbSet<SingleNudeServiceChannel> SingleNudeServiceChannels { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
@@ -93,7 +94,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
-
+        
         //Profiles
         public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
@@ -252,7 +253,7 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
             modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
             modelBuilder.Entity<SingleNudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
-
+            modelBuilder.Entity<UrlFilter>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             // Hunger Game
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });

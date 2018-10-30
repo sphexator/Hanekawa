@@ -12,6 +12,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Config = Hanekawa.Data.Config;
 using System.Text.RegularExpressions;
+using Hanekawa.Addons.Database.Tables.Account;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -99,9 +100,11 @@ namespace Hanekawa.Services.AutoModerator
                 if (!(msg.Author is SocketGuildUser user)) return;
 
                 GuildConfig cfg;
+                Account userdata;
                 using (var db = new DbService())
                 {
                     cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    userdata = await db.GetOrCreateUserData(user);
                 }
 
                 var invite = InviteFilter(msg, user, cfg);
@@ -149,17 +152,17 @@ namespace Hanekawa.Services.AutoModerator
 
         }
 
-        private async Task UrlFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task UrlFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
         }
 
-        private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
 
         }
 
-        private async Task LengthFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task LengthFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             if (user.GuildId != 339370914724446208) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -174,6 +177,7 @@ namespace Hanekawa.Services.AutoModerator
         private async Task MentionFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (cfg.MentionCountFilter == null || cfg.MentionCountFilter == 0) return;
+            if (user.GuildPermissions.ManageMessages) return;
             if (!Mention.IsMatch(msg.Content)) return;
             var amount = Mention.Matches(msg.Content).Count;
             if (amount >= cfg.MentionCountFilter)
@@ -182,9 +186,10 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task EmoteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task EmoteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             if (cfg.EmoteCountFilter == null || cfg.EmoteCountFilter == 0) return;
+            if (user.GuildPermissions.ManageMessages) return;
             if (!Emote.IsMatch(msg.Content)) return;
             var amount = Emote.Matches(msg.Content).Count;
             if (amount >= cfg.EmoteCountFilter)
