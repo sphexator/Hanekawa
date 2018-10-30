@@ -41,6 +41,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong? LogBan { get; set; }
         public ulong? LogAvi { get; set; }
         public ulong? LogWarn { get; set; }
+        public ulong? LogAutoMod { get;set; }
 
         // Leveling settings
         public uint ExpMultiplier { get; set; }

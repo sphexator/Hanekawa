@@ -22,7 +22,7 @@ namespace Hanekawa.Services.AutoModerator
         private readonly Config _config;
         private ConcurrentDictionary<ulong, List<ulong>> UrlFilterChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
-        private ConcurrentDictionary<ulong, List<ulong>> SpamFilterChannels { get; set; }
+        private ConcurrentDictionary<ulong, List<ulong>> SpamIgnoreChannels { get; set; }
             = new ConcurrentDictionary<ulong, List<ulong>>();
         private readonly Regex Emote = new Regex(@"/^<a?:(\w+):(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private readonly Regex Channel = new Regex(@"/^<#(\d+)>$/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -36,13 +36,16 @@ namespace Hanekawa.Services.AutoModerator
             ScamLink,
             Url,
             Length,
-            Toxicity
+            Toxicity,
+            Emote,
+            Mention
         }
 
         public event AsyncEvent<SocketGuildUser> AutoModPermMute;
         public event AsyncEvent<SocketGuildUser, TimeSpan> AutoModTimedMute;
         public event AsyncEvent<SocketGuildUser, AutoModActionType, string> AutoModPermLog;
         public event AsyncEvent<SocketGuildUser, AutoModActionType, TimeSpan, string> AutoModTimedLog;
+        public event AsyncEvent<SocketGuildUser, AutoModActionType, int> AutoModFilter;
 
         public ModerationService(DiscordSocketClient discord, IServiceProvider provider, Config config)
         {
@@ -50,7 +53,21 @@ namespace Hanekawa.Services.AutoModerator
             _config = config;
 
             _discord.MessageReceived += AutoModInitializer;
-            _discord.UserJoined += GlobalBanChecker;
+            //_discord.UserJoined += GlobalBanChecker;
+
+            using(var db = new DbService()){
+                foreach (var x in db.UrlFilters)
+                {
+                    var guild = UrlFilterChannels.GetOrAdd(x.GuildId, new List<ulong>());
+                    guild.Add(x.ChannelId);
+                }
+
+                foreach (var x in db.SpamIgnores)
+                {
+                    var guild = SpamIgnoreChannels.GetOrAdd(x.GuildId, new List<ulong>());
+                    guild.Add(x.ChannelId);
+                }
+            }
         }
 
         public async Task AutoModMute(SocketGuildUser user, AutoModActionType type, TimeSpan time, string reason)
@@ -63,6 +80,34 @@ namespace Hanekawa.Services.AutoModerator
         {
             await AutoModPermMute(user);
             await AutoModPermLog(user, type, reason);
+        }
+
+        public void AddSpamChannel(ITextChannel channel){
+            if(!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return;
+            if(guild.Contains(channel.Id)) return;
+            guild.Add(channel.Id);
+        }
+
+        public void AddUrlFilterChannel(ITextChannel channel){
+            if(!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return;
+            if(guild.Contains(channel.Id)) return;
+            guild.Add(channel.Id);
+        }
+
+        public void RemoveSpamChannel(ITextChannel channel){
+            if(!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return;
+            if(!guild.Contains(channel.Id)) return;
+            guild.Remove(channel.Id);
+        }
+
+        public void RemoveUrlFilter(ITextChannel channel){
+            if(!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return;
+            if(!guild.Contains(channel.Id)) return;
+            guild.Remove(channel.Id);
+        }
+
+        public void RemoveSpamChannel(ITextChannel channel){
+
         }
 
         private Task GlobalBanChecker(SocketGuildUser user)
@@ -110,9 +155,9 @@ namespace Hanekawa.Services.AutoModerator
                 var invite = InviteFilter(msg, user, cfg);
                 var scam = ScamLinkFilter(msg, user, cfg);
                 var spam = SpamFilter(msg, user, cfg);
-                var url = UrlFilter(msg, user, cfg);
-                var world = WordFilter(msg, user, cfg);
-                var length = LengthFilter(msg, user, cfg);
+                var url = UrlFilter(msg, user, cfg, userdata);
+                var world = WordFilter(msg, user, cfg, userdata);
+                var length = LengthFilter(msg, user, cfg, userdata);
 
                 await Task.WhenAll(invite, scam, spam, url, world, length);
             });
@@ -154,7 +199,13 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task UrlFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
-            //if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+            using(var db = new DbService()){
+                var channel = await db.UrlFilters.FindAsync(user.GuildId, msg.Channel.Id);
+                if(channel == null) return;
+                if (msg.Channel.Id != channel.ChannelId) return;
+                if (msg.Content.IsUrl()) try { await msg.DeleteAsync(); } catch { /* ignored */ }
+                var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Url, 0);
+            }
         }
 
         private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
@@ -176,26 +227,24 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task MentionFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
-            if (cfg.MentionCountFilter == null || cfg.MentionCountFilter == 0) return;
+            if (!cfg.MentionCountFilter.HasValue || cfg.MentionCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
             if (!Mention.IsMatch(msg.Content)) return;
             var amount = Mention.Matches(msg.Content).Count;
-            if (amount >= cfg.MentionCountFilter)
-            {
-                try { await msg.DeleteAsync(); } catch{ }
-            }
+            if (amount >= cfg.MentionCountFilter) return;
+            try { await msg.DeleteAsync(); } catch{/* IGNORED */ }
+            var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Mention, amount);
         }
 
         private async Task EmoteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
-            if (cfg.EmoteCountFilter == null || cfg.EmoteCountFilter == 0) return;
+            if (!cfg.EmoteCountFilter.HasValue || cfg.EmoteCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
             if (!Emote.IsMatch(msg.Content)) return;
             var amount = Emote.Matches(msg.Content).Count;
-            if (amount >= cfg.EmoteCountFilter)
-            {
-                try {await msg.DeleteAsync(); } catch{ }
-            }
+            if (amount < cfg.EmoteCountFilter) return;
+            try {await msg.DeleteAsync(); } catch{ /* IGNORED */ }
+            var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Emote, amount);
         }
     }
 }

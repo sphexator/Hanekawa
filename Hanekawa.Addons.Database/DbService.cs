@@ -73,9 +73,6 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
         public virtual DbSet<GuildInfo> GuildInfos { get; set; }
         public virtual DbSet<GuildInfoLink> GuildInfoLinks { get; set; }
-        public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
-        public virtual DbSet<UrlFilter> UrlFilters { get; set; }
-        public virtual DbSet<SingleNudeServiceChannel> SingleNudeServiceChannels { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
@@ -94,6 +91,10 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
         public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
+        public virtual DbSet<SpamIgnore> SpamIgnores { get; set; }
+        public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
+        public virtual DbSet<UrlFilter> UrlFilters { get; set; }
+        public virtual DbSet<SingleNudeServiceChannel> SingleNudeServiceChannels { get; set; }
         
         //Profiles
         public virtual DbSet<Background> Backgrounds { get; set; }
@@ -251,9 +252,7 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));
             modelBuilder.Entity<LootChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
-            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
-            modelBuilder.Entity<SingleNudeServiceChannel>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
-            modelBuilder.Entity<UrlFilter>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
+            
             // Hunger Game
             modelBuilder.Entity<HungerGameConfig>(x => { x.HasKey(e => e.GuildId); });
             modelBuilder.Entity<HungerGameDefault>(x => { x.HasKey(e => e.UserId); });
@@ -271,6 +270,10 @@ namespace Hanekawa.Addons.Database
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
+            modelBuilder.Entity<NudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<SingleNudeServiceChannel>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<UrlFilter>(x => { x.HasKey(e => new { e.GuildId, e.ChannelId }); });
+            modelBuilder.Entity<SpamIgnore>(x => {x.HasKey(e => new { e.GuildId, e.ChannelId });});
 
             // Profiles
             modelBuilder.Entity<Background>(x => x.HasKey(e => e.Id));
