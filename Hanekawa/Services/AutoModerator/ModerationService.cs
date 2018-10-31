@@ -89,7 +89,7 @@ namespace Hanekawa.Services.AutoModerator
             using(var db = new DbService())
             {
                 var check = await db.SpamIgnores.FindAsync(channel.GuildId, channel.Id);
-                if (check == null) return await AddSpamIgnoreChannel(channel, db);
+                if (check == null)return await AddSpamIgnoreChannel(channel, db);
                 else return await RemoveSpamIgnoreChannel(channel, db);
             }
         }
@@ -99,7 +99,7 @@ namespace Hanekawa.Services.AutoModerator
             using(var db = new DbService())
             {
                 var check = await db.UrlFilters.FindAsync(channel.GuildId, channel.Id);
-                if (check == null) return await AddUrlFilterChannel(channel, db);
+                if (check == null)return await AddUrlFilterChannel(channel, db);
                 else return await RemoveUrlFilter(channel, db);
             }
         }
@@ -154,8 +154,8 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task<EmbedBuilder> RemoveUrlFilter(ITextChannel channel, DbService db)
         {
-            if (!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return null;
-            if (!guild.Contains(channel.Id)) return null;
+            if (!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild))return null;
+            if (!guild.Contains(channel.Id))return null;
             var entry = await db.UrlFilters.FindAsync(channel.GuildId, channel.Id);
             if (entry == null)return null;
             db.UrlFilters.Remove(entry);
