@@ -82,32 +82,72 @@ namespace Hanekawa.Services.AutoModerator
             await AutoModPermLog(user, type, reason);
         }
 
-        public void AddSpamChannel(ITextChannel channel){
+        public async Task AddSpamIgnoreChannel(ITextChannel channel)
+        {
             if(!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return;
             if(guild.Contains(channel.Id)) return;
-            guild.Add(channel.Id);
+            using (var db = new DbService())
+            {
+                var entry = await db.SpamIgnores.FindAsync(channel.GuildId,channel.Id);
+                if (entry != null)
+                    return;
+                var data = new SpamIgnore
+                {
+                    GuildId = channel.GuildId,
+                    ChannelId = channel.Id
+                };
+                await db.SpamIgnores.AddAsync(data);
+                await db.SaveChangesAsync();
+                guild.Add(channel.Id);
+            }
         }
 
-        public void AddUrlFilterChannel(ITextChannel channel){
+        public async Task AddUrlFilterChannel(ITextChannel channel)
+        {
             if(!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return;
             if(guild.Contains(channel.Id)) return;
-            guild.Add(channel.Id);
+            using (var db = new DbService())
+            {
+                var entry = await db.UrlFilters.FindAsync(channel.GuildId, channel.Id);
+                if (entry != null) return;
+                var data = new UrlFilter
+                {
+                    GuildId = channel.GuildId,
+                    ChannelId = channel.Id
+                };
+                await db.UrlFilters.AddAsync(data);
+                await db.SaveChangesAsync();
+                guild.Add(channel.Id);
+            }
         }
 
-        public void RemoveSpamChannel(ITextChannel channel){
-            if(!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return;
+        public async Task RemoveSpamIgnoreChannel(ITextChannel channel)
+        {
+
+            if (!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return;
             if(!guild.Contains(channel.Id)) return;
-            guild.Remove(channel.Id);
+            using (var db = new DbService())
+            {
+                var entry = await db.SpamIgnores.FindAsync(channel.GuildId, channel.Id);
+                if (entry == null) return;
+                db.SpamIgnores.Remove(entry);
+                await db.SaveChangesAsync();
+                guild.Remove(channel.Id);
+            }
         }
 
-        public void RemoveUrlFilter(ITextChannel channel){
+        public async Task RemoveUrlFilter(ITextChannel channel)
+        {
             if(!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return;
             if(!guild.Contains(channel.Id)) return;
-            guild.Remove(channel.Id);
-        }
-
-        public void RemoveSpamChannel(ITextChannel channel){
-
+            using (var db = new DbService())
+            {
+                var entry = await db.UrlFilters.FindAsync(channel.GuildId, channel.Id);
+                if (entry == null) return;
+                db.UrlFilters.Remove(entry);
+                await db.SaveChangesAsync();
+                guild.Remove(channel.Id);
+            }
         }
 
         private Task GlobalBanChecker(SocketGuildUser user)
@@ -158,6 +198,8 @@ namespace Hanekawa.Services.AutoModerator
                 var url = UrlFilter(msg, user, cfg, userdata);
                 var world = WordFilter(msg, user, cfg, userdata);
                 var length = LengthFilter(msg, user, cfg, userdata);
+                var emote = EmoteFilter(msg, user, cfg, userdata);
+                var mention = MentionFilter(msg, user, cfg);
 
                 await Task.WhenAll(invite, scam, spam, url, world, length);
             });

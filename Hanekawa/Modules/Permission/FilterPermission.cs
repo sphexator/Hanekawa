@@ -16,9 +16,11 @@ namespace Hanekawa.Modules.Permission
     public class FilterPermission : InteractiveBase
     {
         private readonly NudeScoreService _nude;
-        public FilterPermission(NudeScoreService nude)
+        private readonly ModerationService _moderation;
+        public FilterPermission(NudeScoreService nude, ModerationService moderation)
         {
             _nude = nude;
+            _moderation = moderation;
         }
 
         [Command("invite")]
@@ -149,5 +151,9 @@ namespace Hanekawa.Modules.Permission
                 await db.SaveChangesAsync();
             }
         }
+
+        [Command("url filter", RunMode = RunMode.Async)]
+        [Alias("url")]
+        [Summary("Sets a channel to filter out urls ")]
     }
 }
