@@ -155,5 +155,9 @@ namespace Hanekawa.Modules.Permission
         [Command("url filter", RunMode = RunMode.Async)]
         [Alias("url")]
         [Summary("Sets a channel to filter out urls ")]
+        public async Task UrlFilter(ITextChannel channel = null){
+            if(channel == null) channel = Context.Channel as ITextChannel;
+            await _moderation.UrlFilterHandler(channel);
+        }
     }
 }
