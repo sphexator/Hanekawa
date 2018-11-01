@@ -33,16 +33,15 @@ namespace Hanekawa.Services.Reliability
 
             _timer = new Timer(__ =>
             {
-                if (_discord.ConnectionState == ConnectionState.Disconnected)
+                if (_discord.ConnectionState != ConnectionState.Disconnected) return;
+                __ = InfoAsync("Client disconnected, starting timeout task...");
+                __ = Task.Delay(Timeout, _cts.Token).ContinueWith(async ___ =>
                 {
-                    __ = InfoAsync("Client disconnected, starting timeout task...");
-                    __ = Task.Delay(Timeout, _cts.Token).ContinueWith(async ___ =>
-                    {
-                        await DebugAsync("Timeout expired, continuing to check client state...");
-                        await CheckStateAsync();
-                        await DebugAsync("State came back okay");
-                    });
-                }}, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+                    await DebugAsync("Timeout expired, continuing to check client state...");
+                    await CheckStateAsync();
+                    await DebugAsync("State came back okay");
+                });
+            }, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
         }
 
         private Task ConnectedAsync()

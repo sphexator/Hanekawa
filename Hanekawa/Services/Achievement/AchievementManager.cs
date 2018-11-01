@@ -1,4 +1,8 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
@@ -7,20 +11,11 @@ using Hanekawa.Services.Drop;
 using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Level;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
 
 namespace Hanekawa.Services.Achievement
 {
     public class AchievementManager
     {
-        private readonly DiscordSocketClient _client;
-        private readonly DropService _dropService;
-        private readonly LevelingService _levelingService;
-        private readonly ShipGameService _gameService;
-
         private const int Special = 1;
         private const int Voice = 2;
         private const int Level = 3;
@@ -28,6 +23,10 @@ namespace Hanekawa.Services.Achievement
         private const int PvP = 5;
         private const int PvE = 6;
         private const int Fun = 7;
+        private readonly DiscordSocketClient _client;
+        private readonly DropService _dropService;
+        private readonly ShipGameService _gameService;
+        private readonly LevelingService _levelingService;
 
         public AchievementManager(DropService dropService, LevelingService levelingService, ShipGameService gameService,
             DiscordSocketClient client)
@@ -47,21 +46,27 @@ namespace Hanekawa.Services.Achievement
             _client.MessageReceived += MessageCount;
         }
 
+        /// <summary>The total time.</summary>
+        /// <param name="user">The user.</param>
+        /// <param name="time">The time.</param>
+        /// <returns>The <see cref="Task" />.</returns>
         private static Task TotalTime(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
-                    var achievements = await db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15).ToListAsync();
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15)
+                        .ToListAsync();
                     var progress = await db.GetAchievementProgress(user, Voice);
                     if (progress == null) return;
                     if (achievements == null || achievements.Count == 0) return;
 
                     var totalTime = Convert.ToInt32(time.TotalMinutes);
-                    if (achievements.Any(x => x.Requirement == (progress.Count + totalTime) && x.Once == false))
+                    if (achievements.Any(x => x.Requirement == progress.Count + totalTime && x.Once == false))
                     {
-                        var achieve = achievements.First(x => x.Requirement == (progress.Count + totalTime) && x.Once == false);
+                        var achieve = achievements.First(x =>
+                            x.Requirement == progress.Count + totalTime && x.Once == false);
                         var data = new AchievementUnlock
                         {
                             AchievementId = achieve.AchievementId,
@@ -75,7 +80,7 @@ namespace Hanekawa.Services.Achievement
                     else
                     {
                         var below = achievements
-                            .Where(x => x.Requirement < (progress.Count + totalTime) && x.Once == false).ToList();
+                            .Where(x => x.Requirement < progress.Count + totalTime && x.Once == false).ToList();
                         if (below.Count != 0)
                         {
                             var unlocked = await db.AchievementUnlocks.Where(x => x.TypeId == Voice).ToListAsync();
@@ -93,13 +98,18 @@ namespace Hanekawa.Services.Achievement
                             }
                         }
                     }
+
                     progress.Count = progress.Count + totalTime;
                     await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
         }
-        
+
+        /// <summary>The at once.</summary>
+        /// <param name="user">The user.</param>
+        /// <param name="time">The time.</param>
+        /// <returns>The <see cref="Task" />.</returns>
         private static Task AtOnce(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
@@ -148,14 +158,19 @@ namespace Hanekawa.Services.Achievement
             });
             return Task.CompletedTask;
         }
-        
+
+        /// <summary>The server level achievement.</summary>
+        /// <param name="user">The user.</param>
+        /// <param name="userData">The user data.</param>
+        /// <returns>The <see cref="Task" />.</returns>
         private static Task ServerLevelAchievement(IGuildUser user, Account userData)
         {
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
-                    var achievements = await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global).ToListAsync();
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global)
+                        .ToListAsync();
                     if (achievements == null || achievements.Count == 0) return;
 
                     if (achievements.Any(x => x.Requirement == userData.Level))
@@ -180,7 +195,7 @@ namespace Hanekawa.Services.Achievement
                             var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
                             foreach (var x in belowAchieves)
                             {
-                                if(unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -192,19 +207,25 @@ namespace Hanekawa.Services.Achievement
                             }
                         }
                     }
+
                     await db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
         }
 
+        /// <summary>The global level achievement.</summary>
+        /// <param name="user">The user.</param>
+        /// <param name="userData">The user data.</param>
+        /// <returns>The <see cref="Task" />.</returns>
         private static Task GlobalLevelAchievement(IGuildUser user, AccountGlobal userData)
         {
             var _ = Task.Run(async () =>
             {
                 using (var db = new DbService())
                 {
-                    var achievements = await db.Achievements.Where(x => x.TypeId == Level && x.Once == false && x.Global).ToListAsync();
+                    var achievements = await db.Achievements
+                        .Where(x => x.TypeId == Level && x.Once == false && x.Global).ToListAsync();
                     if (achievements == null || achievements.Count == 0) return;
 
                     if (achievements.Any(x => x.Requirement == userData.Level))
@@ -222,7 +243,7 @@ namespace Hanekawa.Services.Achievement
                     }
                     else
                     {
-                        var belowAchieves = achievements.Where(x => x.Requirement < (int)userData.Level).ToList();
+                        var belowAchieves = achievements.Where(x => x.Requirement < (int) userData.Level).ToList();
                         if (belowAchieves.Count > 0)
                         {
                             var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
@@ -240,6 +261,7 @@ namespace Hanekawa.Services.Achievement
                             }
                         }
                     }
+
                     await db.SaveChangesAsync();
                 }
             });
@@ -356,7 +378,8 @@ namespace Hanekawa.Services.Achievement
             {
                 using (var db = new DbService())
                 {
-                    var achievements = await db.Achievements.Where(x => x.TypeId == PvE && x.Once == false).ToListAsync();
+                    var achievements =
+                        await db.Achievements.Where(x => x.TypeId == PvE && x.Once == false).ToListAsync();
                     var progress = await db.GetAchievementProgress(userid, PvE);
                     if (progress == null) return;
                     if (achievements == null) return;
