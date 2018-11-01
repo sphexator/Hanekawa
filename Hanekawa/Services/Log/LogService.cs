@@ -59,6 +59,7 @@ namespace Hanekawa.Services.Log
 
             _moderationService.AutoModPermLog += AutoModPermLog;
             _moderationService.AutoModTimedLog += AutoModTimedLog;
+            _moderationService.AutoModFilter += AutoModFilterLog;
 
             _warnService.UserWarned += UserWarnLog;
             _warnService.UserMuted += UserMuteWarnLog;
@@ -208,6 +209,25 @@ namespace Hanekawa.Services.Log
             return Task.CompletedTask;
         }
 
+        private static Task AutoModFilterLog(SocketGuildUser user,ModerationService.AutoModActionType type,int amount, string content)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    ITextChannel channel;
+                    if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
+                    else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
+                    else return;
+                    if (channel == null) return;
+                    await AutoModLog(user, channel, type, content, $"{type.ToString()} - Amount: {amount}",
+                        ActionType.Deleted);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
         private static Task AutoModTimedLog(SocketGuildUser user, ModerationService.AutoModActionType type,
             TimeSpan timer, string msg)
         {
@@ -216,30 +236,12 @@ namespace Hanekawa.Services.Log
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    if (!cfg.LogBan.HasValue) return;
-                    var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
-                    if (ch == null) return;
-
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
-                    var embed = new EmbedBuilder
-                    {
-                        Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"},
-                        Color = Color.Red,
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Fields = new List<EmbedFieldBuilder>
-                        {
-                            new EmbedFieldBuilder { IsInline = false, Name = "User", Value = user.Mention},
-                            new EmbedFieldBuilder { IsInline = false, Name = "Moderator", Value = "Auto-Moderator"},
-                            new EmbedFieldBuilder { IsInline = false, Name = "Reason", Value = type},
-                            new EmbedFieldBuilder { IsInline = false, Name = "Duration", Value = timer.Humanize()},
-                            new EmbedFieldBuilder { IsInline = false, Name = "Message", Value = msg.Truncate(999)},
-                        },
-                        Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}"}
-                    };
-
-                    await ch.SendEmbedAsync(embed);
-                    caseId.ModId = 1;
-                    await db.SaveChangesAsync();
+                    ITextChannel channel;
+                    if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
+                    else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
+                    else return;
+                    if (channel == null) return;
+                    await AutoModLog(user, channel, type, msg, type.ToString(), ActionType.Gagged, timer);
                 }
             });
             return Task.CompletedTask;
@@ -252,32 +254,35 @@ namespace Hanekawa.Services.Log
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    if (!cfg.LogBan.HasValue) return;
-                    var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
-                    if (ch == null) return;
-
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
-                    var embed = new EmbedBuilder
-                    {
-                        Author = new EmbedAuthorBuilder { Name = $"Case ID : {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}" },
-                        Color = Color.Red,
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Fields = new List<EmbedFieldBuilder>
-                        {
-                            new EmbedFieldBuilder { IsInline = false, Name = "", Value = user.Mention },
-                            new EmbedFieldBuilder { IsInline = false, Name = "", Value = "Auto-Moderator" },
-                            new EmbedFieldBuilder { IsInline = false, Name = "", Value = type },
-                            new EmbedFieldBuilder { IsInline = false, Name = "", Value = msg.Truncate(999) }
-                        },
-                        Footer = new EmbedFooterBuilder { Text = $"User ID {user.Id}" }
-                    };
-
-                    await ch.SendEmbedAsync(embed);
-                    caseId.ModId = 1;
-                    await db.SaveChangesAsync();
+                    ITextChannel channel;
+                    if (!cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
+                    else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
+                    else return;
+                    if (channel == null) return;
+                    await AutoModLog(user, channel, type, msg, type.ToString(), ActionType.Gagged);
                 }
             });
             return Task.CompletedTask;
+        }
+
+        private static async Task AutoModLog(IUser user, IMessageChannel channel, ModerationService.AutoModActionType type, string content, string reason, string action, TimeSpan? timer = null)
+        {
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { Name = $"{action} - {user.Username}#{user.DiscriminatorValue}" },
+                    Color = Color.Red,
+                    Description = content,
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder{ IsInline = true, Name = "User", Value = user.Mention },
+                        new EmbedFieldBuilder{ IsInline = true, Name = "Staff", Value = "Auto-moderator"},
+                        new EmbedFieldBuilder{ IsInline = true, Name = "Reason", Value = reason }
+                    },
+                    Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                    Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}"}
+                };
+                if (timer.HasValue) embed.AddField("Duration", timer.Value.Humanize(), true);
+                await channel.SendEmbedAsync(embed);
         }
 
         private static Task UserUnmuted(SocketGuildUser user)
@@ -629,15 +634,17 @@ namespace Hanekawa.Services.Log
 
         private async Task GetAuditLogData(SocketGuild guild, SocketUser user, Discord.ActionType type)
         {
+            await Task.Delay(1000);
             var auditlogs = (await guild.GetAuditLogsAsync(1).FlattenAsync()).FirstOrDefault(x => x.Action == type);
         }
     }
 
     public static class ActionType
     {
-        public const string Gagged = "🔇Muted";
-        public const string Ungagged = "🔊UnMuted";
-        public const string Bent = "❌Banned";
-        public const string UnBent = "✔UnBanned";
+        public const string Gagged = "🔇 Muted";
+        public const string Ungagged = "🔊 UnMuted";
+        public const string Bent = "❌ Banned";
+        public const string UnBent = "✔ UnBanned";
+        public const string Deleted = "Message Deleted";
     }
 }

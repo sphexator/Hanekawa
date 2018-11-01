@@ -74,7 +74,7 @@ namespace Hanekawa.Services.AutoModerator
         public event AsyncEvent<SocketGuildUser, TimeSpan> AutoModTimedMute;
         public event AsyncEvent<SocketGuildUser, AutoModActionType, string> AutoModPermLog;
         public event AsyncEvent<SocketGuildUser, AutoModActionType, TimeSpan, string> AutoModTimedLog;
-        public event AsyncEvent<SocketGuildUser, AutoModActionType, int> AutoModFilter;
+        public event AsyncEvent<SocketGuildUser, AutoModActionType, int, string> AutoModFilter;
 
         public async Task AutoModMute(SocketGuildUser user, AutoModActionType type, TimeSpan time, string reason)
         {
@@ -223,7 +223,7 @@ namespace Hanekawa.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private async Task InviteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (!cfg.FilterInvites) return;
             if (user.GuildPermissions.ManageGuild) return;
@@ -245,7 +245,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task ScamLinkFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
             if (msg.Content.IsGoogleLink())
@@ -288,7 +288,7 @@ namespace Hanekawa.Services.AutoModerator
         {
         }
 
-        private async Task UrlFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             using (var db = new DbService())
             {
@@ -305,7 +305,7 @@ namespace Hanekawa.Services.AutoModerator
                         /* ignored */
                     }
 
-                var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Url, 0);
+                var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Url, 0, msg.Content);
             }
         }
 
@@ -313,7 +313,7 @@ namespace Hanekawa.Services.AutoModerator
         {
         }
 
-        private async Task LengthFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             if (user.GuildId != 339370914724446208) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -333,7 +333,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task MentionFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task MentionFilter(IMessage msg, IGuildUser user, GuildConfig cfg)
         {
             if (!cfg.MentionCountFilter.HasValue || cfg.MentionCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -349,10 +349,10 @@ namespace Hanekawa.Services.AutoModerator
                 /* IGNORED */
             }
 
-            var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Mention, amount);
+            var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Mention, amount, msg.Content);
         }
 
-        private async Task EmoteFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task EmoteFilter(IMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             if (!cfg.EmoteCountFilter.HasValue || cfg.EmoteCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -368,7 +368,7 @@ namespace Hanekawa.Services.AutoModerator
                 /* IGNORED */
             }
 
-            var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Emote, amount);
+            var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Emote, amount, msg.Content);
         }
     }
 }
