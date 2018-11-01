@@ -67,22 +67,6 @@ namespace Hanekawa.Services.AutoModerator
                 foreach (var x in z.Value)
                 {
                     if (x.Time.AddHours(1) > DateTime.UtcNow) continue;
-                    
-                    var toxList = SlowNudeValue.GetOrAdd(a.Key,
-                        new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
-                    var channel = toxList.GetOrAdd(y.Key, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
-                    var userValue = channel.GetOrAdd(z.Key, new LinkedList<ToxicityEntry>());
-                    
-                    if (userValue.Count == 20)
-                    {
-                        userValue.RemoveLast();
-                        userValue.AddFirst(new ToxicityEntry {Value = x.Value, Time = x.Time});
-                    }
-                    else
-                    {
-                        userValue.AddFirst(new ToxicityEntry {Value = x.Value, Time = x.Time});
-                    }
-
                     z.Value.Remove(x);
                 }
             }, null, TimeSpan.FromHours(1), TimeSpan.FromHours(1));
@@ -243,31 +227,6 @@ namespace Hanekawa.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private double? CalculateNudeScore(double result, IGuildUser user, SocketTextChannel channel)
-        {
-            var toxList = FastNudeValue.GetOrAdd(user.GuildId,
-                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
-            var channelValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
-            var userValue = channelValue.GetOrAdd(channel.Id, new LinkedList<ToxicityEntry>());
-
-            if (channelValue.Count == 20)
-            {
-                userValue.RemoveLast();
-                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow});
-            }
-            else
-            {
-                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow});
-                return null;
-            }
-
-            double totalScore = 0;
-
-            foreach (var x in userValue) totalScore = x.Value + totalScore;
-
-            return totalScore / channelValue.Count;
-        }
-
         private async Task SingleMessageAsync(double score, IGuildUser user, SocketTextChannel ch,
             IDeletable msg)
         {
@@ -300,10 +259,9 @@ namespace Hanekawa.Services.AutoModerator
             if (!NudeChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
 
             if (!channels.TryGetValue(ch.Id, out var channel)) return;
-
-            var result = CalculateNudeScore(score, user, ch);
+            SlowNudeValue.ToxicityAdd(score, user, ch);
+            var result = FastNudeValue.ToxicityAdd(score, user, ch);
             if (result == null) return;
-
             if (result < channel) return;
 
             await NudeWarn(user as SocketGuildUser, ch).ConfigureAwait(false);
