@@ -21,6 +21,7 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService
     {
         private readonly Timer _cleanupTimer;
+        private readonly Timer _MoveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly ModerationService _moderationService;
@@ -60,20 +61,56 @@ namespace Hanekawa.Services.AutoModerator
 
             _cleanupTimer = new Timer(__ =>
             {
-                foreach (var a in NudeValue)
+                foreach (var a in FastNudeValue)
                 foreach (var y in a.Value)
                 foreach (var z in y.Value)
                 foreach (var x in z.Value)
                 {
                     if (x.Time.AddHours(1) > DateTime.UtcNow) continue;
+                    
+                    var toxList = SlowNudeValue.GetOrAdd(a.Key,
+                        new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
+                    var channel = toxList.GetOrAdd(y.Key, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
+                    var userValue = channel.GetOrAdd(z.Key, new LinkedList<ToxicityEntry>());
+                    
+                    if (userValue.Count == 20)
+                    {
+                        userValue.RemoveLast();
+                        userValue.AddFirst(new ToxicityEntry {Value = x.Value, Time = x.Time});
+                    }
+                    else
+                    {
+                        userValue.AddFirst(new ToxicityEntry {Value = x.Value, Time = x.Time});
+                    }
+
                     z.Value.Remove(x);
                 }
-            }, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+            }, null, TimeSpan.FromHours(1), TimeSpan.FromHours(1));
+
+            _MoveToLongTerm = new Timer(_ =>
+            {
+                foreach (var a in SlowNudeValue)
+                foreach (var y in a.Value)
+                foreach (var z in y.Value)
+                foreach (var x in z.Value)
+                {
+                    if (x.Time.AddHours(24) > DateTime.UtcNow) continue;
+                    z.Value.Remove(x);
+                } 
+            }, null, TimeSpan.FromDays(1), TimeSpan.FromHours(1));
         }
 
+        // Short-term caching of values for Auto-moderator to view
         private ConcurrentDictionary<ulong,
             ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> 
-            NudeValue { get; }
+            FastNudeValue { get; }
+            = new ConcurrentDictionary<ulong,
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>();
+
+        // Long-term caching of values for moderators to view
+        private ConcurrentDictionary<ulong,
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> 
+            SlowNudeValue { get; }
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>();
 
@@ -208,7 +245,7 @@ namespace Hanekawa.Services.AutoModerator
 
         private double? CalculateNudeScore(double result, IGuildUser user, SocketTextChannel channel)
         {
-            var toxList = NudeValue.GetOrAdd(user.GuildId,
+            var toxList = FastNudeValue.GetOrAdd(user.GuildId,
                 new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
             var channelValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
             var userValue = channelValue.GetOrAdd(channel.Id, new LinkedList<ToxicityEntry>());
@@ -274,7 +311,7 @@ namespace Hanekawa.Services.AutoModerator
 
         private void ClearChannelNudeScore(IGuildUser user, SocketTextChannel channel)
         {
-            var toxList = NudeValue.GetOrAdd(user.GuildId,
+            var toxList = FastNudeValue.GetOrAdd(user.GuildId,
                 new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
             var userValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
             var channelValue = userValue.GetOrAdd(channel.Id, new LinkedList<ToxicityEntry>());
