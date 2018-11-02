@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
+using Hanekawa.Entities;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -231,10 +232,34 @@ namespace Hanekawa.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
         [Summary("Pulls up warnlog and admin profile of a user.")]
-        public async Task WarnlogAsync(SocketGuildUser user)
+        public async Task WarnlogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
-            var log = await _warnService.Warnlog(user);
-            await Context.Channel.SendEmbedAsync(log);
+            if (type == WarnLogType.Simple)
+            {
+                var log = await _warnService.GetSimpleWarnlogAsync(user);
+                await Context.Channel.SendEmbedAsync(log);
+            }
+            else
+            {
+                var pages = await _warnService.GetFullWarnlogAsync(user);
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Title = $"Full warn log for {user.Username}",
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+            }
         }
 
         [Command("reason", RunMode = RunMode.Async)]

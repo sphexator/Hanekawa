@@ -41,7 +41,7 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        public async Task<EmbedBuilder> Warnlog(SocketGuildUser user)
+        public async Task<EmbedBuilder> GetSimpleWarnlogAsync(SocketGuildUser user)
         {
             using (var db = new DbService())
             {
@@ -77,6 +77,33 @@ namespace Hanekawa.Services.Administration
                     Fields = await GetWarnings(user)
                 };
                 return embed;
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetFullWarnlogAsync(SocketGuildUser user)
+        {
+            using (var db = new DbService())
+            {
+                var result = new List<string>();
+                var warnings = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                    .ToListAsync();
+                for (var i = 0; i < warnings.Count;)
+                {
+                    string page = null;
+                    for (var j = 0; j < 5; j++)
+                    {
+                        var index = warnings[i];
+                        page = $"Warn ID: {index.Id}\n" +
+                               $"{index.Type} - <@{index.Moderator}>\n" +
+                               $"{index.Reason.Truncate(700) ?? "I made this :)"}\n" +
+                               $"{index.Time.Humanize()}\n";
+                        if (index.MuteTimer != null) page += $"{index.MuteTimer.Value.Humanize()}\n";
+                        page += "\n";
+                        i++;
+                    }
+                    result.Add(page);
+                }
+                return result;
             }
         }
 
@@ -287,30 +314,6 @@ namespace Hanekawa.Services.Administration
                     };
                     result.Add(field);
                 }
-                return result;
-            }
-        }
-
-        private static async Task<List<EmbedFieldBuilder>> GetAllWarnings(IGuildUser user)
-        {
-            using (var db = new DbService())
-            {
-                var result = new List<EmbedFieldBuilder>();
-                foreach (var x in await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id).ToListAsync())
-                {
-                    var content = $"{x.Type} - <@{x.Moderator}>\n" +
-                                  $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
-                                  $"{x.Time.Humanize()}\n";
-                    if (x.MuteTimer != null) content += $"{x.MuteTimer.Value.Humanize()}\n";
-                    var field = new EmbedFieldBuilder
-                    {
-                        Name = $"Warn ID: {x.Id}",
-                        IsInline = false,
-                        Value = content
-                    };
-                    result.Add(field);
-                }
-
                 return result;
             }
         }
