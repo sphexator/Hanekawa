@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Entities;
+using Hanekawa.Services.AutoModerator;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -16,11 +17,13 @@ namespace Hanekawa.Modules.Administration
     {
         private readonly MuteService _muteService;
         private readonly WarnService _warnService;
+        private readonly NudeScoreService _nudeScore;
 
-        public Administration(MuteService muteService, WarnService warnService)
+        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore)
         {
             _muteService = muteService;
             _warnService = warnService;
+            _nudeScore = nudeScore;
         }
 
         [Command("ban", RunMode = RunMode.Async)]
@@ -247,6 +250,94 @@ namespace Hanekawa.Modules.Administration
                     Color = Color.Purple,
                     Pages = pages,
                     Title = $"Full warn log for {user.Username}",
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+            }
+        }
+
+        [Command("toxicity", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [Summary("Shows toxicity values of users if server has toxicity enabled channels")]
+        public async Task viewToxicity(SocketGuildUser user = null, ITextChannel channel = null, WarnToxicityType type = WarnToxicityType.Single)
+        {
+            if (channel == null && user == null)
+            {
+                var pages = _nudeScore.GetGuildTopScore(Context.Guild);
+                if (pages == null || !pages.Any())
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Title = $"Toxicity values in {Context.Guild.Name}",
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+                return;
+            }
+
+            if (user == null)
+            {
+                var page = _nudeScore.GetChannelTopScores(channel);
+                if (page == null)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(page).Build());
+                return;
+            }
+
+            if (type == WarnToxicityType.Single)
+            {
+                var page = _nudeScore.GetSingleScore(channel, user);
+                if (page == 0)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Toxicity score in {channel.Mention}: {page}").Build());
+            }
+            else
+            {
+                var pages = _nudeScore.GetAllScores(user);
+                if (pages == null || !pages.Any())
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Title = $"Toxicity values in {Context.Guild.Name}",
                     Options = new PaginatedAppearanceOptions
                     {
                         First = new Emoji("⏮"),

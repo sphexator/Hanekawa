@@ -15,6 +15,7 @@ using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Microsoft.Extensions.Configuration;
+using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -110,6 +111,88 @@ namespace Hanekawa.Services.AutoModerator
 
         private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
             = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
+
+        public double GetSingleScore(ITextChannel channel, IUser user)
+        {
+            if (!SlowNudeValue.TryGetValue(channel.GuildId, out var channels)) return 0;
+            if (!channels.TryGetValue(channel.Id, out var users)) return 0;
+            if (!users.TryGetValue(user.Id, out var list)) return 0;
+
+            double score = 0;
+            foreach (var x in list)
+            {
+                score += x.Value;
+            }
+
+            return score / list.Count;
+
+        }
+
+        public IEnumerable<string> GetAllScores(SocketGuildUser user)
+        {
+            var result = new List<string>();
+            foreach (var a in SlowNudeValue)
+            foreach (var y in a.Value)
+            {
+                if(!y.Value.TryGetValue(user.Id, out var list)) continue;
+                double score = 0;
+                foreach (var x in list)
+                {
+                    score += x.Value;
+                }
+                result.Add($"Toxicity score in {user.Guild.GetTextChannel(y.Key).Mention}: {score / list.Count}");
+            }
+            return result;
+        }
+
+        public string GetChannelTopScores(ITextChannel channel)
+        {
+            string result = null;
+            var chanUsers = new Dictionary<ulong, double>();
+            if(!SlowNudeValue.TryGetValue(channel.GuildId, out var channels)) return null;
+            if(!channels.TryGetValue(channel.Id, out var users)) return null;
+            foreach (var y in users)
+            {
+                double score = 0;
+                foreach (var x in y.Value)
+                {
+                    score += x.Value;
+                }
+
+                chanUsers.TryAdd(y.Key, (score / y.Value.Count));
+            }
+
+            var topUsers = chanUsers.OrderBy(x => x.Value).Take(5);
+            topUsers.ForEach(x => result += $"{_client.GetUser(x.Key)} Score: {x.Value}\n");
+            return result;
+        }
+
+        public IEnumerable<string> GetGuildTopScore(IGuild guild)
+        {
+            var result = new List<string>();
+            if (!SlowNudeValue.TryGetValue(guild.Id, out var channels)) return null;
+            foreach (var a in channels)
+            {
+                var channel = _client.GetGuild(guild.Id).GetTextChannel(a.Key).Mention;
+                var userScore = new Dictionary<ulong, double>();
+                foreach (var y in a.Value)
+                {
+                    double score = 0;
+                    foreach (var x in y.Value)
+                    {
+                        score += x.Value;
+                    }
+
+                    userScore.TryAdd(y.Key, (score / y.Value.Count));
+                }
+
+                var page = $"{channel}\n";
+                var topUsers = userScore.OrderBy(x => x.Value).Take(5);
+                topUsers.ForEach(x => page += $"{_client.GetUser(x.Key).Mention} Score: {x.Value}\n");
+                result.Add(page);
+            }
+            return result;
+        }
 
         public async Task<EmbedBuilder> SetNudeChannel(ITextChannel ch, uint tolerance)
         {
