@@ -46,10 +46,6 @@ namespace Hanekawa.Services.Achievement
             _client.MessageReceived += MessageCount;
         }
 
-        /// <summary>The total time.</summary>
-        /// <param name="user">The user.</param>
-        /// <param name="time">The time.</param>
-        /// <returns>The <see cref="Task" />.</returns>
         private static Task TotalTime(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
@@ -106,10 +102,6 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        /// <summary>The at once.</summary>
-        /// <param name="user">The user.</param>
-        /// <param name="time">The time.</param>
-        /// <returns>The <see cref="Task" />.</returns>
         private static Task AtOnce(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
@@ -159,10 +151,6 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        /// <summary>The server level achievement.</summary>
-        /// <param name="user">The user.</param>
-        /// <param name="userData">The user data.</param>
-        /// <returns>The <see cref="Task" />.</returns>
         private static Task ServerLevelAchievement(IGuildUser user, Account userData)
         {
             var _ = Task.Run(async () =>
@@ -214,10 +202,6 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        /// <summary>The global level achievement.</summary>
-        /// <param name="user">The user.</param>
-        /// <param name="userData">The user data.</param>
-        /// <returns>The <see cref="Task" />.</returns>
         private static Task GlobalLevelAchievement(IGuildUser user, AccountGlobal userData)
         {
             var _ = Task.Run(async () =>
