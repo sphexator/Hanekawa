@@ -58,7 +58,6 @@ namespace Hanekawa.Modules.Administration
         [Summary("Kicks a user")]
         public async Task KickAsync(IGuildUser user)
         {
-
             await Context.Message.DeleteAsync().ConfigureAwait(false);
             if (Context.User.Id != user.Guild.OwnerId && ((SocketGuildUser
             )user).Roles.Select(r => r.Position).Max() >=
@@ -249,7 +248,11 @@ namespace Hanekawa.Modules.Administration
                 {
                     Color = Color.Purple,
                     Pages = pages,
-                    Title = $"Full warn log for {user.Username}",
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = user.GetAvatar(),
+                        Name = $"Full warn log for {user.Username}"
+                    },
                     Options = new PaginatedAppearanceOptions
                     {
                         First = new Emoji("⏮"),
@@ -283,7 +286,11 @@ namespace Hanekawa.Modules.Administration
                 {
                     Color = Color.Purple,
                     Pages = pages,
-                    Title = $"Toxicity values in {Context.Guild.Name}",
+                    Author = new EmbedAuthorBuilder 
+                    { 
+                        IconUrl = Context.Guild.IconUrl, 
+                        Name = $"Toxicity values in {Context.Guild.Name}"
+                    },
                     Options = new PaginatedAppearanceOptions
                     {
                         First = new Emoji("⏮"),
@@ -337,7 +344,11 @@ namespace Hanekawa.Modules.Administration
                 {
                     Color = Color.Purple,
                     Pages = pages,
-                    Title = $"Toxicity values in {Context.Guild.Name}",
+                    Author = new EmbedAuthorBuilder 
+                    { 
+                        IconUrl = user.GetAvatar(), 
+                        Name = $"Toxicity values for {user.Mention} in {Context.Guild.Name}"
+                    },
                     Options = new PaginatedAppearanceOptions
                     {
                         First = new Emoji("⏮"),
