@@ -1,6 +1,6 @@
-﻿using Hanekawa.Addons.Database;
+﻿using System;
+using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.BotGame;
-using System;
 
 namespace Hanekawa.Services.Games.ShipGame.Data
 {
@@ -44,8 +44,11 @@ namespace Hanekawa.Services.Games.ShipGame.Data
         {
             var avoid = new Random().Next(100);
             var crit = new Random().Next(100);
-            if(type == EnemyType.Player) if (avoid <= EnemyClass.ChanceAvoid) return 0;
-            if (crit <= AttackerClass.ChanceCrit) damage = Convert.ToInt32(damage * AttackerClass.ModifierCriticalChance);
+            if (type == EnemyType.Player)
+                if (avoid <= EnemyClass.ChanceAvoid)
+                    return 0;
+            if (crit <= AttackerClass.ChanceCrit)
+                damage = Convert.ToInt32(damage * AttackerClass.ModifierCriticalChance);
             var lowDmg = damage / 2;
             if (lowDmg <= 0) lowDmg = 5;
             var highDmg = damage * 2;

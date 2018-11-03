@@ -1,16 +1,16 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using System.Numerics;
+using Discord.WebSocket;
+using Hanekawa.Addons.Database.Tables.Account;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
-using System;
-using System.Numerics;
-using Hanekawa.Addons.Database.Tables.Account;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;
+using SixLabors.Primitives;
+using SixLabors.Shapes;
 
 namespace Hanekawa.Extensions
 {
@@ -170,7 +170,7 @@ namespace Hanekawa.Extensions
             processingContext.DrawText(optionsLeft, missionstr, classFont, Rgba32.Black, new Point(114, 230));
             processingContext.DrawText(optionsRight, "0", classFont, Rgba32.Black, new Point(284, 230));
 
-            processingContext.DrawText(optionsName, $"TBD", gdclassFont, Rgba32.Black, new PointF(48, 278));
+            processingContext.DrawText(optionsName, "TBD", gdclassFont, Rgba32.Black, new PointF(48, 278));
             return processingContext;
         }
 

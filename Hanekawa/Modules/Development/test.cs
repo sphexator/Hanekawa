@@ -53,10 +53,7 @@ namespace Hanekawa.Modules.Development
         {
             await Context.Guild.DownloadUsersAsync();
             Console.WriteLine(Context.Guild.Users.Count);
-            foreach (var x in Context.Guild.Users)
-            {
-                Console.WriteLine($"{x.Username} - {x.Id}");
-            }
+            foreach (var x in Context.Guild.Users) Console.WriteLine($"{x.Username} - {x.Id}");
             Console.WriteLine(Context.Guild.Users.Count);
         }
     }

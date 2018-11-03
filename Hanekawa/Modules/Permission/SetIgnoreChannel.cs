@@ -1,14 +1,14 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -94,8 +94,8 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 var title = cfg.IgnoreAllChannels
-                    ? $"Channels commands are enabled on:"
-                    : $"Channels commands are ignored on:";
+                    ? "Channels commands are enabled on:"
+                    : "Channels commands are ignored on:";
                 var author = new EmbedAuthorBuilder
                 {
                     IconUrl = Context.Guild.IconUrl,

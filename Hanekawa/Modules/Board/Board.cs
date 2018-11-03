@@ -1,15 +1,15 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Reaction;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Board
 {
@@ -17,6 +17,7 @@ namespace Hanekawa.Modules.Board
     public class Board : InteractiveBase
     {
         private readonly BoardService _boardService;
+
         public Board(BoardService boardService)
         {
             _boardService = boardService;
@@ -32,26 +33,25 @@ namespace Hanekawa.Modules.Board
             {
                 var emote = _boardService.GetGuildEmote(Context.Guild);
                 var amount = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).OrderByDescending(x => x.StarAmount)
+                var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id)
+                    .OrderByDescending(x => x.StarAmount)
                     .Take(3).ToListAsync();
-                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active).OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
-                
+                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
+                    .OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
+
                 string topR = null;
                 string topM = null;
                 var topRr = 1;
                 var topMr = 1;
                 uint stars = 0;
 
-                foreach (var x in amount)
-                {
-                    stars = stars + x.StarAmount;
-                }
+                foreach (var x in amount) stars = stars + x.StarAmount;
 
                 foreach (var x in topRecieve)
-                {
                     try
                     {
-                        topR += $"{topRr}: {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
+                        topR +=
+                            $"{topRr}: {Context.Guild.GetUser(x.UserId).Mention ?? "N/A"} ({x.StarReceived} {emote})\n";
                         topRr++;
                     }
                     catch
@@ -59,7 +59,6 @@ namespace Hanekawa.Modules.Board
                         topR += $"{topRr}: User left the server. ({x.UserId}) ({x.StarReceived} {emote})\n";
                         topRr++;
                     }
-                }
 
                 foreach (var x in topStars)
                 {
@@ -99,13 +98,11 @@ namespace Hanekawa.Modules.Board
                 string topStar = null;
                 var id = 1;
                 if (boardData.Count != 0)
-                {
                     foreach (var x in boardData.OrderByDescending(x => x.StarAmount).Take(3))
                     {
                         topStar += $"{id} > {x.MessageId} ({emote} received {x.StarAmount}";
                         id++;
                     }
-                }
                 else topStar += $"No {emote} messages";
 
                 var author = new EmbedAuthorBuilder
@@ -125,7 +122,7 @@ namespace Hanekawa.Modules.Board
                 await ReplyAsync(null, false, embed.Build());
             }
         }
-        
+
         [Command("emote", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -139,7 +136,8 @@ namespace Hanekawa.Modules.Board
                 _boardService.SetBoardEmote(Context.Guild, emoteString);
                 cfg.BoardEmote = emoteString;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Changed board emote to {emote}", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Changed board emote to {emote}", Color.Green.RawValue).Build());
             }
         }
 
@@ -156,13 +154,15 @@ namespace Hanekawa.Modules.Board
                 {
                     cfg.BoardChannel = null;
                     await db.SaveChangesAsync();
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled the board", Color.Green.RawValue).Build());
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled the board", Color.Green.RawValue).Build());
                     return;
                 }
 
                 cfg.BoardChannel = channel.Id;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set board channel to {channel.Mention}", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Set board channel to {channel.Mention}", Color.Green.RawValue).Build());
             }
         }
 

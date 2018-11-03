@@ -8,22 +8,20 @@ namespace Hanekawa.Extensions
         {
             var sb = new StringBuilder();
             foreach (var c in str)
-            {
-                if ((c >= '0' && c <= '9') ||
-                    (c >= 'A' && c <= 'Z') ||
-                    (c >= 'a' && c <= 'z') ||
+                if (c >= '0' && c <= '9' ||
+                    c >= 'A' && c <= 'Z' ||
+                    c >= 'a' && c <= 'z' ||
                     c == '.' ||
                     c == '_' ||
                     c == ' ')
-                {
                     sb.Append(c);
-                }
-            }
             return sb.ToString();
         }
 
-        public static string SanitizeMentions(this string str) =>
-            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
+        public static string SanitizeMentions(this string str)
+        {
+            return str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
+        }
 
         public static bool IsPictureUrl(this string str)
         {
@@ -39,10 +37,7 @@ namespace Hanekawa.Extensions
         {
             if (num >= 100000)
                 return FormatNumber(num / 1000) + "K";
-            if (num >= 10000)
-            {
-                return (num / 1000D).ToString("0.#") + "K";
-            }
+            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
             return num.ToString("#,0");
         }
 
@@ -50,10 +45,7 @@ namespace Hanekawa.Extensions
         {
             if (num >= 100000)
                 return FormatNumber(num / 1000) + "K";
-            if (num >= 10000)
-            {
-                return (num / 1000D).ToString("0.#") + "K";
-            }
+            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
             return num.ToString("#,0");
         }
     }

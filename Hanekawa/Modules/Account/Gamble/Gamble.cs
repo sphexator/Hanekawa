@@ -30,6 +30,7 @@ namespace Hanekawa.Modules.Account.Gamble
                             Color.Red.RawValue).Build());
                     return;
                 }
+
                 await ReplyAsync(null, false, (await GambleBetAsync(Context, db, userdata, bet)).Build());
             }
         }
@@ -51,6 +52,7 @@ namespace Hanekawa.Modules.Account.Gamble
                             Color.Red.RawValue).Build());
                     return;
                 }
+
                 var bet = userdata.Credit;
                 await ReplyAsync(null, false, (await GambleBetAsync(Context, db, userdata, bet, true)).Build());
             }
@@ -72,6 +74,7 @@ namespace Hanekawa.Modules.Account.Gamble
                             Color.Red.RawValue).Build());
                     return;
                 }
+
                 await ReplyAsync(null, false, (await GambleRollAsync(Context, db, userdata, bet)).Build());
             }
         }
@@ -92,12 +95,14 @@ namespace Hanekawa.Modules.Account.Gamble
                             Color.Red.RawValue).Build());
                     return;
                 }
+
                 var bet = userdata.Credit;
                 await ReplyAsync(null, false, (await GambleRollAsync(Context, db, userdata, bet, true)).Build());
             }
         }
 
-        private static async Task<EmbedBuilder> GambleBetAsync(SocketCommandContext context, DbContext db, Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
+        private static async Task<EmbedBuilder> GambleBetAsync(SocketCommandContext context, DbContext db,
+            Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -105,18 +110,22 @@ namespace Hanekawa.Modules.Account.Gamble
             var botRoll = new Random().Next(1, 9);
             if (userRoll == botRoll)
             {
-                userdata.Credit = userdata.Credit + (bet * 5);
+                userdata.Credit = userdata.Credit + bet * 5;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"Congratulations {context.User.Mention}!, You made a total of **${bet * 5}** off ${bet}!\n" +
-                                                $"You rolled: {userRoll} - Bot rolled: {botRoll}", Color.Green.RawValue);
+                return new EmbedBuilder().Reply(
+                    $"Congratulations {context.User.Mention}!, You made a total of **${bet * 5}** off ${bet}!\n" +
+                    $"You rolled: {userRoll} - Bot rolled: {botRoll}", Color.Green.RawValue);
             }
+
             userdata.Credit = userdata.Credit - bet;
             await db.SaveChangesAsync();
-            return new EmbedBuilder().Reply($"Sorry **{context.User.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
-                                            $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red.RawValue);
+            return new EmbedBuilder().Reply(
+                $"Sorry **{context.User.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
+                $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red.RawValue);
         }
 
-        private static async Task<EmbedBuilder> GambleRollAsync(SocketCommandContext context, DbContext db, Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
+        private static async Task<EmbedBuilder> GambleRollAsync(SocketCommandContext context, DbContext db,
+            Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -125,26 +134,30 @@ namespace Hanekawa.Modules.Account.Gamble
 
             if (rolled >= 90)
             {
-                userdata.Credit = userdata.Credit + (bet * 2);
+                userdata.Credit = userdata.Credit + bet * 2;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"{context.User.Mention} rolled **{rolled}** and won ${bet * 2}", Color.Green.RawValue);
+                return new EmbedBuilder().Reply($"{context.User.Mention} rolled **{rolled}** and won ${bet * 2}",
+                    Color.Green.RawValue);
             }
 
             if (rolled >= 50)
             {
                 userdata.Credit = userdata.Credit + bet;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"{context.User.Mention} rolled **{rolled}** and won ${bet}", Color.Green.RawValue);
+                return new EmbedBuilder().Reply($"{context.User.Mention} rolled **{rolled}** and won ${bet}",
+                    Color.Green.RawValue);
             }
 
             userdata.Credit = userdata.Credit - bet;
             await db.SaveChangesAsync();
-            return new EmbedBuilder().Reply($"Sorry **{context.User.Mention}**, You have lost ${bet} Off a roll of **{rolled}**", Color.Red.RawValue);
+            return new EmbedBuilder().Reply(
+                $"Sorry **{context.User.Mention}**, You have lost ${bet} Off a roll of **{rolled}**",
+                Color.Red.RawValue);
         }
 
         private static uint BetAdjust(Addons.Database.Tables.Account.Account userdata)
         {
-            return userdata.Credit >= 25000 ? (uint) 25000 : userdata.Credit;
+            return userdata.Credit >= 25000 ? 25000 : userdata.Credit;
         }
 
         private static uint BetAdjust()

@@ -1,14 +1,14 @@
-﻿using Discord;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Humanizer;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Help
 {
@@ -24,7 +24,7 @@ namespace Hanekawa.Modules.Help
             var application = await Context.Client.GetApplicationInfoAsync();
             var embed = new EmbedBuilder
             {
-                Color = Color.Purple,
+                Color = Color.Purple
             };
             var host = new EmbedFieldBuilder
             {
@@ -56,7 +56,9 @@ namespace Hanekawa.Modules.Help
             embed.AddField(about);
             embed.AddField(uptime);
             embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
-            embed.AddField("Invite link", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
+            embed.AddField("Invite link",
+                "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
+                true);
             await (await Context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, embed.Build());
         }
 
@@ -71,7 +73,7 @@ namespace Hanekawa.Modules.Help
             var application = await Context.Client.GetApplicationInfoAsync();
             var embed = new EmbedBuilder
             {
-                Color = Color.Purple,
+                Color = Color.Purple
             };
             var about = new EmbedFieldBuilder
             {
@@ -103,7 +105,9 @@ namespace Hanekawa.Modules.Help
             embed.AddField(about);
             embed.AddField(uptime);
             embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
-            embed.AddField("Invite link", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
+            embed.AddField("Invite link",
+                "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
+                true);
             await ReplyAsync(null, false, embed.Build());
         }
 
@@ -114,7 +118,8 @@ namespace Hanekawa.Modules.Help
         public async Task UptimeTask()
         {
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
+                new EmbedBuilder()
+                    .Reply($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
                     .Build(), TimeSpan.FromSeconds(20));
         }
 
@@ -128,7 +133,8 @@ namespace Hanekawa.Modules.Help
             var embed = new EmbedBuilder
             {
                 Color = Color.Purple,
-                Author = new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} ({Context.Guild.Id})"}
+                Author = new EmbedAuthorBuilder
+                    {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} ({Context.Guild.Id})"}
             };
             embed.AddField("Verification Level", Context.Guild.VerificationLevel, true);
             embed.AddField("Region", Context.Guild.VoiceRegionId, true);
@@ -141,7 +147,8 @@ namespace Hanekawa.Modules.Help
             embed.AddField("Server owner",
                 $"{Context.Guild.Owner.Username}#{Context.Guild.Owner.Discriminator} ({Context.Guild.OwnerId})");
             embed.AddField("Created", $"{Context.Guild.CreatedAt.Humanize()} ({Context.Guild.CreatedAt})", true);
-            embed.AddField($"Roles[{Context.Guild.Roles.Count}]", "Use [prefix]server roles to view all roles on the server.", true);
+            embed.AddField($"Roles[{Context.Guild.Roles.Count}]",
+                "Use [prefix]server roles to view all roles on the server.", true);
             await ReplyAsync(null, false, embed.Build());
         }
 
@@ -152,11 +159,13 @@ namespace Hanekawa.Modules.Help
         [RequiredChannel]
         public async Task ServerRoles()
         {
-            var roles = Context.Guild.Roles.Aggregate<SocketRole, string>(null, (current, x) => current + $"{x.Name}, ");
+            var roles = Context.Guild.Roles.Aggregate<SocketRole, string>(null,
+                (current, x) => current + $"{x.Name}, ");
             var embed = new EmbedBuilder
             {
                 Color = Color.Purple,
-                Author = new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = $"Roles for {Context.Guild.Name}"},
+                Author = new EmbedAuthorBuilder
+                    {IconUrl = Context.Guild.IconUrl, Name = $"Roles for {Context.Guild.Name}"},
                 Description = roles
             };
             await ReplyAsync(null, false, embed.Build());

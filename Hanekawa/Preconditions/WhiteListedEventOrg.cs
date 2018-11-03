@@ -1,8 +1,8 @@
-﻿using Discord.Commands;
-using Hanekawa.Addons.Database;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
+using Hanekawa.Addons.Database;
 
 namespace Hanekawa.Preconditions
 {

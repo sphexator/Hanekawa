@@ -1,20 +1,20 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
 using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
-using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Account
 {
@@ -22,6 +22,7 @@ namespace Hanekawa.Modules.Account
     public class LevelAdmin : InteractiveBase
     {
         private readonly LevelingService _levelingService;
+
         public LevelAdmin(LevelingService levelingService)
         {
             _levelingService = levelingService;
@@ -59,14 +60,14 @@ namespace Hanekawa.Modules.Account
         [Summary("Adds a role reward")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelAdd(uint level, [Remainder]string roleName)
+        public async Task LevelAdd(uint level, [Remainder] string roleName)
         {
             if (roleName.IsNullOrWhiteSpace()) return;
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == roleName);
             if (role == null)
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Couldn't find a role by that name.", Color.Red.RawValue).Build());
+                    new EmbedBuilder().Reply("Couldn\'t find a role by that name.", Color.Red.RawValue).Build());
                 return;
             }
 
@@ -76,7 +77,8 @@ namespace Hanekawa.Modules.Account
                 if (check != null)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"There's already a level reward on that level.", Color.Red.RawValue).Build());
+                        new EmbedBuilder().Reply("There\'s already a level reward on that level.", Color.Red.RawValue)
+                            .Build());
                     return;
                 }
 
@@ -99,7 +101,7 @@ namespace Hanekawa.Modules.Account
         [Summary("Creates a role reward with given level and name")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelCreate(uint level, [Remainder]string roleName)
+        public async Task LevelCreate(uint level, [Remainder] string roleName)
         {
             if (roleName.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
@@ -133,16 +135,18 @@ namespace Hanekawa.Modules.Account
                 if (check == null)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"There is no reward connected to that level.", Color.Red.RawValue)
+                        new EmbedBuilder().Reply("There is no reward connected to that level.", Color.Red.RawValue)
                             .Build());
                     return;
                 }
+
                 var role = db.LevelRewards.First(x => x.GuildId == Context.Guild.Id && x.Level == level);
                 db.LevelRewards.Remove(role);
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
-                        .Reply($"Removed {Context.Guild.Roles.First(x => x.Id == role.Role).Name} from level rewards!", Color.Green.RawValue)
+                        .Reply($"Removed {Context.Guild.Roles.First(x => x.Id == role.Role).Name} from level rewards!",
+                            Color.Green.RawValue)
                         .Build());
             }
         }
@@ -161,7 +165,6 @@ namespace Hanekawa.Modules.Account
                 if (list.Count != 0)
                 {
                     for (var i = 0; i < list.Count;)
-                    {
                         try
                         {
                             string input = null;
@@ -182,7 +185,6 @@ namespace Hanekawa.Modules.Account
                         {
                             // ignored
                         }
-                    }
 
                     var paginator = new PaginatedMessage
                     {
@@ -202,7 +204,10 @@ namespace Hanekawa.Modules.Account
                     };
                     await PagedReplyAsync(paginator);
                 }
-                else await ReplyAsync(null, false, new EmbedBuilder().Reply("No level roles added!").Build());
+                else
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No level roles added!").Build());
+                }
             }
         }
 
@@ -218,7 +223,8 @@ namespace Hanekawa.Modules.Account
 
         [Command("exp", RunMode = RunMode.Async)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Summary("Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
+        [Summary(
+            "Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
         public async Task ExpEventAsync(uint multiplier, TimeSpan? duration = null)
         {
             try
@@ -248,7 +254,8 @@ namespace Hanekawa.Modules.Account
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Announcing event into designated channel.",
                             Color.Green.RawValue).Build());
-                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true, Context.Channel as SocketTextChannel);
+                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true,
+                        Context.Channel as SocketTextChannel);
                 }
             }
             catch

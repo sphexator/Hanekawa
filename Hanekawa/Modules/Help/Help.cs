@@ -26,7 +26,7 @@ namespace Hanekawa.Modules.Help
         [Ratelimit(1, 5, Measure.Seconds)]
         [Priority(1)]
         [RequiredChannel]
-        public async Task HelpAsync([Remainder]string path = "")
+        public async Task HelpAsync([Remainder] string path = "")
         {
             if (path == "")
             {
@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Help
             }
             else
             {
-                var output = new EmbedBuilder { Color = Color.Purple };
+                var output = new EmbedBuilder {Color = Color.Purple};
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)
@@ -75,7 +75,7 @@ namespace Hanekawa.Modules.Help
         [Command("help")]
         [Summary("Lists this bots commands.")]
         [Ratelimit(1, 5, Measure.Seconds)]
-        public async Task DmHelpAsync([Remainder]string path = "")
+        public async Task DmHelpAsync([Remainder] string path = "")
         {
             if (path == "")
             {
@@ -96,7 +96,9 @@ namespace Hanekawa.Modules.Help
                     Footer = footer
                 };
                 embed.AddField("Support", "[Discord](https://discord.gg/9tq4xNT)", true);
-                embed.AddField("Bot Invite", "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", true);
+                embed.AddField("Bot Invite",
+                    "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
+                    true);
                 var eng = await Context.User.GetOrCreateDMChannelAsync();
                 await eng.SendMessageAsync(null, false, embed.Build());
             }
@@ -124,7 +126,8 @@ namespace Hanekawa.Modules.Help
             }
         }
 
-        private static async Task<IEnumerable<string>> GetModulesAsync(CommandService commandService, ICommandContext context)
+        private static async Task<IEnumerable<string>> GetModulesAsync(CommandService commandService,
+            ICommandContext context)
         {
             var modules = new List<string>();
             foreach (var module in commandService.Modules)
@@ -133,16 +136,10 @@ namespace Hanekawa.Modules.Help
                 foreach (var cmd in module.Commands)
                 {
                     var result = await cmd.CheckPreconditionsAsync(context);
-                    if (result.IsSuccess)
-                    {
-                        resultstringList.Add(cmd.Name);
-                    }
+                    if (result.IsSuccess) resultstringList.Add(cmd.Name);
                 }
 
-                if (resultstringList.Count != 0)
-                {
-                    modules.Add($"`{module.Name}`");
-                }
+                if (resultstringList.Count != 0) modules.Add($"`{module.Name}`");
             }
 
             return modules;
@@ -153,10 +150,7 @@ namespace Hanekawa.Modules.Help
             foreach (var command in module.Commands)
             {
                 var check = command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
-                if (check.IsSuccess)
-                {
-                    AddCommand(command, ref builder);
-                }
+                if (check.IsSuccess) AddCommand(command, ref builder);
             }
         }
 

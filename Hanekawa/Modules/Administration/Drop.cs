@@ -1,14 +1,14 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Drop;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -18,6 +18,7 @@ namespace Hanekawa.Modules.Administration
     public class Drop : InteractiveBase
     {
         private readonly DropService _lootCrates;
+
         public Drop(DropService lootCrates)
         {
             _lootCrates = lootCrates;
@@ -42,13 +43,15 @@ namespace Hanekawa.Modules.Administration
                 await _lootCrates.AddLootChannelAsync(channel as SocketTextChannel);
                 await Context.Message.DeleteAsync();
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {channel.Mention} to loot eligable channels.", Color.Green.RawValue)
+                    new EmbedBuilder().Reply($"Added {channel.Mention} to loot eligable channels.",
+                            Color.Green.RawValue)
                         .Build());
             }
             catch
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Couldn't add {channel.Mention} to loot eligable channels.", Color.Red.RawValue)
+                    new EmbedBuilder().Reply($"Couldn't add {channel.Mention} to loot eligable channels.",
+                            Color.Red.RawValue)
                         .Build());
             }
         }
@@ -62,13 +65,15 @@ namespace Hanekawa.Modules.Administration
                 if (channel == null) channel = Context.Channel as ITextChannel;
                 await _lootCrates.RemoveLootChannelAsync(channel as SocketTextChannel);
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {channel.Mention} from loot eligable channels.", Color.Green.RawValue)
+                    new EmbedBuilder().Reply($"Removed {channel.Mention} from loot eligable channels.",
+                            Color.Green.RawValue)
                         .Build());
             }
             catch
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Couldn't remove {channel.Mention} from loot eligable channels.", Color.Red.RawValue)
+                    new EmbedBuilder().Reply($"Couldn't remove {channel.Mention} from loot eligable channels.",
+                            Color.Red.RawValue)
                         .Build());
             }
         }
@@ -81,17 +86,15 @@ namespace Hanekawa.Modules.Administration
             {
                 var embed = new EmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder { Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl },
+                    Author = new EmbedAuthorBuilder
+                        {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl},
                     Color = Color.Purple
                 };
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count != 0)
                 {
                     var result = new List<string>();
-                    foreach (var x in list)
-                    {
-                        result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
-                    }
+                    foreach (var x in list) result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
 
                     embed.Description = string.Join("\n", result);
                     await ReplyAsync(null, false, embed.Build());

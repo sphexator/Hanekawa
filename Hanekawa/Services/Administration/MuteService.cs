@@ -15,17 +15,13 @@ namespace Hanekawa.Services.Administration
     public class MuteService
     {
         private const string DefaultMuteRole = "Mute";
+
+        private static readonly OverwritePermissions DenyOverwrite =
+            new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
+                attachFiles: PermValue.Deny);
+
         private readonly DiscordSocketClient _client;
         private readonly ModerationService _moderationService;
-
-        public event AsyncEvent<SocketGuildUser, SocketGuildUser> UserMuted;
-        public event AsyncEvent<SocketGuildUser, SocketGuildUser, TimeSpan> UserTimedMuted;
-        public event AsyncEvent<SocketGuildUser> UserUnmuted;
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
-
-        private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
 
         public MuteService(DiscordSocketClient client, ModerationService moderationService)
         {
@@ -47,12 +43,20 @@ namespace Hanekawa.Services.Administration
             }
         }
 
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
+
+        public event AsyncEvent<SocketGuildUser, SocketGuildUser> UserMuted;
+        public event AsyncEvent<SocketGuildUser, SocketGuildUser, TimeSpan> UserTimedMuted;
+        public event AsyncEvent<SocketGuildUser> UserUnmuted;
+
         // EVENTS
         private Task AutoModTimedMute(IGuildUser user, TimeSpan after)
         {
             var _ = Task.Run(async () => { await TimedMute(user, after); });
             return Task.CompletedTask;
         }
+
         private Task AutoModPermMute(IGuildUser arg1)
         {
             var _ = Task.Run(async () => { await Mute(arg1); });
@@ -77,7 +81,7 @@ namespace Hanekawa.Services.Administration
             var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
             await Task.WhenAll(stopTimer, unmute);
         }
-        
+
         // TIMED MUTE AREA
         public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
@@ -103,6 +107,7 @@ namespace Hanekawa.Services.Administration
                     await db.SaveChangesAsync();
                 }
             }
+
             StartUnmuteTimer(user.GuildId, user.Id, after);
             await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
         }
@@ -122,6 +127,7 @@ namespace Hanekawa.Services.Administration
                 await db.MuteTimers.AddAsync(data);
                 await db.SaveChangesAsync();
             }
+
             StartUnmuteTimer(user.GuildId, user.Id, after);
         }
 
@@ -143,7 +149,7 @@ namespace Hanekawa.Services.Administration
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
 
-            userUnmuteTimers.AddOrUpdate(userId, (key) => toAdd, (key, old) =>
+            userUnmuteTimers.AddOrUpdate(userId, key => toAdd, (key, old) =>
             {
                 old.Change(Timeout.Infinite, Timeout.Infinite);
                 return toAdd;
@@ -180,8 +186,23 @@ namespace Hanekawa.Services.Administration
         public async Task UnmuteUser(IGuildUser user)
         {
             await StopUnmuteTimerAsync(user.GuildId, user.Id);
-            try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch {/*IGNORE*/}
-            try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch {/*IGNORE*/}
+            try
+            {
+                await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
+            }
+            catch
+            {
+                /*IGNORE*/
+            }
+
+            try
+            {
+                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+            }
+            catch
+            {
+                /*IGNORE*/
+            }
 
             await UserUnmuted(user as SocketGuildUser);
         }
@@ -197,10 +218,12 @@ namespace Hanekawa.Services.Administration
                     .ConfigureAwait(false);
                 muteRole = role;
             }
-            else muteRole = defaultCheck;
-
-            foreach (var toOverwrite in (await guild.GetTextChannelsAsync()))
+            else
             {
+                muteRole = defaultCheck;
+            }
+
+            foreach (var toOverwrite in await guild.GetTextChannelsAsync())
                 try
                 {
                     if (toOverwrite.PermissionOverwrites.Select(x => x.Permissions).Contains(DenyOverwrite)) continue;
@@ -213,7 +236,7 @@ namespace Hanekawa.Services.Administration
                 {
                     // ignored
                 }
-            }
+
             return muteRole;
         }
     }

@@ -1,20 +1,33 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Club
 {
     public class ClubService
     {
-        public enum UpdateType { Image, Description}
+        public enum UpdateType
+        {
+            Image,
+            Description
+        }
+
+        private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(
+            addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny,
+            embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
+
+        private static readonly OverwritePermissions AllowOverwrite =
+            new OverwritePermissions(addReactions: PermValue.Allow, sendMessages: PermValue.Allow,
+                attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
+
         private readonly DiscordSocketClient _client;
 
         public ClubService(DiscordSocketClient client)
@@ -31,7 +44,7 @@ namespace Hanekawa.Services.Club
             var embed = new EmbedBuilder
             {
                 Color = Color.Purple,
-                Author = new EmbedAuthorBuilder { Name = club.Name},
+                Author = new EmbedAuthorBuilder {Name = club.Name},
                 ImageUrl = club.ImageUrl,
                 Description = club.Description ?? "No description added"
             };
@@ -42,7 +55,8 @@ namespace Hanekawa.Services.Club
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
         }
 
-        public async Task UpdatePostAsync(GuildConfig cfg, IUserMessage msg, ClubInfo club, UpdateType type, string content)
+        public async Task UpdatePostAsync(GuildConfig cfg, IUserMessage msg, ClubInfo club, UpdateType type,
+            string content)
         {
             switch (type)
             {
@@ -93,10 +107,12 @@ namespace Hanekawa.Services.Club
                         if (x.Rank == 1)
                         {
                             var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(y =>
-                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 2) ?? await db.ClubPlayers.FirstOrDefaultAsync(y =>
+                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 2) ??
+                                            await db.ClubPlayers.FirstOrDefaultAsync(y =>
                                                 y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 3);
                             toPromote.Rank = 1;
                         }
+
                         db.ClubPlayers.Remove(x);
                     }
 
@@ -106,7 +122,8 @@ namespace Hanekawa.Services.Club
             return Task.CompletedTask;
         }
 
-        private static Task RemoveClubMemberAsync(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private static Task RemoveClubMemberAsync(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
+            SocketReaction arg3)
         {
             var _ = Task.Run(async () =>
             {
@@ -136,7 +153,8 @@ namespace Hanekawa.Services.Club
             return Task.CompletedTask;
         }
 
-        private static Task AddClubMemberAsync(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private static Task AddClubMemberAsync(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2,
+            SocketReaction arg3)
         {
             var _ = Task.Run(async () =>
             {
@@ -166,7 +184,7 @@ namespace Hanekawa.Services.Club
                         JoinDate = DateTimeOffset.UtcNow,
                         Rank = 3,
                         UserId = user.Id,
-                        Id = (await db.ClubPlayers.CountAsync(x => x.GuildId == channel.Guild.Id)) + 1
+                        Id = await db.ClubPlayers.CountAsync(x => x.GuildId == channel.Guild.Id) + 1
                     };
                     db.ClubPlayers.Add(data);
                     await db.SaveChangesAsync();
@@ -175,20 +193,13 @@ namespace Hanekawa.Services.Club
             return Task.CompletedTask;
         }
 
-        private static readonly OverwritePermissions DenyOverwrite = new OverwritePermissions(
-            addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny,
-            embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
-
-        private static readonly OverwritePermissions AllowOverwrite =
-            new OverwritePermissions(addReactions: PermValue.Allow, sendMessages: PermValue.Allow,
-                attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
-
         public async Task<int> IsChannelRequirementAsync(DbService db, IEnumerable<ClubPlayer> users, uint level = 40)
         {
             return await GetUsersOfLevelAsync(db, level, users);
         }
 
-        public async Task CreateChannelAsync(DbService db, IGuild guild, GuildConfig cfg, string clubName, IGuildUser leader,
+        public async Task CreateChannelAsync(DbService db, IGuild guild, GuildConfig cfg, string clubName,
+            IGuildUser leader,
             IEnumerable<ClubPlayer> users, ClubInfo club)
         {
             var channel = await guild.CreateTextChannelAsync(clubName, x => x.CategoryId = cfg.ClubChannelCategory);

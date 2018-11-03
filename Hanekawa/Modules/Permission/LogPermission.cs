@@ -1,10 +1,10 @@
-﻿using Discord;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Extensions;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -31,7 +31,8 @@ namespace Hanekawa.Modules.Permission
 
                 cfg.LogWarn = channel.Id;
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Set warn logging channel to {channel.Mention}!", Color.Green.RawValue).Build());
+                    new EmbedBuilder().Reply($"Set warn logging channel to {channel.Mention}!", Color.Green.RawValue)
+                        .Build());
                 await db.SaveChangesAsync();
             }
         }

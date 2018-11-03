@@ -1,15 +1,15 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Suggestion
@@ -78,12 +78,13 @@ namespace Hanekawa.Modules.Suggestion
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, new EmbedBuilder().Reply(
-                        $"Your suggestion got a response!\n" +
-                        $"Suggestion:\n" +
-                        $"{embed.Description}\n" +
-                        $"Answer from {Context.User}:\n" +
-                        $"{response}").Build());
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false,
+                        new EmbedBuilder().Reply(
+                            "Your suggestion got a response!\n" +
+                            "Suggestion:\n" +
+                            $"{embed.Description}\n" +
+                            $"Answer from {Context.User}:\n" +
+                            $"{response}").Build());
                 }
                 catch
                 {
@@ -120,8 +121,8 @@ namespace Hanekawa.Modules.Suggestion
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
                     await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
-                        $"Your suggestion got a response!\n" +
-                        $"Suggestion:\n" +
+                        "Your suggestion got a response!\n" +
+                        "Suggestion:\n" +
                         $"{embed.Description}\n" +
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
@@ -160,8 +161,8 @@ namespace Hanekawa.Modules.Suggestion
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
                     await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
-                        $"Your suggestion got a response!\n" +
-                        $"Suggestion:\n" +
+                        "Your suggestion got a response!\n" +
+                        "Suggestion:\n" +
                         $"{embed.Description}\n" +
                         $"Answer from {Context.User}:\n" +
                         $"{response}");
@@ -265,19 +266,26 @@ namespace Hanekawa.Modules.Suggestion
         {
             IEmote iYes;
             IEmote iNo;
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yesEmote)) iYes = yesEmote;
+            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yesEmote))
+            {
+                iYes = yesEmote;
+            }
             else
             {
                 Emote.TryParse("<:1yes:403870491749777411>", out var defaultYes);
                 iYes = defaultYes;
             }
 
-            if (Emote.TryParse(cfg.SuggestionEmoteNo, out var noEmote)) iNo = noEmote;
+            if (Emote.TryParse(cfg.SuggestionEmoteNo, out var noEmote))
+            {
+                iNo = noEmote;
+            }
             else
             {
                 Emote.TryParse("<:2no:403870492206825472>", out var defaultNo);
                 iNo = defaultNo;
             }
+
             var result = new List<IEmote> {iYes, iNo};
             foreach (var x in result)
             {

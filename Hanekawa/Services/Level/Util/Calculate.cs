@@ -5,15 +5,22 @@ namespace Hanekawa.Services.Level.Util
 {
     public class Calculate
     {
-        public uint GetServerLevelRequirement(uint currentLevel) => 3 * currentLevel * currentLevel + 150;
+        public uint GetServerLevelRequirement(uint currentLevel)
+        {
+            return 3 * currentLevel * currentLevel + 150;
+        }
 
-        public uint GetGlobalLevelRequirement(uint currentLevel) => 50 * currentLevel * currentLevel + 300;
+        public uint GetGlobalLevelRequirement(uint currentLevel)
+        {
+            return 50 * currentLevel * currentLevel + 300;
+        }
 
         public uint GetMessageExp(SocketMessage msg)
         {
             var rand = new Random();
             var xp = rand.Next(10, 20);
-            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184)) return Convert.ToUInt32(xp / 5);
+            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184))
+                return Convert.ToUInt32(xp / 5);
             return Convert.ToUInt32(xp);
         }
 

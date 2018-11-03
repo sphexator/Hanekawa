@@ -1,24 +1,31 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Hanekawa.Extensions;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 using Hanekawa.Addons.Database;
+using Hanekawa.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Owner
 {
     [RequireOwner]
     public class OwnerCommands : InteractiveBase
     {
+        [Command("quit")]
+        public async Task ExitProgramAsync()
+        {
+            await ReplyAsync(null, false, new EmbedBuilder().Reply("Exiting...").Build());
+            Environment.Exit(0);
+        }
+
         [Group("blacklist")]
         public class Blacklist : InteractiveBase
         {
             [Command("add", RunMode = RunMode.Async)]
             [RequireOwner]
-            public async Task BlackListAddAsync(ulong id, [Remainder]string reason = null)
+            public async Task BlackListAddAsync(ulong id, [Remainder] string reason = null)
             {
                 using (var db = new DbService())
                 {
@@ -71,13 +78,6 @@ namespace Hanekawa.Modules.Owner
                             .Build());
                 }
             }
-        }
-
-        [Command("quit")]
-        public async Task ExitProgramAsync()
-        {
-            await ReplyAsync(null, false, new EmbedBuilder().Reply("Exiting...").Build());
-            Environment.Exit(0);
         }
     }
 }

@@ -1,20 +1,21 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {
     [RequireContext(ContextType.Guild)]
-    public partial class Permission : InteractiveBase
+    public class Permission : InteractiveBase
     {
         private readonly CommandHandlingService _command;
+
         public Permission(CommandHandlingService command)
         {
             _command = command;

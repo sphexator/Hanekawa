@@ -96,6 +96,7 @@ namespace Hanekawa.Preconditions
                 _invokeTracker[context.User.Id] = timeout;
                 return Task.FromResult(PreconditionResult.FromSuccess());
             }
+
             return Task.FromResult(PreconditionResult.FromError("You are currently in Timeout."));
         }
 

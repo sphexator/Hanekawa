@@ -4,10 +4,13 @@ using Discord;
 
 namespace Hanekawa.Extensions
 {
-    public static class EmbedExtension 
+    public static class EmbedExtension
     {
-        public static Task<IUserMessage> SendEmbedAsync(this IMessageChannel ch, EmbedBuilder getEmbed, string content = null)
-            => ch.SendMessageAsync(content, embed: getEmbed.Build());
+        public static Task<IUserMessage> SendEmbedAsync(this IMessageChannel ch, EmbedBuilder getEmbed,
+            string content = null)
+        {
+            return ch.SendMessageAsync(content, embed: getEmbed.Build());
+        }
 
         public static EmbedBuilder Reply(this EmbedBuilder embed, string content, uint color = 0)
         {
@@ -17,7 +20,8 @@ namespace Hanekawa.Extensions
             return embed;
         }
 
-        public static EmbedBuilder Log(this EmbedBuilder embed, IGuildUser user, string content, uint color, bool ban = false, string title = null)
+        public static EmbedBuilder Log(this EmbedBuilder embed, IGuildUser user, string content, uint color,
+            bool ban = false, string title = null)
         {
             var footer = new EmbedFooterBuilder
             {

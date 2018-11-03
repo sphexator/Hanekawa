@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
@@ -7,9 +10,6 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Stores;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Storage
 {
@@ -30,13 +30,15 @@ namespace Hanekawa.Modules.Account.Storage
                         if (i == store.Count) continue;
 
                         var storeContent = store[i];
-                        page += $"Name: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - {GetPrice(cfg, storeContent, storeContent.Price)}\n";
+                        page +=
+                            $"Name: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - {GetPrice(cfg, storeContent, storeContent.Price)}\n";
                         i++;
                     }
 
                     result.Add(page);
                 }
-                if(result.Count == 0) result.Add("Store is empty");
+
+                if (result.Count == 0) result.Add("Store is empty");
                 return result;
             }
         }
@@ -55,7 +57,8 @@ namespace Hanekawa.Modules.Account.Storage
                         if (i == store.Count) continue;
 
                         var storeContent = store[i];
-                        page += $"Item: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - Price: ${storeContent.Price}\n";
+                        page +=
+                            $"Item: {(await db.Items.FindAsync(storeContent.ItemId)).Name} (id:{storeContent.ItemId}) - Price: ${storeContent.Price}\n";
                         i++;
                     }
 
@@ -85,54 +88,52 @@ namespace Hanekawa.Modules.Account.Storage
             var userdata = await db.GetOrCreateGlobalUserData(user.Id);
 
             if (userdata.Credit < price)
-            {
-                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}", Color.Red.RawValue);
-            }
+                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                    Color.Red.RawValue);
 
             return await BuyNormalCredit(db, item, price, user, null, userdata);
         }
 
-        private static async Task<EmbedBuilder> PurchaseServer(DbService db, Item item, int price, bool specialCredit, IGuildUser user)
+        private static async Task<EmbedBuilder> PurchaseServer(DbService db, Item item, int price, bool specialCredit,
+            IGuildUser user)
         {
             var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
             if (specialCredit && userdata.CreditSpecial < price)
-            {
-                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}", Color.Red.RawValue);
-            }
+                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                    Color.Red.RawValue);
 
             if (!specialCredit && userdata.Credit < price)
-            {
-                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}", Color.Red.RawValue);
-            }
+                return new EmbedBuilder().Reply($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                    Color.Red.RawValue);
 
             if (specialCredit) return await BuySpecialCredit(db, item, price, user, userdata);
             return await BuyNormalCredit(db, item, price, user, userdata, null);
         }
 
-        private static async Task<EmbedBuilder> BuySpecialCredit(DbService db, Item item, int price, IGuildUser user, Addons.Database.Tables.Account.Account account)
+        private static async Task<EmbedBuilder> BuySpecialCredit(DbService db, Item item, int price, IGuildUser user,
+            Addons.Database.Tables.Account.Account account)
         {
-            account.Credit = account.Credit - (uint)price;
+            account.Credit = account.Credit - (uint) price;
             await db.PurchaseServerItem(user, item);
             await db.SaveChangesAsync();
             return new EmbedBuilder().Reply($"{user.Mention} purchased {item.Name} for {price}");
         }
 
-        private static async Task<EmbedBuilder> BuyNormalCredit(DbService db, Item item, int price, IGuildUser user, Addons.Database.Tables.Account.Account account = null, AccountGlobal accountGlobal = null)
+        private static async Task<EmbedBuilder> BuyNormalCredit(DbService db, Item item, int price, IGuildUser user,
+            Addons.Database.Tables.Account.Account account = null, AccountGlobal accountGlobal = null)
         {
             if (accountGlobal == null)
             {
-                account.Credit = account.Credit - (uint)price;
+                account.Credit = account.Credit - (uint) price;
                 await db.PurchaseServerItem(user, item);
                 await db.SaveChangesAsync();
                 return new EmbedBuilder().Reply($"{user.Mention} purchased {item.Name} for {price}");
             }
-            else
-            {
-                accountGlobal.Credit = accountGlobal.Credit - (uint)price;
-                await db.PurchaseGlobalItem(user, item);
-                await db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"{user.Mention} purchased {item.Name} for {price}");
-            }
+
+            accountGlobal.Credit = accountGlobal.Credit - (uint) price;
+            await db.PurchaseGlobalItem(user, item);
+            await db.SaveChangesAsync();
+            return new EmbedBuilder().Reply($"{user.Mention} purchased {item.Name} for {price}");
         }
 
         private static string GetPrice(GuildConfig cfg, Shop shop, int price)

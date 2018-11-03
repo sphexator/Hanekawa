@@ -16,15 +16,18 @@ namespace Hanekawa.Services.Scheduler
         {
             _services = services;
         }
-        
+
         public IJob NewJob(TriggerFiredBundle bundle, IScheduler scheduler)
         {
             var jobDetail = bundle.JobDetail;
 
-            var job = (IJob)_services.GetService(jobDetail.JobType);
+            var job = (IJob) _services.GetService(jobDetail.JobType);
             return job;
         }
-        public void ReturnJob(IJob job) { }
+
+        public void ReturnJob(IJob job)
+        {
+        }
     }
 
     public static class UsingQuartz

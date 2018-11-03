@@ -1,23 +1,21 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 namespace Hanekawa.Services.Automate
 {
     public class MvpService : IJob
     {
-        private readonly DiscordSocketClient _client;
         private readonly List<ulong> _channels = new List<ulong>();
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> Cooldown { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+        private readonly DiscordSocketClient _client;
 
         public MvpService(DiscordSocketClient client)
         {
@@ -35,6 +33,16 @@ namespace Hanekawa.Services.Automate
             _channels.Add(404633037884620802); //Test channel
         }
 
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> Cooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
+        //Scheduled event
+        public Task Execute(IJobExecutionContext context)
+        {
+            NewMvpUsers();
+            return Task.CompletedTask;
+        }
+
         // Message Reciever method
         private Task MessageCounterAsync(SocketMessage msg)
         {
@@ -47,18 +55,11 @@ namespace Hanekawa.Services.Automate
                 using (var db = new DbService())
                 {
                     Console.WriteLine($"{DateTime.Now.ToLongTimeString()} | MVP SERVICE | +1 {msg.Author.Username}");
-                    var user = await db.GetOrCreateUserData((SocketGuildUser)msg.Author);
+                    var user = await db.GetOrCreateUserData((SocketGuildUser) msg.Author);
                     user.MvpCounter = user.MvpCounter + 1;
                     await db.SaveChangesAsync();
                 }
             });
-            return Task.CompletedTask;
-        }
-
-        //Scheduled event
-        public Task Execute(IJobExecutionContext context)
-        {
-            NewMvpUsers();
             return Task.CompletedTask;
         }
 
@@ -83,7 +84,8 @@ namespace Hanekawa.Services.Automate
                     try
                     {
                         var embed = MvpMessage(newMvps, oldMvps);
-                        await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+                        await guild.GetTextChannel(346429829316476928).SendMessageAsync("", false, embed.Build())
+                            .ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {

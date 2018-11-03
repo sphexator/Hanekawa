@@ -1,4 +1,9 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
@@ -10,11 +15,6 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Profile
 {
@@ -35,7 +35,7 @@ namespace Hanekawa.Services.Profile
                     avi.Seek(0, SeekOrigin.Begin);
                     var avatar = Image.Load(avi);
                     avatar.Mutate(x => x.Resize(86, 86));
-                    var shipClass = Image.Load($"Data/Profile/Class/Battleship.png");
+                    var shipClass = Image.Load("Data/Profile/Class/Battleship.png");
                     var template = Image.Load("Data/Profile/Template.png");
                     shipClass.Mutate(x => x.Resize(88, 97));
                     img.Mutate(x => x
@@ -46,6 +46,7 @@ namespace Hanekawa.Services.Profile
                     img.Save(stream, new PngEncoder());
                 }
             }
+
             return stream;
         }
 
@@ -59,7 +60,7 @@ namespace Hanekawa.Services.Profile
                 using (var img = bg)
                 {
                     var avatar = Image.Load(await GetAvatarAsync(user));
-                    var shipClass = Image.Load($"Data/Profile/Class/Battleship.png");
+                    var shipClass = Image.Load("Data/Profile/Class/Battleship.png");
                     var template = Image.Load("Data/Profile/Template.png");
                     shipClass.Mutate(x => x.Resize(88, 97));
                     img.Mutate(x => x
@@ -70,6 +71,7 @@ namespace Hanekawa.Services.Profile
                     img.Save(stream, new PngEncoder());
                 }
             }
+
             return stream;
         }
 
@@ -86,9 +88,11 @@ namespace Hanekawa.Services.Profile
                         return img.Clone();
                     }
                 }
-                
             }
-            catch { return GetBackgroundAsync(); }
+            catch
+            {
+                return GetBackgroundAsync();
+            }
         }
 
         private Image<Rgba32> GetBackgroundAsync()
@@ -116,6 +120,7 @@ namespace Hanekawa.Services.Profile
                     avi.Save(stream, new PngEncoder());
                 }
             }
+
             return stream;
         }
     }

@@ -1,12 +1,12 @@
-using Discord;
-using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Administration;
+using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 namespace Hanekawa.Services.Events
 {
@@ -32,7 +32,7 @@ namespace Hanekawa.Services.Events
         public async Task<bool> TryAddEventAsync(DbService db, string name, IGuildUser user, DateTime time)
         {
             var check = await db.EventSchedules.FindAsync(
-                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1, 
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
                 user.Guild.Id);
             if (check != null) return false;
             var data = new EventSchedule
@@ -69,7 +69,8 @@ namespace Hanekawa.Services.Events
                     var guild = _client.GetGuild(x.GuildId);
                     if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
-                    var events = await db.EventSchedules.Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date)
+                    var events = await db.EventSchedules
+                        .Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date)
                         .OrderBy(z => z.Time).Take(5).ToListAsync();
                     if (events.All(z => z.Posted)) return;
                     if (events.Any()) await ChannelCleanup(channel);
@@ -82,13 +83,14 @@ namespace Hanekawa.Services.Events
                             Title = e.Name,
                             Timestamp = new DateTimeOffset(e.Time),
                             Color = GetEventColor(e.Time),
-                            Footer = new EmbedFooterBuilder { Text = "Scheduled:"}
+                            Footer = new EmbedFooterBuilder {Text = "Scheduled:"}
                         };
                         embed.AddField("Host", guild.GetUser(e.Host).Mention ?? ":KuuThinking:");
                         await channel.SendMessageAsync(null, false, embed.Build());
                         await Task.Delay(1000);
                         e.Posted = true;
                     }
+
                     await db.SaveChangesAsync();
                 }
             }
@@ -133,7 +135,9 @@ namespace Hanekawa.Services.Events
                 var result = msgs.Where(x => x.Timestamp.Date.AddDays(10) >= DateTime.UtcNow.Date).ToList();
                 await channel.DeleteMessagesAsync(result);
             }
-            catch { }
+            catch
+            {
+            }
         }
     }
 }

@@ -1,16 +1,17 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 
 namespace Hanekawa.Services.Administration
 {
     public class PlayStatusService
     {
-        private DiscordSocketClient _client;
-        private Timer _updateStatus;
+        private readonly DiscordSocketClient _client;
         private int _memberCount;
+        private Timer _updateStatus;
+
         public PlayStatusService(DiscordSocketClient client)
         {
             _client = client;
@@ -24,10 +25,7 @@ namespace Hanekawa.Services.Administration
             _updateStatus = new Timer(async _ =>
             {
                 var users = 0;
-                foreach (var x in _client.Guilds)
-                {
-                    users += x.MemberCount;
-                }
+                foreach (var x in _client.Guilds) users += x.MemberCount;
                 if (users == _memberCount) return;
                 _memberCount = users;
                 await _client.SetGameAsync($"Serving {users} users", null, ActivityType.Playing);

@@ -1,6 +1,6 @@
-﻿using Discord.Commands;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 

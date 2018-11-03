@@ -1,17 +1,17 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Games.ShipGame;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Game
 {
@@ -73,6 +73,7 @@ namespace Hanekawa.Modules.Game
                 if (playerOne.Credit < bet) return;
                 if (playerTwo.Credit < bet) return;
             }
+
             var msg = bet == 0
                 ? $"{user.Mention}, {Context.User.Mention} has challenged you to a duel, do you accept? (y/n)"
                 : $"{user.Mention}, {Context.User.Mention} has challenged you to a duel with ${bet} at stake, do you accept? (y/n)";
@@ -112,13 +113,13 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int)userdata.Level)
+                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int) userdata.Level)
                     .ToListAsync();
                 var result = new List<string>
-                    {
-                        "Available classes\n" +
-                        $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"
-                    };
+                {
+                    "Available classes\n" +
+                    $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"
+                };
                 foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
 
                 result.Add("Pick a class by saying the number");
@@ -149,7 +150,7 @@ namespace Hanekawa.Modules.Game
                     }
 
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Coundn't find a class with that ID.", Color.Red.RawValue)
+                        new EmbedBuilder().Reply("Coundn\'t find a class with that ID.", Color.Red.RawValue)
                             .Build());
                 }
                 catch
@@ -170,7 +171,7 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var classes = await db.GameClasses.ToListAsync();
-                var result = new List<string> { "Classes" };
+                var result = new List<string> {"Classes"};
                 foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
                 var content = string.Join("\n", result);
                 await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
@@ -189,7 +190,7 @@ namespace Hanekawa.Modules.Game
                 if (classInfo == null)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Couldn't find a class with that ID.", Color.Red.RawValue)
+                        new EmbedBuilder().Reply("Couldn\'t find a class with that ID.", Color.Red.RawValue)
                             .Build());
                     return;
                 }

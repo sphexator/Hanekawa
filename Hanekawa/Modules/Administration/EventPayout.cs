@@ -1,13 +1,13 @@
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -93,7 +93,7 @@ namespace Hanekawa.Modules.Administration
                 foreach (var x in users)
                 {
                     var user = await db.GetOrCreateUserData(x.GuildId, x.UserId);
-                    user.CreditSpecial = user.CreditSpecial + (uint)x.Amount;
+                    user.CreditSpecial = user.CreditSpecial + (uint) x.Amount;
                     payout += $"{Context.Guild.GetUser(x.UserId).Mention} rewarded {x.Amount}\n";
                 }
 

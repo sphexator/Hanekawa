@@ -57,7 +57,8 @@ namespace Hanekawa.Preconditions
         ///     Set whether or not there is no limit to the command for server admins. Defaults to
         ///     false.
         /// </param>
-        public GlobalRatelimitAttribute(uint times, TimeSpan period, bool noLimitInDMs = false, bool noLimitForAdmins = false)
+        public GlobalRatelimitAttribute(uint times, TimeSpan period, bool noLimitInDMs = false,
+            bool noLimitForAdmins = false)
         {
             _invokeLimit = times;
             _noLimitInDMs = noLimitInDMs;

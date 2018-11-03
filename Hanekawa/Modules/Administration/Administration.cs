@@ -1,25 +1,29 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
+using Hanekawa.Services.AutoModerator;
 
 namespace Hanekawa.Modules.Administration
 {
     public class Administration : InteractiveBase
     {
         private readonly MuteService _muteService;
+        private readonly NudeScoreService _nudeScore;
         private readonly WarnService _warnService;
 
-        public Administration(MuteService muteService, WarnService warnService)
+        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore)
         {
             _muteService = muteService;
             _warnService = warnService;
+            _nudeScore = nudeScore;
         }
 
         [Command("ban", RunMode = RunMode.Async)]
@@ -31,7 +35,7 @@ namespace Hanekawa.Modules.Administration
         {
             await Context.Message.DeleteAsync().ConfigureAwait(false);
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
-                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
+                ((SocketGuildUser) Context.User).Roles.Select(r => r.Position)
                 .Max())
             {
                 var fembed = new EmbedBuilder().Reply(
@@ -54,11 +58,10 @@ namespace Hanekawa.Modules.Administration
         [Summary("Kicks a user")]
         public async Task KickAsync(IGuildUser user)
         {
-
             await Context.Message.DeleteAsync().ConfigureAwait(false);
             if (Context.User.Id != user.Guild.OwnerId && ((SocketGuildUser
-            )user).Roles.Select(r => r.Position).Max() >=
-                ((SocketGuildUser)Context.User).Roles.Select(r => r.Position)
+                    ) user).Roles.Select(r => r.Position).Max() >=
+                ((SocketGuildUser) Context.User).Roles.Select(r => r.Position)
                 .Max())
             {
                 var fembed = new EmbedBuilder().Reply(
@@ -114,7 +117,10 @@ namespace Hanekawa.Modules.Administration
             if (Context.User.Id != user.Guild.OwnerId && user.Roles.Select(r => r.Position).Max() >=
                 Context.Guild.Roles.Select(r => r.Position).Max())
             {
-                await ReplyAndDeleteAsync("", false, new EmbedBuilder().Reply($"{Context.User.Mention}, you can't mute someone with same or higher role then you.", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
+                await ReplyAndDeleteAsync("", false,
+                    new EmbedBuilder()
+                        .Reply($"{Context.User.Mention}, you can't mute someone with same or higher role then you.",
+                            Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
                 return;
             }
 
@@ -131,7 +137,8 @@ namespace Hanekawa.Modules.Administration
 
             try
             {
-                var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).Where(m => m.Author.Id == user.Id)
+                var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync())
+                    .Where(m => m.Author.Id == user.Id)
                     .Take(50).ToArray();
 
                 var bulkDeletable = msgs.ToList();
@@ -155,8 +162,9 @@ namespace Hanekawa.Modules.Administration
         public async Task MuteAsync(SocketGuildUser user, uint minutes = 1440, [Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
-            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(minutes));
-            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(minutes));
+            var mute = _muteService.TimedMute(user, (SocketGuildUser) Context.User, TimeSpan.FromMinutes(minutes));
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
+                TimeSpan.FromMinutes(minutes));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
@@ -171,8 +179,9 @@ namespace Hanekawa.Modules.Administration
         public async Task MuteAsync(SocketGuildUser user, [Remainder] string reason = null)
         {
             await Context.Message.DeleteAsync();
-            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, TimeSpan.FromMinutes(1440));
-            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, TimeSpan.FromMinutes(1440));
+            var mute = _muteService.TimedMute(user, (SocketGuildUser) Context.User, TimeSpan.FromMinutes(1440));
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
+                TimeSpan.FromMinutes(1440));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
@@ -191,8 +200,9 @@ namespace Hanekawa.Modules.Administration
             if (!timer.HasValue) timer = TimeSpan.FromHours(12);
             if (timer.Value > TimeSpan.FromDays(1)) timer = TimeSpan.FromDays(1);
             if (timer.Value < TimeSpan.FromMinutes(10)) timer = TimeSpan.FromMinutes(10);
-            var mute = _muteService.TimedMute(user, (SocketGuildUser)Context.User, timer.Value);
-            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute, timer.Value);
+            var mute = _muteService.TimedMute(user, (SocketGuildUser) Context.User, timer.Value);
+            var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
+                timer.Value);
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
@@ -231,10 +241,136 @@ namespace Hanekawa.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
         [Summary("Pulls up warnlog and admin profile of a user.")]
-        public async Task WarnlogAsync(SocketGuildUser user)
+        public async Task WarnlogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
-            var log = await _warnService.Warnlog(user);
-            await Context.Channel.SendEmbedAsync(log);
+            if (type == WarnLogType.Simple)
+            {
+                var log = await _warnService.GetSimpleWarnlogAsync(user);
+                await Context.Channel.SendEmbedAsync(log);
+            }
+            else
+            {
+                var pages = await _warnService.GetFullWarnlogAsync(user);
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = user.GetAvatar(),
+                        Name = $"Full warn log for {user.Username}"
+                    },
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+            }
+        }
+
+        [Command("toxicity", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [Summary("Shows toxicity values of users if server has toxicity enabled channels")]
+        public async Task ViewToxicity(SocketGuildUser user = null, ITextChannel channel = null,
+            WarnToxicityType type = WarnToxicityType.Single)
+        {
+            if (channel == null && user == null)
+            {
+                var pages = _nudeScore.GetGuildTopScore(Context.Guild);
+                if (pages == null || !pages.Any())
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = Context.Guild.IconUrl,
+                        Name = $"Toxicity values in {Context.Guild.Name}"
+                    },
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+                return;
+            }
+
+            if (user == null)
+            {
+                var page = _nudeScore.GetChannelTopScores(channel);
+                if (page == null)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(page).Build());
+                return;
+            }
+
+            if (channel != null && type == WarnToxicityType.Single)
+            {
+                var page = _nudeScore.GetSingleScore(channel, user);
+                if (page == 0)
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Toxicity score in {channel.Mention}: {page}").Build());
+            }
+            else
+            {
+                var pages = _nudeScore.GetAllScores(user);
+                if (pages == null || !pages.Any())
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    return;
+                }
+
+                var paginator = new PaginatedMessage
+                {
+                    Color = Color.Purple,
+                    Pages = pages,
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = user.GetAvatar(),
+                        Name = $"Toxicity values for {user.Mention} in {Context.Guild.Name}"
+                    },
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        First = new Emoji("⏮"),
+                        Back = new Emoji("◀"),
+                        Next = new Emoji("▶"),
+                        Last = new Emoji("⏭"),
+                        Stop = null,
+                        Jump = null,
+                        Info = null
+                    }
+                };
+                await PagedReplyAsync(paginator);
+            }
         }
 
         [Command("reason", RunMode = RunMode.Async)]
@@ -290,7 +426,10 @@ namespace Hanekawa.Modules.Administration
                         x.IsInline = length.IsInline;
                     });
                 }
-                catch{/*ignore*/}
+                catch
+                {
+                    /*ignore*/
+                }
 
                 updEmbed.AddField(x =>
                 {

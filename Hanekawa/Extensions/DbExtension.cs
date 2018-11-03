@@ -1,10 +1,5 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Data.Constants;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
+﻿
+
 /*
 namespace Hanekawa.Extensions
 {
