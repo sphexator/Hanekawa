@@ -11,6 +11,8 @@ namespace Hanekawa.Events
 
     public delegate Task AsyncEvent<in T1, in T2, in T3, in T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
+    public delegate Task AsyncEvent<in T1, in T2, in T3, in T4, in T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+
     public static class AsyncEventExtensions
     {
         public static Task InvokeAsync<T1>(this AsyncEvent<T1> asyncEvent, T1 arg1)
@@ -54,6 +56,18 @@ namespace Hanekawa.Events
 
             var events = asyncEvent.GetInvocationList().Cast<AsyncEvent<T1, T2, T3, T4>>();
             var eventTasks = events.Select(it => it.Invoke(arg1, arg2, arg3, arg4));
+
+            return Task.WhenAll(eventTasks);
+        }
+
+        public static Task InvokeAsync<T1, T2, T3, T4, T5>(this AsyncEvent<T1, T2, T3, T4, T5> asyncEvent, T1 arg1, T2 arg2,
+            T3 arg3, T4 arg4, T5 arg5)
+        {
+            if (asyncEvent == null)
+                return Task.CompletedTask;
+
+            var events = asyncEvent.GetInvocationList().Cast<AsyncEvent<T1, T2, T3, T4, T5>>();
+            var eventTasks = events.Select(it => it.Invoke(arg1, arg2, arg3, arg4, arg5));
 
             return Task.WhenAll(eventTasks);
         }

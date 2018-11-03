@@ -26,15 +26,17 @@ namespace Hanekawa.Services.Log
         private readonly ModerationService _moderationService;
         private readonly MuteService _muteService;
         private readonly WarnService _warnService;
+        private readonly NudeScoreService _nudeService;
 
         public LogService(DiscordSocketClient client, CommandService commands, ILoggerFactory loggerFactory,
-            ModerationService moderationService, MuteService muteService, WarnService warnService)
+            ModerationService moderationService, MuteService muteService, WarnService warnService, NudeScoreService nudeService)
         {
             _client = client;
             _commands = commands;
             _moderationService = moderationService;
             _muteService = muteService;
             _warnService = warnService;
+            _nudeService = nudeService;
 
             _loggerFactory = ConfigureLogging(loggerFactory);
             _discordLogger = _loggerFactory.CreateLogger("client");
@@ -60,6 +62,7 @@ namespace Hanekawa.Services.Log
             _moderationService.AutoModPermLog += AutoModPermLog;
             _moderationService.AutoModTimedLog += AutoModTimedLog;
             _moderationService.AutoModFilter += AutoModFilterLog;
+            _nudeService.AutoModFilter += AutoModToxicityFilter;
 
             _warnService.UserWarned += UserWarnLog;
             _warnService.UserMuted += UserMuteWarnLog;
@@ -294,6 +297,39 @@ namespace Hanekawa.Services.Log
             };
             if (timer.HasValue) embed.AddField("Duration", timer.Value.Humanize(), true);
             await channel.SendEmbedAsync(embed);
+        }
+
+        private static Task AutoModToxicityFilter(SocketGuildUser user, ModerationService.AutoModActionType type, string content, double score, double tolerance)
+        {
+            var _ = Task.Run(async () =>
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    ITextChannel channel;
+                    if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
+                    else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
+                    else return;
+                    if(channel == null) return;
+                    var embed = new EmbedBuilder
+                    {
+                        Author = new EmbedAuthorBuilder {Name = $"Toxicity filter - {user.Username}#{user.DiscriminatorValue}"},
+                        Color = Color.Red,
+                        Description = content,
+                        Fields = new List<EmbedFieldBuilder>
+                        {
+                            new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Staff", Value = "Auto-moderator"},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = "Toxicity"},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Score", Value = $"{score} (higher then {tolerance})"}
+                        },
+                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}
+                    };
+                    await channel.SendEmbedAsync(embed);
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private static Task UserUnmuted(SocketGuildUser user)

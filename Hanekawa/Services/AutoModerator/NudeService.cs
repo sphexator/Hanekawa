@@ -12,6 +12,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Perspective;
 using Hanekawa.Entities;
+using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Microsoft.Extensions.Configuration;
@@ -111,6 +112,8 @@ namespace Hanekawa.Services.AutoModerator
 
         private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
             = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
+
+        public event AsyncEvent<SocketGuildUser,ModerationService.AutoModActionType,string, double, double> AutoModFilter;
 
         public double GetSingleScore(ITextChannel channel, IUser user)
         {
@@ -300,7 +303,7 @@ namespace Hanekawa.Services.AutoModerator
         }
 
         private async Task SingleMessageAsync(double score, IGuildUser user, SocketTextChannel ch,
-            IDeletable msg)
+            SocketUserMessage msg)
         {
             if(!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
             if(!channels.TryGetValue(ch.Id, out var cfg)) return;
@@ -310,7 +313,7 @@ namespace Hanekawa.Services.AutoModerator
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 if (userdata.Level > cfg.Level) return;
 
-                if (score <= cfg.Tolerance) return;
+                if (score > cfg.Tolerance) return;
 
                 try
                 {
@@ -320,6 +323,7 @@ namespace Hanekawa.Services.AutoModerator
                 {
                     // ignored
                 }
+                await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content, score, cfg.Tolerance);
             }
         }
 
