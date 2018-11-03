@@ -313,7 +313,7 @@ namespace Hanekawa.Services.Log
                     if(channel == null) return;
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder {Name = $"Toxicity filter - {user.Username}#{user.DiscriminatorValue}"},
+                        Author = new EmbedAuthorBuilder {Name = $"Toxicity - {user.Username}#{user.DiscriminatorValue}"},
                         Color = Color.Red,
                         Description = content,
                         Fields = new List<EmbedFieldBuilder>
