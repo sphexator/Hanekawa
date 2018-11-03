@@ -1,15 +1,15 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Preconditions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
+using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Audio
 {
@@ -43,7 +43,7 @@ namespace Hanekawa.Modules.Audio
             using (var db = new DbService())
             {
                 var users = new List<Addons.Database.Tables.Account.Account>();
-                foreach (var x in await ((IVoiceState)Context.User).VoiceChannel.GetUsersAsync().ToArray())
+                foreach (var x in await ((IVoiceState) Context.User).VoiceChannel.GetUsersAsync().ToArray())
                 {
                     var user = x.FirstOrDefault();
                     if (user == null) return;
@@ -63,18 +63,14 @@ namespace Hanekawa.Modules.Audio
                 }
 
                 await ReplyAsync(
-                    $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState)Context.User).VoiceChannel.Name}, do you accept? (y/n)");
+                    $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}, do you accept? (y/n)");
                 var status = true;
                 while (status)
-                {
                     try
                     {
                         var response = await NextMessageAsync(new EnsureFromUserCriterion(mvUser.Id),
                             TimeSpan.FromSeconds(60));
-                        if (response.Content.ToLower() != "y")
-                        {
-                            status = false;
-                        }
+                        if (response.Content.ToLower() != "y") status = false;
                         if (response.Content.ToLower() == "n")
                         {
                             await ReplyAsync(null, false,
@@ -91,11 +87,11 @@ namespace Hanekawa.Modules.Audio
                             new EmbedBuilder().Reply("Move request timed out", Color.Red.RawValue).Build());
                         return;
                     }
-                }
-                await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState)Context.User).VoiceChannel.Id);
+
+                await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState) Context.User).VoiceChannel.Id);
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
-                        .Reply($"Moved {mvUser.Mention} to {((IVoiceState)Context.User).VoiceChannel.Name}",
+                        .Reply($"Moved {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}",
                             Color.Green.RawValue).Build());
             }
         }

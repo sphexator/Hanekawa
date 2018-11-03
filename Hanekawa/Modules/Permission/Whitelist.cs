@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,9 +9,6 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Administration;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -23,10 +23,8 @@ namespace Hanekawa.Modules.Permission
             {
                 var check = await db.WhitelistEvents.FindAsync(Context.Guild.Id, Context.User.Id);
                 if (check != null)
-                {
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("User is already a whitelisted event organiser.").Build());
-                }
 
                 var data = new WhitelistEvent
                 {
@@ -35,7 +33,8 @@ namespace Hanekawa.Modules.Permission
                 };
                 await db.WhitelistEvents.AddAsync(data);
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Added {user.Mention} as whitelisted event organiser!").Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {user.Mention} as whitelisted event organiser!").Build());
             }
         }
 
@@ -44,16 +43,16 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var check = await db.WhitelistEvents.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
+                var check = await db.WhitelistEvents.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
                 if (check == null)
-                {
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("User isn't whitelisted!", Color.Red.RawValue).Build());
-                }
 
                 db.WhitelistEvents.Remove(check);
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Removed {user.Mention} as whitelisted event organiser!").Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Removed {user.Mention} as whitelisted event organiser!").Build());
             }
         }
 
@@ -75,6 +74,7 @@ namespace Hanekawa.Modules.Permission
                         eventString += $"{Context.Guild.GetUser(sEvent.UserId).Mention ?? "User left server"}\n";
                         i++;
                     }
+
                     pages.Add(eventString);
                 }
 
@@ -105,10 +105,8 @@ namespace Hanekawa.Modules.Permission
             {
                 var check = await db.WhitelistDesigns.FindAsync(Context.Guild.Id, Context.User.Id);
                 if (check != null)
-                {
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("User is already a whitelisted designer.").Build());
-                }
 
                 var data = new WhitelistDesign
                 {
@@ -117,7 +115,8 @@ namespace Hanekawa.Modules.Permission
                 };
                 await db.WhitelistDesigns.AddAsync(data);
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Added {user.Mention} as whitelisted designer!").Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {user.Mention} as whitelisted designer!").Build());
             }
         }
 
@@ -126,16 +125,16 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var check = await db.WhitelistDesigns.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
+                var check = await db.WhitelistDesigns.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
                 if (check == null)
-                {
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("User isn't whitelisted!", Color.Red.RawValue).Build());
-                }
 
                 db.WhitelistDesigns.Remove(check);
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"Removed {user.Mention} as whitelisted designer!").Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Removed {user.Mention} as whitelisted designer!").Build());
             }
         }
 
@@ -157,6 +156,7 @@ namespace Hanekawa.Modules.Permission
                         eventString += $"{Context.Guild.GetUser(sEvent.UserId).Mention ?? "User left server"}\n";
                         i++;
                     }
+
                     pages.Add(eventString);
                 }
 

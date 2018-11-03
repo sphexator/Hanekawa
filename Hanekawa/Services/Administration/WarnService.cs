@@ -23,13 +23,13 @@ namespace Hanekawa.Services.Administration
 
     public class WarnService : IJob
     {
-        public event AsyncEvent<SocketGuildUser, string, string> UserWarned;
-        public event AsyncEvent<SocketGuildUser, string, string, TimeSpan> UserMuted;
-
         public async Task Execute(IJobExecutionContext context)
         {
             await VoidWarning();
         }
+
+        public event AsyncEvent<SocketGuildUser, string, string> UserWarned;
+        public event AsyncEvent<SocketGuildUser, string, string, TimeSpan> UserMuted;
 
         private static async Task VoidWarning()
         {
@@ -101,13 +101,16 @@ namespace Hanekawa.Services.Administration
                         page += "\n";
                         i++;
                     }
+
                     result.Add(page);
                 }
+
                 return result;
             }
         }
 
-        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null)
+        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type,
+            IEnumerable<IMessage> messages = null)
         {
             using (var db = new DbService())
             {
@@ -130,12 +133,14 @@ namespace Hanekawa.Services.Administration
                     var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
                     await StoreMessages(warn.Id, user, messages);
                 }
+
                 await WarnUser(WarnReason.Warning, user, staff, reason);
                 await UserWarned(user, staff.Mention, reason);
             }
         }
 
-        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type,
+            TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
@@ -160,11 +165,13 @@ namespace Hanekawa.Services.Administration
                     var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
                     await StoreMessages(warn.Id, user, messages);
                 }
+
                 await WarnUser(WarnReason.Mute, user, staff, reason, after);
             }
         }
 
-        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type,
+            IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
@@ -194,7 +201,8 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type, TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
+        public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type,
+            TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
             using (var db = new DbService())
             {
@@ -219,6 +227,7 @@ namespace Hanekawa.Services.Administration
                     var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
                     await StoreMessages(warn.Id, user, messages);
                 }
+
                 await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
                 await UserMuted(user, "Auto-Moderator", reason, after);
             }
@@ -233,15 +242,19 @@ namespace Hanekawa.Services.Administration
                 {
                     Color = Color.Purple,
                     Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
-                                  $"Reason:\n" +
+                                  "Reason:\n" +
                                   $"{reason}"
                 };
                 await dm.SendEmbedAsync(embed);
             }
-            catch {/* IGNORE */ }
+            catch
+            {
+                /* IGNORE */
+            }
         }
 
-        private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason, TimeSpan after)
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason,
+            TimeSpan after)
         {
             try
             {
@@ -250,13 +263,16 @@ namespace Hanekawa.Services.Administration
                 {
                     Color = Color.Purple,
                     Description = $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
-                                  $"Reason:\n" +
+                                  "Reason:\n" +
                                   $"{reason}"
                 };
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
                 await dm.SendEmbedAsync(embed);
             }
-            catch {/* IGNORE */ }
+            catch
+            {
+                /* IGNORE */
+            }
         }
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason)
@@ -268,15 +284,19 @@ namespace Hanekawa.Services.Administration
                 {
                     Color = Color.Purple,
                     Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
-                                  $"Reason:\n" +
+                                  "Reason:\n" +
                                   $"{reason}"
                 };
                 await dm.SendEmbedAsync(embed);
             }
-            catch {/* IGNORE */ }
+            catch
+            {
+                /* IGNORE */
+            }
         }
 
-        private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason, TimeSpan after)
+        private static async Task WarnUser(WarnReason warn, IGuildUser user, string staff, string reason,
+            TimeSpan after)
         {
             try
             {
@@ -285,20 +305,24 @@ namespace Hanekawa.Services.Administration
                 {
                     Color = Color.Purple,
                     Description = $"You've been muted on {user.Guild.Name} by {staff}\n" +
-                                  $"Reason:\n" +
+                                  "Reason:\n" +
                                   $"{reason}"
                 };
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
                 await dm.SendEmbedAsync(embed);
             }
-            catch {/* IGNORE */ }
+            catch
+            {
+                /* IGNORE */
+            }
         }
 
         private static async Task<List<EmbedFieldBuilder>> GetWarnings(IGuildUser user)
         {
             using (var db = new DbService())
             {
-                var warns = await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id).ToListAsync();
+                var warns = await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id)
+                    .ToListAsync();
                 var result = new List<EmbedFieldBuilder>();
                 foreach (var x in warns)
                 {
@@ -314,6 +338,7 @@ namespace Hanekawa.Services.Administration
                     };
                     result.Add(field);
                 }
+
                 return result;
             }
         }

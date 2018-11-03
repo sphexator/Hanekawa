@@ -1,12 +1,13 @@
-﻿using Discord.WebSocket;
+﻿using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Administration
 {
     public class BlackListService
     {
         private readonly DiscordSocketClient _client;
+
         public BlackListService(DiscordSocketClient client)
         {
             _client = client;

@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
@@ -7,9 +10,6 @@ using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Achievement
 {
@@ -28,10 +28,7 @@ namespace Hanekawa.Modules.Account.Achievement
                 {
                     var tabs = await db.AchievementTypes.ToListAsync();
                     string content = null;
-                    foreach (var x in tabs)
-                    {
-                        content += $"{x.Name}\n";
-                    }
+                    foreach (var x in tabs) content += $"{x.Name}\n";
                     var author = new EmbedAuthorBuilder
                     {
                         Name = "Achievement tabs"
@@ -58,13 +55,14 @@ namespace Hanekawa.Modules.Account.Achievement
                             new EmbedBuilder().Reply("No tabs with that name", Color.Red.RawValue).Build());
                         return;
                     }
-                    var achievements = await db.Achievements.Where(x => !x.Hidden && x.TypeId == type.TypeId).ToListAsync();
+
+                    var achievements = await db.Achievements.Where(x => !x.Hidden && x.TypeId == type.TypeId)
+                        .ToListAsync();
                     var pages = new List<string>();
                     for (var i = 0; i < achievements.Count;)
                     {
                         string achievString = null;
                         for (var j = 0; j < 5; j++)
-                        {
                             try
                             {
                                 if (i == achievements.Count) continue;
@@ -73,8 +71,10 @@ namespace Hanekawa.Modules.Account.Achievement
                                     $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
                                 i++;
                             }
-                            catch { i++; }
-                        }
+                            catch
+                            {
+                                i++;
+                            }
 
                         pages.Add(achievString);
                     }
@@ -134,6 +134,7 @@ namespace Hanekawa.Modules.Account.Achievement
                         new EmbedBuilder().Reply("No achievements found.", Color.Red.RawValue).Build());
                     return;
                 }
+
                 var achievements = new List<AchievementMeta>();
                 unlock.ForEach(x => achievements.Add(db.Achievements.Find(x.AchievementId)));
                 var pages = new List<string>();
@@ -141,7 +142,6 @@ namespace Hanekawa.Modules.Account.Achievement
                 {
                     string achievString = null;
                     for (var j = 0; j < 5; j++)
-                    {
                         try
                         {
                             if (i == achievements.Count) continue;
@@ -150,8 +150,10 @@ namespace Hanekawa.Modules.Account.Achievement
                                 $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
                             i++;
                         }
-                        catch { i++; }
-                    }
+                        catch
+                        {
+                            i++;
+                        }
 
                     pages.Add(achievString);
                 }
@@ -184,7 +186,8 @@ namespace Hanekawa.Modules.Account.Achievement
             return achiev.Achievement.Global ? "Server | **Global**" : "**Server** | Global";
         }
 
-        private static bool ServerAndGlobal(IEnumerable<AchievementUnlock> list, List<AchievementMeta> achievements, AchievementUnlock achiev = null)
+        private static bool ServerAndGlobal(IEnumerable<AchievementUnlock> list, List<AchievementMeta> achievements,
+            AchievementUnlock achiev = null)
         {
             if (achiev == null) return false;
             if (!achiev.Achievement.Global) return false;

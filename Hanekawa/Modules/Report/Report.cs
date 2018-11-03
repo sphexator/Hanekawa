@@ -1,13 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Extensions;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Report
@@ -43,7 +43,7 @@ namespace Hanekawa.Modules.Report
         [Command("report", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 30, Measure.Seconds)]
-        public async Task ReportGuildAsync([Remainder]string text)
+        public async Task ReportGuildAsync([Remainder] string text)
         {
             await Context.Message.DeleteAsync();
             using (var db = new DbService())
@@ -69,9 +69,7 @@ namespace Hanekawa.Modules.Report
                     Timestamp = new DateTimeOffset(DateTime.UtcNow)
                 };
                 if (Context.Message.Attachments.FirstOrDefault() != null)
-                {
                     embed.ImageUrl = Context.Message.Attachments.First().Url;
-                }
                 var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).SendEmbedAsync(embed);
                 report.MessageId = msg.Id;
                 await db.SaveChangesAsync();
@@ -105,9 +103,12 @@ namespace Hanekawa.Modules.Report
                         $"Answer from {Context.User.Mention}:\n" +
                         $"{text}");
                 }
-                catch { /*IGNORE*/ }
+                catch
+                {
+                    /*IGNORE*/
+                }
 
-                await ((IUserMessage)msg).ModifyAsync(x => x.Embed = embed.Build());
+                await ((IUserMessage) msg).ModifyAsync(x => x.Embed = embed.Build());
             }
         }
     }

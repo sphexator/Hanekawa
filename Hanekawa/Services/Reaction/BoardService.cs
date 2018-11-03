@@ -1,12 +1,12 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
 
 namespace Hanekawa.Services.Reaction
 {

@@ -1,7 +1,7 @@
-﻿using Discord.Addons.Interactive;
+﻿using System.Threading.Tasks;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Miki.Anilist;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Anime
 {
@@ -11,7 +11,7 @@ namespace Hanekawa.Modules.Anime
         [RequireOwner]
         public async Task AniSearchAsync([Remainder] string anime)
         {
-            AnilistClient client = new AnilistClient();
+            var client = new AnilistClient();
             var animeResult = await client.GetMediaAsync(anime, MediaFormat.TV);
             await ReplyAsync(animeResult.EnglishTitle);
         }

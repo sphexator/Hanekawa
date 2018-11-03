@@ -1,5 +1,15 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -13,16 +23,6 @@ using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
@@ -31,19 +31,6 @@ namespace Hanekawa.Services.Welcome
     {
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _provider;
-
-        // True = banners enabled
-        // False = banners disabled 
-        private ConcurrentDictionary<ulong, bool> DisableBanner { get; set; }
-            = new ConcurrentDictionary<ulong, bool>();
-        private ConcurrentDictionary<ulong, uint> JoinCount { get; set; }
-            = new ConcurrentDictionary<ulong, uint>();
-
-        private ConcurrentDictionary<ulong, bool> AntiRaidDisable { get; }
-            = new ConcurrentDictionary<ulong, bool>();
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         public WelcomeService(IServiceProvider provider, DiscordSocketClient discord)
         {
@@ -57,11 +44,25 @@ namespace Hanekawa.Services.Welcome
             using (var db = new DbService())
             {
                 foreach (var x in db.GuildConfigs)
-                {
                     DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
-                }
             }
         }
+
+        // True = banners enabled
+        // False = banners disabled 
+        private ConcurrentDictionary<ulong, bool> DisableBanner { get; }
+            = new ConcurrentDictionary<ulong, bool>();
+
+        private ConcurrentDictionary<ulong, uint> JoinCount { get; }
+            = new ConcurrentDictionary<ulong, uint>();
+
+        private ConcurrentDictionary<ulong, bool> AntiRaidDisable { get; }
+            = new ConcurrentDictionary<ulong, bool>();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
+        private static Regex UserRegex => new Regex("%PLAYER%");
 
         public async Task TestBanner(ISocketMessageChannel ch, IGuildUser user, string backgroundUrl)
         {
@@ -132,7 +133,6 @@ namespace Hanekawa.Services.Welcome
                         if (!cfg.WelcomeChannel.HasValue) return;
                         await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user, cfg)
                             .ConfigureAwait(false);
-
                     }
                 }
                 catch (Exception e)
@@ -151,8 +151,14 @@ namespace Hanekawa.Services.Welcome
             var welcMsg = await ch.SendFileAsync(stream, "welcome.png", msg);
             if (!cfg.WelcomeDelete.HasValue) return;
             await Task.Delay(cfg.WelcomeDelete.Value);
-            try { await welcMsg.DeleteAsync(); }
-            catch {/* IGNORE */}
+            try
+            {
+                await welcMsg.DeleteAsync();
+            }
+            catch
+            {
+                /* IGNORE */
+            }
         }
 
         private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
@@ -173,6 +179,7 @@ namespace Hanekawa.Services.Welcome
                     .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
+
             return stream;
         }
 
@@ -222,8 +229,6 @@ namespace Hanekawa.Services.Welcome
             var msg = UserRegex.Replace(cfg.WelcomeMessage, user.Mention);
             return msg;
         }
-
-        private static Regex UserRegex => new Regex("%PLAYER%");
 
         private static Task BannerCleanup(SocketGuild guild)
         {

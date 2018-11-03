@@ -1,8 +1,8 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 
 namespace Hanekawa.Services.Reliability
 {
@@ -19,15 +19,15 @@ namespace Hanekawa.Services.Reliability
 
         private readonly DiscordSocketClient _discord;
         private readonly Func<LogMessage, Task> _logger;
-        private CancellationTokenSource _cts;
         private readonly Timer _timer;
+        private CancellationTokenSource _cts;
 
         public ReliabilityService(DiscordSocketClient discord, Func<LogMessage, Task> logger = null)
         {
             _cts = new CancellationTokenSource();
             _discord = discord;
             _logger = logger ?? (_ => Task.CompletedTask);
-            
+
             _discord.Connected += ConnectedAsync;
             _discord.Disconnected += DisconnectedAsync;
 
@@ -73,10 +73,7 @@ namespace Hanekawa.Services.Reliability
 
         private async Task CheckStateAsync()
         {
-            if (_discord.ConnectionState == ConnectionState.Connected)
-            {
-                return;
-            }
+            if (_discord.ConnectionState == ConnectionState.Connected) return;
 
             if (AttemptReset)
             {

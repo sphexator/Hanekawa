@@ -1,21 +1,21 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.AnimeSimulCast.Entity;
-
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Anime
 {
     public class SimulCast
     {
-        private readonly DiscordSocketClient _client;
         private readonly AnimeSimulCastClient _anime;
+        private readonly DiscordSocketClient _client;
+
         public SimulCast(AnimeSimulCastClient anime, DiscordSocketClient client)
         {
             _anime = anime;
@@ -54,14 +54,15 @@ namespace Hanekawa.Services.Anime
             if (!cfg.AnimeAirChannel.HasValue) return;
             var guild = _client.GetGuild(cfg.GuildId);
             Console.WriteLine($"Posting to {guild.Name}");
-            await guild.GetTextChannel(cfg.AnimeAirChannel.Value).SendMessageAsync(null, false, BuildEmbed(data).Build());
+            await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
+                .SendMessageAsync(null, false, BuildEmbed(data).Build());
         }
 
         private static EmbedBuilder BuildEmbed(AnimeData data)
         {
             var embed = new EmbedBuilder
             {
-                Author = new EmbedAuthorBuilder { Name = "New Episode Available!" },
+                Author = new EmbedAuthorBuilder {Name = "New Episode Available!"},
                 Title = $"{data.Title}",
                 Url = data.Url,
                 Color = Color.Purple,

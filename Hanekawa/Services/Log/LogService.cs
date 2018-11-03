@@ -1,18 +1,18 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Data.Constants;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Data;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
 using Humanizer;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Services.Log
 {
@@ -95,7 +95,10 @@ namespace Hanekawa.Services.Log
                         if (Uri.IsWellFormedUriString(newUsr.GetAvatarUrl(ImageFormat.Auto, 1024), UriKind.Absolute))
                             embed.WithImageUrl(newUsr.GetAvatarUrl(ImageFormat.Auto, 1024));
                     }
-                    else return;
+                    else
+                    {
+                        return;
+                    }
 
                     await ch.SendMessageAsync(null, false, embed.Build());
                 }
@@ -117,14 +120,16 @@ namespace Hanekawa.Services.Log
                     var embed = new EmbedBuilder
                     {
                         Title = $"{oldUsr.Username}#{oldUsr.Discriminator} | {oldUsr.Id}",
-                        Footer = new EmbedFooterBuilder { IconUrl = newUsr.GetAvatarUrl(), Text = ""}
+                        Footer = new EmbedFooterBuilder {IconUrl = newUsr.GetAvatarUrl(), Text = ""}
                     };
 
                     if (oldUsr.Nickname != newUsr.Nickname)
                     {
                         embed.WithAuthor(x => x.WithName("Nick Change"))
-                            .AddField(x => x.WithName("Old Nick").WithValue($"{oldUsr.Nickname}#{oldUsr.Discriminator}"))
-                            .AddField(x => x.WithName("New Nick").WithValue($"{newUsr.Nickname}#{newUsr.Discriminator}"));
+                            .AddField(
+                                x => x.WithName("Old Nick").WithValue($"{oldUsr.Nickname}#{oldUsr.Discriminator}"))
+                            .AddField(
+                                x => x.WithName("New Nick").WithValue($"{newUsr.Nickname}#{newUsr.Discriminator}"));
                         await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
                     }
                     else if (!oldUsr.Roles.SequenceEqual(newUsr.Roles))
@@ -163,15 +168,17 @@ namespace Hanekawa.Services.Log
                     {
                         Color = Color.Purple,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Author = new EmbedAuthorBuilder { Name = "User Mute Warned" },
+                        Author = new EmbedAuthorBuilder {Name = "User Mute Warned"},
                         Fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder { IsInline = true, Name = "User", Value = $"{user.Mention}" },
-                            new EmbedFieldBuilder { IsInline = true, Name = "Staff", Value = staff},
-                            new EmbedFieldBuilder { IsInline = true, Name = "Reason", Value = reason.Truncate(700) },
-                            new EmbedFieldBuilder { IsInline = true, Name = "Duration", Value = $"{duration.Humanize()} ({duration})" }
+                            new EmbedFieldBuilder {IsInline = true, Name = "User", Value = $"{user.Mention}"},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Staff", Value = staff},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = reason.Truncate(700)},
+                            new EmbedFieldBuilder
+                                {IsInline = true, Name = "Duration", Value = $"{duration.Humanize()} ({duration})"}
                         },
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"}
+                        Footer = new EmbedFooterBuilder
+                            {Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"}
                     };
                     await ch.SendEmbedAsync(embed);
                 }
@@ -194,14 +201,15 @@ namespace Hanekawa.Services.Log
                     {
                         Color = Color.Purple,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Author = new EmbedAuthorBuilder { Name = "User Warned" },
+                        Author = new EmbedAuthorBuilder {Name = "User Warned"},
                         Fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder { IsInline = true, Name = "User", Value = user.Mention},
-                            new EmbedFieldBuilder { IsInline = true, Name = "Staff", Value = staff},
-                            new EmbedFieldBuilder { IsInline = true, Name = "Reason", Value = reason.Truncate(700)}
+                            new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Staff", Value = staff},
+                            new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = reason.Truncate(700)}
                         },
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"}
+                        Footer = new EmbedFooterBuilder
+                            {Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"}
                     };
                     await ch.SendEmbedAsync(embed);
                 }
@@ -209,7 +217,8 @@ namespace Hanekawa.Services.Log
             return Task.CompletedTask;
         }
 
-        private static Task AutoModFilterLog(SocketGuildUser user,ModerationService.AutoModActionType type,int amount, string content)
+        private static Task AutoModFilterLog(SocketGuildUser user, ModerationService.AutoModActionType type, int amount,
+            string content)
         {
             var _ = Task.Run(async () =>
             {
@@ -265,24 +274,26 @@ namespace Hanekawa.Services.Log
             return Task.CompletedTask;
         }
 
-        private static async Task AutoModLog(IUser user, IMessageChannel channel, ModerationService.AutoModActionType type, string content, string reason, string action, TimeSpan? timer = null)
+        private static async Task AutoModLog(IUser user, IMessageChannel channel,
+            ModerationService.AutoModActionType type, string content, string reason, string action,
+            TimeSpan? timer = null)
         {
-                var embed = new EmbedBuilder
+            var embed = new EmbedBuilder
+            {
+                Author = new EmbedAuthorBuilder {Name = $"{action} - {user.Username}#{user.DiscriminatorValue}"},
+                Color = Color.Red,
+                Description = content,
+                Fields = new List<EmbedFieldBuilder>
                 {
-                    Author = new EmbedAuthorBuilder { Name = $"{action} - {user.Username}#{user.DiscriminatorValue}" },
-                    Color = Color.Red,
-                    Description = content,
-                    Fields = new List<EmbedFieldBuilder>
-                    {
-                        new EmbedFieldBuilder{ IsInline = true, Name = "User", Value = user.Mention },
-                        new EmbedFieldBuilder{ IsInline = true, Name = "Staff", Value = "Auto-moderator"},
-                        new EmbedFieldBuilder{ IsInline = true, Name = "Reason", Value = reason }
-                    },
-                    Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                    Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}"}
-                };
-                if (timer.HasValue) embed.AddField("Duration", timer.Value.Humanize(), true);
-                await channel.SendEmbedAsync(embed);
+                    new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
+                    new EmbedFieldBuilder {IsInline = true, Name = "Staff", Value = "Auto-moderator"},
+                    new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = reason}
+                },
+                Timestamp = new DateTimeOffset(DateTime.UtcNow),
+                Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}
+            };
+            if (timer.HasValue) embed.AddField("Duration", timer.Value.Humanize(), true);
+            await channel.SendEmbedAsync(embed);
         }
 
         private static Task UserUnmuted(SocketGuildUser user)
@@ -298,11 +309,12 @@ namespace Hanekawa.Services.Log
 
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder { Name = $"{user.Username}#{user.DiscriminatorValue} | {ActionType.Ungagged}"},
+                        Author = new EmbedAuthorBuilder
+                            {Name = $"{user.Username}#{user.DiscriminatorValue} | {ActionType.Ungagged}"},
                         Description = $"{user.Mention}",
                         Color = Color.Green,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" }
+                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}
                     };
                     await ch.SendEmbedAsync(embed);
                 }
@@ -321,14 +333,19 @@ namespace Hanekawa.Services.Log
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow,
+                        (ModAction) Data.Constants.ModAction.Mute);
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"},
+                        Author = new EmbedAuthorBuilder
+                        {
+                            Name =
+                                $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
+                        },
                         Color = new Color(Color.Red.RawValue),
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
                         Fields = ModLogFieldBuilders(user, null, timer),
-                        Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}"}
+                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}
                     };
                     var msg = await ch.SendEmbedAsync(embed);
                     caseId.MessageId = msg.Id;
@@ -350,11 +367,16 @@ namespace Hanekawa.Services.Log
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
 
-                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Mute);
+                    var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow,
+                        (ModAction) Data.Constants.ModAction.Mute);
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}" },
-                        Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
+                        Author = new EmbedAuthorBuilder
+                        {
+                            Name =
+                                $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
+                        },
+                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                         Color = Color.Red,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
                         Fields = ModLogFieldBuilders(user)
@@ -385,7 +407,7 @@ namespace Hanekawa.Services.Log
 
                         Color = Color.Green,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
                     };
 
                     await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
@@ -409,7 +431,7 @@ namespace Hanekawa.Services.Log
                         Description = $"📤 {user.Mention} has left (*{user.Id}*)",
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
                         Color = Color.Red,
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
                     };
 
                     await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
@@ -431,11 +453,16 @@ namespace Hanekawa.Services.Log
                         var ch = guild.GetTextChannel(cfg.LogBan.Value);
                         if (ch == null) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Ban);
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow,
+                            (ModAction) Data.Constants.ModAction.Ban);
                         var embed = new EmbedBuilder
                         {
-                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Bent} | {user.Username}#{user.Discriminator}" },
-                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
+                            Author = new EmbedAuthorBuilder
+                            {
+                                Name =
+                                    $"Case ID: {caseId.Id} - {ActionType.Bent} | {user.Username}#{user.Discriminator}"
+                            },
+                            Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                             Color = Color.Red,
                             Timestamp = new DateTimeOffset(DateTime.UtcNow),
                             Fields = ModLogFieldBuilders(user)
@@ -466,11 +493,16 @@ namespace Hanekawa.Services.Log
                         var ch = guild.GetTextChannel(cfg.LogBan.Value);
                         if (ch == null) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, (Addons.Database.Data.ModAction) ModAction.Unban);
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow,
+                            (ModAction) Data.Constants.ModAction.Unban);
                         var embed = new EmbedBuilder
                         {
-                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.UnBent} | {user.Username}#{user.Discriminator}" },
-                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
+                            Author = new EmbedAuthorBuilder
+                            {
+                                Name =
+                                    $"Case ID: {caseId.Id} - {ActionType.UnBent} | {user.Username}#{user.Discriminator}"
+                            },
+                            Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                             Color = Color.Green,
                             Timestamp = new DateTimeOffset(DateTime.UtcNow),
                             Fields = ModLogFieldBuilders(user)
@@ -500,26 +532,29 @@ namespace Hanekawa.Services.Log
                     if (!cfg.LogMsg.HasValue) return;
                     var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
                     if (channel == null) return;
-                    if (!((optMsg.HasValue ? optMsg.Value : null) is IUserMessage msg)) return;
-                    
+                    if (!optMsg.HasValue) return;
+                    if (!(optMsg.Value is IUserMessage msg)) return;
+
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder { Name = "Message Deleted" },
-                        Footer = new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" },
+                        Author = new EmbedAuthorBuilder {Name = "Message Deleted"},
+                        Footer = new EmbedFooterBuilder {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"},
                         Color = Color.Purple,
                         Timestamp = msg.Timestamp,
                         Description = $"{msg.Author.Mention} deleted a message in {(ch as ITextChannel)?.Mention}",
-                        Fields = new List<EmbedFieldBuilder> { new EmbedFieldBuilder { IsInline = false, Name = "Message", Value = msg.Content.Truncate(900) } }
+                        Fields = new List<EmbedFieldBuilder>
+                        {
+                            new EmbedFieldBuilder
+                                {IsInline = false, Name = "Message", Value = msg.Content.Truncate(900)}
+                        }
                     };
-                    if(msg.Attachments.Count > 0)
-                    {
+                    if (msg.Attachments.Count > 0)
                         embed.AddField(x =>
                         {
                             x.Name = "File";
                             x.IsInline = false;
                             x.Value = msg.Attachments.First().Url;
                         });
-                    }
 
                     await channel.SendEmbedAsync(embed);
                 }
@@ -538,23 +573,27 @@ namespace Hanekawa.Services.Log
                     if (!(ch is ITextChannel chtx)) return;
                     var cfg = await db.GetOrCreateGuildConfig(chtx.Guild);
                     if (!cfg.LogMsg.HasValue) return;
-                    if (!((oldMsg.HasValue ? oldMsg.Value : null) is IUserMessage msg) || newMsg == null) return;
-                    var channel = await chtx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+ 
+                    if (!oldMsg.HasValue) return;
+                    if (!(oldMsg.Value is IUserMessage msg)) return;var channel = await chtx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+                    
                     if (channel == null) return;
                     if (msg.Author.IsBot && oldMsg.Value.Content == newMsg.Content) return;
                     if (oldMsg.Value.Content == newMsg.Content) return;
 
                     var embed = new EmbedBuilder
                     {
-                        Author = new EmbedAuthorBuilder { Name = "Message Updated" },
-                        Footer = new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" },
+                        Author = new EmbedAuthorBuilder {Name = "Message Updated"},
+                        Footer = new EmbedFooterBuilder {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"},
                         Color = Color.Purple,
                         Timestamp = newMsg.EditedTimestamp ?? newMsg.Timestamp,
                         Description = $"{newMsg.Author.Mention} updated a message in {chtx.Mention}",
                         Fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder { IsInline = true, Name = "Updated Message:", Value = newMsg.Content.Truncate(900) },
-                            new EmbedFieldBuilder { IsInline = true, Name = "Old Message:", Value = msg.Content.Truncate(900) }
+                            new EmbedFieldBuilder
+                                {IsInline = true, Name = "Updated Message:", Value = newMsg.Content.Truncate(900)},
+                            new EmbedFieldBuilder
+                                {IsInline = true, Name = "Old Message:", Value = msg.Content.Truncate(900)}
                         }
                     };
                     await channel.SendEmbedAsync(embed);
@@ -608,7 +647,7 @@ namespace Hanekawa.Services.Log
 
         private static LogLevel LogLevelFromSeverity(LogSeverity severity)
         {
-            return (LogLevel)Math.Abs((int)severity - 5);
+            return (LogLevel) Math.Abs((int) severity - 5);
         }
 
         private static List<EmbedFieldBuilder> ModLogFieldBuilders(IMentionable user,
@@ -617,9 +656,9 @@ namespace Hanekawa.Services.Log
         {
             var result = new List<EmbedFieldBuilder>
             {
-                new EmbedFieldBuilder { IsInline = true, Name = "User", Value = user.Mention },
-                new EmbedFieldBuilder { IsInline = true, Name = "Moderator", Value = "N/A" },
-                new EmbedFieldBuilder { IsInline = true, Name = "Reason", Value = reason ?? "N/A"},
+                new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
+                new EmbedFieldBuilder {IsInline = true, Name = "Moderator", Value = "N/A"},
+                new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = reason ?? "N/A"}
             };
             if (duration == null) return result;
             var durationField = new EmbedFieldBuilder

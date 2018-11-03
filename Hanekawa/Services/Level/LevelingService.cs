@@ -1,20 +1,20 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using Hanekawa.Services.Level.Util;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Events;
+using Hanekawa.Extensions;
+using Hanekawa.Services.Level.Util;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Level
 {
@@ -22,10 +22,6 @@ namespace Hanekawa.Services.Level
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
-
-        public event AsyncEvent<IGuildUser, Account> ServerLevel;
-        public event AsyncEvent<IGuildUser, AccountGlobal> GlobalLevel; 
-        public event AsyncEvent<SocketGuildUser, TimeSpan> InVoice;
 
         public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
@@ -76,8 +72,15 @@ namespace Hanekawa.Services.Level
         private ConcurrentDictionary<ulong, DateTime> GlobalExpCooldown { get; }
             = new ConcurrentDictionary<ulong, DateTime>();
 
+        public event AsyncEvent<IGuildUser, Account> ServerLevel;
+        public event AsyncEvent<IGuildUser, AccountGlobal> GlobalLevel;
+        public event AsyncEvent<SocketGuildUser, TimeSpan> InVoice;
+
         // Get Commands
-        public uint GetServerMultiplier(IGuild guild) => ExpMultiplier.GetOrAdd(guild.Id, 1);
+        public uint GetServerMultiplier(IGuild guild)
+        {
+            return ExpMultiplier.GetOrAdd(guild.Id, 1);
+        }
 
         // Exp event handler
         public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
@@ -224,7 +227,7 @@ namespace Hanekawa.Services.Level
                     ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
                     var cfg = await db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
-                    var exp = (_calc.GetMessageExp(msg) * cfg.ExpMultiplier) * multi;
+                    var exp = _calc.GetMessageExp(msg) * cfg.ExpMultiplier * multi;
                     var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
@@ -309,7 +312,7 @@ namespace Hanekawa.Services.Level
 
                         if (oldVc == null || newVc != null) return;
                         var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
-                        var exp = (_calc.GetVoiceExp(userdata.VoiceExpTime) * cfg.ExpMultiplier ) * multi;
+                        var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * cfg.ExpMultiplier * multi;
                         var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                         userdata.TotalExp = userdata.TotalExp + exp;
@@ -329,7 +332,7 @@ namespace Hanekawa.Services.Level
                         }
 
                         await db.SaveChangesAsync();
-                        await InVoice?.Invoke(gusr, (DateTime.UtcNow - userdata.VoiceExpTime));
+                        await InVoice?.Invoke(gusr, DateTime.UtcNow - userdata.VoiceExpTime);
                     }
                 }
                 catch (Exception e)

@@ -1,13 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.QA
 {
@@ -68,6 +68,7 @@ namespace Hanekawa.Modules.QA
                         new EmbedBuilder().Reply("No QnA channel has been setup", Color.Red.RawValue).Build());
                     return;
                 }
+
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value)
                     .GetMessageAsync(question.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -80,12 +81,13 @@ namespace Hanekawa.Modules.QA
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(question.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, new EmbedBuilder().Reply(
-                        "Your question got a response!\n" +
-                        "Question:\n" +
-                        $"{embed.Description}\n" +
-                        $"Answer from {Context.User}:\n" +
-                        $"{response}").Build());
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false,
+                        new EmbedBuilder().Reply(
+                            "Your question got a response!\n" +
+                            "Question:\n" +
+                            $"{embed.Description}\n" +
+                            $"Answer from {Context.User}:\n" +
+                            $"{response}").Build());
                 }
                 catch
                 {

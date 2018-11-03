@@ -1,22 +1,25 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Extensions;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Services.AutoModerator;
+using Microsoft.EntityFrameworkCore;
+using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {
-
     [Group("automoderator")]
     [Alias("automod")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class FilterPermission : InteractiveBase
     {
-        private readonly NudeScoreService _nude;
         private readonly ModerationService _moderation;
+        private readonly NudeScoreService _nude;
+
         public FilterPermission(NudeScoreService nude, ModerationService moderation)
         {
             _nude = nude;
@@ -71,7 +74,7 @@ namespace Hanekawa.Modules.Permission
             }
             else
             {
-                var embed = await _nude.SetNudeChannel(ch,tolerance);
+                var embed = await _nude.SetNudeChannel(ch, tolerance);
                 if (embed == null) return;
                 await ReplyAsync(null, false, embed.Build());
             }
@@ -88,21 +91,65 @@ namespace Hanekawa.Modules.Permission
                 var embed = await _nude.RemoveSingleNudeChannel(ch);
                 if (embed == null)
                     return;
-                await ReplyAsync(null,false,embed.Build());
+                await ReplyAsync(null, false, embed.Build());
             }
-            else if (tolerance == 0 || (tolerance == 0 && level == 0))
+            else if (tolerance == 0 || tolerance == 0 && level == 0)
             {
                 var embed = await _nude.RemoveSingleNudeChannel(ch);
                 if (embed == null)
                     return;
-                await ReplyAsync(null,false,embed.Build());
+                await ReplyAsync(null, false, embed.Build());
             }
             else
             {
                 var embed = await _nude.SetSingleNudeChannel(ch, level, tolerance);
                 if (embed == null)
                     return;
-                await ReplyAsync(null,false,embed.Build());
+                await ReplyAsync(null, false, embed.Build());
+            }
+        }
+
+        [Command("view st", RunMode = RunMode.Async)]
+        [Alias("vst")]
+        [Summary("View single toxicity enabled channels with tolerance and level")]
+        public async Task ViewSingleToxicityChannels()
+        {
+            using (var db = new DbService())
+            {
+                var channels = await db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var content = "Single toxicity enabled channels:\n";
+                if (channels.Count == 0) content += "No toxicity enabled channels";
+                else
+                {
+                    content += "```\n";
+                    channels.ForEach(x =>
+                        content +=
+                            $"{Context.Guild.GetTextChannel(x.ChannelId).Mention.PadRight(10)} | Level: {x.Level} | Tolerance: {x.Tolerance}\n");
+                    content += "```";
+                }
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
+            }
+        }
+
+        [Command("view at", RunMode = RunMode.Async)]
+        [Alias("vat")]
+        [Summary("View average toxicity enabled channels with tolerance")]
+        public async Task ViewAverageToxicityChannels()
+        {
+            using (var db = new DbService())
+            {
+                var channels = await db.NudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var content = "Average toxicity enabled channels:\n";
+                if (channels.Count == 0) content += "No toxicity enabled channels";
+                else
+                {
+                    content += "```\n";
+                    channels.ForEach(x =>
+                        content +=
+                            $"{Context.Guild.GetTextChannel(x.ChannelId).Mention.PadRight(10)} | Tolerance: {x.Tolerance}\n");
+                    content += "```";
+                }
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
             }
         }
 
@@ -140,12 +187,12 @@ namespace Hanekawa.Modules.Permission
                 if (amount > 0)
                 {
                     cfg.MentionCountFilter = amount;
-                    await ReplyAsync(null,false,new EmbedBuilder().Reply($"Set mention filter to {amount}").Build());
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"Set mention filter to {amount}").Build());
                 }
                 else
                 {
                     cfg.MentionCountFilter = null;
-                    await ReplyAsync(null,false,new EmbedBuilder().Reply("Disabled mention filter").Build());
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("Disabled mention filter").Build());
                 }
 
                 await db.SaveChangesAsync();
@@ -155,10 +202,11 @@ namespace Hanekawa.Modules.Permission
         [Command("url filter", RunMode = RunMode.Async)]
         [Alias("url")]
         [Summary("Sets a channel to filter out urls ")]
-        public async Task UrlFilter(ITextChannel channel = null){
-            if(channel == null) channel = Context.Channel as ITextChannel;
+        public async Task UrlFilter(ITextChannel channel = null)
+        {
+            if (channel == null) channel = Context.Channel as ITextChannel;
             var embed = await _moderation.UrlFilterHandler(channel);
-            if(embed == null) return;
+            if (embed == null) return;
             await ReplyAsync(null, false, embed.Build());
         }
     }

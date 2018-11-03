@@ -1,18 +1,18 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Club;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Club;
 using static Hanekawa.Services.Club.ClubService;
 
 namespace Hanekawa.Modules.Club
@@ -62,7 +62,7 @@ namespace Hanekawa.Modules.Club
                     JoinDate = DateTimeOffset.UtcNow,
                     Rank = 1,
                     UserId = Context.User.Id,
-                    Id = (await db.ClubPlayers.CountAsync()) + 1
+                    Id = await db.ClubPlayers.CountAsync() + 1
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -91,24 +91,25 @@ namespace Hanekawa.Modules.Club
                             .Reply("You're not high enough rank to use that command!", Color.Red.RawValue).Build());
                     return;
                 }
+
                 var clubData = await db.GetClubAsync(clubUser.ClubId, Context.Guild);
                 await ReplyAsync(
                     $"{user.Mention}, {Context.User.Mention} has invited you to {clubData.Name}, do you accept? (y/n)");
                 var status = true;
                 while (status)
-                {
                     try
                     {
-                        var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id), TimeSpan.FromSeconds(30));
+                        var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id),
+                            TimeSpan.FromSeconds(30));
                         if (response.Content.ToLower() == "y") status = false;
                         if (response.Content.ToLower() == "n") return;
                     }
                     catch
                     {
-                        await ReplyAsync(null, false, new EmbedBuilder().Reply("Invite expired.", Color.Red.RawValue).Build());
+                        await ReplyAsync(null, false,
+                            new EmbedBuilder().Reply("Invite expired.", Color.Red.RawValue).Build());
                         return;
                     }
-                }
 
                 var data = new ClubPlayer
                 {
@@ -191,7 +192,7 @@ namespace Hanekawa.Modules.Club
 
                 var embed = new EmbedBuilder().Reply(content);
                 embed.Title = "Reply with the ID of club you wish to leave";
-                embed.Footer = new EmbedFooterBuilder{Text = "Exit to cancel"};
+                embed.Footer = new EmbedFooterBuilder {Text = "Exit to cancel"};
                 await ReplyAsync(null, false, embed.Build());
                 var status = true;
                 try
@@ -212,7 +213,9 @@ namespace Hanekawa.Modules.Club
                         status = false;
                     }
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 
@@ -261,7 +264,8 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.ClubId == leaderCheck.Id && x.UserId == user.Id);
+                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.GuildId == user.GuildId && x.ClubId == leaderCheck.Id && x.UserId == user.Id);
                 if (clubUser == null)
                 {
                     await ReplyAsync(null, false,
@@ -334,7 +338,8 @@ namespace Hanekawa.Modules.Club
             using (var db = new DbService())
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.GuildId == user.GuildId && x.ClubId == leader.Id && x.UserId == user.Id);
+                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.GuildId == user.GuildId && x.ClubId == leader.Id && x.UserId == user.Id);
                 if (clubUser == null)
                 {
                     await ReplyAsync(null, false,
@@ -372,7 +377,7 @@ namespace Hanekawa.Modules.Club
                 if (!cfg.ClubChannelCategory.HasValue)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"This server doesn't allow club channels", Color.Red.RawValue)
+                        new EmbedBuilder().Reply("This server doesn\'t allow club channels", Color.Red.RawValue)
                             .Build());
                     return;
                 }
@@ -392,7 +397,8 @@ namespace Hanekawa.Modules.Club
 
                 try
                 {
-                    await _clubService.CreateChannelAsync(db, Context.Guild, cfg, leader.Name, Context.User as IGuildUser,
+                    await _clubService.CreateChannelAsync(db, Context.Guild, cfg, leader.Name,
+                        Context.User as IGuildUser,
                         users, leader);
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply($"Successfully created channel for club {leader.Name} !",
@@ -429,19 +435,21 @@ namespace Hanekawa.Modules.Club
                 {
                     string clubString = null;
                     for (var j = 0; j < 5; j++)
-                    {
                         try
                         {
                             if (i == clubs.Count) continue;
                             var club = clubs[i];
-                            var leader = Context.Guild.GetUser(club.Leader).Mention ?? "Couldn't find user or left server.";
+                            var leader = Context.Guild.GetUser(club.Leader).Mention ??
+                                         "Couldn't find user or left server.";
                             clubString += $"**{club.Name} (id: {club.Id})**\n" +
                                           $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
                                           $"Leader {leader}\n\n";
                             i++;
                         }
-                        catch { i++; }
-                    }
+                        catch
+                        {
+                            i++;
+                        }
 
                     pages.Add(clubString);
                 }
@@ -744,14 +752,16 @@ namespace Hanekawa.Modules.Club
                     cfg.ClubAutoPrune = false;
                     await ReplyAsync(null, false,
                         new EmbedBuilder()
-                            .Reply("Disabled automatic deletion of low member count clubs with a channel.", Color.Green.RawValue).Build());
+                            .Reply("Disabled automatic deletion of low member count clubs with a channel.",
+                                Color.Green.RawValue).Build());
                 }
                 else
                 {
                     cfg.ClubAutoPrune = true;
                     await ReplyAsync(null, false,
                         new EmbedBuilder()
-                            .Reply("Enabled automatic deletion of low member count clubs with a channel.", Color.Green.RawValue).Build());
+                            .Reply("Enabled automatic deletion of low member count clubs with a channel.",
+                                Color.Green.RawValue).Build());
                 }
 
                 await db.SaveChangesAsync();

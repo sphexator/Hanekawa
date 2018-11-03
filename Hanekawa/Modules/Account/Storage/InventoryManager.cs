@@ -1,9 +1,9 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Hanekawa.Addons.Database;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Storage
 {
@@ -22,22 +22,18 @@ namespace Hanekawa.Modules.Account.Storage
 
                 if (inventory != null || inventory.Count > 0)
                     foreach (var x in inventory)
-                    {
                         inventoryValue += $"Name: {(await db.Items.FindAsync(x.ItemId)).Name} - Amount: {x.Amount}\n";
-                    }
 
                 if (globalInventory != null || globalInventory.Count > 0)
                     foreach (var x in globalInventory)
-                    {
                         inventoryValue += $"Name: {(await db.Items.FindAsync(x.ItemId)).Name} - Amount: {x.Amount}\n";
-                    }
 
-                if(inventoryValue == null) return new EmbedBuilder().Reply("Your inventory is empty.");
+                if (inventoryValue == null) return new EmbedBuilder().Reply("Your inventory is empty.");
                 return new EmbedBuilder
                 {
                     Color = Color.Purple,
                     Description = inventoryValue,
-                    Author = new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = user.Username}
+                    Author = new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.Username}
                 };
             }
         }

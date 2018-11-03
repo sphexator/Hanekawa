@@ -1,25 +1,25 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Extensions;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Extensions;
 using SharpLink;
 
 namespace Hanekawa.Modules.Audio.Service
 {
     public class AudioService
     {
+        private const int MaxTries = 100;
         private readonly DiscordSocketClient _client;
         private readonly LavalinkManager _lava;
-        private ConcurrentDictionary<ulong, (LavalinkTrack Track, List<ulong> Votes)> _voteSkip;
-        private ConcurrentDictionary<ulong, bool> _repeat;
-        private ConcurrentDictionary<ulong, List<LavalinkTrack>> _queue;
-        private ConcurrentDictionary<ulong, int> _queNumber;
-        private ConcurrentDictionary<ulong, ITextChannel> _textChannel;
-        private const int MaxTries = 100;
+        private readonly ConcurrentDictionary<ulong, int> _queNumber;
+        private readonly ConcurrentDictionary<ulong, List<LavalinkTrack>> _queue;
+        private readonly ConcurrentDictionary<ulong, bool> _repeat;
+        private readonly ConcurrentDictionary<ulong, ITextChannel> _textChannel;
+        private readonly ConcurrentDictionary<ulong, (LavalinkTrack Track, List<ulong> Votes)> _voteSkip;
 
         public AudioService(DiscordSocketClient client, LavalinkManager lava)
         {
@@ -39,20 +39,22 @@ namespace Hanekawa.Modules.Audio.Service
             _queNumber = new ConcurrentDictionary<ulong, int>();
         }
 
-        private async Task OnReady() => await _lava.StartAsync();
+        private async Task OnReady()
+        {
+            await _lava.StartAsync();
+        }
 
-        public async Task<EmbedBuilder> PlayAsync(IGuildUser user, string query, IVoiceState state, ITextChannel channel)
+        public async Task<EmbedBuilder> PlayAsync(IGuildUser user, string query, IVoiceState state,
+            ITextChannel channel)
         {
             var player = await _lava.GetOrCreatePlayerAsync(user.GuildId, state.VoiceChannel, channel);
             var track = await _lava.GetSongAsync(query);
             if (track == null)
-            {
                 return new EmbedBuilder
                 {
                     Color = Color.Purple,
                     Description = $"{user.Mention}, Couldn't play song"
                 };
-            }
             return await QueueSongAsync(player, track, channel);
         }
 
@@ -100,7 +102,7 @@ namespace Hanekawa.Modules.Audio.Service
         public EmbedBuilder DisplayQueue(ulong guildId)
         {
             var player = _lava.GetPlayer(guildId);
-            var embed = new EmbedBuilder { Color = Color.Purple };
+            var embed = new EmbedBuilder {Color = Color.Purple};
             try
             {
                 if (player.Playing && player.CurrentTrack != null)
@@ -119,12 +121,16 @@ namespace Hanekawa.Modules.Audio.Service
                     foreach (var x in queueList)
                     {
                         if (tries >= limit) continue;
-                        if (player.CurrentTrack != null && player.CurrentTrack.Title == x.Title) queue += $"=> {x.Title}\n";
+                        if (player.CurrentTrack != null && player.CurrentTrack.Title == x.Title)
+                            queue += $"=> {x.Title}\n";
                         else queue += $"{x.Title}\n";
                         tries++;
                     }
                 }
-                else queue = "Queue is empty";
+                else
+                {
+                    queue = "Queue is empty";
+                }
 
                 embed.Description = queue;
                 return embed;
@@ -138,10 +144,7 @@ namespace Hanekawa.Modules.Audio.Service
         public async Task<EmbedBuilder> ClearQueueAsync(ulong guildId)
         {
             var player = _lava.GetPlayer(guildId);
-            if (player == null)
-            {
-                return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
-            }
+            if (player == null) return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
             if (player.CurrentTrack != null) await player.StopAsync();
             _queue.TryGetValue(guildId, out var queue);
             if (queue == null) return new EmbedBuilder().Reply("Cleared queue");
@@ -154,7 +157,7 @@ namespace Hanekawa.Modules.Audio.Service
             var player = _lava.GetPlayer(guildId);
             try
             {
-                await player.SetVolumeAsync((uint)vol);
+                await player.SetVolumeAsync((uint) vol);
                 return new EmbedBuilder().Reply($"Volume has been set to {vol}.");
             }
             catch (ArgumentException arg)
@@ -200,7 +203,13 @@ namespace Hanekawa.Modules.Audio.Service
 
         public async Task<EmbedBuilder> FixPlayer(ulong guildId, IVoiceState vc, IMessageChannel txC)
         {
-            try { await _lava.LeaveAsync(guildId); } catch { }
+            try
+            {
+                await _lava.LeaveAsync(guildId);
+            }
+            catch
+            {
+            }
 
             await Task.Delay(1000);
 
@@ -219,7 +228,7 @@ namespace Hanekawa.Modules.Audio.Service
                 _voteSkip.TryGetValue(guildId, out var skipInfo);
 
                 if (!skipInfo.Votes.Contains(userId)) skipInfo.Votes.Add(userId);
-                var perc = (int)Math.Round((double)(100 * skipInfo.Votes.Count) / users);
+                var perc = (int) Math.Round((double) (100 * skipInfo.Votes.Count) / users);
                 if (perc <= 50) return new EmbedBuilder().Reply("More votes needed.");
                 _voteSkip.TryUpdate(guildId, skipInfo, skipInfo);
                 await player.StopAsync();
@@ -235,12 +244,15 @@ namespace Hanekawa.Modules.Audio.Service
         {
             if (state.VoiceChannel == null)
             {
-                await channel.SendMessageAsync(null, false, new EmbedBuilder().Reply("You aren't connected to any voice channels.", Color.Red.RawValue).Build());
+                await channel.SendMessageAsync(null, false,
+                    new EmbedBuilder().Reply("You aren't connected to any voice channels.", Color.Red.RawValue)
+                        .Build());
                 return;
             }
 
             await _lava.GetOrCreatePlayerAsync(guildId, state.VoiceChannel, channel);
-            await channel.SendMessageAsync(null, false, new EmbedBuilder().Reply($"Connected to {state.VoiceChannel}.", Color.Green.RawValue).Build());
+            await channel.SendMessageAsync(null, false,
+                new EmbedBuilder().Reply($"Connected to {state.VoiceChannel}.", Color.Green.RawValue).Build());
         }
 
         public async Task<EmbedBuilder> DisconnectAsync(ulong guildId)
@@ -256,15 +268,13 @@ namespace Hanekawa.Modules.Audio.Service
             }
         }
 
-        private async Task<EmbedBuilder> QueueSongAsync(LavalinkPlayer player, LavalinkTrack track, ITextChannel channel)
+        private async Task<EmbedBuilder> QueueSongAsync(LavalinkPlayer player, LavalinkTrack track,
+            ITextChannel channel)
         {
             var queue = _queue.GetOrAdd(channel.GuildId, new List<LavalinkTrack>());
             _textChannel.AddOrUpdate(channel.GuildId, channel, (arg1, textChannel) => channel);
             queue.Add(track);
-            if (player.Playing)
-            {
-                return new EmbedBuilder().Reply($"Queued: {track.Title}");
-            }
+            if (player.Playing) return new EmbedBuilder().Reply($"Queued: {track.Title}");
             await player.PlayAsync(track);
             return new EmbedBuilder().Reply($"Playing: {track.Title}");
         }
@@ -290,7 +300,9 @@ namespace Hanekawa.Modules.Audio.Service
                 var nextTrack = queue[index] ?? queue[0];
                 _queNumber.AddOrUpdate(player.VoiceChannel.GuildId, index, (arg1, i) => index);
                 await player.PlayAsync(nextTrack);
-                if (ch != null) await ch.SendMessageAsync(null, false, new EmbedBuilder().Reply($"**Now Playing:** {nextTrack.Title}").Build());
+                if (ch != null)
+                    await ch.SendMessageAsync(null, false,
+                        new EmbedBuilder().Reply($"**Now Playing:** {nextTrack.Title}").Build());
             }
             else
             {
@@ -299,17 +311,27 @@ namespace Hanekawa.Modules.Audio.Service
                 if (nextTrack == null)
                 {
                     await player.DisconnectAsync();
-                    if (ch != null) await ch.SendMessageAsync(null, false, new EmbedBuilder().Reply("Queue Completed!").Build());
+                    if (ch != null)
+                        await ch.SendMessageAsync(null, false, new EmbedBuilder().Reply("Queue Completed!").Build());
                     return;
                 }
+
                 await player.PlayAsync(nextTrack);
-                if (ch != null) await ch.SendMessageAsync(null, false, new EmbedBuilder().Reply($"**Now Playing:** {nextTrack.Title}").Build());
+                if (ch != null)
+                    await ch.SendMessageAsync(null, false,
+                        new EmbedBuilder().Reply($"**Now Playing:** {nextTrack.Title}").Build());
             }
         }
 
-        private async Task OnStuck(LavalinkPlayer player, LavalinkTrack track, long arg3) => await ResolveError(player, track);
+        private async Task OnStuck(LavalinkPlayer player, LavalinkTrack track, long arg3)
+        {
+            await ResolveError(player, track);
+        }
 
-        private async Task OnException(LavalinkPlayer player, LavalinkTrack track, string arg3) => await ResolveError(player, track);
+        private async Task OnException(LavalinkPlayer player, LavalinkTrack track, string arg3)
+        {
+            await ResolveError(player, track);
+        }
 
         private async Task ResolveError(LavalinkPlayer player, LavalinkTrack track)
         {
@@ -326,6 +348,7 @@ namespace Hanekawa.Modules.Audio.Service
                 tries++;
                 index++;
             }
+
             await player.PlayAsync(nextTrack);
         }
     }

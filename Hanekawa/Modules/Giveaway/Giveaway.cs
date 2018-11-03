@@ -1,10 +1,10 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using Discord.Commands;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Addons.Interactive;
+using Discord.Commands;
 using Hanekawa.Extensions;
 
 namespace Hanekawa.Modules.Giveaway
@@ -19,7 +19,7 @@ namespace Hanekawa.Modules.Giveaway
         {
             await Context.Message.DeleteAsync();
             var stream = new MemoryStream();
-            if(channel == null) channel = Context.Channel as ITextChannel;
+            if (channel == null) channel = Context.Channel as ITextChannel;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 await ReplyAsync(null, false,
@@ -31,13 +31,12 @@ namespace Hanekawa.Modules.Giveaway
             var reactionAmount = GetReactionAmount(message, emote);
             var users = await message.GetReactionUsersAsync(emote, reactionAmount).FlattenAsync();
             if (users == null)
-            {
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
                         .Reply(
-                            "Couldn't find any users reacting with that emote. You sure this is a emote on this server?", Color.Red.RawValue)
+                            "Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
+                            Color.Red.RawValue)
                         .Build());
-            }
             var rnd = new Random();
             var result = users.OrderBy(item => rnd.Next());
             string winners = null;
@@ -51,15 +50,17 @@ namespace Hanekawa.Modules.Giveaway
                     await file.WriteLineAsync($"{nr}: {x.Id} - {x.Username}#{x.Discriminator}");
                     nr++;
                 }
+
                 await file.FlushAsync();
                 stream.Seek(0, SeekOrigin.Begin);
-                await channel.SendFileAsync(stream, "participants.txt", $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
+                await channel.SendFileAsync(stream, "participants.txt",
+                    $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
             }
         }
 
         private static int GetReactionAmount(IUserMessage message, Emote emote)
         {
-            message.Reactions.TryGetValue(emote as IEmote, out var reactionData);
+            message.Reactions.TryGetValue(emote, out var reactionData);
             return reactionData.ReactionCount;
         }
     }

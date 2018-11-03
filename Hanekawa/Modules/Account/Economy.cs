@@ -22,8 +22,9 @@ namespace Hanekawa.Modules.Account
     [RequireContext(ContextType.Guild)]
     public class Economy : InteractiveBase
     {
-        private readonly ShopManager _shopManager;
         private readonly InventoryManager _inventoryManager;
+        private readonly ShopManager _shopManager;
+
         public Economy(ShopManager shopManager, InventoryManager inventoryManager)
         {
             _shopManager = shopManager;
@@ -200,8 +201,10 @@ namespace Hanekawa.Modules.Account
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task InventoryAsync()
-         => await ReplyAsync(null, false, (await _inventoryManager.GetInventory(Context.User as IGuildUser)).Build());
-        
+        {
+            await ReplyAsync(null, false, (await _inventoryManager.GetInventory(Context.User as IGuildUser)).Build());
+        }
+
         [Command("store", RunMode = RunMode.Async)]
         [Alias("shop")]
         [Ratelimit(1, 2, Measure.Seconds)]
@@ -270,7 +273,7 @@ namespace Hanekawa.Modules.Account
                 }
 
                 EmbedBuilder embed;
-                if(item != null) embed = await _shopManager.PurchaseItem(db, item, Context.User as IGuildUser);
+                if (item != null) embed = await _shopManager.PurchaseItem(db, item, Context.User as IGuildUser);
                 else embed = await _shopManager.PurchaseItem(db, globalItem, Context.User as IGuildUser);
                 await ReplyAsync(null, false, embed.Build());
             }
@@ -305,9 +308,9 @@ namespace Hanekawa.Modules.Account
                 if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
                 var embed = new EmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder { Name = item.Name},
+                    Author = new EmbedAuthorBuilder {Name = item.Name},
                     Description = item.Description,
-                    Color = Color.Purple,
+                    Color = Color.Purple
                 };
                 embed.AddField("Role", item.Role.HasValue, true);
                 embed.AddField("Unique", item.Unique, true);
@@ -359,7 +362,10 @@ namespace Hanekawa.Modules.Account
                 await db.SaveChangesAsync();
 
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`", Color.Green.RawValue).Build());
+                    new EmbedBuilder()
+                        .Reply(
+                            $"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`",
+                            Color.Green.RawValue).Build());
             }
         }
 
@@ -435,7 +441,7 @@ namespace Hanekawa.Modules.Account
                 var storeItem = new StoreGlobal
                 {
                     ItemId = getItem.ItemId,
-                    Price = price,
+                    Price = price
                 };
                 await db.StoreGlobals.AddAsync(storeItem);
                 await db.SaveChangesAsync();
@@ -500,7 +506,7 @@ namespace Hanekawa.Modules.Account
                     cfg.CurrencyName = "Credit";
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Set regular back to default `Credit`", Color.Green.RawValue)
+                        new EmbedBuilder().Reply("Set regular back to default `Credit`", Color.Green.RawValue)
                             .Build());
                     return;
                 }
@@ -541,7 +547,7 @@ namespace Hanekawa.Modules.Account
                     cfg.CurrencyName = "$";
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Set currency sign back to default `$`", Color.Green.RawValue)
+                        new EmbedBuilder().Reply("Set currency sign back to default `$`", Color.Green.RawValue)
                             .Build());
                     return;
                 }
@@ -607,7 +613,7 @@ namespace Hanekawa.Modules.Account
                     cfg.SpecialCurrencySign = "$";
                     await db.SaveChangesAsync();
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Set currency sign back to default `$`", Color.Green.RawValue)
+                        new EmbedBuilder().Reply("Set currency sign back to default `$`", Color.Green.RawValue)
                             .Build());
                     return;
                 }

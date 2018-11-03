@@ -5,11 +5,12 @@ namespace Hanekawa.Extensions
     public static class RegexExtension
     {
         private static readonly Regex FilterRegex =
-    new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex ScamFilter =
-            new Regex(@"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
+            new Regex(
+                @"(?:linkd\.in|bitly\.co|tcrn\.ch|bit\.ly|steam-community\.com|tinyurl\.com|ow\.ly|strawpoli|steam-halloween\.com|snip\.li|pointsprizes\.com|paysafecards\.org|c99\.nl|sentry\.mba|steamchristmas\.com).*?(\s|$)",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly Regex GoogleLink =

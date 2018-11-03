@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Entities;
@@ -12,7 +11,8 @@ namespace Hanekawa.Extensions
     {
         public static double? ToxicityAdd(
             this ConcurrentDictionary<ulong,
-                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> context, double result, IGuildUser user,
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> context,
+            double result, IGuildUser user,
             SocketTextChannel channel)
         {
             var toxList = context.GetOrAdd(user.GuildId,

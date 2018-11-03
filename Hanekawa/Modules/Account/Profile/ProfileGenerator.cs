@@ -170,18 +170,17 @@ namespace Hanekawa.Modules.Account.Profile
                     achievements.TryAdd(nAchiev.AchievementNameId, image);
                 }
             }
+
             var result = new List<Image<Rgba32>>();
             achievements.ForEach(pair => result.Add(pair.Value));
             return result;
         }
 
-        private static async Task<List<AchievementMeta>> UnlockToAchieve(DbService db, IEnumerable<AchievementUnlock> list)
+        private static async Task<List<AchievementMeta>> UnlockToAchieve(DbService db,
+            IEnumerable<AchievementUnlock> list)
         {
             var result = new List<AchievementMeta>();
-            foreach (var x in list)
-            {
-                result.Add(await db.Achievements.FindAsync(x.AchievementId));
-            }
+            foreach (var x in list) result.Add(await db.Achievements.FindAsync(x.AchievementId));
 
             return result;
         }
@@ -191,7 +190,8 @@ namespace Hanekawa.Modules.Account.Profile
             var dir = Directory.CreateDirectory($"Data/Achievement/Image/{achiev.AchievementNameId}/");
             var file = dir.GetFiles($"{achiev.AchievementId}.png");
             if (file.Length == 0) return await OnlineIcon(achiev);
-            using (var image = Image.Load($"Data/Achievement/Image/{achiev.AchievementNameId}/{achiev.AchievementId}.png"))
+            using (var image =
+                Image.Load($"Data/Achievement/Image/{achiev.AchievementNameId}/{achiev.AchievementId}.png"))
             {
                 return image.CloneAndConvertToAvatarWithoutApply(new Size(80, 80), 50).Clone();
             }
@@ -212,12 +212,14 @@ namespace Hanekawa.Modules.Account.Profile
             image.Save($"Data/Achievement/Image/{achiev.AchievementNameId}/{achiev.AchievementId}.png");
         }
 
-        private static async Task<Image<Rgba32>> GetHighestStackable(AchievementMeta achiev, IEnumerable<AchievementMeta> list, DbService db)
+        private static async Task<Image<Rgba32>> GetHighestStackable(AchievementMeta achiev,
+            IEnumerable<AchievementMeta> list, DbService db)
         {
             var achievementUnlocks = list.ToList();
             var max = achievementUnlocks.Where(x => x.AchievementNameId == achiev.AchievementNameId)
                 .Max(x => x.Requirement);
-            var result = achievementUnlocks.First(x => x.AchievementNameId == achiev.AchievementNameId && x.Requirement == max);            
+            var result = achievementUnlocks.First(x =>
+                x.AchievementNameId == achiev.AchievementNameId && x.Requirement == max);
             return await GetIcon(result);
         }
     }

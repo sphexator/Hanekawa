@@ -1,6 +1,18 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,28 +22,13 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.BotGame;
 using Image = SixLabors.ImageSharp.Image;
-using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Events;
 
 namespace Hanekawa.Services.Games.ShipGame
 {
     public class ShipGameService
     {
         private readonly GameStats _gameStats;
-
-        public event AsyncEvent<ulong> NpcKill;
-        public event AsyncEvent<ulong> PvpKill;
 
         public ShipGameService(GameStats gameStats)
         {
@@ -47,14 +44,15 @@ namespace Hanekawa.Services.Games.ShipGame
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveDuels { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
+        public event AsyncEvent<ulong> NpcKill;
+        public event AsyncEvent<ulong> PvpKill;
+
         //TODO: Custom banner depending on monster type
 
         public async Task<EmbedBuilder> SearchAsync(SocketCommandContext context)
         {
             if (IsInBattle(context))
-            {
                 return new EmbedBuilder().Reply($"{context.User.Mention} is already in a fight", Color.Red.RawValue);
-            }
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
@@ -155,9 +153,9 @@ namespace Hanekawa.Services.Games.ShipGame
                 playerOne = await GetClass(db, userdata.Class);
                 playerTwo = await GetClass(db, enemy.ClassId);
                 playerOneHp = await Health(db, userdata.Level, context.User as SocketGuildUser);
-                playerTwoHp = await Health(db, userdata.Level,  enemy);
+                playerTwoHp = await Health(db, userdata.Level, enemy);
                 playerOneDmg = Damage(userdata.Level);
-                playerTwoDmg = Damage(userdata.Level,  enemy);
+                playerTwoDmg = Damage(userdata.Level, enemy);
                 playerOneHpMax = await Health(db, userdata.Level, context.User as SocketGuildUser);
                 playerTwoHpMax = await Health(db, userdata.Level, enemy);
             }
@@ -362,8 +360,10 @@ namespace Hanekawa.Services.Games.ShipGame
                 var alive = true;
                 while (alive)
                 {
-                    var playerOneDamage = _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.Player);
-                    var playerTwoDamage = _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
+                    var playerOneDamage =
+                        _gameStats.CalculateDamage(playerOneDmg, playerOne, playerTwo, EnemyType.Player);
+                    var playerTwoDamage =
+                        _gameStats.CalculateDamage(playerTwoDmg, playerTwo, playerTwo, EnemyType.Player);
 
                     playerTwoHp = playerTwoHp - playerOneDamage;
                     if (playerTwoHp > 0)
@@ -479,14 +479,13 @@ namespace Hanekawa.Services.Games.ShipGame
                 }
 
                 if (bet != 0)
-                {
                     using (var db = new DbService())
                     {
                         winner.Credit = winner.Credit + bet;
                         loser.Credit = loser.Credit - bet;
                         await db.SaveChangesAsync();
                     }
-                }
+
                 UpdateDuel(context, false);
                 Console.WriteLine("Completed duel");
                 PvpKill?.Invoke(winner.UserId);

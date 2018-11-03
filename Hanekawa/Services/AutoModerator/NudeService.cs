@@ -22,10 +22,10 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService
     {
         private readonly Timer _cleanupTimer;
-        private readonly Timer _MoveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly ModerationService _moderationService;
+        private readonly Timer _MoveToLongTerm;
         private readonly MuteService _muteService;
         private readonly PerspectiveClient _perspectiveClient;
         private readonly string _perspectiveToken;
@@ -81,20 +81,20 @@ namespace Hanekawa.Services.AutoModerator
                 {
                     if (x.Time.AddHours(24) > DateTime.UtcNow) continue;
                     z.Value.Remove(x);
-                } 
+                }
             }, null, TimeSpan.FromDays(1), TimeSpan.FromHours(1));
         }
 
         // Short-term caching of values for Auto-moderator to view
         private ConcurrentDictionary<ulong,
-            ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> 
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>
             FastNudeValue { get; }
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>();
 
         // Long-term caching of values for moderators to view
         private ConcurrentDictionary<ulong,
-                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> 
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>
             SlowNudeValue { get; }
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>();
@@ -119,13 +119,9 @@ namespace Hanekawa.Services.AutoModerator
             if (!users.TryGetValue(user.Id, out var list)) return 0;
 
             double score = 0;
-            foreach (var x in list)
-            {
-                score += x.Value;
-            }
+            foreach (var x in list) score += x.Value;
 
             return score / list.Count;
-
         }
 
         public IEnumerable<string> GetAllScores(SocketGuildUser user)
@@ -134,14 +130,12 @@ namespace Hanekawa.Services.AutoModerator
             foreach (var a in SlowNudeValue)
             foreach (var y in a.Value)
             {
-                if(!y.Value.TryGetValue(user.Id, out var list)) continue;
+                if (!y.Value.TryGetValue(user.Id, out var list)) continue;
                 double score = 0;
-                foreach (var x in list)
-                {
-                    score += x.Value;
-                }
+                foreach (var x in list) score += x.Value;
                 result.Add($"Toxicity score in {user.Guild.GetTextChannel(y.Key).Mention}: {score / list.Count}");
             }
+
             return result;
         }
 
@@ -149,17 +143,14 @@ namespace Hanekawa.Services.AutoModerator
         {
             string result = null;
             var chanUsers = new Dictionary<ulong, double>();
-            if(!SlowNudeValue.TryGetValue(channel.GuildId, out var channels)) return null;
-            if(!channels.TryGetValue(channel.Id, out var users)) return null;
+            if (!SlowNudeValue.TryGetValue(channel.GuildId, out var channels)) return null;
+            if (!channels.TryGetValue(channel.Id, out var users)) return null;
             foreach (var y in users)
             {
                 double score = 0;
-                foreach (var x in y.Value)
-                {
-                    score += x.Value;
-                }
+                foreach (var x in y.Value) score += x.Value;
 
-                chanUsers.TryAdd(y.Key, (score / y.Value.Count));
+                chanUsers.TryAdd(y.Key, score / y.Value.Count);
             }
 
             var topUsers = chanUsers.OrderBy(x => x.Value).Take(5);
@@ -178,12 +169,9 @@ namespace Hanekawa.Services.AutoModerator
                 foreach (var y in a.Value)
                 {
                     double score = 0;
-                    foreach (var x in y.Value)
-                    {
-                        score += x.Value;
-                    }
+                    foreach (var x in y.Value) score += x.Value;
 
-                    userScore.TryAdd(y.Key, (score / y.Value.Count));
+                    userScore.TryAdd(y.Key, score / y.Value.Count);
                 }
 
                 var page = $"{channel}\n";
@@ -191,6 +179,7 @@ namespace Hanekawa.Services.AutoModerator
                 topUsers.ForEach(x => page += $"{_client.GetUser(x.Key).Mention} Score: {x.Value}\n");
                 result.Add(page);
             }
+
             return result;
         }
 
@@ -313,11 +302,8 @@ namespace Hanekawa.Services.AutoModerator
         private async Task SingleMessageAsync(double score, IGuildUser user, SocketTextChannel ch,
             IDeletable msg)
         {
-            var isChannels = SingleNudeChannels.TryGetValue(user.GuildId, out var channels);
-            if (!isChannels) return;
-
-            var isEnabled = channels.TryGetValue(ch.Id, out var cfg);
-            if (!isEnabled) return;
+            if(!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
+            if(!channels.TryGetValue(ch.Id, out var cfg)) return;
 
             using (var db = new DbService())
             {

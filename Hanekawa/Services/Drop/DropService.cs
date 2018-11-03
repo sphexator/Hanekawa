@@ -1,10 +1,10 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
@@ -14,19 +14,10 @@ namespace Hanekawa.Services.Drop
 {
     public class DropService
     {
-        private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; set; }
-            = new ConcurrentDictionary<ulong, List<ulong>>();
-        private ConcurrentDictionary<ulong, DateTime> GuildCooldown { get; set; }
-            = new ConcurrentDictionary<ulong, DateTime>();
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> UserCooldown { get; set; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
-
-        public event AsyncEvent<SocketGuildUser> DropClaimed;
+        private readonly DiscordSocketClient _client;
 
         private readonly List<ulong> _regularLoot = new List<ulong>();
         private readonly List<ulong> _specialLoot = new List<ulong>();
-
-        private readonly DiscordSocketClient _client;
 
         public DropService(DiscordSocketClient client)
         {
@@ -40,34 +31,43 @@ namespace Hanekawa.Services.Drop
                 {
                     var result = db.LootChannels.Where(c => c.GuildId == x.GuildId).ToList();
                     var channels = new List<ulong>();
-                    foreach (var y in result)
-                    {
-                        channels.Add(y.ChannelId);
-                    }
+                    foreach (var y in result) channels.Add(y.ChannelId);
                     LootChannels.GetOrAdd(x.GuildId, channels);
                 }
             }
         }
 
+        private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; }
+            = new ConcurrentDictionary<ulong, List<ulong>>();
+
+        private ConcurrentDictionary<ulong, DateTime> GuildCooldown { get; }
+            = new ConcurrentDictionary<ulong, DateTime>();
+
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> UserCooldown { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+
+        public event AsyncEvent<SocketGuildUser> DropClaimed;
+
         public async Task SpawnCrateAsync(SocketTextChannel ch, SocketGuildUser user)
         {
-
             var triggerMsg = await ch.SendMessageAsync(
                 $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
             var emotes = ReturnEmotes().ToList();
             var rng = new Random();
             foreach (var x in emotes.OrderBy(x => rng.Next()).Take(emotes.Count))
-            {
                 try
                 {
                     if (x.Name == "realsip") _specialLoot.Add(triggerMsg.Id);
                     await triggerMsg.AddReactionAsync(x);
                 }
-                catch { break; }
-            }
+                catch
+                {
+                    break;
+                }
         }
 
-        private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
+        private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
+            SocketReaction rct)
         {
             var _ = Task.Run(async () =>
             {
@@ -106,7 +106,9 @@ namespace Hanekawa.Services.Drop
                         userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
                         userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
                         await db.SaveChangesAsync();
-                        var trgMsg = await channel.SendMessageAsync($"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
+                        var trgMsg =
+                            await channel.SendMessageAsync(
+                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
                         await Task.Delay(5000);
                         await trgMsg.DeleteAsync();
                         await DropClaimed(rct.User.Value as SocketGuildUser);
@@ -131,7 +133,7 @@ namespace Hanekawa.Services.Drop
                 var rand = new Random().Next(0, 10000);
                 if (rand < 200)
                 {
-                    if (!CheckGuildCooldown((SocketTextChannel)msg.Channel)) return;
+                    if (!CheckGuildCooldown((SocketTextChannel) msg.Channel)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
                     var emotes = ReturnEmotes().ToList();

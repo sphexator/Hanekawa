@@ -1,13 +1,13 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Hanekawa.TypeReaders;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.TypeReaders;
 
 namespace Hanekawa.Services
 {
@@ -16,9 +16,6 @@ namespace Hanekawa.Services
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
         private IServiceProvider _provider;
-
-        private ConcurrentDictionary<ulong, string> Prefix { get; }
-            = new ConcurrentDictionary<ulong, string>();
 
         public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands)
         {
@@ -30,12 +27,12 @@ namespace Hanekawa.Services
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs)
-                {
-                    Prefix.GetOrAdd(x.GuildId, x.Prefix);
-                }
+                foreach (var x in db.GuildConfigs) Prefix.GetOrAdd(x.GuildId, x.Prefix);
             }
         }
+
+        private ConcurrentDictionary<ulong, string> Prefix { get; }
+            = new ConcurrentDictionary<ulong, string>();
 
         public async Task UpdatePrefixAsync(SocketGuild guild, string prefix)
         {
@@ -63,8 +60,9 @@ namespace Hanekawa.Services
             if (message.Source != MessageSource.User) return;
             var argPos = 0;
             var prefix = message.Author is SocketGuildUser user ? Prefix.GetOrAdd(user.Guild.Id, "h.") : "h.";
-            if (!message.HasStringPrefix(prefix, ref argPos) && !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
-            
+            if (!message.HasStringPrefix(prefix, ref argPos) &&
+                !message.HasMentionPrefix(_discord.CurrentUser, ref argPos)) return;
+
             var context = new SocketCommandContext(_discord, message);
             await _commands.ExecuteAsync(context, argPos, _provider);
         }

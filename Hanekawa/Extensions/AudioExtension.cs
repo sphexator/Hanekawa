@@ -1,14 +1,15 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using SharpLink;
 
 namespace Hanekawa.Extensions
 {
     public static class AudioExtension
     {
-        public static async Task<LavalinkPlayer> GetOrCreatePlayerAsync(this LavalinkManager node, ulong guildId, IVoiceChannel vc, IMessageChannel txC)
+        public static async Task<LavalinkPlayer> GetOrCreatePlayerAsync(this LavalinkManager node, ulong guildId,
+            IVoiceChannel vc, IMessageChannel txC)
         {
             var player = node.GetPlayer(guildId);
             if (player == null) return await node.JoinAsync(vc);

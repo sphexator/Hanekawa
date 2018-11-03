@@ -195,9 +195,9 @@ namespace Hanekawa.Services.AutoModerator
         {
             var _ = Task.Run(async () =>
             {
+                if (message.Author.IsBot) return;
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
-                if (msg.Author.IsBot) return;
                 if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
@@ -213,12 +213,12 @@ namespace Hanekawa.Services.AutoModerator
                 var scam = ScamLinkFilter(msg, user, cfg);
                 // var spam = SpamFilter(msg, user, cfg);
                 var url = UrlFilter(msg, user, cfg, userdata);
-                var world = WordFilter(msg, user, cfg, userdata);
+                //var world = WordFilter(msg, user, cfg, userdata);
                 var length = LengthFilter(msg, user, cfg, userdata);
                 var emote = EmoteFilter(msg, user, cfg, userdata);
                 var mention = MentionFilter(msg, user, cfg);
 
-                await Task.WhenAll(invite, scam, url, world, length, emote, mention);
+                await Task.WhenAll(invite, scam, url, length, emote, mention);
             });
             return Task.CompletedTask;
         }

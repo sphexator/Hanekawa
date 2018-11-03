@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -7,9 +10,11 @@ using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
 using Hanekawa.Modules.Account.Profile;
+using Hanekawa.Modules.Account.Storage;
 using Hanekawa.Modules.Audio.Service;
 using Hanekawa.Preconditions;
 using Hanekawa.Services;
+using Hanekawa.Services.Achievement;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Anime;
 using Hanekawa.Services.Automate;
@@ -32,11 +37,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Spi;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Hanekawa.Modules.Account.Storage;
-using Hanekawa.Services.Achievement;
 using SharpLink;
 using Config = Hanekawa.Data.Config;
 
@@ -48,8 +48,8 @@ namespace Hanekawa
         private DiscordSocketClient _client;
         private IConfiguration _config;
         private DatabaseClient _databaseClient;
-        private YouTubeService _youTubeService;
         private LavalinkManager _lavalink;
+        private YouTubeService _youTubeService;
 
         private static void Main()
         {

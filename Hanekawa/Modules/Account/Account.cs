@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -10,10 +14,6 @@ using Hanekawa.Preconditions;
 using Hanekawa.Services.Level.Util;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account
 {
@@ -40,7 +40,8 @@ namespace Hanekawa.Modules.Account
             {
                 var userdata = await db.GetOrCreateUserData(user);
                 var glUserData = await db.GetOrCreateGlobalUserData(user);
-                var rank = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
+                var rank = db.Accounts.CountAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
                 var total = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id);
 
                 var globalRank = db.AccountGlobals.CountAsync();
@@ -105,7 +106,8 @@ namespace Hanekawa.Modules.Account
                     Color = Color.Purple,
                     Author = author
                 };
-                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id).OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
+                    .OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
                 var rank = 1;
                 foreach (var x in users)
                 {
@@ -118,6 +120,7 @@ namespace Hanekawa.Modules.Account
                     embed.AddField(field);
                     rank++;
                 }
+
                 await ReplyAsync(null, false, embed.Build());
             }
         }
@@ -142,29 +145,37 @@ namespace Hanekawa.Modules.Account
                                 Color.Red.RawValue).Build());
                     }
                     else
+                    {
                         await ReplyAsync(null, false,
                             new EmbedBuilder()
                                 .Reply($"{Context.User.Mention}, you got a reputation point point available!",
                                     Color.Green.RawValue).Build()
                         );
+                    }
                 }
 
                 return;
             }
+
             using (var db = new DbService())
             {
                 var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue).Build());
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
+                            Color.Red.RawValue).Build());
                     return;
                 }
+
                 var userdata = await db.GetOrCreateUserData(user);
                 cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
                 userdata.Rep = userdata.Rep + 1;
                 await db.SaveChangesAsync();
-                await ReplyAsync(null, false, new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue).Build());
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue)
+                        .Build());
             }
         }
 
@@ -190,7 +201,7 @@ namespace Hanekawa.Modules.Account
             try
             {
                 await Context.Channel.TriggerTypingAsync();
-                using (var stream = await _profileBuilder.Preview((Context.User as SocketGuildUser), url))
+                using (var stream = await _profileBuilder.Preview(Context.User as SocketGuildUser, url))
                 {
                     stream.Seek(0, SeekOrigin.Begin);
                     await Context.Channel.SendFileAsync(stream, "profile.png");
@@ -201,7 +212,8 @@ namespace Hanekawa.Modules.Account
                 await ReplyAsync(null, false,
                     new EmbedBuilder()
                         .Reply(
-                            $"{Context.User.Mention} couldn't make a background with that picture. Please use a direct image and preferably from imgur.com", Color.Red.RawValue)
+                            $"{Context.User.Mention} couldn't make a background with that picture. Please use a direct image and preferably from imgur.com",
+                            Color.Red.RawValue)
                         .Build());
             }
         }

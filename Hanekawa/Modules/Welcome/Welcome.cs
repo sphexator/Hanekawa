@@ -1,18 +1,18 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Welcome;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 
 namespace Hanekawa.Modules.Welcome
 {
@@ -34,17 +34,19 @@ namespace Hanekawa.Modules.Welcome
         {
             if (!url.IsPictureUrl())
             {
-                await ReplyAsync(null, false, new EmbedBuilder().Reply("Please use direct image urls when adding pictures!\n" +
-                                                                       "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(
+                    "Please use direct image urls when adding pictures!\n" +
+                    "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
                 return;
             }
+
             await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
-            await ReplyAsync($"Do you want to add this banner? (Y/N");
+            await ReplyAsync("Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
             if (response.Content.ToLower() != "y")
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Okay then :awaueyes:", Color.Red.RawValue).Build());
+                    new EmbedBuilder().Reply("Okay then :awaueyes:", Color.Red.RawValue).Build());
                 return;
             }
 
@@ -62,7 +64,7 @@ namespace Hanekawa.Modules.Welcome
                 await db.WelcomeBanners.AddAsync(data);
                 await db.SaveChangesAsync();
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added banner to the collection!", Color.Green.RawValue).Build());
+                    new EmbedBuilder().Reply("Added banner to the collection!", Color.Green.RawValue).Build());
             }
         }
 
@@ -72,11 +74,12 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var banner = await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
+                var banner =
+                    await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
                 if (banner == null)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Couldn't remove a banner with that ID.", Color.Red.RawValue)
+                        new EmbedBuilder().Reply("Couldn\'t remove a banner with that ID.", Color.Red.RawValue)
                             .Build());
                     return;
                 }
@@ -101,7 +104,6 @@ namespace Hanekawa.Modules.Welcome
                 if (list.Count != 0)
                 {
                     for (var i = 0; i < list.Count;)
-                    {
                         try
                         {
                             string input = null;
@@ -113,7 +115,7 @@ namespace Hanekawa.Modules.Welcome
                                          $"URL: {entry.Url}\n" +
                                          $"Uploader: {Context.Guild.GetUser(entry.Uploader).Mention ?? $"User left server ({entry.Uploader})"}\n" +
                                          $"Added: {entry.UploadTimeOffset.DateTime}\n" +
-                                         $"\n";
+                                         "\n";
                                 i++;
                             }
 
@@ -122,7 +124,6 @@ namespace Hanekawa.Modules.Welcome
                         catch
                         {
                         }
-                    }
 
                     var paginator = new PaginatedMessage
                     {
@@ -142,7 +143,10 @@ namespace Hanekawa.Modules.Welcome
                     };
                     await PagedReplyAsync(paginator);
                 }
-                else await ReplyAsync(null, false, new EmbedBuilder().Reply("No banners added!").Build());
+                else
+                {
+                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No banners added!").Build());
+                }
             }
         }
 
@@ -152,10 +156,12 @@ namespace Hanekawa.Modules.Welcome
         {
             if (!url.IsPictureUrl())
             {
-                await ReplyAsync(null, false, new EmbedBuilder().Reply("Please use direct image urls when adding pictures!\n" +
-                                                                       "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
+                await ReplyAsync(null, false, new EmbedBuilder().Reply(
+                    "Please use direct image urls when adding pictures!\n" +
+                    "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red.RawValue).Build());
                 return;
             }
+
             await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
         }
 
@@ -190,7 +196,7 @@ namespace Hanekawa.Modules.Welcome
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                if (!(cfg.WelcomeDelete.HasValue) && timer == null) return;
+                if (!cfg.WelcomeDelete.HasValue && timer == null) return;
                 if (timer == null)
                 {
                     cfg.WelcomeDelete = null;
@@ -203,7 +209,8 @@ namespace Hanekawa.Modules.Welcome
                     cfg.WelcomeDelete = timer.Value;
                     await ReplyAsync(null, false,
                         new EmbedBuilder().Reply("Enabled auto-deletion of welcome messages!\n" +
-                                                 $"I will now delete the message after {timer.Value.Humanize()}!", Color.Green.RawValue)
+                                                 $"I will now delete the message after {timer.Value.Humanize()}!",
+                                Color.Green.RawValue)
                             .Build());
                 }
 
