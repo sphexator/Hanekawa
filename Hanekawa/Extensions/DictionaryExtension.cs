@@ -17,8 +17,8 @@ namespace Hanekawa.Extensions
         {
             var toxList = context.GetOrAdd(user.GuildId,
                 new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
-            var channelValue = toxList.GetOrAdd(user.Id, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
-            var userValue = channelValue.GetOrAdd(channel.Id, new LinkedList<ToxicityEntry>());
+            var channelValue = toxList.GetOrAdd(channel.Id, new ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>());
+            var userValue = channelValue.GetOrAdd(user.Id, new LinkedList<ToxicityEntry>());
 
             if (channelValue.Count == 20)
             {

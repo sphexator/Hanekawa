@@ -40,6 +40,7 @@ namespace Hanekawa.Services.AutoModerator
             _moderationService = moderationService;
             _warnService = warnService;
             _muteService = muteService;
+            _perspectiveClient = new PerspectiveClient();
 
             _perspectiveToken = _config["perspective"];
 
@@ -127,16 +128,16 @@ namespace Hanekawa.Services.AutoModerator
             return score / list.Count;
         }
 
-        public IEnumerable<string> GetAllScores(SocketGuildUser user)
+        public string GetAllScores(SocketGuildUser user)
         {
-            var result = new List<string>();
-            foreach (var a in SlowNudeValue)
-            foreach (var y in a.Value)
+            string result = null;
+            if (!SlowNudeValue.TryGetValue(user.Guild.Id, out var channels)) return null;
+            foreach (var y in channels)
             {
                 if (!y.Value.TryGetValue(user.Id, out var list)) continue;
                 double score = 0;
                 foreach (var x in list) score += x.Value;
-                result.Add($"Toxicity score in {user.Guild.GetTextChannel(y.Key).Mention}: {score / list.Count}");
+                result += $"Toxicity score in {user.Guild.GetTextChannel(y.Key).Mention}: {score / list.Count}\n";
             }
 
             return result;
@@ -313,7 +314,7 @@ namespace Hanekawa.Services.AutoModerator
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 if (userdata.Level > cfg.Level) return;
 
-                if (score > cfg.Tolerance) return;
+                if (score < cfg.Tolerance) return;
 
                 try
                 {
@@ -331,6 +332,7 @@ namespace Hanekawa.Services.AutoModerator
         {
             if (!NudeChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
 
+            
             if (!channels.TryGetValue(ch.Id, out var channel)) return;
             SlowNudeValue.ToxicityAdd(score, user, ch);
             var result = FastNudeValue.ToxicityAdd(score, user, ch);

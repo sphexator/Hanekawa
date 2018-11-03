@@ -111,5 +111,30 @@ namespace Hanekawa.Modules.Permission
                 await db.SaveChangesAsync();
             }
         }
+
+        [Command("automod", RunMode = RunMode.Async)]
+        [Summary("Enable/Disable separate logging of auto-moderator")]
+        public async Task LogAutoModAsync(ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (channel == null)
+                {
+                    cfg.LogAutoMod = null;
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("Disabled separate logging of auto-moderator actions!", Color.Green.RawValue)
+                            .Build());
+                    await db.SaveChangesAsync();
+                    return;
+                }
+
+                cfg.LogAutoMod = channel.Id;
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Set auto mod log channel to {channel.Mention}!", Color.Green.RawValue)
+                        .Build());
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }

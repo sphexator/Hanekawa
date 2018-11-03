@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -117,17 +118,26 @@ namespace Hanekawa.Modules.Permission
             using (var db = new DbService())
             {
                 var channels = await db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                var content = "Single toxicity enabled channels:\n";
-                if (channels.Count == 0) content += "No toxicity enabled channels";
-                else
+                if (channels.Count == 0)
                 {
-                    content += "```\n";
-                    channels.ForEach(x =>
-                        content +=
-                            $"{Context.Guild.GetTextChannel(x.ChannelId).Mention.PadRight(10)} | Level: {x.Level} | Tolerance: {x.Tolerance}\n");
-                    content += "```";
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("No single toxicity channels enabled.", Color.Red.RawValue).Build());
+                    return;
                 }
-                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
+
+                var fields = new List<EmbedFieldBuilder>();
+                foreach (var x in channels)
+                {
+                    var field = new EmbedFieldBuilder { IsInline = true, Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}", Value = $"Tol:{x.Tolerance} - Lvl:{x.Level}" };
+                    fields.Add(field);
+                }
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels" },
+                    Color = Color.Purple,
+                    Fields = fields
+                };
+                await ReplyAsync(null, false, embed.Build()); ;
             }
         }
 
@@ -139,17 +149,26 @@ namespace Hanekawa.Modules.Permission
             using (var db = new DbService())
             {
                 var channels = await db.NudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                var content = "Average toxicity enabled channels:\n";
-                if (channels.Count == 0) content += "No toxicity enabled channels";
-                else
+                if (channels.Count == 0)
                 {
-                    content += "```\n";
-                    channels.ForEach(x =>
-                        content +=
-                            $"{Context.Guild.GetTextChannel(x.ChannelId).Mention.PadRight(10)} | Tolerance: {x.Tolerance}\n");
-                    content += "```";
+                    await ReplyAsync(null, false,
+                        new EmbedBuilder().Reply("No average toxicity channels enabled.", Color.Red.RawValue).Build());
+                    return;
                 }
-                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
+
+                var fields = new List<EmbedFieldBuilder>();
+                foreach (var x in channels)
+                {
+                    var field = new EmbedFieldBuilder{IsInline = true, Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}", Value = $"Tol:{x.Tolerance}"};
+                    fields.Add(field);
+                }
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels"},
+                    Color = Color.Purple,
+                    Fields = fields
+                };
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 

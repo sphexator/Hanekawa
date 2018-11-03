@@ -349,27 +349,17 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                var paginator = new PaginatedMessage
+                var embed = new EmbedBuilder
                 {
-                    Color = Color.Purple,
-                    Pages = pages,
                     Author = new EmbedAuthorBuilder
                     {
                         IconUrl = user.GetAvatar(),
-                        Name = $"Toxicity values for {user.Mention} in {Context.Guild.Name}"
+                        Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
                     },
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
+                    Color = Color.Purple,
+                    Description = pages
                 };
-                await PagedReplyAsync(paginator);
+                await ReplyAsync(null, false, embed.Build());
             }
         }
 
