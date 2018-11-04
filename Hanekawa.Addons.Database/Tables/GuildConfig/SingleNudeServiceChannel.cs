@@ -6,5 +6,6 @@
         public ulong ChannelId { get; set; }
         public int Level { get; set; }
         public int Tolerance { get; set; }
+        public bool InHouse { get; set; }
     }
 }

@@ -5,5 +5,6 @@
         public ulong GuildId { get; set; }
         public ulong ChannelId { get; set; }
         public uint Tolerance { get; set; }
+        public bool InHouse { get; set; }
     }
 }

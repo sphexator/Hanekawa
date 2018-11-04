@@ -114,7 +114,8 @@ namespace Hanekawa.Services.AutoModerator
         private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
             = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
 
-        public event AsyncEvent<SocketGuildUser,ModerationService.AutoModActionType,string, double, double> AutoModFilter;
+        public event AsyncEvent<SocketGuildUser, ModerationService.AutoModActionType, string, double, double>
+            AutoModFilter;
 
         public double GetSingleScore(ITextChannel channel, IUser user)
         {
@@ -306,15 +307,15 @@ namespace Hanekawa.Services.AutoModerator
         private async Task SingleMessageAsync(double score, IGuildUser user, SocketTextChannel ch,
             SocketUserMessage msg)
         {
-            if(!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
-            if(!channels.TryGetValue(ch.Id, out var cfg)) return;
+            if (!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
+            if (!channels.TryGetValue(ch.Id, out var cfg)) return;
 
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
                 if (userdata.Level > cfg.Level) return;
-
-                if (score < cfg.Tolerance) return;
+                var tolerance = cfg.InHouse ? InHouseSingleToxicityTolerance((int) userdata.Level) : cfg.Tolerance;
+                if (score < tolerance) return;
 
                 try
                 {
@@ -324,17 +325,18 @@ namespace Hanekawa.Services.AutoModerator
                 {
                     // ignored
                 }
-                await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content, score, cfg.Tolerance);
+
+                await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content,
+                    score, cfg.Tolerance);
             }
         }
 
         private async Task MultiMessageProcessingAsync(double score, IGuildUser user, SocketTextChannel ch)
         {
             if (!NudeChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
-
-            
             if (!channels.TryGetValue(ch.Id, out var channel)) return;
             SlowNudeValue.ToxicityAdd(score, user, ch);
+
             var result = FastNudeValue.ToxicityAdd(score, user, ch);
             if (result == null) return;
             if (result < channel) return;
@@ -421,6 +423,16 @@ namespace Hanekawa.Services.AutoModerator
             var mentionFilter = mention.Replace(channelFilter, "");
             var roleFilter = role.Replace(mentionFilter, "");
             return roleFilter;
+        }
+
+        private static int InHouseAverageToxicityTolerance(int level)
+        {
+            return 60 + level * level / 80;
+        }
+
+        private static int InHouseSingleToxicityTolerance(int level)
+        {
+            return 70 + level * level / 160;
         }
     }
 }
