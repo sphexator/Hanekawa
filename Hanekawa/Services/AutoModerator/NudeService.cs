@@ -23,10 +23,11 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService
     {
         private readonly Timer _cleanupTimer;
+        private readonly Timer _quickClearSingle;
+        private readonly Timer _moveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly ModerationService _moderationService;
-        private readonly Timer _MoveToLongTerm;
         private readonly MuteService _muteService;
         private readonly PerspectiveClient _perspectiveClient;
         private readonly string _perspectiveToken;
@@ -74,7 +75,7 @@ namespace Hanekawa.Services.AutoModerator
                 }
             }, null, TimeSpan.FromHours(1), TimeSpan.FromHours(1));
 
-            _MoveToLongTerm = new Timer(_ =>
+            _moveToLongTerm = new Timer(_ =>
             {
                 foreach (var a in SlowNudeValue)
                 foreach (var y in a.Value)
@@ -85,6 +86,17 @@ namespace Hanekawa.Services.AutoModerator
                     z.Value.Remove(x);
                 }
             }, null, TimeSpan.FromDays(1), TimeSpan.FromHours(1));
+
+            _quickClearSingle = new Timer(_ =>
+            {
+                foreach (var a in SingleNudeValue)
+                foreach (var y in a.Value)
+                foreach (var x in y.Value)
+                {
+                    if (x.Value.Time.AddMinutes(10) > DateTime.UtcNow) continue;
+                    y.Value.Remove(x.Key, out var value);
+                }
+            }, null, TimeSpan.FromHours(1), TimeSpan.FromMinutes(1));
         }
 
         // Short-term caching of values for Auto-moderator to view
@@ -100,6 +112,14 @@ namespace Hanekawa.Services.AutoModerator
             SlowNudeValue { get; }
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>>();
+
+        // Single caching of values for auto-moderator to view
+        private ConcurrentDictionary<ulong,
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>>
+            SingleNudeValue
+        { get; }
+            = new ConcurrentDictionary<ulong,
+                ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>>();
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> NudeChannels { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
@@ -298,7 +318,7 @@ namespace Hanekawa.Services.AutoModerator
                 var response = await _perspectiveClient.GetToxicityScore(FilterMessage(msg.Content), _perspectiveToken);
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value * 100;
                 var single = SingleMessageAsync(score, user, ch, message);
-                var multi = MultiMessageProcessingAsync(score, user, ch);
+                var multi = MultiMessageProcessingAsync(score, user, ch, message);
                 await Task.WhenAll(single, multi);
             });
             return Task.CompletedTask;
@@ -313,13 +333,46 @@ namespace Hanekawa.Services.AutoModerator
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
-                if (userdata.Level > cfg.Level) return;
-                var tolerance = cfg.InHouse ? InHouseSingleToxicityTolerance((int) userdata.Level) : cfg.Tolerance;
-                if (score < tolerance) return;
+
+                var toxList = SingleNudeValue.GetOrAdd(user.GuildId,
+                    new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>());
+                var channelValue = toxList.GetOrAdd(ch.Id, new ConcurrentDictionary<ulong, ToxicityEntry>());
+                var userValue = channelValue.GetOrAdd(user.Id, new ToxicityEntry());
+                channelValue.AddOrUpdate(user.Id, new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id },
+                    (key, value) => new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id});
+                if(userValue == null) return;
+
+                var totalScore = (score + userValue.Value) / 2;
+                int tolerance;
+                int? level = null;
+
+                if (cfg.Level.HasValue && cfg.Tolerance.HasValue)
+                {
+                    level = cfg.Level.Value;
+                    tolerance = cfg.Tolerance.Value;
+                }
+                else if (cfg.InHouse)
+                {
+                    tolerance = InHouseSingleToxicityTolerance((int)userdata.Level);
+                }
+                else return;
+
+                if (totalScore > tolerance && level.HasValue && level.Value <= cfg.Level.Value)
+                {
+
+                }
+                else if (totalScore > tolerance)
+                {
+                }
+                else return;
 
                 try
                 {
-                    await msg.DeleteAsync();
+                    var del = new List<IMessage>();
+                    var oldMsg = await ch.GetMessageAsync(userValue.MessageId);
+                    if(oldMsg != null) del.Add(oldMsg);
+                    del.Add(msg);
+                    await ch.DeleteMessagesAsync(del);
                 }
                 catch
                 {
@@ -327,17 +380,16 @@ namespace Hanekawa.Services.AutoModerator
                 }
 
                 await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content,
-                    score, cfg.Tolerance);
+                    totalScore, tolerance);
             }
         }
 
-        private async Task MultiMessageProcessingAsync(double score, IGuildUser user, SocketTextChannel ch)
+        private async Task MultiMessageProcessingAsync(double score, IGuildUser user, SocketTextChannel ch, SocketUserMessage msg)
         {
             if (!NudeChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
             if (!channels.TryGetValue(ch.Id, out var channel)) return;
-            SlowNudeValue.ToxicityAdd(score, user, ch);
-
-            var result = FastNudeValue.ToxicityAdd(score, user, ch);
+            SlowNudeValue.ToxicityAdd(score, user, ch, msg);
+            var result = FastNudeValue.ToxicityAdd(score, user, ch, msg);
             if (result == null) return;
             if (result < channel) return;
 

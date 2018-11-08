@@ -35,7 +35,7 @@ namespace Hanekawa.Modules.Permission
             {
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
                 int emoteCount;
-                emoteCount = cfg.EmoteCountFilter.HasValue ? cfg.EmoteCountFilter.Value : 0;
+                emoteCount = cfg.EmoteCountFilter ?? 0;
 
                 var embed = new EmbedBuilder
                 {

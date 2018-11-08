@@ -13,7 +13,7 @@ namespace Hanekawa.Extensions
             this ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>> context,
             double result, IGuildUser user,
-            SocketTextChannel channel)
+            SocketTextChannel channel, SocketMessage msg)
         {
             var toxList = context.GetOrAdd(user.GuildId,
                 new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, LinkedList<ToxicityEntry>>>());
@@ -23,11 +23,11 @@ namespace Hanekawa.Extensions
             if (channelValue.Count == 20)
             {
                 userValue.RemoveLast();
-                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow});
+                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow, MessageId = msg.Id});
             }
             else
             {
-                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow});
+                userValue.AddFirst(new ToxicityEntry {Value = result, Time = DateTime.UtcNow, MessageId = msg.Id});
                 return null;
             }
 
