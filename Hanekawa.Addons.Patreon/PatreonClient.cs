@@ -14,13 +14,13 @@ namespace Hanekawa.Addons.Patreon
 {
     public class PatreonClient : IDisposable
     {
-        private readonly string _token = "O2HpJPEuIbSq6Wn8aXO6zMuJQ2j5Q4WzKGqPyhhHNR8";
+        private readonly string _token;
         private const string BaseUrl = "https://www.patreon.com/api/oauth2/api/";
         private string CampaignId { get; set; }
 
-        public PatreonClient()
+        public PatreonClient(string token)
         {
-           // _token = token;
+            _token = token;
         }
 
         public async Task InitializeAsync()
