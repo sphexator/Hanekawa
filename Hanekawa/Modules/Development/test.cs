@@ -6,6 +6,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Patreon;
 using Hanekawa.Modules.Account.Profile;
 
 namespace Hanekawa.Modules.Development
@@ -47,14 +48,18 @@ namespace Hanekawa.Modules.Development
             return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
         }
 
-        [Command("users", RunMode = RunMode.Async)]
+        [Command("patreon")]
         [RequireOwner]
-        public async Task GetUsers()
+        public async Task PatreonTest()
         {
-            await Context.Guild.DownloadUsersAsync();
-            Console.WriteLine(Context.Guild.Users.Count);
-            foreach (var x in Context.Guild.Users) Console.WriteLine($"{x.Username} - {x.Id}");
-            Console.WriteLine(Context.Guild.Users.Count);
+            var patreon = new PatreonClient();
+            await patreon.InitializeAsync();
+            var result = await patreon.GetPledges();
+
+            foreach (var x in result)
+            {
+                Console.WriteLine($"{x.Users.DiscordId} - {x.Pledges.AmountCents}");
+            }
         }
     }
 }
