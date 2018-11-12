@@ -23,6 +23,12 @@ namespace Hanekawa.Services.Level
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
 
+        private ConcurrentDictionary<ulong, List<ulong>> ServerCategoryReduction =
+            new ConcurrentDictionary<ulong, List<ulong>>();
+
+        private ConcurrentDictionary<ulong, List<ulong>> ServerChannelReduction =
+            new ConcurrentDictionary<ulong, List<ulong>>();
+
         public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
@@ -55,6 +61,21 @@ namespace Hanekawa.Services.Level
                         var after = expEvent.Time - DateTime.UtcNow;
                         ExpEventHandler(db, expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId,
                             expEvent.ChannelId, after);
+                    }
+                }
+
+                foreach (var x in db.LevelExpReductions)
+                {
+                    if (x.Channel)
+                    {
+                        var channels = ServerChannelReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        channels.Add(x.ChannelId);
+                    }
+
+                    if (!x.Category) continue;
+                    {
+                        var channels = ServerCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        channels.Add(x.ChannelId);
                     }
                 }
             }
@@ -91,27 +112,113 @@ namespace Hanekawa.Services.Level
                 IUserMessage message = null;
                 var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
                 if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
-                ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message.Id, message.Channel.Id, after);
-                await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message.Id, message.Channel.Id, after);
+                ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
+                await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
+            }
+        }
+
+        public async Task<EmbedBuilder> ReducedExpManager(ICategoryChannel category = null, ITextChannel channel = null)
+        {
+            if (category != null)
+            {
+                var channels = ServerCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
+                if (channels.Contains(category.Id)) return await RemoveReducedExp(category);
+                return await AddReducedExp(category);
+            }
+
+            if (channel == null) return null;
+            {
+                var channels = ServerChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+                if(channels.Contains(channel.Id)) return await RemoveReducedExp(null, channel);
+                return await AddReducedExp(null, channel);
+            }
+
+        }
+
+        private async Task<EmbedBuilder> AddReducedExp(ICategoryChannel category = null, ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                if (category != null)
+                {
+                    var channels = ServerCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
+                    channels.Add(category.Id);
+                    var data = new LevelExpReduction
+                    {
+                        GuildId = category.GuildId,
+                        ChannelId = category.Id,
+                        Channel = false,
+                        Category = true
+                    };
+                    await db.LevelExpReductions.AddAsync(data);
+                    await db.SaveChangesAsync();
+                    return new EmbedBuilder().Reply($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
+                }
+
+                if (channel == null) return null;
+                {
+                    var channels = ServerChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+                    channels.Add(channel.Id);
+                    var data = new LevelExpReduction
+                    {
+                        GuildId = channel.GuildId,
+                        ChannelId = channel.Id,
+                        Channel = true,
+                        Category = false
+                    };
+                    await db.LevelExpReductions.AddAsync(data);
+                    await db.SaveChangesAsync();
+                    return new EmbedBuilder().Reply($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
+                }
+
+            }
+        }
+
+        private async Task<EmbedBuilder> RemoveReducedExp(ICategoryChannel category = null, ITextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                if (category != null)
+                {
+                    var channels = ServerCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
+                    channels.Remove(category.Id);
+                    var data = await db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
+                    db.LevelExpReductions.Remove(data);
+                    await db.SaveChangesAsync();
+                    return new EmbedBuilder().Reply($"Removed {category.Name} from reduced exp list", Color.Green.RawValue);
+                }
+
+                if (channel == null) return null;
+                {
+                    var channels = ServerChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+                    channels.Remove(channel.Id);
+                    var data = await db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
+                    db.LevelExpReductions.Remove(data);
+                    await db.SaveChangesAsync();
+                    return new EmbedBuilder().Reply($"Removed {channel.Name} from reduced exp list", Color.Green.RawValue);
+                }
+
             }
         }
 
         private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMult, ulong? messageId,
             ulong? channelId, TimeSpan after)
         {
-            ExpMultiplier.AddOrUpdate(guildId, multiplier, (key, old) => old = multiplier);
+            ExpMultiplier.AddOrUpdate(guildId, multiplier, (key, old) => multiplier);
             var toAdd = new Timer(async _ =>
             {
                 try
                 {
-                    ExpMultiplier.AddOrUpdate(guildId, defaultMult, (key, old) => old = defaultMult);
-                    if (messageId != null)
+                    ExpMultiplier.AddOrUpdate(guildId, defaultMult, (key, old) => defaultMult);
+                    if (messageId.HasValue && channelId.HasValue)
                     {
-                        var msg = await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
-                            .GetMessageAsync(messageId.Value) as IUserMessage;
-                        var upd = msg.Embeds.First().ToEmbedBuilder();
-                        upd.Color = Color.Red;
-                        await msg.ModifyAsync(x => x.Embed = upd.Build());
+                        if (await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
+                            .GetMessageAsync(messageId.Value) is IUserMessage msg)
+                        {
+                            var upd = msg.Embeds.First().ToEmbedBuilder();
+                            upd.Color = Color.Red;
+                            await msg.ModifyAsync(x => x.Embed = upd.Build());
+                        }
                     }
 
                     RemoveFromDatabase(db, guildId);
@@ -222,12 +329,16 @@ namespace Hanekawa.Services.Level
 
                 if (!CheckServerCooldown(user)) return;
 
+                ServerChannelReduction.TryGetValue(channel.GuildId, out var channeList);
+                ServerCategoryReduction.TryGetValue(channel.GuildId, out var category);
+                var reduced = (channeList != null && (channeList.Contains(channel.Id)) || (category != null && channel.CategoryId.HasValue && category.Contains(channel.CategoryId.Value)));
+
                 using (var db = new DbService())
                 {
                     ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
                     var cfg = await db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
-                    var exp = _calc.GetMessageExp(msg) * cfg.ExpMultiplier * multi;
+                    var exp = _calc.GetMessageExp(msg, reduced) * cfg.ExpMultiplier * multi;
                     var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
                     userdata.LastMessage = DateTime.UtcNow;
@@ -261,14 +372,19 @@ namespace Hanekawa.Services.Level
                 if (message.Author.IsBot) return;
                 if (!(message is SocketUserMessage msg)) return;
                 if (msg.Source != MessageSource.User) return;
+                if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
                 if (!CheckGlobalCooldown(user)) return;
 
+                ServerChannelReduction.TryGetValue(user.Guild.Id, out var channeList);
+                ServerCategoryReduction.TryGetValue(user.Guild.Id, out var category);
+                var reduced = (channeList != null && (channeList.Contains(channel.Id)) || (category != null && channel.CategoryId.HasValue && category.Contains(channel.CategoryId.Value)));
+                
                 using (var db = new DbService())
                 {
                     var userdata = await db.GetOrCreateGlobalUserData(user);
-                    var exp = _calc.GetMessageExp(msg);
+                    var exp = _calc.GetMessageExp(msg, reduced);
                     var nextLevel = _calc.GetGlobalLevelRequirement(userdata.Level);
                     userdata.TotalExp = userdata.TotalExp + exp;
                     userdata.Credit = userdata.Credit + _calc.GetMessageCredit();

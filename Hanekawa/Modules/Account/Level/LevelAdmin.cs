@@ -16,7 +16,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 
-namespace Hanekawa.Modules.Account
+namespace Hanekawa.Modules.Account.Level
 {
     [Group("level")]
     public class LevelAdmin : InteractiveBase
@@ -208,61 +208,6 @@ namespace Hanekawa.Modules.Account
                 {
                     await ReplyAsync(null, false, new EmbedBuilder().Reply("No level roles added!").Build());
                 }
-            }
-        }
-
-        [Command("multiplier")]
-        [Alias("multi")]
-        [Summary("Gets the current level multiplier")]
-        public async Task LevelMultiplier()
-        {
-            var multiplier = _levelingService.GetServerMultiplier(Context.Guild);
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Current server multiplier: x{multiplier}").Build());
-        }
-
-        [Command("exp", RunMode = RunMode.Async)]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [Summary(
-            "Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
-        public async Task ExpEventAsync(uint multiplier, TimeSpan? duration = null)
-        {
-            try
-            {
-                if (!duration.HasValue) duration = TimeSpan.FromDays(1);
-                if (duration.Value > TimeSpan.FromDays(1)) duration = TimeSpan.FromDays(1);
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply(
-                        $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration.Value.Humanize()}) ? (y/n)",
-                        Color.Purple.RawValue).Build());
-                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (response.Content.ToLower() != "y") return;
-
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Do you want to announce the event? (y/n)",
-                        Color.Purple.RawValue).Build());
-                var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (announceResp.Content.ToLower() == "y")
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Okay, I'll let you announce it.",
-                            Color.Green.RawValue).Build());
-                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value);
-                }
-                else
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Announcing event into designated channel.",
-                            Color.Green.RawValue).Build());
-                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true,
-                        Context.Channel as SocketTextChannel);
-                }
-            }
-            catch
-            {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Exp event setup aborted.",
-                        Color.Red.RawValue).Build());
             }
         }
     }

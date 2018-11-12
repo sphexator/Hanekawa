@@ -15,13 +15,11 @@ namespace Hanekawa.Services.Level.Util
             return 50 * currentLevel * currentLevel + 300;
         }
 
-        public uint GetMessageExp(SocketMessage msg)
+        public uint GetMessageExp(SocketMessage msg, bool reduced = false)
         {
             var rand = new Random();
             var xp = rand.Next(10, 20);
-            if (msg.Channel.Id.Equals(339383206669320192) || msg.Channel.Id.Equals(346429281314013184))
-                return Convert.ToUInt32(xp / 5);
-            return Convert.ToUInt32(xp);
+            return reduced ? Convert.ToUInt32(xp / 10) : Convert.ToUInt32(xp);
         }
 
         public uint GetMessageCredit()
