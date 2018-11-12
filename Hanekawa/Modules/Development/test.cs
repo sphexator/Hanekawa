@@ -8,16 +8,19 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Patreon;
 using Hanekawa.Modules.Account.Profile;
+using Hanekawa.Services.Patreon;
 
 namespace Hanekawa.Modules.Development
 {
     public class Test : InteractiveBase
     {
         private readonly ProfileGenerator _generator;
+        private readonly PatreonService _patreonService;
 
-        public Test(ProfileGenerator generator)
+        public Test(ProfileGenerator generator, PatreonService patreonService)
         {
             _generator = generator;
+            _patreonService = patreonService;
         }
 
         [Command("roleid", RunMode = RunMode.Async)]
@@ -52,14 +55,7 @@ namespace Hanekawa.Modules.Development
         [RequireOwner]
         public async Task PatreonTest()
         {
-            var patreon = new PatreonClient();
-            await patreon.InitializeAsync();
-            var result = await patreon.GetPledges();
-
-            foreach (var x in result)
-            {
-                Console.WriteLine($"{x.Users.DiscordId} - {x.Pledges.AmountCents}");
-            }
+            await _patreonService.Execute();
         }
     }
 }

@@ -9,6 +9,7 @@ using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Patreon;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Modules.Account.Storage;
 using Hanekawa.Modules.Audio.Service;
@@ -27,6 +28,7 @@ using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Log;
+using Hanekawa.Services.Patreon;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
 using Hanekawa.Services.Reliability;
@@ -50,6 +52,7 @@ namespace Hanekawa
         private DatabaseClient _databaseClient;
         private LavalinkManager _lavalink;
         private YouTubeService _youTubeService;
+        private PatreonClient _patreonClient;
 
         private static void Main()
         {
@@ -79,7 +82,8 @@ namespace Hanekawa
                 TotalShards = 1
             });
             _anime = new AnimeSimulCastClient();
-
+            _patreonClient = new PatreonClient(_config["patreon"]);
+            
             using (var db = new DbService())
             {
                 await db.Database.MigrateAsync();
@@ -104,6 +108,8 @@ namespace Hanekawa
             services.GetRequiredService<ReliabilityService>();
             services.GetRequiredService<EventService>();
             services.GetRequiredService<AchievementManager>();
+            services.GetRequiredService<PatreonService>();
+            await _patreonClient.InitializeAsync();
 
             var scheduler = services.GetService<IScheduler>();
 
@@ -125,6 +131,7 @@ namespace Hanekawa
             services.AddSingleton(_config);
             services.AddSingleton(_anime);
             services.AddSingleton(_lavalink);
+            services.AddSingleton(_patreonClient);
 
             services.AddDistributedRedisCache(options =>
             {
@@ -161,6 +168,7 @@ namespace Hanekawa
             services.AddSingleton<SimulCast>();
             services.AddSingleton<ProfileGenerator>();
             services.AddSingleton<AchievementManager>();
+            services.AddSingleton<PatreonService>();
             services.AddLogging();
             services.AddSingleton<LogService>();
             services.AddSingleton<Config>();

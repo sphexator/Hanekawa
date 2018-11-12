@@ -58,6 +58,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<EventSchedule> EventSchedules { get; set; }
         public virtual DbSet<WhitelistDesign> WhitelistDesigns { get; set; }
         public virtual DbSet<WhitelistEvent> WhitelistEvents { get; set; }
+        public virtual DbSet<Patreon> Patreons { get; set; }
 
         //Clubs
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
@@ -200,6 +201,7 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<EventSchedule>(x => x.HasKey(e => new { e.Id, e.GuildId }));
             modelBuilder.Entity<WhitelistDesign>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
             modelBuilder.Entity<WhitelistEvent>(x => x.HasKey(e => new { e.GuildId, e.UserId }));
+            modelBuilder.Entity<Patreon>(x => x.HasKey(e => new { e.BotId, e.UserId }));
 
             // Clubs
             modelBuilder.Entity<ClubInfo>(x =>
