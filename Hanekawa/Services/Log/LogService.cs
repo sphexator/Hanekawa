@@ -14,10 +14,11 @@ namespace Hanekawa.Services.Log
         private readonly CommandService _commands;
         private readonly ILogger<LogService> _logger;
 
-        public LogService(DiscordSocketClient client, CommandService commands, ILoggerFactory loggerFactory)
+        public LogService(DiscordSocketClient client, CommandService commands, ILogger<LogService> logger)
         {
             _client = client;
             _commands = commands;
+            _logger = logger;
 
             _client.Log += LogDiscord;
             _commands.Log += LogCommand;

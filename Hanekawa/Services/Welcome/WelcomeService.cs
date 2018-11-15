@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
@@ -23,6 +16,13 @@ using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Text;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
@@ -30,12 +30,10 @@ namespace Hanekawa.Services.Welcome
     public class WelcomeService
     {
         private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _provider;
 
-        public WelcomeService(IServiceProvider provider, DiscordSocketClient discord)
+        public WelcomeService(DiscordSocketClient discord)
         {
             _client = discord;
-            _provider = provider;
 
             _client.UserJoined += Welcomer;
             _client.UserJoined += WelcomeToggler;
