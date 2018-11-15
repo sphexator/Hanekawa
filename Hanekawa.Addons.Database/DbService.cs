@@ -73,7 +73,6 @@ namespace Hanekawa.Addons.Database
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
         public virtual DbSet<GuildInfo> GuildInfos { get; set; }
-        public virtual DbSet<GuildInfoLink> GuildInfoLinks { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
@@ -242,7 +241,10 @@ namespace Hanekawa.Addons.Database
             });
 
             // Config
-            modelBuilder.Entity<GuildInfo>(x => { x.HasKey(e => e.GuildId); });
+            modelBuilder.Entity<GuildInfo>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.ChannelId, e.MessageId});
+            });
             modelBuilder.Entity<GuildConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
@@ -250,7 +252,6 @@ namespace Hanekawa.Addons.Database
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
             });
-            modelBuilder.Entity<GuildInfoLink>(x => x.HasKey(e => e.GuildId));
             modelBuilder.Entity<IgnoreChannel>(x => x.HasKey(e => new { e.GuildId, e.ChannelId }));
             modelBuilder.Entity<Board>(x => x.HasKey(e => new { e.GuildId, e.MessageId }));
             modelBuilder.Entity<WelcomeBanner>(x => x.HasKey(e => new { e.GuildId, e.Id }));

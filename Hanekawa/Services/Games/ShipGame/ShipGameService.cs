@@ -234,7 +234,7 @@ namespace Hanekawa.Services.Games.ShipGame
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"0/{playerTwoHpMax}";
                     await msg.ModifyAsync(x => x.Embed = embed.Build());
-                    NpcKill(context.User.Id);
+                    var _ = NpcKill(context.User.Id);
                     continue;
                 }
 

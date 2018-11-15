@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Rest", "Han
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Twitter", "Hanekawa.Addons.Twitter\Hanekawa.Addons.Twitter.csproj", "{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Addons.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

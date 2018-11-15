@@ -37,6 +37,8 @@ using Hanekawa.Services.Welcome;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Spi;
 using SharpLink;
@@ -90,8 +92,10 @@ namespace Hanekawa
             }
 
             var services = ConfigureServices();
+            ConfigureLogging(services);
             services.GetRequiredService<Config>();
             services.GetRequiredService<LogService>();
+            services.GetRequiredService<DiscordLogging>();
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync(services);
             services.GetRequiredService<LevelingService>();
             services.GetRequiredService<WelcomeService>();
@@ -169,13 +173,24 @@ namespace Hanekawa
             services.AddSingleton<ProfileGenerator>();
             services.AddSingleton<AchievementManager>();
             services.AddSingleton<PatreonService>();
-            services.AddLogging();
+            services.AddSingleton<DiscordLogging>();
             services.AddSingleton<LogService>();
+            services.AddSingleton<ILoggerFactory, LoggerFactory>();
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
             services.AddSingleton<Config>();
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<QuartzJonFactory>();
             services.AddSingleton<IJobFactory, QuartzJonFactory>();
             return services.BuildServiceProvider();
+        }
+
+        private static void ConfigureLogging(IServiceProvider provider)
+        {
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true});
+            NLog.LogManager.LoadConfiguration("nlog.config");
         }
 
         private static IConfiguration BuildConfig()

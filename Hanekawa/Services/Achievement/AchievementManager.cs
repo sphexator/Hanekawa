@@ -56,6 +56,7 @@ namespace Hanekawa.Services.Achievement
                         .ToListAsync();
                     var progress = await db.GetAchievementProgress(user, Voice);
                     if (progress == null) return;
+
                     if (achievements == null || achievements.Count == 0) return;
 
                     var totalTime = Convert.ToInt32(time.TotalMinutes);
@@ -83,6 +84,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in below)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -118,6 +120,7 @@ namespace Hanekawa.Services.Achievement
                         var unlockCheck = await db.AchievementUnlocks.FirstOrDefaultAsync(x =>
                             x.AchievementId == achieve.AchievementId && x.UserId == user.Id);
                         if (unlockCheck != null) return;
+
                         var data = new AchievementUnlock
                         {
                             AchievementId = achieve.AchievementId,
@@ -136,6 +139,7 @@ namespace Hanekawa.Services.Achievement
                         foreach (var x in below)
                         {
                             if (unlock.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                             var data = new AchievementUnlock
                             {
                                 AchievementId = x.AchievementId,
@@ -184,6 +188,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in belowAchieves)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -234,6 +239,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in belowAchieves)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -261,6 +267,7 @@ namespace Hanekawa.Services.Achievement
                     var achievements = await db.Achievements.Where(x => x.TypeId == Drop).ToListAsync();
                     var progress = await db.GetAchievementProgress(user, Drop);
                     if (progress == null) return;
+
                     if (achievements == null) return;
 
                     if (achievements.Any(x => x.Requirement == progress.Count + 1 && x.Once == false))
@@ -285,6 +292,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in below)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -313,6 +321,7 @@ namespace Hanekawa.Services.Achievement
                     var achievements = await db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
                     var progress = await db.GetAchievementProgress(userid, PvP);
                     if (progress == null) return;
+
                     if (achievements == null) return;
 
                     if (achievements.Any(x => x.Requirement == progress.Count + 1 && !x.Once))
@@ -337,6 +346,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in below)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -366,6 +376,7 @@ namespace Hanekawa.Services.Achievement
                         await db.Achievements.Where(x => x.TypeId == PvE && x.Once == false).ToListAsync();
                     var progress = await db.GetAchievementProgress(userid, PvE);
                     if (progress == null) return;
+
                     if (achievements == null) return;
 
                     if (achievements.Any(x => x.Requirement == progress.Count + 1))
@@ -390,6 +401,7 @@ namespace Hanekawa.Services.Achievement
                             foreach (var x in below)
                             {
                                 if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
                                 var data = new AchievementUnlock
                                 {
                                     AchievementId = x.AchievementId,
@@ -413,12 +425,13 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
+                if (message.Author.IsBot) return;
+                if (!(message is SocketUserMessage msg)) return;
+                if (message.Source != MessageSource.User) return;
+                if (!(msg.Author is SocketGuildUser user)) return;
+
                 using (var db = new DbService())
                 {
-                    if (message.Author.IsBot) return;
-                    if (!(message is SocketUserMessage msg)) return;
-                    if (message.Source != MessageSource.User) return;
-                    if (!(msg.Author is SocketGuildUser user)) return;
                     var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
                     if (achievements == null) return;
 

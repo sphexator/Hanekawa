@@ -352,7 +352,7 @@ namespace Hanekawa.Services.Level
                         userdata.Level = userdata.Level + 1;
                         userdata.Exp = userdata.Exp + exp - nxtLvl;
                         await NewLevelManagerAsync(userdata, user, db);
-                        ServerLevel(user, userdata);
+                        var __ = ServerLevel(user, userdata);
                     }
                     else
                     {
@@ -392,7 +392,7 @@ namespace Hanekawa.Services.Level
                     {
                         userdata.Exp = userdata.Exp + exp - nextLevel;
                         userdata.Level = userdata.Level + 1;
-                        GlobalLevel(user, userdata);
+                        var __ = GlobalLevel(user, userdata);
                     }
                     else
                     {

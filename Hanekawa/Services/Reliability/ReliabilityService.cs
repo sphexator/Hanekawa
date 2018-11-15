@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Services.Log;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Services.Reliability
 {
@@ -10,23 +12,19 @@ namespace Hanekawa.Services.Reliability
     {
         private const bool AttemptReset = true;
 
-        private const LogSeverity Debug = LogSeverity.Debug;
-        private const LogSeverity Info = LogSeverity.Info;
-        private const LogSeverity Critical = LogSeverity.Critical;
-
         private const string LogSource = "Reliability";
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
         private readonly DiscordSocketClient _discord;
-        private readonly Func<LogMessage, Task> _logger;
+        private readonly LogService _logger;
         private readonly Timer _timer;
         private CancellationTokenSource _cts;
 
-        public ReliabilityService(DiscordSocketClient discord, Func<LogMessage, Task> logger = null)
+        public ReliabilityService(DiscordSocketClient discord, LogService logger)
         {
             _cts = new CancellationTokenSource();
             _discord = discord;
-            _logger = logger ?? (_ => Task.CompletedTask);
+            _logger = logger;
 
             _discord.Connected += ConnectedAsync;
             _discord.Disconnected += DisconnectedAsync;
@@ -47,7 +45,7 @@ namespace Hanekawa.Services.Reliability
 
         private Task ConnectedAsync()
         {
-            var __ = Task.Run(async () =>
+            var __ = Task.Run(() =>
             {
                 _ = DebugAsync("Client reconnected, resetting cancel tokens...");
                 _cts.Cancel();
@@ -59,7 +57,7 @@ namespace Hanekawa.Services.Reliability
 
         private Task DisconnectedAsync(Exception _e)
         {
-            var __ = Task.Run(async () =>
+            var __ = Task.Run(() =>
             {
                 _ = InfoAsync("Client disconnected, starting timeout task...");
                 _ = Task.Delay(Timeout, _cts.Token).ContinueWith(async _ =>
@@ -111,17 +109,20 @@ namespace Hanekawa.Services.Reliability
 
         private Task DebugAsync(string message)
         {
-            return _logger.Invoke(new LogMessage(Debug, LogSource, message));
+            _logger.LogAction(LogLevel.Debug, message, LogSource);
+            return Task.CompletedTask;
         }
 
         private Task InfoAsync(string message)
         {
-            return _logger.Invoke(new LogMessage(Info, LogSource, message));
+            _logger.LogAction(LogLevel.Information, message, LogSource);
+            return Task.CompletedTask;
         }
 
         private Task CriticalAsync(string message, Exception error = null)
         {
-            return _logger.Invoke(new LogMessage(Critical, LogSource, message, error));
+            _logger.LogAction(LogLevel.Critical, message, error?.Message ?? LogSource);
+            return Task.CompletedTask;
         }
     }
 }
