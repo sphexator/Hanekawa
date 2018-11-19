@@ -285,8 +285,7 @@ namespace Hanekawa.Services.Logging
                         },
                         Color = new Color(Color.Red.RawValue),
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Fields = ModLogFieldBuilders(user, null, timer),
-                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}
+                        Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(user)
                     };
                     var msg = await ch.SendEmbedAsync(embed);
                     caseId.MessageId = msg.Id;
@@ -320,7 +319,7 @@ namespace Hanekawa.Services.Logging
                         Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                         Color = Color.Red,
                         Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Fields = ModLogFieldBuilders(user)
+                        Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(user)
                     };
                     var msg = await ch.SendEmbedAsync(embed);
                     caseId.MessageId = msg.Id;
@@ -331,9 +330,13 @@ namespace Hanekawa.Services.Logging
             return Task.CompletedTask;
         }
 
-        private static Task UserJoined(SocketGuildUser user)
+        private Task UserJoined(SocketGuildUser user)
         {
-            var _ = Task.Run(async () => { });
+            var _ = Task.Run(() =>
+            {
+                var data = new UserJoined {User = user};
+                _balancer.Add(LogType.UserJoined, data);
+            });
             return Task.CompletedTask;
         }
 
@@ -431,27 +434,6 @@ namespace Hanekawa.Services.Logging
                 _balancer.Add(LogType.GuildUserUpdated, data);
             });
             return Task.CompletedTask;
-        }
-
-        private static List<EmbedFieldBuilder> ModLogFieldBuilders(IMentionable user,
-            string reason = null,
-            TimeSpan? duration = null)
-        {
-            var result = new List<EmbedFieldBuilder>
-            {
-                new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
-                new EmbedFieldBuilder {IsInline = true, Name = "Moderator", Value = "N/A"},
-                new EmbedFieldBuilder {IsInline = true, Name = "Reason", Value = reason ?? "N/A"}
-            };
-            if (duration == null) return result;
-            var durationField = new EmbedFieldBuilder
-            {
-                Name = "Duration",
-                Value = duration.Value.Humanize(),
-                IsInline = true
-            };
-            result.Add(durationField);
-            return result;
         }
     }
 }

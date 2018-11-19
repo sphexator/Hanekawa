@@ -48,14 +48,14 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var _ = Task.Run(() =>
             {
-                BanQueue.TryRemove(guild.Id, out var banQueue);
-                UnBanQueue.TryRemove(guild.Id, out var unbanQueue);
-                UserJoinedQueue.TryRemove(guild.Id, out var userJoinedQueue);
-                UserLeftQueue.TryRemove(guild.Id, out var userLeftQueue);
-                MessageDeletedQueue.TryRemove(guild.Id, out var messageDeletedQueue);
-                MessageUpdatedQueue.TryRemove(guild.Id, out var messageUpdatedQueue);
-                GuildMemberUpdatedQueue.TryRemove(guild.Id, out var guildMemberUpdatedQueue);
-                UserUpdatedQueue.TryRemove(guild.Id, out var userUpdatedQueue);
+                BanQueue.TryRemove(guild.Id, out var _);
+                UnBanQueue.TryRemove(guild.Id, out var _);
+                UserJoinedQueue.TryRemove(guild.Id, out var _);
+                UserLeftQueue.TryRemove(guild.Id, out var _);
+                MessageDeletedQueue.TryRemove(guild.Id, out var _);
+                MessageUpdatedQueue.TryRemove(guild.Id, out var _);
+                GuildMemberUpdatedQueue.TryRemove(guild.Id, out var _);
+                UserUpdatedQueue.TryRemove(guild.Id, out var _);
             });
             return Task.CompletedTask;
         }
@@ -256,7 +256,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                                 Footer = new EmbedFooterBuilder { Text = $"User ID: {userBanned.User.Id}" },
                                 Color = Color.Red,
                                 Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                                // Fields = ModLogFieldBuilders(user) - TODO: ADD
+                                Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(userBanned.User)
                             };
                             var msg = await ch.SendEmbedAsync(embed);
                             caseId.MessageId = msg.Id;
@@ -305,7 +305,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                                 Footer = new EmbedFooterBuilder { Text = $"User ID: {userUnbanned.User.Id}" },
                                 Color = Color.Green,
                                 Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                                // Fields = ModLogFieldBuilders(user) TODO: ADD
+                                Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(userUnbanned.User)
                             };
                             var msg = await ch.SendEmbedAsync(embed);
                             caseId.MessageId = msg.Id;
@@ -343,10 +343,11 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         var embed = new EmbedBuilder { Color = Color.Purple };
                         if (userUpdated.OldUser.Username != userUpdated.NewUser.Username)
                         {
+                            var updated = userUpdated;
                             embed.WithTitle("Username Change")
-                                .WithDescription($"{userUpdated.OldUser.Username}#{userUpdated.OldUser.Discriminator} || {userUpdated.OldUser.Id}")
-                                .AddField(x => x.WithName("Old Name").WithValue($"{userUpdated.OldUser.Username}").WithIsInline(true))
-                                .AddField(x => x.WithName("New Name").WithValue($"{userUpdated.NewUser.Username}").WithIsInline(true));
+                                .WithDescription($"{userUpdated.OldUser.Username}#{updated.OldUser.Discriminator} || {userUpdated.OldUser.Id}")
+                                .AddField(x => x.WithName("Old Name").WithValue($"{updated.OldUser.Username}").WithIsInline(true))
+                                .AddField(x => x.WithName("New Name").WithValue($"{updated.NewUser.Username}").WithIsInline(true));
                         }
                         else if (userUpdated.OldUser.AvatarId != userUpdated.NewUser.AvatarId)
                         {

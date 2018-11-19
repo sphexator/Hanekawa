@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
+using Humanizer;
 
 namespace Hanekawa.Extensions
 {
@@ -39,6 +41,24 @@ namespace Hanekawa.Extensions
             };
             embed.Author = author;
             return embed;
+        }
+
+        public static List<EmbedFieldBuilder> ModLogFieldBuilders(this List<EmbedFieldBuilder> result, IMentionable user,
+            string reason = null,
+            TimeSpan? duration = null)
+        {
+            result.Add(new EmbedFieldBuilder { IsInline = true, Name = "User", Value = user.Mention });
+            result.Add(new EmbedFieldBuilder { IsInline = true, Name = "Moderator", Value = "N/A" });
+            result.Add(new EmbedFieldBuilder { IsInline = true, Name = "Reason", Value = reason ?? "N/A" });
+            if (duration == null) return result;
+            var durationField = new EmbedFieldBuilder
+            {
+                Name = "Duration",
+                Value = duration.Value.Humanize(),
+                IsInline = true
+            };
+            result.Add(durationField);
+            return result;
         }
     }
 }
