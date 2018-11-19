@@ -1,12 +1,12 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
-namespace Hanekawa.Services.Log
+namespace Hanekawa.Services.Logging
 {
     public class LogService
     {

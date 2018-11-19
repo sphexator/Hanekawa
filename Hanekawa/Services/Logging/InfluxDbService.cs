@@ -6,7 +6,7 @@ using InfluxData.Net.Common.Enums;
 using InfluxData.Net.InfluxDb;
 using InfluxData.Net.InfluxDb.Models;
 
-namespace Hanekawa.Services.Log
+namespace Hanekawa.Services.Logging
 {
     public class InfluxDbService
     {

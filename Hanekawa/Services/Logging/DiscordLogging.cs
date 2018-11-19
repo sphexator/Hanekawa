@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Data;
@@ -7,16 +11,9 @@ using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
 using Humanizer;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Hanekawa.Addons.EventQueue;
 using ActionType = Hanekawa.Entities.ActionType;
 
-namespace Hanekawa.Services.Log
+namespace Hanekawa.Services.Logging
 {
     public class DiscordLogging
     {
@@ -25,48 +22,10 @@ namespace Hanekawa.Services.Log
         private readonly MuteService _muteService;
         private readonly WarnService _warnService;
         private readonly NudeScoreService _nudeService;
-        private readonly EventQueue<DiscordSocketClient> _queue;
-        private readonly CancellationToken _ctoken;
-
-        private ConcurrentDictionary<ulong, Task> UserBannedGuildTasks { get; } =
-            new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> BanQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> UserUnBannedGuildTasks { get; } =
-            new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> UnBanQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> UserJoinedTasks { get; } = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> UserJoinedQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> UserLeftTasks { get; } = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> UserLeftQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> MessageDeletedTasks { get; } =
-            new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> MessageDeletedQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> MessageUpdatedTasks { get; } = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> MessageUpdatedQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> GuildMemberUpdatedTasks { get; } = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> GuildMemberUpdatedQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
-
-        private ConcurrentDictionary<ulong, Task> UserUpdatedTasks { get; } = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, ConcurrentQueue<string>> UserUpdatedQueue { get; } =
-            new ConcurrentDictionary<ulong, ConcurrentQueue<string>>();
 
         public DiscordLogging(DiscordSocketClient client, ModerationService moderationService, MuteService muteService, WarnService warnService, NudeScoreService nudeService)
         {
             _client = client;
-            _queue = new EventQueue<DiscordSocketClient>(client);
 
             _moderationService = moderationService;
             _muteService = muteService;
@@ -75,7 +34,7 @@ namespace Hanekawa.Services.Log
 
             _client.UserBanned += Banned;
             _client.UserUnbanned += Unbanned;
-            _queue.Register(nameof(_client.UserJoined)); // _client.UserJoined += UserJoined;
+            _client.UserJoined += UserJoined;
             _client.UserLeft += UserLeft;
             _client.MessageDeleted += MessageDeleted;
             _client.MessageUpdated += MessageUpdated;
@@ -458,24 +417,7 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    if (!cfg.LogJoin.HasValue) return;
-                    var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                    if (ch == null) return;
-                    var embed = new EmbedBuilder
-                    {
-                        Description = $"📥 {user.Mention} has joined (*{user.Id}*)\n" +
-                                      $"Account Created: {user.CreatedAt.Humanize()}",
 
-                        Color = Color.Green,
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
-                    };
-
-                    await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
-                }
             });
             return Task.CompletedTask;
         }
@@ -484,22 +426,7 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
-                    if (!cfg.LogJoin.HasValue) return;
-                    var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                    if (ch == null) return;
-                    var embed = new EmbedBuilder
-                    {
-                        Description = $"📤 {user.Mention} has left (*{user.Id}*)",
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Color = Color.Red,
-                        Footer = new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" }
-                    };
 
-                    await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
-                }
             });
             return Task.CompletedTask;
         }
@@ -508,38 +435,7 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    try
-                    {
-                        var cfg = await db.GetOrCreateGuildConfig(guild).ConfigureAwait(false);
-                        if (!cfg.LogBan.HasValue) return;
-                        var ch = guild.GetTextChannel(cfg.LogBan.Value);
-                        if (ch == null) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow,
-                            (ModAction)Data.Constants.ModAction.Ban);
-                        var embed = new EmbedBuilder
-                        {
-                            Author = new EmbedAuthorBuilder
-                            {
-                                Name =
-                                    $"Case ID: {caseId.Id} - {ActionType.Bent} | {user.Username}#{user.Discriminator}"
-                            },
-                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
-                            Color = Color.Red,
-                            Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = ModLogFieldBuilders(user)
-                        };
-                        var msg = await ch.SendEmbedAsync(embed);
-                        caseId.MessageId = msg.Id;
-                        await db.SaveChangesAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
             });
             return Task.CompletedTask;
         }
@@ -548,38 +444,7 @@ namespace Hanekawa.Services.Log
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    try
-                    {
-                        var cfg = await db.GetOrCreateGuildConfig(guild).ConfigureAwait(false);
-                        if (!cfg.LogBan.HasValue) return;
-                        var ch = guild.GetTextChannel(cfg.LogBan.Value);
-                        if (ch == null) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow,
-                            (ModAction)Data.Constants.ModAction.Unban);
-                        var embed = new EmbedBuilder
-                        {
-                            Author = new EmbedAuthorBuilder
-                            {
-                                Name =
-                                    $"Case ID: {caseId.Id} - {ActionType.UnBent} | {user.Username}#{user.Discriminator}"
-                            },
-                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
-                            Color = Color.Green,
-                            Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = ModLogFieldBuilders(user)
-                        };
-                        var msg = await ch.SendEmbedAsync(embed);
-                        caseId.MessageId = msg.Id;
-                        await db.SaveChangesAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
             });
             return Task.CompletedTask;
         }

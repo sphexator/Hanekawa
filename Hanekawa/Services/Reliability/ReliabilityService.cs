@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Services.Log;
+using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Services.Reliability

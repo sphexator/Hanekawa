@@ -27,7 +27,7 @@ using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
-using Hanekawa.Services.Log;
+using Hanekawa.Services.Logging;
 using Hanekawa.Services.Patreon;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
