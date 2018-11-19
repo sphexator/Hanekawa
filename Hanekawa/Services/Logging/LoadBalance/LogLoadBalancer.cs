@@ -1,7 +1,7 @@
-﻿using Discord.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Entities.LogEntities;
 
 namespace Hanekawa.Services.Logging.LoadBalance
@@ -10,28 +10,35 @@ namespace Hanekawa.Services.Logging.LoadBalance
     {
         private readonly Tasks _tasks;
 
-        // Collections of tasks per event per guild
-        private ConcurrentDictionary<ulong, Task> UserBannedGuildTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> UserUnBannedGuildTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> UserJoinedTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> UserLeftTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> MessageDeletedTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> MessageUpdatedTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> GuildMemberUpdatedTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-        private ConcurrentDictionary<ulong, Task> UserUpdatedTasks { get; } 
-            = new ConcurrentDictionary<ulong, Task>();
-
         public LogLoadBalancer(Tasks tasks)
         {
             _tasks = tasks;
         }
+
+        // Collections of tasks per event per guild
+        private ConcurrentDictionary<ulong, Task> UserBannedGuildTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> UserUnBannedGuildTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> UserJoinedTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> UserLeftTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> MessageDeletedTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> MessageUpdatedTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> GuildMemberUpdatedTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
+
+        private ConcurrentDictionary<ulong, Task> UserUpdatedTasks { get; }
+            = new ConcurrentDictionary<ulong, Task>();
 
         public void Add(LogType type, object entity)
         {
@@ -46,27 +53,27 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     HandleUserUpdated(userUpdated);
                     break;
                 case LogType.MessageDeleted:
-                    var messageDeleted = (MessageDeleted)entity;
+                    var messageDeleted = (MessageDeleted) entity;
                     HandleMessageDeleted(messageDeleted);
                     break;
                 case LogType.MessageUpdated:
-                    var messageUpdated = (MessageUpdated)entity;
+                    var messageUpdated = (MessageUpdated) entity;
                     HandleMessageUpdated(messageUpdated);
                     break;
                 case LogType.UserBanned:
-                    var userBanned = (UserBanned)entity;
+                    var userBanned = (UserBanned) entity;
                     HandleUserBanned(userBanned);
                     break;
                 case LogType.UserUnbanned:
-                    var userUnbanned = (UserUnbanned)entity;
+                    var userUnbanned = (UserUnbanned) entity;
                     HandleUserUnbanned(userUnbanned);
                     break;
                 case LogType.UserJoined:
-                    var userJoined = (UserJoined)entity;
+                    var userJoined = (UserJoined) entity;
                     HandleUserJoined(userJoined);
                     break;
                 case LogType.UserLeft:
-                    var userLeft = (UserLeft)entity;
+                    var userLeft = (UserLeft) entity;
                     HandleUserLeft(userLeft);
                     break;
                 default:
@@ -82,13 +89,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (UserJoinedTasks.TryGetValue(user.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessJoinEvent, (key, old) => _tasks.ProcessJoinEvent(user.Guild.Id));
-                }
+                    UserJoinedTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessJoinEvent,
+                        (key, old) => _tasks.ProcessJoinEvent(user.Guild.Id));
             }
             else
             {
-                UserJoinedTasks.TryAdd(user.Guild.Id, _tasks.ProcessJoinEvent(user.Guild.Id)); ;
+                UserJoinedTasks.TryAdd(user.Guild.Id, _tasks.ProcessJoinEvent(user.Guild.Id));
             }
         }
 
@@ -100,13 +106,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (UserLeftTasks.TryGetValue(user.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessLeaveEvent, (key, old) => _tasks.ProcessLeaveEvent(user.Guild.Id));
-                }
+                    UserLeftTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessLeaveEvent,
+                        (key, old) => _tasks.ProcessLeaveEvent(user.Guild.Id));
             }
             else
             {
-                UserLeftTasks.TryAdd(user.Guild.Id, _tasks.ProcessLeaveEvent(user.Guild.Id)); ;
+                UserLeftTasks.TryAdd(user.Guild.Id, _tasks.ProcessLeaveEvent(user.Guild.Id));
             }
         }
 
@@ -117,13 +122,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (UserBannedGuildTasks.TryGetValue(user.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessUserBannedEvent, (key, old) => _tasks.ProcessUserBannedEvent(user.Guild.Id));
-                }
+                    UserBannedGuildTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessUserBannedEvent,
+                        (key, old) => _tasks.ProcessUserBannedEvent(user.Guild.Id));
             }
             else
             {
-                UserBannedGuildTasks.TryAdd(user.Guild.Id, _tasks.ProcessUserBannedEvent(user.Guild.Id)); ;
+                UserBannedGuildTasks.TryAdd(user.Guild.Id, _tasks.ProcessUserBannedEvent(user.Guild.Id));
             }
         }
 
@@ -134,13 +138,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (UserUnBannedGuildTasks.TryGetValue(user.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessUserUnbannedEvent, (key, old) => _tasks.ProcessUserUnbannedEvent(user.Guild.Id));
-                }
+                    UserUnBannedGuildTasks.AddOrUpdate(user.Guild.Id, _tasks.ProcessUserUnbannedEvent,
+                        (key, old) => _tasks.ProcessUserUnbannedEvent(user.Guild.Id));
             }
             else
             {
-                UserUnBannedGuildTasks.TryAdd(user.Guild.Id, _tasks.ProcessUserUnbannedEvent(user.Guild.Id)); ;
+                UserUnBannedGuildTasks.TryAdd(user.Guild.Id, _tasks.ProcessUserUnbannedEvent(user.Guild.Id));
             }
         }
 
@@ -152,13 +155,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (MessageDeletedTasks.TryGetValue(chx.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(chx.Guild.Id, _tasks.ProcessMessageDeletedEvent, (key, old) => _tasks.ProcessMessageDeletedEvent(chx.Guild.Id));
-                }
+                    MessageDeletedTasks.AddOrUpdate(chx.Guild.Id, _tasks.ProcessMessageDeletedEvent,
+                        (key, old) => _tasks.ProcessMessageDeletedEvent(chx.Guild.Id));
             }
             else
             {
-                MessageDeletedTasks.TryAdd(chx.Guild.Id, _tasks.ProcessMessageDeletedEvent(chx.Guild.Id)); ;
+                MessageDeletedTasks.TryAdd(chx.Guild.Id, _tasks.ProcessMessageDeletedEvent(chx.Guild.Id));
             }
         }
 
@@ -170,13 +172,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (MessageUpdatedTasks.TryGetValue(chx.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(chx.Guild.Id, _tasks.ProcessMessageUpdatedEvent, (key, old) => _tasks.ProcessMessageUpdatedEvent(chx.Guild.Id));
-                }
+                    MessageUpdatedTasks.AddOrUpdate(chx.Guild.Id, _tasks.ProcessMessageUpdatedEvent,
+                        (key, old) => _tasks.ProcessMessageUpdatedEvent(chx.Guild.Id));
             }
             else
             {
-                MessageUpdatedTasks.TryAdd(chx.Guild.Id, _tasks.ProcessMessageUpdatedEvent(chx.Guild.Id)); ;
+                MessageUpdatedTasks.TryAdd(chx.Guild.Id, _tasks.ProcessMessageUpdatedEvent(chx.Guild.Id));
             }
         }
 
@@ -188,13 +189,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (UserUpdatedTasks.TryGetValue(gusr.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(gusr.Guild.Id, _tasks.ProcessUserUpdatedEvent, (key, old) => _tasks.ProcessUserUpdatedEvent(gusr.Guild.Id));
-                }
+                    UserUpdatedTasks.AddOrUpdate(gusr.Guild.Id, _tasks.ProcessUserUpdatedEvent,
+                        (key, old) => _tasks.ProcessUserUpdatedEvent(gusr.Guild.Id));
             }
             else
             {
-                UserUpdatedTasks.TryAdd(gusr.Guild.Id, _tasks.ProcessUserUpdatedEvent(gusr.Guild.Id)); ;
+                UserUpdatedTasks.TryAdd(gusr.Guild.Id, _tasks.ProcessUserUpdatedEvent(gusr.Guild.Id));
             }
         }
 
@@ -206,13 +206,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (GuildMemberUpdatedTasks.TryGetValue(usr.Guild.Id, out var task))
             {
                 if (task.IsCompleted)
-                {
-                    GuildMemberUpdatedTasks.AddOrUpdate(usr.Guild.Id, _tasks.ProcessGuildUserUpdatedEvent, (key, old) => _tasks.ProcessGuildUserUpdatedEvent(usr.Guild.Id));
-                }
+                    GuildMemberUpdatedTasks.AddOrUpdate(usr.Guild.Id, _tasks.ProcessGuildUserUpdatedEvent,
+                        (key, old) => _tasks.ProcessGuildUserUpdatedEvent(usr.Guild.Id));
             }
             else
             {
-                GuildMemberUpdatedTasks.TryAdd(usr.Guild.Id, _tasks.ProcessGuildUserUpdatedEvent(usr.Guild.Id)); ;
+                GuildMemberUpdatedTasks.TryAdd(usr.Guild.Id, _tasks.ProcessGuildUserUpdatedEvent(usr.Guild.Id));
             }
         }
     }
