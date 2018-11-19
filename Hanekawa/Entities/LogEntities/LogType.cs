@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Entities.Log
+﻿namespace Hanekawa.Entities.LogEntities
 {
     public enum LogType
     {

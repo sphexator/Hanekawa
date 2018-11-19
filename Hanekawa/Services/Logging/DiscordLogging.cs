@@ -6,7 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Entities.Log;
+using Hanekawa.Entities.LogEntities;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;

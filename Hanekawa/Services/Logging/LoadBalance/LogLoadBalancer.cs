@@ -1,8 +1,8 @@
 ﻿using Discord.WebSocket;
-using Hanekawa.Entities.Log;
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Hanekawa.Entities.LogEntities;
 
 namespace Hanekawa.Services.Logging.LoadBalance
 {

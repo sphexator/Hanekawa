@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 
-namespace Hanekawa.Entities.Log
+namespace Hanekawa.Entities.LogEntities
 {
     public class MessageDeleted
     {
