@@ -64,9 +64,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = UserJoinedQueue.GetOrAdd(guildId, new ConcurrentQueue<UserJoined>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var userJoined))
                 {
                     var user = userJoined.User;
@@ -99,9 +99,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = UserLeftQueue.GetOrAdd(guildId, new ConcurrentQueue<UserLeft>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var userJoined))
                 {
                     var user = userJoined.User;
@@ -132,9 +132,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = MessageDeletedQueue.GetOrAdd(guildId, new ConcurrentQueue<MessageDeleted>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var messageDeleted))
                 {
                     if (messageDeleted.OptMsg.HasValue && messageDeleted.OptMsg.Value.Author.IsBot) return;
@@ -171,6 +171,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         await channel.SendEmbedAsync(embed);
                     }
+                    lastRequest = DateTime.UtcNow;
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -181,9 +182,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = MessageUpdatedQueue.GetOrAdd(guildId, new ConcurrentQueue<MessageUpdated>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var messageUpdated))
                 {
                     if (messageUpdated.NewMessage.Author.IsBot) return;
@@ -217,6 +218,8 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         };
                         await channel.SendEmbedAsync(embed);
                     }
+
+                    lastRequest = DateTime.UtcNow;
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -227,9 +230,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = BanQueue.GetOrAdd(guildId, new ConcurrentQueue<UserBanned>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var userBanned))
                 {
                     using (var db = new DbService())
@@ -263,6 +266,8 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         {
                             Console.WriteLine(e);
                         }
+
+                        lastRequest = DateTime.UtcNow;
                     }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
@@ -274,9 +279,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = UnBanQueue.GetOrAdd(guildId, new ConcurrentQueue<UserUnbanned>()); 
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var userUnbanned))
                 {
                     using (var db = new DbService())
@@ -310,6 +315,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         {
                             Console.WriteLine(e);
                         }
+                        lastRequest = DateTime.UtcNow;
                     }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
@@ -321,9 +327,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = UserUpdatedQueue.GetOrAdd(guildId, new ConcurrentQueue<UserUpdated>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var userUpdated))
                 {
                     using (var db = new DbService())
@@ -359,6 +365,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         await ch.SendMessageAsync(null, false, embed.Build());
                     }
+                    lastRequest = DateTime.UtcNow;
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -369,9 +376,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             var queue = GuildMemberUpdatedQueue.GetOrAdd(guildId, new ConcurrentQueue<GuildUserUpdated>());
             var worker = true;
+            var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                var lastRequest = DateTime.UtcNow;
                 while (queue.TryDequeue(out var guildUserUpdated))
                 {
                     using (var db = new DbService())
@@ -417,6 +424,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             await ch.SendMessageAsync(null, false, embed.Build());
                         }
                     }
+                    lastRequest = DateTime.UtcNow;
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
