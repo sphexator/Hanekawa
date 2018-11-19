@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -133,9 +135,42 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 var lastRequest = DateTime.UtcNow;
-                while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var messageDeleted))
                 {
+                    if (messageDeleted.OptMsg.HasValue && messageDeleted.OptMsg.Value.Author.IsBot) return;
+                    using (var db = new DbService())
+                    {
+                        if (!(messageDeleted.Channel is SocketGuildChannel chx)) return;
+                        var cfg = await db.GetOrCreateGuildConfig(chx.Guild).ConfigureAwait(false);
+                        if (!cfg.LogMsg.HasValue) return;
+                        var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
+                        if (channel == null) return;
+                        if (!messageDeleted.OptMsg.HasValue) return;
+                        if (!(messageDeleted.OptMsg.Value is IUserMessage msg)) return;
 
+                        var embed = new EmbedBuilder
+                        {
+                            Author = new EmbedAuthorBuilder { Name = "Message Deleted" },
+                            Footer = new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" },
+                            Color = Color.Purple,
+                            Timestamp = msg.Timestamp,
+                            Description = $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}",
+                            Fields = new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder
+                                    {IsInline = false, Name = "Message", Value = msg.Content.Truncate(900)}
+                            }
+                        };
+                        if (msg.Attachments.Count > 0)
+                            embed.AddField(x =>
+                            {
+                                x.Name = "File";
+                                x.IsInline = false;
+                                x.Value = msg.Attachments.First().Url;
+                            });
+
+                        await channel.SendEmbedAsync(embed);
+                    }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -149,9 +184,39 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 var lastRequest = DateTime.UtcNow;
-                while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var messageUpdated))
                 {
+                    if (messageUpdated.NewMessage.Author.IsBot) return;
+                    using (var db = new DbService())
+                    {
+                        if (!(messageUpdated.Channel is ITextChannel chtx)) return;
+                        var cfg = await db.GetOrCreateGuildConfig(chtx.Guild);
+                        if (!cfg.LogMsg.HasValue) return;
 
+                        if (!messageUpdated.OldMessage.HasValue) return;
+                        if (!(messageUpdated.OldMessage.Value is IUserMessage msg)) return; var channel = await chtx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+
+                        if (channel == null) return;
+                        if (msg.Author.IsBot && messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
+                        if (messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
+
+                        var embed = new EmbedBuilder
+                        {
+                            Author = new EmbedAuthorBuilder { Name = "Message Updated" },
+                            Footer = new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" },
+                            Color = Color.Purple,
+                            Timestamp = messageUpdated.NewMessage.EditedTimestamp ?? messageUpdated.NewMessage.Timestamp,
+                            Description = $"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}",
+                            Fields = new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder
+                                    {IsInline = true, Name = "Updated Message:", Value = messageUpdated.NewMessage.Content.Truncate(900)},
+                                new EmbedFieldBuilder
+                                    {IsInline = true, Name = "Old Message:", Value = msg.Content.Truncate(900)}
+                            }
+                        };
+                        await channel.SendEmbedAsync(embed);
+                    }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -259,9 +324,41 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 var lastRequest = DateTime.UtcNow;
-                while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var userUpdated))
                 {
+                    using (var db = new DbService())
+                    {
+                        if (!(userUpdated.NewUser is SocketGuildUser gusr)) return;
+                        var cfg = await db.GetOrCreateGuildConfig(gusr.Guild);
+                        if (!cfg.LogAvi.HasValue) return;
+                        var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
+                        if (ch == null) return;
 
+                        var embed = new EmbedBuilder { Color = Color.Purple };
+                        if (userUpdated.OldUser.Username != userUpdated.NewUser.Username)
+                        {
+                            embed.WithTitle("Username Change")
+                                .WithDescription($"{userUpdated.OldUser.Username}#{userUpdated.OldUser.Discriminator} || {userUpdated.OldUser.Id}")
+                                .AddField(x => x.WithName("Old Name").WithValue($"{userUpdated.OldUser.Username}").WithIsInline(true))
+                                .AddField(x => x.WithName("New Name").WithValue($"{userUpdated.NewUser.Username}").WithIsInline(true));
+                        }
+                        else if (userUpdated.OldUser.AvatarId != userUpdated.NewUser.AvatarId)
+                        {
+                            embed.WithTitle("Avatar Change")
+                                .WithDescription($"{userUpdated.OldUser.Username}#{userUpdated.OldUser.Discriminator} | {userUpdated.OldUser.Id}");
+
+                            if (Uri.IsWellFormedUriString(userUpdated.OldUser.GetAvatarUrl(ImageFormat.Auto, 1024), UriKind.Absolute))
+                                embed.WithThumbnailUrl(userUpdated.OldUser.GetAvatarUrl(ImageFormat.Auto, 1024));
+                            if (Uri.IsWellFormedUriString(userUpdated.NewUser.GetAvatarUrl(ImageFormat.Auto, 1024), UriKind.Absolute))
+                                embed.WithImageUrl(userUpdated.NewUser.GetAvatarUrl(ImageFormat.Auto, 1024));
+                        }
+                        else
+                        {
+                            return;
+                        }
+
+                        await ch.SendMessageAsync(null, false, embed.Build());
+                    }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
@@ -275,9 +372,51 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 var lastRequest = DateTime.UtcNow;
-                while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var guildUserUpdated))
                 {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateGuildConfig(guildUserUpdated.NewUser.Guild);
+                        if (!cfg.LogAvi.HasValue) return;
+                        var ch = guildUserUpdated.NewUser.Guild.GetTextChannel(cfg.LogAvi.Value);
+                        if (ch == null) return;
 
+                        var embed = new EmbedBuilder
+                        {
+                            Title = $"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}",
+                            Footer = new EmbedFooterBuilder { IconUrl = guildUserUpdated.NewUser.GetAvatarUrl(), Text = "" }
+                        };
+
+                        if (guildUserUpdated.OldUser.Nickname != guildUserUpdated.NewUser.Nickname)
+                        {
+                            var updated = guildUserUpdated;
+                            embed.WithAuthor(x => x.WithName("Nick Change"))
+                                .AddField(
+                                    x => x.WithName("Old Nick").WithValue($"{updated.OldUser.Nickname}#{updated.OldUser.Discriminator}"))
+                                .AddField(
+                                    x => x.WithName("New Nick").WithValue($"{updated.OldUser.Nickname}#{updated.OldUser.Discriminator}"));
+                            await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
+                        }
+                        else if (!guildUserUpdated.OldUser.Roles.SequenceEqual(guildUserUpdated.NewUser.Roles))
+                        {
+                            if (guildUserUpdated.OldUser.Roles.Count < guildUserUpdated.NewUser.Roles.Count)
+                            {
+                                var updated = guildUserUpdated;
+                                var roleDiffer = guildUserUpdated.NewUser.Roles.Where(x => !updated.OldUser.Roles.Contains(x)).Select(x => x.Name);
+                                embed.WithAuthor(x => x.WithName("User role added"))
+                                    .WithDescription(string.Join(", ", roleDiffer).SanitizeMentions());
+                            }
+                            else if (guildUserUpdated.OldUser.Roles.Count > guildUserUpdated.NewUser.Roles.Count)
+                            {
+                                var updated = guildUserUpdated;
+                                var roleDiffer = guildUserUpdated.OldUser.Roles.Where(x => !updated.NewUser.Roles.Contains(x)).Select(x => x.Name);
+                                embed.WithAuthor(x => x.WithName("User role removed"))
+                                    .WithDescription(string.Join(", ", roleDiffer).SanitizeMentions());
+                            }
+
+                            await ch.SendMessageAsync(null, false, embed.Build());
+                        }
+                    }
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
