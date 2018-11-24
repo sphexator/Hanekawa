@@ -79,7 +79,9 @@ namespace Hanekawa
             });
             _anime = new AnimeSimulCastClient();
             _patreonClient = new PatreonClient(_config["patreon"]);
-            
+
+            Directory.CreateDirectory("logs");
+
             using (var db = new DbService())
             {
                 await db.Database.MigrateAsync();
@@ -124,7 +126,7 @@ namespace Hanekawa
         {
             var services = new ServiceCollection();
 
-            services.AddDbContext<DbService>();
+            services.AddDbContext<DbService>(options => options.UseMySql(_config["connectionString"]));
 
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
