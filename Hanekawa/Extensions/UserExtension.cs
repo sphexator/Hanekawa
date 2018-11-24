@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 
 namespace Hanekawa.Extensions
 {
@@ -17,6 +18,11 @@ namespace Hanekawa.Extensions
         public static string GetGame(this IUser user)
         {
             return user.Activity.Name ?? "N/A";
+        }
+
+        public static bool HierarchyCheck(this SocketGuildUser user, SocketGuildUser userNumberTwo)
+        {
+            return user.Hierarchy > userNumberTwo.Hierarchy;
         }
     }
 }

@@ -28,6 +28,7 @@ using Hanekawa.Services.Games.ShipGame.Data;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Logging;
+using Hanekawa.Services.Logging.LoadBalance;
 using Hanekawa.Services.Patreon;
 using Hanekawa.Services.Profile;
 using Hanekawa.Services.Reaction;
@@ -113,6 +114,7 @@ namespace Hanekawa
             services.GetRequiredService<EventService>();
             services.GetRequiredService<AchievementManager>();
             services.GetRequiredService<PatreonService>();
+            services.GetRequiredService<Tasks>();
             await _patreonClient.InitializeAsync();
 
             var scheduler = services.GetService<IScheduler>();
@@ -174,6 +176,8 @@ namespace Hanekawa
             services.AddSingleton<AchievementManager>();
             services.AddSingleton<PatreonService>();
             services.AddSingleton<DiscordLogging>();
+            services.AddSingleton<LogLoadBalancer>();
+            services.AddSingleton<Tasks>();
             services.AddSingleton<LogService>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
