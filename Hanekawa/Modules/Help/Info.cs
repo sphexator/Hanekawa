@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,40 +23,13 @@ namespace Hanekawa.Modules.Help
         {
             await Context.Message.DeleteAsync();
             var application = await Context.Client.GetApplicationInfoAsync();
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple
-            };
-            var host = new EmbedFieldBuilder
-            {
-                IsInline = true,
-                Name = "Instance owned by",
-                Value = $"{application.Owner.Username}#{application.Owner.Discriminator}"
-            };
-            var creator = new EmbedFieldBuilder
-            {
-                IsInline = true,
-                Name = "Creator",
-                Value = "[Sphexator](https://github.com/sphexator)"
-            };
-            var about = new EmbedFieldBuilder
-            {
-                IsInline = false,
-                Name = "About",
-                Value = application.Description
-            };
             var currentProcess = Process.GetCurrentProcess();
-            var uptime = new EmbedFieldBuilder
-            {
-                IsInline = false,
-                Name = "Uptime",
-                Value = $"{(DateTime.Now - currentProcess.StartTime).Humanize()}"
-            };
-            embed.AddField(host);
-            embed.AddField(creator);
-            embed.AddField(about);
-            embed.AddField(uptime);
-            embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
+            var embed = new EmbedBuilder{ Color = Color.Purple };
+            embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
+            embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
+            embed.AddField("About", application.Description, true);
+            embed.AddField("Uptime", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
+            embed.AddField("Support", "[link](https://discord.gg/gGu5TT6)", true);
             embed.AddField("Invite link",
                 "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
                 true);
@@ -71,43 +45,16 @@ namespace Hanekawa.Modules.Help
         public async Task InfoPosTask()
         {
             var application = await Context.Client.GetApplicationInfoAsync();
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple
-            };
-            var about = new EmbedFieldBuilder
-            {
-                IsInline = false,
-                Name = "About",
-                Value = application.Description
-            };
-            var host = new EmbedFieldBuilder
-            {
-                IsInline = true,
-                Name = "Instance owned by",
-                Value = $"{application.Owner.Username}#{application.Owner.Discriminator}"
-            };
-            var creator = new EmbedFieldBuilder
-            {
-                IsInline = true,
-                Name = "Creator",
-                Value = "[Sphexator](https://github.com/sphexator)"
-            };
             var currentProcess = Process.GetCurrentProcess();
-            var uptime = new EmbedFieldBuilder
-            {
-                IsInline = false,
-                Name = "Uptime",
-                Value = $"{(DateTime.Now - currentProcess.StartTime).Humanize()}"
-            };
-            embed.AddField(host);
-            embed.AddField(creator);
-            embed.AddField(about);
-            embed.AddField(uptime);
-            embed.AddField("Support", "[link](https://discord.gg/9tq4xNT)", true);
+            var embed = new EmbedBuilder { Color = Color.Purple };
+            embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
+            embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
+            embed.AddField("About", application.Description, true);
+            embed.AddField("Uptime", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
+            embed.AddField("Support", "[link](https://discord.gg/gGu5TT6)", true);
             embed.AddField("Invite link",
                 "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
-                true);
+                true); ;
             await ReplyAsync(null, false, embed.Build());
         }
 
