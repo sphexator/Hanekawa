@@ -1,12 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Google.Apis.Services;
-using Google.Apis.YouTube.v3;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Patreon;
@@ -43,6 +38,9 @@ using NLog.Extensions.Logging;
 using Quartz;
 using Quartz.Spi;
 using SharpLink;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa
@@ -54,7 +52,6 @@ namespace Hanekawa
         private IConfiguration _config;
         private DatabaseClient _databaseClient;
         private LavalinkManager _lavalink;
-        private YouTubeService _youTubeService;
         private PatreonClient _patreonClient;
 
         private static void Main()
@@ -67,15 +64,11 @@ namespace Hanekawa
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
-                AlwaysDownloadUsers = true
+                AlwaysDownloadUsers = true,
+                LogLevel = LogSeverity.Debug
             });
             _config = BuildConfig();
             _databaseClient = new DatabaseClient(_config["connectionString"]);
-            _youTubeService = new YouTubeService(new BaseClientService.Initializer
-            {
-                ApiKey = _config["googleApi"],
-                ApplicationName = GetType().ToString()
-            });
             _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
             {
                 RESTHost = "localhost",
@@ -130,10 +123,12 @@ namespace Hanekawa
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
+
+            services.AddDbContext<DbService>();
+
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
             services.AddSingleton(_client);
-            services.AddSingleton(_youTubeService);
             services.AddSingleton(_config);
             services.AddSingleton(_anime);
             services.AddSingleton(_lavalink);
@@ -168,7 +163,6 @@ namespace Hanekawa
             services.AddSingleton<DropService>();
             services.AddSingleton<InfluxDbService>();
             services.AddSingleton<AudioService>();
-            //services.AddSingleton<PlaylistService>();
             services.AddSingleton<RequiredChannel>();
             services.AddSingleton<ReliabilityService>();
             services.AddSingleton<SimulCast>();
@@ -181,7 +175,7 @@ namespace Hanekawa
             services.AddSingleton<LogService>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace));
+            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Debug));
             services.AddSingleton<Config>();
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<QuartzJonFactory>();
