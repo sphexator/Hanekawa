@@ -27,12 +27,15 @@ namespace Hanekawa.Preconditions
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
             CommandInfo command, IServiceProvider services)
         {
+            if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
+            {
+                return PreconditionResult.FromSuccess();
+            }
+
             var ignrAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
             if (!ignrAll) status = await UpdateIgnoreAllStatus(context);
 
-            bool pass;
-
-            pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
+            var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
 
             switch (pass)
             {

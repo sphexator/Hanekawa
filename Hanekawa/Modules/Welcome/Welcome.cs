@@ -41,12 +41,13 @@ namespace Hanekawa.Modules.Welcome
             }
 
             await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
-            await ReplyAsync("Do you want to add this banner? (Y/N");
+            var msg = await ReplyAsync("Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
             if (response.Content.ToLower() != "y")
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Okay then :awaueyes:", Color.Red.RawValue).Build());
+                await msg.DeleteAsync();
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().Reply("Not adding.", Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
                 return;
             }
 

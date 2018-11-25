@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 
@@ -16,6 +17,10 @@ namespace Hanekawa.Preconditions
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
             CommandInfo command, IServiceProvider services)
         {
+            if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
+            {
+                return PreconditionResult.FromSuccess();
+            }
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfig(context.Guild);
