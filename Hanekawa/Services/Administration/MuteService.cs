@@ -21,12 +21,14 @@ namespace Hanekawa.Services.Administration
                 attachFiles: PermValue.Deny);
 
         private readonly DiscordSocketClient _client;
+        private readonly DbService _db;
         private readonly ModerationService _moderationService;
 
-        public MuteService(DiscordSocketClient client, ModerationService moderationService)
+        public MuteService(DiscordSocketClient client, ModerationService moderationService, DbService dbService)
         {
             _client = client;
             _moderationService = moderationService;
+            _db = dbService;
 
             _moderationService.AutoModPermMute += AutoModPermMute;
             _moderationService.AutoModTimedMute += AutoModTimedMute;
@@ -41,6 +43,7 @@ namespace Hanekawa.Services.Administration
                     StartUnmuteTimer(x.GuildId, x.UserId, after);
                 }
             }
+            Console.WriteLine("Mute service loaded");
         }
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> UnmuteTimers { get; }
@@ -86,27 +89,26 @@ namespace Hanekawa.Services.Administration
         public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
             await Mute(user).ConfigureAwait(false);
-            using (var db = new DbService())
+
+            var unMuteAt = DateTime.UtcNow + after;
+            var userCheck = await _db.MuteTimers.FindAsync(user.Id, user.GuildId);
+            if (userCheck == null)
             {
-                var unMuteAt = DateTime.UtcNow + after;
-                var userCheck = await db.MuteTimers.FindAsync(user.Id, user.GuildId);
-                if (userCheck == null)
+                var data = new MuteTimer
                 {
-                    var data = new MuteTimer
-                    {
-                        GuildId = user.GuildId,
-                        UserId = user.Id,
-                        Time = unMuteAt
-                    };
-                    await db.MuteTimers.AddAsync(data);
-                    await db.SaveChangesAsync();
-                }
-                else
-                {
-                    userCheck.Time = unMuteAt;
-                    await db.SaveChangesAsync();
-                }
+                    GuildId = user.GuildId,
+                    UserId = user.Id,
+                    Time = unMuteAt
+                };
+                await _db.MuteTimers.AddAsync(data);
+                await _db.SaveChangesAsync();
             }
+            else
+            {
+                userCheck.Time = unMuteAt;
+                await _db.SaveChangesAsync();
+            }
+
 
             StartUnmuteTimer(user.GuildId, user.Id, after);
             await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
@@ -115,18 +117,17 @@ namespace Hanekawa.Services.Administration
         public async Task TimedMute(IGuildUser user, TimeSpan after)
         {
             await Mute(user).ConfigureAwait(false);
-            using (var db = new DbService())
+
+            var unMuteAt = DateTime.UtcNow + after;
+            var data = new MuteTimer
             {
-                var unMuteAt = DateTime.UtcNow + after;
-                var data = new MuteTimer
-                {
-                    GuildId = user.GuildId,
-                    UserId = user.Id,
-                    Time = unMuteAt
-                };
-                await db.MuteTimers.AddAsync(data);
-                await db.SaveChangesAsync();
-            }
+                GuildId = user.GuildId,
+                UserId = user.Id,
+                Time = unMuteAt
+            };
+            await _db.MuteTimers.AddAsync(data);
+            await _db.SaveChangesAsync();
+
 
             StartUnmuteTimer(user.GuildId, user.Id, after);
         }
@@ -164,21 +165,18 @@ namespace Hanekawa.Services.Administration
             removed.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
-        private static async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId)
+        private async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId)
         {
-            using (var db = new DbService())
+            try
             {
-                try
-                {
-                    var data = db.MuteTimers.FirstOrDefault(x => x.GuildId == guildId && x.UserId == userId);
-                    if (data == null) return;
-                    db.MuteTimers.Remove(data);
-                    await db.SaveChangesAsync();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                var data = _db.MuteTimers.FirstOrDefault(x => x.GuildId == guildId && x.UserId == userId);
+                if (data == null) return;
+                _db.MuteTimers.Remove(data);
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 

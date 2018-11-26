@@ -50,7 +50,6 @@ namespace Hanekawa
         private AnimeSimulCastClient _anime;
         private DiscordSocketClient _client;
         private IConfiguration _config;
-        private DatabaseClient _databaseClient;
         private LavalinkManager _lavalink;
         private PatreonClient _patreonClient;
 
@@ -65,10 +64,9 @@ namespace Hanekawa
             {
                 MessageCacheSize = 35,
                 AlwaysDownloadUsers = true,
-                LogLevel = LogSeverity.Debug
+                LogLevel = LogSeverity.Error
             });
             _config = BuildConfig();
-            _databaseClient = new DatabaseClient(_config["connectionString"]);
             _lavalink = new LavalinkManager(_client, new LavalinkManagerConfig
             {
                 RESTHost = "localhost",
@@ -177,7 +175,7 @@ namespace Hanekawa
             services.AddSingleton<LogService>();
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.Debug));
+            services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.None));
             services.AddSingleton<Config>();
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<QuartzJonFactory>();

@@ -97,6 +97,7 @@ namespace Hanekawa.Services.AutoModerator
                     y.Value.Remove(x.Key, out var value);
                 }
             }, null, TimeSpan.FromHours(1), TimeSpan.FromMinutes(1));
+            Console.WriteLine("Nudescore service loaded");
         }
 
         // Short-term caching of values for Auto-moderator to view

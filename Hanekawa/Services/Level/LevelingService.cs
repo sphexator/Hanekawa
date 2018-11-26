@@ -79,6 +79,7 @@ namespace Hanekawa.Services.Level
                     }
                 }
             }
+            Console.WriteLine("Leveling service loaded");
         }
 
         private ConcurrentDictionary<ulong, uint> ExpMultiplier { get; }

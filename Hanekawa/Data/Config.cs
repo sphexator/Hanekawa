@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Data
 {
@@ -13,6 +14,7 @@ namespace Hanekawa.Data
             GoogleApi = config["perspective"];
             BanApi = config["banlist"];
             ConnectionString = config["connectionString"];
+            Console.WriteLine("Config loaded");
         }
 
         public static string GoogleApi { get; private set; }

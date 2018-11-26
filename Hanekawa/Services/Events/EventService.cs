@@ -17,6 +17,7 @@ namespace Hanekawa.Services.Events
         public EventService(DiscordSocketClient client)
         {
             _client = client;
+            Console.WriteLine("Event service loaded");
         }
 
         public Task Execute(IJobExecutionContext context)

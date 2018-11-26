@@ -17,6 +17,7 @@ namespace Hanekawa.Services.Patreon
         {
             _client = client;
             _patreonClient = patreonClient;
+            Console.WriteLine("Patreon service loaded");
         }
 
         public Task Execute(IJobExecutionContext context)

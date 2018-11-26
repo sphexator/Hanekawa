@@ -25,6 +25,7 @@ namespace Hanekawa.Services.Reaction
             {
                 foreach (var x in db.GuildConfigs) ReactionEmote.TryAdd(x.GuildId, x.BoardEmote ?? "⭐");
             }
+            Console.WriteLine("Board service loaded");
         }
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> ReactionMessages { get; }

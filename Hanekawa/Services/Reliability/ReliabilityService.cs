@@ -41,6 +41,7 @@ namespace Hanekawa.Services.Reliability
                     await DebugAsync("State came back okay");
                 });
             }, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(2));
+            Console.WriteLine("Reliability service loaded");
         }
 
         private Task ConnectedAsync()

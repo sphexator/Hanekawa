@@ -22,6 +22,7 @@ namespace Hanekawa.Services.Logging
 
             _client.Log += LogDiscord;
             _commands.Log += LogCommand;
+            Console.WriteLine("Logging service loaded");
         }
 
         private Task LogDiscord(LogMessage message)

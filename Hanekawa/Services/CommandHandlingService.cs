@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
@@ -29,6 +30,7 @@ namespace Hanekawa.Services
             {
                 foreach (var x in db.GuildConfigs) Prefix.GetOrAdd(x.GuildId, x.Prefix);
             }
+            Console.WriteLine("CommandHandler service loaded");
         }
 
         private ConcurrentDictionary<ulong, string> Prefix { get; }
@@ -50,7 +52,8 @@ namespace Hanekawa.Services
             _provider = provider;
             _commands.AddTypeReader(typeof(Emote), new EmoteTypeReader());
 
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+            var commands = await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+            Console.WriteLine($"{commands.Count()} Commands loaded");
         }
 
         private async Task MessageRecieved(SocketMessage rawMessage)

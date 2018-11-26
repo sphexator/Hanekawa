@@ -18,6 +18,7 @@ namespace Hanekawa.Services.Administration
 
             _client.Ready += _client_Ready;
             _memberCount = 0;
+            Console.WriteLine("Play status service loaded");
         }
 
         private Task _client_Ready()

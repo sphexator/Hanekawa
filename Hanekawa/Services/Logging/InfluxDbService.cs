@@ -28,6 +28,7 @@ namespace Hanekawa.Services.Logging
             _client.UserUnbanned += OnUserUnbanned;
 
             _influx = new InfluxDbClient("http://localhost:8086/", "username", "password", InfluxDbVersion.Latest);
+            Console.WriteLine("InfluxDb service loaded");
         }
 
         private Task OnMessageReceived(SocketMessage message)

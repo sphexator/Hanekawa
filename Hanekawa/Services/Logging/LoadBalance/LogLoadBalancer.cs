@@ -17,6 +17,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             _tasks = tasks;
             _db = db;
+            Console.WriteLine("Log load balancer service started");
         }
 
         // Collections of tasks per event per guild

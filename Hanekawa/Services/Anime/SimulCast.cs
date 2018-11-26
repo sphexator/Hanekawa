@@ -23,6 +23,7 @@ namespace Hanekawa.Services.Anime
 
             _anime.AnimeAired += AnimeAiredAsync;
             _client.Ready += StartClient;
+            Console.WriteLine("Simulcast service loaded");
         }
 
         private Task StartClient()

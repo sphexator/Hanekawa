@@ -35,6 +35,7 @@ namespace Hanekawa.Services.Drop
                     LootChannels.GetOrAdd(x.GuildId, channels);
                 }
             }
+            Console.WriteLine("Drop service loaded");
         }
 
         private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; }

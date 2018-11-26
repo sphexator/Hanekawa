@@ -33,6 +33,7 @@ namespace Hanekawa.Services.Games.ShipGame
         public ShipGameService(GameStats gameStats)
         {
             _gameStats = gameStats;
+            Console.WriteLine("Game service loaded");
         }
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> ExistingBattles { get; }

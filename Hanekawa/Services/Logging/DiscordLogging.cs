@@ -57,6 +57,7 @@ namespace Hanekawa.Services.Logging
 
             _warnService.UserWarned += UserWarnLog;
             _warnService.UserMuted += UserMuteWarnLog;
+            Console.WriteLine("Discord logging service loaded");
         }
 
         private static Task UserMuteWarnLog(SocketGuildUser user, string staff, string reason, TimeSpan duration)

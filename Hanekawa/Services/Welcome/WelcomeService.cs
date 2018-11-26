@@ -44,6 +44,7 @@ namespace Hanekawa.Services.Welcome
                 foreach (var x in db.GuildConfigs)
                     DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
             }
+            Console.WriteLine("Welcome service loaded");
         }
 
         // True = banners enabled

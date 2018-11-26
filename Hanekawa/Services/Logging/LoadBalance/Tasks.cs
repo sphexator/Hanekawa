@@ -26,6 +26,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             _db = db;
 
             _client.LeftGuild += GuildCleanup;
+            Console.WriteLine("Task service loaded");
         }
 
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserBanned>> BanQueue { get; } =

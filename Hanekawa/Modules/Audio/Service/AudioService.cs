@@ -37,6 +37,7 @@ namespace Hanekawa.Modules.Audio.Service
             _queue = new ConcurrentDictionary<ulong, List<LavalinkTrack>>();
             _textChannel = new ConcurrentDictionary<ulong, ITextChannel>();
             _queNumber = new ConcurrentDictionary<ulong, int>();
+            Console.WriteLine("Audio service loaded");
         }
 
         private async Task OnReady()
