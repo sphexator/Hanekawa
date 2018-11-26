@@ -30,13 +30,13 @@ namespace Hanekawa.Services.Achievement
         private readonly LevelingService _levelingService;
 
         public AchievementManager(DropService dropService, LevelingService levelingService, ShipGameService gameService,
-            DiscordSocketClient client, DbService _dbService)
+            DiscordSocketClient client, DbService dbService)
         {
             _dropService = dropService;
             _levelingService = levelingService;
             _gameService = gameService;
             _client = client;
-            _db = _dbService;
+            _db = dbService;
 
             _dropService.DropClaimed += DropClaimed;
             _levelingService.ServerLevel += ServerLevelAchievement;
