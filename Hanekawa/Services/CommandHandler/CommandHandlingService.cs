@@ -10,7 +10,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.TypeReaders;
 
-namespace Hanekawa.Services
+namespace Hanekawa.Services.CommandHandler
 {
     public class CommandHandlingService
     {

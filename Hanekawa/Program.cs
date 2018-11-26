@@ -41,6 +41,7 @@ using SharpLink;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Hanekawa.Services.CommandHandler;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa
