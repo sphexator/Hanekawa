@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;
@@ -8,7 +9,7 @@ using Quartz.Spi;
 
 namespace Hanekawa.Services.Scheduler
 {
-    public class QuartzJonFactory : IJobFactory
+    public class QuartzJonFactory : IJobFactory, IHanaService
     {
         private readonly IServiceProvider _services;
 

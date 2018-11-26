@@ -10,6 +10,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Level.Util;
@@ -18,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Level
 {
-    public class LevelingService
+    public class LevelingService : IHanaService
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;

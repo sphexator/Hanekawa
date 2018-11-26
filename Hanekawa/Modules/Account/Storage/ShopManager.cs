@@ -8,12 +8,13 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Stores;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Account.Storage
 {
-    public class ShopManager
+    public class ShopManager : IHanaService
     {
         public async Task<IEnumerable<string>> GetServerStoreAsync(IGuildUser user)
         {

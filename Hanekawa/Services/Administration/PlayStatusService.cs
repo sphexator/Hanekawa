@@ -3,10 +3,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Administration
 {
-    public class PlayStatusService
+    public class PlayStatusService : IHanaService
     {
         private readonly DiscordSocketClient _client;
         private int _memberCount;

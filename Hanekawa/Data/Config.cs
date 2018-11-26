@@ -1,14 +1,11 @@
 ﻿using System;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Data
 {
-    public class Config
+    public class Config : IHanaService
     {
-        public Config()
-        {
-        }
-
         public Config(IConfiguration config)
         {
             GoogleApi = config["perspective"];
@@ -17,8 +14,8 @@ namespace Hanekawa.Data
             Console.WriteLine("Config loaded");
         }
 
-        public static string GoogleApi { get; private set; }
-        public static string BanApi { get; private set; }
-        public static string ConnectionString { get; private set; }
+        public string GoogleApi { get; private set; }
+        public string BanApi { get; private set; }
+        public string ConnectionString { get; private set; }
     }
 }

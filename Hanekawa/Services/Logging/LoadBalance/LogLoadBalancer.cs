@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Entities.LogEntities;
 
 namespace Hanekawa.Services.Logging.LoadBalance
 {
-    public class LogLoadBalancer
+    public class LogLoadBalancer : IHanaService
     {
         private readonly DbService _db;
         private readonly Tasks _tasks;

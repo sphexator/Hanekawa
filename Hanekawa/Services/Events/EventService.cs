@@ -5,12 +5,13 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Administration;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 
 namespace Hanekawa.Services.Events
 {
-    public class EventService : IJob
+    public class EventService : IJob, IHanaService
     {
         private readonly DiscordSocketClient _client;
 

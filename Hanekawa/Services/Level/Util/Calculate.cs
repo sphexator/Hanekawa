@@ -1,9 +1,10 @@
 ﻿using System;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Level.Util
 {
-    public class Calculate
+    public class Calculate : IHanaService
     {
         public uint GetServerLevelRequirement(uint currentLevel)
         {

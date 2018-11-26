@@ -1,10 +1,11 @@
 ﻿using System;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Games.ShipGame.Data
 {
-    public class GameStats
+    public class GameStats : IHanaService
     {
         public GameStats()
         {

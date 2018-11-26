@@ -7,12 +7,13 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Preconditions
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class RequiredChannel : RequireContextAttribute
+    public class RequiredChannel : RequireContextAttribute, IHanaService
     {
         public RequiredChannel() : base(ContextType.Guild)
         {

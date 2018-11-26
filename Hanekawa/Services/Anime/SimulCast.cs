@@ -7,11 +7,12 @@ using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.AnimeSimulCast.Entity;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Anime
 {
-    public class SimulCast
+    public class SimulCast : IHanaService
     {
         private readonly AnimeSimulCastClient _anime;
         private readonly DiscordSocketClient _client;

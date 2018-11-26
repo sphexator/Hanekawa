@@ -3,12 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Services.Reliability
 {
-    public class ReliabilityService
+    public class ReliabilityService : IHanaService
     {
         private const bool AttemptReset = true;
 

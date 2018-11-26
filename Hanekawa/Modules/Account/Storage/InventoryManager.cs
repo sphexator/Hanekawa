@@ -2,12 +2,13 @@
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Addons.Database;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Account.Storage
 {
-    public class InventoryManager
+    public class InventoryManager : IHanaService
     {
         public async Task<EmbedBuilder> GetInventory(IGuildUser user)
         {

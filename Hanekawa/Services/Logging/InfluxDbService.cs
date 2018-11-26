@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 using InfluxData.Net.Common.Enums;
 using InfluxData.Net.InfluxDb;
 using InfluxData.Net.InfluxDb.Models;
 
 namespace Hanekawa.Services.Logging
 {
-    public class InfluxDbService
+    public class InfluxDbService : IHanaService
     {
         private readonly DiscordSocketClient _client;
         private readonly InfluxDbClient _influx;

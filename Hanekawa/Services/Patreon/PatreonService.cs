@@ -4,11 +4,12 @@ using Quartz;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Entities.Interfaces;
 using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.Patreon
 {
-    public class PatreonService : IJob
+    public class PatreonService : IJob, IHanaService
     {
         private readonly PatreonClient _patreonClient;
         private readonly DiscordSocketClient _client;

@@ -6,11 +6,12 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 
 namespace Hanekawa.Services.Reaction
 {
-    public class BoardService
+    public class BoardService : IHanaService
     {
         private readonly DiscordSocketClient _client;
 

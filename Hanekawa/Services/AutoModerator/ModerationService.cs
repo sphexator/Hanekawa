@@ -10,13 +10,14 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa.Services.AutoModerator
 {
-    public class ModerationService
+    public class ModerationService : IHanaService
     {
         public enum AutoModActionType
         {
@@ -176,7 +177,7 @@ namespace Hanekawa.Services.AutoModerator
                 {
                     var values = new Dictionary<string, string>
                     {
-                        {"token", Config.BanApi},
+                        {"token", _config.BanApi},
                         {"userid", $"{user.Id}"},
                         {"version", "3"}
                     };

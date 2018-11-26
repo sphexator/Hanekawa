@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Humanizer;
@@ -21,7 +22,7 @@ namespace Hanekawa.Services.Administration
         Mute
     }
 
-    public class WarnService : IJob
+    public class WarnService : IJob, IHanaService
     {
         private readonly DbService _db;
 

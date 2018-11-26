@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Achievement;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -24,7 +25,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Modules.Account.Profile
 {
-    public class ProfileGenerator
+    public class ProfileGenerator : IHanaService
     {
         public async Task<Stream> Create(SocketGuildUser user)
         {

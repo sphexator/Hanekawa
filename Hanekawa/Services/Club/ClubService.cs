@@ -8,11 +8,12 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Club
 {
-    public class ClubService
+    public class ClubService : IHanaService
     {
         public enum UpdateType
         {

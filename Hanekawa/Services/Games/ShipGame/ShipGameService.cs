@@ -12,6 +12,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Games.ShipGame.Data;
@@ -26,7 +27,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Games.ShipGame
 {
-    public class ShipGameService
+    public class ShipGameService : IHanaService
     {
         private readonly GameStats _gameStats;
 

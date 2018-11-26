@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using SharpLink;
 
 namespace Hanekawa.Modules.Audio.Service
 {
-    public class AudioService
+    public class AudioService : IHanaService
     {
         private const int MaxTries = 100;
         private readonly DiscordSocketClient _client;

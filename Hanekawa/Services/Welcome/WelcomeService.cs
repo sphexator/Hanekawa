@@ -23,11 +23,12 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Hanekawa.Entities.Interfaces;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
 {
-    public class WelcomeService
+    public class WelcomeService : IHanaService
     {
         private readonly DiscordSocketClient _client;
 

@@ -8,11 +8,12 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 
 namespace Hanekawa.Services.Drop
 {
-    public class DropService
+    public class DropService : IHanaService
     {
         private readonly DiscordSocketClient _client;
 

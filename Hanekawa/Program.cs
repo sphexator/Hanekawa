@@ -149,7 +149,7 @@ namespace Hanekawa
             services.AddSingleton<WelcomeService>();
             services.AddSingleton<BoardService>();
             services.AddSingleton<ModerationService>();
-            services.AddSingleton<MvpService>();
+            //services.AddSingleton<MostActiveService>();
             services.AddSingleton<MuteService>();
             services.AddSingleton<WarnService>();
             services.AddSingleton<EventService>();

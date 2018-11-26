@@ -7,6 +7,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.Achievement;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Services.Drop;
 using Hanekawa.Services.Games.ShipGame;
 using Hanekawa.Services.Level;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Achievement
 {
-    public class AchievementManager
+    public class AchievementManager : IHanaService
     {
         private const int Special = 1;
         private const int Voice = 2;

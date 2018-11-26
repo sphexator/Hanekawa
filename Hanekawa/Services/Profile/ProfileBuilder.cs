@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Level.Util;
 using SixLabors.ImageSharp;
@@ -18,7 +19,7 @@ using SixLabors.Primitives;
 
 namespace Hanekawa.Services.Profile
 {
-    public class ProfileBuilder
+    public class ProfileBuilder : IHanaService
     {
         public async Task<MemoryStream> GetProfileAsync(SocketGuildUser user)
         {

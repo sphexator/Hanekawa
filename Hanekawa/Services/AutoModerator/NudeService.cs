@@ -12,6 +12,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Perspective;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
@@ -20,7 +21,7 @@ using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.AutoModerator
 {
-    public class NudeScoreService
+    public class NudeScoreService : IHanaService
     {
         private readonly Timer _cleanupTimer;
         private readonly Timer _quickClearSingle;

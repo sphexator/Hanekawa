@@ -7,12 +7,13 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Services.AutoModerator;
 
 namespace Hanekawa.Services.Administration
 {
-    public class MuteService
+    public class MuteService : IHanaService
     {
         private const string DefaultMuteRole = "Mute";
 
