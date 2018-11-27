@@ -22,7 +22,7 @@ namespace Hanekawa.Services.Administration
         Mute
     }
 
-    public class WarnService : IJob, IHanaService
+    public class WarnService : IJob, IHanaService, IRequiredService
     {
         private readonly DbService _db;
 

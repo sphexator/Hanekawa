@@ -8,11 +8,12 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.TypeReaders;
 
 namespace Hanekawa.Services.CommandHandler
 {
-    public class CommandHandlingService
+    public class CommandHandlingService : IHanaService, IRequiredService
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;

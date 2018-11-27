@@ -9,7 +9,7 @@ using InfluxData.Net.InfluxDb.Models;
 
 namespace Hanekawa.Services.Logging
 {
-    public class InfluxDbService : IHanaService
+    public class InfluxDbService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
         private readonly InfluxDbClient _influx;

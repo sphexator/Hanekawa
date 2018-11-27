@@ -28,7 +28,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
 {
-    public class WelcomeService : IHanaService
+    public class WelcomeService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
 

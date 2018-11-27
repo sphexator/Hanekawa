@@ -13,7 +13,7 @@ using Hanekawa.Events;
 
 namespace Hanekawa.Services.Drop
 {
-    public class DropService : IHanaService
+    public class DropService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
 

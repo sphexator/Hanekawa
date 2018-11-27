@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Services.Reliability
 {
-    public class ReliabilityService : IHanaService
+    public class ReliabilityService : IHanaService, IRequiredService
     {
         private const bool AttemptReset = true;
 

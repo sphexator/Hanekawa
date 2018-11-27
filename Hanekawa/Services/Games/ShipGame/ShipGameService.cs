@@ -27,7 +27,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Games.ShipGame
 {
-    public class ShipGameService : IHanaService
+    public class ShipGameService : IHanaService, IRequiredService
     {
         private readonly GameStats _gameStats;
 

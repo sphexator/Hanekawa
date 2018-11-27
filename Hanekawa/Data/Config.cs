@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Data
 {
-    public class Config : IHanaService
+    public class Config : IHanaService, IRequiredService
     {
         public Config(IConfiguration config)
         {

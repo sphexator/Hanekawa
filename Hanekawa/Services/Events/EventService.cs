@@ -11,7 +11,7 @@ using Quartz;
 
 namespace Hanekawa.Services.Events
 {
-    public class EventService : IJob, IHanaService
+    public class EventService : IJob, IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
 

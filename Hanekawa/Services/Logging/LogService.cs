@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Entities.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Services.Logging
 {
-    public class LogService
+    public class LogService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;

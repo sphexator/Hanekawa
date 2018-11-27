@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Anime
 {
-    public class SimulCast : IHanaService
+    public class SimulCast : IHanaService, IRequiredService
     {
         private readonly AnimeSimulCastClient _anime;
         private readonly DiscordSocketClient _client;

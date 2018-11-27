@@ -11,7 +11,7 @@ using Hanekawa.Extensions;
 
 namespace Hanekawa.Services.Reaction
 {
-    public class BoardService : IHanaService
+    public class BoardService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
 

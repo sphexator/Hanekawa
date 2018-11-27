@@ -16,7 +16,7 @@ using ActionType = Hanekawa.Entities.ActionType;
 
 namespace Hanekawa.Services.Logging.LoadBalance
 {
-    public class Tasks : IHanaService
+    public class Tasks : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;

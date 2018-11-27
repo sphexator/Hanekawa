@@ -21,7 +21,7 @@ using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.AutoModerator
 {
-    public class NudeScoreService : IHanaService
+    public class NudeScoreService : IHanaService, IRequiredService
     {
         private readonly Timer _cleanupTimer;
         private readonly Timer _quickClearSingle;

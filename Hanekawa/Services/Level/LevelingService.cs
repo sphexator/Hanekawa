@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Level
 {
-    public class LevelingService : IHanaService
+    public class LevelingService : IHanaService, IRequiredService
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
@@ -239,15 +239,15 @@ namespace Hanekawa.Services.Level
             });
         }
 
-        private static async Task EventAddOrUpdateDatabaseAsync(DbService db, ulong guildid, uint multiplier,
+        private static async Task EventAddOrUpdateDatabaseAsync(DbService db, ulong guildId, uint multiplier,
             ulong? message, ulong? channel, TimeSpan after)
         {
-            var check = await db.LevelExpEvents.FindAsync(guildid);
+            var check = await db.LevelExpEvents.FindAsync(guildId);
             if (check == null)
             {
                 var data = new LevelExpEvent
                 {
-                    GuildId = guildid,
+                    GuildId = guildId,
                     MessageId = message,
                     ChannelId = channel,
                     Multiplier = multiplier,
@@ -258,10 +258,10 @@ namespace Hanekawa.Services.Level
             }
             else
             {
-                check.ChannelId = channel.Value;
+                check.ChannelId = channel;
                 check.Time = DateTime.UtcNow + after;
                 check.Multiplier = multiplier;
-                check.MessageId = message.Value;
+                check.MessageId = message;
                 await db.SaveChangesAsync();
             }
         }

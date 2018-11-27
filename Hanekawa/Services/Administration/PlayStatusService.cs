@@ -7,7 +7,7 @@ using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Administration
 {
-    public class PlayStatusService : IHanaService
+    public class PlayStatusService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
         private int _memberCount;

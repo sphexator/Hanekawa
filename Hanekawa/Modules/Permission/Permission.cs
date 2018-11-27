@@ -121,13 +121,13 @@ namespace Hanekawa.Modules.Permission
             {
                 await _command.UpdatePrefixAsync(Context.Guild, prefix);
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Successfully changed prefix to {prefix}!", Color.Green.RawValue)
+                    new EmbedBuilder().Reply($"Successfully changed prefix to {prefix}", Color.Green.RawValue)
                         .Build());
             }
             catch
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Something went wrong changing prefix to {prefix}...",
+                    new EmbedBuilder().Reply($"Something went wrong changing prefix to {prefix}",
                         Color.Red.RawValue).Build());
             }
         }

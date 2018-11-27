@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Entities.LogEntities;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
@@ -16,7 +17,7 @@ using ActionType = Hanekawa.Entities.ActionType;
 
 namespace Hanekawa.Services.Logging
 {
-    public class DiscordLogging
+    public class DiscordLogging : IHanaService, IRequiredService
     {
         private readonly LogLoadBalancer _balancer;
         private readonly DiscordSocketClient _client;

@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Achievement
 {
-    public class AchievementManager : IHanaService
+    public class AchievementManager : IHanaService, IRequiredService
     {
         private const int Special = 1;
         private const int Voice = 2;

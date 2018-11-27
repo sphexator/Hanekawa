@@ -6,7 +6,7 @@ using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Administration
 {
-    public class BlackListService : IHanaService
+    public class BlackListService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;
