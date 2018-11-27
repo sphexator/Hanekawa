@@ -56,7 +56,7 @@ namespace Hanekawa
 
         private static void Main()
         {
-            new Program().MainASync().GetAwaiter().GetResult();
+            new HanekawaBot().StartAsync().GetAwaiter().GetResult();
         }
 
         private async Task MainASync()
@@ -129,11 +129,23 @@ namespace Hanekawa
 
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
-            services.AddSingleton(_client);
+            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+            {
+                MessageCacheSize = 35,
+                AlwaysDownloadUsers = true,
+                LogLevel = LogSeverity.Error
+            }));
             services.AddSingleton(_config);
-            services.AddSingleton(_anime);
-            services.AddSingleton(_lavalink);
-            services.AddSingleton(_patreonClient);
+            services.AddSingleton(new AnimeSimulCastClient());
+            services.AddSingleton(new LavalinkManager(_client, new LavalinkManagerConfig
+            {
+                RESTHost = "localhost",
+                RESTPort = 2333,
+                WebSocketHost = "localhost",
+                WebSocketPort = 80,
+                TotalShards = 1
+            }));
+            services.AddSingleton(new PatreonClient(_config["patreon"]));
 
             services.AddDistributedRedisCache(options =>
             {
