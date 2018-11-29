@@ -5,6 +5,8 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Level;
 using Humanizer;
@@ -16,10 +18,22 @@ namespace Hanekawa.Modules.Account.Level
     public class Experience : InteractiveBase
     {
         private readonly LevelingService _levelingService;
+        private readonly DbService _db;
 
-        public Experience(LevelingService levelingService)
+        public Experience(LevelingService levelingService, DbService db)
         {
             _levelingService = levelingService;
+            _db = db;
+        }
+
+        [Command("give")]
+        [Summary("Gives a certain amount of experience to a user")]
+        public async Task GiveExperience(SocketGuildUser user, uint exp)
+        {
+            var userData = await _db.GetOrCreateUserData(user);
+            userData.Exp += exp;
+            await _db.SaveChangesAsync();
+            await ReplyAsync(null, false, new EmbedBuilder().Reply($"Added {exp} of exp to {user.Mention}", Color.Green.RawValue).Build());
         }
 
         [Command("ignore channel", RunMode = RunMode.Async)]

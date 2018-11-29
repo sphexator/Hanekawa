@@ -12,6 +12,7 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Level;
+using Hanekawa.Services.Level.Util;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -22,10 +23,34 @@ namespace Hanekawa.Modules.Account.Level
     public class LevelAdmin : InteractiveBase
     {
         private readonly LevelingService _levelingService;
+        private readonly Calculate _calculate;
+        private readonly DbService _db;
 
-        public LevelAdmin(LevelingService levelingService)
+        public LevelAdmin(LevelingService levelingService, Calculate calculate, DbService db)
         {
             _levelingService = levelingService;
+            _calculate = calculate;
+            _db = db;
+        }
+
+        [Command("setlevel")]
+        [Summary("Toggles between level roles stacking or keep the highest earned one")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetLevel(SocketGuildUser user, uint level)
+        {
+            uint totalExp = 0;
+            for (var i = 1; i < level + 1; i++)
+            {
+                totalExp += _calculate.GetServerLevelRequirement((uint) i);
+            }
+
+            var userdata = await _db.GetOrCreateUserData(user);
+            userdata.Level = level;
+            userdata.Exp = 0;
+            userdata.TotalExp = totalExp;
+            await _db.SaveChangesAsync();
+            await ReplyAsync(null, false,
+                new EmbedBuilder().Reply($"Set {user.Mention} level to {level}", Color.Green.RawValue).Build());
         }
 
         [Command("role stack", RunMode = RunMode.Async)]
