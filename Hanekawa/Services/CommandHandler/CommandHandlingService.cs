@@ -48,15 +48,6 @@ namespace Hanekawa.Services.CommandHandler
             }
         }
 
-        public async Task InitializeAsync(IServiceProvider provider)
-        {
-            _provider = provider;
-            _commands.AddTypeReader(typeof(Emote), new EmoteTypeReader());
-
-            var commands = await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
-            Console.WriteLine($"{commands.Count()} Commands loaded");
-        }
-
         private async Task MessageRecieved(SocketMessage rawMessage)
         {
             if (rawMessage.Author.IsBot) return;

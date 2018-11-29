@@ -18,11 +18,13 @@ namespace Hanekawa.Modules.Permission
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class SetIgnoreChannel : InteractiveBase
     {
+        private readonly DbService _db;
         private readonly RequiredChannel _requiredChannel;
 
-        public SetIgnoreChannel(RequiredChannel requiredChannel)
+        public SetIgnoreChannel(RequiredChannel requiredChannel, DbService db)
         {
             _requiredChannel = requiredChannel;
+            _db = db;
         }
 
         [Command("add", RunMode = RunMode.Async)]
@@ -68,72 +70,66 @@ namespace Hanekawa.Modules.Permission
         [Command("list", RunMode = RunMode.Async)]
         public async Task ListIgnoreChannel()
         {
-            using (var db = new DbService())
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
+            var list = await _db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+            string content = null;
+            if (list.Count != 0)
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                string content = null;
-                if (list.Count != 0)
-                {
-                    var channels = new List<string>();
-                    foreach (var x in list)
-                        try
-                        {
-                            channels.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
-                        }
-                        catch
-                        {
-                            /* ignored */
-                        }
+                var channels = new List<string>();
+                foreach (var x in list)
+                    try
+                    {
+                        channels.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                    }
+                    catch
+                    {
+                        /* ignored */
+                    }
 
-                    content = string.Join("\n", channels);
-                }
-                else
-                {
-                    content = "Commands are usable in every channel";
-                }
-
-                var title = cfg.IgnoreAllChannels
-                    ? "Channels commands are enabled on:"
-                    : "Channels commands are ignored on:";
-                var author = new EmbedAuthorBuilder
-                {
-                    IconUrl = Context.Guild.IconUrl,
-                    Name = title
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = content,
-                    Author = author
-                };
-                await ReplyAsync(null, false, embed.Build());
+                content = string.Join("\n", channels);
             }
+            else
+            {
+                content = "Commands are usable in every channel";
+            }
+                var title = cfg.IgnoreAllChannels
+                ? "Channel commands are enabled in:"
+                : "Channel commands are ignored in:";
+                
+            var author = new EmbedAuthorBuilder
+            {
+                IconUrl = Context.Guild.IconUrl,
+                Name = title
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Description = content,
+                Author = author
+            };
+            await ReplyAsync(null, false, embed.Build());
         }
 
         [Command("toggle", RunMode = RunMode.Async)]
         public async Task ToggleIgnore()
         {
-            using (var db = new DbService())
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
+            if (cfg.IgnoreAllChannels)
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                if (cfg.IgnoreAllChannels)
-                {
-                    cfg.IgnoreAllChannels = false;
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply("Commands are now usable in all channels beside those in the ignore list.")
-                            .Build());
-                }
-                else
-                {
-                    cfg.IgnoreAllChannels = true;
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
-                }
-
-                await db.SaveChangesAsync();
+                cfg.IgnoreAllChannels = false;
+                await ReplyAsync(null, false,
+                    new EmbedBuilder()
+                        .Reply("Commands are now usable in all channels beside those in the ignore list.")
+                        .Build());
             }
+            else
+            {
+                cfg.IgnoreAllChannels = true;
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
+            }
+
+            await _db.SaveChangesAsync();
         }
     }
 }
