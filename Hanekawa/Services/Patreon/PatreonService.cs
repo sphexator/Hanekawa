@@ -1,11 +1,10 @@
 ﻿using Discord.WebSocket;
 using Hanekawa.Addons.Patreon;
+using Hanekawa.Entities.Interfaces;
 using Quartz;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Entities.Interfaces;
-using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.Patreon
 {
@@ -39,7 +38,10 @@ namespace Hanekawa.Services.Patreon
                                                      x.Pledges.DeclinedSince.Value.Year == DateTime.UtcNow.Year) &&
                                                     (x.Pledges.CreatedAt.Month < DateTime.UtcNow.Month &&
                                                      x.Pledges.CreatedAt.Year <= DateTime.UtcNow.Year)));
-            pledges.ForEach(x => Console.WriteLine($"{x.Users.DiscordId} - {x.Pledges.AmountCents}"));
+            foreach (var x in pledges)
+            {
+                Console.WriteLine($"{x.Users.DiscordId} - {x.Pledges.AmountCents}");
+            }
         }
     }
 }
