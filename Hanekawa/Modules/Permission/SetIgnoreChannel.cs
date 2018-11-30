@@ -78,20 +78,17 @@ namespace Hanekawa.Modules.Permission
             if (cfg.IgnoreAllChannels)
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {channel?.Mention} to the ignore list.\n" +
+                    new EmbedBuilder().Reply($"Removed {channel?.Mention} from the ignore list.\n" +
                                              $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue)
                         .Build());
             }
             else
             {
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {channel?.Mention} to the ignore list.\n" +
+                    new EmbedBuilder().Reply($"Removed {channel?.Mention} from the ignore list.\n" +
                                              $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue)
                         .Build());
             }
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Removed {channel.Mention} from the ignore list.", Color.Green.RawValue)
-                    .Build());
         }
 
         [Command("list", RunMode = RunMode.Async)]

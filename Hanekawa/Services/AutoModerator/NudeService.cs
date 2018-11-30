@@ -16,7 +16,9 @@ using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Services.Administration;
+using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.AutoModerator
@@ -24,45 +26,47 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService : IHanaService, IRequiredService
     {
         private readonly Timer _cleanupTimer;
-        private readonly Timer _quickClearSingle;
-        private readonly Timer _moveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
+        private readonly DbService _db;
+        private readonly LogService _log;
         private readonly ModerationService _moderationService;
+        private readonly Timer _moveToLongTerm;
         private readonly MuteService _muteService;
         private readonly PerspectiveClient _perspectiveClient;
         private readonly string _perspectiveToken;
+        private readonly Timer _quickClearSingle;
         private readonly WarnService _warnService;
 
         public NudeScoreService(DiscordSocketClient client, IConfiguration config, ModerationService moderationService,
-            WarnService warnService, MuteService muteService)
+            WarnService warnService, MuteService muteService, DbService db, LogService log)
         {
             _client = client;
             _config = config;
             _moderationService = moderationService;
             _warnService = warnService;
             _muteService = muteService;
+            _db = db;
+            _log = log;
             _perspectiveClient = new PerspectiveClient();
 
             _perspectiveToken = _config["perspective"];
 
             _client.MessageReceived += DetermineNudeScore;
 
-            using (var db = new DbService())
+            foreach (var x in _db.NudeServiceChannels)
             {
-                foreach (var x in db.NudeServiceChannels)
-                {
-                    var guild = NudeChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, uint>());
-                    guild.GetOrAdd(x.ChannelId, x.Tolerance);
-                }
-
-                foreach (var x in db.SingleNudeServiceChannels)
-                {
-                    var guild = SingleNudeChannels.GetOrAdd(x.GuildId,
-                        new ConcurrentDictionary<ulong, SingleNudeServiceChannel>());
-                    guild.GetOrAdd(x.ChannelId, x);
-                }
+                var guild = NudeChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, uint>());
+                guild.GetOrAdd(x.ChannelId, x.Tolerance);
             }
+
+            foreach (var x in _db.SingleNudeServiceChannels)
+            {
+                var guild = SingleNudeChannels.GetOrAdd(x.GuildId,
+                    new ConcurrentDictionary<ulong, SingleNudeServiceChannel>());
+                guild.GetOrAdd(x.ChannelId, x);
+            }
+
 
             _cleanupTimer = new Timer(__ =>
             {
@@ -118,8 +122,7 @@ namespace Hanekawa.Services.AutoModerator
         // Single caching of values for auto-moderator to view
         private ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>>
-            SingleNudeValue
-        { get; }
+            SingleNudeValue { get; }
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>>();
 
@@ -214,29 +217,27 @@ namespace Hanekawa.Services.AutoModerator
         {
             var guild = NudeChannels.GetOrAdd(ch.GuildId, new ConcurrentDictionary<ulong, uint>());
             guild.AddOrUpdate(ch.Id, tolerance, (key, old) => tolerance);
-            using (var db = new DbService())
-            {
-                var check = await db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
-                if (check != null)
-                {
-                    check.Tolerance = tolerance;
-                    await db.SaveChangesAsync();
-                    return new EmbedBuilder().Reply(
-                        $"Updated {ch.Mention} average toxicity filter tolerance to {tolerance}", Color.Green.RawValue);
-                }
 
-                var data = new NudeServiceChannel
-                {
-                    GuildId = ch.GuildId,
-                    ChannelId = ch.Id,
-                    Tolerance = tolerance
-                };
-                await db.NudeServiceChannels.AddAsync(data);
-                await db.SaveChangesAsync();
+            var check = await _db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
+            if (check != null)
+            {
+                check.Tolerance = tolerance;
+                await _db.SaveChangesAsync();
                 return new EmbedBuilder().Reply(
-                    $"Added {ch.Mention} to average toxicity filter with tolerance of {tolerance}",
-                    Color.Green.RawValue);
+                    $"Updated {ch.Mention} average toxicity filter tolerance to {tolerance}", Color.Green.RawValue);
             }
+
+            var data = new NudeServiceChannel
+            {
+                GuildId = ch.GuildId,
+                ChannelId = ch.Id,
+                Tolerance = tolerance
+            };
+            await _db.NudeServiceChannels.AddAsync(data);
+            await _db.SaveChangesAsync();
+            return new EmbedBuilder().Reply(
+                $"Added {ch.Mention} to average toxicity filter with tolerance of {tolerance}",
+                Color.Green.RawValue);
         }
 
         public async Task<EmbedBuilder> SetSingleNudeChannel(ITextChannel ch, int level, int tolerance)
@@ -251,39 +252,34 @@ namespace Hanekawa.Services.AutoModerator
                 Tolerance = tolerance
             };
             guild.AddOrUpdate(ch.Id, cfg, (key, old) => cfg);
-            using (var db = new DbService())
-            {
-                var check = await db.SingleNudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
-                if (check != null)
-                {
-                    check.Tolerance = tolerance;
-                    check.Level = level;
-                    await db.SaveChangesAsync();
-                    return new EmbedBuilder().Reply(
-                        $"Updated {ch.Mention} single toxicity filter to {tolerance} for people lvl{level} or below.",
-                        Color.Green.RawValue);
-                }
 
-                await db.SingleNudeServiceChannels.AddAsync(cfg);
-                await db.SaveChangesAsync();
+            var check = await _db.SingleNudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
+            if (check != null)
+            {
+                check.Tolerance = tolerance;
+                check.Level = level;
+                await _db.SaveChangesAsync();
                 return new EmbedBuilder().Reply(
-                    $"Added {ch.Mention} to single toxicity filter with tolerance of {tolerance} for people lvl{level} or below.",
+                    $"Updated {ch.Mention} single toxicity filter to {tolerance} for people lvl{level} or below.",
                     Color.Green.RawValue);
             }
+
+            await _db.SingleNudeServiceChannels.AddAsync(cfg);
+            await _db.SaveChangesAsync();
+            return new EmbedBuilder().Reply(
+                $"Added {ch.Mention} to single toxicity filter with tolerance of {tolerance} for people lvl{level} or below.",
+                Color.Green.RawValue);
         }
 
         public async Task<EmbedBuilder> RemoveNudeChannel(ITextChannel ch)
         {
             if (!NudeChannels.TryGetValue(ch.GuildId, out var channels)) return null;
             if (!channels.TryRemove(ch.Id, out var value)) return null;
-            using (var db = new DbService())
-            {
-                var check = await db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
-                if (check == null) return null;
-                db.NudeServiceChannels.Remove(check);
-                return new EmbedBuilder().Reply($"Removed average toxicity filter from {ch.Mention}",
-                    Color.Green.RawValue);
-            }
+            var check = await _db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
+            if (check == null) return null;
+            _db.NudeServiceChannels.Remove(check);
+            return new EmbedBuilder().Reply($"Removed average toxicity filter from {ch.Mention}",
+                Color.Green.RawValue);
         }
 
         public async Task<EmbedBuilder> RemoveSingleNudeChannel(ITextChannel ch)
@@ -292,15 +288,13 @@ namespace Hanekawa.Services.AutoModerator
                 return null;
             if (!channels.TryRemove(ch.Id, out _))
                 return null;
-            using (var db = new DbService())
-            {
-                var check = await db.SingleNudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
-                if (check == null)
-                    return null;
-                db.SingleNudeServiceChannels.Remove(check);
-                return new EmbedBuilder().Reply($"Removed single toxicity filter from {ch.Mention}",
-                    Color.Green.RawValue);
-            }
+
+            var check = await _db.SingleNudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
+            if (check == null)
+                return null;
+            _db.SingleNudeServiceChannels.Remove(check);
+            return new EmbedBuilder().Reply($"Removed single toxicity filter from {ch.Mention}",
+                Color.Green.RawValue);
         }
 
         private Task DetermineNudeScore(SocketMessage msg)
@@ -319,6 +313,8 @@ namespace Hanekawa.Services.AutoModerator
 
                 var response = await _perspectiveClient.GetToxicityScore(FilterMessage(msg.Content), _perspectiveToken);
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value * 100;
+                _log.LogAction(LogLevel.Information, $"{user.Id} in {user.Guild.Id} scored {score} in toxicity",
+                    "Toxicity");
                 var single = SingleMessageAsync(score, user, ch, message);
                 var multi = MultiMessageProcessingAsync(score, user, ch, message);
                 await Task.WhenAll(single, multi);
@@ -332,61 +328,68 @@ namespace Hanekawa.Services.AutoModerator
             if (!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
             if (!channels.TryGetValue(ch.Id, out var cfg)) return;
 
-            using (var db = new DbService())
+            var userdata = await _db.GetOrCreateUserData(user as SocketGuildUser);
+
+            var toxList = SingleNudeValue.GetOrAdd(user.GuildId,
+                new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>());
+            var channelValue = toxList.GetOrAdd(ch.Id, new ConcurrentDictionary<ulong, ToxicityEntry>());
+            var userValue = channelValue.GetOrAdd(user.Id, new ToxicityEntry());
+            channelValue.AddOrUpdate(user.Id,
+                new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id},
+                (key, value) => new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id});
+            if (userValue == null) return;
+
+            var totalScore = (score + userValue.Value) / 2;
+            int tolerance;
+            int? level = null;
+
+            if (cfg.Level.HasValue && cfg.Tolerance.HasValue)
             {
-                var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
-
-                var toxList = SingleNudeValue.GetOrAdd(user.GuildId,
-                    new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>());
-                var channelValue = toxList.GetOrAdd(ch.Id, new ConcurrentDictionary<ulong, ToxicityEntry>());
-                var userValue = channelValue.GetOrAdd(user.Id, new ToxicityEntry());
-                channelValue.AddOrUpdate(user.Id, new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id },
-                    (key, value) => new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id});
-                if(userValue == null) return;
-
-                var totalScore = (score + userValue.Value) / 2;
-                int tolerance;
-                int? level = null;
-
-                if (cfg.Level.HasValue && cfg.Tolerance.HasValue)
-                {
-                    level = cfg.Level.Value;
-                    tolerance = cfg.Tolerance.Value;
-                }
-                else if (cfg.InHouse)
-                {
-                    tolerance = InHouseSingleToxicityTolerance((int)userdata.Level);
-                }
-                else return;
-
-                if (totalScore > tolerance && level.HasValue && level.Value <= cfg.Level.Value)
-                {
-
-                }
-                else if (totalScore > tolerance)
-                {
-                }
-                else return;
-
-                try
-                {
-                    var del = new List<IMessage>();
-                    var oldMsg = await ch.GetMessageAsync(userValue.MessageId);
-                    if(oldMsg != null) del.Add(oldMsg);
-                    del.Add(msg);
-                    await ch.DeleteMessagesAsync(del);
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content,
-                    totalScore, tolerance);
+                level = cfg.Level.Value;
+                tolerance = cfg.Tolerance.Value;
             }
+            else if (cfg.InHouse)
+            {
+                tolerance = InHouseSingleToxicityTolerance((int) userdata.Level);
+            }
+            else
+            {
+                return;
+            }
+
+            if (totalScore > tolerance && level.HasValue && level.Value <= cfg.Level.Value)
+            {
+            }
+            else if (totalScore > tolerance)
+            {
+            }
+            else
+            {
+                return;
+            }
+
+            try
+            {
+                var del = new List<IMessage>();
+                var oldMsg = await ch.GetMessageAsync(userValue.MessageId);
+                if (oldMsg != null) del.Add(oldMsg);
+                del.Add(msg);
+                await ch.DeleteMessagesAsync(del);
+                _log.LogAction(LogLevel.Information,
+                    $"Single Toxicity: {user.Id} scored a toxicity value of {totalScore} (cap {tolerance} lvl:{level}) over two messages in {user.Guild.Id}",
+                    "SingleToxicity");
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, $"{e.Message}\n{e.StackTrace}", "SingleToxicity");
+            }
+
+            await AutoModFilter(user as SocketGuildUser, ModerationService.AutoModActionType.Toxicity, msg.Content,
+                totalScore, tolerance);
         }
 
-        private async Task MultiMessageProcessingAsync(double score, IGuildUser user, SocketTextChannel ch, SocketUserMessage msg)
+        private async Task MultiMessageProcessingAsync(double score, IGuildUser user, SocketTextChannel ch,
+            SocketUserMessage msg)
         {
             if (!NudeChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
             if (!channels.TryGetValue(ch.Id, out var channel)) return;
@@ -438,6 +441,9 @@ namespace Hanekawa.Services.AutoModerator
                         WarnReason.Warning, (await channel.GetMessagesAsync().FlattenAsync())
                         .Where(m => m.Author.Id == user.Id)
                         .Take(100).ToArray().ToList());
+                    _log.LogAction(LogLevel.Information,
+                        $"Multi Toxicity: {user.Id} scored over avg. threshold in toxicity in {user.Guild.Id} - Silent Warned",
+                        "MultiToxicity");
                     break;
 
                 case 2:
@@ -445,6 +451,9 @@ namespace Hanekawa.Services.AutoModerator
                     StartWarnTimer(user);
                     ClearChannelNudeScore(user, channel);
                     await channel.SendMessageAsync($"{user.Mention} please calm down (warning)").ConfigureAwait(false);
+                    _log.LogAction(LogLevel.Information,
+                        $"Multi Toxicity: {user.Id} scored over avg. threshold in toxicity in {user.Guild.Id} - Visibly Warned",
+                        "MultiToxicity");
                     break;
 
                 case 3:
@@ -457,6 +466,9 @@ namespace Hanekawa.Services.AutoModerator
                         .Take(100).ToArray().ToList(), true);
                     await _moderationService.AutoModMute(user, ModerationService.AutoModActionType.Toxicity,
                         TimeSpan.FromHours(1), $"High toxicity score in {channel.Name}");
+                    _log.LogAction(LogLevel.Information,
+                        $"Multi Toxicity: {user.Id} scored over avg. threshold in toxicity in {user.Guild.Id} - Muted",
+                        "MultiToxicity");
                     break;
             }
         }
