@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Permission
 {
+    [Name("Channel ignore")]
     [Group("channel ignore")]
     [Alias("ignore", "chignore", "chi")]
     [Summary("Manages channels its to ignore or only use common commands on")]
@@ -30,6 +31,7 @@ namespace Hanekawa.Modules.Permission
         [Command("add", RunMode = RunMode.Async)]
         public async Task AddIgnoreChannel(ITextChannel channel = null)
         {
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
             if (channel == null) channel = Context.Channel as ITextChannel;
             var result = await _requiredChannel.AddChannel(channel);
             if (!result)
@@ -42,14 +44,26 @@ namespace Hanekawa.Modules.Permission
                 return;
             }
 
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.", Color.Green.RawValue)
-                    .Build());
+            if (cfg.IgnoreAllChannels)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.\n" +
+                                             $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue)
+                        .Build());
+            }
+            else
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.\n" +
+                                             $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue)
+                        .Build());
+            }
         }
 
         [Command("remove", RunMode = RunMode.Async)]
         public async Task RemoveIgnoreChannel(ITextChannel channel = null)
         {
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
             if (channel == null) channel = Context.Channel as ITextChannel;
             var result = await _requiredChannel.RemoveChannel(channel);
             if (!result)
@@ -61,7 +75,20 @@ namespace Hanekawa.Modules.Permission
                             Color.Red.RawValue).Build());
                 return;
             }
-
+            if (cfg.IgnoreAllChannels)
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Removed {channel?.Mention} to the ignore list.\n" +
+                                             $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue)
+                        .Build());
+            }
+            else
+            {
+                await ReplyAsync(null, false,
+                    new EmbedBuilder().Reply($"Removed {channel?.Mention} to the ignore list.\n" +
+                                             $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue)
+                        .Build());
+            }
             await ReplyAsync(null, false,
                 new EmbedBuilder().Reply($"Removed {channel.Mention} from the ignore list.", Color.Green.RawValue)
                     .Build());
@@ -118,15 +145,15 @@ namespace Hanekawa.Modules.Permission
             {
                 cfg.IgnoreAllChannels = false;
                 await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply("Commands are now usable in all channels beside those in the ignore list.")
-                        .Build());
+                    new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
             }
             else
             {
                 cfg.IgnoreAllChannels = true;
                 await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
+                    new EmbedBuilder()
+                        .Reply("Commands are now usable in all channels beside those in the ignore list.")
+                        .Build());
             }
 
             await _db.SaveChangesAsync();
