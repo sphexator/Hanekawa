@@ -24,5 +24,10 @@ namespace Hanekawa.Extensions
         {
             return user.Hierarchy > userNumberTwo.Hierarchy;
         }
+
+        public static bool HierarchyCheck(this SocketGuildUser user, IRole role)
+        {
+            return user.Hierarchy > role.Position;
+        }
     }
 }
