@@ -7,25 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Haneka
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Database", "Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Anilist", "Hanekawa.Addons.Anilist\Hanekawa.Addons.Anilist.csproj", "{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.AnimeSimulCast", "Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.EventQueue", "Hanekawa.Addons.EventQueue\Hanekawa.Addons.EventQueue.csproj", "{9C0989E9-18BA-46F2-B239-C8C351E9201C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.GraphQL", "Hanekawa.Addons.GraphQL\Hanekawa.Addons.GraphQL.csproj", "{F64A2BEB-3396-470C-B1EF-54104127342C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.HungerGame", "Hanekawa.Addons.HungerGame\Hanekawa.Addons.HungerGame.csproj", "{F048F46C-E59C-4C0E-AE1F-E29B8479727D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Level", "Hanekawa.Addons.Level\Hanekawa.Addons.Level.csproj", "{9A682951-D7FF-4F89-B220-4786F7137B63}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Patreon", "Hanekawa.Addons.Patreon\Hanekawa.Addons.Patreon.csproj", "{054F731A-9028-4F71-8BC4-AF6EB13E40AA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Profile", "Hanekawa.Addons.Profile\Hanekawa.Addons.Profile.csproj", "{ACECA695-709A-4BDB-8E53-66530707A341}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Rest", "Hanekawa.Addons.Rest\Hanekawa.Addons.Rest.csproj", "{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Twitter", "Hanekawa.Addons.Twitter\Hanekawa.Addons.Twitter.csproj", "{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
 EndProject
@@ -43,46 +29,18 @@ Global
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8B7006F-CDBD-481B-9E9B-65A9BE5BE2FE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9C0989E9-18BA-46F2-B239-C8C351E9201C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F64A2BEB-3396-470C-B1EF-54104127342C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F64A2BEB-3396-470C-B1EF-54104127342C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F64A2BEB-3396-470C-B1EF-54104127342C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F64A2BEB-3396-470C-B1EF-54104127342C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A682951-D7FF-4F89-B220-4786F7137B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A682951-D7FF-4F89-B220-4786F7137B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A682951-D7FF-4F89-B220-4786F7137B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A682951-D7FF-4F89-B220-4786F7137B63}.Release|Any CPU.Build.0 = Release|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ACECA695-709A-4BDB-8E53-66530707A341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ACECA695-709A-4BDB-8E53-66530707A341}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ACECA695-709A-4BDB-8E53-66530707A341}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ACECA695-709A-4BDB-8E53-66530707A341}.Release|Any CPU.Build.0 = Release|Any CPU
-		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{997EBC9B-94DB-4F6D-91E6-9F382A6AD4A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{54CD91DA-1C7C-4B4C-B44C-DDF7D2FCB2D3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
