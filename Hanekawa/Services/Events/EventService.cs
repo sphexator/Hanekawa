@@ -14,10 +14,12 @@ namespace Hanekawa.Services.Events
     public class EventService : IJob, IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
+        private readonly DbService _db;
 
-        public EventService(DiscordSocketClient client)
+        public EventService(DiscordSocketClient client, DbService db)
         {
             _client = client;
+            _db = db;
             Console.WriteLine("Event service loaded");
         }
 
@@ -66,7 +68,7 @@ namespace Hanekawa.Services.Events
                 var guilds = await db.GuildConfigs.Where(x => x.Premium && x.AutomaticEventSchedule).ToListAsync();
                 foreach (var x in guilds)
                 {
-                    if (!x.EventSchedulerChannel.HasValue) return;
+                    if (!x.EventSchedulerChannel.HasValue) continue;
 
                     var guild = _client.GetGuild(x.GuildId);
                     if (guild == null) continue;
@@ -74,7 +76,7 @@ namespace Hanekawa.Services.Events
                     var events = await db.EventSchedules
                         .Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date)
                         .OrderBy(z => z.Time).Take(5).ToListAsync();
-                    if (events.All(z => z.Posted)) return;
+                    if (events.All(z => z.Posted)) continue;
                     if (events.Any()) await ChannelCleanup(channel);
                     foreach (var e in events.OrderByDescending(t => t.Time))
                     {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.Rest;
@@ -17,11 +12,18 @@ using Hanekawa.Services.Administration;
 using Hanekawa.Services.Events;
 using Hanekawa.Services.Scheduler;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Quartz;
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Quartz.Util;
 using Victoria;
 
 namespace Hanekawa
@@ -32,7 +34,12 @@ namespace Hanekawa
         {
             var config = BuildConfig();
             var services = new ServiceCollection();
-            services.AddDbContext<DbService>(options => options.UseMySql(config["connectionString"]));
+            if (config["connectionString"].IsNullOrWhiteSpace())
+                services.AddDbContext<DbService>(options => options.UseMySql(config["connectionString"]));
+            else
+                services.AddDbContext<DbService>(options =>
+                    options.UseInMemoryDatabase("test", new InMemoryDatabaseRoot()));
+
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig

@@ -88,7 +88,7 @@ namespace Hanekawa.Modules.Events
                         Info = null
                     }
                 };
-                await PagedReplyAsync(paginator);
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
             }
         }
 
@@ -102,6 +102,11 @@ namespace Hanekawa.Modules.Events
                 var events = await db.EventSchedules
                     .Where(x => x.GuildId == Context.Guild.Id && x.Time >= DateTime.UtcNow).ToListAsync();
                 var pages = new List<string>();
+                if (events.Count == 0)
+                {
+                    await new EmbedBuilder().Reply(Context.Channel, "No events scheduled.");
+                    return;
+                }
                 for (var i = 0; i < events.Count;)
                 {
                     string eventString = null;
