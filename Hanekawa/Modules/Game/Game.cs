@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Games.ShipGame;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +19,12 @@ namespace Hanekawa.Modules.Game
     public class Game : InteractiveBase
     {
         private readonly ShipGameService _gameService;
+        private readonly DbService _db;
 
-        public Game(ShipGameService gameService)
+        public Game(ShipGameService gameService, DbService db)
         {
             _gameService = gameService;
+            _db = db;
         }
 
         [Command("search", RunMode = RunMode.Async)]
@@ -33,7 +36,7 @@ namespace Hanekawa.Modules.Game
         {
             try
             {
-                await ReplyAsync(null, false, (await _gameService.SearchAsync(Context)).Build());
+                await Context.ReplyAsync(await _gameService.SearchAsync(Context));
             }
             catch (Exception e)
             {
@@ -66,13 +69,11 @@ namespace Hanekawa.Modules.Game
         public async Task AttackGameAsync(SocketGuildUser user, uint bet = 0)
         {
             if (user == Context.User) return;
-            using (var db = new DbService())
-            {
-                var playerOne = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var playerTwo = await db.GetOrCreateUserData(user);
-                if (playerOne.Credit < bet) return;
-                if (playerTwo.Credit < bet) return;
-            }
+
+            var playerOne = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
+            var playerTwo = await _db.GetOrCreateUserData(user);
+            if (playerOne.Credit < bet) return;
+            if (playerTwo.Credit < bet) return;
 
             var msg = bet == 0
                 ? $"{user.Mention}, {Context.User.Mention} has challenged you to a duel, do you accept? (y/n)"
@@ -90,14 +91,13 @@ namespace Hanekawa.Modules.Game
                             status = false;
                             break;
                         case "n":
-                            await ReplyAsync(null, false, new EmbedBuilder().Reply("Duel cancelled.").Build());
+                            await Context.ReplyAsync("Duel cancelled.");
                             return;
                     }
                 }
                 catch
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Duel request timed out.", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("Duel request timed out.", Color.Red.RawValue);
                     return;
                 }
 
@@ -110,55 +110,46 @@ namespace Hanekawa.Modules.Game
         [RequiredChannel]
         public async Task PickClassAsync()
         {
-            using (var db = new DbService())
+            var userdata = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
+            var classes = await _db.GameClasses.Where(x => x.LevelRequirement <= (int) userdata.Level)
+                .ToListAsync();
+            var result = new List<string>
             {
-                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int) userdata.Level)
-                    .ToListAsync();
-                var result = new List<string>
-                {
-                    "Available classes\n" +
-                    $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"
-                };
-                foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
+                "Available classes\n" +
+                $"Your current class: **{classes.FirstOrDefault(x => x.Id == userdata.Class)?.Name}**"
+            };
+            foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
 
-                result.Add("Pick a class by saying the number");
-                var content = string.Join("\n", result);
-                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
+            result.Add("Pick a class by saying the number");
+            var content = string.Join("\n", result);
+            await Context.ReplyAsync(content);
 
-                try
+            try
+            {
+                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                if (int.TryParse(response.Content, out var value))
                 {
-                    var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                    if (int.TryParse(response.Content, out var value))
+                    var ass = await _db.GameClasses.FindAsync(value);
+                    if (ass == null)
                     {
-                        var ass = await db.GameClasses.FindAsync(value);
-                        if (ass == null)
-                        {
-                            await ReplyAsync(null, false,
-                                new EmbedBuilder().Reply("Couldn't find a class with that ID.", Color.Red.RawValue)
-                                    .Build());
-                            return;
-                        }
-
-                        userdata.Class = value;
-                        await db.SaveChangesAsync();
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder()
-                                .Reply($"{Context.User.Mention} changed class to {ass.Name}", Color.Green.RawValue)
-                                .Build());
+                        await Context.ReplyAsync("Couldn't find a class with that ID.", Color.Red.RawValue);
                         return;
                     }
 
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Coundn\'t find a class with that ID.", Color.Red.RawValue)
-                            .Build());
+                    userdata.Class = value;
+                    await _db.SaveChangesAsync();
+                    await Context.ReplyAsync($"{Context.User.Mention} changed class to {ass.Name}",
+                        Color.Green.RawValue);
+                    return;
                 }
-                catch
-                {
-                    await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().Reply("Timed out", Color.Red.RawValue).Build(),
-                        TimeSpan.FromSeconds(30));
-                }
+
+                await Context.ReplyAsync("Coundn\'t find a class with that ID.", Color.Red.RawValue);
+            }
+            catch
+            {
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault("Timed out", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(30));
             }
         }
 
@@ -168,14 +159,11 @@ namespace Hanekawa.Modules.Game
         [RequiredChannel]
         public async Task ListClassesAsync()
         {
-            using (var db = new DbService())
-            {
-                var classes = await db.GameClasses.ToListAsync();
-                var result = new List<string> {"Classes"};
-                foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
-                var content = string.Join("\n", result);
-                await ReplyAsync(null, false, new EmbedBuilder().Reply(content).Build());
-            }
+            var classes = await _db.GameClasses.ToListAsync();
+            var result = new List<string> {"Classes"};
+            foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
+            var content = string.Join("\n", result);
+            await Context.ReplyAsync(content);
         }
 
         [Command("class info", RunMode = RunMode.Async)]
@@ -184,24 +172,18 @@ namespace Hanekawa.Modules.Game
         [RequiredChannel]
         public async Task ClassInfoAsync(int id)
         {
-            using (var db = new DbService())
+            var classInfo = await _db.GameClasses.FindAsync(id);
+            if (classInfo == null)
             {
-                var classInfo = await db.GameClasses.FindAsync(id);
-                if (classInfo == null)
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Couldn\'t find a class with that ID.", Color.Red.RawValue)
-                            .Build());
-                    return;
-                }
-
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Information for {classInfo.Name}\n" +
-                                             $"Health: {100 * classInfo.ModifierHealth}%\n" +
-                                             $"Damage: {100 * classInfo.ModifierDamage}%\n" +
-                                             $"Crit Chance: {classInfo.ChanceCrit}%\n" +
-                                             $"Avoidance: {classInfo.ChanceAvoid}%").Build());
+                await Context.ReplyAsync("Couldn\'t find a class with that ID.", Color.Red.RawValue);
+                return;
             }
+
+            await Context.ReplyAsync($"Information for {classInfo.Name}\n" +
+                                     $"Health: {100 * classInfo.ModifierHealth}%\n" +
+                                     $"Damage: {100 * classInfo.ModifierDamage}%\n" +
+                                     $"Crit Chance: {classInfo.ChanceCrit}%\n" +
+                                     $"Avoidance: {classInfo.ChanceAvoid}%");
         }
     }
 }

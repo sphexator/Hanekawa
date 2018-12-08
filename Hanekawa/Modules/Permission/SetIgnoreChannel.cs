@@ -7,6 +7,7 @@ using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,27 +37,20 @@ namespace Hanekawa.Modules.Permission
             var result = await _requiredChannel.AddChannel(channel);
             if (!result)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply(
-                            $"Couldn't add {channel?.Mention} to the list. Its either already added or doesn't exist.",
-                            Color.Red.RawValue).Build());
+                await Context.ReplyAsync($"Couldn't add {channel?.Mention} to the list. Its either already added or doesn't exist.",
+                    Color.Red.RawValue);
                 return;
             }
 
             if (cfg.IgnoreAllChannels)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.\n" +
-                                             $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
+                                         $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue);
             }
             else
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Added {channel?.Mention} to the ignore list.\n" +
-                                             $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
+                                         $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue);
             }
         }
 
@@ -68,26 +62,19 @@ namespace Hanekawa.Modules.Permission
             var result = await _requiredChannel.RemoveChannel(channel);
             if (!result)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply(
-                            $"Couldn't remove {channel.Mention} from the list. Its either already not added or doesn't exist.",
-                            Color.Red.RawValue).Build());
+                await Context.ReplyAsync($"Couldn't remove {channel.Mention} from the list. Its either already not added or doesn't exist.",
+                    Color.Red.RawValue);
                 return;
             }
             if (cfg.IgnoreAllChannels)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {channel?.Mention} from the ignore list.\n" +
-                                             $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
+                                         $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue);
             }
             else
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {channel?.Mention} from the ignore list.\n" +
-                                             $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
+                                         $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue);
             }
         }
 
@@ -119,19 +106,9 @@ namespace Hanekawa.Modules.Permission
                 var title = cfg.IgnoreAllChannels
                 ? "Channel commands are enabled in:"
                 : "Channel commands are ignored in:";
-                
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = Context.Guild.IconUrl,
-                Name = title
-            };
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple,
-                Description = content,
-                Author = author
-            };
-            await ReplyAsync(null, false, embed.Build());
+            var embed = new EmbedBuilder().CreateDefault(content)
+                .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = title });
+            await Context.ReplyAsync(embed);
         }
 
         [Command("toggle", RunMode = RunMode.Async)]
@@ -141,16 +118,12 @@ namespace Hanekawa.Modules.Permission
             if (cfg.IgnoreAllChannels)
             {
                 cfg.IgnoreAllChannels = false;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Commands are now only usable in channels on the list.").Build());
+                await Context.ReplyAsync("Commands are now only usable in channels on the list.");
             }
             else
             {
                 cfg.IgnoreAllChannels = true;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply("Commands are now usable in all channels beside those in the ignore list.")
-                        .Build());
+                await Context.ReplyAsync("Commands are now usable in all channels beside those in the ignore list.");
             }
 
             await _db.SaveChangesAsync();

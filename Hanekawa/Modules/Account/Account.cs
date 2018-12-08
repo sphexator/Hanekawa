@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Level.Util;
@@ -21,11 +23,13 @@ namespace Hanekawa.Modules.Account
     {
         private readonly Calculate _calculate;
         private readonly ProfileGenerator _profileBuilder;
+        private readonly DbService _db;
 
-        public Account(Calculate calculate, ProfileGenerator profileBuilder)
+        public Account(Calculate calculate, ProfileGenerator profileBuilder, DbService db)
         {
             _calculate = calculate;
             _profileBuilder = profileBuilder;
+            _db = db;
         }
 
         [Command("rank", RunMode = RunMode.Async)]
@@ -36,55 +40,32 @@ namespace Hanekawa.Modules.Account
         public async Task RankAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
-            using (var db = new DbService())
+
+            var userdata = await _db.GetOrCreateUserData(user);
+            var glUserData = await _db.GetOrCreateGlobalUserData(user);
+            var rank = _db.Accounts.CountAsync(x =>
+                x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
+            var total = _db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id);
+
+            var globalRank = _db.AccountGlobals.CountAsync();
+            var globalUserRank = _db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
+
+            await Task.WhenAll(rank, total, globalRank, globalUserRank);
+            var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
+            await Context.ReplyAsync(new EmbedBuilder
             {
-                var userdata = await db.GetOrCreateUserData(user);
-                var glUserData = await db.GetOrCreateGlobalUserData(user);
-                var rank = db.Accounts.CountAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.TotalExp >= userdata.TotalExp && x.Active);
-                var total = db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id);
-
-                var globalRank = db.AccountGlobals.CountAsync();
-                var globalUserRank = db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
-
-                await Task.WhenAll(rank, total, globalRank, globalUserRank);
-                var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
-
-                var author = new EmbedAuthorBuilder
+                Author = new EmbedAuthorBuilder {Name = user.GetName()},
+                Color = Color.Purple,
+                ThumbnailUrl = user.GetAvatar(),
+                Fields = new List<EmbedFieldBuilder>
                 {
-                    Name = user.GetName()
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Author = author,
-                    ThumbnailUrl = user.GetAvatar()
-                };
-                var level = new EmbedFieldBuilder
-                {
-                    Name = "Level",
-                    IsInline = true,
-                    Value = $"{userdata.Level}"
-                };
-                var exp = new EmbedFieldBuilder
-                {
-                    Name = "Exp",
-                    IsInline = true,
-                    Value = $"{userdata.Exp}/{nxtLevel}"
-                };
-                var ranking = new EmbedFieldBuilder
-                {
-                    Name = "Rank",
-                    IsInline = true,
-                    Value = $"{rank.Result}/{total.Result}"
-                };
-
-                embed.AddField(level);
-                embed.AddField(exp);
-                embed.AddField(ranking);
-                embed.AddField("Global Rank", $"{globalUserRank.Result}/{globalRank.Result}", true);
-                await ReplyAsync("", false, embed.Build()).ConfigureAwait(false);
-            }
+                    new EmbedFieldBuilder {IsInline = true, Name = "Level", Value = $"{userdata.Level}"},
+                    new EmbedFieldBuilder {IsInline = true, Name = "Exp", Value = $"{userdata.Exp}/{nxtLevel}"},
+                    new EmbedFieldBuilder {IsInline = true, Name = "Rank", Value = $"{rank.Result}/{total.Result}"},
+                    new EmbedFieldBuilder
+                        {IsInline = true, Name = "Global Rank", Value = $"{globalUserRank.Result}/{globalRank.Result}"}
+                }
+            });
         }
 
         [Command("top", RunMode = RunMode.Async)]
@@ -94,35 +75,32 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task LeaderboardAsync()
         {
-            using (var db = new DbService())
+            var author = new EmbedAuthorBuilder
             {
-                var author = new EmbedAuthorBuilder
+                Name = $"Level leaderboard for {Context.Guild.Name}",
+                IconUrl = Context.Guild.IconUrl
+            };
+            var embed = new EmbedBuilder
+            {
+                Color = Color.Purple,
+                Author = author
+            };
+            var users = await _db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
+                .OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
+            var rank = 1;
+            foreach (var x in users)
+            {
+                var field = new EmbedFieldBuilder
                 {
-                    Name = $"Level leaderboard for {Context.Guild.Name}",
-                    IconUrl = Context.Guild.IconUrl
+                    IsInline = false,
+                    Name = $"Rank: {rank}",
+                    Value = $"<@{x.UserId}> - Level:{x.Level} - Total Exp:{x.TotalExp}"
                 };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Author = author
-                };
-                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
-                    .OrderByDescending(account => account.TotalExp).Take(10).ToListAsync();
-                var rank = 1;
-                foreach (var x in users)
-                {
-                    var field = new EmbedFieldBuilder
-                    {
-                        IsInline = false,
-                        Name = $"Rank: {rank}",
-                        Value = $"<@{x.UserId}> - Level:{x.Level} - Total Exp:{x.TotalExp}"
-                    };
-                    embed.AddField(field);
-                    rank++;
-                }
-
-                await ReplyAsync(null, false, embed.Build());
+                embed.AddField(field);
+                rank++;
             }
+
+            await Context.ReplyAsync(embed);
         }
 
         [Command("rep", RunMode = RunMode.Async)]
@@ -132,51 +110,36 @@ namespace Hanekawa.Modules.Account
         public async Task RepAsync(SocketGuildUser user = null)
         {
             if (user == Context.User) return;
+            var cooldownCheckAccount = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
             if (user == null)
             {
-                using (var db = new DbService())
+                if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
-                    var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                    if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
-                    {
-                        var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
-                                Color.Red.RawValue).Build());
-                    }
-                    else
-                    {
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder()
-                                .Reply($"{Context.User.Mention}, you got a reputation point point available!",
-                                    Color.Green.RawValue).Build()
-                        );
-                    }
+                    var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                    await Context.ReplyAsync(
+                        $"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue);
+                }
+                else
+                {
+                    await Context.ReplyAsync(
+                        $"{Context.User.Mention}, you got a reputation point point available!",
+                        Color.Green.RawValue);
                 }
 
                 return;
             }
-
-            using (var db = new DbService())
+            if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
-                {
-                    var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
-                            Color.Red.RawValue).Build());
-                    return;
-                }
-
-                var userdata = await db.GetOrCreateUserData(user);
-                cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
-                userdata.Rep = userdata.Rep + 1;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"rewarded {user?.Mention} with a reputation point!", Color.Green.RawValue)
-                        .Build());
+                var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
+                    Color.Red.RawValue);
+                return;
             }
+            var userdata = await _db.GetOrCreateUserData(user);
+            cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
+            userdata.Rep = userdata.Rep + 1;
+            await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green.RawValue);
         }
 
         [Command("profile", RunMode = RunMode.Async)]
@@ -192,7 +155,9 @@ namespace Hanekawa.Modules.Account
                 await Context.Channel.SendFileAsync(stream, "profile.png");
             }
         }
-
+        /*
+         <-- MAY USE THIS FOR LATER -->
+         TODO: PREVIEW, MAYBE USE
         [Command("preview", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -217,5 +182,6 @@ namespace Hanekawa.Modules.Account
                         .Build());
             }
         }
+        */
     }
 }

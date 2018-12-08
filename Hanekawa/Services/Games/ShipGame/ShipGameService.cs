@@ -15,6 +15,7 @@ using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Games.ShipGame.Data;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -54,7 +55,8 @@ namespace Hanekawa.Services.Games.ShipGame
         public async Task<EmbedBuilder> SearchAsync(SocketCommandContext context)
         {
             if (IsInBattle(context))
-                return new EmbedBuilder().Reply($"{context.User.Mention} is already in a fight", Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault($"{context.User.Mention} is already in a fight",
+                    Color.Red.RawValue);
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(context.User as SocketGuildUser);
@@ -79,7 +81,7 @@ namespace Hanekawa.Services.Games.ShipGame
                 }
                 else
                 {
-                    return new EmbedBuilder().Reply(
+                    return new EmbedBuilder().CreateDefault(
                         $"{context.User.Mention} searched throughout the sea and found no enemy",
                         Color.Red.RawValue);
                 }
@@ -106,35 +108,25 @@ namespace Hanekawa.Services.Games.ShipGame
             return _gameStats.GetHealth(level, await GetClass(db, userdata.Class));
         }
 
-        private async Task<int> Health(DbService db, uint level, GameEnemy enemy)
-        {
-            return _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
-        }
+        private async Task<int> Health(DbService db, uint level, GameEnemy enemy) =>
+            _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
 
-        private int Damage(uint level)
-        {
-            return _gameStats.GetDamage(level);
-        }
+        private int Damage(uint level) => _gameStats.GetDamage(level);
 
-        private int Damage(uint level, GameEnemy enemy)
-        {
-            return _gameStats.GetDamage(level, enemy);
-        }
+        private int Damage(uint level, GameEnemy enemy) => _gameStats.GetDamage(level, enemy);
 
         public async Task AttackAsync(SocketCommandContext context)
         {
             if (!IsInBattle(context))
             {
-                await context.Channel.SendEmbedAsync(
-                    new EmbedBuilder().Reply($"{context.User.Mention} isn't in a fight", Color.Red.RawValue));
+                await context.ReplyAsync($"{context.User.Mention} isn't in a fight", Color.Red.RawValue);
                 return;
             }
 
             if (ActiveBattle(context))
             {
-                await context.Channel.SendEmbedAsync(
-                    new EmbedBuilder().Reply($"{context.User.Mention}, a fight is already in progress, please wait.",
-                        Color.Red.RawValue));
+                await context.ReplyAsync($"{context.User.Mention}, a fight is already in progress, please wait.",
+                    Color.Red.RawValue);
                 return;
             }
 
@@ -306,27 +298,26 @@ namespace Hanekawa.Services.Games.ShipGame
         {
             if (ActiveDuel(context))
             {
-                await context.Channel.SendEmbedAsync(
-                    new EmbedBuilder().Reply($"{context.User.Mention}, a fight is already in progress, please wait.",
-                        Color.Red.RawValue));
+                await context.ReplyAsync($"{context.User.Mention}, a fight is already in progress, please wait.",
+                    Color.Red.RawValue);
                 return;
             }
 
             UpdateDuel(context, true);
             try
             {
-                Account userdata = null;
-                Account userdata2 = null;
+                Account userdata;
+                Account userdata2;
                 var p1Name = (context.User as SocketGuildUser).GetName();
                 var p2Name = playerTwoUser.GetName();
-                var playerOneHp = 0;
-                var playerTwoHp = 0;
-                var playerOneDmg = 0;
-                var playerTwoDmg = 0;
-                var playerOneHpMax = 0;
-                var playerTwoHpMax = 0;
-                GameClass playerOne = null;
-                GameClass playerTwo = null;
+                int playerOneHp;
+                int playerTwoHp;
+                int playerOneDmg;
+                int playerTwoDmg;
+                int playerOneHpMax;
+                int playerTwoHpMax;
+                GameClass playerOne;
+                GameClass playerTwo;
                 Account winner = null;
                 Account loser = null;
 

@@ -1,102 +1,63 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Achievement;
-using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Achievement
 {
     public class Achievement : InteractiveBase
     {
+        private readonly DbService _db;
+
+        public Achievement(DbService db)
+        {
+            _db = db;
+        }
+
         [Command("achievement", RunMode = RunMode.Async)]
-        [Alias("achiev")]
+        [Alias("achieve", "achiev")]
         [RequiredChannel]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievementLog([Remainder] string tab = null)
         {
-            var user = Context.User as IGuildUser;
-            using (var db = new DbService())
+            if (tab.IsNullOrWhiteSpace())
             {
-                if (tab.IsNullOrWhiteSpace())
+                var tabs = await _db.AchievementTypes.ToListAsync();
+                string content = null;
+                foreach (var x in tabs) content += $"{x.Name}\n";
+                var embed = new EmbedBuilder
                 {
-                    var tabs = await db.AchievementTypes.ToListAsync();
-                    string content = null;
-                    foreach (var x in tabs) content += $"{x.Name}\n";
-                    var author = new EmbedAuthorBuilder
-                    {
-                        Name = "Achievement tabs"
-                    };
-                    var footer = new EmbedFooterBuilder
-                    {
-                        Text = "Use `Achievement <tab>` to see list of achievements in that tab"
-                    };
-                    var embed = new EmbedBuilder
-                    {
-                        Color = Color.Purple,
-                        Description = content,
-                        Author = author,
-                        Footer = footer
-                    };
-                    await ReplyAsync(null, false, embed.Build());
-                }
-                else
+                    Author = new EmbedAuthorBuilder {Name = "Achievement tabs"},
+                    Color = Color.Purple,
+                    Description = content,
+                    Footer = new EmbedFooterBuilder
+                        {Text = "Use `Achievement <tab>` to see list of achievements in that tab"}
+                };
+                await Context.ReplyAsync(embed);
+            }
+            else
+            {
+                var type = await _db.AchievementTypes.FirstOrDefaultAsync(x => x.Name == tab);
+                if (type == null)
                 {
-                    var type = await db.AchievementTypes.FirstOrDefaultAsync(x => x.Name == tab);
-                    if (type == null)
-                    {
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply("No tabs with that name", Color.Red.RawValue).Build());
-                        return;
-                    }
-
-                    var achievements = await db.Achievements.Where(x => !x.Hidden && x.TypeId == type.TypeId)
-                        .ToListAsync();
-                    var pages = new List<string>();
-                    for (var i = 0; i < achievements.Count;)
-                    {
-                        string achievString = null;
-                        for (var j = 0; j < 5; j++)
-                            try
-                            {
-                                if (i == achievements.Count) continue;
-                                var Achiev = achievements[i];
-                                achievString +=
-                                    $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
-                                i++;
-                            }
-                            catch
-                            {
-                                i++;
-                            }
-
-                        pages.Add(achievString);
-                    }
-
-                    var paginator = new PaginatedMessage
-                    {
-                        Color = Color.Purple,
-                        Pages = pages,
-                        Title = $"Achievements in {type.Name}",
-                        Options = new PaginatedAppearanceOptions
-                        {
-                            First = new Emoji("⏮"),
-                            Back = new Emoji("◀"),
-                            Next = new Emoji("▶"),
-                            Last = new Emoji("⏭"),
-                            Stop = null,
-                            Jump = null,
-                            Info = null
-                        }
-                    };
-                    await PagedReplyAsync(paginator);
+                    await Context.ReplyAsync("No tabs with that name", Color.Red.RawValue);
+                    return;
                 }
+
+                var achievements = await _db.Achievements.Where(x => !x.Hidden && x.TypeId == type.TypeId)
+                    .ToListAsync();
+                var pages = new List<string>();
+                foreach (var x in achievements) pages.Add($"{x.Name} - Req: {x.Requirement}\n");
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Achievements in {type.Name}"));
             }
         }
 
@@ -106,18 +67,15 @@ namespace Hanekawa.Modules.Account.Achievement
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievementInspect(int id)
         {
-            using (var db = new DbService())
+            var achiv = await _db.Achievements.FindAsync(id);
+            var embed = new EmbedBuilder
             {
-                var achiv = await db.Achievements.FindAsync(id);
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Title = achiv.Name,
-                    Description = $"{achiv.Description}\nRequired: {achiv.Requirement}",
-                    ThumbnailUrl = achiv.ImageUrl
-                };
-                await ReplyAsync(null, false, embed.Build());
-            }
+                Color = Color.Purple,
+                Title = achiv.Name,
+                Description = $"{achiv.Description}\nRequired: {achiv.Requirement}",
+                ThumbnailUrl = achiv.ImageUrl
+            };
+            await ReplyAsync(null, false, embed.Build());
         }
 
         [Command("achieved")]
@@ -125,57 +83,20 @@ namespace Hanekawa.Modules.Account.Achievement
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievedList()
         {
-            using (var db = new DbService())
+            var unlock = await _db.AchievementUnlocks.Where(x => x.UserId == Context.User.Id).ToListAsync();
+            if (unlock.Count == 0)
             {
-                var unlock = await db.AchievementUnlocks.Where(x => x.UserId == Context.User.Id).ToListAsync();
-                if (unlock.Count == 0)
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("No achievements found.", Color.Red.RawValue).Build());
-                    return;
-                }
-
-                var achievements = new List<AchievementMeta>();
-                unlock.ForEach(x => achievements.Add(db.Achievements.Find(x.AchievementId)));
-                var pages = new List<string>();
-                for (var i = 0; i < achievements.Count;)
-                {
-                    string achievString = null;
-                    for (var j = 0; j < 5; j++)
-                        try
-                        {
-                            if (i == achievements.Count) continue;
-                            var Achiev = achievements[i];
-                            achievString +=
-                                $"{Achiev.Name}({Achiev.AchievementId}) - Req: {Achiev.Requirement}\n";
-                            i++;
-                        }
-                        catch
-                        {
-                            i++;
-                        }
-
-                    pages.Add(achievString);
-                }
-
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.Purple,
-                    Pages = pages,
-                    Title = $"Unlocked Achievements for {Context.User.Username}",
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(paginator);
+                await Context.ReplyAsync("No achievements found", Color.Red.RawValue);
+                return;
             }
+
+            var achievements = new List<AchievementMeta>();
+            unlock.ForEach(x => achievements.Add(_db.Achievements.Find(x.AchievementId)));
+            var pages = new List<string>();
+            foreach (var x in achievements)
+                pages.Add($"{x.Name}({x.AchievementId}) - Req: {x.Requirement}\n");
+
+            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Unlocked Achievements for {Context.User.Username}"));
         }
 
         private static string AchievType(IEnumerable<AchievementUnlock> list,

@@ -6,6 +6,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.Giveaway
 {
@@ -22,21 +23,16 @@ namespace Hanekawa.Modules.Giveaway
             if (channel == null) channel = Context.Channel as ITextChannel;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Couldn't find a message with that ID in {channel.Mention}",
-                        Color.Red.RawValue).Build());
+                await Context.ReplyAsync($"Couldn't find a message with that ID in {channel.Mention}",
+                    Color.Red.RawValue);
                 return;
             }
 
             var reactionAmount = GetReactionAmount(message, emote);
             var users = await message.GetReactionUsersAsync(emote, reactionAmount).FlattenAsync();
             if (users == null)
-                await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply(
-                            "Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
-                            Color.Red.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
+                    Color.Red.RawValue);
             var rnd = new Random();
             var result = users.OrderBy(item => rnd.Next());
             string winners = null;

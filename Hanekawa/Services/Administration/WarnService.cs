@@ -10,6 +10,7 @@ using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
@@ -29,7 +30,7 @@ namespace Hanekawa.Services.Administration
         public WarnService(DbService db)
         {
             _db = db;
-            Console.WriteLine("1: WarnService Db initiated");
+            Console.WriteLine("WarnService Db initiated");
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -71,16 +72,14 @@ namespace Hanekawa.Services.Administration
                           "**⮞ Session**\n" +
                           $"Amount: {userdata.Sessions}\n" +
                           $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
-            var author = new EmbedAuthorBuilder
-            {
-                IconUrl = user.GetAvatar(),
-                Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"
-            };
             var embed = new EmbedBuilder
             {
                 Description = content,
-                Author = author,
-                Color = Color.Purple,
+                Author = new EmbedAuthorBuilder
+                {
+                    IconUrl = user.GetAvatar(),
+                    Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"
+                },
                 Fields = await GetWarnings(user)
             };
             return embed;
@@ -89,26 +88,15 @@ namespace Hanekawa.Services.Administration
         public async Task<IEnumerable<string>> GetFullWarnlogAsync(SocketGuildUser user)
         {
             var result = new List<string>();
-            var warnings = await _db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
-                .ToListAsync();
-            for (var i = 0; i < warnings.Count;)
+            foreach (var x in await _db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                .ToListAsync())
             {
-                string page = null;
-                for (var j = 0; j < 5; j++)
-                {
-                    var index = warnings[i];
-                    page = $"Warn ID: {index.Id}\n" +
-                           $"{index.Type} - <@{index.Moderator}>\n" +
-                           $"{index.Reason.Truncate(700) ?? "I made this :)"}\n" +
-                           $"{index.Time.Humanize()}\n";
-                    if (index.MuteTimer != null) page += $"{index.MuteTimer.Value.Humanize()}\n";
-                    page += "\n";
-                    i++;
-                }
-
-                result.Add(page);
+                result.Add($"Warn ID: {x.Id}\n" +
+                           $"{x.Type} - <@{x.Moderator}>\n" +
+                           $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
+                           $"{x.Time.Humanize()}\n");
             }
-
+            if(result.Count == 0) result.Add("User has no warnings");
             return result;
         }
 
@@ -229,14 +217,10 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = $"You've been warned on {user.Guild.Name} by {staff.Mention}\n" +
-                                  "Reason:\n" +
-                                  $"{reason}"
-                };
-                await dm.SendEmbedAsync(embed);
+                var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff.Mention}\n" +
+                                                             "Reason:\n" +
+                                                             $"{reason}");
+                await dm.SendMessageAsync(null, false, embed.Build()); ;
             }
             catch
             {
@@ -250,15 +234,11 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
-                                  "Reason:\n" +
-                                  $"{reason}"
-                };
+                var embed = new EmbedBuilder().CreateDefault($"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
+                                                             "Reason:\n" +
+                                                             $"{reason}");
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
-                await dm.SendEmbedAsync(embed);
+                await dm.SendMessageAsync(null, false, embed.Build());
             }
             catch
             {
@@ -271,14 +251,10 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = $"You've been warned on {user.Guild.Name} by {staff}\n" +
-                                  "Reason:\n" +
-                                  $"{reason}"
-                };
-                await dm.SendEmbedAsync(embed);
+                var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff}\n" +
+                                                               "Reason:\n" +
+                                                               $"{reason}");
+                await dm.SendMessageAsync(null, false, embed.Build());
             }
             catch
             {
@@ -292,15 +268,11 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = $"You've been muted on {user.Guild.Name} by {staff}\n" +
-                                  "Reason:\n" +
-                                  $"{reason}"
-                };
+                var embed = new EmbedBuilder().CreateDefault($"You've been muted in {user.Guild.Name} by {staff}\n" +
+                                                                "Reason:\n" +
+                                                                $"{reason}");
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
-                await dm.SendEmbedAsync(embed);
+                await dm.SendMessageAsync(null, false, embed.Build());
             }
             catch
             {
@@ -310,24 +282,16 @@ namespace Hanekawa.Services.Administration
 
         private async Task<List<EmbedFieldBuilder>> GetWarnings(IGuildUser user)
         {
-            var warns = await _db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id)
-                .ToListAsync();
             var result = new List<EmbedFieldBuilder>();
-            foreach (var x in warns)
+            foreach (var x in await _db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id)
+                .ToListAsync())
             {
                 if (!x.Valid) continue;
                 var content = $"{x.Type} - <@{x.Moderator}>\n" +
-                              $"{x.Reason ?? "I made this :)"}\n" +
+                              $"{x.Reason ?? "No reason provided."}\n" +
                               $"{x.Time.Humanize()}\n";
-                var field = new EmbedFieldBuilder
-                {
-                    Name = $"Warn ID: {x.Id}",
-                    IsInline = true,
-                    Value = content.Truncate(999)
-                };
-                result.Add(field);
+                result.Add( new EmbedFieldBuilder { Name = $"Warn ID: {x.Id}", IsInline = true, Value = content.Truncate(999) });
             }
-
             return result;
         }
 
@@ -348,7 +312,7 @@ namespace Hanekawa.Services.Administration
 
         private static string GetStatus(IPresence user)
         {
-            var result = "N/A";
+            string result;
             switch (user.Status)
             {
                 case UserStatus.Online:
@@ -369,6 +333,9 @@ namespace Hanekawa.Services.Administration
                 case UserStatus.Offline:
                     result = "Offline";
                     break;
+                default:
+                    result = "N/A";
+                    break;
             }
 
             return result;
@@ -376,8 +343,7 @@ namespace Hanekawa.Services.Administration
 
         private static string GetGame(IPresence user)
         {
-            if (user.Activity == null) return "Currently not playing";
-            var result = "Currently not playing";
+            string result;
             switch (user.Activity.Type)
             {
                 case ActivityType.Listening:
@@ -391,6 +357,9 @@ namespace Hanekawa.Services.Administration
                     break;
                 case ActivityType.Watching:
                     result = $"Watching: {user.Activity.Name}";
+                    break;
+                default:
+                    result = "Currently not playing";
                     break;
             }
 

@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -28,16 +28,13 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogWarn = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled logging of warnings!", Color.Green.RawValue).Build());
+                await Context.ReplyAsync("Disabled logging of warnings!", Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogWarn = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set warn logging channel to {channel.Mention}!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Set warn logging channel to {channel.Mention}!", Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
 
@@ -49,16 +46,14 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogJoin = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled logging of join/leave!", Color.Green.RawValue).Build());
+                await Context.ReplyAsync("Disabled logging of join/leave!", Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogJoin = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set join/leave logging channel to {channel.Mention}!",
-                    Color.Green.RawValue).Build());
+            await Context.ReplyAsync($"Set join/leave logging channel to {channel.Mention}!",
+                Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
 
@@ -71,16 +66,14 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogMsg = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled logging of messages!", Color.Green.RawValue).Build());
+                await Context.ReplyAsync("Disabled logging of messages!", Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogMsg = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set message logging channel to {channel.Mention}!",
-                    Color.Green.RawValue).Build());
+            await Context.ReplyAsync($"Set message logging channel to {channel.Mention}!",
+                Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
 
@@ -93,17 +86,13 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogBan = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled logging of moderation actions!", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Disabled logging of moderation actions!", Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogBan = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Set mod log channel to {channel.Mention}!", Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
 
@@ -115,18 +104,14 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogAutoMod = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled separate logging of auto-moderator actions!",
-                            Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Disabled separate logging of auto-moderator actions!",
+                    Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogAutoMod = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set auto mod log channel to {channel.Mention}!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Set auto mod log channel to {channel.Mention}!", Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
 
@@ -138,18 +123,14 @@ namespace Hanekawa.Modules.Permission
             if (channel == null)
             {
                 cfg.LogAvi = null;
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Disabled logging of user updates!",
-                            Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Disabled logging of user updates!",
+                    Color.Green.RawValue);
                 await _db.SaveChangesAsync();
                 return;
             }
 
             cfg.LogAvi = channel.Id;
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Set user update log channel to {channel.Mention}!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Set user update log channel to {channel.Mention}!", Color.Green.RawValue);
             await _db.SaveChangesAsync();
         }
     }

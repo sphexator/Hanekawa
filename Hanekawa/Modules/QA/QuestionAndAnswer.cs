@@ -8,45 +8,38 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.QA
 {
     public class QuestionAndAnswer : InteractiveBase
     {
+        private readonly DbService _db;
+        public QuestionAndAnswer(DbService db)
+        {
+            _db = db;
+        }
+
         [Command("question", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Summary("Sends a question to server owners to answer (QnA)")]
         public async Task QuestionAsync([Remainder] string question)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue) return;
-                var caseId = await db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
-                var author = new EmbedAuthorBuilder
-                {
-                    IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
-                    Name = (Context.User as SocketGuildUser).GetName()
-                };
-                var footer = new EmbedFooterBuilder
-                {
-                    Text = $"Question ID: {caseId.Id}"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Author = author,
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Color = Color.Purple,
-                    Description = question,
-                    Footer = footer
-                };
-                var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value).SendEmbedAsync(embed);
+                var caseId = await _db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
+
+                var embed = new EmbedBuilder().CreateDefault(question)
+                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
+                    .WithFooter(new EmbedFooterBuilder { Text = $"Question ID: {caseId.Id}" })
+                    .WithTimestamp(DateTimeOffset.UtcNow);
+
+                var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value).ReplyAsync(embed);
                 caseId.MessageId = msg.Id;
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply("Question sent!", Color.Green.RawValue).Build());
-            }
+                    new EmbedBuilder().CreateDefault("Question sent!", Color.Green.RawValue).Build());
         }
 
         [Command("qa answer", RunMode = RunMode.Async)]
@@ -57,18 +50,20 @@ namespace Hanekawa.Modules.QA
         public async Task CommentAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var question = await db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
+                var question = await _db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
                 if (question == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue)
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("No QnA channel has been setup", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("No QnA channel has been setup", Color.Red.RawValue);
                     return;
                 }
 
+            if (!question.MessageId.HasValue)
+            {
+                await Context.ReplyAsync("Couldn't find the associated message to this question :(");
+                return;
+            }
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value)
                     .GetMessageAsync(question.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -81,21 +76,19 @@ namespace Hanekawa.Modules.QA
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(question.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false,
-                        new EmbedBuilder().Reply(
-                            "Your question got a response!\n" +
+                    await (await suggestUser.GetOrCreateDMChannelAsync())
+                        .ReplyAsync("Your question got a response!\n" +
                             "Question:\n" +
                             $"{embed.Description}\n" +
                             $"Answer from {Context.User}:\n" +
-                            $"{response}").Build());
+                            $"{response}");
                 }
                 catch
                 {
-                    /*IGNORE*/
+                    /*IGNORE*/ //TODO: Add logging
                 }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
-            }
         }
 
         [Command("qa set channel", RunMode = RunMode.Async)]
@@ -105,26 +98,21 @@ namespace Hanekawa.Modules.QA
         [RequireContext(ContextType.Guild)]
         public async Task SetQuestionChannelAsync(ITextChannel channel = null)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (cfg.QuestionAndAnswerChannel.HasValue && channel == null)
                 {
                     cfg.QuestionAndAnswerChannel = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Disabled QnA channel", Color.Green.RawValue).Build());
+                    await _db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled QnA channel", Color.Green.RawValue);
                     return;
                 }
 
                 if (channel == null) channel = Context.Channel as ITextChannel;
 
                 cfg.QuestionAndAnswerChannel = channel?.Id;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"All questions will now be sent to {channel.Mention} !",
-                        Color.Green.RawValue).Build());
-            }
+                await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"All questions will now be sent to {channel.Mention} !",
+                Color.Green.RawValue);
         }
     }
 }

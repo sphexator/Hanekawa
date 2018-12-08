@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
 
@@ -18,12 +19,15 @@ namespace Hanekawa.Modules.Administration
         private readonly MuteService _muteService;
         private readonly NudeScoreService _nudeScore;
         private readonly WarnService _warnService;
+        private readonly DbService _db;
 
-        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore)
+        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore,
+            DbService db)
         {
             _muteService = muteService;
             _warnService = warnService;
             _nudeScore = nudeScore;
+            _db = db;
         }
 
         [Command("ban", RunMode = RunMode.Async)]
@@ -37,20 +41,23 @@ namespace Hanekawa.Modules.Administration
             if (Context.Guild.GetUser(Context.Client.CurrentUser.Id).HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply("Cannot ban someone that's higher than me in hierarchy.",
+                    new EmbedBuilder().CreateDefault("Cannot ban someone that's higher than me in hierarchy.",
                         Color.Red.RawValue).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
+
             if ((Context.User as SocketGuildUser).HierarchyCheck(user))
             {
-                await ReplyAndDeleteAsync(null, false, 
-                    new EmbedBuilder().Reply($"{Context.User.Mention}, can't ban someone that's equal or more power than you.",
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault(
+                        $"{Context.User.Mention}, can't ban someone that's equal or more power than you.",
                         Color.Red.RawValue).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
             await Context.Guild.AddBanAsync(user, 7, $"{Context.User.Id}");
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Banned {user.Mention} from {Context.Guild.Name}.",
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault(
+                $"Banned {user.Mention} from {Context.Guild.Name}.",
                 Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
         }
 
@@ -65,21 +72,23 @@ namespace Hanekawa.Modules.Administration
             if (Context.Guild.GetUser(Context.Client.CurrentUser.Id).HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply("Cannot kick someone that's higher than me in hierarchy.",
+                    new EmbedBuilder().CreateDefault("Cannot kick someone that's higher than me in hierarchy.",
                         Color.Red.RawValue).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
+
             if ((Context.User as SocketGuildUser).HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply($"{Context.User.Mention}, can't kick someone that's equal or more power than you.",
+                    new EmbedBuilder().CreateDefault(
+                        $"{Context.User.Mention}, can't kick someone that's equal or more power than you.",
                         Color.Red.RawValue).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
             await user.KickAsync($"{Context.User.Id}").ConfigureAwait(false);
-            await ReplyAndDeleteAsync(null, false, 
-                new EmbedBuilder().Reply($"Kicked {user.Mention} from {Context.Guild.Name}.",
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().CreateDefault($"Kicked {user.Mention} from {Context.Guild.Name}.",
                     Color.Green.RawValue).Build(), TimeSpan.FromSeconds(15));
         }
 
@@ -93,21 +102,25 @@ namespace Hanekawa.Modules.Administration
             if (x > 1000) x = 1000;
             if (user == null)
             {
-                var channel = Context.Channel as ITextChannel;
-                var msgs = await channel.GetMessagesAsync(x + 1).FlattenAsync().ConfigureAwait(false);
-                await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
-                var embed = new EmbedBuilder().Reply($"{msgs.Count()} messages deleted!", Color.Green.RawValue);
-                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(30));
+                if (!(Context.Channel is ITextChannel channel)) return;
+                var msgs = (await channel.GetMessagesAsync(x + 1).FlattenAsync()).Where(m =>
+                    m.Timestamp >= DateTimeOffset.UtcNow - TimeSpan.FromDays(11));
+                var messages = msgs.ToList();
+                await channel.DeleteMessagesAsync(messages).ConfigureAwait(false);
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"{messages.Count} messages deleted!", Color.Green.RawValue)
+                        .Build(), TimeSpan.FromSeconds(30));
             }
             else
             {
                 var msgs = (await Context.Channel.GetMessagesAsync(x + 1).FlattenAsync())
-                    .Where(m => m.Author.Id == user.Id)
+                    .Where(m => m.Author.Id == user.Id && m.Timestamp >= DateTimeOffset.UtcNow - TimeSpan.FromDays(11))
                     .Take(x);
-                var channel = Context.Channel as ITextChannel;
+                if (!(Context.Channel is ITextChannel channel)) return;
                 await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
-                var embed = new EmbedBuilder().Reply($"{x} messages deleted!", Color.Green.RawValue);
-                await ReplyAndDeleteAsync(null, false, embed.Build(), TimeSpan.FromSeconds(30));
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"{x} messages deleted!", Color.Green.RawValue).Build(),
+                    TimeSpan.FromSeconds(30));
             }
         }
 
@@ -125,7 +138,8 @@ namespace Hanekawa.Modules.Administration
             {
                 await ReplyAndDeleteAsync("", false,
                     new EmbedBuilder()
-                        .Reply($"{Context.User.Mention}, you can't mute someone with same or higher role then you.",
+                        .CreateDefault(
+                            $"{Context.User.Mention}, you can't mute someone with same or higher role then you.",
                             Color.Red.RawValue).Build(), TimeSpan.FromSeconds(15));
                 return;
             }
@@ -144,14 +158,11 @@ namespace Hanekawa.Modules.Administration
             try
             {
                 var msgs = (await Context.Channel.GetMessagesAsync(50).FlattenAsync())
-                    .Where(m => m.Author.Id == user.Id)
-                    .Take(50).ToArray();
-
-                var bulkDeletable = msgs.ToList();
-                bulkDeletable.Add(Context.Message);
-
-                var channel = Context.Channel as ITextChannel;
-                await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(bulkDeletable)).ConfigureAwait(false);
+                    .Where(m => m.Author.Id == user.Id && m.Timestamp >= DateTimeOffset.UtcNow - TimeSpan.FromDays(11))
+                    .Take(50).ToList();
+                msgs.Add(Context.Message);
+                if (!(Context.Channel is ITextChannel channel)) return;
+                await Task.WhenAll(Task.Delay(1000), channel.DeleteMessagesAsync(msgs)).ConfigureAwait(false);
             }
             catch
             {
@@ -173,7 +184,7 @@ namespace Hanekawa.Modules.Administration
                 TimeSpan.FromMinutes(minutes));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
         }
 
@@ -190,7 +201,7 @@ namespace Hanekawa.Modules.Administration
                 TimeSpan.FromMinutes(1440));
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
         }
 
@@ -211,7 +222,7 @@ namespace Hanekawa.Modules.Administration
                 timer.Value);
             await Task.WhenAll(mute, warn);
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Muted {user.Mention}", Color.Green.RawValue).Build(),
+                new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
         }
 
@@ -225,7 +236,7 @@ namespace Hanekawa.Modules.Administration
             await Context.Message.DeleteAsync();
             await _muteService.UnmuteUser(user);
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
+                new EmbedBuilder().CreateDefault($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
         }
 
@@ -240,7 +251,7 @@ namespace Hanekawa.Modules.Administration
             var msgs = (await Context.Channel.GetMessagesAsync().FlattenAsync()).Where(m => m.Author.Id == user.Id)
                 .Take(100).ToList();
             await _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Warning, msgs);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Reply($"Warned {user.Mention}").Build());
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault($"Warned {user.Mention}").Build());
         }
 
         [Command("warnlog", RunMode = RunMode.Async)]
@@ -252,7 +263,7 @@ namespace Hanekawa.Modules.Administration
             if (type == WarnLogType.Simple)
             {
                 var log = await _warnService.GetSimpleWarnlogAsync(user);
-                await Context.Channel.SendEmbedAsync(log);
+                await Context.ReplyAsync(log);
             }
             else
             {
@@ -290,34 +301,14 @@ namespace Hanekawa.Modules.Administration
         {
             if (channel == null && user == null)
             {
-                var pages = _nudeScore.GetGuildTopScore(Context.Guild);
-                if (pages == null || !pages.Any())
+                var pages = _nudeScore.GetGuildTopScore(Context.Guild).ToList();
+                if (pages.Count == 0 || !pages.Any())
                 {
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
                 }
 
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.Purple,
-                    Pages = pages,
-                    Author = new EmbedAuthorBuilder
-                    {
-                        IconUrl = Context.Guild.IconUrl,
-                        Name = $"Toxicity values in {Context.Guild.Name}"
-                    },
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(paginator);
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Toxicity values in {Context.Guild.Name}"));
                 return;
             }
 
@@ -326,11 +317,11 @@ namespace Hanekawa.Modules.Administration
                 var page = _nudeScore.GetChannelTopScores(channel);
                 if (page == null)
                 {
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
                 }
 
-                await ReplyAsync(null, false, new EmbedBuilder().Reply(page).Build());
+                await Context.ReplyAsync(page);
                 return;
             }
 
@@ -339,33 +330,25 @@ namespace Hanekawa.Modules.Administration
                 var page = _nudeScore.GetSingleScore(channel, user);
                 if (page == 0)
                 {
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
                 }
 
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Toxicity score in {channel.Mention}: {page}").Build());
+                await Context.ReplyAsync($"Toxicity score in {channel.Mention}: {page}");
             }
             else
             {
                 var pages = _nudeScore.GetAllScores(user);
                 if (pages == null || !pages.Any())
                 {
-                    await ReplyAsync(null, false, new EmbedBuilder().Reply("No values", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
                 }
 
-                var embed = new EmbedBuilder
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages).WithAuthor(new EmbedAuthorBuilder
                 {
-                    Author = new EmbedAuthorBuilder
-                    {
-                        IconUrl = user.GetAvatar(),
-                        Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
-                    },
-                    Color = Color.Purple,
-                    Description = pages
-                };
-                await ReplyAsync(null, false, embed.Build());
+                    IconUrl = user.GetAvatar(), Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
+                }));
             }
         }
 
@@ -376,29 +359,26 @@ namespace Hanekawa.Modules.Administration
         [Summary("Inputs reason for moderation log entry")]
         public async Task ApplyReason(uint id, [Remainder] string reason)
         {
-            using (var db = new DbService())
+            await Context.Message.DeleteAsync();
+            var actionCase = await _db.ModLogs.FindAsync(id, Context.Guild.Id);
+            var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
+            var embed = updMsg?.Embeds.FirstOrDefault().ToEmbedBuilder();
+            if (embed == null)
             {
-                await Context.Message.DeleteAsync();
-                var actionCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
-                var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
-                var embed = updMsg?.Embeds.FirstOrDefault().ToEmbedBuilder();
-                if (embed == null)
-                {
-                    await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
-                    return;
-                }
-                
-                var modField = embed.Fields.FirstOrDefault(x => x.Name == "Moderator");
-                var reasonField = embed.Fields.FirstOrDefault(x => x.Name == "Reason");
-
-                if (modField != null) modField.Value = Context.User.Mention;
-                if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
-                
-                await updMsg.ModifyAsync(m => m.Embed = embed.Build());
-                actionCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
-                actionCase.ModId = Context.User.Id;
-                await db.SaveChangesAsync();
+                await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
+                return;
             }
+
+            var modField = embed.Fields.FirstOrDefault(x => x.Name == "Moderator");
+            var reasonField = embed.Fields.FirstOrDefault(x => x.Name == "Reason");
+
+            if (modField != null) modField.Value = Context.User.Mention;
+            if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
+
+            await updMsg.ModifyAsync(m => m.Embed = embed.Build());
+            actionCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
+            actionCase.ModId = Context.User.Id;
+            await _db.SaveChangesAsync();
         }
     }
 }

@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,8 @@ namespace Hanekawa.Modules.Administration
             }
 
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Added {role.Name} to {Context.User.Mention}", Color.Green.RawValue).Build(),
+                new EmbedBuilder().CreateDefault($"Added {role.Name} to {Context.User.Mention}", Color.Green.RawValue)
+                    .Build(),
                 TimeSpan.FromSeconds(10));
         }
 
@@ -77,7 +79,8 @@ namespace Hanekawa.Modules.Administration
 
             await (Context.User as IGuildUser).RemoveRoleAsync(role);
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Reply($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
+                new EmbedBuilder()
+                    .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
                     .Build(), TimeSpan.FromSeconds(10));
         }
 
@@ -92,7 +95,7 @@ namespace Hanekawa.Modules.Administration
                 foreach (var x in list)
                     roles += $"{Context.Guild.GetRole(x.RoleId).Name ?? "*Role deleted*"}, ";
             else roles += "No self-assignable roles added";
-            await ReplyAsync(null, false, new EmbedBuilder().Reply(roles).Build());
+            await Context.ReplyAsync(roles);
         }
 
         [Command("role add")]
@@ -103,9 +106,7 @@ namespace Hanekawa.Modules.Administration
             var roleCheck = await _db.SelfAssignAbleRoles.FindAsync(Context.Guild.Id, role.Id);
             if (roleCheck != null)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"{role.Name} is already added as self-assignable", Color.Red.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"{role.Name} is already added as self-assignable", Color.Red.RawValue);
                 return;
             }
 
@@ -117,9 +118,7 @@ namespace Hanekawa.Modules.Administration
             };
             await _db.SelfAssignAbleRoles.AddAsync(data);
             await _db.SaveChangesAsync();
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Added {role.Name} as a self-assignable role!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green.RawValue);
         }
 
         [Command("role remove")]
@@ -132,17 +131,14 @@ namespace Hanekawa.Modules.Administration
                     x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
             if (roleCheck == null)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"There is no self-assignable role by the name {role.Name}",
-                        Color.Red.RawValue).Build());
+                await Context.ReplyAsync($"There is no self-assignable role by the name {role.Name}",
+                    Color.Red.RawValue);
                 return;
             }
 
             _db.SelfAssignAbleRoles.Remove(roleCheck);
             await _db.SaveChangesAsync();
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Removed {role.Name} as a self-assignable role!", Color.Green.RawValue)
-                    .Build());
+            await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green.RawValue);
         }
     }
 }

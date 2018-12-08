@@ -8,6 +8,7 @@ using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Events;
 using Hanekawa.Services.Level;
@@ -23,11 +24,13 @@ namespace Hanekawa.Modules.Events
     {
         private readonly LevelingService _levelingService;
         private readonly EventService _service;
+        private readonly DbService _db;
 
-        public EventModule(EventService service, LevelingService levelingService)
+        public EventModule(EventService service, LevelingService levelingService, DbService db)
         {
             _service = service;
             _levelingService = levelingService;
+            _db = db;
         }
 
         [Command("post", RunMode = RunMode.Async)]
@@ -43,53 +46,28 @@ namespace Hanekawa.Modules.Events
         [WhiteListedOverAll]
         public async Task ListDesignerEventsAsync()
         {
-            using (var db = new DbService())
+            var events = await _db.EventSchedules
+                .Where(x => x.GuildId == Context.Guild.Id && x.Time >= DateTime.UtcNow).ToListAsync();
+            if (events.Count == 0)
             {
-                var events = await db.EventSchedules
-                    .Where(x => x.GuildId == Context.Guild.Id && x.Time >= DateTime.UtcNow).ToListAsync();
-                var pages = new List<string>();
-                for (var i = 0; i < events.Count;)
-                {
-                    string eventString = null;
-                    for (var j = 0; j < 5; j++)
-                    {
-                        if (i == events.Count) continue;
-
-                        var sEvent = events[i];
-                        var host = Context.Guild.GetUser(sEvent.Host).Mention ?? "Couldn't find user or left server.";
-                        var designer = sEvent.DesignerClaim.HasValue
-                            ? Context.Guild.GetUser(sEvent.DesignerClaim.Value).Mention
-                            : "N/A - Available";
-                        var image = sEvent.ImageUrl ?? "No Image";
-                        eventString += $"**{sEvent.Name} (ID:{sEvent.Id})**\n" +
-                                       $"Date: {sEvent.Time}\n" +
-                                       $"Designer: {designer}\n" +
-                                       $"Image: {image}\n" +
-                                       $"Host {host}\n\n";
-                        i++;
-                    }
-
-                    pages.Add(eventString);
-                }
-
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.Purple,
-                    Pages = pages,
-                    Title = $"Events in {Context.Guild.Name}",
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
+                await Context.ReplyAsync("No events scheduled");
+                return;
             }
+            var pages = new List<string>();
+            foreach (var x in events)
+            {
+                var host = Context.Guild.GetUser(x.Host).Mention ?? "Couldn't find user or left server.";
+                var designer = x.DesignerClaim.HasValue
+                    ? Context.Guild.GetUser(x.DesignerClaim.Value).Mention
+                    : "N/A - Available";
+                var image = x.ImageUrl ?? "No Image";
+                pages.Add($"**{x.Name} (ID:{x.Id})**\n" +
+                               $"Date: {x.Time}\n" +
+                               $"Designer: {designer}\n" +
+                               $"Image: {image}\n" +
+                               $"Host {host}\n\n");
+            }
+            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
         }
 
         [Command("list", RunMode = RunMode.Async)]
@@ -97,52 +75,22 @@ namespace Hanekawa.Modules.Events
         [RequiredChannel]
         public async Task ListEventsAsync()
         {
-            using (var db = new DbService())
+            var events = await _db.EventSchedules
+                .Where(x => x.GuildId == Context.Guild.Id && x.Time >= DateTime.UtcNow).ToListAsync();
+            if (events.Count == 0)
             {
-                var events = await db.EventSchedules
-                    .Where(x => x.GuildId == Context.Guild.Id && x.Time >= DateTime.UtcNow).ToListAsync();
-                var pages = new List<string>();
-                if (events.Count == 0)
-                {
-                    await new EmbedBuilder().Reply(Context.Channel, "No events scheduled.");
-                    return;
-                }
-                for (var i = 0; i < events.Count;)
-                {
-                    string eventString = null;
-                    for (var j = 0; j < 5; j++)
-                    {
-                        if (i == events.Count) continue;
-
-                        var sEvent = events[i];
-                        var host = Context.Guild.GetUser(sEvent.Host).Mention ?? "Couldn't find user or left server.";
-                        eventString += $"**{sEvent.Name} (ID:{sEvent.Id})**\n" +
-                                       $"Date: {sEvent.Time}\n" +
-                                       $"Host {host}\n\n";
-                        i++;
-                    }
-
-                    pages.Add(eventString);
-                }
-
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.Purple,
-                    Pages = pages,
-                    Title = $"Events in {Context.Guild.Name}",
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(paginator);
+                await Context.ReplyAsync("No events scheduled");
+                return;
             }
+            var pages = new List<string>();
+            foreach (var x in events)
+            {
+                var host = Context.Guild.GetUser(x.Host).Mention ?? "Couldn't find user or left server.";
+                 pages.Add($"**{x.Name} (ID:{x.Id})**\n" +
+                               $"Date: {x.Time}\n" +
+                               $"Host {host}\n\n");
+            }
+            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
         }
 
         [Command("schedule", RunMode = RunMode.Async)]
@@ -150,24 +98,19 @@ namespace Hanekawa.Modules.Events
         [RequireOwner]
         public async Task SetSchedulingChannel(ITextChannel channel = null)
         {
-            using (var db = new DbService())
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.EventSchedulerChannel = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Removed event scheduling channel.", Color.Green.RawValue).Build());
-                }
-                else
-                {
-                    cfg.EventSchedulerChannel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Set {channel.Mention} as event scheduling channel",
-                            Color.Green.RawValue).Build());
-                }
+                cfg.EventSchedulerChannel = null;
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync("Removed event scheduling channel.", Color.Green.RawValue);
+            }
+            else
+            {
+                cfg.EventSchedulerChannel = channel.Id;
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set {channel.Mention} as event scheduling channel",
+                    Color.Green.RawValue);
             }
         }
 
@@ -176,24 +119,18 @@ namespace Hanekawa.Modules.Events
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEventChannel(ITextChannel channel = null)
         {
-            using (var db = new DbService())
+            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.EventChannel = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Removed event channel.", Color.Green.RawValue).Build());
-                }
-                else
-                {
-                    cfg.EventChannel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Set {channel.Mention} as event channel", Color.Green.RawValue)
-                            .Build());
-                }
+                cfg.EventChannel = null;
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync("Removed event channel.", Color.Green.RawValue);
+            }
+            else
+            {
+                cfg.EventChannel = channel.Id;
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set {channel.Mention} as event channel", Color.Green.RawValue);
             }
         }
 
@@ -202,19 +139,11 @@ namespace Hanekawa.Modules.Events
         [RequiredChannel]
         public async Task ShowExpEvent()
         {
-            using (var db = new DbService())
-            {
-                var expEvent = await db.LevelExpEvents.FindAsync(Context.Guild.Id);
-                if (expEvent == null)
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("There's currently no event active.").Build());
-                else
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply(
-                                $"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}")
-                            .Build());
-            }
+            var expEvent = await _db.LevelExpEvents.FindAsync(Context.Guild.Id);
+            if (expEvent == null)
+                await Context.ReplyAsync("There's currently no event active.");
+            else
+                await Context.ReplyAsync($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}");
         }
 
         [Command("Add", RunMode = RunMode.Async)]
@@ -230,12 +159,11 @@ namespace Hanekawa.Modules.Events
             string timezone = null;
             var year = 1;
 
-            var nameMsg = await ReplyAsync(null, false, new EmbedBuilder().Reply("Name of event?").Build());
+            var nameMsg = await Context.ReplyAsync("Name of event?");
             var nameResponse = await NextMessageAsync(true, true, TimeSpan.FromMinutes(5));
             name = nameResponse.Content;
 
-            var dayMsg = await ReplyAsync(null, false,
-                new EmbedBuilder().Reply("Which day is this event? (In numbers: 1-31)").Build());
+            var dayMsg = await Context.ReplyAsync("Which day is this event? (In numbers: 1-31)");
             var dayResponse = await NextMessageAsync(true, true, TimeSpan.FromMinutes(5));
             day = Convert.ToInt32(dayResponse.Content);
 
@@ -256,11 +184,11 @@ namespace Hanekawa.Modules.Events
             else
                 year = currentTime.Year;
 
-            var timeMsg = await ReplyAsync(null, false, new EmbedBuilder().Reply("Time? (eg. 15:00)").Build());
+            var timeMsg = await Context.ReplyAsync("Time? (eg. 15:00)");
             var timeResponse = await NextMessageAsync(true, true, TimeSpan.FromMinutes(5));
             time = timeResponse.Content;
 
-            var timezoneMsg = await ReplyAsync(null, false, new EmbedBuilder().Reply("Timezone? (eg. -5)").Build());
+            var timezoneMsg = await Context.ReplyAsync("Timezone? (eg. -5)");
             var timezoneResponse = await NextMessageAsync(true, true, TimeSpan.FromMinutes(5));
             timezone = timezoneResponse.Content;
 
@@ -280,71 +208,52 @@ namespace Hanekawa.Modules.Events
             var parseCheck = DateTime.TryParse($"{year}-{month}-{day} {time} {timezone}", out var date);
             if (!parseCheck)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Couldn't parse input into a timestamp\n" +
-                                             $"Input: {year}-{month}-{day} {time} {timezone}", Color.Red.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Couldn't parse input into a timestamp\n" +
+                                         $"Input: {year}-{month}-{day} {time} {timezone}", Color.Red.RawValue);
                 await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                 return;
             }
 
-            using (var db = new DbService())
-            {
                 if (date == DateTime.UtcNow.Date)
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Can't schedule an event on the same day.", Color.Red.RawValue)
-                            .Build());
+                    await Context.ReplyAsync("Can't schedule an event on the same day.", Color.Red.RawValue);
 
-                var check = await db.EventSchedules.FirstOrDefaultAsync(x =>
+                var check = await _db.EventSchedules.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.Time == date);
                 if (check != null)
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder()
-                            .Reply("There is already an event scheduled at that time.", Color.Red.RawValue).Build());
+                    await Context.ReplyAsync("There is already an event scheduled at that time.", Color.Red.RawValue);
                     return;
                 }
 
-                var id = await db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id) + 1;
-                var embed = new EmbedBuilder
-                {
-                    Title = name,
-                    Timestamp = new DateTimeOffset(date),
-                    Color = Color.Purple
-                };
+                var id = await _db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id) + 1;
+            
+            var embed = new EmbedBuilder().CreateDefault(null)
+                .WithTitle(name)
+                .WithTimestamp(new DateTimeOffset(date));
+
 
                 embed.AddField("Host", Context.User.Mention ?? ":KuuThinking:");
-                await ReplyAsync("Does this look correct? (y/n)", false, embed.Build());
+            await Context.ReplyAsync(embed, "Does this look correct? (y/n)");
                 try
                 {
                     var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
                     if (response.Content.ToLower() == "n")
                     {
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder()
-                                .Reply(
-                                    "Cancelling event scheduling. Restart with new designated name/time.\n" +
-                                    $"Date input: {year}-{month}-{day} {time} {timezone}\n" +
-                                    $"Name: {name}")
-                                .Build());
+                        await Context.ReplyAsync("Cancelling event scheduling. Restart with new designated name/time.\n" +
+                                                 $"Date input: {year}-{month}-{day} {time} {timezone}\n" +
+                                                 $"Name: {name}");
                         await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                         return;
                     }
 
                     if (response.Content.ToLower() == "y")
                     {
-                        await _service.TryAddEventAsync(db, name, Context.User as IGuildUser, date);
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder()
-                                .Reply(
-                                    $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!")
-                                .Build());
+                        await _service.TryAddEventAsync(name, Context.User as IGuildUser, date);
+                        var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
+                        await Context.ReplyAsync(
+                            $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!");
                         if (cfg.DesignChannel.HasValue)
-                            await Context.Guild.GetTextChannel(cfg.DesignChannel.Value)
-                                .SendMessageAsync(
-                                    $"New event added\nClaim to make a banner for this with `!event claim {id}`", false,
-                                    embed.Build());
+                            await (Context.Guild.GetTextChannel(cfg.DesignChannel.Value)).ReplyAsync(embed, $"New event added\nClaim to make a banner for this with `!event claim {id}`");
                         await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                     }
                 }
@@ -352,7 +261,7 @@ namespace Hanekawa.Modules.Events
                 {
                     Console.WriteLine(e);
                 }
-            }
+            
         }
 
         [Command("preview", RunMode = RunMode.Async)]
@@ -360,23 +269,18 @@ namespace Hanekawa.Modules.Events
         [WhiteListedOverAll]
         public async Task PreviewEvent(int id)
         {
-            using (var db = new DbService())
+            var eventInfo = await _db.EventSchedules.FindAsync(id, Context.Guild.Id);
+            if (eventInfo == null)
             {
-                var eventInfo = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
-                if (eventInfo == null)
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Couldn't find a event with given ID.").Build());
-                var embed = new EmbedBuilder
-                {
-                    Description = eventInfo.Description,
-                    ImageUrl = eventInfo.ImageUrl,
-                    Title = eventInfo.Name,
-                    Timestamp = new DateTimeOffset(eventInfo.Time),
-                    Color = Color.Purple
-                };
-                await ReplyAsync("Preview. Colour does not represent the colour displayed in schedule channel.", false,
-                    embed.Build());
+                await Context.ReplyAsync("Couldn't find a event with given ID.");
+                return;
             }
+            var embed = new EmbedBuilder().CreateDefault(eventInfo.Description)
+                .WithImageUrl(eventInfo.ImageUrl)
+                .WithTitle(eventInfo.Name)
+                .WithTimestamp(new DateTimeOffset(eventInfo.Time));
+            await Context.ReplyAsync(embed,
+                "Preview. Colour does not represent the colour displayed in schedule channel.");
         }
 
         [Command("Remove", RunMode = RunMode.Async)]
@@ -384,25 +288,19 @@ namespace Hanekawa.Modules.Events
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)
         {
-            using (var db = new DbService())
+            var eventData =
+                await _db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Id == id);
+            if (eventData == null) return;
+
+            if (eventData.Host != Context.User.Id || !(Context.User as IGuildUser).GuildPermissions.ManageGuild)
             {
-                var eventData =
-                    await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Id == id);
-                if (eventData == null) return;
-
-                if (eventData.Host != Context.User.Id || !(Context.User as IGuildUser).GuildPermissions.ManageGuild)
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("You do not own or have the permission to remove events!",
-                            Color.Red.RawValue).Build());
-                    return;
-                }
-
-                await _service.TryRemoveEventAsync(db, id, Context.Guild);
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Removed {eventData.Name} from the event schedule.", Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync("You do not own or have the permission to remove events!",
+                    Color.Red.RawValue);
+                return;
             }
+
+            await _service.TryRemoveEventAsync(id, Context.Guild);
+            await Context.ReplyAsync($"Removed {eventData.Name} from the event schedule.", Color.Green.RawValue);
         }
 
         [Command("claim", RunMode = RunMode.Async)]
@@ -411,28 +309,22 @@ namespace Hanekawa.Modules.Events
         public async Task ClaimEventAsync(int id)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
+
+            var eventData =
+                await _db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Id == id);
+            if (eventData == null) return;
+
+            if (eventData.DesignerClaim.HasValue)
             {
-                var eventData =
-                    await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Id == id);
-                if (eventData == null) return;
-
-                if (eventData.DesignerClaim.HasValue)
-                {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"{Context.User.Mention}, this event is already claimed",
-                            Color.Red.RawValue).Build());
-                    return;
-                }
-
-                eventData.DesignerClaim = Context.User.Id;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder()
-                        .Reply($"{Context.User.Mention} has claimed to make a banner for {eventData.Name}",
-                            Color.Green.RawValue)
-                        .Build());
+                await Context.ReplyAsync($"{Context.User.Mention}, this event is already claimed",
+                    Color.Red.RawValue);
+                return;
             }
+
+            eventData.DesignerClaim = Context.User.Id;
+            await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"{Context.User.Mention} has claimed to make a banner for {eventData.Name}",
+                Color.Green.RawValue);
         }
 
         [Command("Description", RunMode = RunMode.Async)]
@@ -442,17 +334,13 @@ namespace Hanekawa.Modules.Events
         public async Task SetEventDescriptionAsync(int id, [Remainder] string content)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
-                if (eventData == null) return;
 
-                eventData.Description = content;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Updated description for {eventData.Name}", Color.Green.RawValue)
-                        .Build());
-            }
+            var eventData = await _db.EventSchedules.FindAsync(id, Context.Guild.Id);
+            if (eventData == null) return;
+
+            eventData.Description = content;
+            await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"Updated description for {eventData.Name}", Color.Green.RawValue);
         }
 
         [Command("Image", RunMode = RunMode.Async)]
@@ -462,19 +350,14 @@ namespace Hanekawa.Modules.Events
         public async Task SetEventImageUrlAsync(int id, string url)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var eventData = await db.EventSchedules.FindAsync(id, Context.Guild.Id);
-                if (eventData == null) return;
+            var eventData = await _db.EventSchedules.FindAsync(id, Context.Guild.Id);
+            if (eventData == null) return;
 
-                if (!eventData.DesignerClaim.HasValue) eventData.DesignerClaim = Context.User.Id;
+            if (!eventData.DesignerClaim.HasValue) eventData.DesignerClaim = Context.User.Id;
 
-                eventData.ImageUrl = url;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Updated event image for {eventData.Name}", Color.Green.RawValue)
-                        .Build());
-            }
+            eventData.ImageUrl = url;
+            await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"Updated event image for {eventData.Name}", Color.Green.RawValue);
         }
     }
 }

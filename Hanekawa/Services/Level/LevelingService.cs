@@ -13,6 +13,7 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Level.Util;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -148,7 +149,7 @@ namespace Hanekawa.Services.Level
                 };
                 await _db.LevelExpReductions.AddAsync(data);
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
             }
 
             if (channel == null) return null;
@@ -164,7 +165,7 @@ namespace Hanekawa.Services.Level
                 };
                 await _db.LevelExpReductions.AddAsync(data);
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
             }
         }
 
@@ -177,7 +178,7 @@ namespace Hanekawa.Services.Level
                 var data = await _db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
                 _db.LevelExpReductions.Remove(data);
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"Removed {category.Name} from reduced exp list", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault($"Removed {category.Name} from reduced exp list", Color.Green.RawValue);
             }
 
             if (channel == null) return null;
@@ -187,7 +188,7 @@ namespace Hanekawa.Services.Level
                 var data = await _db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
                 _db.LevelExpReductions.Remove(data);
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply($"Removed {channel.Name} from reduced exp list", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault($"Removed {channel.Name} from reduced exp list", Color.Green.RawValue);
             }
         }
 
@@ -287,21 +288,18 @@ namespace Hanekawa.Services.Level
             if (cfg.EventChannel.HasValue)
             {
                 var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Title = "Exp Event",
-                    Description = $"A {multiplier}x exp event has started!\n" +
-                                  $"Duration: {after.Humanize()} ( {after} )",
-                    Timestamp = DateTimeOffset.UtcNow + after,
-                    Footer = new EmbedFooterBuilder {Text = "Ends:"}
-                };
-                var msg = await channel.SendEmbedAsync(embed);
+                var embed = new EmbedBuilder().CreateDefault($"A {multiplier}x exp event has started!\n" +
+                                                             $"Duration: {after.Humanize()} ( {after} )");
+                embed.Title = "Exp Event";
+                embed.Timestamp = DateTimeOffset.UtcNow + after;
+                embed.Footer = new EmbedFooterBuilder { Text = "Ends:"};
+                var msg = await channel.SendMessageAsync(null, false, embed.Build());
                 return msg;
             }
 
-            await fallbackChannel.SendEmbedAsync(new EmbedBuilder().Reply("No event channel has been setup.",
-                Color.Red.RawValue));
+            await fallbackChannel.SendMessageAsync(null, false, 
+                new EmbedBuilder().CreateDefault("No event channel has been setup.",
+                Color.Red.RawValue).Build());
             return null;
         }
 

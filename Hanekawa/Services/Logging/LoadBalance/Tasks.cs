@@ -11,6 +11,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Entities.LogEntities;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Humanizer;
 using ActionType = Hanekawa.Entities.ActionType;
 
@@ -78,22 +79,17 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!cfg.LogJoin.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                     if (ch == null) return;
-                    var embed = new EmbedBuilder
-                    {
-                        Description = $"📥 {user.Mention} has joined (*{user.Id}*)\n" +
-                                      $"Account Created: {user.CreatedAt.Humanize()}",
 
-                        Color = Color.Green,
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
-                    };
-
-                    await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
+                    await ch.ReplyAsync(new EmbedBuilder()
+                        .CreateDefault($"📥 {user.Mention} has joined (*{user.Id}*)\n" +
+                                       $"Account Created: {user.CreatedAt.Humanize()}", Color.Green.RawValue)
+                        .WithFooter(new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" })
+                        .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))); ;
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -112,20 +108,16 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!cfg.LogJoin.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                     if (ch == null) return;
-                    var embed = new EmbedBuilder
-                    {
-                        Description = $"📤 {user.Mention} has left (*{user.Id}*)",
-                        Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                        Color = Color.Red,
-                        Footer = new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"}
-                    };
 
-                    await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
+                    await ch.ReplyAsync(new EmbedBuilder()
+                        .CreateDefault($"📤 {user.Mention} has left (*{user.Id}*)", Color.Red.RawValue)
+                        .WithFooter(new EmbedFooterBuilder {Text = $"Username: {user.Username}#{user.Discriminator}"})
+                        .WithTimestamp(new DateTimeOffset(DateTime.UtcNow)));
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -148,19 +140,16 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!messageDeleted.OptMsg.HasValue) return;
                     if (!(messageDeleted.OptMsg.Value is IUserMessage msg)) return;
 
-                    var embed = new EmbedBuilder
-                    {
-                        Author = new EmbedAuthorBuilder {Name = "Message Deleted"},
-                        Footer = new EmbedFooterBuilder {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"},
-                        Color = Color.Purple,
-                        Timestamp = msg.Timestamp,
-                        Description = $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}",
-                        Fields = new List<EmbedFieldBuilder>
+                    var embed = new EmbedBuilder().CreateDefault($"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}")
+                        .WithAuthor(new EmbedAuthorBuilder { Name = "Message Deleted" })
+                        .WithFooter(new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" })
+                        .WithTimestamp(msg.Timestamp)
+                        .WithFields(new List<EmbedFieldBuilder>
                         {
                             new EmbedFieldBuilder
                                 {IsInline = false, Name = "Message", Value = msg.Content.Truncate(900)}
-                        }
-                    };
+                        });
+
                     if (msg.Attachments.Count > 0)
                         embed.AddField(x =>
                         {
@@ -169,13 +158,13 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             x.Value = msg.Attachments.First().Url;
                         });
 
-                    await channel.SendEmbedAsync(embed);
+                    await channel.ReplyAsync(embed);
 
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -203,14 +192,11 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
                     if (messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
 
-                    var embed = new EmbedBuilder
-                    {
-                        Author = new EmbedAuthorBuilder {Name = "Message Updated"},
-                        Footer = new EmbedFooterBuilder {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"},
-                        Color = Color.Purple,
-                        Timestamp = messageUpdated.NewMessage.EditedTimestamp ?? messageUpdated.NewMessage.Timestamp,
-                        Description = $"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}",
-                        Fields = new List<EmbedFieldBuilder>
+                    await channel.ReplyAsync(new EmbedBuilder().CreateDefault($"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}")
+                            .WithAuthor(new EmbedAuthorBuilder { Name = "Message Updated"})
+                            .WithFooter(new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" })
+                            .WithTimestamp(messageUpdated.NewMessage.EditedTimestamp ?? messageUpdated.NewMessage.Timestamp)
+                        .WithFields(new List<EmbedFieldBuilder>
                         {
                             new EmbedFieldBuilder
                             {
@@ -219,16 +205,13 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             },
                             new EmbedFieldBuilder
                                 {IsInline = true, Name = "Old Message:", Value = msg.Content.Truncate(900)}
-                        }
-                    };
-                    await channel.SendEmbedAsync(embed);
-
-
+                        }));
+                    
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -250,24 +233,18 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         var caseId = await _db.CreateCaseId(userBanned.User, userBanned.Guild, DateTime.UtcNow,
                             (ModAction) Data.Constants.ModAction.Ban);
-                        var embed = new EmbedBuilder
-                        {
-                            Author = new EmbedAuthorBuilder
-                            {
-                                Name =
-                                    $"Case ID: {caseId.Id} - {ActionType.Bent} | {userBanned.User.Username}#{userBanned.User.Discriminator}"
-                            },
-                            Footer = new EmbedFooterBuilder {Text = $"User ID: {userBanned.User.Id}"},
-                            Color = Color.Red,
-                            Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(userBanned.User)
-                        };
-                        var msg = await ch.SendEmbedAsync(embed);
+                        var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
+                            .WithAuthor(new EmbedAuthorBuilder{ Name = $"Case ID: {caseId.Id} - {ActionType.Bent} | {userBanned.User.Username}#{userBanned.User.Discriminator}"})
+                            .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {userBanned.User.Id}" })
+                            .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
+                            .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(userBanned.User)));
+
                         caseId.MessageId = msg.Id;
                         await _db.SaveChangesAsync();
                     }
                     catch (Exception e)
                     {
+                        //TODO: Add logging
                         Console.WriteLine(e);
                     }
 
@@ -275,7 +252,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -297,24 +274,18 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         var caseId = await _db.CreateCaseId(userUnbanned.User, userUnbanned.Guild, DateTime.UtcNow,
                             (ModAction) Data.Constants.ModAction.Unban);
-                        var embed = new EmbedBuilder
-                        {
-                            Author = new EmbedAuthorBuilder
-                            {
-                                Name =
-                                    $"Case ID: {caseId.Id} - {ActionType.UnBent} | {userUnbanned.User.Username}#{userUnbanned.User.Discriminator}"
-                            },
-                            Footer = new EmbedFooterBuilder {Text = $"User ID: {userUnbanned.User.Id}"},
-                            Color = Color.Green,
-                            Timestamp = new DateTimeOffset(DateTime.UtcNow),
-                            Fields = new List<EmbedFieldBuilder>().ModLogFieldBuilders(userUnbanned.User)
-                        };
-                        var msg = await ch.SendEmbedAsync(embed);
+
+                        var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
+                            .WithAuthor(new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.UnBent} | {userUnbanned.User.Username}#{userUnbanned.User.Discriminator}" })
+                            .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {userUnbanned.User.Id}" })
+                            .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
+                            .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(userUnbanned.User)));
                         caseId.MessageId = msg.Id;
                         await _db.SaveChangesAsync();
                     }
                     catch (Exception e)
                     {
+                        //TODO: add logging
                         Console.WriteLine(e);
                     }
 
@@ -322,7 +293,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -341,7 +312,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
                     if (ch == null) return;
 
-                    var embed = new EmbedBuilder {Color = Color.Purple};
+                    var embed = new EmbedBuilder().CreateDefault(null);
                     if (userUpdated.OldUser.Username != userUpdated.NewUser.Username)
                     {
                         var updated = userUpdated;
@@ -371,13 +342,13 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         return;
                     }
 
-                    await ch.SendMessageAsync(null, false, embed.Build());
+                    await ch.ReplyAsync(embed);
 
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -395,12 +366,9 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     var ch = guildUserUpdated.NewUser.Guild.GetTextChannel(cfg.LogAvi.Value);
                     if (ch == null) return;
 
-                    var embed = new EmbedBuilder
-                    {
-                        Title =
-                            $"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}",
-                        Footer = new EmbedFooterBuilder {IconUrl = guildUserUpdated.NewUser.GetAvatarUrl(), Text = ""}
-                    };
+                    var embed = new EmbedBuilder().CreateDefault(null)
+                        .WithTitle($"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}")
+                        .WithFooter(new EmbedFooterBuilder { IconUrl = guildUserUpdated.NewUser.GetAvatar(), Text = ""});
 
                     if (guildUserUpdated.OldUser.Nickname != guildUserUpdated.NewUser.Nickname)
                     {
@@ -412,7 +380,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             .AddField(
                                 x => x.WithName("New Nick")
                                     .WithValue($"{updated.OldUser.Nickname}#{updated.OldUser.Discriminator}"));
-                        await ch.SendMessageAsync(null, false, embed.Build()).ConfigureAwait(false);
+                        await ch.ReplyAsync(embed);
                     }
                     else if (!guildUserUpdated.OldUser.Roles.SequenceEqual(guildUserUpdated.NewUser.Roles))
                     {
@@ -433,14 +401,14 @@ namespace Hanekawa.Services.Logging.LoadBalance
                                 .WithDescription(string.Join(", ", roleDiffer).SanitizeMentions());
                         }
 
-                        await ch.SendMessageAsync(null, false, embed.Build());
+                        await ch.ReplyAsync(embed);
                     }
 
                     lastRequest = DateTime.UtcNow;
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) <= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
             }
         }
     }

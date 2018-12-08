@@ -8,6 +8,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Humanizer;
 
@@ -24,7 +25,7 @@ namespace Hanekawa.Modules.Help
             await Context.Message.DeleteAsync();
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
-            var embed = new EmbedBuilder{ Color = Color.Purple };
+            var embed = new EmbedBuilder().CreateDefault();
             embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
@@ -66,7 +67,7 @@ namespace Hanekawa.Modules.Help
         {
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder()
-                    .Reply($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
+                    .CreateDefault($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
                     .Build(), TimeSpan.FromSeconds(20));
         }
 

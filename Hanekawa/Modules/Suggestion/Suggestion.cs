@@ -10,47 +10,39 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
+        private readonly DbService _db;
+        public Suggestion(DbService db)
+        {
+            _db = db;
+        }
+
         [Command("Suggest", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 30, Measure.Seconds)]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (!cfg.SuggestionChannel.HasValue) return;
-                var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
-                var author = new EmbedAuthorBuilder
-                {
-                    IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
-                    Name = (Context.User as SocketGuildUser).GetName()
-                };
-                var footer = new EmbedFooterBuilder
-                {
-                    Text = $"Suggestion ID: {caseId.Id}"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Author = author,
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Color = Color.Purple,
-                    Description = suggestion,
-                    Footer = footer
-                };
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).SendEmbedAsync(embed);
+                var caseId = await _db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
+            var embed = new EmbedBuilder().CreateDefault(suggestion)
+                .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
+                .WithFooter(new EmbedFooterBuilder { Text = $"Suggestion ID: {caseId.Id}" })
+                .WithTimestamp(DateTimeOffset.UtcNow);
+            if (Context.Message.Attachments.Count > 0) embed.WithImageUrl(Context.Message.Attachments.First().Url);
+                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).ReplyAsync(embed);
                 caseId.MessageId = msg.Id;
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Reply("Suggestion sent!", Color.Green.RawValue).Build());
+                    new EmbedBuilder().CreateDefault("Suggestion sent!", Color.Green.RawValue).Build());
                 await SetEmotesAsync(msg, cfg);
-            }
         }
 
         [Command("approve", RunMode = RunMode.Async)]
@@ -60,11 +52,9 @@ namespace Hanekawa.Modules.Suggestion
         public async Task ApproveAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await _db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -78,13 +68,13 @@ namespace Hanekawa.Modules.Suggestion
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false,
-                        new EmbedBuilder().Reply(
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
+                        new EmbedBuilder().CreateDefault(
                             "Your suggestion got a response!\n" +
                             "Suggestion:\n" +
                             $"{embed.Description}\n" +
                             $"Answer from {Context.User}:\n" +
-                            $"{response}").Build());
+                            $"{response}"));
                 }
                 catch
                 {
@@ -92,7 +82,6 @@ namespace Hanekawa.Modules.Suggestion
                 }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
-            }
         }
 
         [Command("deny", RunMode = RunMode.Async)]
@@ -102,11 +91,9 @@ namespace Hanekawa.Modules.Suggestion
         public async Task DenyAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await _db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -120,7 +107,7 @@ namespace Hanekawa.Modules.Suggestion
                 try
                 {
                     var suggestUser = Context.Guild.GetUser(suggestion.UserId);
-                    await (await suggestUser.GetOrCreateDMChannelAsync()).SendMessageAsync(
+                    await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
                         "Your suggestion got a response!\n" +
                         "Suggestion:\n" +
                         $"{embed.Description}\n" +
@@ -133,7 +120,6 @@ namespace Hanekawa.Modules.Suggestion
                 }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
-            }
         }
 
         [Command("comment", RunMode = RunMode.Async)]
@@ -143,11 +129,9 @@ namespace Hanekawa.Modules.Suggestion
         public async Task CommentAsync(uint id, [Remainder] string response)
         {
             await Context.Message.DeleteAsync();
-            using (var db = new DbService())
-            {
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await _db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -173,7 +157,6 @@ namespace Hanekawa.Modules.Suggestion
                 }
 
                 await (msg as IUserMessage).ModifyAsync(x => x.Embed = embed.Build());
-            }
         }
 
         [Command("suggestion set channel", RunMode = RunMode.Async)]
@@ -183,24 +166,19 @@ namespace Hanekawa.Modules.Suggestion
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (cfg.SuggestionChannel.HasValue && channel == null)
                 {
                     cfg.SuggestionChannel = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Disabled suggestion channel", Color.Green.RawValue).Build());
+                    await _db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled suggestion channel", Color.Green.RawValue);
                     return;
                 }
 
                 cfg.SuggestionChannel = channel.Id;
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"All suggestions will now be sent to {channel.Mention} !",
-                        Color.Green.RawValue).Build());
-            }
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
+                    Color.Green.RawValue);
         }
 
         [Command("suggestion set no", RunMode = RunMode.Async)]
@@ -210,24 +188,18 @@ namespace Hanekawa.Modules.Suggestion
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionNoEmoteAsync(Emote emote = null)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (emote == null)
                 {
                     cfg.SuggestionEmoteNo = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
-                            .Build());
+                    await _db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
                     return;
                 }
 
                 cfg.SuggestionEmoteNo = ParseEmoteString(emote);
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
-            }
+                await _db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
         }
 
         [Command("suggestion set yes", RunMode = RunMode.Async)]
@@ -237,24 +209,18 @@ namespace Hanekawa.Modules.Suggestion
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionYesEmoteAsync(Emote emote = null)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
                 if (emote == null)
                 {
                     cfg.SuggestionEmoteYes = null;
-                    await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Set `no` reaction to default emote", Color.Green.RawValue)
-                            .Build());
+                    await _db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
                     return;
                 }
 
                 cfg.SuggestionEmoteYes = ParseEmoteString(emote);
-                await db.SaveChangesAsync();
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply($"Set `no` reaction to {emote}", Color.Green.RawValue).Build());
-            }
+                await _db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
         }
 
         private static string ParseEmoteString(Emote emote)

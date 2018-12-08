@@ -30,17 +30,19 @@ namespace Hanekawa.Services.Club
                 attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
 
         private readonly DiscordSocketClient _client;
+        private readonly DbService _db;
 
-        public ClubService(DiscordSocketClient client)
+        public ClubService(DiscordSocketClient client, DbService db)
         {
             _client = client;
+            _db = db;
 
             _client.ReactionAdded += AddClubMemberAsync;
             _client.ReactionRemoved += RemoveClubMemberAsync;
             _client.UserLeft += ClubRemoveAsync;
         }
 
-        public async Task PostAdvertisementAsync(DbService db, GuildConfig cfg, IGuild guild, ClubInfo club)
+        public async Task PostAdvertisementAsync(GuildConfig cfg, IGuild guild, ClubInfo club)
         {
             var embed = new EmbedBuilder
             {
@@ -52,7 +54,7 @@ namespace Hanekawa.Services.Club
             var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).SendMessageAsync(null,
                 false, embed.Build());
             club.AdMessage = msg.Id;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
         }
 
@@ -98,26 +100,26 @@ namespace Hanekawa.Services.Club
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                using (var _db = new DbService())
                 {
-                    var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                    var clubs = await _db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
                         .ToListAsync();
                     if (clubs.Count == 0) return;
                     foreach (var x in clubs)
                     {
                         if (x.Rank == 1)
                         {
-                            var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(y =>
+                            var toPromote = await _db.ClubPlayers.FirstOrDefaultAsync(y =>
                                                 y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 2) ??
-                                            await db.ClubPlayers.FirstOrDefaultAsync(y =>
+                                            await _db.ClubPlayers.FirstOrDefaultAsync(y =>
                                                 y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 3);
                             toPromote.Rank = 1;
                         }
 
-                        db.ClubPlayers.Remove(x);
+                        _db.ClubPlayers.Remove(x);
                     }
 
-                    await db.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
@@ -128,18 +130,18 @@ namespace Hanekawa.Services.Club
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                using (var _db = new DbService())
                 {
                     if (!(arg2 is ITextChannel channel)) return;
-                    var cfg = await db.GetOrCreateGuildConfig(channel.Guild);
+                    var cfg = await _db.GetOrCreateGuildConfig(channel.Guild);
                     if (!cfg.ClubAdvertisementChannel.HasValue) return;
                     if (cfg.ClubAdvertisementChannel.Value != channel.Id) return;
 
-                    var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                    var club = await _db.ClubInfos.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.AdMessage == arg3.MessageId);
                     if (!club.Public || club == null) return;
 
-                    var Clubuser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    var Clubuser = await _db.ClubPlayers.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.ClubId == club.Id && x.UserId == arg3.UserId);
                     if (Clubuser == null) return;
 
@@ -147,8 +149,8 @@ namespace Hanekawa.Services.Club
                     if (!arg3.User.IsSpecified) user = await channel.Guild.GetUserAsync(arg3.UserId);
                     await user.RemoveRoleAsync(channel.Guild.GetRole(club.RoleId.Value));
 
-                    db.ClubPlayers.Remove(Clubuser);
-                    await db.SaveChangesAsync();
+                    _db.ClubPlayers.Remove(Clubuser);
+                    await _db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
@@ -159,18 +161,18 @@ namespace Hanekawa.Services.Club
         {
             var _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                using (var _db = new DbService())
                 {
                     if (!(arg2 is ITextChannel channel)) return;
-                    var cfg = await db.GetOrCreateGuildConfig(channel.Guild);
+                    var cfg = await _db.GetOrCreateGuildConfig(channel.Guild);
                     if (!cfg.ClubAdvertisementChannel.HasValue) return;
                     if (cfg.ClubAdvertisementChannel.Value != channel.Id) return;
 
-                    var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                    var club = await _db.ClubInfos.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.AdMessage == arg3.MessageId);
                     if (!club.Public || club.AdMessage == null) return;
 
-                    var Clubuser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    var Clubuser = await _db.ClubPlayers.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.ClubId == club.Id && x.UserId == arg3.UserId);
                     if (Clubuser != null) return;
 
@@ -185,21 +187,21 @@ namespace Hanekawa.Services.Club
                         JoinDate = DateTimeOffset.UtcNow,
                         Rank = 3,
                         UserId = user.Id,
-                        Id = await db.ClubPlayers.CountAsync(x => x.GuildId == channel.Guild.Id) + 1
+                        Id = await _db.ClubPlayers.CountAsync(x => x.GuildId == channel.Guild.Id) + 1
                     };
-                    db.ClubPlayers.Add(data);
-                    await db.SaveChangesAsync();
+                    _db.ClubPlayers.Add(data);
+                    await _db.SaveChangesAsync();
                 }
             });
             return Task.CompletedTask;
         }
 
-        public async Task<int> IsChannelRequirementAsync(DbService db, IEnumerable<ClubPlayer> users, uint level = 40)
+        public async Task<int> IsChannelRequirementAsync(IEnumerable<ClubPlayer> users, uint level = 40)
         {
-            return await GetUsersOfLevelAsync(db, level, users);
+            return await GetUsersOfLevelAsync(level, users);
         }
 
-        public async Task CreateChannelAsync(DbService db, IGuild guild, GuildConfig cfg, string clubName,
+        public async Task CreateChannelAsync(IGuild guild, GuildConfig cfg, string clubName,
             IGuildUser leader,
             IEnumerable<ClubPlayer> users, ClubInfo club)
         {
@@ -210,7 +212,7 @@ namespace Hanekawa.Services.Club
 
             club.Channel = channel.Id;
             club.RoleId = role.Id;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
             await leader.AddRoleAsync(role);
             foreach (var x in users)
@@ -220,15 +222,16 @@ namespace Hanekawa.Services.Club
                 }
                 catch
                 {
+                    // IGNORE TODO: ADD LOGGING
                 }
         }
 
-        private static async Task<int> GetUsersOfLevelAsync(DbService db, uint level, IEnumerable<ClubPlayer> players)
+        private async Task<int> GetUsersOfLevelAsync(uint level, IEnumerable<ClubPlayer> players)
         {
             var nr = 0;
             foreach (var x in players)
             {
-                var user = await db.GetOrCreateUserData(x.GuildId, x.UserId);
+                var user = await _db.GetOrCreateUserData(x.GuildId, x.UserId);
                 if (user.Level >= level) nr++;
             }
 

@@ -1,15 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Level;
 using Humanizer;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Level
 {
@@ -33,7 +33,7 @@ namespace Hanekawa.Modules.Account.Level
             var userData = await _db.GetOrCreateUserData(user);
             userData.Exp += exp;
             await _db.SaveChangesAsync();
-            await ReplyAsync(null, false, new EmbedBuilder().Reply($"Added {exp} of exp to {user.Mention}", Color.Green.RawValue).Build());
+            await Context.ReplyAsync($"Added {exp} of exp to {user.Mention}", Color.Green.RawValue);
         }
 
         [Command("ignore channel", RunMode = RunMode.Async)]
@@ -42,7 +42,7 @@ namespace Hanekawa.Modules.Account.Level
         public async Task AddReducedExpChannel(ITextChannel channel)
         {
             var embed = await _levelingService.ReducedExpManager(null, channel);
-            if (embed != null) await Context.Channel.SendEmbedAsync(embed);
+            if (embed != null) await Context.ReplyAsync(embed);
         }
 
         [Command("ignore category", RunMode = RunMode.Async)]
@@ -52,22 +52,19 @@ namespace Hanekawa.Modules.Account.Level
         {
             if (!channel.CategoryId.HasValue)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("That channel is not part of a category", Color.Red.RawValue).Build());
+                await Context.ReplyAsync("That channel is not part of a category", Color.Red.RawValue);
                 return;
             }
 
             var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel.CategoryId.Value);
             if (category == null)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Couldn't find a category with provided argument", Color.Red.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
                 return;
             }
 
             var embed = await _levelingService.ReducedExpManager(category);
-            if (embed != null) await Context.Channel.SendEmbedAsync(embed);
+            if (embed != null) await Context.ReplyAsync(embed);
         }
 
         [Command("ignore category", RunMode = RunMode.Async)]
@@ -78,14 +75,12 @@ namespace Hanekawa.Modules.Account.Level
             var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel);
             if (category == null)
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Couldn't find a category with provided argument", Color.Red.RawValue)
-                        .Build());
+                await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
                 return;
             }
 
             var embed = await _levelingService.ReducedExpManager(category);
-            if (embed != null) await Context.Channel.SendEmbedAsync(embed);
+            if (embed != null) await Context.ReplyAsync(embed);
         }
 
         [Command("multiplier")]
@@ -94,8 +89,7 @@ namespace Hanekawa.Modules.Account.Level
         public async Task LevelMultiplier()
         {
             var multiplier = _levelingService.GetServerMultiplier(Context.Guild);
-            await ReplyAsync(null, false,
-                new EmbedBuilder().Reply($"Current server multiplier: x{multiplier}").Build());
+            await Context.ReplyAsync($"Current server multiplier: x{multiplier}");
         }
 
         [Command("event", RunMode = RunMode.Async)]
@@ -107,38 +101,29 @@ namespace Hanekawa.Modules.Account.Level
             {
                 if (!duration.HasValue) duration = TimeSpan.FromDays(1);
                 if (duration.Value > TimeSpan.FromDays(1)) duration = TimeSpan.FromDays(1);
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply(
-                        $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration.Value.Humanize()}) ? (y/n)",
-                        Color.Purple.RawValue).Build());
+                await Context.ReplyAsync(
+                    $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration.Value.Humanize()}) ? (y/n)");
                 var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
                 if (response.Content.ToLower() != "y") return;
 
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Do you want to announce the event? (y/n)",
-                        Color.Purple.RawValue).Build());
+                await Context.ReplyAsync("Do you want to announce the event? (y/n)");
                 var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
                 if (announceResp.Content.ToLower() == "y")
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Okay, I'll let you announce it.",
-                            Color.Green.RawValue).Build());
+                    await Context.ReplyAsync("Okay, I'll let you announce it.", Color.Green.RawValue);
                     await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value);
                 }
                 else
                 {
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply("Announcing event into designated channel.",
-                            Color.Green.RawValue).Build());
+                    await Context.ReplyAsync("Announcing event into designated channel.",
+                        Color.Green.RawValue);
                     await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true,
                         Context.Channel as SocketTextChannel);
                 }
             }
             catch
             {
-                await ReplyAsync(null, false,
-                    new EmbedBuilder().Reply("Exp event setup aborted.",
-                        Color.Red.RawValue).Build());
+                await Context.ReplyAsync("Exp event setup aborted.", Color.Red.RawValue);
             }
         }
     }

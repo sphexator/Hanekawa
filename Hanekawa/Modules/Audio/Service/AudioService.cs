@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Logging;
 using Victoria;
@@ -62,7 +63,7 @@ namespace Hanekawa.Modules.Audio.Service
                 if (string.IsNullOrWhiteSpace(query))
                 {
                     if (player.Queue.Count < 1)
-                        return new EmbedBuilder().Reply("Queue is empty. Please queue something first.");
+                        return new EmbedBuilder().CreateDefault("Queue is empty. Please queue something first.");
                     track = player.Queue.Dequeue();
                 }
                 else
@@ -71,7 +72,7 @@ namespace Hanekawa.Modules.Audio.Service
                                  ?? await _lavaNode.GetTracksAsync(query);
 
                     if (search.LoadResultType == LoadResultType.NoMatches)
-                        return new EmbedBuilder().Reply($"I wasn't able to find anything for {query}.");
+                        return new EmbedBuilder().CreateDefault($"I wasn't able to find anything for {query}.");
 
                     track = search.Tracks.FirstOrDefault();
                 }
@@ -79,16 +80,16 @@ namespace Hanekawa.Modules.Audio.Service
                 if (_lavaNode.IsConnected && !(player.CurrentTrack is null))
                 {
                     player.Queue.Enqueue(track);
-                    return new EmbedBuilder().Reply($"{track.Title} has been added to queue.");
+                    return new EmbedBuilder().CreateDefault($"{track.Title} has been added to queue.");
                 }
 
                 await player.PlayAsync(track);
-                return new EmbedBuilder().Reply($"**Now Playing:** {track.Title}");
+                return new EmbedBuilder().CreateDefault($"**Now Playing:** {track.Title}");
             }
             catch (Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Couldn't play that"); ;
+                return new EmbedBuilder().CreateDefault("Couldn't play that"); ;
             }
         }
 
@@ -99,12 +100,12 @@ namespace Hanekawa.Modules.Audio.Service
                 var player = _lavaNode.GetPlayer(guildId);
                 await player.StopAsync();
                 await _lavaNode.DisconnectAsync(guildId);
-                return new EmbedBuilder().Reply("Disconnected!", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault("Disconnected!", Color.Green.RawValue);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Can't leave when I'm not connected??", Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault("Can't leave when I'm not connected??", Color.Red.RawValue);
             }
         }
 
@@ -114,12 +115,12 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.PauseAsync();
-                return new EmbedBuilder().Reply($"**Paused:** {player.CurrentTrack.Title}");
+                return new EmbedBuilder().CreateDefault($"**Paused:** {player.CurrentTrack.Title}");
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
             }
         }
 
@@ -129,12 +130,12 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.ResumeAsync();
-                return new EmbedBuilder().Reply($"**Resumed:** {player.CurrentTrack.Title}", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault($"**Resumed:** {player.CurrentTrack.Title}", Color.Green.RawValue);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.", Color.Red.RawValue);
             }
         }
 
@@ -176,18 +177,18 @@ namespace Hanekawa.Modules.Audio.Service
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Queue is empty.");
+                return new EmbedBuilder().CreateDefault("Queue is empty.");
             }
         }
 
         public async Task<EmbedBuilder> ClearQueueAsync(ulong guildId)
         {
             var player = _lavaNode.GetPlayer(guildId);
-            if (player == null) return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
+            if (player == null) return new EmbedBuilder().CreateDefault("Not playing anything currently.", Color.Red.RawValue);
             if (player.CurrentTrack != null) await player.StopAsync();
-            if (player.Queue == null || player.Queue.Count == 0) return new EmbedBuilder().Reply("No queue");
+            if (player.Queue == null || player.Queue.Count == 0) return new EmbedBuilder().CreateDefault("No queue");
             player.Queue.Clear();
-            return new EmbedBuilder().Reply("Cleared queue");
+            return new EmbedBuilder().CreateDefault("Cleared queue");
         }
 
         public async Task<EmbedBuilder> VolumeAsync(ulong guildId, int vol)
@@ -196,16 +197,16 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.SetVolumeAsync(vol);
-                return new EmbedBuilder().Reply($"Volume has been set to {vol}.");
+                return new EmbedBuilder().CreateDefault($"Volume has been set to {vol}.");
             }
             catch (ArgumentException arg)
             {
-                return new EmbedBuilder().Reply(arg.Message, Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault(arg.Message, Color.Red.RawValue);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
             }
         }
 
@@ -215,12 +216,12 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.SeekAsync(span);
-                return new EmbedBuilder().Reply($"**Seeked:** {player.CurrentTrack.Title}");
+                return new EmbedBuilder().CreateDefault($"**Seeked:** {player.CurrentTrack.Title}");
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
             }
         }
 
@@ -240,7 +241,7 @@ namespace Hanekawa.Modules.Audio.Service
             await Task.Delay(1000);
 
             await _lavaNode.ConnectAsync(vc.VoiceChannel, txC);
-            return new EmbedBuilder().Reply("Reconnected!");
+            return new EmbedBuilder().CreateDefault("Reconnected!");
         }
 
         public async Task<EmbedBuilder> SkipAsync(ulong guildId, SocketGuildUser user)
@@ -251,26 +252,26 @@ namespace Hanekawa.Modules.Audio.Service
                 Options.TryGetValue(guildId, out var options);
 
                 if (options.Voters.Contains(user.Id))
-                    return new EmbedBuilder().Reply("You've already voted. Please don't vote again.");
+                    return new EmbedBuilder().CreateDefault("You've already voted. Please don't vote again.");
 
                 options.VotedTrack = player.Queue.Peek();
                 options.Voters.Add(user.Id);
                 var perc = options.Voters.Count / user.VoiceChannel.Users.Count(x => !x.IsBot) * 100;
 
                 if (perc < 60)
-                    return new EmbedBuilder().Reply("More votes needed.");
+                    return new EmbedBuilder().CreateDefault("More votes needed.");
 
                 var track = player.CurrentTrack;
                 await player.SkipAsync();
                 options.VotedTrack = null;
                 options.Voters.Clear();
 
-                return new EmbedBuilder().Reply($"$**Skipped:** {track.Title}");
+                return new EmbedBuilder().CreateDefault($"$**Skipped:** {track.Title}");
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Not playing anything currently.", Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.", Color.Red.RawValue);
             }
         }
 
@@ -279,14 +280,14 @@ namespace Hanekawa.Modules.Audio.Service
             if (state.VoiceChannel == null)
             {
                 await channel.SendMessageAsync(null, false,
-                    new EmbedBuilder().Reply("You aren't connected to any voice channels.", Color.Red.RawValue)
+                    new EmbedBuilder().CreateDefault("You aren't connected to any voice channels.", Color.Red.RawValue)
                         .Build());
                 return;
             }
 
             await _lavaNode.GetOrCreatePlayerAsync(guildId, state.VoiceChannel, channel);
             await channel.SendMessageAsync(null, false,
-                new EmbedBuilder().Reply($"Connected to {state.VoiceChannel}.", Color.Green.RawValue).Build());
+                new EmbedBuilder().CreateDefault($"Connected to {state.VoiceChannel}.", Color.Green.RawValue).Build());
         }
 
         public async Task<EmbedBuilder> DisconnectAsync(ulong guildId)
@@ -295,12 +296,12 @@ namespace Hanekawa.Modules.Audio.Service
             {
                 await _lavaNode.GetPlayer(guildId).StopAsync();
                 await _lavaNode.DisconnectAsync(guildId);
-                return new EmbedBuilder().Reply("Disconnected!", Color.Green.RawValue);
+                return new EmbedBuilder().CreateDefault("Disconnected!", Color.Green.RawValue);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().Reply("Can't leave when I'm not connected", Color.Red.RawValue);
+                return new EmbedBuilder().CreateDefault("Can't leave when I'm not connected", Color.Red.RawValue);
             }
         }
 

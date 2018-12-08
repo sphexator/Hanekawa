@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Owner
@@ -16,7 +17,7 @@ namespace Hanekawa.Modules.Owner
         [Command("quit")]
         public async Task ExitProgramAsync()
         {
-            await ReplyAsync(null, false, new EmbedBuilder().Reply("Exiting...").Build());
+            await Context.ReplyAsync("Exiting...");
             Environment.Exit(0);
         }
 
@@ -32,8 +33,7 @@ namespace Hanekawa.Modules.Owner
                     var check = await db.Blacklists.FindAsync(id);
                     if (check != null)
                     {
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply("Id is already blacklisted", Color.Red.RawValue).Build());
+                        await Context.ReplyAsync("Id is already blacklisted", Color.Red.RawValue);
                         return;
                     }
 
@@ -50,9 +50,7 @@ namespace Hanekawa.Modules.Owner
 
                     var checkTwo = Context.Client.Guilds.FirstOrDefault(x => x.Id == id);
                     if (checkTwo != null) await checkTwo.LeaveAsync();
-
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Added {id} to the server blacklist", Color.Green.RawValue).Build());
+                    await Context.ReplyAsync($"Added {id} to the server blacklist", Color.Green.RawValue);
                 }
             }
 
@@ -65,17 +63,14 @@ namespace Hanekawa.Modules.Owner
                     var check = await db.Blacklists.FindAsync(id);
                     if (check is null)
                     {
-                        await ReplyAsync(null, false,
-                            new EmbedBuilder().Reply("Id isn't blacklisted", Color.Red.RawValue).Build());
+                        await Context.ReplyAsync("Id isn't blacklisted", Color.Red.RawValue);
                         return;
                     }
 
                     var data = await db.Blacklists.FirstOrDefaultAsync(x => x.GuildId == id);
                     db.Blacklists.Remove(data);
                     await db.SaveChangesAsync();
-                    await ReplyAsync(null, false,
-                        new EmbedBuilder().Reply($"Removed {id} from the server blacklist", Color.Green.RawValue)
-                            .Build());
+                    await Context.ReplyAsync($"Removed {id} from the server blacklist", Color.Green.RawValue);
                 }
             }
         }

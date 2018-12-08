@@ -15,6 +15,7 @@ using Hanekawa.Entities;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Configuration;
@@ -223,7 +224,7 @@ namespace Hanekawa.Services.AutoModerator
             {
                 check.Tolerance = tolerance;
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply(
+                return new EmbedBuilder().CreateDefault(
                     $"Updated {ch.Mention} average toxicity filter tolerance to {tolerance}", Color.Green.RawValue);
             }
 
@@ -235,7 +236,7 @@ namespace Hanekawa.Services.AutoModerator
             };
             await _db.NudeServiceChannels.AddAsync(data);
             await _db.SaveChangesAsync();
-            return new EmbedBuilder().Reply(
+            return new EmbedBuilder().CreateDefault(
                 $"Added {ch.Mention} to average toxicity filter with tolerance of {tolerance}",
                 Color.Green.RawValue);
         }
@@ -259,14 +260,14 @@ namespace Hanekawa.Services.AutoModerator
                 check.Tolerance = tolerance;
                 check.Level = level;
                 await _db.SaveChangesAsync();
-                return new EmbedBuilder().Reply(
+                return new EmbedBuilder().CreateDefault(
                     $"Updated {ch.Mention} single toxicity filter to {tolerance} for people lvl{level} or below.",
                     Color.Green.RawValue);
             }
 
             await _db.SingleNudeServiceChannels.AddAsync(cfg);
             await _db.SaveChangesAsync();
-            return new EmbedBuilder().Reply(
+            return new EmbedBuilder().CreateDefault(
                 $"Added {ch.Mention} to single toxicity filter with tolerance of {tolerance} for people lvl{level} or below.",
                 Color.Green.RawValue);
         }
@@ -278,7 +279,7 @@ namespace Hanekawa.Services.AutoModerator
             var check = await _db.NudeServiceChannels.FindAsync(ch.GuildId, ch.Id);
             if (check == null) return null;
             _db.NudeServiceChannels.Remove(check);
-            return new EmbedBuilder().Reply($"Removed average toxicity filter from {ch.Mention}",
+            return new EmbedBuilder().CreateDefault($"Removed average toxicity filter from {ch.Mention}",
                 Color.Green.RawValue);
         }
 
@@ -293,7 +294,7 @@ namespace Hanekawa.Services.AutoModerator
             if (check == null)
                 return null;
             _db.SingleNudeServiceChannels.Remove(check);
-            return new EmbedBuilder().Reply($"Removed single toxicity filter from {ch.Mention}",
+            return new EmbedBuilder().CreateDefault($"Removed single toxicity filter from {ch.Mention}",
                 Color.Green.RawValue);
         }
 
