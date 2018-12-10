@@ -23,7 +23,6 @@ namespace Hanekawa.Modules.Club
     public class Club : InteractiveBase
     {
         private readonly ClubService _clubService;
-        private readonly DbService _db;
         public Club(ClubService clubService)
         {
             _clubService = clubService;
