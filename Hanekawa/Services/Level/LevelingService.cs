@@ -24,7 +24,6 @@ namespace Hanekawa.Services.Level
     {
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverCategoryReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
@@ -32,11 +31,10 @@ namespace Hanekawa.Services.Level
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverChannelReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
 
-        public LevelingService(DiscordSocketClient discord, Calculate calc, DbService db)
+        public LevelingService(DiscordSocketClient discord, Calculate calc)
         {
             _client = discord;
             _calc = calc;
-            _db = db;
 
             _client.MessageReceived += ServerMessageExpAsync;
             _client.MessageReceived += GlobalMessageExpAsync;
@@ -46,38 +44,41 @@ namespace Hanekawa.Services.Level
             _client.UserJoined += UserActiveAsync;
             _client.UserLeft += UserDeactivateAsync;
 
-            foreach (var x in _db.GuildConfigs)
+            using (var db = new DbService())
             {
-                var expEvent = db.LevelExpEvents.Find(x.GuildId);
-                if (expEvent == null)
+                foreach (var x in db.GuildConfigs)
                 {
-                    ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
-                }
-                else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
-                {
-                    ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
-                    RemoveFromDatabase(x.GuildId);
-                }
-                else
-                {
-                    var after = expEvent.Time - DateTime.UtcNow;
-                    ExpEventHandler(expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId,
-                        expEvent.ChannelId, after);
-                }
-            }
-
-            foreach (var x in _db.LevelExpReductions)
-            {
-                if (x.Channel)
-                {
-                    var channels = _serverChannelReduction.GetOrAdd(x.GuildId, new List<ulong>());
-                    channels.Add(x.ChannelId);
+                    var expEvent = db.LevelExpEvents.Find(x.GuildId);
+                    if (expEvent == null)
+                    {
+                        ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                    }
+                    else if (expEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
+                    {
+                        ExpMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                        RemoveFromDatabase(db, x.GuildId);
+                    }
+                    else
+                    {
+                        var after = expEvent.Time - DateTime.UtcNow;
+                        ExpEventHandler(db, expEvent.GuildId, expEvent.Multiplier, x.ExpMultiplier, expEvent.MessageId,
+                            expEvent.ChannelId, after);
+                    }
                 }
 
-                if (!x.Category) continue;
+                foreach (var x in db.LevelExpReductions)
                 {
-                    var channels = _serverCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
-                    channels.Add(x.ChannelId);
+                    if (x.Channel)
+                    {
+                        var channels = _serverChannelReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        channels.Add(x.ChannelId);
+                    }
+
+                    if (!x.Category) continue;
+                    {
+                        var channels = _serverCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        channels.Add(x.ChannelId);
+                    }
                 }
             }
 
@@ -107,23 +108,23 @@ namespace Hanekawa.Services.Level
         }
 
         // Exp event handler
-        public async Task StartExpEventAsync(IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
+        public async Task StartExpEventAsync(DbService db, IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
             ITextChannel fallbackChannel = null)
         {
             IUserMessage message = null;
-            var cfg = await _db.GetOrCreateGuildConfig(guild as SocketGuild);
-            if (announce) message = await AnnounceExpEventAsync(cfg, guild, multiplier, after, fallbackChannel);
-            ExpEventHandler(guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
-            await EventAddOrUpdateDatabaseAsync(guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
+            var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
+            if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
+            ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
+            await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }
 
-        public async Task<EmbedBuilder> ReducedExpManager(ICategoryChannel category = null, ITextChannel channel = null)
+        public async Task<EmbedBuilder> ReducedExpManager(DbService db,ICategoryChannel category = null, ITextChannel channel = null)
         {
             if (category != null)
             {
                 var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
-                if (channels.Contains(category.Id)) return await RemoveReducedExp(category);
-                return await AddReducedExp(category);
+                if (channels.Contains(category.Id)) return await RemoveReducedExp(db, category);
+                return await AddReducedExp(db, category);
             }
 
             if (channel == null) return null;
@@ -134,7 +135,7 @@ namespace Hanekawa.Services.Level
             }
         }
 
-        private async Task<EmbedBuilder> AddReducedExp(IGuildChannel category = null, IGuildChannel channel = null)
+        private async Task<EmbedBuilder> AddReducedExp(DbService db, IGuildChannel category = null, IGuildChannel channel = null)
         {
             if (category != null)
             {
@@ -147,8 +148,8 @@ namespace Hanekawa.Services.Level
                     Channel = false,
                     Category = true
                 };
-                await _db.LevelExpReductions.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await db.LevelExpReductions.AddAsync(data);
+                await db.SaveChangesAsync();
                 return new EmbedBuilder().CreateDefault($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
             }
 
@@ -163,21 +164,21 @@ namespace Hanekawa.Services.Level
                     Channel = true,
                     Category = false
                 };
-                await _db.LevelExpReductions.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await db.LevelExpReductions.AddAsync(data);
+                await db.SaveChangesAsync();
                 return new EmbedBuilder().CreateDefault($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
             }
         }
 
-        private async Task<EmbedBuilder> RemoveReducedExp(IGuildChannel category = null, IGuildChannel channel = null)
+        private async Task<EmbedBuilder> RemoveReducedExp(DbService db, IGuildChannel category = null, IGuildChannel channel = null)
         {
             if (category != null)
             {
                 var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
                 channels.Remove(category.Id);
-                var data = await _db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
-                _db.LevelExpReductions.Remove(data);
-                await _db.SaveChangesAsync();
+                var data = await db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
+                db.LevelExpReductions.Remove(data);
+                await db.SaveChangesAsync();
                 return new EmbedBuilder().CreateDefault($"Removed {category.Name} from reduced exp list", Color.Green.RawValue);
             }
 
@@ -185,14 +186,14 @@ namespace Hanekawa.Services.Level
             {
                 var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
                 channels.Remove(channel.Id);
-                var data = await _db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
-                _db.LevelExpReductions.Remove(data);
-                await _db.SaveChangesAsync();
+                var data = await db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
+                db.LevelExpReductions.Remove(data);
+                await db.SaveChangesAsync();
                 return new EmbedBuilder().CreateDefault($"Removed {channel.Name} from reduced exp list", Color.Green.RawValue);
             }
         }
 
-        private void ExpEventHandler(ulong guildId, uint multiplier, uint defaultMulti, ulong? messageId,
+        private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMulti, ulong? messageId,
             ulong? channelId, TimeSpan after)
         {
             ExpMultiplier.AddOrUpdate(guildId, multiplier, (key, old) => multiplier);
@@ -210,13 +211,13 @@ namespace Hanekawa.Services.Level
                             await msg.ModifyAsync(x => x.Embed = upd.Build());
                         }
 
-                    RemoveFromDatabase(guildId);
+                    RemoveFromDatabase(db, guildId);
                     ExpEvent.Remove(guildId, out var _);
                 }
                 catch
                 {
                     ExpMultiplier.AddOrUpdate(guildId, defaultMulti, (key, old) => defaultMulti);
-                    RemoveFromDatabase(guildId);
+                    RemoveFromDatabase(db, guildId);
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
             ExpEvent.AddOrUpdate(guildId, key => toAdd, (key, old) =>
@@ -226,10 +227,10 @@ namespace Hanekawa.Services.Level
             });
         }
 
-        private async Task EventAddOrUpdateDatabaseAsync(ulong guildId, uint multiplier,
+        private async Task EventAddOrUpdateDatabaseAsync(DbService db, ulong guildId, uint multiplier,
             ulong? message, ulong? channel, TimeSpan after)
         {
-            var check = await _db.LevelExpEvents.FindAsync(guildId);
+            var check = await db.LevelExpEvents.FindAsync(guildId);
             if (check == null)
             {
                 var data = new LevelExpEvent
@@ -240,8 +241,8 @@ namespace Hanekawa.Services.Level
                     Multiplier = multiplier,
                     Time = DateTime.UtcNow + after
                 };
-                await _db.LevelExpEvents.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await db.LevelExpEvents.AddAsync(data);
+                await db.SaveChangesAsync();
             }
             else
             {
@@ -249,22 +250,22 @@ namespace Hanekawa.Services.Level
                 check.Time = DateTime.UtcNow + after;
                 check.Multiplier = multiplier;
                 check.MessageId = message;
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
         }
 
-        private void RemoveFromDatabase(ulong guildId)
+        private void RemoveFromDatabase(DbService db, ulong guildId)
         {
-            var check = _db.LevelExpEvents.FirstOrDefault(x => x.GuildId == guildId);
+            var check = db.LevelExpEvents.FirstOrDefault(x => x.GuildId == guildId);
             if (check == null) return;
-            _db.LevelExpEvents.Remove(check);
-            _db.SaveChanges();
+            db.LevelExpEvents.Remove(check);
+            db.SaveChanges();
         }
 
-        private async Task<IUserMessage> AnnounceExpEventAsync(GuildConfig cfg, IGuild guild,
+        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, GuildConfig cfg, IGuild guild,
             uint multiplier, TimeSpan after, IMessageChannel fallbackChannel)
         {
-            var check = await _db.LevelExpEvents.FindAsync(guild.Id);
+            var check = await db.LevelExpEvents.FindAsync(guild.Id);
             if (check?.ChannelId == null || !check.MessageId.HasValue)
                 return await PostAnnouncementAsync(guild, cfg, multiplier, after, fallbackChannel);
             try
@@ -320,32 +321,36 @@ namespace Hanekawa.Services.Level
                 _serverCategoryReduction.TryGetValue(channel.GuildId, out var category);
                 var reduced = channelList != null && channelList.Contains(channel.Id) || category != null &&
                               channel.CategoryId.HasValue && category.Contains(channel.CategoryId.Value);
-
-                ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
-                var userdata = await _db.GetOrCreateUserData(user);
-                var cfg = await _db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
-                var exp = _calc.GetMessageExp(msg, reduced) * cfg.ExpMultiplier * multi;
-                var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
-
-                userdata.LastMessage = DateTime.UtcNow;
-                if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
-
-                userdata.TotalExp = userdata.TotalExp + exp;
-                userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
-
-                if (userdata.Exp + exp >= nxtLvl)
+                using (var db = new DbService())
                 {
-                    userdata.Level = userdata.Level + 1;
-                    userdata.Exp = userdata.Exp + exp - nxtLvl;
-                    await NewLevelManagerAsync(userdata, user);
-                    var __ = ServerLevel?.Invoke(user, userdata);
-                }
-                else
-                {
-                    userdata.Exp = userdata.Exp + exp;
-                }
 
-                await _db.SaveChangesAsync();
+
+                    ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
+                    var userdata = await db.GetOrCreateUserData(user);
+                    var cfg = await db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
+                    var exp = _calc.GetMessageExp(msg, reduced) * cfg.ExpMultiplier * multi;
+                    var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
+
+                    userdata.LastMessage = DateTime.UtcNow;
+                    if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
+
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+
+                    if (userdata.Exp + exp >= nxtLvl)
+                    {
+                        userdata.Level = userdata.Level + 1;
+                        userdata.Exp = userdata.Exp + exp - nxtLvl;
+                        await NewLevelManagerAsync(db, userdata, user);
+                        var __ = ServerLevel?.Invoke(user, userdata);
+                    }
+                    else
+                    {
+                        userdata.Exp = userdata.Exp + exp;
+                    }
+
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -366,24 +371,26 @@ namespace Hanekawa.Services.Level
                 _serverCategoryReduction.TryGetValue(user.Guild.Id, out var category);
                 var reduced = channelList != null && channelList.Contains(channel.Id) || category != null &&
                               channel.CategoryId.HasValue && category.Contains(channel.CategoryId.Value);
-
-                var userdata = await _db.GetOrCreateGlobalUserData(user);
-                var exp = _calc.GetMessageExp(msg, reduced);
-                var nextLevel = _calc.GetGlobalLevelRequirement(userdata.Level);
-                userdata.TotalExp = userdata.TotalExp + exp;
-                userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
-                if (userdata.Exp + exp >= nextLevel)
+                using (var db = new DbService())
                 {
-                    userdata.Exp = userdata.Exp + exp - nextLevel;
-                    userdata.Level = userdata.Level + 1;
-                    var __ = GlobalLevel?.Invoke(user, userdata);
-                }
-                else
-                {
-                    userdata.Exp = userdata.Exp + exp;
-                }
+                    var userdata = await db.GetOrCreateGlobalUserData(user);
+                    var exp = _calc.GetMessageExp(msg, reduced);
+                    var nextLevel = _calc.GetGlobalLevelRequirement(userdata.Level);
+                    userdata.TotalExp = userdata.TotalExp + exp;
+                    userdata.Credit = userdata.Credit + _calc.GetMessageCredit();
+                    if (userdata.Exp + exp >= nextLevel)
+                    {
+                        userdata.Exp = userdata.Exp + exp - nextLevel;
+                        userdata.Level = userdata.Level + 1;
+                        var __ = GlobalLevel?.Invoke(user, userdata);
+                    }
+                    else
+                    {
+                        userdata.Exp = userdata.Exp + exp;
+                    }
 
-                await _db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -394,46 +401,52 @@ namespace Hanekawa.Services.Level
             {
                 if (!(user is SocketGuildUser gusr)) return;
                 if (user.IsBot) return;
-                try
+                using (var db = new DbService())
                 {
-                    var userdata = await _db.GetOrCreateUserData(gusr);
-                    var cfg = await _db.GetOrCreateGuildConfig(gusr.Guild);
-                    var oldVc = oldState.VoiceChannel;
-                    var newVc = newState.VoiceChannel;
-                    if (newVc != null && oldVc == null)
+
+
+                    try
                     {
-                        userdata.VoiceExpTime = DateTime.UtcNow;
-                        await _db.SaveChangesAsync();
-                        return;
+                        var userdata = await db.GetOrCreateUserData(gusr);
+                        var cfg = await db.GetOrCreateGuildConfig(gusr.Guild);
+                        var oldVc = oldState.VoiceChannel;
+                        var newVc = newState.VoiceChannel;
+                        if (newVc != null && oldVc == null)
+                        {
+                            userdata.VoiceExpTime = DateTime.UtcNow;
+                            await db.SaveChangesAsync();
+                            return;
+                        }
+
+                        if (oldVc == null || newVc != null) return;
+                        var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
+                        var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * cfg.ExpMultiplier * multi;
+                        var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
+
+                        userdata.TotalExp = userdata.TotalExp + exp;
+                        userdata.Credit = userdata.Credit + _calc.GetVoiceCredit(userdata.VoiceExpTime);
+                        userdata.StatVoiceTime = userdata.StatVoiceTime + (DateTime.UtcNow - userdata.VoiceExpTime);
+                        userdata.Sessions = userdata.Sessions + 1;
+
+                        if (userdata.Exp + exp >= nxtLvl)
+                        {
+                            userdata.Level = userdata.Level + 1;
+                            userdata.Exp = userdata.Exp + exp - nxtLvl;
+                            await NewLevelManagerAsync(db, userdata, gusr);
+                        }
+                        else
+                        {
+                            userdata.Exp = userdata.Exp + exp;
+                        }
+
+                        await db.SaveChangesAsync();
+                        await InVoice?.Invoke(gusr, DateTime.UtcNow - userdata.VoiceExpTime);
                     }
-
-                    if (oldVc == null || newVc != null) return;
-                    var multi = ExpMultiplier.GetOrAdd(oldState.VoiceChannel.Guild.Id, 1);
-                    var exp = _calc.GetVoiceExp(userdata.VoiceExpTime) * cfg.ExpMultiplier * multi;
-                    var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
-
-                    userdata.TotalExp = userdata.TotalExp + exp;
-                    userdata.Credit = userdata.Credit + _calc.GetVoiceCredit(userdata.VoiceExpTime);
-                    userdata.StatVoiceTime = userdata.StatVoiceTime + (DateTime.UtcNow - userdata.VoiceExpTime);
-                    userdata.Sessions = userdata.Sessions + 1;
-
-                    if (userdata.Exp + exp >= nxtLvl)
+                    catch (Exception e)
                     {
-                        userdata.Level = userdata.Level + 1;
-                        userdata.Exp = userdata.Exp + exp - nxtLvl;
-                        await NewLevelManagerAsync(userdata, gusr);
+                        // TODO: Add logging
+                        Console.WriteLine(e);
                     }
-                    else
-                    {
-                        userdata.Exp = userdata.Exp + exp;
-                    }
-
-                    await _db.SaveChangesAsync();
-                    await InVoice?.Invoke(gusr, DateTime.UtcNow - userdata.VoiceExpTime);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
                 }
             });
             return Task.CompletedTask;
@@ -469,15 +482,15 @@ namespace Hanekawa.Services.Level
         }
 
         // Level manager & roles
-        private async Task NewLevelManagerAsync(Account userdata, IGuildUser user)
+        private async Task NewLevelManagerAsync(DbService db, Account userdata, IGuildUser user)
         {
-            var roles = await _db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
+            var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
             var role = GetLevelUpRole(userdata.Level, user, roles);
-            var cfg = await _db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
+            var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
 
             if (role == null)
             {
-                await RoleCheckAsync(user, cfg, userdata);
+                await RoleCheckAsync(db, user, cfg, userdata);
                 return;
             }
 
@@ -511,23 +524,23 @@ namespace Hanekawa.Services.Level
                     var cfg = await db.GetOrCreateGuildConfig(user.Guild);
                     if (cfg.StackLvlRoles)
                     {
-                        var roleCollection = await GetRoleCollectionAsync(user, userdata);
+                        var roleCollection = await GetRoleCollectionAsync(db, user, userdata);
                         await user.AddRolesAsync(roleCollection);
                         return;
                     }
 
-                    var singleRole = await GetRoleSingleAsync(user, userdata);
+                    var singleRole = await GetRoleSingleAsync(db, user, userdata);
                     await user.AddRolesAsync(singleRole);
                 }
             });
             return Task.CompletedTask;
         }
 
-        private async Task RoleCheckAsync(IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task RoleCheckAsync(DbService db, IGuildUser user, GuildConfig cfg, Account userdata)
         {
             List<IRole> roles;
-            if (cfg.StackLvlRoles) roles = await GetRoleCollectionAsync(user, userdata);
-            else roles = await GetRoleSingleAsync(user, userdata);
+            if (cfg.StackLvlRoles) roles = await GetRoleCollectionAsync(db, user, userdata);
+            else roles = await GetRoleSingleAsync(db, user, userdata);
             var missingRoles = new List<IRole>();
             var currentUser = await user.Guild.GetCurrentUserAsync();
             foreach (var x in roles)
@@ -541,12 +554,12 @@ namespace Hanekawa.Services.Level
             else await user.AddRoleAsync(missingRoles.FirstOrDefault());
         }
 
-        private async Task<List<IRole>> GetRoleSingleAsync(IGuildUser user, Account userdata)
+        private async Task<List<IRole>> GetRoleSingleAsync(DbService db, IGuildUser user, Account userdata)
         {
             var roles = new List<IRole>();
             ulong role = 0;
             var currentUser = await user.Guild.GetCurrentUserAsync();
-            foreach (var x in await _db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
+            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
             {
                 if (userdata.Level >= x.Level && x.Stackable)
                 {
@@ -563,11 +576,11 @@ namespace Hanekawa.Services.Level
             return roles;
         }
 
-        private async Task<List<IRole>> GetRoleCollectionAsync(IGuildUser user, Account userdata)
+        private async Task<List<IRole>> GetRoleCollectionAsync(DbService db, IGuildUser user, Account userdata)
         {
             var roles = new List<IRole>();
             var currentUser = await user.Guild.GetCurrentUserAsync();
-            foreach (var x in await _db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
+            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync())
                 if (userdata.Level >= x.Level)
                 {
                     var getRole = user.Guild.GetRole(x.Role);

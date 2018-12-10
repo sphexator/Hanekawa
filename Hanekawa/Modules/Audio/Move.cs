@@ -16,13 +16,6 @@ namespace Hanekawa.Modules.Audio
 {
     public class Move : InteractiveBase
     {
-        private readonly DbService _db;
-
-        public Move(DbService db)
-        {
-            _db = db;
-        }
-
         [Command("move", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
@@ -45,47 +38,50 @@ namespace Hanekawa.Modules.Audio
                 return;
             }
 
-            var users = new List<Addons.Database.Tables.Account.Account>();
-            foreach (var x in await ((IVoiceState) Context.User).VoiceChannel.GetUsersAsync().ToArray())
+            using (var db = new DbService())
             {
-                var user = x.FirstOrDefault();
-                if (user == null) return;
-                if (user.IsBot) return;
-                users.Add(await _db.GetOrCreateUserData(user as SocketGuildUser));
-            }
-
-            var qual = users.OrderByDescending(x => x.ChannelVoiceTime).First();
-            if (qual.UserId != Context.User.Id)
-            {
-                await Context.ReplyAsync(
-                    $"{Context.User.Mention} can't use this command. Talk to {Context.Guild.GetUser(qual.UserId).Mention}",
-                    Color.Red.RawValue);
-                return;
-            }
-
-            await ReplyAsync(
-                $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}, do you accept? (y/n)");
-            var status = true;
-            while (status)
-                try
+                var users = new List<Addons.Database.Tables.Account.Account>();
+                foreach (var x in await ((IVoiceState) Context.User).VoiceChannel.GetUsersAsync().ToArray())
                 {
-                    var response = await NextMessageAsync(new EnsureFromUserCriterion(mvUser.Id),
-                        TimeSpan.FromSeconds(60));
-                    if (response.Content.ToLower() != "y") status = false;
-                    if (response.Content.ToLower() != "n") continue;
-                    await Context.ReplyAsync($"{mvUser.Mention} didn't accept or respond in time.",
+                    var user = x.FirstOrDefault();
+                    if (user == null) return;
+                    if (user.IsBot) return;
+                    users.Add(await db.GetOrCreateUserData(user as SocketGuildUser));
+                }
+
+                var qual = users.OrderByDescending(x => x.ChannelVoiceTime).First();
+                if (qual.UserId != Context.User.Id)
+                {
+                    await Context.ReplyAsync(
+                        $"{Context.User.Mention} can't use this command. Talk to {Context.Guild.GetUser(qual.UserId).Mention}",
                         Color.Red.RawValue);
                     return;
                 }
-                catch
-                {
-                    await Context.ReplyAsync("Move request timed out", Color.Red.RawValue);
-                    return;
-                }
 
-            await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState) Context.User).VoiceChannel.Id);
-            await Context.ReplyAsync($"Moved {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}",
-                Color.Green.RawValue);
+                await ReplyAsync(
+                    $"{Context.User.Mention} wants to move {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}, do you accept? (y/n)");
+                var status = true;
+                while (status)
+                    try
+                    {
+                        var response = await NextMessageAsync(new EnsureFromUserCriterion(mvUser.Id),
+                            TimeSpan.FromSeconds(60));
+                        if (response.Content.ToLower() != "y") status = false;
+                        if (response.Content.ToLower() != "n") continue;
+                        await Context.ReplyAsync($"{mvUser.Mention} didn't accept or respond in time.",
+                            Color.Red.RawValue);
+                        return;
+                    }
+                    catch
+                    {
+                        await Context.ReplyAsync("Move request timed out", Color.Red.RawValue);
+                        return;
+                    }
+
+                await mvUser.ModifyAsync(x => x.ChannelId = ((IVoiceState) Context.User).VoiceChannel.Id);
+                await Context.ReplyAsync($"Moved {mvUser.Mention} to {((IVoiceState) Context.User).VoiceChannel.Name}",
+                    Color.Green.RawValue);
+            }
         }
     }
 }

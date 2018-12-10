@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Drop;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -19,12 +18,10 @@ namespace Hanekawa.Modules.Administration
     public class Drop : InteractiveBase
     {
         private readonly DropService _lootCrates;
-        private readonly DbService _db;
 
-        public Drop(DropService lootCrates, DbService db)
+        public Drop(DropService lootCrates)
         {
             _lootCrates = lootCrates;
-            _db = db;
         }
 
         [Command(RunMode = RunMode.Async)]
@@ -77,17 +74,20 @@ namespace Hanekawa.Modules.Administration
         [Summary("Lists channels that're available for drops")]
         public async Task ListDropChannelsAsync()
         {
-            var embed = new EmbedBuilder().CreateDefault(null).WithAuthor(new EmbedAuthorBuilder
-                {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});
-            var list = await _db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (list.Count == 0) embed.Description = "No loot channels has been added to this server";
-            else
+            using (var db = new DbService())
             {
+                var embed = new EmbedBuilder().CreateDefault(null).WithAuthor(new EmbedAuthorBuilder
+                    { Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl });
+                var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (list.Count == 0) embed.Description = "No loot channels has been added to this server";
+                else
+                {
                     var result = new List<string>();
                     foreach (var x in list) result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
                     embed.Description = string.Join("\n", result);
+                }
+                await Context.ReplyAsync(embed);
             }
-            await Context.ReplyAsync(embed);
         }
     }
 }

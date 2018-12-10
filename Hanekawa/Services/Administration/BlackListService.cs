@@ -9,24 +9,25 @@ namespace Hanekawa.Services.Administration
     public class BlackListService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public BlackListService(DiscordSocketClient client, DbService dbService)
+        public BlackListService(DiscordSocketClient client)
         {
             _client = client;
-            _db = dbService;
 
             _client.JoinedGuild += BlacklistCheck;
             Console.WriteLine("Blacklist service loaded");
         }
 
-        private Task BlacklistCheck(SocketGuild guild)
+        private static Task BlacklistCheck(SocketGuild guild)
         {
             var _ = Task.Run(async () =>
             {
-                var check = await _db.Blacklists.FindAsync(guild.Id);
-                if (check == null) return;
-                await guild.LeaveAsync();
+                using (var db = new DbService())
+                {
+                    var check = await db.Blacklists.FindAsync(guild.Id);
+                    if (check == null) return;
+                    await guild.LeaveAsync();
+                }
             });
             return Task.CompletedTask;
         }

@@ -288,6 +288,7 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task SpamFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
         {
+            // IGNORE TODO: ADD spam filter
         }
 
         private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
@@ -313,6 +314,7 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
         {
+            // IGNORE Todo: Add word filter
         }
 
         private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)

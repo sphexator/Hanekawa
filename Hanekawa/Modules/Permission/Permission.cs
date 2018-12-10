@@ -2,13 +2,9 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
-using Hanekawa.Services.CommandHandler;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Services.CommandHandler;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -16,12 +12,10 @@ namespace Hanekawa.Modules.Permission
     public class Permission : InteractiveBase
     {
         private readonly CommandHandlingService _command;
-        private readonly DbService _db;
 
-        public Permission(CommandHandlingService command, DbService db)
+        public Permission(CommandHandlingService command)
         {
             _command = command;
-            _db = db;
         }
 
         [Command("permissions", RunMode = RunMode.Async)]
@@ -33,7 +27,8 @@ namespace Hanekawa.Modules.Permission
             await Context.ReplyAsync("Currently disabled");
         }
 
-        [Command("set prefix", RunMode = RunMode.Async)]
+        [Command("prefix", RunMode = RunMode.Async)]
+        [Alias("set prefix")]
         [Summary("Sets custom prefix for this guild/server")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetPrefix(string prefix)
@@ -48,6 +43,15 @@ namespace Hanekawa.Modules.Permission
                 await Context.ReplyAsync($"Something went wrong changing prefix to {prefix}",
                     Color.Red.RawValue);
             }
+        }
+
+        [Command("embed")]
+        [Alias("set embed")]
+        [Summary("Sets a custom colour for embeds")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetEmbed(uint color)
+        {
+            await Context.ReplyAsync("test", color);
         }
     }
 }

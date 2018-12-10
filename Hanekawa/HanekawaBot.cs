@@ -34,12 +34,6 @@ namespace Hanekawa
         {
             var config = BuildConfig();
             var services = new ServiceCollection();
-            if (config["connectionString"].IsNullOrWhiteSpace())
-                services.AddDbContext<DbService>(options => options.UseMySql(config["connectionString"]));
-            else
-                services.AddDbContext<DbService>(options =>
-                    options.UseInMemoryDatabase("test", new InMemoryDatabaseRoot()));
-
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
@@ -77,7 +71,9 @@ namespace Hanekawa
             foreach (var x in hanakawaServices) services.AddSingleton(x);
             var provider = services.BuildServiceProvider();
             ConfigureLogging(provider);
-            await provider.GetRequiredService<DbService>().Database.MigrateAsync();
+
+            using (var db = new DbService()) await db.Database.MigrateAsync(); 
+            
             foreach (var x in requiredServices) provider.GetRequiredService(x);
 
             var scheduler = provider.GetService<IScheduler>();

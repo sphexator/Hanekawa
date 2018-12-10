@@ -23,7 +23,6 @@ namespace Hanekawa.Modules.Welcome
     public class Welcome : InteractiveBase
     {
         private readonly WelcomeService _welcomeService;
-        private readonly DbService _db;
 
         public Welcome(WelcomeService welcomeService)
         {
@@ -53,60 +52,70 @@ namespace Hanekawa.Modules.Welcome
                 return;
             }
 
-            var number = await _db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).CountAsync();
-            var data = new WelcomeBanner
+            using (var db = new DbService())
             {
-                GuildId = Context.Guild.Id,
-                UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
-                Uploader = Context.User.Id,
-                Url = url,
-                Id = number + 1
-            };
-            await _db.WelcomeBanners.AddAsync(data);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync("Added banner to the collection!", Color.Green.RawValue);
+                var number = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).CountAsync();
+                var data = new WelcomeBanner
+                {
+                    GuildId = Context.Guild.Id,
+                    UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
+                    Uploader = Context.User.Id,
+                    Url = url,
+                    Id = number + 1
+                };
+                await db.WelcomeBanners.AddAsync(data);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Added banner to the collection!", Color.Green.RawValue);
+            }
         }
 
         [Command("remove", RunMode = RunMode.Async)]
         [Summary("Removes a banner from the bot")]
         public async Task RemoveWelcomeBanner(int id)
         {
-            var banner =
-                await _db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
-            if (banner == null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("Couldn\'t remove a banner with that ID.", Color.Red.RawValue);
-                return;
-            }
+                var banner =
+                    await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
+                if (banner == null)
+                {
+                    await Context.ReplyAsync("Couldn\'t remove a banner with that ID.", Color.Red.RawValue);
+                    return;
+                }
 
-            _db.WelcomeBanners.Remove(banner);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Removed {banner.Url} with ID {banner.Id} from the bot",
-                Color.Green.RawValue);
+                db.WelcomeBanners.Remove(banner);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Removed {banner.Url} with ID {banner.Id} from the bot",
+                    Color.Green.RawValue);
+            }
         }
 
         [Command("list", RunMode = RunMode.Async)]
         [Summary("Lists all banners for this guild")]
         public async Task ListWelcomeBanner()
         {
-            var list = await _db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (list.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No banners added, using default one if enabled");
-                return;
-            }
+                var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (list.Count == 0)
+                {
+                    await Context.ReplyAsync("No banners added, using default one if enabled");
+                    return;
+                }
 
-            var pages = new List<string>();
-            foreach (var x in list)
-            {
-                pages.Add($"ID: {x.Id}\n" +
-                          $"URL: {x.Url}\n" +
-                          $"Uploader: {Context.Guild.GetUser(x.Uploader).Mention ?? $"User left server ({x.Uploader})"}\n" +
-                          $"Added: {x.UploadTimeOffset.DateTime}\n" +
-                          "\n");
-            }
+                var pages = new List<string>();
+                foreach (var x in list)
+                {
+                    pages.Add($"ID: {x.Id}\n" +
+                              $"URL: {x.Url}\n" +
+                              $"Uploader: {Context.Guild.GetUser(x.Uploader).Mention ?? $"User left server ({x.Uploader})"}\n" +
+                              $"Added: {x.UploadTimeOffset.DateTime}\n" +
+                              "\n");
+                }
 
-            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Welcome banners for {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                    $"Welcome banners for {Context.Guild.Name}"));
+            }
         }
 
         [Command("test", RunMode = RunMode.Async)]
@@ -142,10 +151,13 @@ namespace Hanekawa.Modules.Welcome
         [Summary("Sets welcome message")]
         public async Task SetWelcomeMessage([Remainder] string message)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
+            }
         }
 
         [Command("autodelete", RunMode = RunMode.Async)]
@@ -153,80 +165,89 @@ namespace Hanekawa.Modules.Welcome
         [Summary("Sets when a welcome message should delete on its own")]
         public async Task SetAutoDeleteTimer(TimeSpan? timer = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (!cfg.WelcomeDelete.HasValue && timer == null) return;
-            if (timer == null)
+            using (var db = new DbService())
             {
-                cfg.WelcomeDelete = null;
-                await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
-            }
-            else
-            {
-                cfg.WelcomeDelete = timer.Value;
-                await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
-                                         $"I will now delete the message after {timer.Value.Humanize()}!",
-                    Color.Green.RawValue);
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (!cfg.WelcomeDelete.HasValue && timer == null) return;
+                if (timer == null)
+                {
+                    cfg.WelcomeDelete = null;
+                    await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.WelcomeDelete = timer.Value;
+                    await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
+                                             $"I will now delete the message after {timer.Value.Humanize()}!",
+                        Color.Green.RawValue);
+                }
 
-            await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+            }
         }
 
         [Command("banner", RunMode = RunMode.Async)]
         [Summary("Toggles welcome banner")]
         public async Task ToggleBannerWelcomeBanner()
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (cfg.WelcomeBanner)
+            using (var db = new DbService())
             {
-                cfg.WelcomeBanner = false;
-                await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
-            }
-            else
-            {
-                cfg.WelcomeBanner = true;
-                await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.WelcomeBanner)
+                {
+                    cfg.WelcomeBanner = false;
+                    await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.WelcomeBanner = true;
+                    await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
+                }
 
-            await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+            }
         }
 
         [Command("toggle", RunMode = RunMode.Async)]
         [Summary("Toggles welcome messages")]
         public async Task ToggleWelcome(ITextChannel channel = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (cfg.WelcomeChannel.HasValue && channel == null)
+            using (var db = new DbService())
             {
-                cfg.WelcomeChannel = null;
-                await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
-            }
-            else if (cfg.WelcomeChannel.HasValue && channel != null)
-            {
-                cfg.WelcomeChannel = channel.Id;
-                await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
-                    Color.Green.RawValue);
-            }
-            else if (!cfg.WelcomeChannel.HasValue && channel == null)
-            {
-                if (Context.Channel is ITextChannel textChannel) channel = textChannel;
-                else return;
-                cfg.WelcomeChannel = channel.Id;
-                await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
-                    Color.Green.RawValue);
-            }
-            else if (!cfg.WelcomeChannel.HasValue)
-            {
-                cfg.WelcomeChannel = channel.Id;
-                await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
-                    Color.Green.RawValue);
-            }
-            else
-            {
-                cfg.WelcomeChannel = null;
-                await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.WelcomeChannel.HasValue && channel == null)
+                {
+                    cfg.WelcomeChannel = null;
+                    await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
+                }
+                else if (cfg.WelcomeChannel.HasValue && channel != null)
+                {
+                    cfg.WelcomeChannel = channel.Id;
+                    await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
+                        Color.Green.RawValue);
+                }
+                else if (!cfg.WelcomeChannel.HasValue && channel == null)
+                {
+                    if (Context.Channel is ITextChannel textChannel) channel = textChannel;
+                    else return;
+                    cfg.WelcomeChannel = channel.Id;
+                    await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
+                        Color.Green.RawValue);
+                }
+                else if (!cfg.WelcomeChannel.HasValue)
+                {
+                    cfg.WelcomeChannel = channel.Id;
+                    await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
+                        Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.WelcomeChannel = null;
+                    await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
+                }
 
-            await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+            }
         }
     }
 }

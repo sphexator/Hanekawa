@@ -16,125 +16,136 @@ namespace Hanekawa.Modules.Permission
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Whitelist : InteractiveBase
     {
-        private readonly DbService _db;
-
-        public Whitelist(DbService db)
-        {
-            _db = db;
-        }
-
         [Command("event add", RunMode = RunMode.Async)]
         public async Task Eventadd(SocketGuildUser user)
         {
-            var check = await _db.WhitelistEvents.FindAsync(Context.Guild.Id, Context.User.Id);
-            if (check != null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("User is already a whitelisted event organizer.");
-                return;
-            }
+                var check = await db.WhitelistEvents.FindAsync(Context.Guild.Id, Context.User.Id);
+                if (check != null)
+                {
+                    await Context.ReplyAsync("User is already a whitelisted event organizer.");
+                    return;
+                }
 
-            var data = new WhitelistEvent
-            {
-                GuildId = user.Guild.Id,
-                UserId = user.Id
-            };
-            await _db.WhitelistEvents.AddAsync(data);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {user.Mention} as whitelisted event organizer!");
+                var data = new WhitelistEvent
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id
+                };
+                await db.WhitelistEvents.AddAsync(data);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Added {user.Mention} as whitelisted event organizer!");
+            }
         }
 
         [Command("event remove", RunMode = RunMode.Async)]
         public async Task EventRemove(SocketGuildUser user)
         {
-            var check = await _db.WhitelistEvents.FirstOrDefaultAsync(x =>
-                x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
-            if (check == null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("User isn't whitelisted!", Color.Red.RawValue);
-                return;
-            }
+                var check = await db.WhitelistEvents.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
+                if (check == null)
+                {
+                    await Context.ReplyAsync("User isn't whitelisted!", Color.Red.RawValue);
+                    return;
+                }
 
-            _db.WhitelistEvents.Remove(check);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Removed {user.Mention} as whitelisted event organizer!");
+                db.WhitelistEvents.Remove(check);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Removed {user.Mention} as whitelisted event organizer!");
+            }
         }
 
         [Command("event list", RunMode = RunMode.Async)]
         public async Task EventList(SocketGuildUser user)
         {
-            var events = await _db.WhitelistEvents
-                .Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (events.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No whitelisted event organizers");
-                return;
-            }
+                var events = await db.WhitelistEvents
+                    .Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (events.Count == 0)
+                {
+                    await Context.ReplyAsync("No whitelisted event organizers");
+                    return;
+                }
 
-            var pages = new List<string>();
-            foreach (var x in events)
-            {
-                pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-            }
+                var pages = new List<string>();
+                foreach (var x in events)
+                {
+                    pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
+                }
 
-            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
-                $"Whitelisted event organizers in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                    $"Whitelisted event organizers in {Context.Guild.Name}"));
+            }
         }
 
         [Command("design add", RunMode = RunMode.Async)]
         public async Task DesignAdd(SocketGuildUser user)
         {
-            var check = await _db.WhitelistDesigns.FindAsync(Context.Guild.Id, Context.User.Id);
-            if (check != null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("User is already a whitelisted designer.");
-                return;
-            }
+                var check = await db.WhitelistDesigns.FindAsync(Context.Guild.Id, Context.User.Id);
+                if (check != null)
+                {
+                    await Context.ReplyAsync("User is already a whitelisted designer.");
+                    return;
+                }
 
-            var data = new WhitelistDesign
-            {
-                GuildId = user.Guild.Id,
-                UserId = user.Id
-            };
-            await _db.WhitelistDesigns.AddAsync(data);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {user.Mention} as whitelisted designer!");
+                var data = new WhitelistDesign
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id
+                };
+                await db.WhitelistDesigns.AddAsync(data);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Added {user.Mention} as whitelisted designer!");
+            }
         }
 
         [Command("design remove", RunMode = RunMode.Async)]
         public async Task DesignRemove(SocketGuildUser user)
         {
-            var check = await _db.WhitelistDesigns.FirstOrDefaultAsync(x =>
-                x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
-            if (check == null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("User isn't whitelisted!", Color.Red.RawValue);
-                return;
-            }
+                var check = await db.WhitelistDesigns.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id);
+                if (check == null)
+                {
+                    await Context.ReplyAsync("User isn't whitelisted!", Color.Red.RawValue);
+                    return;
+                }
 
-            _db.WhitelistDesigns.Remove(check);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Removed {user.Mention} as whitelisted designer!");
+                db.WhitelistDesigns.Remove(check);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Removed {user.Mention} as whitelisted designer!");
+            }
         }
 
         [Command("design list", RunMode = RunMode.Async)]
         public async Task DesignList()
         {
-            var designers = await _db.WhitelistDesigns
-                .Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (designers.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No whitelisted designers");
-                return;
-            }
+                var designers = await db.WhitelistDesigns
+                    .Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (designers.Count == 0)
+                {
+                    await Context.ReplyAsync("No whitelisted designers");
+                    return;
+                }
 
-            var pages = new List<string>();
-            foreach (var x in designers)
-            {
-                pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-            }
+                var pages = new List<string>();
+                foreach (var x in designers)
+                {
+                    pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
+                }
 
-            await PagedReplyAsync(
-                pages.PaginateBuilder(Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
+                await PagedReplyAsync(
+                    pages.PaginateBuilder(Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
+            }
         }
     }
 }

@@ -19,15 +19,12 @@ namespace Hanekawa.Modules.Administration
         private readonly MuteService _muteService;
         private readonly NudeScoreService _nudeScore;
         private readonly WarnService _warnService;
-        private readonly DbService _db;
 
-        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore,
-            DbService db)
+        public Administration(MuteService muteService, WarnService warnService, NudeScoreService nudeScore)
         {
             _muteService = muteService;
             _warnService = warnService;
             _nudeScore = nudeScore;
-            _db = db;
         }
 
         [Command("ban", RunMode = RunMode.Async)]
@@ -233,11 +230,14 @@ namespace Hanekawa.Modules.Administration
         [Summary("Unmutes a user")]
         public async Task UnmuteAsync(SocketGuildUser user)
         {
-            await Context.Message.DeleteAsync();
-            await _muteService.UnmuteUser(user);
-            await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().CreateDefault($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
-                TimeSpan.FromSeconds(15));
+            using (var db = new DbService())
+            {
+                await Context.Message.DeleteAsync();
+                await _muteService.UnmuteUser(db, user);
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
+                    TimeSpan.FromSeconds(15));
+            }
         }
 
         [Command("warn", RunMode = RunMode.Async)]
@@ -359,26 +359,29 @@ namespace Hanekawa.Modules.Administration
         [Summary("Inputs reason for moderation log entry")]
         public async Task ApplyReason(uint id, [Remainder] string reason)
         {
-            await Context.Message.DeleteAsync();
-            var actionCase = await _db.ModLogs.FindAsync(id, Context.Guild.Id);
-            var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
-            var embed = updMsg?.Embeds.FirstOrDefault().ToEmbedBuilder();
-            if (embed == null)
+            using (var db = new DbService())
             {
-                await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
-                return;
+                await Context.Message.DeleteAsync();
+                var actionCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
+                var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
+                var embed = updMsg?.Embeds.FirstOrDefault().ToEmbedBuilder();
+                if (embed == null)
+                {
+                    await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
+                    return;
+                }
+
+                var modField = embed.Fields.FirstOrDefault(x => x.Name == "Moderator");
+                var reasonField = embed.Fields.FirstOrDefault(x => x.Name == "Reason");
+
+                if (modField != null) modField.Value = Context.User.Mention;
+                if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
+
+                await updMsg.ModifyAsync(m => m.Embed = embed.Build());
+                actionCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
+                actionCase.ModId = Context.User.Id;
+                await db.SaveChangesAsync();
             }
-
-            var modField = embed.Fields.FirstOrDefault(x => x.Name == "Moderator");
-            var reasonField = embed.Fields.FirstOrDefault(x => x.Name == "Reason");
-
-            if (modField != null) modField.Value = Context.User.Mention;
-            if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
-
-            await updMsg.ModifyAsync(m => m.Embed = embed.Build());
-            actionCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
-            actionCase.ModId = Context.User.Id;
-            await _db.SaveChangesAsync();
         }
     }
 }

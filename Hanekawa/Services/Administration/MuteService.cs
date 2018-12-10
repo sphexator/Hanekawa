@@ -22,14 +22,12 @@ namespace Hanekawa.Services.Administration
                 attachFiles: PermValue.Deny);
 
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly ModerationService _moderationService;
 
-        public MuteService(DiscordSocketClient client, ModerationService moderationService, DbService dbService)
+        public MuteService(DiscordSocketClient client, ModerationService moderationService)
         {
             _client = client;
             _moderationService = moderationService;
-            _db = dbService;
 
             _moderationService.AutoModPermMute += AutoModPermMute;
             _moderationService.AutoModTimedMute += AutoModTimedMute;
@@ -70,65 +68,73 @@ namespace Hanekawa.Services.Administration
         // MUTE AREA
         public async Task Mute(IGuildUser user)
         {
-            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
-            var muteRole = await GetMuteRole(user.Guild);
-            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            await StopUnmuteTimerAsync(user.GuildId, user.Id);
+            using (var db = new DbService())
+            {
+                await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+                var muteRole = await GetMuteRole(user.Guild);
+                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+            }
         }
 
         public async Task Mute(IGuildUser user, IGuildUser staff)
         {
-            await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
-            var muteRole = await GetMuteRole(user.Guild);
-            if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            var stopTimer = StopUnmuteTimerAsync(user.GuildId, user.Id);
-            var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
-            await Task.WhenAll(stopTimer, unmute);
+            using (var db = new DbService())
+            {
+                await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
+                var muteRole = await GetMuteRole(user.Guild);
+                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                var stopTimer = StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+                var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
+                await Task.WhenAll(stopTimer, unmute);
+            }
         }
 
         // TIMED MUTE AREA
         public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
             await Mute(user).ConfigureAwait(false);
-
-            var unMuteAt = DateTime.UtcNow + after;
-            var userCheck = await _db.MuteTimers.FindAsync(user.Id, user.GuildId);
-            if (userCheck == null)
+            using (var db = new DbService())
             {
+                var unMuteAt = DateTime.UtcNow + after;
+                var userCheck = await db.MuteTimers.FindAsync(user.Id, user.GuildId);
+                if (userCheck == null)
+                {
+                    var data = new MuteTimer
+                    {
+                        GuildId = user.GuildId,
+                        UserId = user.Id,
+                        Time = unMuteAt
+                    };
+                    await db.MuteTimers.AddAsync(data);
+                    await db.SaveChangesAsync();
+                }
+                else
+                {
+                    userCheck.Time = unMuteAt;
+                    await db.SaveChangesAsync();
+                }
+
+                StartUnmuteTimer(user.GuildId, user.Id, after);
+                await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
+            }
+        }
+
+        public async Task TimedMute(IGuildUser user, TimeSpan after)
+        {
+            await Mute(user).ConfigureAwait(false);
+            using (var db = new DbService())
+            {
+                var unMuteAt = DateTime.UtcNow + after;
                 var data = new MuteTimer
                 {
                     GuildId = user.GuildId,
                     UserId = user.Id,
                     Time = unMuteAt
                 };
-                await _db.MuteTimers.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await db.MuteTimers.AddAsync(data);
+                await db.SaveChangesAsync();
             }
-            else
-            {
-                userCheck.Time = unMuteAt;
-                await _db.SaveChangesAsync();
-            }
-
-
-            StartUnmuteTimer(user.GuildId, user.Id, after);
-            await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
-        }
-
-        public async Task TimedMute(IGuildUser user, TimeSpan after)
-        {
-            await Mute(user).ConfigureAwait(false);
-
-            var unMuteAt = DateTime.UtcNow + after;
-            var data = new MuteTimer
-            {
-                GuildId = user.GuildId,
-                UserId = user.Id,
-                Time = unMuteAt
-            };
-            await _db.MuteTimers.AddAsync(data);
-            await _db.SaveChangesAsync();
-
 
             StartUnmuteTimer(user.GuildId, user.Id, after);
         }
@@ -139,15 +145,18 @@ namespace Hanekawa.Services.Administration
 
             var toAdd = new Timer(async _ =>
             {
-                try
+                using (var db = new DbService())
                 {
-                    var guild = _client.GetGuild(guildId);
-                    var user = guild.GetUser(userId);
-                    await UnmuteUser(user);
-                }
-                catch
-                {
-                    await RemoveTimerFromDbAsync(guildId, userId);
+                    try
+                    {
+                        var guild = _client.GetGuild(guildId);
+                        var user = guild.GetUser(userId);
+                        await UnmuteUser(db, user);
+                    }
+                    catch
+                    {
+                        await RemoveTimerFromDbAsync(db, guildId, userId);
+                    }
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
 
@@ -158,22 +167,22 @@ namespace Hanekawa.Services.Administration
             });
         }
 
-        private async Task StopUnmuteTimerAsync(ulong guildId, ulong userId)
+        private async Task StopUnmuteTimerAsync(DbService db, ulong guildId, ulong userId)
         {
-            await RemoveTimerFromDbAsync(guildId, userId);
+            await RemoveTimerFromDbAsync(db, guildId, userId);
             if (!UnmuteTimers.TryGetValue(guildId, out var userUnmuteTimers)) return;
             if (!userUnmuteTimers.TryRemove(userId, out var removed)) return;
             removed.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
-        private async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId)
+        private async Task RemoveTimerFromDbAsync(DbService db, ulong guildId, ulong userId)
         {
             try
             {
-                var data = _db.MuteTimers.FirstOrDefault(x => x.GuildId == guildId && x.UserId == userId);
+                var data = db.MuteTimers.FirstOrDefault(x => x.GuildId == guildId && x.UserId == userId);
                 if (data == null) return;
-                _db.MuteTimers.Remove(data);
-                await _db.SaveChangesAsync();
+                db.MuteTimers.Remove(data);
+                await db.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -182,28 +191,28 @@ namespace Hanekawa.Services.Administration
         }
 
         // Unmute AREA
-        public async Task UnmuteUser(IGuildUser user)
+        public async Task UnmuteUser(DbService db, IGuildUser user)
         {
-            await StopUnmuteTimerAsync(user.GuildId, user.Id);
-            try
-            {
-                await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
-            }
-            catch
-            {
-                /*IGNORE*/
-            }
+                await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+                try
+                {
+                    await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
+                }
+                catch
+                {
+                    /*IGNORE*/
+                }
 
-            try
-            {
-                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
-            }
-            catch
-            {
-                /*IGNORE*/
-            }
+                try
+                {
+                    await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+                }
+                catch
+                {
+                    /*IGNORE*/
+                }
 
-            await UserUnmuted(user as SocketGuildUser);
+                await UserUnmuted(user as SocketGuildUser);
         }
 
         // GET ROLE AREA

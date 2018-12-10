@@ -19,32 +19,34 @@ namespace Hanekawa.Modules.Permission
     {
         private readonly ModerationService _moderation;
         private readonly NudeScoreService _nude;
-        private readonly DbService _db;
 
-        public FilterPermission(NudeScoreService nude, ModerationService moderation, DbService db)
+        public FilterPermission(NudeScoreService nude, ModerationService moderation)
         {
             _nude = nude;
             _moderation = moderation;
-            _db = db;
         }
 
         [Command(RunMode = RunMode.Async)]
         [Summary("Display all automod configurations")]
         public async Task AutoModConfig()
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            await Context.ReplyAsync(new EmbedBuilder()
-                .CreateDefault($"**Invite filter:** {cfg.FilterInvites}\n" +
-                               $"**Emote filter:** {cfg.EmoteCountFilter ?? 0}\n" +
-                               $"**Mention Filter:** {cfg.MentionCountFilter ?? 0}\n" +
-                               $"**URL filter:** {cfg.FilterUrls}\n" +
-                               $"**Average Toxicity enabled Channels:** {await _db.NudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vat' for specifics)*\n" +
-                               $"**Single Toxicity enabled channels:** {await _db.SingleNudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vst' for specifics)*\n" +
-                               $"**URL filter enabled channels:** {await _db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*")
-                .WithAuthor(new EmbedAuthorBuilder
-                {
-                    IconUrl = Context.Guild.IconUrl, Name = $"Auto-moderator configuration for {Context.Guild.Name}"
-                }));
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                await Context.ReplyAsync(new EmbedBuilder()
+                    .CreateDefault($"**Invite filter:** {cfg.FilterInvites}\n" +
+                                   $"**Emote filter:** {cfg.EmoteCountFilter ?? 0}\n" +
+                                   $"**Mention Filter:** {cfg.MentionCountFilter ?? 0}\n" +
+                                   $"**URL filter:** {cfg.FilterUrls}\n" +
+                                   $"**Average Toxicity enabled Channels:** {await db.NudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vat' for specifics)*\n" +
+                                   $"**Single Toxicity enabled channels:** {await db.SingleNudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vst' for specifics)*\n" +
+                                   $"**URL filter enabled channels:** {await db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*")
+                    .WithAuthor(new EmbedAuthorBuilder
+                    {
+                        IconUrl = Context.Guild.IconUrl,
+                        Name = $"Auto-moderator configuration for {Context.Guild.Name}"
+                    }));
+            }
         }
 
         [Command("invite")]
@@ -52,20 +54,23 @@ namespace Hanekawa.Modules.Permission
         [Summary("Toggles guild invite filter, auto-deletes invites")]
         public async Task InviteFilter()
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (cfg.FilterInvites)
+            using (var db = new DbService())
             {
-                cfg.FilterInvites = false;
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync("Disabled auto deletion and muting users posting invite links.",
-                    Color.Green.RawValue);
-                return;
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (cfg.FilterInvites)
+                {
+                    cfg.FilterInvites = false;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled auto deletion and muting users posting invite links.",
+                        Color.Green.RawValue);
+                    return;
+                }
 
-            cfg.FilterInvites = true;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync("Enabled auto deletion and muting users posting invite links.",
-                Color.Green.RawValue);
+                cfg.FilterInvites = true;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Enabled auto deletion and muting users posting invite links.",
+                    Color.Green.RawValue);
+            }
         }
 
         [Command("avg toxicity")]
@@ -131,27 +136,31 @@ namespace Hanekawa.Modules.Permission
         [Summary("View single toxicity enabled channels with tolerance and level")]
         public async Task ViewSingleToxicityChannels()
         {
-            var channels = await _db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (channels.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No single toxicity channels enabled.", Color.Red.RawValue);
-                return;
-            }
-
-            var fields = new List<EmbedFieldBuilder>();
-            foreach (var x in channels)
-            {
-                var field = new EmbedFieldBuilder
+                var channels = await db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (channels.Count == 0)
                 {
-                    IsInline = true, Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}",
-                    Value = $"Tol:{x.Tolerance} - Lvl:{x.Level}"
-                };
-                fields.Add(field);
-            }
+                    await Context.ReplyAsync("No single toxicity channels enabled.", Color.Red.RawValue);
+                    return;
+                }
 
-            await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
-                .WithAuthor(new EmbedAuthorBuilder {IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels"})
-                .WithFields(fields));
+                var fields = new List<EmbedFieldBuilder>();
+                foreach (var x in channels)
+                {
+                    var field = new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}",
+                        Value = $"Tol:{x.Tolerance} - Lvl:{x.Level}"
+                    };
+                    fields.Add(field);
+                }
+
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
+                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels" })
+                    .WithFields(fields));
+            }
         }
 
         [Command("view at", RunMode = RunMode.Async)]
@@ -159,27 +168,31 @@ namespace Hanekawa.Modules.Permission
         [Summary("View average toxicity enabled channels with tolerance")]
         public async Task ViewAverageToxicityChannels()
         {
-            var channels = await _db.NudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (channels.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No average toxicity channels enabled.", Color.Red.RawValue);
-                return;
-            }
-
-            var fields = new List<EmbedFieldBuilder>();
-            foreach (var x in channels)
-            {
-                var field = new EmbedFieldBuilder
+                var channels = await db.NudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (channels.Count == 0)
                 {
-                    IsInline = true, Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}",
-                    Value = $"Tol:{x.Tolerance}"
-                };
-                fields.Add(field);
-            }
+                    await Context.ReplyAsync("No average toxicity channels enabled.", Color.Red.RawValue);
+                    return;
+                }
 
-            await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
-                .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels" })
-                .WithFields(fields));
+                var fields = new List<EmbedFieldBuilder>();
+                foreach (var x in channels)
+                {
+                    var field = new EmbedFieldBuilder
+                    {
+                        IsInline = true,
+                        Name = $"{Context.Guild.GetTextChannel(x.ChannelId).Name}",
+                        Value = $"Tol:{x.Tolerance}"
+                    };
+                    fields.Add(field);
+                }
+
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
+                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels" })
+                    .WithFields(fields));
+            }
         }
 
         [Command("emote filter")]
@@ -187,19 +200,22 @@ namespace Hanekawa.Modules.Permission
         [Summary("Sets an amount of emotes, if more it'll deleted the message, 0 or empty to disable")]
         public async Task EmoteFilter(int amount = 0)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (amount > 0)
+            using (var db = new DbService())
             {
-                cfg.EmoteCountFilter = amount;
-                await Context.ReplyAsync($"Set emote filter to {amount}");
-            }
-            else
-            {
-                cfg.EmoteCountFilter = null;
-                await Context.ReplyAsync("Disabled emote filter");
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (amount > 0)
+                {
+                    cfg.EmoteCountFilter = amount;
+                    await Context.ReplyAsync($"Set emote filter to {amount}");
+                }
+                else
+                {
+                    cfg.EmoteCountFilter = null;
+                    await Context.ReplyAsync("Disabled emote filter");
+                }
 
-            await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+            }
         }
 
         [Command("mention filter")]
@@ -207,19 +223,22 @@ namespace Hanekawa.Modules.Permission
         [Summary("Sets an amount of mentions, if more it'll deleted the message, 0 or empty to disable")]
         public async Task MentionFilter(int amount = 0)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (amount > 0)
+            using (var db = new DbService())
             {
-                cfg.MentionCountFilter = amount;
-                await Context.ReplyAsync($"Set mention filter to {amount}");
-            }
-            else
-            {
-                cfg.MentionCountFilter = null;
-                await Context.ReplyAsync("Disabled mention filter");
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (amount > 0)
+                {
+                    cfg.MentionCountFilter = amount;
+                    await Context.ReplyAsync($"Set mention filter to {amount}");
+                }
+                else
+                {
+                    cfg.MentionCountFilter = null;
+                    await Context.ReplyAsync("Disabled mention filter");
+                }
 
-            await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+            }
         }
 
         [Command("url filter", RunMode = RunMode.Async)]
@@ -238,21 +257,24 @@ namespace Hanekawa.Modules.Permission
         [Summary("View channels that's enabled for URL filtering")]
         public async Task ViewUrlFilteredChannels()
         {
-            var channels = await _db.UrlFilters.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-            if (channels.Count == 0)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No url filter channels enabled.", Color.Red.RawValue);
-                return;
-            }
+                var channels = await db.UrlFilters.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (channels.Count == 0)
+                {
+                    await Context.ReplyAsync("No url filter channels enabled.", Color.Red.RawValue);
+                    return;
+                }
 
-            string fields = null;
-            foreach (var x in channels)
-            {
-                fields += $"{Context.Guild.GetTextChannel(x.ChannelId).Mention}\n";
-            }
+                string fields = null;
+                foreach (var x in channels)
+                {
+                    fields += $"{Context.Guild.GetTextChannel(x.ChannelId).Mention}\n";
+                }
 
-            await Context.ReplyAsync(new EmbedBuilder().CreateDefault(fields)
-                .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "URL filter enabled channels" }));
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(fields)
+                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "URL filter enabled channels" }));
+            }
         }
     }
 }

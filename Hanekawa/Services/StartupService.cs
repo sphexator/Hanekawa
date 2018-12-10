@@ -19,16 +19,14 @@ namespace Hanekawa.Services
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
         private readonly IConfiguration _config;
-        private readonly DbService _db;
         private readonly IServiceProvider _provider;
         private readonly DiscordRestClient _restClient;
 
-        public StartupService(CommandService command, IConfiguration config, DbService db, IServiceProvider provider,
+        public StartupService(CommandService command, IConfiguration config, IServiceProvider provider,
             DiscordRestClient restClient, DiscordSocketClient client)
         {
             _command = command;
             _config = config;
-            _db = db;
             _provider = provider;
             _restClient = restClient;
             _client = client;

@@ -25,14 +25,6 @@ namespace Hanekawa.Services.Administration
 
     public class WarnService : IJob, IHanaService, IRequiredService
     {
-        private readonly DbService _db;
-
-        public WarnService(DbService db)
-        {
-            _db = db;
-            Console.WriteLine("WarnService Db initiated");
-        }
-
         public async Task Execute(IJobExecutionContext context)
         {
             await VoidWarning();
@@ -53,163 +45,181 @@ namespace Hanekawa.Services.Administration
 
         public async Task<EmbedBuilder> GetSimpleWarnlogAsync(SocketGuildUser user)
         {
-            var userdata = await _db.GetOrCreateUserData(user);
-            var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
-            var roles = string.Join(", ", roleList);
-            var content = "**⮞ User Information**\n" +
-                          $"Status: {GetStatus(user)}\n" +
-                          $"{GetGame(user)}\n" +
-                          $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
-                          "\n" +
-                          "**⮞ Member Information**\n" +
-                          $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
-                          $"Roles: {roles}\n" +
-                          "\n" +
-                          "**⮞ Activity**\n" +
-                          $"Last Message: {userdata.LastMessage.Humanize()} \n" +
-                          $"First Message: {userdata.FirstMessage.Humanize()} \n" +
-                          "\n" +
-                          "**⮞ Session**\n" +
-                          $"Amount: {userdata.Sessions}\n" +
-                          $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
-            var embed = new EmbedBuilder
+            using (var db = new DbService())
             {
-                Description = content,
-                Author = new EmbedAuthorBuilder
+                var userdata = await db.GetOrCreateUserData(user);
+                var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
+                var roles = string.Join(", ", roleList);
+                var content = "**⮞ User Information**\n" +
+                              $"Status: {GetStatus(user)}\n" +
+                              $"{GetGame(user)}\n" +
+                              $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
+                              "\n" +
+                              "**⮞ Member Information**\n" +
+                              $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
+                              $"Roles: {roles}\n" +
+                              "\n" +
+                              "**⮞ Activity**\n" +
+                              $"Last Message: {userdata.LastMessage.Humanize()} \n" +
+                              $"First Message: {userdata.FirstMessage.Humanize()} \n" +
+                              "\n" +
+                              "**⮞ Session**\n" +
+                              $"Amount: {userdata.Sessions}\n" +
+                              $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
+                var embed = new EmbedBuilder
                 {
-                    IconUrl = user.GetAvatar(),
-                    Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"
-                },
-                Fields = await GetWarnings(user)
-            };
-            return embed;
+                    Description = content,
+                    Author = new EmbedAuthorBuilder
+                    {
+                        IconUrl = user.GetAvatar(),
+                        Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"
+                    },
+                    Fields = await GetWarnings(db, user)
+                };
+                return embed;
+            }
         }
 
         public async Task<IEnumerable<string>> GetFullWarnlogAsync(SocketGuildUser user)
         {
-            var result = new List<string>();
-            foreach (var x in await _db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
-                .ToListAsync())
+            using (var db = new DbService())
             {
-                result.Add($"Warn ID: {x.Id}\n" +
-                           $"{x.Type} - <@{x.Moderator}>\n" +
-                           $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
-                           $"{x.Time.Humanize()}\n");
+                var result = new List<string>();
+                foreach (var x in await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                    .ToListAsync())
+                {
+                    result.Add($"Warn ID: {x.Id}\n" +
+                               $"{x.Type} - <@{x.Moderator}>\n" +
+                               $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
+                               $"{x.Time.Humanize()}\n");
+                }
+                if (result.Count == 0) result.Add("User has no warnings");
+                return result;
             }
-            if(result.Count == 0) result.Add("User has no warnings");
-            return result;
         }
 
         public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type,
             IEnumerable<IMessage> messages = null)
         {
-            var number = await _db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
-            var data = new Warn
+            using (var db = new DbService())
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
-                Moderator = staff.Id,
-                Time = time,
-                Reason = reason,
-                Type = (Addons.Database.Data.WarnReason) type,
-                Valid = true,
-                Id = number + 1
-            };
-            await _db.Warns.AddAsync(data);
-            await _db.SaveChangesAsync();
-            if (messages != null)
-            {
-                var warn = await _db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
-            }
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id,
+                    Moderator = staff.Id,
+                    Time = time,
+                    Reason = reason,
+                    Type = (Addons.Database.Data.WarnReason)type,
+                    Valid = true,
+                    Id = number + 1
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(db, warn.Id, user, messages);
+                }
 
-            await WarnUser(WarnReason.Warning, user, staff, reason);
-            await UserWarned(user, staff.Mention, reason);
+                await WarnUser(WarnReason.Warning, user, staff, reason);
+                await UserWarned(user, staff.Mention, reason);
+            }
         }
 
         public async Task AddWarning(SocketGuildUser user, IUser staff, DateTime time, string reason, WarnReason type,
             TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
-            var number = await _db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
-            var data = new Warn
+            using (var db = new DbService())
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
-                Moderator = staff.Id,
-                Time = time,
-                Reason = reason,
-                Type = (Addons.Database.Data.WarnReason) type,
-                Valid = true,
-                Id = number + 1,
-                MuteTimer = after
-            };
-            await _db.Warns.AddAsync(data);
-            await _db.SaveChangesAsync();
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id,
+                    Moderator = staff.Id,
+                    Time = time,
+                    Reason = reason,
+                    Type = (Addons.Database.Data.WarnReason)type,
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = after
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
 
-            if (messages != null)
-            {
-                var warn = await _db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(db, warn.Id, user, messages);
+                }
+
+                await WarnUser(WarnReason.Mute, user, staff, reason, after);
             }
-
-            await WarnUser(WarnReason.Mute, user, staff, reason, after);
         }
 
         public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type,
             IEnumerable<IMessage> messages = null, bool notify = false)
         {
-            var number = await _db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
-            var data = new Warn
+            using (var db = new DbService())
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
-                Moderator = staff,
-                Time = time,
-                Reason = reason,
-                Type = (Addons.Database.Data.WarnReason) type,
-                Valid = true,
-                Id = number + 1,
-                MuteTimer = null
-            };
-            await _db.Warns.AddAsync(data);
-            await _db.SaveChangesAsync();
-            if (messages != null)
-            {
-                var warn = await _db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
-            }
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id,
+                    Moderator = staff,
+                    Time = time,
+                    Reason = reason,
+                    Type = (Addons.Database.Data.WarnReason)type,
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = null
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(db, warn.Id, user, messages);
+                }
 
-            await WarnUser(WarnReason.Warning, user, "Auto-Moderator", reason);
-            await UserWarned(user, "Auto-Moderator", reason);
+                await WarnUser(WarnReason.Warning, user, "Auto-Moderator", reason);
+                await UserWarned(user, "Auto-Moderator", reason);
+            }
         }
 
         public async Task AddWarning(SocketGuildUser user, ulong staff, DateTime time, string reason, WarnReason type,
             TimeSpan after, IEnumerable<IMessage> messages = null, bool notify = false)
         {
-            var number = await _db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
-            var data = new Warn
+            using (var db = new DbService())
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
-                Moderator = staff,
-                Time = time,
-                Reason = reason,
-                Type = (Addons.Database.Data.WarnReason) type,
-                Valid = true,
-                Id = number + 1,
-                MuteTimer = after
-            };
-            await _db.Warns.AddAsync(data);
-            await _db.SaveChangesAsync();
+                var number = await db.Warns.Where(x => x.GuildId == user.Guild.Id).CountAsync();
+                var data = new Warn
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id,
+                    Moderator = staff,
+                    Time = time,
+                    Reason = reason,
+                    Type = (Addons.Database.Data.WarnReason)type,
+                    Valid = true,
+                    Id = number + 1,
+                    MuteTimer = after
+                };
+                await db.Warns.AddAsync(data);
+                await db.SaveChangesAsync();
 
-            if (messages != null)
-            {
-                var warn = await _db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                await StoreMessages(warn.Id, user, messages);
+                if (messages != null)
+                {
+                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
+                    await StoreMessages(db, warn.Id, user, messages);
+                }
+
+                await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
+                await UserMuted(user, "Auto-Moderator", reason, after);
             }
-
-            await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
-            await UserMuted(user, "Auto-Moderator", reason, after);
         }
 
         private static async Task WarnUser(WarnReason warn, IGuildUser user, IMentionable staff, string reason)
@@ -280,10 +290,10 @@ namespace Hanekawa.Services.Administration
             }
         }
 
-        private async Task<List<EmbedFieldBuilder>> GetWarnings(IGuildUser user)
+        private async Task<List<EmbedFieldBuilder>> GetWarnings(DbService db, IGuildUser user)
         {
             var result = new List<EmbedFieldBuilder>();
-            foreach (var x in await _db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id)
+            foreach (var x in await db.Warns.Where(x => x.GuildId == user.GuildId).Where(y => y.UserId == user.Id)
                 .ToListAsync())
             {
                 if (!x.Valid) continue;
@@ -295,7 +305,7 @@ namespace Hanekawa.Services.Administration
             return result;
         }
 
-        private async Task StoreMessages(int id, IGuildUser user, IEnumerable<IMessage> messages)
+        private async Task StoreMessages(DbService db, int id, IGuildUser user, IEnumerable<IMessage> messages)
         {
             var result = messages.Select(x => new WarnMsgLog
                 {
@@ -307,7 +317,7 @@ namespace Hanekawa.Services.Administration
                     Time = x.Timestamp.UtcDateTime
                 })
                 .ToList();
-            await _db.WarnMsgLogs.AddRangeAsync(result);
+            await db.WarnMsgLogs.AddRangeAsync(result);
         }
 
         private static string GetStatus(IPresence user)

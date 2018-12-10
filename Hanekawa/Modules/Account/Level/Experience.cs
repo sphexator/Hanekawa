@@ -18,22 +18,23 @@ namespace Hanekawa.Modules.Account.Level
     public class Experience : InteractiveBase
     {
         private readonly LevelingService _levelingService;
-        private readonly DbService _db;
 
-        public Experience(LevelingService levelingService, DbService db)
+        public Experience(LevelingService levelingService)
         {
             _levelingService = levelingService;
-            _db = db;
         }
 
         [Command("give")]
         [Summary("Gives a certain amount of experience to a user")]
         public async Task GiveExperience(SocketGuildUser user, uint exp)
         {
-            var userData = await _db.GetOrCreateUserData(user);
-            userData.Exp += exp;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {exp} of exp to {user.Mention}", Color.Green.RawValue);
+            using (var db = new DbService())
+            {
+                var userData = await db.GetOrCreateUserData(user);
+                userData.Exp += exp;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Added {exp} of exp to {user.Mention}", Color.Green.RawValue);
+            }
         }
 
         [Command("ignore channel", RunMode = RunMode.Async)]
@@ -41,8 +42,11 @@ namespace Hanekawa.Modules.Account.Level
         [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
         public async Task AddReducedExpChannel(ITextChannel channel)
         {
-            var embed = await _levelingService.ReducedExpManager(null, channel);
-            if (embed != null) await Context.ReplyAsync(embed);
+            using (var db = new DbService())
+            {
+                var embed = await _levelingService.ReducedExpManager(db, null, channel);
+                if (embed != null) await Context.ReplyAsync(embed);
+            }
         }
 
         [Command("ignore category", RunMode = RunMode.Async)]
@@ -50,21 +54,24 @@ namespace Hanekawa.Modules.Account.Level
         [Summary("Adds or removes a category from reduced exp pool with the provided channel(if in a category)")]
         public async Task AddReducedExpCategory(ITextChannel channel)
         {
-            if (!channel.CategoryId.HasValue)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("That channel is not part of a category", Color.Red.RawValue);
-                return;
-            }
+                if (!channel.CategoryId.HasValue)
+                {
+                    await Context.ReplyAsync("That channel is not part of a category", Color.Red.RawValue);
+                    return;
+                }
 
-            var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel.CategoryId.Value);
-            if (category == null)
-            {
-                await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
-                return;
-            }
+                var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel.CategoryId.Value);
+                if (category == null)
+                {
+                    await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
+                    return;
+                }
 
-            var embed = await _levelingService.ReducedExpManager(category);
-            if (embed != null) await Context.ReplyAsync(embed);
+                var embed = await _levelingService.ReducedExpManager(db, category);
+                if (embed != null) await Context.ReplyAsync(embed);
+            }
         }
 
         [Command("ignore category", RunMode = RunMode.Async)]
@@ -79,8 +86,11 @@ namespace Hanekawa.Modules.Account.Level
                 return;
             }
 
-            var embed = await _levelingService.ReducedExpManager(category);
-            if (embed != null) await Context.ReplyAsync(embed);
+            using (var db = new DbService())
+            {
+                var embed = await _levelingService.ReducedExpManager(db, category);
+                if (embed != null) await Context.ReplyAsync(embed);
+            }
         }
 
         [Command("multiplier")]
@@ -97,33 +107,36 @@ namespace Hanekawa.Modules.Account.Level
             "Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
         public async Task ExpEventAsync(uint multiplier, TimeSpan? duration = null)
         {
-            try
+            using (var db = new DbService())
             {
-                if (!duration.HasValue) duration = TimeSpan.FromDays(1);
-                if (duration.Value > TimeSpan.FromDays(1)) duration = TimeSpan.FromDays(1);
-                await Context.ReplyAsync(
-                    $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration.Value.Humanize()}) ? (y/n)");
-                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (response.Content.ToLower() != "y") return;
+                try
+                {
+                    if (!duration.HasValue) duration = TimeSpan.FromDays(1);
+                    if (duration.Value > TimeSpan.FromDays(1)) duration = TimeSpan.FromDays(1);
+                    await Context.ReplyAsync(
+                        $"Wanna activate a exp event with multiplier of {multiplier} for {duration.Value.Humanize()} ({duration.Value.Humanize()}) ? (y/n)");
+                    var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                    if (response.Content.ToLower() != "y") return;
 
-                await Context.ReplyAsync("Do you want to announce the event? (y/n)");
-                var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
-                if (announceResp.Content.ToLower() == "y")
-                {
-                    await Context.ReplyAsync("Okay, I'll let you announce it.", Color.Green.RawValue);
-                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value);
+                    await Context.ReplyAsync("Do you want to announce the event? (y/n)");
+                    var announceResp = await NextMessageAsync(true, true, TimeSpan.FromSeconds(60));
+                    if (announceResp.Content.ToLower() == "y")
+                    {
+                        await Context.ReplyAsync("Okay, I'll let you announce it.", Color.Green.RawValue);
+                        await _levelingService.StartExpEventAsync(db, Context.Guild, multiplier, duration.Value);
+                    }
+                    else
+                    {
+                        await Context.ReplyAsync("Announcing event into designated channel.",
+                            Color.Green.RawValue);
+                        await _levelingService.StartExpEventAsync(db, Context.Guild, multiplier, duration.Value, true,
+                            Context.Channel as SocketTextChannel);
+                    }
                 }
-                else
+                catch
                 {
-                    await Context.ReplyAsync("Announcing event into designated channel.",
-                        Color.Green.RawValue);
-                    await _levelingService.StartExpEventAsync(Context.Guild, multiplier, duration.Value, true,
-                        Context.Channel as SocketTextChannel);
+                    await Context.ReplyAsync("Exp event setup aborted.", Color.Red.RawValue);
                 }
-            }
-            catch
-            {
-                await Context.ReplyAsync("Exp event setup aborted.", Color.Red.RawValue);
             }
         }
     }

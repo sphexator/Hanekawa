@@ -16,37 +16,36 @@ namespace Hanekawa.Modules.Account.Storage
 {
     public class ShopManager : IHanaService
     {
-        private readonly DbService _db;
-
-        public ShopManager(DbService db)
+        public async Task<List<string>> GetServerStoreAsync(IGuildUser user)
         {
-            _db = db;
+            using (var db = new DbService())
+            {
+                var result = new List<string>();
+                var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                foreach (var x in await db.Shops.Where(x => x.GuildId == user.GuildId).ToListAsync())
+                {
+                    result.Add(
+                        $"Name: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - {GetPrice(cfg, x, x.Price)}\n");
+                }
+
+                if (result.Count == 0) result.Add("Store is empty");
+                return result;
+            }
         }
 
-        public async Task<IEnumerable<string>> GetServerStoreAsync(IGuildUser user)
+        public async Task<List<string>> GetGlobalStoreAsync(IGuildUser user)
         {
-            var result = new List<string>();
-            var cfg = await _db.GetOrCreateGuildConfig(user.Guild);
-            foreach (var x in await _db.Shops.Where(x => x.GuildId == user.GuildId).ToListAsync())
+            using (var db = new DbService())
             {
-                result.Add(
-                    $"Name: {(await _db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - {GetPrice(cfg, x, x.Price)}\n");
+                var result = new List<string>();
+                foreach (var x in await db.StoreGlobals.ToListAsync())
+                {
+                    result.Add($"Item: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - Price: ${x.Price}\n");
+                }
+
+                if (result.Count == 0) result.Add("Store is empty");
+                return result;
             }
-
-            if (result.Count == 0) result.Add("Store is empty");
-            return result;
-        }
-
-        public async Task<IEnumerable<string>> GetGlobalStoreAsync(IGuildUser user)
-        {
-            var result = new List<string>();
-            foreach (var x in await _db.StoreGlobals.ToListAsync())
-            {
-                result.Add($"Item: {(await _db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - Price: ${x.Price}\n");
-            }
-
-            if (result.Count == 0) result.Add("Store is empty");
-            return result;
         }
 
         public async Task<EmbedBuilder> PurchaseItem(DbService db, Shop shop, IGuildUser user)

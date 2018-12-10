@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
-using Hanekawa.TypeReaders;
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Services.CommandHandler
 {
@@ -17,7 +14,7 @@ namespace Hanekawa.Services.CommandHandler
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
-        private IServiceProvider _provider;
+        private readonly IServiceProvider _provider;
 
         public CommandHandlingService(IServiceProvider provider, DiscordSocketClient discord, CommandService commands)
         {

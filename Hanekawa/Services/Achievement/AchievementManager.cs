@@ -25,19 +25,17 @@ namespace Hanekawa.Services.Achievement
         private const int PvE = 6;
         private const int Fun = 7;
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly DropService _dropService;
         private readonly ShipGameService _gameService;
         private readonly LevelingService _levelingService;
 
         public AchievementManager(DropService dropService, LevelingService levelingService, ShipGameService gameService,
-            DiscordSocketClient client, DbService dbService)
+            DiscordSocketClient client)
         {
             _dropService = dropService;
             _levelingService = levelingService;
             _gameService = gameService;
             _client = client;
-            _db = dbService;
 
             _dropService.DropClaimed += DropClaimed;
             _levelingService.ServerLevel += ServerLevelAchievement;
@@ -54,53 +52,56 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15)
-                    .ToListAsync();
-                var progress = await _db.GetAchievementProgress(user, Voice);
-                if (progress == null) return;
-
-                if (achievements == null || achievements.Count == 0) return;
-
-                var totalTime = Convert.ToInt32(time.TotalMinutes);
-                if (achievements.Any(x => x.Requirement == progress.Count + totalTime && x.Once == false))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x =>
-                        x.Requirement == progress.Count + totalTime && x.Once == false);
-                    var data = new AchievementUnlock
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15)
+                        .ToListAsync();
+                    var progress = await db.GetAchievementProgress(user, Voice);
+                    if (progress == null) return;
+
+                    if (achievements == null || achievements.Count == 0) return;
+
+                    var totalTime = Convert.ToInt32(time.TotalMinutes);
+                    if (achievements.Any(x => x.Requirement == progress.Count + totalTime && x.Once == false))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Voice,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var below = achievements
-                        .Where(x => x.Requirement < progress.Count + totalTime && x.Once == false).ToList();
-                    if (below.Count != 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.TypeId == Voice).ToListAsync();
-                        foreach (var x in below)
+                        var achieve = achievements.First(x =>
+                            x.Requirement == progress.Count + totalTime && x.Once == false);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Voice,
+                            UserId = user.Id,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var below = achievements
+                            .Where(x => x.Requirement < progress.Count + totalTime && x.Once == false).ToList();
+                        if (below.Count != 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.TypeId == Voice).ToListAsync();
+                            foreach (var x in below)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = user.Id,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                progress.Count = progress.Count + totalTime;
-                await _db.SaveChangesAsync();
+                    progress.Count = progress.Count + totalTime;
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -109,44 +110,47 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Voice).ToListAsync();
-                if (achievements == null || achievements.Count == 0) return;
-
-                var totalTime = Convert.ToInt32(time.TotalMinutes);
-                if (achievements.Any(x => x.Requirement == totalTime && x.AchievementNameId == 8))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x => x.Requirement == totalTime && x.Once);
-                    var unlockCheck = await _db.AchievementUnlocks.FirstOrDefaultAsync(x =>
-                        x.AchievementId == achieve.AchievementId && x.UserId == user.Id);
-                    if (unlockCheck != null) return;
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Voice).ToListAsync();
+                    if (achievements == null || achievements.Count == 0) return;
 
-                    var data = new AchievementUnlock
+                    var totalTime = Convert.ToInt32(time.TotalMinutes);
+                    if (achievements.Any(x => x.Requirement == totalTime && x.AchievementNameId == 8))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Voice,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var below = achievements.Where(x => x.Requirement < totalTime).ToList();
-                    var unlock = await _db.AchievementUnlocks.Where(x => x.UserId == user.Id && x.TypeId == Voice)
-                        .ToListAsync();
-                    foreach (var x in below)
-                    {
-                        if (unlock.Any(y => y.AchievementId == x.AchievementId)) continue;
+                        var achieve = achievements.First(x => x.Requirement == totalTime && x.Once);
+                        var unlockCheck = await db.AchievementUnlocks.FirstOrDefaultAsync(x =>
+                            x.AchievementId == achieve.AchievementId && x.UserId == user.Id);
+                        if (unlockCheck != null) return;
 
                         var data = new AchievementUnlock
                         {
-                            AchievementId = x.AchievementId,
-                            TypeId = Level,
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Voice,
                             UserId = user.Id,
-                            Achievement = x
+                            Achievement = achieve
                         };
-                        await _db.AchievementUnlocks.AddAsync(data);
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var below = achievements.Where(x => x.Requirement < totalTime).ToList();
+                        var unlock = await db.AchievementUnlocks.Where(x => x.UserId == user.Id && x.TypeId == Voice)
+                            .ToListAsync();
+                        foreach (var x in below)
+                        {
+                            if (unlock.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                            var data = new AchievementUnlock
+                            {
+                                AchievementId = x.AchievementId,
+                                TypeId = Level,
+                                UserId = user.Id,
+                                Achievement = x
+                            };
+                            await db.AchievementUnlocks.AddAsync(data);
+                        }
                     }
                 }
             });
@@ -157,47 +161,50 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global)
-                    .ToListAsync();
-                if (achievements == null || achievements.Count == 0) return;
+                using (var db = new DbService())
+                {
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global)
+                        .ToListAsync();
+                    if (achievements == null || achievements.Count == 0) return;
 
-                if (achievements.Any(x => x.Requirement == userData.Level))
-                {
-                    var achieve = achievements.First(x => x.Requirement == userData.Level);
-                    var data = new AchievementUnlock
+                    if (achievements.Any(x => x.Requirement == userData.Level))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Level,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var belowAchieves = achievements
-                        .Where(x => x.Requirement < userData.Level).ToList();
-                    if (belowAchieves.Count > 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
-                        foreach (var x in belowAchieves)
+                        var achieve = achievements.First(x => x.Requirement == userData.Level);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Level,
+                            UserId = user.Id,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var belowAchieves = achievements
+                            .Where(x => x.Requirement < userData.Level).ToList();
+                        if (belowAchieves.Count > 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                            foreach (var x in belowAchieves)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = user.Id,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                await _db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -206,46 +213,49 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements
-                    .Where(x => x.TypeId == Level && x.Once == false && x.Global).ToListAsync();
-                if (achievements == null || achievements.Count == 0) return;
+                using (var db = new DbService())
+                {
+                    var achievements = await db.Achievements
+                        .Where(x => x.TypeId == Level && x.Once == false && x.Global).ToListAsync();
+                    if (achievements == null || achievements.Count == 0) return;
 
-                if (achievements.Any(x => x.Requirement == userData.Level))
-                {
-                    var achieve = achievements.First(x => x.Requirement == userData.Level);
-                    var data = new AchievementUnlock
+                    if (achievements.Any(x => x.Requirement == userData.Level))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Level,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var belowAchieves = achievements.Where(x => x.Requirement < (int) userData.Level).ToList();
-                    if (belowAchieves.Count > 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
-                        foreach (var x in belowAchieves)
+                        var achieve = achievements.First(x => x.Requirement == userData.Level);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Level,
+                            UserId = user.Id,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var belowAchieves = achievements.Where(x => x.Requirement < (int) userData.Level).ToList();
+                        if (belowAchieves.Count > 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                            foreach (var x in belowAchieves)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = user.Id,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                await _db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -254,49 +264,52 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Drop).ToListAsync();
-                var progress = await _db.GetAchievementProgress(user, Drop);
-                if (progress == null) return;
-
-                if (achievements == null) return;
-
-                if (achievements.Any(x => x.Requirement == progress.Count + 1 && x.Once == false))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x => x.Requirement == progress.Count + 1 && x.Once == false);
-                    var data = new AchievementUnlock
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Drop).ToListAsync();
+                    var progress = await db.GetAchievementProgress(user, Drop);
+                    if (progress == null) return;
+
+                    if (achievements == null) return;
+
+                    if (achievements.Any(x => x.Requirement == progress.Count + 1 && x.Once == false))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Drop,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var below = achievements.Where(x => x.Requirement < progress.Count + 1 && !x.Once).ToList();
-                    if (below.Count != 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
-                        foreach (var x in below)
+                        var achieve = achievements.First(x => x.Requirement == progress.Count + 1 && x.Once == false);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Drop,
+                            UserId = user.Id,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var below = achievements.Where(x => x.Requirement < progress.Count + 1 && !x.Once).ToList();
+                        if (below.Count != 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                            foreach (var x in below)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = user.Id,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = user.Id,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                progress.Count = progress.Count + 1;
-                await _db.SaveChangesAsync();
+                    progress.Count = progress.Count + 1;
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -305,49 +318,52 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements = await _db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
-                var progress = await _db.GetAchievementProgress(userid, PvP);
-                if (progress == null) return;
-
-                if (achievements == null) return;
-
-                if (achievements.Any(x => x.Requirement == progress.Count + 1 && !x.Once))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x => x.Requirement == progress.Count + 1);
-                    var data = new AchievementUnlock
+                    var achievements = await db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
+                    var progress = await db.GetAchievementProgress(userid, PvP);
+                    if (progress == null) return;
+
+                    if (achievements == null) return;
+
+                    if (achievements.Any(x => x.Requirement == progress.Count + 1 && !x.Once))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = PvP,
-                        UserId = userid,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
-                    if (below.Count != 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.UserId == userid).ToListAsync();
-                        foreach (var x in below)
+                        var achieve = achievements.First(x => x.Requirement == progress.Count + 1);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = PvP,
+                            UserId = userid,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
+                        if (below.Count != 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == userid).ToListAsync();
+                            foreach (var x in below)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = userid,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = userid,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                progress.Count = progress.Count + 1;
-                await _db.SaveChangesAsync();
+                    progress.Count = progress.Count + 1;
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -356,50 +372,53 @@ namespace Hanekawa.Services.Achievement
         {
             var _ = Task.Run(async () =>
             {
-                var achievements =
-                    await _db.Achievements.Where(x => x.TypeId == PvE && x.Once == false).ToListAsync();
-                var progress = await _db.GetAchievementProgress(userid, PvE);
-                if (progress == null) return;
-
-                if (achievements == null) return;
-
-                if (achievements.Any(x => x.Requirement == progress.Count + 1))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x => x.Requirement == progress.Count + 1);
-                    var data = new AchievementUnlock
+                    var achievements =
+                        await db.Achievements.Where(x => x.TypeId == PvE && x.Once == false).ToListAsync();
+                    var progress = await db.GetAchievementProgress(userid, PvE);
+                    if (progress == null) return;
+
+                    if (achievements == null) return;
+
+                    if (achievements.Any(x => x.Requirement == progress.Count + 1))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = PvE,
-                        UserId = userid,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
-                    if (below.Count != 0)
-                    {
-                        var unlocked = await _db.AchievementUnlocks.Where(x => x.UserId == userid).ToListAsync();
-                        foreach (var x in below)
+                        var achieve = achievements.First(x => x.Requirement == progress.Count + 1);
+                        var data = new AchievementUnlock
                         {
-                            if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                            var data = new AchievementUnlock
+                            AchievementId = achieve.AchievementId,
+                            TypeId = PvE,
+                            UserId = userid,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
+                        if (below.Count != 0)
+                        {
+                            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == userid).ToListAsync();
+                            foreach (var x in below)
                             {
-                                AchievementId = x.AchievementId,
-                                TypeId = Level,
-                                UserId = userid,
-                                Achievement = x
-                            };
-                            await _db.AchievementUnlocks.AddAsync(data);
+                                if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+
+                                var data = new AchievementUnlock
+                                {
+                                    AchievementId = x.AchievementId,
+                                    TypeId = Level,
+                                    UserId = userid,
+                                    Achievement = x
+                                };
+                                await db.AchievementUnlocks.AddAsync(data);
+                            }
                         }
                     }
-                }
 
-                progress.Count = progress.Count + 1;
-                await _db.SaveChangesAsync();
+                    progress.Count = progress.Count + 1;
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }
@@ -413,22 +432,24 @@ namespace Hanekawa.Services.Achievement
                 if (message.Source != MessageSource.User) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
-
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
-                if (achievements == null) return;
-
-                if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.First(x => x.Requirement == msg.Content.Length && x.Once);
-                    var data = new AchievementUnlock
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
+                    if (achievements == null) return;
+
+                    if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
                     {
-                        AchievementId = achieve.AchievementId,
-                        TypeId = Fun,
-                        UserId = user.Id,
-                        Achievement = achieve
-                    };
-                    await _db.AchievementUnlocks.AddAsync(data);
-                    await _db.SaveChangesAsync();
+                        var achieve = achievements.First(x => x.Requirement == msg.Content.Length && x.Once);
+                        var data = new AchievementUnlock
+                        {
+                            AchievementId = achieve.AchievementId,
+                            TypeId = Fun,
+                            UserId = user.Id,
+                            Achievement = achieve
+                        };
+                        await db.AchievementUnlocks.AddAsync(data);
+                        await db.SaveChangesAsync();
+                    }
                 }
             });
             return Task.CompletedTask;

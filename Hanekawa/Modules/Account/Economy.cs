@@ -25,13 +25,11 @@ namespace Hanekawa.Modules.Account
     {
         private readonly InventoryManager _inventoryManager;
         private readonly ShopManager _shopManager;
-        private readonly DbService _db;
 
-        public Economy(ShopManager shopManager, InventoryManager inventoryManager, DbService db)
+        public Economy(ShopManager shopManager, InventoryManager inventoryManager)
         {
             _shopManager = shopManager;
             _inventoryManager = inventoryManager;
-            _db = db;
         }
 
         [Command("wallet")]
@@ -41,22 +39,25 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task WalletAsync(SocketGuildUser user = null)
         {
-            if (user == null) user = Context.User as SocketGuildUser;
-            var userdata = await _db.GetOrCreateUserData(user);
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            var author = new EmbedAuthorBuilder
+            using (var db = new DbService())
             {
-                IconUrl = user.GetAvatar(),
-                Name = user.GetName()
-            };
-            var embed = new EmbedBuilder
-            {
-                Author = author,
-                Color = Color.Purple,
-                Description = $"{GetRegularCurrency(userdata, cfg)}\n" +
-                              $"{GetSpecialCurrency(userdata, cfg)}"
-            };
-            await ReplyAsync(null, false, embed.Build());
+                if (user == null) user = Context.User as SocketGuildUser;
+                var userdata = await db.GetOrCreateUserData(user);
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var author = new EmbedAuthorBuilder
+                {
+                    IconUrl = user.GetAvatar(),
+                    Name = user.GetName()
+                };
+                var embed = new EmbedBuilder
+                {
+                    Author = author,
+                    Color = Color.Purple,
+                    Description = $"{GetRegularCurrency(userdata, cfg)}\n" +
+                                  $"{GetSpecialCurrency(userdata, cfg)}"
+                };
+                await ReplyAsync(null, false, embed.Build());
+            }
         }
 
         [Command("give", RunMode = RunMode.Async)]
@@ -67,21 +68,23 @@ namespace Hanekawa.Modules.Account
         public async Task GiveCreditAsync(uint amount, SocketGuildUser user)
         {
             if (user == Context.User) return;
-
-            var userdata = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
-            var recieverData = await _db.GetOrCreateUserData(user);
-            if (userdata.Credit < amount)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync($"{Context.User.Mention} doesn't have enough credit",
-                    Color.Red.RawValue);
-                return;
-            }
+                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                var recieverData = await db.GetOrCreateUserData(user);
+                if (userdata.Credit < amount)
+                {
+                    await Context.ReplyAsync($"{Context.User.Mention} doesn't have enough credit",
+                        Color.Red.RawValue);
+                    return;
+                }
 
-            userdata.Credit = userdata.Credit - amount;
-            recieverData.Credit = recieverData.Credit + amount;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"{Context.User.Mention} transferred ${amount} to {user.Mention}",
-                Color.Green.RawValue);
+                userdata.Credit = userdata.Credit - amount;
+                recieverData.Credit = recieverData.Credit + amount;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"{Context.User.Mention} transferred ${amount} to {user.Mention}",
+                    Color.Green.RawValue);
+            }
         }
 
         [Command("daily", RunMode = RunMode.Async)]
@@ -90,35 +93,38 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task DailyAsync(SocketGuildUser user = null)
         {
-            var cooldownCheckAccount = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
-            if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
+            using (var db = new DbService())
             {
-                var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
-                await Context.ReplyAsync($"{Context.User.Mention} daily credit refresh in {timer.Humanize()}",
-                    Color.Red.RawValue);
-                return;
-            }
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
+                {
+                    var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
+                    await Context.ReplyAsync($"{Context.User.Mention} daily credit refresh in {timer.Humanize()}",
+                        Color.Red.RawValue);
+                    return;
+                }
 
-            uint reward;
-            if (user == null || user == Context.User)
-            {
-                user = Context.User as SocketGuildUser;
-                reward = 200;
-                var userdata = await _db.GetOrCreateUserData(user);
-                userdata.DailyCredit = DateTime.UtcNow;
-                userdata.Credit = userdata.Credit + reward;
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync($"rewarded {user?.Mention} with ${reward} credit", Color.Green.RawValue);
-            }
-            else
-            {
-                reward = Convert.ToUInt32(new Random().Next(200, 300));
-                var userData = await _db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var recieverData = await _db.GetOrCreateUserData(user);
-                userData.DailyCredit = DateTime.UtcNow;
-                recieverData.Credit = recieverData.Credit + reward;
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync($"{Context.User.Mention} rewarded {user.Mention} with ${reward} credit");
+                uint reward;
+                if (user == null || user == Context.User)
+                {
+                    user = Context.User as SocketGuildUser;
+                    reward = 200;
+                    var userdata = await db.GetOrCreateUserData(user);
+                    userdata.DailyCredit = DateTime.UtcNow;
+                    userdata.Credit = userdata.Credit + reward;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"rewarded {user?.Mention} with ${reward} credit", Color.Green.RawValue);
+                }
+                else
+                {
+                    reward = Convert.ToUInt32(new Random().Next(200, 300));
+                    var userData = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                    var recieverData = await db.GetOrCreateUserData(user);
+                    userData.DailyCredit = DateTime.UtcNow;
+                    recieverData.Credit = recieverData.Credit + reward;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"{Context.User.Mention} rewarded {user.Mention} with ${reward} credit");
+                }
             }
         }
 
@@ -128,27 +134,30 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task LeaderboardAsync()
         {
-            var embed = new EmbedBuilder
+            using (var db = new DbService())
             {
-                Author = new EmbedAuthorBuilder
-                    {Name = $"Money leaderboard for {Context.Guild.Name}", IconUrl = Context.Guild.IconUrl}
-            };
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            var rank = 1;
-            foreach (var x in await _db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
-                .OrderByDescending(account => account.Credit).Take(10).ToListAsync())
-            {
-                embed.AddField(new EmbedFieldBuilder
+                var embed = new EmbedBuilder
                 {
-                    IsInline = false,
-                    Name = $"Rank: {rank}",
-                    Value =
-                        $"{Context.Client.GetUser(x.UserId).Mention ?? $"User left server (ID: {x.UserId})"} - {cfg.CurrencyName}:{x.Credit}"
-                });
-                rank++;
-            }
+                    Author = new EmbedAuthorBuilder
+                        {Name = $"Money leaderboard for {Context.Guild.Name}", IconUrl = Context.Guild.IconUrl}
+                };
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var rank = 1;
+                foreach (var x in await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
+                    .OrderByDescending(account => account.Credit).Take(10).ToListAsync())
+                {
+                    embed.AddField(new EmbedFieldBuilder
+                    {
+                        IsInline = false,
+                        Name = $"Rank: {rank}",
+                        Value =
+                            $"{Context.Client.GetUser(x.UserId).Mention ?? $"User left server (ID: {x.UserId})"} - {cfg.CurrencyName}:{x.Credit}"
+                    });
+                    rank++;
+                }
 
-            await Context.ReplyAsync(embed);
+                await Context.ReplyAsync(embed);
+            }
         }
 
         [Command("reward", RunMode = RunMode.Async)]
@@ -159,13 +168,16 @@ namespace Hanekawa.Modules.Account
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RewardCreditAsync(uint amount, IGuildUser user)
         {
-            var userdata = await _db.GetOrCreateUserData(user as SocketGuildUser);
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            userdata.CreditSpecial = userdata.CreditSpecial + amount;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync(
-                $"Rewarded {SpecialCurrencyResponse(cfg)}{amount} {cfg.SpecialCurrencyName} to {user.Mention}",
-                Color.Green.RawValue);
+            using (var db = new DbService())
+            {
+                var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                userdata.CreditSpecial = userdata.CreditSpecial + amount;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync(
+                    $"Rewarded {SpecialCurrencyResponse(cfg)}{amount} {cfg.SpecialCurrencyName} to {user.Mention}",
+                    Color.Green.RawValue);
+            }
         }
 
         [Command("inventory", RunMode = RunMode.Async)]
@@ -193,23 +205,7 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task GlobalShopAsync()
         {
-            var paginator = new PaginatedMessage
-            {
-                Color = Color.Purple,
-                Pages = await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser),
-                Title = "Global store",
-                Options = new PaginatedAppearanceOptions
-                {
-                    First = new Emoji("⏮"),
-                    Back = new Emoji("◀"),
-                    Next = new Emoji("▶"),
-                    Last = new Emoji("⏭"),
-                    Stop = null,
-                    Jump = null,
-                    Info = null
-                }
-            };
-            await PagedReplyAsync(paginator);
+            await PagedReplyAsync((await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser)).PaginateBuilder("Global Store"));
         }
 
         [Command("buy", RunMode = RunMode.Async)]
@@ -218,18 +214,21 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task BuyAsync(int itemId)
         {
-            var item = await _db.Shops.FindAsync(Context.Guild.Id, itemId);
-            var globalItem = await _db.StoreGlobals.FindAsync(Context.Guild.Id, itemId);
-            if (item == null && globalItem == null)
+            using (var db = new DbService())
             {
-                await Context.ReplyAsync("No item with said id");
-                return;
-            }
+                var item = await db.Shops.FindAsync(Context.Guild.Id, itemId);
+                var globalItem = await db.StoreGlobals.FindAsync(Context.Guild.Id, itemId);
+                if (item == null && globalItem == null)
+                {
+                    await Context.ReplyAsync("No item with said id");
+                    return;
+                }
 
-            EmbedBuilder embed;
-            if (item != null) embed = await _shopManager.PurchaseItem(_db, item, Context.User as IGuildUser);
-            else embed = await _shopManager.PurchaseItem(_db, globalItem, Context.User as IGuildUser);
-            await ReplyAsync(null, false, embed.Build());
+                EmbedBuilder embed;
+                if (item != null) embed = await _shopManager.PurchaseItem(db, item, Context.User as IGuildUser);
+                else embed = await _shopManager.PurchaseItem(db, globalItem, Context.User as IGuildUser);
+                await ReplyAsync(null, false, embed.Build());
+            }
         }
 
         [Command("item description", RunMode = RunMode.Async)]
@@ -238,11 +237,14 @@ namespace Hanekawa.Modules.Account
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetItemDescription(int id, [Remainder] string description)
         {
-            var item = await _db.Items.FindAsync(id);
-            if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
-            item.Description = description;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Updated description of {item.Name}");
+            using (var db = new DbService())
+            {
+                var item = await db.Items.FindAsync(id);
+                if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
+                item.Description = description;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Updated description of {item.Name}");
+            }
         }
 
         [Command("item inspect", RunMode = RunMode.Async)]
@@ -252,21 +254,24 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task InspectItem(int id)
         {
-            var item = await _db.Items.FindAsync(id);
-            if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
-            var embed = new EmbedBuilder
+            using (var db = new DbService())
             {
-                Author = new EmbedAuthorBuilder {Name = item.Name},
-                Description = item.Description,
-                Color = Color.Purple
-            };
-            embed.AddField("Role", item.Role.HasValue, true);
-            embed.AddField("Unique", item.Unique, true);
-            if (item.Role.HasValue)
-            {
-                var role = Context.Guild.GetRole(item.Role.Value);
-                embed.AddField("Color", $"{role.Color}");
-                embed.AddField("Hoisted", $"{role.IsHoisted}", true);
+                var item = await db.Items.FindAsync(id);
+                if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder { Name = item.Name },
+                    Description = item.Description,
+                    Color = Color.Purple
+                };
+                embed.AddField("Role", item.Role.HasValue, true);
+                embed.AddField("Unique", item.Unique, true);
+                if (item.Role.HasValue)
+                {
+                    var role = Context.Guild.GetRole(item.Role.Value);
+                    embed.AddField("Color", $"{role.Color}");
+                    embed.AddField("Hoisted", $"{role.IsHoisted}", true);
+                }
             }
         }
 
@@ -277,37 +282,40 @@ namespace Hanekawa.Modules.Account
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(IRole role, int price, bool special = false)
         {
-            var date = DateTime.UtcNow;
-            var item = new Item
+            using (var db = new DbService())
             {
-                Global = false,
-                GuildId = Context.Guild.Id,
-                Name = role.Name,
-                Role = role.Id,
-                Secret = false,
-                SecretValue = null,
-                Unique = true,
-                Value = null,
-                ConsumeOnUse = false,
-                DateAdded = date
-            };
-            await _db.Items.AddAsync(item);
-            await _db.SaveChangesAsync();
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = role.Name,
+                    Role = role.Id,
+                    Secret = false,
+                    SecretValue = null,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = false,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
 
-            var getItem = await _db.Items.FirstOrDefaultAsync(x =>
-                x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-            var storeItem = new Shop
-            {
-                GuildId = Context.Guild.Id,
-                ItemId = getItem.ItemId,
-                Price = price,
-                SpecialCredit = special
-            };
-            await _db.Shops.AddAsync(storeItem);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync(
-                $"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`",
-                Color.Green.RawValue);
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new Shop
+                {
+                    GuildId = Context.Guild.Id,
+                    ItemId = getItem.ItemId,
+                    Price = price,
+                    SpecialCredit = special
+                };
+                await db.Shops.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync(
+                    $"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`",
+                    Color.Green.RawValue);
+            }
         }
 
         [Command("store add", RunMode = RunMode.Async)]
@@ -316,35 +324,38 @@ namespace Hanekawa.Modules.Account
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(string name, string value, int price, bool special = false)
         {
-            var date = DateTime.UtcNow;
-            var item = new Item
+            using (var db = new DbService())
             {
-                Global = false,
-                GuildId = Context.Guild.Id,
-                Name = name,
-                Role = null,
-                Secret = true,
-                SecretValue = value,
-                Unique = true,
-                Value = null,
-                ConsumeOnUse = true,
-                DateAdded = date
-            };
-            await _db.Items.AddAsync(item);
-            await _db.SaveChangesAsync();
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = name,
+                    Role = null,
+                    Secret = true,
+                    SecretValue = value,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = true,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
 
-            var getItem = await _db.Items.FirstOrDefaultAsync(x =>
-                x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-            var storeItem = new Shop
-            {
-                GuildId = Context.Guild.Id,
-                ItemId = getItem.ItemId,
-                Price = price,
-                SpecialCredit = special
-            };
-            await _db.Shops.AddAsync(storeItem);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new Shop
+                {
+                    GuildId = Context.Guild.Id,
+                    ItemId = getItem.ItemId,
+                    Price = price,
+                    SpecialCredit = special
+                };
+                await db.Shops.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
+            }
         }
 
         [Command("store global add", RunMode = RunMode.Async)]
@@ -353,33 +364,36 @@ namespace Hanekawa.Modules.Account
         [RequireOwner]
         public async Task AddGlobalStoreItemAsync(string name, string value, int price)
         {
-            var date = DateTime.UtcNow;
-            var item = new Item
+            using (var db = new DbService())
             {
-                Global = false,
-                GuildId = Context.Guild.Id,
-                Name = name,
-                Role = null,
-                Secret = true,
-                SecretValue = value,
-                Unique = true,
-                Value = null,
-                ConsumeOnUse = true,
-                DateAdded = date
-            };
-            await _db.Items.AddAsync(item);
-            await _db.SaveChangesAsync();
+                var date = DateTime.UtcNow;
+                var item = new Item
+                {
+                    Global = false,
+                    GuildId = Context.Guild.Id,
+                    Name = name,
+                    Role = null,
+                    Secret = true,
+                    SecretValue = value,
+                    Unique = true,
+                    Value = null,
+                    ConsumeOnUse = true,
+                    DateAdded = date
+                };
+                await db.Items.AddAsync(item);
+                await db.SaveChangesAsync();
 
-            var getItem = await _db.Items.FirstOrDefaultAsync(x =>
-                x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-            var storeItem = new StoreGlobal
-            {
-                ItemId = getItem.ItemId,
-                Price = price
-            };
-            await _db.StoreGlobals.AddAsync(storeItem);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
+                var getItem = await db.Items.FirstOrDefaultAsync(x =>
+                    x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
+                var storeItem = new StoreGlobal
+                {
+                    ItemId = getItem.ItemId,
+                    Price = price
+                };
+                await db.StoreGlobals.AddAsync(storeItem);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
+            }
         }
 
         private static string SpecialCurrencyResponse(GuildConfig cfg)
@@ -425,29 +439,26 @@ namespace Hanekawa.Modules.Account
     [RequireContext(ContextType.Guild)]
     public class AdminEconomy : InteractiveBase
     {
-        private readonly DbService _db;
-
-        public AdminEconomy(DbService db)
-        {
-            _db = db;
-        }
 
         [Command("regular name", RunMode = RunMode.Async)]
         [Alias("rn")]
         public async Task SetCurrencyNameAsync([Remainder] string name = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (name.IsNullOrWhiteSpace())
+            using (var db = new DbService())
             {
-                cfg.CurrencyName = "Credit";
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync("Set regular back to default `Credit`", Color.Green.RawValue);
-                return;
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (name.IsNullOrWhiteSpace())
+                {
+                    cfg.CurrencyName = "Credit";
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set regular back to default `Credit`", Color.Green.RawValue);
+                    return;
+                }
 
-            cfg.CurrencyName = name;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green.RawValue);
+                cfg.CurrencyName = name;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green.RawValue);
+            }
         }
 
         [Command("regular symbol", RunMode = RunMode.Async)]
@@ -455,50 +466,59 @@ namespace Hanekawa.Modules.Account
         [Priority(1)]
         public async Task SetCurrencySignAsync(Emote emote)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            cfg.EmoteCurrency = true;
-            cfg.CurrencySign = ParseEmoteString(emote);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set currency sign to {emote}", Color.Green.RawValue);
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                cfg.EmoteCurrency = true;
+                cfg.CurrencySign = ParseEmoteString(emote);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set currency sign to {emote}", Color.Green.RawValue);
+            }
         }
 
         [Command("regular symbol", RunMode = RunMode.Async)]
         [Alias("rs")]
         public async Task SetCurrencySignAsync([Remainder] string name = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (name.IsNullOrWhiteSpace())
+            using (var db = new DbService())
             {
-                cfg.EmoteCurrency = false;
-                cfg.CurrencyName = "$";
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync("Set currency sign back to default `$`", Color.Green.RawValue);
-                return;
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (name.IsNullOrWhiteSpace())
+                {
+                    cfg.EmoteCurrency = false;
+                    cfg.CurrencyName = "$";
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set currency sign back to default `$`", Color.Green.RawValue);
+                    return;
+                }
 
-            cfg.EmoteCurrency = false;
-            cfg.CurrencySign = name;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set regular currency sign to {name}", Color.Green.RawValue);
+                cfg.EmoteCurrency = false;
+                cfg.CurrencySign = name;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set regular currency sign to {name}", Color.Green.RawValue);
+            }
         }
 
         [Command("special name", RunMode = RunMode.Async)]
         [Alias("sn")]
         public async Task SetSpecialCurrencyNameAsync([Remainder] string name = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (name.IsNullOrWhiteSpace())
+            using (var db = new DbService())
             {
-                cfg.SpecialCurrencyName = "Special Credit";
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync("Set regular back to default `Special Credit`",
-                    Color.Green.RawValue);
-                return;
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (name.IsNullOrWhiteSpace())
+                {
+                    cfg.SpecialCurrencyName = "Special Credit";
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set regular back to default `Special Credit`",
+                        Color.Green.RawValue);
+                    return;
+                }
 
-            cfg.SpecialCurrencyName = name;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green.RawValue);
+                cfg.SpecialCurrencyName = name;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green.RawValue);
+            }
         }
 
         [Command("special symbol", RunMode = RunMode.Async)]
@@ -506,31 +526,37 @@ namespace Hanekawa.Modules.Account
         [Priority(1)]
         public async Task SetSpecialCurrencySignAsync(Emote emote)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            cfg.SpecialEmoteCurrency = true;
-            cfg.SpecialCurrencySign = ParseEmoteString(emote);
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set currency sign to {emote}", Color.Green.RawValue);
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                cfg.SpecialEmoteCurrency = true;
+                cfg.SpecialCurrencySign = ParseEmoteString(emote);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set currency sign to {emote}", Color.Green.RawValue);
+            }
         }
 
         [Command("special symbol", RunMode = RunMode.Async)]
         [Alias("ss")]
         public async Task SetSpecialCurrencySignAsync([Remainder] string name = null)
         {
-            var cfg = await _db.GetOrCreateGuildConfig(Context.Guild);
-            if (name.IsNullOrWhiteSpace())
+            using (var db = new DbService())
             {
-                cfg.SpecialEmoteCurrency = false;
-                cfg.SpecialCurrencySign = "$";
-                await _db.SaveChangesAsync();
-                await Context.ReplyAsync("Set currency sign back to default `$`", Color.Green.RawValue);
-                return;
-            }
+                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                if (name.IsNullOrWhiteSpace())
+                {
+                    cfg.SpecialEmoteCurrency = false;
+                    cfg.SpecialCurrencySign = "$";
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Set currency sign back to default `$`", Color.Green.RawValue);
+                    return;
+                }
 
-            cfg.SpecialEmoteCurrency = false;
-            cfg.SpecialCurrencySign = name;
-            await _db.SaveChangesAsync();
-            await Context.ReplyAsync($"Set regular currency sign to {name}", Color.Green.RawValue);
+                cfg.SpecialEmoteCurrency = false;
+                cfg.SpecialCurrencySign = name;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set regular currency sign to {name}", Color.Green.RawValue);
+            }
         }
 
         private static string ParseEmoteString(Emote emote)
