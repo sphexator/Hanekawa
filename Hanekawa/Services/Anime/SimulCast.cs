@@ -58,13 +58,13 @@ namespace Hanekawa.Services.Anime
             var guild = _client.GetGuild(cfg.GuildId);
             Console.WriteLine($"Posting anime event to {guild.Name}");
             await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
-                .SendMessageAsync(null, false, BuildEmbed(data).Build());
+                .ReplyAsync(BuildEmbed(data, cfg.GuildId));
         }
 
-        private static EmbedBuilder BuildEmbed(AnimeData data)
+        private static EmbedBuilder BuildEmbed(AnimeData data, ulong guild)
         {
             var embed = new EmbedBuilder()
-                .CreateDefault()
+                .CreateDefault(guild)
                 .WithAuthor(new EmbedAuthorBuilder {Name = "New Episode Available!"})
                 .WithTitle($"{data.Title}")
                 .WithUrl(data.Url)

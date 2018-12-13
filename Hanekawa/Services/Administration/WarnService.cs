@@ -67,7 +67,7 @@ namespace Hanekawa.Services.Administration
                               $"Amount: {userdata.Sessions}\n" +
                               $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
                 var embed = new EmbedBuilder()
-                    .CreateDefault(content)
+                    .CreateDefault(content, user.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})" })
                     .WithFields(await GetWarnings(db, user));
                 return embed;
@@ -223,8 +223,8 @@ namespace Hanekawa.Services.Administration
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff.Mention}\n" +
                                                              "Reason:\n" +
-                                                             $"{reason}");
-                await dm.SendMessageAsync(null, false, embed.Build()); ;
+                                                             $"{reason}", user.GuildId);
+                await dm.ReplyAsync(embed);
             }
             catch
             {
@@ -240,9 +240,9 @@ namespace Hanekawa.Services.Administration
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
                                                              "Reason:\n" +
-                                                             $"{reason}");
+                                                             $"{reason}", user.GuildId);
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
-                await dm.SendMessageAsync(null, false, embed.Build());
+                await dm.ReplyAsync(embed);
             }
             catch
             {
@@ -257,8 +257,8 @@ namespace Hanekawa.Services.Administration
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff}\n" +
                                                                "Reason:\n" +
-                                                               $"{reason}");
-                await dm.SendMessageAsync(null, false, embed.Build());
+                                                               $"{reason}", user.GuildId);
+                await dm.ReplyAsync(embed);
             }
             catch
             {
@@ -274,9 +274,9 @@ namespace Hanekawa.Services.Administration
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been muted in {user.Guild.Name} by {staff}\n" +
                                                                 "Reason:\n" +
-                                                                $"{reason}");
+                                                                $"{reason}", user.GuildId);
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
-                await dm.SendMessageAsync(null, false, embed.Build());
+                await dm.ReplyAsync(embed);
             }
             catch
             {

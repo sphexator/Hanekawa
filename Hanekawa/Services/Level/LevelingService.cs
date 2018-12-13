@@ -112,7 +112,7 @@ namespace Hanekawa.Services.Level
             ITextChannel fallbackChannel = null)
         {
             IUserMessage message = null;
-            var cfg = await db.GetOrCreateGuildConfig(guild as SocketGuild);
+            var cfg = await db.GetOrCreateGuildConfigAsync(guild as SocketGuild);
             if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
             ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
@@ -290,7 +290,7 @@ namespace Hanekawa.Services.Level
             {
                 var channel = await guild.GetTextChannelAsync(cfg.EventChannel.Value);
                 var embed = new EmbedBuilder().CreateDefault($"A {multiplier}x exp event has started!\n" +
-                                                             $"Duration: {after.Humanize()} ( {after} )");
+                                                             $"Duration: {after.Humanize()} ( {after} )", cfg.GuildId);
                 embed.Title = "Exp Event";
                 embed.Timestamp = DateTimeOffset.UtcNow + after;
                 embed.Footer = new EmbedFooterBuilder { Text = "Ends:"};
@@ -327,7 +327,7 @@ namespace Hanekawa.Services.Level
 
                     ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
-                    var cfg = await db.GetOrCreateGuildConfig(((IGuildChannel) msg.Channel).Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(((IGuildChannel) msg.Channel).Guild);
                     var exp = _calc.GetMessageExp(msg, reduced) * cfg.ExpMultiplier * multi;
                     var nxtLvl = _calc.GetServerLevelRequirement(userdata.Level);
 
@@ -408,7 +408,7 @@ namespace Hanekawa.Services.Level
                     try
                     {
                         var userdata = await db.GetOrCreateUserData(gusr);
-                        var cfg = await db.GetOrCreateGuildConfig(gusr.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(gusr.Guild);
                         var oldVc = oldState.VoiceChannel;
                         var newVc = newState.VoiceChannel;
                         if (newVc != null && oldVc == null)
@@ -486,7 +486,7 @@ namespace Hanekawa.Services.Level
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
             var role = GetLevelUpRole(userdata.Level, user, roles);
-            var cfg = await db.GetOrCreateGuildConfig(user.Guild as SocketGuild);
+            var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild as SocketGuild);
 
             if (role == null)
             {
@@ -521,7 +521,7 @@ namespace Hanekawa.Services.Level
                 {
                     var userdata = await db.GetOrCreateUserData(user);
                     if (userdata.Level < 2) return;
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     if (cfg.StackLvlRoles)
                     {
                         var roleCollection = await GetRoleCollectionAsync(db, user, userdata);

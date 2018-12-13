@@ -104,7 +104,7 @@ namespace Hanekawa.Modules.Events
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventSchedulerChannel = null;
@@ -128,7 +128,7 @@ namespace Hanekawa.Modules.Events
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventChannel = null;
@@ -242,7 +242,7 @@ namespace Hanekawa.Modules.Events
 
                 var id = await db.EventSchedules.CountAsync(x => x.GuildId == Context.Guild.Id) + 1;
 
-                var embed = new EmbedBuilder().CreateDefault(null)
+                var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id)
                     .WithTitle(name)
                     .WithTimestamp(new DateTimeOffset(date));
 
@@ -265,7 +265,7 @@ namespace Hanekawa.Modules.Events
                     if (response.Content.ToLower() == "y")
                     {
                         await _service.TryAddEventAsync(name, Context.User as IGuildUser, date, db);
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                         await Context.ReplyAsync(
                             $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!");
                         if (cfg.DesignChannel.HasValue)
@@ -294,7 +294,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("Couldn't find a event with given ID.");
                     return;
                 }
-                var embed = new EmbedBuilder().CreateDefault(eventInfo.Description)
+                var embed = new EmbedBuilder().CreateDefault(eventInfo.Description, Context.Guild.Id)
                     .WithImageUrl(eventInfo.ImageUrl)
                     .WithTitle(eventInfo.Name)
                     .WithTimestamp(new DateTimeOffset(eventInfo.Time));

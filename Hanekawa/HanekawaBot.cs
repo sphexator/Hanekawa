@@ -12,7 +12,6 @@ using Hanekawa.Services.Administration;
 using Hanekawa.Services.Events;
 using Hanekawa.Services.Scheduler;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,19 +22,17 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Quartz.Util;
 using Victoria;
 
 namespace Hanekawa
 {
     public class HanekawaBot
     {
-        private DatabaseClient _dbClient;
         public async Task StartAsync()
         {
             var config = BuildConfig();
 
-            _dbClient = new DatabaseClient(config["connectionString"]);
+            var databaseClient = new DatabaseClient(config["connectionString"]);
             var services = new ServiceCollection();
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));
@@ -53,6 +50,7 @@ namespace Hanekawa
                     LogLevel = LogSeverity.Verbose
                 }));
             services.AddSingleton(config);
+            services.AddLogging();
             services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new PatreonClient(config["patreon"]));
             services.AddSingleton<Lavalink>();
@@ -67,17 +65,14 @@ namespace Hanekawa
 
             var hanakawaServices = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(IHanaService))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract);
-            var requiredServices = assembly.GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IHanaService))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract);
+                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
             foreach (var x in hanakawaServices) services.AddSingleton(x);
             var provider = services.BuildServiceProvider();
             ConfigureLogging(provider);
 
             using (var db = new DbService()) await db.Database.MigrateAsync(); 
             
-            foreach (var x in requiredServices) provider.GetRequiredService(x);
+            foreach (var x in hanakawaServices) provider.GetRequiredService(x);
 
             var scheduler = provider.GetService<IScheduler>();
 

@@ -5,6 +5,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.CommandHandler;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Extensions;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -51,7 +52,22 @@ namespace Hanekawa.Modules.Permission
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(uint color)
         {
-            await Context.ReplyAsync("test", color);
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            var response = await NextMessageAsync();
+            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    cfg.EmbedColor = color;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Changed default embed color");
+                }
+            }
+            else
+            {
+                await Context.ReplyAsync("Aborting...");
+            }
         }
     }
 }

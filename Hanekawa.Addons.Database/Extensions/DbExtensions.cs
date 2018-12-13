@@ -89,14 +89,26 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketUser user) =>
             await GetOrCreateGlobalUser(context, user.Id);
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
-            await GetOrCreateConfig(context, guild.Id);
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateConfigAsync(context, guild.Id);
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuildUser user) =>
-            await GetOrCreateConfig(context, user.Guild.Id);
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, SocketGuildUser user) =>
+            await GetOrCreateConfigAsync(context, user.Guild.Id);
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuild guild) =>
-            await GetOrCreateConfig(context, guild.Id);
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, SocketGuild guild) =>
+            await GetOrCreateConfigAsync(context, guild.Id);
+
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, ulong guild) =>
+            await GetOrCreateConfigAsync(context, guild);
+
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, ulong guild) =>
+            GetOrCreateConfig(context, guild);
+
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, SocketGuildUser guild) =>
+            GetOrCreateConfig(context, guild.Guild.Id);
+
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
+            GetOrCreateConfig(context, guild.Id);
 
         public static async Task PurchaseServerItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
         {
@@ -340,18 +352,15 @@ namespace Hanekawa.Addons.Database.Extensions
         private static async Task<AccountGlobal> GetOrCreateGlobalUser(this DbService context, ulong userId)
         {
             var userdata = await context.AccountGlobals.FindAsync(userId);
-            if (userdata != null)
-            {
-                return userdata;
-            }
-
+            if (userdata != null) return userdata;
+            
             var data = new AccountGlobal().DefaultAccountGlobal(userId);
             await context.AccountGlobals.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.AccountGlobals.FindAsync(userId);
         }
 
-        private static async Task<GuildConfig> GetOrCreateConfig(DbService context, ulong guild)
+        private static async Task<GuildConfig> GetOrCreateConfigAsync(DbService context, ulong guild)
         {
             var response = await context.GuildConfigs.FindAsync(guild);
             if (response != null) return response;
@@ -360,6 +369,17 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.GuildConfigs.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.GuildConfigs.FindAsync(guild);
+        }
+
+        private static GuildConfig GetOrCreateConfig(DbService context, ulong guild)
+        {
+            var response = context.GuildConfigs.Find(guild);
+            if (response != null) return response;
+
+            var data = new GuildConfig().DefaultGuildConfig(guild);
+            context.GuildConfigs.Add(data);
+            context.SaveChanges();
+            return context.GuildConfigs.Find(guild);
         }
     }
 }

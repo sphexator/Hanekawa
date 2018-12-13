@@ -53,7 +53,7 @@ namespace Hanekawa.Preconditions
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(context.Guild as SocketGuild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild as SocketGuild);
                 return cfg.IgnoreAllChannels;
             }
         }

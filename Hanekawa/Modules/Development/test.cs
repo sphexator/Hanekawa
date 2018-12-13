@@ -7,6 +7,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Patreon;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Services.Patreon;
 
@@ -32,6 +33,14 @@ namespace Hanekawa.Modules.Development
                              $"{role.Id}\n" +
                              $"{role.Color.RawValue}\n" +
                              $"{role.Position}");
+        }
+
+        [Command("shard")]
+        [RequireOwner]
+        public async Task CheckShards()
+        {
+            var shards = await Context.Client.GetRecommendedShardCountAsync();
+            await Context.ReplyAsync($"Current recommended shard count is: {shards}");
         }
 
         [Command("test", RunMode = RunMode.Async)]

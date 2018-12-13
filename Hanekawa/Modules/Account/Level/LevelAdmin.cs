@@ -59,7 +59,7 @@ namespace Hanekawa.Modules.Account.Level
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.StackLvlRoles)
                 {
                     cfg.StackLvlRoles = false;

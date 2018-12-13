@@ -23,7 +23,7 @@ namespace Hanekawa.Preconditions
             }
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
                 if (!cfg.MusicChannel.HasValue) return PreconditionResult.FromSuccess();
                 return context.Channel.Id != cfg.MusicChannel.Value
                     ? PreconditionResult.FromError("Wrong channel")

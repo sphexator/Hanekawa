@@ -70,7 +70,7 @@ namespace Hanekawa.Modules.Board
                 }
 
                 var embed = new EmbedBuilder()
-                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given").WithAuthor(
+                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given", Context.Guild.Id).WithAuthor(
                         new EmbedAuthorBuilder
                             {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} board stats"});
                 embed.AddField($"Top {emote} Posts", $"{topM ?? "N/A"}");
@@ -101,7 +101,7 @@ namespace Hanekawa.Modules.Board
                     }
                 else topStar += $"No {emote} messages";
 
-                var embed = new EmbedBuilder().CreateDefault(null).WithAuthor(new EmbedAuthorBuilder
+                var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
                     { IconUrl = user.GetAvatar(), Name = user.GetName() });
                 embed.AddField("Boarded Messages", $"{boardData.Count}", true);
                 embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
@@ -119,7 +119,7 @@ namespace Hanekawa.Modules.Board
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var emoteString = ParseEmoteString(emote);
                 _boardService.SetBoardEmote(Context.Guild, emoteString);
                 cfg.BoardEmote = emoteString;
@@ -136,7 +136,7 @@ namespace Hanekawa.Modules.Board
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.BoardChannel = null;

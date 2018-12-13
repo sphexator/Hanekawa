@@ -1,63 +1,49 @@
-﻿using System;
+﻿using Discord;
+using Discord.Commands;
+using Humanizer;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
-using Hanekawa.Entities;
-using Humanizer;
-using ActionType = Hanekawa.Entities.ActionType;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class EmbedExtension
     {        
-        // Attach into channels for usage outside of the command service
-        //TODO: Uncomment this later
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, uint color) =>
-            channel.SendEmbedAsync(Create(content, color));
+            channel.SendEmbedAsync(Create(content, new Color(color)));
 
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content) =>
-            channel.SendEmbedAsync(Create(content, Color.Purple.RawValue));
+        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, ulong guild) =>
+            channel.SendEmbedAsync(Create(content, new Color().GetDefaultColor(guild)));
 
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendEmbedAsync(embed);
 
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed, string message) =>
             channel.SendEmbedAsync(embed, message);
-        /*
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, IGuildUser user, Color color,
-            LogAction type) =>
-            channel.SendEmbedAsync(Create());
-        */
-        // Attach into the command context for use in commands
+
         public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string content, uint color) =>
-            context.Channel.SendEmbedAsync(Create(content, color));
+            context.Channel.SendEmbedAsync(Create(content, new Color(color)));
 
         public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string embedMsg, string message, uint color) =>
-            context.Channel.SendEmbedAsync(Create(embedMsg, color), message);
+            context.Channel.SendEmbedAsync(Create(embedMsg, new Color(color)), message);
 
         public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string content) =>
-            context.Channel.SendEmbedAsync(Create(content, Color.Purple.RawValue));
+            context.Channel.SendEmbedAsync(Create(content, new Color().GetDefaultColor(context.Guild.Id)));
 
         public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
 
         public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, EmbedBuilder embed, string message) =>
             context.Channel.SendEmbedAsync(embed, message);
-        /*
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, IGuildUser user, Color color,
-            LogAction type) =>
-            context.Channel.SendEmbedAsync(Create());
-            */
 
         public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, uint color) =>
-            context.Create(content, color);
+            context.Create(content, new Color(color));
 
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content) =>
-            context.Create(content, Color.Purple.RawValue);
+        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, ulong guild) =>
+            context.Create(content, new Color().GetDefaultColor(guild));
 
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context) =>
-            context.Create(null, Color.Purple.RawValue);
+        public static EmbedBuilder CreateDefault(this EmbedBuilder context, ulong guild) =>
+            context.Create(null, new Color().GetDefaultColor(guild));
 
         public static EmbedBuilder Log(this EmbedBuilder embed, IGuildUser user, string content, uint color,
             string title)
@@ -99,18 +85,18 @@ namespace Hanekawa.Extensions.Embed
             return result;
         }
 
-        private static EmbedBuilder Create(this EmbedBuilder embed, string content, uint color)
+        private static EmbedBuilder Create(this EmbedBuilder embed, string content, Color color)
         {
-            embed.Color = new Color(color);
+            embed.Color = color;
             embed.Description = content;
             return embed;
         }
 
-        private static EmbedBuilder Create(string content, uint color)
+        private static EmbedBuilder Create(string content, Color color)
         {
             return new EmbedBuilder
             {
-                Color = new Color(color),
+                Color = color,
                 Description = content
             };
         }
@@ -120,6 +106,5 @@ namespace Hanekawa.Extensions.Embed
 
         private static Task<IUserMessage> SendEmbedAsync(this IMessageChannel ch, EmbedBuilder embed,
             string content) => ch.SendMessageAsync(content, false, embed.Build());
-
     }
 }

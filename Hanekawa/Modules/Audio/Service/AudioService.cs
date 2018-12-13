@@ -63,7 +63,7 @@ namespace Hanekawa.Modules.Audio.Service
                 if (string.IsNullOrWhiteSpace(query))
                 {
                     if (player.Queue.Count < 1)
-                        return new EmbedBuilder().CreateDefault("Queue is empty. Please queue something first.");
+                        return new EmbedBuilder().CreateDefault("Queue is empty. Please queue something first.", channel.GuildId);
                     track = player.Queue.Dequeue();
                 }
                 else
@@ -72,7 +72,7 @@ namespace Hanekawa.Modules.Audio.Service
                                  ?? await _lavaNode.GetTracksAsync(query);
 
                     if (search.LoadResultType == LoadResultType.NoMatches)
-                        return new EmbedBuilder().CreateDefault($"I wasn't able to find anything for {query}.");
+                        return new EmbedBuilder().CreateDefault($"I wasn't able to find anything for {query}.", channel.GuildId);
 
                     track = search.Tracks.FirstOrDefault();
                 }
@@ -80,16 +80,16 @@ namespace Hanekawa.Modules.Audio.Service
                 if (_lavaNode.IsConnected && !(player.CurrentTrack is null))
                 {
                     player.Queue.Enqueue(track);
-                    return new EmbedBuilder().CreateDefault($"{track.Title} has been added to queue.");
+                    return new EmbedBuilder().CreateDefault($"{track.Title} has been added to queue.", channel.GuildId);
                 }
 
                 await player.PlayAsync(track);
-                return new EmbedBuilder().CreateDefault($"**Now Playing:** {track.Title}");
+                return new EmbedBuilder().CreateDefault($"**Now Playing:** {track.Title}", guildId);
             }
             catch (Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().CreateDefault("Couldn't play that"); ;
+                return new EmbedBuilder().CreateDefault("Couldn't play that", guildId); ;
             }
         }
 
@@ -115,12 +115,12 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.PauseAsync();
-                return new EmbedBuilder().CreateDefault($"**Paused:** {player.CurrentTrack.Title}");
+                return new EmbedBuilder().CreateDefault($"**Paused:** {player.CurrentTrack.Title}", guildId);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.", guildId);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Hanekawa.Modules.Audio.Service
         public EmbedBuilder DisplayQueue(ulong guildId)
         {
             var player = _lavaNode.GetPlayer(guildId);
-            var embed = new EmbedBuilder().CreateDefault();
+            var embed = new EmbedBuilder().CreateDefault(guildId);
             try
             {
                 if (player.IsPlaying && player.CurrentTrack != null)
@@ -177,7 +177,7 @@ namespace Hanekawa.Modules.Audio.Service
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().CreateDefault("Queue is empty.");
+                return new EmbedBuilder().CreateDefault("Queue is empty.", guildId);
             }
         }
 
@@ -186,9 +186,9 @@ namespace Hanekawa.Modules.Audio.Service
             var player = _lavaNode.GetPlayer(guildId);
             if (player == null) return new EmbedBuilder().CreateDefault("Not playing anything currently.", Color.Red.RawValue);
             if (player.CurrentTrack != null) await player.StopAsync();
-            if (player.Queue == null || player.Queue.Count == 0) return new EmbedBuilder().CreateDefault("No queue");
+            if (player.Queue == null || player.Queue.Count == 0) return new EmbedBuilder().CreateDefault("No queue", guildId);
             player.Queue.Clear();
-            return new EmbedBuilder().CreateDefault("Cleared queue");
+            return new EmbedBuilder().CreateDefault("Cleared queue", guildId);
         }
 
         public async Task<EmbedBuilder> VolumeAsync(ulong guildId, int vol)
@@ -197,7 +197,7 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.SetVolumeAsync(vol);
-                return new EmbedBuilder().CreateDefault($"Volume has been set to {vol}.");
+                return new EmbedBuilder().CreateDefault($"Volume has been set to {vol}.", guildId);
             }
             catch (ArgumentException arg)
             {
@@ -206,7 +206,7 @@ namespace Hanekawa.Modules.Audio.Service
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.", guildId);
             }
         }
 
@@ -216,12 +216,12 @@ namespace Hanekawa.Modules.Audio.Service
             try
             {
                 await player.SeekAsync(span);
-                return new EmbedBuilder().CreateDefault($"**Seeked:** {player.CurrentTrack.Title}");
+                return new EmbedBuilder().CreateDefault($"**Seeked:** {player.CurrentTrack.Title}", guildId);
             }
             catch(Exception ex)
             {
                 Log(ex);
-                return new EmbedBuilder().CreateDefault("Not playing anything currently.");
+                return new EmbedBuilder().CreateDefault("Not playing anything currently.", guildId);
             }
         }
 
@@ -241,7 +241,7 @@ namespace Hanekawa.Modules.Audio.Service
             await Task.Delay(1000);
 
             await _lavaNode.ConnectAsync(vc.VoiceChannel, txC);
-            return new EmbedBuilder().CreateDefault("Reconnected!");
+            return new EmbedBuilder().CreateDefault("Reconnected!", vc.VoiceChannel.GuildId);
         }
 
         public async Task<EmbedBuilder> SkipAsync(ulong guildId, SocketGuildUser user)
@@ -252,21 +252,21 @@ namespace Hanekawa.Modules.Audio.Service
                 Options.TryGetValue(guildId, out var options);
 
                 if (options.Voters.Contains(user.Id))
-                    return new EmbedBuilder().CreateDefault("You've already voted. Please don't vote again.");
+                    return new EmbedBuilder().CreateDefault("You've already voted. Please don't vote again.", guildId);
 
                 options.VotedTrack = player.Queue.Peek();
                 options.Voters.Add(user.Id);
                 var perc = options.Voters.Count / user.VoiceChannel.Users.Count(x => !x.IsBot) * 100;
 
                 if (perc < 60)
-                    return new EmbedBuilder().CreateDefault("More votes needed.");
+                    return new EmbedBuilder().CreateDefault("More votes needed.", guildId);
 
                 var track = player.CurrentTrack;
                 await player.SkipAsync();
                 options.VotedTrack = null;
                 options.Voters.Clear();
 
-                return new EmbedBuilder().CreateDefault($"$**Skipped:** {track.Title}");
+                return new EmbedBuilder().CreateDefault($"$**Skipped:** {track.Title}", guildId);
             }
             catch(Exception ex)
             {

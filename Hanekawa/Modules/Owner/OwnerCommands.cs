@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Owner
 {
@@ -22,8 +22,27 @@ namespace Hanekawa.Modules.Owner
         }
 
         [Group("blacklist")]
+        [RequireOwner]
         public class Blacklist : InteractiveBase
         {
+            [Command("list")]
+            [RequireOwner]
+            public async Task BlackListList()
+            {
+                using (var db = new DbService())
+                {
+                    var list = await db.Blacklists.ToListAsync();
+                    var pages = new List<string>();
+                    foreach (var x in list)
+                    {
+                        pages.Add($"Guild ID: {x.GuildId} - Reason: {x.Reason}\n" +
+                                  $"Responsible: {Context.Client.GetUser(x.ResponsibleUser)}");
+                    }
+
+                    await PagedReplyAsync(pages.PaginateBuilder("Blacklisted servers"));
+                }
+            }
+
             [Command("add", RunMode = RunMode.Async)]
             [RequireOwner]
             public async Task BlackListAddAsync(ulong id, [Remainder] string reason = null)

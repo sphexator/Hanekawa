@@ -30,7 +30,7 @@ namespace Hanekawa.Modules.Account.Achievement
                     var content = new StringBuilder();
                     foreach (var x in tabs)  content.Append($"{x.Name}\n");
                     var embed = new EmbedBuilder()
-                        .CreateDefault(content.ToString())
+                        .CreateDefault(content.ToString(), Context.Guild.Id)
                         .WithAuthor(new EmbedAuthorBuilder {Name = "Achievement tabs"})
                         .WithFooter(new EmbedFooterBuilder
                             {Text = "Use `Achievement <tab>` to see list of achievements in that tab"});
@@ -65,7 +65,7 @@ namespace Hanekawa.Modules.Account.Achievement
             {
                 var achiv = await db.Achievements.FindAsync(id);
                 await Context.ReplyAsync(new EmbedBuilder()
-                    .CreateDefault($"{achiv.Description}\nRequired: {achiv.Requirement}")
+                    .CreateDefault($"{achiv.Description}\nRequired: {achiv.Requirement}", Context.Guild.Id)
                     .WithThumbnailUrl(achiv.ImageUrl)
                     .WithTitle(achiv.Name));
             }

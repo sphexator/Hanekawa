@@ -39,7 +39,7 @@ namespace Hanekawa.Services.CommandHandler
             using (var db = new DbService())
             {
                 Prefix.AddOrUpdate(guild.Id, prefix, (key, old) => prefix);
-                var cfg = await db.GetOrCreateGuildConfig(guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(guild);
                 cfg.Prefix = prefix;
                 await db.SaveChangesAsync();
             }

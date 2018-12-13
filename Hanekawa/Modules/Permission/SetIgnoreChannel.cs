@@ -32,7 +32,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null) channel = Context.Channel as ITextChannel;
                 var result = await _requiredChannel.AddChannel(channel);
                 if (!result)
@@ -60,7 +60,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null) channel = Context.Channel as ITextChannel;
                 var result = await _requiredChannel.RemoveChannel(channel);
                 if (!result)
@@ -87,7 +87,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 string content = null;
                 if (list.Count != 0)
@@ -112,7 +112,7 @@ namespace Hanekawa.Modules.Permission
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
-                var embed = new EmbedBuilder().CreateDefault(content)
+                var embed = new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = title });
                 await Context.ReplyAsync(embed);
             }
@@ -123,7 +123,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.IgnoreAllChannels)
                 {
                     cfg.IgnoreAllChannels = false;

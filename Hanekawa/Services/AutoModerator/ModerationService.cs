@@ -207,7 +207,7 @@ namespace Hanekawa.Services.AutoModerator
                 Account userdata;
                 using (var db = new DbService())
                 {
-                    cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     userdata = await db.GetOrCreateUserData(user);
                 }
 

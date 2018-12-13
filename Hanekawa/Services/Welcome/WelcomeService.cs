@@ -129,7 +129,7 @@ namespace Hanekawa.Services.Welcome
                     if (status) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.WelcomeChannel.HasValue) return;
                         await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user, cfg)
                             .ConfigureAwait(false);

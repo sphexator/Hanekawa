@@ -140,7 +140,7 @@ namespace Hanekawa.Modules.Welcome
                 .CreateDefault(
                     "The PSD file contains everything that's needed to get started creating your own banners.\n" +
                     "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
-                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)")
+                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
             await Context.Channel.SendFileAsync(@"Data\Welcome\WelcomeTemplate.psd", null, false, embed.Build());
@@ -153,7 +153,7 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
@@ -167,7 +167,7 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.WelcomeDelete.HasValue && timer == null) return;
                 if (timer == null)
                 {
@@ -192,7 +192,7 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.WelcomeBanner)
                 {
                     cfg.WelcomeBanner = false;
@@ -214,7 +214,7 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.WelcomeChannel.HasValue && channel == null)
                 {
                     cfg.WelcomeChannel = null;

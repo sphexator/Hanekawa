@@ -43,10 +43,10 @@ namespace Hanekawa.Modules.Account
             {
                 if (user == null) user = Context.User as SocketGuildUser;
                 var userdata = await db.GetOrCreateUserData(user);
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var embed = new EmbedBuilder()
                     .CreateDefault($"{GetRegularCurrency(userdata, cfg)}\n" +
-                                   $"{GetSpecialCurrency(userdata, cfg)}")
+                                   $"{GetSpecialCurrency(userdata, cfg)}", Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()});
                 await Context.ReplyAsync(embed);
             }
@@ -133,7 +133,7 @@ namespace Hanekawa.Modules.Account
                     Author = new EmbedAuthorBuilder
                         {Name = $"Money leaderboard for {Context.Guild.Name}", IconUrl = Context.Guild.IconUrl}
                 };
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var rank = 1;
                 foreach (var x in await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
                     .OrderByDescending(account => account.Credit).Take(10).ToListAsync())
@@ -163,7 +163,7 @@ namespace Hanekawa.Modules.Account
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 userdata.CreditSpecial = userdata.CreditSpecial + amount;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -251,7 +251,7 @@ namespace Hanekawa.Modules.Account
                 var item = await db.Items.FindAsync(id);
                 if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
                 var embed = new EmbedBuilder()
-                    .CreateDefault(item.Description)
+                    .CreateDefault(item.Description, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {Name = item.Name});
 
                 embed.AddField("Role", item.Role.HasValue, true);
@@ -436,7 +436,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.CurrencyName = "Credit";
@@ -458,7 +458,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.EmoteCurrency = true;
                 cfg.CurrencySign = ParseEmoteString(emote);
                 await db.SaveChangesAsync();
@@ -472,7 +472,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.EmoteCurrency = false;
@@ -495,7 +495,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.SpecialCurrencyName = "Special Credit";
@@ -518,7 +518,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.SpecialEmoteCurrency = true;
                 cfg.SpecialCurrencySign = ParseEmoteString(emote);
                 await db.SaveChangesAsync();
@@ -532,7 +532,7 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.SpecialEmoteCurrency = false;

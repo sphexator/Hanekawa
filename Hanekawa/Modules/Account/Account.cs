@@ -52,7 +52,7 @@ namespace Hanekawa.Modules.Account
                 await Task.WhenAll(rank, total, globalRank, globalUserRank);
                 var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
                 await Context.ReplyAsync(new EmbedBuilder()
-                    .CreateDefault()
+                    .CreateDefault(Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { Name = user.GetName() })
                     .WithThumbnailUrl(user.GetAvatar())
                     .WithFields(new List<EmbedFieldBuilder>

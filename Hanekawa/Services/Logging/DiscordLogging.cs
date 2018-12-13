@@ -67,11 +67,11 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     if (!cfg.LogWarn.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     if (ch == null) return;
-                    await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null)
+                    await ch.ReplyAsync(new EmbedBuilder().CreateDefault(user.Guild.Id)
                         .WithAuthor(new EmbedAuthorBuilder { Name = "User Mute Warned" })
                         .WithFooter(new EmbedFooterBuilder
                             { Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})" })
@@ -95,12 +95,12 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     if (!cfg.LogWarn.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     if (ch == null) return;
 
-                    await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null)
+                    await ch.ReplyAsync(new EmbedBuilder().CreateDefault(user.Guild.Id)
                         .WithAuthor(new EmbedAuthorBuilder { Name = "User Warned" })
                         .WithFields(new List<EmbedFieldBuilder>
                         {
@@ -123,7 +123,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     ITextChannel channel;
                     if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
                     else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
@@ -143,7 +143,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                     ITextChannel channel;
                     if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
@@ -161,7 +161,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                     ITextChannel channel;
                     if (!cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
@@ -199,7 +199,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                     ITextChannel channel;
                     if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
                     else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
@@ -231,7 +231,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
@@ -251,7 +251,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
@@ -282,7 +282,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;

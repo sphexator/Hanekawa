@@ -14,7 +14,7 @@ namespace Hanekawa.Modules.Development
         {
             using (var db = new DbService())
             {
-                await db.GetOrCreateGuildConfig(Context.Guild);
+                await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 await ReplyAsync("Created or reseted guild config");
             }
         }

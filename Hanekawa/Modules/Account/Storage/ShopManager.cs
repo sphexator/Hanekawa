@@ -21,7 +21,7 @@ namespace Hanekawa.Modules.Account.Storage
             using (var db = new DbService())
             {
                 var result = new List<string>();
-                var cfg = await db.GetOrCreateGuildConfig(user.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
                 foreach (var x in await db.Shops.Where(x => x.GuildId == user.GuildId).ToListAsync())
                 {
                     result.Add(
@@ -95,7 +95,7 @@ namespace Hanekawa.Modules.Account.Storage
             account.Credit = account.Credit - (uint) price;
             await db.PurchaseServerItem(user, item);
             await db.SaveChangesAsync();
-            return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}");
+            return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
         }
 
         private static async Task<EmbedBuilder> BuyNormalCredit(DbService db, Item item, int price, IGuildUser user,
@@ -106,13 +106,13 @@ namespace Hanekawa.Modules.Account.Storage
                 account.Credit = account.Credit - (uint) price;
                 await db.PurchaseServerItem(user, item);
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}");
+                return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
             }
 
             accountGlobal.Credit = accountGlobal.Credit - (uint) price;
             await db.PurchaseGlobalItem(user, item);
             await db.SaveChangesAsync();
-            return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}");
+            return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
         }
 
         private static string GetPrice(GuildConfig cfg, Shop shop, int price)

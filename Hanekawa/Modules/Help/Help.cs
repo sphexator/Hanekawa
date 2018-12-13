@@ -33,14 +33,14 @@ namespace Hanekawa.Modules.Help
             {
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var embed = new EmbedBuilder()
-                    .CreateDefault(content)
+                    .CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
                     .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" });
                 await Context.ReplyAsync(embed);
             }
             else
             {
-                var output = new EmbedBuilder().CreateDefault();
+                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)
@@ -71,7 +71,7 @@ namespace Hanekawa.Modules.Help
             {
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var embed = new EmbedBuilder()
-                    .CreateDefault(content)
+                    .CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
                     .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" }); ;
                 embed.AddField("Support", "[Discord](https://discord.gg/gGu5TT6)", true);
@@ -83,7 +83,7 @@ namespace Hanekawa.Modules.Help
             }
             else
             {
-                var output = new EmbedBuilder().CreateDefault();
+                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)

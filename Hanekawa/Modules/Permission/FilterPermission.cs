@@ -32,7 +32,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 await Context.ReplyAsync(new EmbedBuilder()
                     .CreateDefault($"**Invite filter:** {cfg.FilterInvites}\n" +
                                    $"**Emote filter:** {cfg.EmoteCountFilter ?? 0}\n" +
@@ -40,7 +40,7 @@ namespace Hanekawa.Modules.Permission
                                    $"**URL filter:** {cfg.FilterUrls}\n" +
                                    $"**Average Toxicity enabled Channels:** {await db.NudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vat' for specifics)*\n" +
                                    $"**Single Toxicity enabled channels:** {await db.SingleNudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vst' for specifics)*\n" +
-                                   $"**URL filter enabled channels:** {await db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*")
+                                   $"**URL filter enabled channels:** {await db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*", Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder
                     {
                         IconUrl = Context.Guild.IconUrl,
@@ -56,7 +56,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.FilterInvites)
                 {
                     cfg.FilterInvites = false;
@@ -157,7 +157,7 @@ namespace Hanekawa.Modules.Permission
                     fields.Add(field);
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels" })
                     .WithFields(fields));
             }
@@ -189,7 +189,7 @@ namespace Hanekawa.Modules.Permission
                     fields.Add(field);
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault()
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels" })
                     .WithFields(fields));
             }
@@ -202,7 +202,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (amount > 0)
                 {
                     cfg.EmoteCountFilter = amount;
@@ -225,7 +225,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (amount > 0)
                 {
                     cfg.MentionCountFilter = amount;
@@ -272,7 +272,7 @@ namespace Hanekawa.Modules.Permission
                     fields += $"{Context.Guild.GetTextChannel(x.ChannelId).Mention}\n";
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(fields)
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(fields, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "URL filter enabled channels" }));
             }
         }

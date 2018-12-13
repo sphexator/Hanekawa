@@ -25,7 +25,7 @@ namespace Hanekawa.Modules.Help
             await Context.Message.DeleteAsync();
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
-            var embed = new EmbedBuilder().CreateDefault();
+            var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id);
             embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
@@ -47,7 +47,7 @@ namespace Hanekawa.Modules.Help
         {
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
-            var embed = new EmbedBuilder().CreateDefault();
+            var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id);
             embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
@@ -67,7 +67,7 @@ namespace Hanekawa.Modules.Help
         {
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder()
-                    .CreateDefault($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}")
+                    .CreateDefault($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}", Context.Guild.Id)
                     .Build(), TimeSpan.FromSeconds(20));
         }
 
@@ -79,7 +79,7 @@ namespace Hanekawa.Modules.Help
         public async Task ServerInformation()
         {
             var embed = new EmbedBuilder()
-                .CreateDefault()
+                .CreateDefault(Context.Guild.Id)
                 .WithAuthor(new EmbedAuthorBuilder
                     {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} ({Context.Guild.Id})"});
 
@@ -109,7 +109,7 @@ namespace Hanekawa.Modules.Help
             var roles = Context.Guild.Roles.Aggregate<SocketRole, string>(null,
                 (current, x) => current + $"{x.Name}, ");
             var embed = new EmbedBuilder()
-                .CreateDefault(roles)
+                .CreateDefault(roles, Context.Guild.Id)
                 .WithAuthor(new EmbedAuthorBuilder
                     {IconUrl = Context.Guild.IconUrl, Name = $"Roles for {Context.Guild.Name}"});
             await Context.ReplyAsync(embed);

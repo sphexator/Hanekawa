@@ -75,7 +75,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         var user = userJoined.User;
                         using (var db = new DbService())
                         {
-                        var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -107,7 +107,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         var user = userJoined.User;
                         using (var db = new DbService())
                         {
-                        var cfg = await db.GetOrCreateGuildConfig(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -140,7 +140,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         if (!(messageDeleted.Channel is SocketGuildChannel chx)) return;
                         using (var db = new DbService())
                         {
-                            var cfg = await db.GetOrCreateGuildConfig(chx.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateGuildConfigAsync(chx.Guild).ConfigureAwait(false);
                             if (!cfg.LogMsg.HasValue) return;
                             var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
                             if (channel == null) return;
@@ -149,7 +149,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                             var embed = new EmbedBuilder()
                                 .CreateDefault(
-                                    $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}")
+                                    $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}", guildId)
                                 .WithAuthor(new EmbedAuthorBuilder {Name = "Message Deleted"})
                                 .WithFooter(new EmbedFooterBuilder
                                     {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"})
@@ -192,7 +192,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(messageUpdated.Channel is ITextChannel chtx)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfig(chtx.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(chtx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
 
                         if (!messageUpdated.OldMessage.HasValue) return;
@@ -204,7 +204,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
                         if (messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
 
-                        await channel.ReplyAsync(new EmbedBuilder().CreateDefault($"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}")
+                        await channel.ReplyAsync(new EmbedBuilder().CreateDefault($"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}", guildId)
                             .WithAuthor(new EmbedAuthorBuilder { Name = "Message Updated" })
                             .WithFooter(new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" })
                             .WithTimestamp(messageUpdated.NewMessage.EditedTimestamp ?? messageUpdated.NewMessage.Timestamp)
@@ -241,7 +241,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfig(userBanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateGuildConfigAsync(userBanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userBanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
@@ -285,7 +285,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfig(userUnbanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateGuildConfigAsync(userUnbanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userUnbanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
@@ -328,12 +328,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(userUpdated.NewUser is SocketGuildUser gusr)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfig(gusr.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(gusr.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;
 
-                        var embed = new EmbedBuilder().CreateDefault(null);
+                        var embed = new EmbedBuilder().CreateDefault(guildId);
                         if (userUpdated.OldUser.Username != userUpdated.NewUser.Username)
                         {
                             var updated = userUpdated;
@@ -385,12 +385,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 {
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfig(guildUserUpdated.NewUser.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(guildUserUpdated.NewUser.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = guildUserUpdated.NewUser.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;
 
-                        var embed = new EmbedBuilder().CreateDefault(null)
+                        var embed = new EmbedBuilder().CreateDefault(guildId)
                             .WithTitle($"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}")
                             .WithFooter(new EmbedFooterBuilder { IconUrl = guildUserUpdated.NewUser.GetAvatar(), Text = "" });
 

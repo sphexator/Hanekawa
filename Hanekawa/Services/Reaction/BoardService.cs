@@ -154,7 +154,7 @@ namespace Hanekawa.Services.Reaction
 
         private async Task SendBoardAsync(DbService db, ITextChannel channel, ulong messageId)
         {
-            var cfg = await db.GetOrCreateGuildConfig(channel.Guild as SocketGuild);
+            var cfg = await db.GetOrCreateGuildConfigAsync(channel.Guild as SocketGuild);
             if (!cfg.BoardChannel.HasValue) return;
             var guild = _client.GetGuild(channel.GuildId);
             var message = await channel.GetMessageAsync(messageId);

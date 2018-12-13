@@ -22,11 +22,11 @@ namespace Hanekawa.Modules.QA
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue) return;
                 var caseId = await db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
 
-                var embed = new EmbedBuilder().CreateDefault(question)
+                var embed = new EmbedBuilder().CreateDefault(question, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
                     .WithFooter(new EmbedFooterBuilder { Text = $"Question ID: {caseId.Id}" })
                     .WithTimestamp(DateTimeOffset.UtcNow);
@@ -51,7 +51,7 @@ namespace Hanekawa.Modules.QA
                 await Context.Message.DeleteAsync();
                 var question = await db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
                 if (question == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue)
                 {
                     await Context.ReplyAsync("No QnA channel has been setup", Color.Red.RawValue);
@@ -80,7 +80,7 @@ namespace Hanekawa.Modules.QA
                                     "Question:\n" +
                                     $"{embed.Description}\n" +
                                     $"Answer from {Context.User}:\n" +
-                                    $"{response}");
+                                    $"{response}", Context.Guild.Id);
                 }
                 catch
                 {
@@ -100,7 +100,7 @@ namespace Hanekawa.Modules.QA
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.QuestionAndAnswerChannel.HasValue && channel == null)
                 {
                     cfg.QuestionAndAnswerChannel = null;

@@ -25,10 +25,10 @@ namespace Hanekawa.Modules.Suggestion
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.SuggestionChannel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
-                var embed = new EmbedBuilder().CreateDefault(suggestion)
+                var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
                     .WithFooter(new EmbedFooterBuilder { Text = $"Suggestion ID: {caseId.Id}" })
                     .WithTimestamp(DateTimeOffset.UtcNow);
@@ -53,7 +53,7 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -73,7 +73,7 @@ namespace Hanekawa.Modules.Suggestion
                             "Suggestion:\n" +
                             $"{embed.Description}\n" +
                             $"Answer from {Context.User}:\n" +
-                            $"{response}"));
+                            $"{response}", Context.Guild.Id));
                 }
                 catch
                 {
@@ -95,7 +95,7 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Suggestion
                         "Suggestion:\n" +
                         $"{embed.Description}\n" +
                         $"Answer from {Context.User}:\n" +
-                        $"{response}");
+                        $"{response}", Context.Guild.Id);
                 }
                 catch
                 {
@@ -136,7 +136,7 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -174,7 +174,7 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.SuggestionChannel.HasValue && channel == null)
                 {
                     cfg.SuggestionChannel = null;
@@ -199,7 +199,7 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (emote == null)
                 {
                     cfg.SuggestionEmoteNo = null;
@@ -223,7 +223,7 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (emote == null)
                 {
                     cfg.SuggestionEmoteYes = null;

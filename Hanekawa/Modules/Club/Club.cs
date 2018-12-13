@@ -178,7 +178,7 @@ namespace Hanekawa.Modules.Club
                     }
                 else content += "Currently not in any clubs";
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content)
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
                     .WithTitle("Reply with the ID of club you wish to leave")
                     .WithFooter("Exit to cancel"));
                 var status = true;
@@ -341,7 +341,7 @@ namespace Hanekawa.Modules.Club
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader.Channel.HasValue) return;
                 if (leader.RoleId.HasValue) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.ClubChannelCategory.HasValue)
                 {
                     await Context.ReplyAsync("This server doesn\'t allow club channels", Color.Red.RawValue);
@@ -438,7 +438,7 @@ namespace Hanekawa.Modules.Club
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader == null) return;
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 leader.Description = content;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
@@ -463,7 +463,7 @@ namespace Hanekawa.Modules.Club
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader == null) return;
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 leader.ImageUrl = image;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync("Updated image to club!", Color.Green.RawValue);
@@ -500,7 +500,7 @@ namespace Hanekawa.Modules.Club
                     await Context.ReplyAsync("Set club as public. Anyone can join!", Color.Green.RawValue);
                     if (leader.AdMessage.HasValue)
                     {
-                        var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                        var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                         if (cfg.ClubAdvertisementChannel.HasValue)
                         {
                             var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
@@ -522,7 +522,7 @@ namespace Hanekawa.Modules.Club
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader == null) return;
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.ClubAdvertisementChannel.HasValue)
                 {
                     await Context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
@@ -564,7 +564,7 @@ namespace Hanekawa.Modules.Club
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.ClubAdvertisementChannel = null;
@@ -595,7 +595,7 @@ namespace Hanekawa.Modules.Club
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.ClubChannelCategory.HasValue && cfg.ClubChannelCategory.Value == category.Id)
                 {
                     await Context.ReplyAsync($"Club category channel has already been set to {category.Name}",
@@ -627,7 +627,7 @@ namespace Hanekawa.Modules.Club
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.ClubChannelRequiredLevel = level;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -642,7 +642,7 @@ namespace Hanekawa.Modules.Club
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.ClubChannelRequiredAmount = amount;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -658,7 +658,7 @@ namespace Hanekawa.Modules.Club
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (cfg.ClubAutoPrune)
                 {
                     cfg.ClubAutoPrune = false;

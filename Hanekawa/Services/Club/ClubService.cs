@@ -44,7 +44,7 @@ namespace Hanekawa.Services.Club
         public async Task PostAdvertisementAsync(DbService db, GuildConfig cfg, IGuild guild, ClubInfo club)
         {
             var embed = new EmbedBuilder()
-                .CreateDefault(club.Description ?? "No description added")
+                .CreateDefault(club.Description ?? "No description added", guild.Id)
                 .WithAuthor(new EmbedAuthorBuilder { Name = club.Name })
                 .WithImageUrl(club.ImageUrl);
             var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).ReplyAsync(embed);
@@ -128,7 +128,7 @@ namespace Hanekawa.Services.Club
                 using (var db = new DbService())
                 {
                     if (!(arg2 is ITextChannel channel)) return;
-                    var cfg = await db.GetOrCreateGuildConfig(channel.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(channel.Guild);
                     if (!cfg.ClubAdvertisementChannel.HasValue) return;
                     if (cfg.ClubAdvertisementChannel.Value != channel.Id) return;
 
@@ -159,7 +159,7 @@ namespace Hanekawa.Services.Club
                 using (var db = new DbService())
                 {
                     if (!(arg2 is ITextChannel channel)) return;
-                    var cfg = await db.GetOrCreateGuildConfig(channel.Guild);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(channel.Guild);
                     if (!cfg.ClubAdvertisementChannel.HasValue) return;
                     if (cfg.ClubAdvertisementChannel.Value != channel.Id) return;
 

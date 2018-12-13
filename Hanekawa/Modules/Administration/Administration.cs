@@ -251,7 +251,7 @@ namespace Hanekawa.Modules.Administration
             var msgs = (await Context.Channel.GetMessagesAsync().FlattenAsync()).Where(m => m.Author.Id == user.Id)
                 .Take(100).ToList();
             await _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Warning, msgs);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault($"Warned {user.Mention}").Build());
+            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault($"Warned {user.Mention}", Context.Guild.Id).Build());
         }
 
         [Command("warnlog", RunMode = RunMode.Async)]
@@ -325,7 +325,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages).WithAuthor(new EmbedAuthorBuilder
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages, Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
                 {
                     IconUrl = user.GetAvatar(), Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
                 }));
