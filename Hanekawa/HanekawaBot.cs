@@ -30,9 +30,12 @@ namespace Hanekawa
 {
     public class HanekawaBot
     {
+        private DatabaseClient _dbClient;
         public async Task StartAsync()
         {
             var config = BuildConfig();
+
+            _dbClient = new DatabaseClient(config["connectionString"]);
             var services = new ServiceCollection();
             services.UseQuartz(typeof(EventService));
             services.UseQuartz(typeof(WarnService));

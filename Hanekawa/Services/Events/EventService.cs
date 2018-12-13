@@ -101,7 +101,7 @@ namespace Hanekawa.Services.Events
 
         private static Color GetEventColor(DateTime date)
         {
-            var result = Color.Purple;
+            Color result;
             switch (date.DayOfWeek)
             {
                 case DayOfWeek.Monday:
@@ -125,7 +125,10 @@ namespace Hanekawa.Services.Events
                 case DayOfWeek.Sunday:
                     result = Color.DarkerGrey;
                     break;
-            }
+                default:
+                    result = Color.Purple;
+                    break;
+           }
 
             return result;
         }

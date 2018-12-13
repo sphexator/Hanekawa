@@ -142,7 +142,7 @@ namespace Hanekawa.Modules.Audio.Service
         public EmbedBuilder DisplayQueue(ulong guildId)
         {
             var player = _lavaNode.GetPlayer(guildId);
-            var embed = new EmbedBuilder {Color = Color.Purple};
+            var embed = new EmbedBuilder().CreateDefault();
             try
             {
                 if (player.IsPlaying && player.CurrentTrack != null)

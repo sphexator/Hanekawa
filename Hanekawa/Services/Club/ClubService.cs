@@ -9,6 +9,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
+using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Club
@@ -42,15 +43,11 @@ namespace Hanekawa.Services.Club
 
         public async Task PostAdvertisementAsync(DbService db, GuildConfig cfg, IGuild guild, ClubInfo club)
         {
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple,
-                Author = new EmbedAuthorBuilder {Name = club.Name},
-                ImageUrl = club.ImageUrl,
-                Description = club.Description ?? "No description added"
-            };
-            var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).SendMessageAsync(null,
-                false, embed.Build());
+            var embed = new EmbedBuilder()
+                .CreateDefault(club.Description ?? "No description added")
+                .WithAuthor(new EmbedAuthorBuilder { Name = club.Name })
+                .WithImageUrl(club.ImageUrl);
+            var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).ReplyAsync(embed);
             club.AdMessage = msg.Id;
             await db.SaveChangesAsync();
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));

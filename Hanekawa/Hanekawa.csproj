@@ -20,20 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Data\Images\PictureSpam\**" />
-    <Compile Remove="Data\Images\Zip\**" />
     <Compile Remove="Modules\ApplicationForm\**" />
     <Compile Remove="Services\AutoModerator\Perspective\Services\**" />
     <Compile Remove="Services\INC\**" />
     <Compile Remove="Services\Welcome\Lists\**" />
-    <EmbeddedResource Remove="Data\Images\PictureSpam\**" />
-    <EmbeddedResource Remove="Data\Images\Zip\**" />
     <EmbeddedResource Remove="Modules\ApplicationForm\**" />
     <EmbeddedResource Remove="Services\AutoModerator\Perspective\Services\**" />
     <EmbeddedResource Remove="Services\INC\**" />
     <EmbeddedResource Remove="Services\Welcome\Lists\**" />
-    <None Remove="Data\Images\PictureSpam\**" />
-    <None Remove="Data\Images\Zip\**" />
     <None Remove="Modules\ApplicationForm\**" />
     <None Remove="Services\AutoModerator\Perspective\Services\**" />
     <None Remove="Services\INC\**" />
@@ -176,21 +170,6 @@
     <None Update="Data\Game\Enemy\TransportShipWaClass.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\Info\faq.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Info\level_roles.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Info\rules.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Info\staff.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Ship Girl.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Data\Profile\Default\1.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -228,48 +207,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Default\9.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Aircraft Carrier.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Battleship.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Destroyer.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Heavy Cruiser.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Class\Light Cruiser.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Profile\Template.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Cache\Avatar\placeboAvatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Cache\Banner\placeboAvatar.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\1.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\3.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\4.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\5.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\Images\Welcome\Template\6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Profile\Template\AchievementCircle.png">

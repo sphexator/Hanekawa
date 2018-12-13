@@ -36,15 +36,6 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<EventPayout> EventPayouts { get; set; }
         public virtual DbSet<Item> Items { get; set; }
 
-        // Stats
-        public virtual DbSet<BanStat> BanStats { get; set; }
-        //public virtual DbSet<BotUsageStat> BotUsageStats { get; set; }
-        //public virtual DbSet<EmoteStat> EmoteStats { get; set; }
-        public virtual DbSet<JoinStat> JoinStats { get; set; }
-        public virtual DbSet<MessageStat> MessageStats { get; set; }
-        public virtual DbSet<MuteStat> MuteStats { get; set; }
-        public virtual DbSet<WarnStat> WarnStats { get; set; }
-
         // Achievements
         public virtual DbSet<AchievementMeta> Achievements { get; set; }
         public virtual DbSet<AchievementName> AchievementNames { get; set; }

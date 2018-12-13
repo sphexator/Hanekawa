@@ -44,19 +44,11 @@ namespace Hanekawa.Modules.Account
                 if (user == null) user = Context.User as SocketGuildUser;
                 var userdata = await db.GetOrCreateUserData(user);
                 var cfg = await db.GetOrCreateGuildConfig(Context.Guild);
-                var author = new EmbedAuthorBuilder
-                {
-                    IconUrl = user.GetAvatar(),
-                    Name = user.GetName()
-                };
-                var embed = new EmbedBuilder
-                {
-                    Author = author,
-                    Color = Color.Purple,
-                    Description = $"{GetRegularCurrency(userdata, cfg)}\n" +
-                                  $"{GetSpecialCurrency(userdata, cfg)}"
-                };
-                await ReplyAsync(null, false, embed.Build());
+                var embed = new EmbedBuilder()
+                    .CreateDefault($"{GetRegularCurrency(userdata, cfg)}\n" +
+                                   $"{GetSpecialCurrency(userdata, cfg)}")
+                    .WithAuthor(new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()});
+                await Context.ReplyAsync(embed);
             }
         }
 
@@ -71,16 +63,16 @@ namespace Hanekawa.Modules.Account
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var recieverData = await db.GetOrCreateUserData(user);
                 if (userdata.Credit < amount)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have enough credit",
                         Color.Red.RawValue);
                     return;
                 }
+                var receiverData = await db.GetOrCreateUserData(user);
 
                 userdata.Credit = userdata.Credit - amount;
-                recieverData.Credit = recieverData.Credit + amount;
+                receiverData.Credit = receiverData.Credit + amount;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"{Context.User.Mention} transferred ${amount} to {user.Mention}",
                     Color.Green.RawValue);
@@ -258,12 +250,10 @@ namespace Hanekawa.Modules.Account
             {
                 var item = await db.Items.FindAsync(id);
                 if (item.GuildId.HasValue && item.GuildId != Context.Guild.Id) return;
-                var embed = new EmbedBuilder
-                {
-                    Author = new EmbedAuthorBuilder { Name = item.Name },
-                    Description = item.Description,
-                    Color = Color.Purple
-                };
+                var embed = new EmbedBuilder()
+                    .CreateDefault(item.Description)
+                    .WithAuthor(new EmbedAuthorBuilder {Name = item.Name});
+
                 embed.AddField("Role", item.Role.HasValue, true);
                 embed.AddField("Unique", item.Unique, true);
                 if (item.Role.HasValue)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 
 namespace Hanekawa.Modules.Help
@@ -31,31 +32,20 @@ namespace Hanekawa.Modules.Help
             if (path == "")
             {
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
-                var author = new EmbedAuthorBuilder
-                {
-                    Name = "Module list"
-                };
-                var footer = new EmbedFooterBuilder
-                {
-                    Text = "Use `h.help <module>` to get help with a module"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = content,
-                    Author = author,
-                    Footer = footer
-                };
-                await ReplyAsync(null, false, embed.Build());
+                var embed = new EmbedBuilder()
+                    .CreateDefault(content)
+                    .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
+                    .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" });
+                await Context.ReplyAsync(embed);
             }
             else
             {
-                var output = new EmbedBuilder {Color = Color.Purple};
+                var output = new EmbedBuilder().CreateDefault();
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)
                 {
-                    await ReplyAsync("No module could be found with that name.");
+                    await Context.ReplyAsync("No module could be found with that name.", Color.Red.RawValue);
                     return;
                 }
 
@@ -80,31 +70,20 @@ namespace Hanekawa.Modules.Help
             if (path == "")
             {
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
-                var author = new EmbedAuthorBuilder
-                {
-                    Name = "Module list"
-                };
-                var footer = new EmbedFooterBuilder
-                {
-                    Text = "Use `h.help <module>` to get help with a module"
-                };
-                var embed = new EmbedBuilder
-                {
-                    Color = Color.Purple,
-                    Description = content,
-                    Author = author,
-                    Footer = footer
-                };
-                embed.AddField("Support", "[Discord](https://discord.gg/9tq4xNT)", true);
+                var embed = new EmbedBuilder()
+                    .CreateDefault(content)
+                    .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
+                    .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" }); ;
+                embed.AddField("Support", "[Discord](https://discord.gg/gGu5TT6)", true);
                 embed.AddField("Bot Invite",
                     "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
                     true);
                 var eng = await Context.User.GetOrCreateDMChannelAsync();
-                await eng.SendMessageAsync(null, false, embed.Build());
+                await eng.ReplyAsync(embed);
             }
             else
             {
-                var output = new EmbedBuilder {Color = Color.Purple};
+                var output = new EmbedBuilder().CreateDefault();
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)
@@ -132,14 +111,14 @@ namespace Hanekawa.Modules.Help
             var modules = new List<string>();
             foreach (var module in commandService.Modules)
             {
-                var resultstringList = new List<string>();
+                var resultingList = new List<string>();
                 foreach (var cmd in module.Commands)
                 {
                     var result = await cmd.CheckPreconditionsAsync(context);
-                    if (result.IsSuccess) resultstringList.Add(cmd.Name);
+                    if (result.IsSuccess) resultingList.Add(cmd.Name);
                 }
 
-                if (resultstringList.Count != 0) modules.Add($"`{module.Name}`");
+                if (resultingList.Count != 0) modules.Add($"`{module.Name}`");
             }
 
             return modules;

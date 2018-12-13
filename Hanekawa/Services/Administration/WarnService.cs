@@ -66,21 +66,15 @@ namespace Hanekawa.Services.Administration
                               "**⮞ Session**\n" +
                               $"Amount: {userdata.Sessions}\n" +
                               $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
-                var embed = new EmbedBuilder
-                {
-                    Description = content,
-                    Author = new EmbedAuthorBuilder
-                    {
-                        IconUrl = user.GetAvatar(),
-                        Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"
-                    },
-                    Fields = await GetWarnings(db, user)
-                };
+                var embed = new EmbedBuilder()
+                    .CreateDefault(content)
+                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})" })
+                    .WithFields(await GetWarnings(db, user));
                 return embed;
             }
         }
 
-        public async Task<IEnumerable<string>> GetFullWarnlogAsync(SocketGuildUser user)
+        public async Task<List<string>> GetFullWarnlogAsync(SocketGuildUser user)
         {
             using (var db = new DbService())
             {

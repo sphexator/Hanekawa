@@ -48,7 +48,7 @@ namespace Hanekawa.Services.Achievement
             Console.WriteLine("Achievement manager service loaded");
         }
 
-        private Task TotalTime(SocketGuildUser user, TimeSpan time)
+        private static Task TotalTime(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
             {
@@ -106,7 +106,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task AtOnce(SocketGuildUser user, TimeSpan time)
+        private static Task AtOnce(SocketGuildUser user, TimeSpan time)
         {
             var _ = Task.Run(async () =>
             {
@@ -157,7 +157,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task ServerLevelAchievement(IGuildUser user, Account userData)
+        private static Task ServerLevelAchievement(IGuildUser user, Account userData)
         {
             var _ = Task.Run(async () =>
             {
@@ -209,7 +209,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task GlobalLevelAchievement(IGuildUser user, AccountGlobal userData)
+        private static Task GlobalLevelAchievement(IGuildUser user, AccountGlobal userData)
         {
             var _ = Task.Run(async () =>
             {
@@ -260,7 +260,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task DropClaimed(SocketGuildUser user)
+        private static Task DropClaimed(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
@@ -314,7 +314,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task PvpAchievement(ulong userid)
+        private static Task PvpAchievement(ulong userid)
         {
             var _ = Task.Run(async () =>
             {
@@ -368,7 +368,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task NpcAchievement(ulong userid)
+        private static Task NpcAchievement(ulong userid)
         {
             var _ = Task.Run(async () =>
             {
@@ -423,7 +423,7 @@ namespace Hanekawa.Services.Achievement
             return Task.CompletedTask;
         }
 
-        private Task MessageCount(SocketMessage message)
+        private static Task MessageCount(SocketMessage message)
         {
             var _ = Task.Run(async () =>
             {

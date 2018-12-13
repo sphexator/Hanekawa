@@ -62,176 +62,41 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
         }
 
-        public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user)
-        {
-            var userdata = await context.Accounts.FindAsync(user.Guild.Id, user.Id);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+        public static async Task<Account> GetOrCreateUserData(this DbService context, SocketGuildUser user) =>
+            await GetOrCreateServerUser(context, user.Guild.Id, user.Id);
 
-            var data = new Account
-            {
-                UserId = user.Id,
-                GuildId = user.Guild.Id,
-                Active = true,
-                Class = 1,
-                Credit = 0,
-                CreditSpecial = 0,
-                CustomRoleId = null,
-                DailyCredit = DateTime.UtcNow,
-                GameKillAmount = 0,
-                MvpCounter = 0,
-                RepCooldown = DateTime.UtcNow,
-                Exp = 0,
-                VoiceExpTime = DateTime.UtcNow,
-                TotalExp = 0,
-                MvpIgnore = false,
-                MvpImmunity = false,
-                Level = 1,
-                Sessions = 0,
-                StatVoiceTime = TimeSpan.Zero,
-                ChannelVoiceTime = DateTime.UtcNow,
-                StatMessages = 0,
-                Rep = 0,
-                ProfilePic = null,
-                StarGiven = 0,
-                StarReceived = 0
-            };
-            await context.Accounts.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.Accounts.FindAsync(user.Id, user.Guild.Id);
-        }
+        public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user) =>
+            await GetOrCreateServerUser(context, guild.Id, user.Id);
 
-        public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user)
-        {
-            var userdata = await context.Accounts.FindAsync(guild.Id, user.Id);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+        public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user) =>
+            await GetOrCreateServerUser(context, guild, user);
 
-            var data = new Account
-            {
-                UserId = user.Id,
-                GuildId = guild.Id,
-                Active = true,
-                Class = 1,
-                Credit = 0,
-                CreditSpecial = 0,
-                CustomRoleId = null,
-                DailyCredit = DateTime.UtcNow,
-                GameKillAmount = 0,
-                MvpCounter = 0,
-                RepCooldown = DateTime.UtcNow,
-                Exp = 0,
-                VoiceExpTime = DateTime.UtcNow,
-                TotalExp = 0,
-                MvpIgnore = false,
-                MvpImmunity = false,
-                Level = 1,
-                Sessions = 0,
-                StatVoiceTime = TimeSpan.Zero,
-                ChannelVoiceTime = DateTime.UtcNow,
-                StatMessages = 0,
-                Rep = 0,
-                ProfilePic = null,
-                StarGiven = 0,
-                StarReceived = 0
-            };
-            await context.Accounts.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.Accounts.FindAsync(user.Id, guild.Id);
-        }
+        public static async Task<Account> GetOrCreateUserData(this DbService context, IGuildUser user) =>
+            await GetOrCreateServerUser(context, user.GuildId, user.Id);
 
-        public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user)
-        {
-            var userdata = await context.Accounts.FindAsync(guild, user);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user) =>
+            await GetOrCreateGlobalUser(context, user.Id);
 
-            var data = new Account
-            {
-                UserId = user,
-                GuildId = guild,
-                Active = true,
-                Class = 1,
-                Credit = 0,
-                CreditSpecial = 0,
-                CustomRoleId = null,
-                DailyCredit = DateTime.UtcNow,
-                GameKillAmount = 0,
-                MvpCounter = 0,
-                RepCooldown = DateTime.UtcNow,
-                Exp = 0,
-                VoiceExpTime = DateTime.UtcNow,
-                TotalExp = 0,
-                MvpIgnore = false,
-                MvpImmunity = false,
-                Level = 1,
-                Sessions = 0,
-                StatVoiceTime = TimeSpan.Zero,
-                ChannelVoiceTime = DateTime.UtcNow,
-                StatMessages = 0,
-                Rep = 0,
-                ProfilePic = null,
-                StarGiven = 0,
-                StarReceived = 0
-            };
-            await context.Accounts.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.Accounts.FindAsync(user, guild);
-        }
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, ulong userId) =>
+            await GetOrCreateGlobalUser(context, userId);
 
-        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IUser user)
-        {
-            var userdata = await context.AccountGlobals.FindAsync(user.Id);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IGuildUser user) =>
+            await GetOrCreateGlobalUser(context, user.Id);
 
-            var data = new AccountGlobal
-            {
-                UserId = user.Id,
-                Exp = 0,
-                TotalExp = 0,
-                Level = 1,
-                Rep = 0,
-                StarGive = 0,
-                StarReceive = 0,
-                Credit = 0
-            };
-            await context.AccountGlobals.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AccountGlobals.FindAsync(user.Id);
-        }
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketGuildUser user) =>
+            await GetOrCreateGlobalUser(context, user.Id);
 
-        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, ulong userId)
-        {
-            var userdata = await context.AccountGlobals.FindAsync(userId);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketUser user) =>
+            await GetOrCreateGlobalUser(context, user.Id);
 
-            var data = new AccountGlobal
-            {
-                UserId = userId,
-                Exp = 0,
-                TotalExp = 0,
-                Level = 1,
-                Rep = 0,
-                StarGive = 0,
-                StarReceive = 0,
-                Credit = 0
-            };
-            await context.AccountGlobals.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AccountGlobals.FindAsync(userId);
-        }
+        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
+            await GetOrCreateConfig(context, guild.Id);
+
+        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuildUser user) =>
+            await GetOrCreateConfig(context, user.Guild.Id);
+
+        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, SocketGuild guild) =>
+            await GetOrCreateConfig(context, guild.Id);
 
         public static async Task PurchaseServerItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
         {
@@ -431,66 +296,6 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.Reports.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfig(this DbService context, IGuild guild)
-        {
-            var response = await context.GuildConfigs.FindAsync(guild.Id);
-            if (response != null)
-            {
-                return response;
-            }
-
-            var data = new GuildConfig
-            {
-                GuildId = guild.Id,
-                WelcomeChannel = null,
-                LogMsg = null,
-                LogJoin = null,
-                LogBan = null,
-                LogAvi = null,
-                StackLvlRoles = true,
-                ExpMultiplier = 1,
-                MuteRole = null,
-                WelcomeLimit = 5,
-                Prefix = "h.",
-                BoardChannel = null,
-                IgnoreAllChannels = false,
-                WelcomeBanner = true,
-                WelcomeMessage = null,
-                FilterInvites = false,
-                ReportChannel = null,
-                SuggestionChannel = null,
-                EventChannel = null,
-                MusicVcChannel = null,
-                ModChannel = null,
-                MusicChannel = null,
-                BoardEmote = null,
-                EventSchedulerChannel = null,
-                FilterAllInv = true,
-                FilterMsgLength = null,
-                FilterUrls = false,
-                LogWarn = null,
-                WelcomeDelete = null,
-                Premium = false,
-                SpecialCurrencySign = "$",
-                SpecialCurrencyName = "Special Credit",
-                SpecialEmoteCurrency = false,
-                CurrencyName = "Credit",
-                CurrencySign = "$",
-                EmoteCurrency = false,
-                AnimeAirChannel = null,
-                SuggestionEmoteYes = "<:1yes:403870491749777411>",
-                SuggestionEmoteNo = "<:2no:403870492206825472>",
-                ClubAdvertisementChannel = null,
-                ClubChannelCategory = null,
-                ClubChannelRequiredAmount = 4,
-                ClubChannelRequiredLevel = 40,
-                ClubEnableVoiceChannel = false
-            };
-            await context.GuildConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.GuildConfigs.FindAsync(guild.Id);
-        }
-
         public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, int type)
         {
             var check = await context.AchievementTrackers.FindAsync(type, user.Id);
@@ -519,6 +324,42 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.AchievementTrackers.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.AchievementTrackers.FindAsync(type, userId);
+        }
+
+        private static async Task<Account> GetOrCreateServerUser(DbService context, ulong guild, ulong user)
+        {
+            var userdata = await context.Accounts.FindAsync(guild, user);
+            if (userdata != null) return userdata;
+
+            var data = new Account().DefaultAccount(guild, user);
+            await context.Accounts.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.Accounts.FindAsync(user, guild);
+        }
+
+        private static async Task<AccountGlobal> GetOrCreateGlobalUser(this DbService context, ulong userId)
+        {
+            var userdata = await context.AccountGlobals.FindAsync(userId);
+            if (userdata != null)
+            {
+                return userdata;
+            }
+
+            var data = new AccountGlobal().DefaultAccountGlobal(userId);
+            await context.AccountGlobals.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.AccountGlobals.FindAsync(userId);
+        }
+
+        private static async Task<GuildConfig> GetOrCreateConfig(DbService context, ulong guild)
+        {
+            var response = await context.GuildConfigs.FindAsync(guild);
+            if (response != null) return response;
+
+            var data = new GuildConfig().DefaultGuildConfig(guild);
+            await context.GuildConfigs.AddAsync(data);
+            await context.SaveChangesAsync();
+            return await context.GuildConfigs.FindAsync(guild);
         }
     }
 }

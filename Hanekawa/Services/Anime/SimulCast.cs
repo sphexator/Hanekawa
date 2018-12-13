@@ -8,6 +8,7 @@ using Hanekawa.Addons.AnimeSimulCast.Entity;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
+using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Anime
@@ -55,21 +56,19 @@ namespace Hanekawa.Services.Anime
         {
             if (!cfg.AnimeAirChannel.HasValue) return;
             var guild = _client.GetGuild(cfg.GuildId);
-            Console.WriteLine($"Posting to {guild.Name}");
+            Console.WriteLine($"Posting anime event to {guild.Name}");
             await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
                 .SendMessageAsync(null, false, BuildEmbed(data).Build());
         }
 
         private static EmbedBuilder BuildEmbed(AnimeData data)
         {
-            var embed = new EmbedBuilder
-            {
-                Author = new EmbedAuthorBuilder {Name = "New Episode Available!"},
-                Title = $"{data.Title}",
-                Url = data.Url,
-                Color = Color.Purple,
-                Timestamp = data.Time
-            };
+            var embed = new EmbedBuilder()
+                .CreateDefault()
+                .WithAuthor(new EmbedAuthorBuilder {Name = "New Episode Available!"})
+                .WithTitle($"{data.Title}")
+                .WithUrl(data.Url)
+                .WithTimestamp(data.Time);
             return embed;
         }
     }

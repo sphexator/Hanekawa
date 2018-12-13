@@ -51,12 +51,11 @@ namespace Hanekawa.Modules.Account
 
                 await Task.WhenAll(rank, total, globalRank, globalUserRank);
                 var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
-                await Context.ReplyAsync(new EmbedBuilder
-                {
-                    Author = new EmbedAuthorBuilder {Name = user.GetName()},
-                    Color = Color.Purple,
-                    ThumbnailUrl = user.GetAvatar(),
-                    Fields = new List<EmbedFieldBuilder>
+                await Context.ReplyAsync(new EmbedBuilder()
+                    .CreateDefault()
+                    .WithAuthor(new EmbedAuthorBuilder { Name = user.GetName() })
+                    .WithThumbnailUrl(user.GetAvatar())
+                    .WithFields(new List<EmbedFieldBuilder>
                     {
                         new EmbedFieldBuilder {IsInline = true, Name = "Level", Value = $"{userdata.Level}"},
                         new EmbedFieldBuilder {IsInline = true, Name = "Exp", Value = $"{userdata.Exp}/{nxtLevel}"},
@@ -66,8 +65,7 @@ namespace Hanekawa.Modules.Account
                             IsInline = true, Name = "Global Rank",
                             Value = $"{globalUserRank.Result}/{globalRank.Result}"
                         }
-                    }
-                });
+                    }));
             }
         }
 

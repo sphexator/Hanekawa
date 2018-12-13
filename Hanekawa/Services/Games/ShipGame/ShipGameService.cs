@@ -159,11 +159,7 @@ namespace Hanekawa.Services.Games.ShipGame
 
             var img = await CreateBanner(context.User as SocketGuildUser, enemy);
             img.Seek(0, SeekOrigin.Begin);
-            var embed = new EmbedBuilder
-            {
-                Description = UpdateCombatLog(msglog),
-                Color = Color.Purple
-            };
+            var embed = new EmbedBuilder().CreateDefault(UpdateCombatLog(msglog));
             embed.AddField($"{(context.User as SocketGuildUser).GetName()}", $"{playerOneHp}/{playerOneHpMax}", true);
             embed.AddField($"{enemy.Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
             var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
@@ -342,11 +338,8 @@ namespace Hanekawa.Services.Games.ShipGame
 
                 var img = await CreateBanner(context.User as SocketGuildUser, playerTwoUser);
                 img.Seek(0, SeekOrigin.Begin);
-                var embed = new EmbedBuilder
-                {
-                    Description = UpdateCombatLog(msglog),
-                    Color = Color.Purple
-                };
+                var embed = new EmbedBuilder().CreateDefault(UpdateCombatLog(msglog));
+
                 embed.AddField($"{p1Name}", $"{playerOneHp}/{playerOneHpMax}", true);
                 embed.AddField($"{p2Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
                 var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());

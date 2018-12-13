@@ -268,27 +268,7 @@ namespace Hanekawa.Modules.Administration
             else
             {
                 var pages = await _warnService.GetFullWarnlogAsync(user);
-                var paginator = new PaginatedMessage
-                {
-                    Color = Color.Purple,
-                    Pages = pages,
-                    Author = new EmbedAuthorBuilder
-                    {
-                        IconUrl = user.GetAvatar(),
-                        Name = $"Full warn log for {user.Username}"
-                    },
-                    Options = new PaginatedAppearanceOptions
-                    {
-                        First = new Emoji("⏮"),
-                        Back = new Emoji("◀"),
-                        Next = new Emoji("▶"),
-                        Last = new Emoji("⏭"),
-                        Stop = null,
-                        Jump = null,
-                        Info = null
-                    }
-                };
-                await PagedReplyAsync(paginator);
+                await PagedReplyAsync(pages.PaginateBuilder(user, $"Full warn log for {user.Username}"));
             }
         }
 

@@ -7,4 +7,9 @@
             Config.ConnectionString = connectionString;
         }
     }
+
+    internal static class Config
+    {
+        internal static string ConnectionString { get; set; }
+    }
 }

@@ -47,7 +47,7 @@ namespace Hanekawa.Modules.Help
         {
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
-            var embed = new EmbedBuilder { Color = Color.Purple };
+            var embed = new EmbedBuilder().CreateDefault();
             embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
@@ -55,8 +55,8 @@ namespace Hanekawa.Modules.Help
             embed.AddField("Support", "[link](https://discord.gg/gGu5TT6)", true);
             embed.AddField("Invite link",
                 "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
-                true); ;
-            await ReplyAsync(null, false, embed.Build());
+                true);
+            await Context.ReplyAsync(embed);
         }
 
         [Command("uptime")]
@@ -78,12 +78,11 @@ namespace Hanekawa.Modules.Help
         [RequiredChannel]
         public async Task ServerInformation()
         {
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple,
-                Author = new EmbedAuthorBuilder
-                    {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} ({Context.Guild.Id})"}
-            };
+            var embed = new EmbedBuilder()
+                .CreateDefault()
+                .WithAuthor(new EmbedAuthorBuilder
+                    {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} ({Context.Guild.Id})"});
+
             embed.AddField("Verification Level", Context.Guild.VerificationLevel, true);
             embed.AddField("Region", Context.Guild.VoiceRegionId, true);
             embed.AddField($"Members[{Context.Guild.MemberCount}]",
@@ -109,14 +108,11 @@ namespace Hanekawa.Modules.Help
         {
             var roles = Context.Guild.Roles.Aggregate<SocketRole, string>(null,
                 (current, x) => current + $"{x.Name}, ");
-            var embed = new EmbedBuilder
-            {
-                Color = Color.Purple,
-                Author = new EmbedAuthorBuilder
-                    {IconUrl = Context.Guild.IconUrl, Name = $"Roles for {Context.Guild.Name}"},
-                Description = roles
-            };
-            await ReplyAsync(null, false, embed.Build());
+            var embed = new EmbedBuilder()
+                .CreateDefault(roles)
+                .WithAuthor(new EmbedAuthorBuilder
+                    {IconUrl = Context.Guild.IconUrl, Name = $"Roles for {Context.Guild.Name}"});
+            await Context.ReplyAsync(embed);
         }
 
         [Command("latency", RunMode = RunMode.Async)]
