@@ -67,7 +67,7 @@ namespace Hanekawa.Modules.Events
                               $"Image: {image}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
             }
         }
 
@@ -93,7 +93,7 @@ namespace Hanekawa.Modules.Events
                               $"Date: {x.Time}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Events in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
             }
         }
 

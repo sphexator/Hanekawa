@@ -401,7 +401,7 @@ namespace Hanekawa.Modules.Club
                               $"Leader {leader}\n\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Clubs in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Clubs in {Context.Guild.Name}"));
             }
         }
 

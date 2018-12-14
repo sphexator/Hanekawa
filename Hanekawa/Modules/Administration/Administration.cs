@@ -268,7 +268,7 @@ namespace Hanekawa.Modules.Administration
             else
             {
                 var pages = await _warnService.GetFullWarnlogAsync(user);
-                await PagedReplyAsync(pages.PaginateBuilder(user, $"Full warn log for {user.Username}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, user, $"Full warn log for {user.Username}"));
             }
         }
 
@@ -288,7 +288,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Toxicity values in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Toxicity values in {Context.Guild.Name}"));
                 return;
             }
 

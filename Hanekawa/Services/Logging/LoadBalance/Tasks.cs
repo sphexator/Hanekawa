@@ -90,7 +90,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -122,7 +122,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -174,7 +174,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         }
                     }
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -224,7 +224,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -268,7 +268,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(10) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -312,7 +312,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(10) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -370,7 +370,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
 
@@ -433,7 +433,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
-                if (lastRequest.AddHours(18) >= DateTime.UtcNow) worker = false;
+                if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
         }
     }

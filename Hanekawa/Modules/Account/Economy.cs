@@ -188,7 +188,7 @@ namespace Hanekawa.Modules.Account
         public async Task ServerShopAsync()
         {
             await PagedReplyAsync((await _shopManager.GetServerStoreAsync(Context.User as IGuildUser)).ToList()
-                .PaginateBuilder(Context.Guild, $"Store for {Context.Guild.Name}"));
+                .PaginateBuilder(Context.Guild.Id, Context.Guild, $"Store for {Context.Guild.Name}"));
         }
 
         [Command("global store", RunMode = RunMode.Async)]
@@ -197,7 +197,7 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task GlobalShopAsync()
         {
-            await PagedReplyAsync((await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser)).PaginateBuilder("Global Store"));
+            await PagedReplyAsync((await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser)).PaginateBuilder(Context.Guild.Id, "Global Store"));
         }
 
         [Command("buy", RunMode = RunMode.Async)]

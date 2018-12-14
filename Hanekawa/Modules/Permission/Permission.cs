@@ -6,6 +6,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.CommandHandler;
 using System.Threading.Tasks;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Entities;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -13,10 +14,12 @@ namespace Hanekawa.Modules.Permission
     public class Permission : InteractiveBase
     {
         private readonly CommandHandlingService _command;
+        private readonly DefaultColors _colors;
 
-        public Permission(CommandHandlingService command)
+        public Permission(CommandHandlingService command, DefaultColors colors)
         {
             _command = command;
+            _colors = colors;
         }
 
         [Command("permissions", RunMode = RunMode.Async)]
@@ -62,11 +65,64 @@ namespace Hanekawa.Modules.Permission
                     cfg.EmbedColor = color;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
+                    cfg.UpdateConfig(Context.Guild.Id);
                 }
             }
             else
             {
-                await Context.ReplyAsync("Aborting...");
+                await Context.ReplyAsync("Canceled");
+            }
+        }
+
+        [Command("embed")]
+        [Alias("set embed")]
+        [Summary("Sets a custom colour for embeds")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetEmbed(int r, int g, int b)
+        {
+            var color = new Color(r, g, b).RawValue;
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            var response = await NextMessageAsync();
+            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    cfg.EmbedColor = color;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Changed default embed color");
+                    cfg.UpdateConfig(Context.Guild.Id);
+                }
+            }
+            else
+            {
+                await Context.ReplyAsync("Canceled");
+            }
+        }
+
+        [Command("embed")]
+        [Alias("set embed")]
+        [Summary("Sets a custom colour for embeds")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetEmbed(Colors type)
+        {
+            var color = _colors.GetColor(type).RawValue;
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            var response = await NextMessageAsync();
+            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    cfg.EmbedColor = color;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Changed default embed color");
+                    cfg.UpdateConfig(Context.Guild.Id);
+                }
+            }
+            else
+            {
+                await Context.ReplyAsync("Canceled");
             }
         }
     }

@@ -22,6 +22,12 @@ namespace Hanekawa.Extensions.Embed
             return cfg == null ? Color.Purple : new Color(cfg.EmbedColor);
         }
 
+        public static void UpdateConfig(this GuildConfig cfg, ulong guild)
+        {
+            var toAdd = new Tuple<GuildConfig, DateTime>(cfg, DateTime.UtcNow);
+            GuildConfig.AddOrUpdate(guild, toAdd, (key, old) => toAdd);
+        }
+
         private static GuildConfig GetConfig(ulong guild)
         {
             GuildConfig cfg;

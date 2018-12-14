@@ -184,7 +184,7 @@ namespace Hanekawa.Modules.Account.Level
                               $"Stack: {x.Stackable}\n" +
                               "\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Level roles for {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level roles for {Context.Guild.Name}"));
             }
         }
     }

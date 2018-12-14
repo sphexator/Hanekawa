@@ -7,28 +7,28 @@ namespace Hanekawa.Extensions.Embed
 {
     public static class PaginatorExtension
     {
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, IGuild guild, string name) =>
-            PaginatedMessageBuilder(pages, guild.IconUrl, name);
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild, string name) =>
+            PaginatedMessageBuilder(pages, guildId, guild.IconUrl, name);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, IGuildUser user, string name) =>
-            PaginatedMessageBuilder(pages, user.GetAvatar(), name);
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuildUser user, string name) =>
+            PaginatedMessageBuilder(pages, guildId, user.GetAvatar(), name);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, string name) =>
-            PaginatedMessageBuilder(pages, null, name);
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, string name) =>
+            PaginatedMessageBuilder(pages, guildId, null, name);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, IGuild guild, string name, int count) =>
-            PaginatedMessageBuilder(pages, guild.IconUrl, name, count);
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild, string name, int count) =>
+            PaginatedMessageBuilder(pages, guildId, guild.IconUrl, name, count);
 
 
-        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, string icon,
-            string name) => new PaginatedMessage().Builder(pages, icon, name, 5);
+        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId, string icon,
+            string name) => new PaginatedMessage().Builder(pages, guildId, icon, name, 5);
 
-        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, string icon,
-            string name, int count) => new PaginatedMessage().Builder(pages, icon, name, count);
+        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId, string icon,
+            string name, int count) => new PaginatedMessage().Builder(pages, guildId, icon, name, count);
 
-        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages, string icon, string name, int count)
+        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages, ulong guildId, string icon, string name, int count)
         {
-            paginated.Color = Color.Purple;
+            paginated.Color = new Color().GetDefaultColor(guildId);
             paginated.Pages = PageBuilder(pages, count);
             paginated.Author = new EmbedAuthorBuilder {IconUrl = icon, Name = name};
             paginated.Options = new PaginatedAppearanceOptions
@@ -52,8 +52,9 @@ namespace Hanekawa.Extensions.Embed
                 var page = new StringBuilder();
                 for (var j = 0; j < count; j++)
                 {
+                    if (i >= list.Count) continue;
                     var index = list[i];
-                    page.Append($"{index}\n");
+                    page.AppendLine($"{index}");
                     i++;
                 }
 

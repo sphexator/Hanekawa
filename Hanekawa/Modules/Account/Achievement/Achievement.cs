@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Account.Achievement
                     var pages = new List<string>();
                     foreach (var x in achievements) pages.Add($"{x.Name} - Req: {x.Requirement}\n");
 
-                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Achievements in {type.Name}"));
+                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Achievements in {type.Name}"));
                 }
             }
         }
@@ -91,7 +91,7 @@ namespace Hanekawa.Modules.Account.Achievement
                 foreach (var x in achievements)
                     pages.Add($"{x.Name}({x.AchievementId}) - Req: {x.Requirement}\n");
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Unlocked Achievements for {Context.User.Username}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Unlocked Achievements for {Context.User.Username}"));
             }
         }
 

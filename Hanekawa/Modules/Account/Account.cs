@@ -90,7 +90,7 @@ namespace Hanekawa.Modules.Account
                     rank++;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Level leadboard for {Context.Guild.Name}",
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level leadboard for {Context.Guild.Name}",
                     10));
             }
         }

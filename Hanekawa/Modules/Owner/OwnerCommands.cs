@@ -21,6 +21,13 @@ namespace Hanekawa.Modules.Owner
             Environment.Exit(0);
         }
 
+        [Command("servers")]
+        public async Task ServerOverview()
+        {
+            var pages = Context.Client.Guilds.Select(x => $"Name: **{x.Name}** ({x.Id})\n" + $"Members: **{x.MemberCount}** (owner {x.Owner.Mention} ({x.OwnerId})\n").ToList();
+            await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, "Guilds I am in", 10));
+        }
+
         [Group("blacklist")]
         [RequireOwner]
         public class Blacklist : InteractiveBase
@@ -39,7 +46,7 @@ namespace Hanekawa.Modules.Owner
                                   $"Responsible: {Context.Client.GetUser(x.ResponsibleUser)}");
                     }
 
-                    await PagedReplyAsync(pages.PaginateBuilder("Blacklisted servers"));
+                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, "Blacklisted servers"));
                 }
             }
 

@@ -77,7 +77,7 @@ namespace Hanekawa.Modules.Permission
                     pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Whitelisted event organizers in {Context.Guild.Name}"));
             }
         }
@@ -144,7 +144,7 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 await PagedReplyAsync(
-                    pages.PaginateBuilder(Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
+                    pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
             }
         }
     }

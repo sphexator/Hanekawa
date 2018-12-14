@@ -113,7 +113,7 @@ namespace Hanekawa.Modules.Welcome
                               "\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Welcome banners for {Context.Guild.Name}"));
             }
         }

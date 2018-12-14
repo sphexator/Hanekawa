@@ -73,10 +73,9 @@ namespace Hanekawa.Services.Events
                     if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
                     var events = await db.EventSchedules
-                        .Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date)
+                        .Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date && !y.Posted)
                         .OrderBy(z => z.Time).Take(5).ToListAsync();
-                    if (events.All(z => z.Posted)) continue;
-                    if (events.Any()) await ChannelCleanup(channel);
+                    if (events.Count == 0) continue;
                     foreach (var e in events.OrderByDescending(t => t.Time))
                     {
                         var embed = new EmbedBuilder
@@ -131,19 +130,6 @@ namespace Hanekawa.Services.Events
            }
 
             return result;
-        }
-
-        private static async Task ChannelCleanup(ITextChannel channel)
-        {
-            try
-            {
-                var msgs = await channel.GetMessagesAsync().FlattenAsync();
-                var result = msgs.Where(x => x.Timestamp.Date.AddDays(10) >= DateTime.UtcNow.Date).ToList();
-                await channel.DeleteMessagesAsync(result);
-            }
-            catch
-            {
-            }
         }
     }
 }
