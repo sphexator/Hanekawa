@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Entities
@@ -26,6 +27,14 @@ namespace Hanekawa.Entities
         private static readonly Color DarkGrey = new Color(6323595U);
         private static readonly Color DarkerGrey = new Color(5533306U);
         private static readonly Color Pink = new Color(16669612);
+
+        public Color GetColor(string hex)
+        {
+            if(hex.Contains("#")) hex = hex.Replace("#", "");
+            hex = hex.Insert(0, "0x");
+            var hexToInt = Convert.ToInt32(hex, 16);
+            return new Color((uint)hexToInt);
+        }
 
         public Color GetColor(Colors type)
         {

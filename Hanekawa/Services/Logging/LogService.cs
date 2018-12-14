@@ -52,9 +52,9 @@ namespace Hanekawa.Services.Logging
                 // Return an error message for async commands
                 if (message.Exception is CommandException command)
                 {
-                    var __ = _client.GetGuild(431617676859932704).GetTextChannel(512434322360238085)
+                    var __ = _client.GetGuild(431617676859932704).GetTextChannel(523165903219720232)
                         .SendMessageAsync($"Error: {command.Message}\n" +
-                                          $"{message.Exception.Message.Truncate(1500)}");
+                                          $"{message.Exception.StackTrace.Truncate(1500)}");
                 }
 
                 _logger.Log(

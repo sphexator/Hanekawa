@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
@@ -107,6 +108,32 @@ namespace Hanekawa.Modules.Permission
         public async Task SetEmbed(Colors type)
         {
             var color = _colors.GetColor(type).RawValue;
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            var response = await NextMessageAsync();
+            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            {
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    cfg.EmbedColor = color;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Changed default embed color");
+                    cfg.UpdateConfig(Context.Guild.Id);
+                }
+            }
+            else
+            {
+                await Context.ReplyAsync("Canceled");
+            }
+        }
+
+        [Command("embed")]
+        [Alias("set embed")]
+        [Summary("Sets a custom colour for embeds")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task SetEmbed(string hex)
+        {
+            var color = _colors.GetColor(hex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
