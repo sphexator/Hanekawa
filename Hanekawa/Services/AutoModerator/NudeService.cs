@@ -323,8 +323,6 @@ namespace Hanekawa.Services.AutoModerator
 
                 var response = await _perspectiveClient.GetToxicityScore(FilterMessage(msg.Content), _perspectiveToken);
                 var score = response.AttributeScores.TOXICITY.SummaryScore.Value * 100;
-                _log.LogAction(LogLevel.Information, $"{user.Id} in {user.Guild.Id} scored {score} in toxicity",
-                    "Toxicity");
                 var single = SingleMessageAsync(score, user, ch, message);
                 var multi = MultiMessageProcessingAsync(score, user, ch, message);
                 await Task.WhenAll(single, multi);
@@ -337,6 +335,8 @@ namespace Hanekawa.Services.AutoModerator
         {
             if (!SingleNudeChannels.TryGetValue(user.GuildId, out var channels)) return;
             if (!channels.TryGetValue(ch.Id, out var cfg)) return;
+            _log.LogAction(LogLevel.Information, $"{user.Id} in {user.Guild.Id} scored {score} in toxicity",
+                "Toxicity");
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
@@ -408,8 +408,9 @@ namespace Hanekawa.Services.AutoModerator
             SlowNudeValue.ToxicityAdd(score, user, ch, msg);
             var result = FastNudeValue.ToxicityAdd(score, user, ch, msg);
             if (result == null) return;
+            _log.LogAction(LogLevel.Information, $"{user.Id} in {user.Guild.Id} scored {score} in toxicity",
+                "Toxicity");
             if (result < channel) return;
-
             await NudeWarn(user as SocketGuildUser, ch).ConfigureAwait(false);
         }
 

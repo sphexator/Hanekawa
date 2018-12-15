@@ -42,12 +42,11 @@ namespace Hanekawa
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Info
             }));
-            services.AddSingleton(new DiscordRestClient());
             services.AddSingleton(new CommandService(
                 new CommandServiceConfig
                 {
                     DefaultRunMode = RunMode.Async,
-                    LogLevel = LogSeverity.Verbose
+                    LogLevel = LogSeverity.Info
                 }));
             services.AddSingleton(config);
             services.AddLogging();

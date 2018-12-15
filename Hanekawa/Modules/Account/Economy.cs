@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -128,27 +129,25 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var embed = new EmbedBuilder
-                {
-                    Author = new EmbedAuthorBuilder
-                        {Name = $"Money leaderboard for {Context.Guild.Name}", IconUrl = Context.Guild.IconUrl}
-                };
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+
+                var amount = Context.Guild.MemberCount < 50 ? Context.Guild.MemberCount : 50;
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
+                    .OrderByDescending(account => account.Credit).Take(amount).ToListAsync();
                 var rank = 1;
-                foreach (var x in await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
-                    .OrderByDescending(account => account.Credit).Take(10).ToListAsync())
+                var pages = new List<string>();
+                foreach (var x in users)
                 {
-                    embed.AddField(new EmbedFieldBuilder
-                    {
-                        IsInline = false,
-                        Name = $"Rank: {rank}",
-                        Value =
-                            $"{Context.Client.GetUser(x.UserId).Mention ?? $"User left server (ID: {x.UserId})"} - {cfg.CurrencyName}:{x.Credit}"
-                    });
+                    var user = Context.Guild.GetUser(x.UserId);
+                    var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
+
+                    pages.Add($"**Rank: {rank}** - {name}\n" +
+                              $"-> {cfg.CurrencyName}: {x.Credit}");
                     rank++;
                 }
 
-                await Context.ReplyAsync(embed);
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Money leaderboard for {Context.Guild.Name}",
+                    10));
             }
         }
 

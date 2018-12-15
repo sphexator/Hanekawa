@@ -54,7 +54,7 @@ namespace Hanekawa.Services.Logging
                 {
                     var __ = _client.GetGuild(431617676859932704).GetTextChannel(523165903219720232)
                         .SendMessageAsync($"Error: {command.Message}\n" +
-                                          $"{message.Exception.StackTrace.Truncate(1500)}");
+                                          $"{command.StackTrace.Truncate(1500)}");
                 }
 
                 _logger.Log(

@@ -398,7 +398,7 @@ namespace Hanekawa.Modules.Club
                                  "Couldn't find user or left server.";
                     pages.Add($"**{x.Name} (id: {x.Id})**\n" +
                               $"Members: {await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id)}\n" +
-                              $"Leader {leader}\n\n");
+                              $"Leader {leader}\n");
                 }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Clubs in {Context.Guild.Name}"));

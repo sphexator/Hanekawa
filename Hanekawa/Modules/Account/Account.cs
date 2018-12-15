@@ -78,19 +78,23 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
+                var amount = Context.Guild.MemberCount < 50 ? Context.Guild.MemberCount : 50;
                 var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
-                    .OrderByDescending(account => account.TotalExp).Take(50).ToListAsync();
+                    .OrderByDescending(account => account.TotalExp).Take(amount).ToListAsync();
                 var rank = 1;
                 var pages = new List<string>();
                 foreach (var x in users)
                 {
+                    var user = Context.Guild.GetUser(x.UserId);
+                    var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
+
                     pages.Add(
-                        $"Rank: {rank} - {Context.Client.GetUser(x.UserId).Mention ?? $"User left ({x.UserId}"}\n" +
-                        $"Level:{x.Level} - Total Exp:{x.TotalExp}");
+                        $"**Rank: {rank}** - {name}\n" +
+                        $"-> Level:{x.Level} - Total Exp:{x.TotalExp}");
                     rank++;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level leadboard for {Context.Guild.Name}",
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level leaderboard for {Context.Guild.Name}",
                     10));
             }
         }

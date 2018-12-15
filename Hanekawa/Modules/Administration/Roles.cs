@@ -91,6 +91,11 @@ namespace Hanekawa.Modules.Administration
             using (var db = new DbService())
             {
                 var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                if (list.Count == 0)
+                {
+                    await Context.ReplyAsync("No self-assignable roles added");
+                    return;
+                }
                 string roles = null;
                 if (list.Count > 0)
                     foreach (var x in list)
@@ -100,35 +105,19 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Command("exclusive role add")]
+        [Alias("era")]
+        [Summary("adds a role to the list of self-assignable roles")]
+        public async Task ExclusiveRole([Remainder] IRole role) => await AddSelfAssignAbleRoleAsync(Context, role, true);
+
         [Command("role add")]
         [Alias("ra")]
         [Summary("adds a role to the list of self-assignable roles")]
-        public async Task AddSelfAssignAbleRoleAsync(IRole role, bool exclusive = false)
-        {
-            using (var db = new DbService())
-            {
-                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(Context.Guild.Id, role.Id);
-                if (roleCheck != null)
-                {
-                    await Context.ReplyAsync($"{role.Name} is already added as self-assignable", Color.Red.RawValue);
-                    return;
-                }
-
-                var data = new SelfAssignAbleRole
-                {
-                    GuildId = Context.Guild.Id,
-                    RoleId = role.Id,
-                    Exclusive = exclusive
-                };
-                await db.SelfAssignAbleRoles.AddAsync(data);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green.RawValue);
-            }
-        }
+        public async Task NonExclusiveRole([Remainder] IRole role) => await AddSelfAssignAbleRoleAsync(Context, role, false);
 
         [Command("role remove")]
         [Alias("rr")]
-        [Summary("Removes a role from the list of self-assignableroles")]
+        [Summary("Removes a role from the list of self-assignable roles")]
         public async Task RemoveSelfAssignAbleRoleAsync(IRole role)
         {
             using (var db = new DbService())
@@ -146,6 +135,44 @@ namespace Hanekawa.Modules.Administration
                 db.SelfAssignAbleRoles.Remove(roleCheck);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green.RawValue);
+            }
+        }
+
+        private async Task AddSelfAssignAbleRoleAsync(SocketCommandContext context, IRole role, bool exclusive)
+        {
+            using (var db = new DbService())
+            {
+                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);
+                if (roleCheck != null)
+                {
+                    if (exclusive && !roleCheck.Exclusive)
+                    {
+                        roleCheck.Exclusive = true;
+                        await db.SaveChangesAsync();
+                        await context.ReplyAsync($"Changed {role.Name} to a exclusive self-assignable role!", Color.Green.RawValue);
+                    }
+                    else if (!exclusive && roleCheck.Exclusive)
+                    {
+                        roleCheck.Exclusive = false;
+                        await db.SaveChangesAsync();
+                        await context.ReplyAsync($"Changed {role.Name} to a non-exclusive self-assignable role!", Color.Green.RawValue);
+                    }
+                    else
+                    {
+                        await context.ReplyAsync($"{role.Name} is already added as self-assignable", Color.Red.RawValue);
+                    }
+                    return;
+                }
+
+                var data = new SelfAssignAbleRole
+                {
+                    GuildId = context.Guild.Id,
+                    RoleId = role.Id,
+                    Exclusive = exclusive
+                };
+                await db.SelfAssignAbleRoles.AddAsync(data);
+                await db.SaveChangesAsync();
+                await context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green.RawValue);
             }
         }
     }

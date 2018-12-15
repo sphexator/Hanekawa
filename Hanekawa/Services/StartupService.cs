@@ -20,15 +20,12 @@ namespace Hanekawa.Services
         private readonly CommandService _command;
         private readonly IConfiguration _config;
         private readonly IServiceProvider _provider;
-        private readonly DiscordRestClient _restClient;
 
-        public StartupService(CommandService command, IConfiguration config, IServiceProvider provider,
-            DiscordRestClient restClient, DiscordSocketClient client)
+        public StartupService(CommandService command, IConfiguration config, IServiceProvider provider, DiscordSocketClient client)
         {
             _command = command;
             _config = config;
             _provider = provider;
-            _restClient = restClient;
             _client = client;
         }
 
@@ -46,7 +43,6 @@ namespace Hanekawa.Services
             Console.WriteLine($"{commands.Count()} Commands loaded");
 
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
-            await _restClient.LoginAsync(TokenType.Bot, _config["token"]);
             await _client.StartAsync();
         }
     }
