@@ -1,27 +1,26 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Administration
 {
-    [RequiredChannel]
     [RequireContext(ContextType.Guild)]
     public class Roles : InteractiveBase
     {
         [Command("Assign")]
         [Alias("iam", "give")]
         [Summary("Assigns a role that's setup as self-assignable")]
-        public async Task AssignSelfRoleAsync(IRole role)
+        [RequiredChannel]
+        public async Task AssignSelfRoleAsync([Remainder] IRole role)
         {
             using (var db = new DbService())
             {
@@ -62,7 +61,8 @@ namespace Hanekawa.Modules.Administration
         [Command("Remove")]
         [Alias("iamn")]
         [Summary("Removes a role that's setup as self-assignable")]
-        public async Task RemoveSelfRoleAsync(IRole role)
+        [RequiredChannel]
+        public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
             using (var db = new DbService())
             {
@@ -75,7 +75,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await (Context.User as IGuildUser).RemoveRoleAsync(role);
+                await ((IGuildUser) Context.User).RemoveRoleAsync(role);
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder()
                         .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
@@ -86,7 +86,8 @@ namespace Hanekawa.Modules.Administration
         [Command("role list")]
         [Alias("rl")]
         [Summary("Displays list of self-assignable roles")]
-        public async Task ListSelfAssignAbleRolesAsync(IRole role)
+        [RequiredChannel]
+        public async Task ListSelfAssignAbleRolesAsync()
         {
             using (var db = new DbService())
             {
@@ -107,16 +108,19 @@ namespace Hanekawa.Modules.Administration
 
         [Command("exclusive role add")]
         [Alias("era")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("adds a role to the list of self-assignable roles")]
         public async Task ExclusiveRole([Remainder] IRole role) => await AddSelfAssignAbleRoleAsync(Context, role, true);
 
         [Command("role add")]
         [Alias("ra")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("adds a role to the list of self-assignable roles")]
         public async Task NonExclusiveRole([Remainder] IRole role) => await AddSelfAssignAbleRoleAsync(Context, role, false);
 
         [Command("role remove")]
         [Alias("rr")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Removes a role from the list of self-assignable roles")]
         public async Task RemoveSelfAssignAbleRoleAsync(IRole role)
         {

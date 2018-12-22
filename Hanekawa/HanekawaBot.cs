@@ -74,7 +74,6 @@ namespace Hanekawa
             foreach (var x in hanakawaServices) provider.GetRequiredService(x);
 
             var scheduler = provider.GetService<IScheduler>();
-
             QuartzServicesUtilities.StartCronJob<EventService>(scheduler, "0 0 10 1/1 * ? *");
             QuartzServicesUtilities.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             await provider.GetRequiredService<StartupService>().StartupAsync();

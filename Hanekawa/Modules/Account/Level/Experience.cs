@@ -37,8 +37,9 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("ignore channel", RunMode = RunMode.Async)]
-        [Alias("ichan")]
+        [Command("ignore add", RunMode = RunMode.Async)]
+        [Alias("iadd")]
+        [Priority(1)]
         [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
         public async Task AddReducedExpChannel(ITextChannel channel)
         {
@@ -49,46 +50,38 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("ignore category", RunMode = RunMode.Async)]
-        [Alias("icat")]
-        [Summary("Adds or removes a category from reduced exp pool with the provided channel(if in a category)")]
-        public async Task AddReducedExpCategory(ITextChannel channel)
+        [Command("ignore add", RunMode = RunMode.Async)]
+        [Alias("iadd")]
+        [Priority(2)]
+        [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
+        public async Task AddReducedExpChannel(ICategoryChannel category)
         {
             using (var db = new DbService())
             {
-                if (!channel.CategoryId.HasValue)
-                {
-                    await Context.ReplyAsync("That channel is not part of a category", Color.Red.RawValue);
-                    return;
-                }
-
-                var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel.CategoryId.Value);
-                if (category == null)
-                {
-                    await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
-                    return;
-                }
-
                 var embed = await _levelingService.ReducedExpManager(db, category);
                 if (embed != null) await Context.ReplyAsync(embed);
             }
         }
 
-        [Command("ignore category", RunMode = RunMode.Async)]
-        [Alias("icat")]
-        [Summary("Adds or removes a category from reduced exp pool with provided category ID")]
-        public async Task AddReducedExpCategory(ulong channel)
+        [Command("ignore add", RunMode = RunMode.Async)]
+        [Alias("iadd")]
+        [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
+        public async Task AddReducedExpChannel(ulong channelId)
         {
-            var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channel);
-            if (category == null)
-            {
-                await Context.ReplyAsync("Couldn't find a category with provided argument", Color.Red.RawValue);
-                return;
-            }
-
+            var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channelId);
+            var channel = Context.Guild.TextChannels.FirstOrDefault(x => x.Id == channelId);
             using (var db = new DbService())
             {
-                var embed = await _levelingService.ReducedExpManager(db, category);
+                EmbedBuilder embed = null;
+                if (category != null)
+                {
+                    embed = await _levelingService.ReducedExpManager(db, category);
+                }
+
+                if (channel != null)
+                {
+                    embed = await _levelingService.ReducedExpManager(db, null, channel);
+                }
                 if (embed != null) await Context.ReplyAsync(embed);
             }
         }

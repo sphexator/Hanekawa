@@ -77,41 +77,20 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
+        [Command("stack add", RunMode = RunMode.Async)]
+        [Alias("sadd")]
+        [Summary("Adds a role reward")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireBotPermission(ChannelPermission.ManageRoles)]
+        public async Task ExclusiveAdd(uint level, [Remainder] IRole role) =>
+            await AddLevelRole(Context, level, role, true);
+
         [Command("add", RunMode = RunMode.Async)]
         [Summary("Adds a role reward")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelAdd(uint level, [Remainder] string roleName)
-        {
-            if (roleName.IsNullOrWhiteSpace()) return;
-            using (var db = new DbService())
-            {
-                var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == roleName);
-                if (role == null)
-                {
-                    await Context.ReplyAsync("Couldn\'t find a role by that name.", Color.Red.RawValue);
-                    return;
-                }
-
-                var check = await db.LevelRewards.FindAsync(Context.Guild.Id, level);
-                if (check != null)
-                {
-                    await Context.ReplyAsync("There\'s already a level reward on that level.", Color.Red.RawValue);
-                    return;
-                }
-
-                var data = new LevelReward
-                {
-                    GuildId = Context.Guild.Id,
-                    Level = level,
-                    Role = role.Id,
-                    Stackable = false
-                };
-                await db.LevelRewards.AddAsync(data);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green.RawValue);
-            }
-        }
+        public async Task LevelAdd(uint level, [Remainder] IRole role) =>
+            await AddLevelRole(Context, level, role, false);
 
         [Command("create", RunMode = RunMode.Async)]
         [Summary("Creates a role reward with given level and name")]
@@ -145,14 +124,12 @@ namespace Hanekawa.Modules.Account.Level
         {
             using (var db = new DbService())
             {
-                var check = await db.LevelRewards.FindAsync(Context.Guild.Id, level);
-                if (check == null)
+                var role = await db.LevelRewards.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Level == level);
+                if (role == null)
                 {
-                    await Context.ReplyAsync("There is no reward connected to that level.", Color.Red.RawValue);
+                    await Context.ReplyAsync("Couldn't find a role with that level", Color.Red.RawValue);
                     return;
                 }
-
-                var role = db.LevelRewards.First(x => x.GuildId == Context.Guild.Id && x.Level == level);
                 db.LevelRewards.Remove(role);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -185,6 +162,39 @@ namespace Hanekawa.Modules.Account.Level
                               "\n");
                 }
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level roles for {Context.Guild.Name}"));
+            }
+        }
+
+        private async Task AddLevelRole(SocketCommandContext context, uint level, IRole role, bool stack)
+        {
+            using (var db = new DbService())
+            {
+                var check = await db.LevelRewards.FindAsync(context.Guild.Id, level);
+                if (check != null)
+                {
+                    var gRole = context.Guild.GetRole(check.Role);
+                    if (gRole != null)
+                    {
+                        await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
+                        var response = await NextMessageAsync();
+                        if (response.Content.ToLower() != "y" || response.Content.ToLower() != "yes")
+                        {
+                            await context.ReplyAsync("Cancelling.");
+                            return;
+                        }
+                    }
+                }
+
+                var data = new LevelReward
+                {
+                    GuildId = context.Guild.Id,
+                    Level = level,
+                    Role = role.Id,
+                    Stackable = stack
+                };
+                await db.LevelRewards.AddAsync(data);
+                await db.SaveChangesAsync();
+                await context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green.RawValue);
             }
         }
     }

@@ -14,6 +14,7 @@ using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Microsoft.EntityFrameworkCore;
 using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa.Services.AutoModerator
@@ -130,10 +131,8 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task<EmbedBuilder> AddUrlFilterChannel(ITextChannel channel, DbService db)
         {
-            if (!UrlFilterChannels.TryGetValue(channel.GuildId, out var guild)) return null;
+            var guild = UrlFilterChannels.GetOrAdd(channel.GuildId, new List<ulong>());
             if (guild.Contains(channel.Id)) return null;
-            var entry = await db.UrlFilters.FindAsync(channel.GuildId, channel.Id);
-            if (entry != null) return null;
             var data = new UrlFilter
             {
                 GuildId = channel.GuildId,
@@ -149,8 +148,7 @@ namespace Hanekawa.Services.AutoModerator
         {
             if (!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return null;
             if (!guild.Contains(channel.Id)) return null;
-            var entry = await db.SpamIgnores.FindAsync(channel.GuildId, channel.Id);
-            if (entry == null) return null;
+            var entry = await db.SpamIgnores.FirstOrDefaultAsync(x => x.GuildId == channel.GuildId && x.ChannelId ==  channel.Id);
             db.SpamIgnores.Remove(entry);
             await db.SaveChangesAsync();
             guild.Remove(channel.Id);
