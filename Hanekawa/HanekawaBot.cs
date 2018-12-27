@@ -1,7 +1,12 @@
-﻿using Discord;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.Database;
@@ -15,13 +20,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog;
 using NLog.Extensions.Logging;
 using Quartz;
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Victoria;
 
 namespace Hanekawa
@@ -54,6 +55,8 @@ namespace Hanekawa
             services.AddSingleton(new PatreonClient(config["patreon"]));
             services.AddSingleton<Lavalink>();
             services.AddSingleton<InteractiveService>();
+            services.AddSingleton<HttpClient>();
+            services.AddSingleton<Random>();
             services.AddDistributedRedisCache(options =>
             {
                 options.Configuration = "localhost";
@@ -69,8 +72,11 @@ namespace Hanekawa
             var provider = services.BuildServiceProvider();
             ConfigureLogging(provider);
 
-            using (var db = new DbService()) await db.Database.MigrateAsync(); 
-            
+            using (var db = new DbService())
+            {
+                await db.Database.MigrateAsync();
+            }
+
             foreach (var x in hanakawaServices) provider.GetRequiredService(x);
 
             var scheduler = provider.GetService<IScheduler>();
@@ -80,20 +86,19 @@ namespace Hanekawa
             await Task.Delay(-1);
         }
 
-        private static IConfiguration BuildConfig()
-        {
-            return new ConfigurationBuilder()
+        private static IConfiguration BuildConfig() =>
+            new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("config.json")
                 .Build();
-        }
 
         private static void ConfigureLogging(IServiceProvider provider)
         {
             var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
 
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
-            NLog.LogManager.LoadConfiguration("nlog.config");
+            loggerFactory.AddNLog(new NLogProviderOptions
+                {CaptureMessageTemplates = true, CaptureMessageProperties = true});
+            LogManager.LoadConfiguration("nlog.config");
         }
     }
 }

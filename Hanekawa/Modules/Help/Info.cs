@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -11,13 +6,17 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Humanizer;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Help
 {
     public class Info : InteractiveBase
     {
         [Command("bot info")]
-        [Alias("botinfo")]
+        [Alias("botinfo", "bot")]
         [Summary("General info about the bot")]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task DmInfoPosTask()
@@ -29,7 +28,7 @@ namespace Hanekawa.Modules.Help
             embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
-            embed.AddField("Uptime", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
+            embed.AddField("Up time", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
             embed.AddField("Support", "[link](https://discord.gg/gGu5TT6)", true);
             embed.AddField("Invite link",
                 "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
@@ -38,7 +37,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("bot info")]
-        [Alias("botinfo")]
+        [Alias("botinfo", "bot")]
         [Summary("General info about the bot")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [Priority(1)]
@@ -47,15 +46,17 @@ namespace Hanekawa.Modules.Help
         {
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
-            var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id);
-            embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
-            embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
-            embed.AddField("About", application.Description, true);
-            embed.AddField("Uptime", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
-            embed.AddField("Support", "[link](https://discord.gg/gGu5TT6)", true);
-            embed.AddField("Invite link",
-                "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
-                true);
+            var embed = new EmbedBuilder()
+                .CreateDefault(Context.Guild.Id)
+                .AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true)
+                .AddField("Creator", "[Sphexator](https://github.com/sphexator)", true)
+                .AddField("About", application.Description, true)
+                .AddField("Up time", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true)
+                .AddField("Memory", $"{currentProcess.WorkingSet64.SizeSuffix()} (Peak {currentProcess.PeakWorkingSet64.SizeSuffix()})")
+                .AddField("Support", "[link](https://discord.gg/gGu5TT6)", true)
+                .AddField("Invite link",
+                    "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
+                    true);
             await Context.ReplyAsync(embed);
         }
 
@@ -72,7 +73,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("server info", RunMode = RunMode.Async)]
-        [Alias("serverinfo", "sinfo")]
+        [Alias("serverinfo", "sinfo", "si", "server")]
         [Summary("Displays information about the guild/server")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
@@ -100,7 +101,7 @@ namespace Hanekawa.Modules.Help
         }
 
         [Command("server roles", RunMode = RunMode.Async)]
-        [Alias("serverroles", "sroles")]
+        [Alias("serverroles", "sroles", "sr")]
         [Summary("Displays all roles in the guild/server")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]

@@ -101,14 +101,10 @@ namespace Hanekawa.Services.Level
         public event AsyncEvent<IGuildUser, AccountGlobal> GlobalLevel;
         public event AsyncEvent<SocketGuildUser, TimeSpan> InVoice;
 
-        // Get Commands
-        public uint GetServerMultiplier(IGuild guild)
-        {
-            return ExpMultiplier.GetOrAdd(guild.Id, 1);
-        }
+        public uint GetServerMultiplier(IGuild guild) => ExpMultiplier.GetOrAdd(guild.Id, 1);
 
-        // Exp event handler
-        public async Task StartExpEventAsync(DbService db, IGuild guild, uint multiplier, TimeSpan after, bool announce = false,
+        public async Task StartExpEventAsync(DbService db, IGuild guild, uint multiplier, TimeSpan after,
+            bool announce = false,
             ITextChannel fallbackChannel = null)
         {
             IUserMessage message = null;
@@ -118,79 +114,109 @@ namespace Hanekawa.Services.Level
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }
 
-        public async Task<EmbedBuilder> ReducedExpManager(DbService db,ICategoryChannel category = null, ITextChannel channel = null)
+        public async Task<EmbedBuilder> ReducedExpManager(ITextChannel channel, bool remove)
         {
-            if (category != null)
+            using (var db = new DbService())
             {
+                var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+                if (!remove)
+                {
+                    if(!channels.Contains(channel.Id)) return await AddReducedExp(db, channel);
+                    return new EmbedBuilder().CreateDefault($"{channel.Mention} is already added.", Color.Red.RawValue);
+                }
+
+                if (channels.Contains(channel.Id)) return await RemoveReducedExp(db, channel);
+                return new EmbedBuilder().CreateDefault($"Couldn't find {channel.Mention}", Color.Red.RawValue);
+            }
+        }
+
+        public async Task<EmbedBuilder> ReducedExpManager(ICategoryChannel category, bool remove)
+        {
+            using (var db = new DbService())
+            {
+                if (!remove) return await AddReducedExp(db, category);
+
                 var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
                 if (channels.Contains(category.Id)) return await RemoveReducedExp(db, category);
-                return await AddReducedExp(db, category);
-            }
-
-            if (channel == null) return null;
-            {
-                var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
-                if (channels.Contains(channel.Id)) return await RemoveReducedExp(null, channel);
-                return await AddReducedExp(null, channel);
+                return new EmbedBuilder().CreateDefault($"Couldn't find {category.Name}", Color.Red.RawValue);
             }
         }
 
-        private async Task<EmbedBuilder> AddReducedExp(DbService db, IGuildChannel category = null, IGuildChannel channel = null)
+        public async Task<List<string>> ReducedExpList(IGuild guild)
         {
-            if (category != null)
+            using (var db = new DbService())
             {
-                var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
-                channels.Add(category.Id);
-                var data = new LevelExpReduction
+                var channels = await db.LevelExpReductions.Where(x => x.GuildId == guild.Id).ToListAsync();
+                var result = new List<string>();
+                if (channels.Count == 0)
                 {
-                    GuildId = category.GuildId,
-                    ChannelId = category.Id,
-                    Channel = false,
-                    Category = true
-                };
-                await db.LevelExpReductions.AddAsync(data);
-                await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
-            }
+                    result.Add("No channels");
+                    return result;
+                }
+                foreach (var x in channels)
+                {
+                    var type = x.Category
+                        ? $"Category: {(await guild.GetCategoriesAsync()).First(y => y.Id == x.ChannelId).Name}"
+                        : $"Channel: {(await guild.GetTextChannelAsync(x.ChannelId)).Name}";
+                    result.Add(type);
+                }
 
-            if (channel == null) return null;
-            {
-                var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
-                channels.Add(channel.Id);
-                var data = new LevelExpReduction
-                {
-                    GuildId = channel.GuildId,
-                    ChannelId = channel.Id,
-                    Channel = true,
-                    Category = false
-                };
-                await db.LevelExpReductions.AddAsync(data);
-                await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
+                return result;
             }
         }
 
-        private async Task<EmbedBuilder> RemoveReducedExp(DbService db, IGuildChannel category = null, IGuildChannel channel = null)
+        private async Task<EmbedBuilder> AddReducedExp(DbService db, ITextChannel channel)
         {
-            if (category != null)
+            var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+            channels.Add(channel.Id);
+            var data = new LevelExpReduction
             {
-                var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
-                channels.Remove(category.Id);
-                var data = await db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
-                db.LevelExpReductions.Remove(data);
-                await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"Removed {category.Name} from reduced exp list", Color.Green.RawValue);
-            }
+                GuildId = channel.GuildId,
+                ChannelId = channel.Id,
+                Channel = true,
+                Category = false
+            };
+            await db.LevelExpReductions.AddAsync(data);
+            await db.SaveChangesAsync();
+            return new EmbedBuilder().CreateDefault($"Added {channel.Name} to reduced exp list", Color.Green.RawValue);
+        }
 
-            if (channel == null) return null;
+        private async Task<EmbedBuilder> AddReducedExp(DbService db, ICategoryChannel category)
+        {
+            var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
+            channels.Add(category.Id);
+            var data = new LevelExpReduction
             {
-                var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
-                channels.Remove(channel.Id);
-                var data = await db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
-                db.LevelExpReductions.Remove(data);
-                await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"Removed {channel.Name} from reduced exp list", Color.Green.RawValue);
-            }
+                GuildId = category.GuildId,
+                ChannelId = category.Id,
+                Channel = false,
+                Category = true
+            };
+            await db.LevelExpReductions.AddAsync(data);
+            await db.SaveChangesAsync();
+            return new EmbedBuilder().CreateDefault($"Added {category.Name} to reduced exp list", Color.Green.RawValue);
+        }
+
+        private async Task<EmbedBuilder> RemoveReducedExp(DbService db, ITextChannel channel)
+        {
+            var channels = _serverChannelReduction.GetOrAdd(channel.GuildId, new List<ulong>());
+            channels.Remove(channel.Id);
+            var data = await db.LevelExpReductions.FindAsync(channel.GuildId, channel.Id);
+            db.LevelExpReductions.Remove(data);
+            await db.SaveChangesAsync();
+            return new EmbedBuilder().CreateDefault($"Removed {channel.Name} from reduced exp list",
+                Color.Green.RawValue);
+        }
+
+        private async Task<EmbedBuilder> RemoveReducedExp(DbService db, ICategoryChannel category)
+        {
+            var channels = _serverCategoryReduction.GetOrAdd(category.GuildId, new List<ulong>());
+            channels.Remove(category.Id);
+            var data = await db.LevelExpReductions.FindAsync(category.GuildId, category.Id);
+            db.LevelExpReductions.Remove(data);
+            await db.SaveChangesAsync();
+            return new EmbedBuilder().CreateDefault($"Removed {category.Name} from reduced exp list",
+                Color.Green.RawValue);
         }
 
         private void ExpEventHandler(DbService db, ulong guildId, uint multiplier, uint defaultMulti, ulong? messageId,
@@ -293,14 +319,14 @@ namespace Hanekawa.Services.Level
                                                              $"Duration: {after.Humanize()} ( {after} )", cfg.GuildId);
                 embed.Title = "Exp Event";
                 embed.Timestamp = DateTimeOffset.UtcNow + after;
-                embed.Footer = new EmbedFooterBuilder { Text = "Ends:"};
+                embed.Footer = new EmbedFooterBuilder {Text = "Ends:"};
                 var msg = await channel.SendMessageAsync(null, false, embed.Build());
                 return msg;
             }
 
-            await fallbackChannel.SendMessageAsync(null, false, 
+            await fallbackChannel.SendMessageAsync(null, false,
                 new EmbedBuilder().CreateDefault("No event channel has been setup.",
-                Color.Red.RawValue).Build());
+                    Color.Red.RawValue).Build());
             return null;
         }
 
@@ -323,8 +349,6 @@ namespace Hanekawa.Services.Level
                               channel.CategoryId.HasValue && category.Contains(channel.CategoryId.Value);
                 using (var db = new DbService())
                 {
-
-
                     ExpMultiplier.TryGetValue(((IGuildChannel) msg.Channel).GuildId, out var multi);
                     var userdata = await db.GetOrCreateUserData(user);
                     var cfg = await db.GetOrCreateGuildConfigAsync(((IGuildChannel) msg.Channel).Guild);
@@ -403,8 +427,6 @@ namespace Hanekawa.Services.Level
                 if (user.IsBot) return;
                 using (var db = new DbService())
                 {
-
-
                     try
                     {
                         var userdata = await db.GetOrCreateUserData(gusr);
@@ -545,9 +567,7 @@ namespace Hanekawa.Services.Level
             var currentUser = await user.Guild.GetCurrentUserAsync();
             foreach (var x in roles)
                 if (!user.RoleIds.Contains(x.Id) && (currentUser as SocketGuildUser).HierarchyCheck(x))
-                {
                     missingRoles.Add(x);
-                }
 
             if (missingRoles.Count == 0) return;
             if (missingRoles.Count > 1) await user.AddRolesAsync(missingRoles);
@@ -572,7 +592,7 @@ namespace Hanekawa.Services.Level
 
             if (role == 0) return roles;
             var getSingleRole = user.Guild.GetRole(role);
-            if((currentUser as SocketGuildUser).HierarchyCheck(getSingleRole)) roles.Add(getSingleRole);
+            if ((currentUser as SocketGuildUser).HierarchyCheck(getSingleRole)) roles.Add(getSingleRole);
             return roles;
         }
 
@@ -584,8 +604,9 @@ namespace Hanekawa.Services.Level
                 if (userdata.Level >= x.Level)
                 {
                     var getRole = user.Guild.GetRole(x.Role);
-                    if((currentUser as SocketGuildUser).HierarchyCheck(getRole)) roles.Add(getRole);
+                    if ((currentUser as SocketGuildUser).HierarchyCheck(getRole)) roles.Add(getRole);
                 }
+
             return roles;
         }
 

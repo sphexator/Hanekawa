@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Extensions;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -144,6 +145,11 @@ namespace Hanekawa.Modules.Administration
 
         private async Task AddSelfAssignAbleRoleAsync(SocketCommandContext context, IRole role, bool exclusive)
         {
+            if ((context.User as SocketGuildUser).HierarchyCheck(role))
+            {
+                await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red.RawValue);
+                return;
+            }
             using (var db = new DbService())
             {
                 var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);

@@ -19,10 +19,7 @@ namespace Hanekawa.Modules.Account.Level
     {
         private readonly LevelingService _levelingService;
 
-        public Experience(LevelingService levelingService)
-        {
-            _levelingService = levelingService;
-        }
+        public Experience(LevelingService levelingService) => _levelingService = levelingService;
 
         [Command("give")]
         [Summary("Gives a certain amount of experience to a user")]
@@ -40,51 +37,33 @@ namespace Hanekawa.Modules.Account.Level
         [Command("ignore add", RunMode = RunMode.Async)]
         [Alias("iadd")]
         [Priority(1)]
-        [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
-        public async Task AddReducedExpChannel(ITextChannel channel)
-        {
-            using (var db = new DbService())
-            {
-                var embed = await _levelingService.ReducedExpManager(db, null, channel);
-                if (embed != null) await Context.ReplyAsync(embed);
-            }
-        }
+        [Summary("Adds a channel from reduced exp pool with provided channel")]
+        public async Task AddReducedExpChannel([Remainder] ITextChannel channel) => await Context.ReplyAsync(await _levelingService.ReducedExpManager(channel, false));
 
         [Command("ignore add", RunMode = RunMode.Async)]
         [Alias("iadd")]
         [Priority(2)]
-        [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
-        public async Task AddReducedExpChannel(ICategoryChannel category)
-        {
-            using (var db = new DbService())
-            {
-                var embed = await _levelingService.ReducedExpManager(db, category);
-                if (embed != null) await Context.ReplyAsync(embed);
-            }
-        }
+        [Summary("Adds a channel from reduced exp pool with provided channel")]
+        public async Task AddReducedExpChannel([Remainder] ICategoryChannel category) => await Context.ReplyAsync(await _levelingService.ReducedExpManager(category, false));
 
-        [Command("ignore add", RunMode = RunMode.Async)]
-        [Alias("iadd")]
-        [Summary("Adds or removes a channel from reduced exp pool with provided channel")]
-        public async Task AddReducedExpChannel(ulong channelId)
-        {
-            var category = Context.Guild.CategoryChannels.FirstOrDefault(x => x.Id == channelId);
-            var channel = Context.Guild.TextChannels.FirstOrDefault(x => x.Id == channelId);
-            using (var db = new DbService())
-            {
-                EmbedBuilder embed = null;
-                if (category != null)
-                {
-                    embed = await _levelingService.ReducedExpManager(db, category);
-                }
+        [Command("ignore remove")]
+        [Alias("remove")]
+        [Summary("Removes a channel from reduced exp pool with provided channel")]
+        public async Task RemoveReducedExpChannel([Remainder] ICategoryChannel category) =>
+            await Context.ReplyAsync(await _levelingService.ReducedExpManager(category, true));
 
-                if (channel != null)
-                {
-                    embed = await _levelingService.ReducedExpManager(db, null, channel);
-                }
-                if (embed != null) await Context.ReplyAsync(embed);
-            }
-        }
+        [Command("ignore remove")]
+        [Alias("remove")]
+        [Summary("Removes a channel from reduced exp pool with provided channel")]
+        public async Task RemoveReducedExpChannel([Remainder] ITextChannel channel) =>
+            await Context.ReplyAsync(await _levelingService.ReducedExpManager(channel, true));
+
+        [Command("ignore list")]
+        [Alias("list")]
+        [Summary("List of channels and categories that got reduced exp enabled")]
+        public async Task ListReducedExpChannels() =>
+            await PagedReplyAsync((await _levelingService.ReducedExpList(Context.Guild))
+                .PaginateBuilder(Context.Guild.Id, Context.Guild, "Reduced Exp channel list"));
 
         [Command("multiplier")]
         [Alias("multi")]

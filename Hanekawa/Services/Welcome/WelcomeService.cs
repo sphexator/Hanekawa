@@ -3,41 +3,29 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
-using Hanekawa.Extensions;
-using Humanizer;
-using Microsoft.EntityFrameworkCore;
-using Quartz.Util;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
-using SixLabors.Primitives;
+using Hanekawa.Entities.Interfaces;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Hanekawa.Entities.Interfaces;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Services.Welcome
 {
     public class WelcomeService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
+        private readonly WelcomeMessage _message;
+        private readonly ImageGenerator _image;
 
-        public WelcomeService(DiscordSocketClient discord)
+        public WelcomeService(DiscordSocketClient discord, WelcomeMessage message, ImageGenerator image)
         {
             _client = discord;
+            _message = message;
+            _image = image;
 
-            _client.UserJoined += Welcomer;
-            _client.UserJoined += WelcomeToggler;
+            _client.UserJoined += WelcomeMessage;
+            _client.UserJoined += WelcomeToggle;
             _client.LeftGuild += BannerCleanup;
 
             using (var db = new DbService())
@@ -62,36 +50,7 @@ namespace Hanekawa.Services.Welcome
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
-        private static Regex UserRegex => new Regex("%PLAYER%");
-
-        public async Task TestBanner(ISocketMessageChannel ch, IGuildUser user, string backgroundUrl)
-        {
-            var stream = new MemoryStream();
-            using (var client = new HttpClient())
-            {
-                var response = await client.GetStreamAsync(backgroundUrl);
-                var avatar = await GetAvatarAsync(user);
-                using (var img = Image.Load(response))
-                {
-                    img.Mutate(x => x.Resize(600, 78));
-                    var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
-                    var text = user.Username.Truncate(15);
-                    var optionsCenter = new TextGraphicsOptions
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center
-                    };
-                    img.Mutate(ctx => ctx
-                        .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
-                        .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
-                    img.Save(stream, new PngEncoder());
-                }
-            }
-
-            stream.Seek(0, SeekOrigin.Begin);
-            await ch.SendFileAsync(stream, "testBanner.png");
-        }
-
-        private Task WelcomeToggler(SocketGuildUser user)
+        private Task WelcomeToggle(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
@@ -117,117 +76,40 @@ namespace Hanekawa.Services.Welcome
             return Task.CompletedTask;
         }
 
-        private Task Welcomer(SocketGuildUser user)
+        private Task WelcomeMessage(SocketGuildUser user)
         {
-            var _ = Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
-                try
+                if (user.IsBot) return;
+                if (!CheckCooldown(user)) return;
+                if (AntiRaidDisable.GetOrAdd(user.Guild.Id, false)) return;
+                using (var db = new DbService())
                 {
-                    if (user.IsBot) return;
-                    if (!CheckCooldown(user)) return;
-                    var status = AntiRaidDisable.GetOrAdd(user.Guild.Id, false);
-                    if (status) return;
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
-                        if (!cfg.WelcomeChannel.HasValue) return;
-                        await WelcomeBanner(user.Guild.GetTextChannel(cfg.WelcomeChannel.Value), user, cfg)
-                            .ConfigureAwait(false);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    if (!cfg.WelcomeChannel.HasValue) return;
+
+                    var channel = user.Guild.GetTextChannel(cfg.WelcomeChannel.Value);
+                    if (channel == null) return;
+
+                    if (cfg.WelcomeBanner) await WelcomeBanner(channel, user, cfg).ConfigureAwait(false);
+                    else await channel.SendMessageAsync(_message.Message(cfg.WelcomeMessage, user));
                 }
             });
             return Task.CompletedTask;
         }
 
-        private static async Task WelcomeBanner(ISocketMessageChannel ch, SocketGuildUser user, GuildConfig cfg)
+        private async Task WelcomeBanner(ISocketMessageChannel channel, SocketGuildUser user, GuildConfig cfg)
         {
-            var stream = await ImageGeneratorAsync(user);
-            var msg = WelcomeMessage(cfg, user);
+            var (stream, message) = await _image.Banner(user, cfg.WelcomeMessage).ConfigureAwait(false);
             stream.Seek(0, SeekOrigin.Begin);
-            var welcMsg = await ch.SendFileAsync(stream, "welcome.png", msg);
-            if (!cfg.WelcomeDelete.HasValue) return;
-            await Task.Delay(cfg.WelcomeDelete.Value);
-            try
+            var msg = await channel.SendFileAsync(stream, "Welcome.png", message)
+                .ConfigureAwait(false);
+            if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.WelcomeDelete.HasValue)
             {
-                await welcMsg.DeleteAsync();
+                await Task.Delay(cfg.WelcomeDelete.Value);
+                try { await msg.DeleteAsync(); }
+                catch { /* IGNORE */ }
             }
-            catch
-            {
-                /* IGNORE */
-            }
-        }
-
-        private static async Task<Stream> ImageGeneratorAsync(IGuildUser user)
-        {
-            var stream = new MemoryStream();
-            var toLoad = await GetImageAsync(user.Guild);
-            var avatar = await GetAvatarAsync(user);
-            using (var img = toLoad)
-            {
-                var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
-                var text = user.Username.Truncate(15);
-                var optionsCenter = new TextGraphicsOptions
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                img.Mutate(ctx => ctx
-                    .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
-                    .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
-                img.Save(stream, new PngEncoder());
-            }
-
-            return stream;
-        }
-
-        private static async Task<Image<Rgba32>> GetImageAsync(IGuild guild)
-        {
-            using (var db = new DbService())
-            using (var client = new HttpClient())
-            {
-                var list = await db.WelcomeBanners.Where(x => x.GuildId == guild.Id).ToListAsync();
-                if (list.Count == 0) return GetDefaultImage();
-                var rand = new Random().Next(list.Count);
-                var response = await client.GetStreamAsync(list[rand].Url);
-                using (var img = Image.Load(response))
-                {
-                    img.Mutate(x => x.Resize(600, 78));
-                    return img.Clone();
-                }
-            }
-        }
-
-        private static Image<Rgba32> GetDefaultImage()
-        {
-            using (var img = Image.Load(@"Data\Welcome\Default.png"))
-            {
-                img.Mutate(x => x.Resize(600, 78));
-                return img.Clone();
-            }
-        }
-
-        private static async Task<Image<Rgba32>> GetAvatarAsync(IUser user)
-        {
-            using (var client = new HttpClient())
-            {
-                var response = await client.GetStreamAsync(user.GetAvatar());
-                using (var img = Image.Load(response))
-                {
-                    var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
-                    return avi.Clone();
-                }
-            }
-        }
-
-        private static string WelcomeMessage(GuildConfig cfg, SocketGuildUser user)
-        {
-            if (cfg.WelcomeMessage.IsNullOrWhiteSpace()) return null;
-            if (!UserRegex.IsMatch(cfg.WelcomeMessage)) return cfg.WelcomeMessage;
-            var msg = UserRegex.Replace(cfg.WelcomeMessage, user.Mention);
-            return msg;
         }
 
         private static Task BannerCleanup(SocketGuild guild)

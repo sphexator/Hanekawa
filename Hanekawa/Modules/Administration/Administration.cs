@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
@@ -344,7 +345,21 @@ namespace Hanekawa.Modules.Administration
                 await Context.Message.DeleteAsync();
                 var actionCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
                 var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
-                var embed = updMsg?.Embeds.FirstOrDefault().ToEmbedBuilder();
+                if (updMsg == null)
+                {
+                    await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.", timeout: TimeSpan.FromSeconds(5));
+                    var delay = Task.Delay(5000);
+                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild).ConfigureAwait(false);
+                    await Task.WhenAll(delay);
+                    if(cfg.LogBan.HasValue) updMsg = await Context.Guild.GetTextChannel(cfg.LogBan.Value).GetMessageAsync(actionCase.MessageId) as IUserMessage;
+                }
+
+                if (updMsg == null)
+                {
+                    await ReplyAndDeleteAsync("Something went wrong, aborting.", timeout: TimeSpan.FromSeconds(10));
+                    return;
+                }
+                var embed = updMsg.Embeds.FirstOrDefault().ToEmbedBuilder();
                 if (embed == null)
                 {
                     await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));

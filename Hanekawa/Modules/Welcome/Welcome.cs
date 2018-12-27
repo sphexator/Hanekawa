@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -19,14 +20,18 @@ namespace Hanekawa.Modules.Welcome
 {
     [Group("welcome")]
     [Alias("welc")]
-    [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Welcome : InteractiveBase
     {
-        private readonly WelcomeService _welcomeService;
+        private readonly ImageGenerator _banner;
+        private readonly WelcomeMessage _message;
+        private readonly WelcomeService _service;
 
-        public Welcome(WelcomeService welcomeService)
+        public Welcome(WelcomeService welcomeService, ImageGenerator banner, WelcomeMessage message)
         {
-            _welcomeService = welcomeService;
+            _service = welcomeService;
+            _banner = banner;
+            _message = message;
         }
 
         [Command("add", RunMode = RunMode.Async)]
@@ -40,8 +45,10 @@ namespace Hanekawa.Modules.Welcome
                 return;
             }
 
-            await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
-            var msg = await ReplyAsync("Do you want to add this banner? (Y/N");
+            var stream = await _banner.TestBanner(Context.User as IGuildUser, url);
+            stream.Seek(0, SeekOrigin.Begin);
+            var msg = await Context.Channel.SendFileAsync(stream, "Welcome.png",
+                "Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
             if (response.Content.ToLower() != "y")
             {
@@ -105,13 +112,11 @@ namespace Hanekawa.Modules.Welcome
 
                 var pages = new List<string>();
                 foreach (var x in list)
-                {
                     pages.Add($"ID: {x.Id}\n" +
                               $"URL: {x.Url}\n" +
                               $"Uploader: {Context.Guild.GetUser(x.Uploader).Mention ?? $"User left server ({x.Uploader})"}\n" +
                               $"Added: {x.UploadTimeOffset.DateTime}\n" +
                               "\n");
-                }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Welcome banners for {Context.Guild.Name}"));
@@ -129,7 +134,9 @@ namespace Hanekawa.Modules.Welcome
                 return;
             }
 
-            await _welcomeService.TestBanner(Context.Channel, Context.User as IGuildUser, url);
+            var stream = await _banner.TestBanner(Context.User as IGuildUser, url);
+            stream.Seek(0, SeekOrigin.Begin);
+            await Context.Channel.SendFileAsync(stream, "welcome.png");
         }
 
         [Command("template", RunMode = RunMode.Async)]
@@ -156,7 +163,9 @@ namespace Hanekawa.Modules.Welcome
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
+                await Context.ReplyAsync("Updated welcome message!\n\n" +
+                                         $"{_message.Message(message, Context.User, Context.Guild)}",
+                    Color.Green.RawValue);
             }
         }
 
