@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,6 @@ using Hanekawa.Services.Administration;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Tweetinvi.Core.Extensions;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -172,7 +172,7 @@ namespace Hanekawa.Services.AutoModerator
 
         public string GetChannelTopScores(ITextChannel channel)
         {
-            string result = null;
+            var result = new StringBuilder();
             var chanUsers = new Dictionary<ulong, double>();
             if (!SlowNudeValue.TryGetValue(channel.GuildId, out var channels)) return null;
             if (!channels.TryGetValue(channel.Id, out var users)) return null;
@@ -185,8 +185,11 @@ namespace Hanekawa.Services.AutoModerator
             }
 
             var topUsers = chanUsers.OrderBy(x => x.Value).Take(5);
-            topUsers.ForEach(x => result += $"{_client.GetUser(x.Key)} Score: {x.Value}\n");
-            return result;
+            foreach (var (id, score) in topUsers)
+            {
+                result.AppendLine($"{_client.GetUser(id)} Score: {score}");
+            }
+            return result.ToString();
         }
 
         public IEnumerable<string> GetGuildTopScore(IGuild guild)
@@ -204,11 +207,14 @@ namespace Hanekawa.Services.AutoModerator
 
                     userScore.TryAdd(y.Key, score / y.Value.Count);
                 }
-
-                var page = $"{channel}\n";
+                var page = new StringBuilder();
+                page.AppendLine($"{channel}");
                 var topUsers = userScore.OrderBy(x => x.Value).Take(5);
-                topUsers.ForEach(x => page += $"{_client.GetUser(x.Key).Mention} Score: {x.Value}\n");
-                result.Add(page);
+                foreach (var (id, score) in topUsers)
+                {
+                    page.AppendLine($"{_client.GetUser(id).Mention} Score: {score}");
+                }
+                result.Add(page.ToString());
             }
 
             return result;

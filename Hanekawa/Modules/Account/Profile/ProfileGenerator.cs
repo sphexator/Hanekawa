@@ -20,7 +20,6 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Drawing;
 using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
-using Tweetinvi.Core.Extensions;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Modules.Account.Profile
@@ -173,7 +172,10 @@ namespace Hanekawa.Modules.Account.Profile
             }
 
             var result = new List<Image<Rgba32>>();
-            achievements.ForEach(pair => result.Add(pair.Value));
+            foreach (var x in achievements)
+            {
+                result.Add(x.Value);
+            }
             return result;
         }
 

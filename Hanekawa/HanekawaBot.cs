@@ -32,7 +32,6 @@ namespace Hanekawa
         public async Task StartAsync()
         {
             var config = BuildConfig();
-
             var databaseClient = new DatabaseClient(config["connectionString"]);
             var services = new ServiceCollection();
             services.UseQuartz(typeof(EventService));
