@@ -123,8 +123,13 @@ namespace Hanekawa.Modules.Administration
         [Alias("rr")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Removes a role from the list of self-assignable roles")]
-        public async Task RemoveSelfAssignAbleRoleAsync(IRole role)
+        public async Task RemoveSelfAssignAbleRoleAsync([Remainder] IRole role)
         {
+            if ((Context.User as SocketGuildUser).HierarchyCheck(role))
+            {
+                await Context.ReplyAsync("Can't remove a role that's higher then your highest role.", Color.Red.RawValue);
+                return;
+            }
             using (var db = new DbService())
             {
                 var roleCheck =
