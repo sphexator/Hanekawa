@@ -11,12 +11,20 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Modules.Administration
 {
     [RequireContext(ContextType.Guild)]
     public class Roles : InteractiveBase
     {
+        private readonly LogService _log;
+        public Roles(LogService log)
+        {
+            _log = log;
+        }
+
         [Command("Assign")]
         [Alias("iam", "give")]
         [Summary("Assigns a role that's setup as self-assignable")]
@@ -101,7 +109,17 @@ namespace Hanekawa.Modules.Administration
                 string roles = null;
                 if (list.Count > 0)
                     foreach (var x in list)
-                        roles += $"{Context.Guild.GetRole(x.RoleId).Name ?? "*Role deleted*"}, ";
+                    {
+                        try
+                        {
+                            var role = Context.Guild.GetRole(x.RoleId) ?? Context.Guild.Roles.FirstOrDefault(z => z.Id == x.RoleId);
+                            if (role != null) roles += $"**{role.Name}**, ";
+                        }
+                        catch (Exception e)
+                        {
+                            _log.LogAction(LogLevel.Error, e.ToString(), "Role module");
+                        }
+                    }
                 else roles += "No self-assignable roles added";
                 await Context.ReplyAsync(roles);
             }

@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -14,6 +15,8 @@ using Quartz.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Services.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Modules.Account.Level
 {
@@ -22,11 +25,12 @@ namespace Hanekawa.Modules.Account.Level
     {
         private readonly LevelingService _levelingService;
         private readonly Calculate _calculate;
-
-        public LevelAdmin(LevelingService levelingService, Calculate calculate)
+        private readonly LogService _log;
+        public LevelAdmin(LevelingService levelingService, Calculate calculate, LogService log)
         {
             _levelingService = levelingService;
             _calculate = calculate;
+            _log = log;
         }
 
         [Command("setlevel")]
@@ -156,10 +160,23 @@ namespace Hanekawa.Modules.Account.Level
                 var pages = new List<string>();
                 foreach (var x in levels)
                 {
-                    pages.Add($"Name: {Context.Guild.GetRole(x.Role).Name ?? "Role not found"}\n" +
-                              $"Level: {x.Level}\n" +
-                              $"Stack: {x.Stackable}\n" +
-                              "\n");
+                    try
+                    {
+                        var role = Context.Guild.GetRole(x.Role) ?? Context.Guild.Roles.FirstOrDefault(z => z.Id == x.Role);
+                        if(role == null) pages.Add("Role not found");
+                        else
+                        {
+                            pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
+                                      $"Level: {x.Level}\n" +
+                                      $"Stack: {x.Stackable}\n" +
+                                      "\n");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        pages.Add("Role not found\n");
+                        _log.LogAction(LogLevel.Error, e.ToString(), "LevelAdmin");
+                    }
                 }
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level roles for {Context.Guild.Name}"));
             }
