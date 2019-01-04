@@ -212,13 +212,13 @@ namespace Hanekawa.Services.AutoModerator
                 var invite = InviteFilter(msg, user, cfg);
                 var scam = ScamLinkFilter(msg, user, cfg);
                 // var spam = SpamFilter(msg, user, cfg);
-                var url = UrlFilter(msg, user, cfg, userdata);
-                //var world = WordFilter(msg, user, cfg, userdata);
+                // var url = UrlFilter(msg, user, cfg, userdata);
+                // var world = WordFilter(msg, user, cfg, userdata);
                 var length = LengthFilter(msg, user, cfg, userdata);
                 var emote = EmoteFilter(msg, user, cfg, userdata);
                 var mention = MentionFilter(msg, user, cfg);
 
-                await Task.WhenAll(invite, scam, url, length, emote, mention);
+                await Task.WhenAll(invite, scam, length, emote, mention);
             });
             return Task.CompletedTask;
         }

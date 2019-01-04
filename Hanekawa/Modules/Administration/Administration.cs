@@ -107,7 +107,7 @@ namespace Hanekawa.Modules.Administration
                 await channel.DeleteMessagesAsync(messages).ConfigureAwait(false);
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().CreateDefault($"{messages.Count} messages deleted!", Color.Green.RawValue)
-                        .Build(), TimeSpan.FromSeconds(30));
+                        .Build(), TimeSpan.FromSeconds(10));
             }
             else
             {
@@ -118,7 +118,7 @@ namespace Hanekawa.Modules.Administration
                 await channel.DeleteMessagesAsync(msgs).ConfigureAwait(false);
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().CreateDefault($"{x} messages deleted!", Color.Green.RawValue).Build(),
-                    TimeSpan.FromSeconds(30));
+                    TimeSpan.FromSeconds(10));
             }
         }
 

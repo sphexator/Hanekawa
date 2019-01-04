@@ -20,10 +20,7 @@ namespace Hanekawa.Modules.Administration
     public class Roles : InteractiveBase
     {
         private readonly LogService _log;
-        public Roles(LogService log)
-        {
-            _log = log;
-        }
+        public Roles(LogService log) => _log = log;
 
         [Command("Assign")]
         [Alias("iam", "give")]

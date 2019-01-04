@@ -19,10 +19,7 @@ namespace Hanekawa.Modules.Administration
     {
         private readonly DropService _lootCrates;
 
-        public Drop(DropService lootCrates)
-        {
-            _lootCrates = lootCrates;
-        }
+        public Drop(DropService lootCrates) => _lootCrates = lootCrates;
 
         [Command(RunMode = RunMode.Async)]
         [Summary("Spawns a crate for people to claim. Higher reward then regular crates")]

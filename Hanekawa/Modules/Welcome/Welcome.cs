@@ -50,6 +50,7 @@ namespace Hanekawa.Modules.Welcome
             var msg = await Context.Channel.SendFileAsync(stream, "Welcome.png",
                 "Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+            if (response == null) return;
             if (response.Content.ToLower() != "y")
             {
                 await msg.DeleteAsync();
