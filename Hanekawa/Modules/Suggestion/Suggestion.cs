@@ -19,12 +19,15 @@ namespace Hanekawa.Modules.Suggestion
     {
         [Command("Suggest", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
+        [RequireBotPermission(GuildPermission.AddReactions)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
         [Ratelimit(1, 30, Measure.Seconds)]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             using (var db = new DbService())
             {
-                await Context.Message.DeleteAsync();
+                try { await Context.Message.DeleteAsync(); } catch { /* IGNORE */ }
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.SuggestionChannel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
