@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Services.Welcome
 {
@@ -47,8 +48,8 @@ namespace Hanekawa.Services.Welcome
         private ConcurrentDictionary<ulong, bool> AntiRaidDisable { get; }
             = new ConcurrentDictionary<ulong, bool>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+        private ConcurrentDictionary<ulong, MemoryCache> WelcomeCooldown { get; }
+            = new ConcurrentDictionary<ulong, MemoryCache>();
 
         private Task WelcomeToggle(SocketGuildUser user)
         {
@@ -126,26 +127,11 @@ namespace Hanekawa.Services.Welcome
             return Task.CompletedTask;
         }
 
-        private bool CheckCooldown(IGuildUser usr)
+        private bool CheckCooldown(IGuildUser user)
         {
-            var check = WelcomeCooldown.TryGetValue(usr.GuildId, out var cds);
-            if (!check)
-            {
-                WelcomeCooldown.TryAdd(usr.GuildId, new ConcurrentDictionary<ulong, DateTime>());
-                WelcomeCooldown.TryGetValue(usr.GuildId, out cds);
-                cds.TryAdd(usr.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            var userCheck = cds.TryGetValue(usr.Id, out var cd);
-            if (!userCheck)
-            {
-                cds.TryAdd(usr.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            if (!((DateTime.UtcNow - cd).TotalSeconds >= 600)) return false;
-            cds.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
+            var users = WelcomeCooldown.GetOrAdd(user.GuildId, new MemoryCache(new MemoryCacheOptions()));
+            if (users.TryGetValue(user.Id, out _)) return false;
+            users.Set(user.Id, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             return true;
         }
     }

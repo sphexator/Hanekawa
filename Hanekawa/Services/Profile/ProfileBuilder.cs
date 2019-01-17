@@ -21,6 +21,10 @@ namespace Hanekawa.Services.Profile
 {
     public class ProfileBuilder : IHanaService
     {
+        private readonly Calculate _calculate;
+
+        public ProfileBuilder(Calculate calculate) => _calculate = calculate;
+
         public async Task<MemoryStream> GetProfileAsync(SocketGuildUser user)
         {
             var stream = new MemoryStream();
@@ -43,7 +47,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, new Calculate().GetServerLevelRequirement(userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement((int)userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }
@@ -68,7 +72,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, new Calculate().GetServerLevelRequirement(userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint)_calculate.GetServerLevelRequirement((int)userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }

@@ -36,18 +36,19 @@ namespace Hanekawa.Modules.Account.Level
         [Command("setlevel")]
         [Summary("Toggles between level roles stacking or keep the highest earned one")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetLevel(SocketGuildUser user, uint level)
+        public async Task SetLevel(SocketGuildUser user, int level)
         {
+            if (level <= 0) return;
             uint totalExp = 0;
             for (var i = 1; i < level + 1; i++)
             {
-                totalExp += _calculate.GetServerLevelRequirement((uint) i);
+                totalExp += (uint)_calculate.GetServerLevelRequirement(i);
             }
 
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user);
-                userdata.Level = level;
+                userdata.Level = (uint)level;
                 userdata.Exp = 0;
                 userdata.TotalExp = totalExp;
                 await db.SaveChangesAsync();

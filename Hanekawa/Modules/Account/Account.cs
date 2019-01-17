@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Account
                 var globalUserRank = db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
 
                 await Task.WhenAll(rank, total, globalRank, globalUserRank);
-                var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
+                var nxtLevel = _calculate.GetServerLevelRequirement((int)userdata.Level);
                 await Context.ReplyAsync(new EmbedBuilder()
                     .CreateDefault(Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder { Name = user.GetName() })

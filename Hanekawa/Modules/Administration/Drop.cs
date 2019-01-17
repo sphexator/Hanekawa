@@ -17,9 +17,14 @@ namespace Hanekawa.Modules.Administration
     [RequireContext(ContextType.Guild)]
     public class Drop : InteractiveBase
     {
-        private readonly DropService _lootCrates;
+        private readonly DropService _dropService;
+        private readonly DropData _dropData;
 
-        public Drop(DropService lootCrates) => _lootCrates = lootCrates;
+        public Drop(DropService dropService, DropData dropData)
+        {
+            _dropService = dropService;
+            _dropData = dropData;
+        }
 
         [Command(RunMode = RunMode.Async)]
         [Summary("Spawns a crate for people to claim. Higher reward then regular crates")]
@@ -27,7 +32,7 @@ namespace Hanekawa.Modules.Administration
         {
             await Context.Message.DeleteAsync();
             if (!(Context.Channel is SocketTextChannel ch)) return;
-            await _lootCrates.SpawnCrateAsync(ch, Context.User as SocketGuildUser);
+            await _dropService.SpawnCrateAsync(ch, Context.User as SocketGuildUser);
         }
 
         [Command("Add", RunMode = RunMode.Async)]
@@ -37,7 +42,7 @@ namespace Hanekawa.Modules.Administration
             try
             {
                 if (channel == null) channel = Context.Channel as ITextChannel;
-                await _lootCrates.AddLootChannelAsync(channel as SocketTextChannel);
+                await _dropData.AddLootChannelAsync(channel as SocketTextChannel);
                 await Context.Message.DeleteAsync();
                 await Context.ReplyAsync($"Added {channel.Mention} to loot eligible channels.",
                     Color.Green.RawValue);
@@ -56,7 +61,7 @@ namespace Hanekawa.Modules.Administration
             try
             {
                 if (channel == null) channel = Context.Channel as ITextChannel;
-                await _lootCrates.RemoveLootChannelAsync(channel as SocketTextChannel);
+                await _dropData.RemoveLootChannelAsync(channel as SocketTextChannel);
                 await Context.ReplyAsync($"Removed {channel.Mention} from loot eligible channels.",
                     Color.Green.RawValue);
             }

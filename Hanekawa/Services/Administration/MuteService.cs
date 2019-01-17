@@ -9,6 +9,7 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
+using Hanekawa.Extensions;
 using Hanekawa.Services.AutoModerator;
 
 namespace Hanekawa.Services.Administration
@@ -72,7 +73,7 @@ namespace Hanekawa.Services.Administration
             {
                 await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                 var muteRole = await GetMuteRole(user.Guild);
-                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                if (!user.RoleIds.Contains(muteRole.Id)) await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
                 await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
             }
         }
@@ -83,7 +84,7 @@ namespace Hanekawa.Services.Administration
             {
                 await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                 var muteRole = await GetMuteRole(user.Guild);
-                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                if (!user.RoleIds.Contains(muteRole.Id)) await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
                 var stopTimer = StopUnmuteTimerAsync(db, user.GuildId, user.Id);
                 var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
                 await Task.WhenAll(stopTimer, unmute);
@@ -205,7 +206,7 @@ namespace Hanekawa.Services.Administration
 
                 try
                 {
-                    await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+                    await user.TryRemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
                 }
                 catch
                 {

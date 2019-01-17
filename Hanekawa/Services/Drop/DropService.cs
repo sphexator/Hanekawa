@@ -1,72 +1,35 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
+using Hanekawa.Services.Level;
 
 namespace Hanekawa.Services.Drop
 {
     public class DropService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
+        private readonly DropData _data;
+        private readonly DropEmote _emote;
+        private readonly LevelHandler _level;
+        private readonly Random _random;
 
-        private readonly List<ulong> _regularLoot = new List<ulong>();
-        private readonly List<ulong> _specialLoot = new List<ulong>();
-
-        public DropService(DiscordSocketClient client)
+        public DropService(DiscordSocketClient client, Random random, DropData data, DropEmote emote,
+            LevelHandler level)
         {
             _client = client;
+            _random = random;
+            _data = data;
+            _emote = emote;
+            _level = level;
             _client.MessageReceived += CrateTriggerAsync;
             _client.ReactionAdded += CrateClaimerAsync;
-
-            using (var db = new DbService())
-            {
-                foreach (var x in db.GuildConfigs)
-                {
-                    var result = db.LootChannels.Where(c => c.GuildId == x.GuildId).ToList();
-                    var channels = new List<ulong>();
-                    foreach (var y in result) channels.Add(y.ChannelId);
-                    LootChannels.GetOrAdd(x.GuildId, channels);
-                }
-            }
-            Console.WriteLine("Drop service loaded");
         }
-
-        private ConcurrentDictionary<ulong, List<ulong>> LootChannels { get; }
-            = new ConcurrentDictionary<ulong, List<ulong>>();
-
-        private ConcurrentDictionary<ulong, DateTime> GuildCooldown { get; }
-            = new ConcurrentDictionary<ulong, DateTime>();
-
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> UserCooldown { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
 
         public event AsyncEvent<SocketGuildUser> DropClaimed;
-
-        public async Task SpawnCrateAsync(SocketTextChannel ch, SocketGuildUser user)
-        {
-            var triggerMsg = await ch.SendMessageAsync(
-                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
-            var emotes = ReturnEmotes().ToList();
-            var rng = new Random();
-            foreach (var x in emotes.OrderBy(x => rng.Next()).Take(emotes.Count))
-                try
-                {
-                    if (x.Name == "realsip") _specialLoot.Add(triggerMsg.Id);
-                    await triggerMsg.AddReactionAsync(x);
-                }
-                catch
-                {
-                    break;
-                }
-        }
 
         private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
             SocketReaction rct)
@@ -76,46 +39,11 @@ namespace Hanekawa.Services.Drop
                 if (!msg.HasValue) return;
                 if (rct.User.Value.IsBot) return;
                 if (rct.Emote.Name != "realsip") return;
-                if (!_regularLoot.Contains(rct.MessageId) &&
-                    !_specialLoot.Contains(rct.MessageId)) return;
-                using (var db = new DbService())
-                {
-                    var userdata = await db.GetOrCreateUserData(rct.User.Value as SocketGuildUser);
-                    if (_specialLoot.Contains(rct.MessageId))
-                    {
-                        _specialLoot.Remove(rct.MessageId);
-                        if (!msg.HasValue) await msg.GetOrDownloadAsync();
-                        await msg.Value.DeleteAsync();
-                        var rand = new Random().Next(150, 250);
-                        userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
-                        userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
-                        userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
-                        await db.SaveChangesAsync();
-                        var trgMsg =
-                            await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
-                        await DropClaimed(rct.User.Value as SocketGuildUser);
-                    }
-                    else
-                    {
-                        _regularLoot.Remove(rct.MessageId);
-                        if (!msg.HasValue) await msg.GetOrDownloadAsync();
-                        await msg.Value.DeleteAsync();
-                        var rand = new Random().Next(15, 150);
-                        userdata.Exp = userdata.Exp + Convert.ToUInt32(rand);
-                        userdata.TotalExp = userdata.TotalExp + Convert.ToUInt32(rand);
-                        userdata.Credit = userdata.Credit + Convert.ToUInt32(rand);
-                        await db.SaveChangesAsync();
-                        var trgMsg =
-                            await channel.SendMessageAsync(
-                                $"Rewarded {rct.User.Value.Mention} with {rand} exp & credit!");
-                        await Task.Delay(5000);
-                        await trgMsg.DeleteAsync();
-                        await DropClaimed(rct.User.Value as SocketGuildUser);
-                    }
-                }
+                if (!(rct.User.Value is SocketGuildUser user)) return;
+                if (!_data.IsLootMessage(user.Guild.Id, msg.Id, out var special)) return;
+                var message = await msg.GetOrDownloadAsync();
+                if (special) await ClaimSpecial(message, channel, user);
+                else await ClaimNormal(message, channel, user);
             });
             return Task.CompletedTask;
         }
@@ -124,24 +52,21 @@ namespace Hanekawa.Services.Drop
         {
             var _ = Task.Run(async () =>
             {
-                if (!(msg is SocketUserMessage message)) return;
-                if (message.Source != MessageSource.User) return;
-                if (!(msg.Channel is SocketTextChannel ch)) return;
+                if (!(msg.Channel is ITextChannel ch)) return;
                 if (msg.Author.IsBot) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
-                if (!CheckUserCooldown(user)) return;
-                if (!LootChannels.TryGetValue(ch.Guild.Id, out var chx)) return;
-                if (!chx.Contains(msg.Channel.Id)) return;
-                var rand = new Random().Next(0, 10000);
+                if (!_data.IsLootChannel(ch.Guild.Id, ch.Id)) return;
+                if (_data.OnUserCooldown(user)) return;
+                var rand = _random.Next(0, 10000);
                 if (rand < 200)
                 {
-                    if (!CheckGuildCooldown((SocketTextChannel) msg.Channel)) return;
+                    if (_data.OnGuildCooldown(ch)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
-                    var emotes = ReturnEmotes().ToList();
-                    foreach (var x in emotes.OrderBy(x => new Random().Next()).Take(emotes.Count))
+                    var emotes = _emote.ReturnEmotes();
+                    foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
                     {
-                        if (x.Name == "realsip") _regularLoot.Add(triggerMsg.Id);
+                        if (x.Name == "realsip") _data.AddRegular(ch.Guild, triggerMsg);
                         await triggerMsg.AddReactionAsync(x);
                     }
                 }
@@ -149,97 +74,47 @@ namespace Hanekawa.Services.Drop
             return Task.CompletedTask;
         }
 
-        public async Task AddLootChannelAsync(SocketTextChannel ch)
+        public async Task SpawnCrateAsync(SocketTextChannel ch, SocketGuildUser user)
         {
-            await AddToDatabaseAsync(ch.Guild.Id, ch.Id);
-            var channels = LootChannels.GetOrAdd(ch.Guild.Id, new List<ulong>());
-            channels.Add(ch.Id);
-            LootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => old = channels);
-        }
-
-        public async Task RemoveLootChannelAsync(SocketTextChannel ch)
-        {
-            await RemoveFromDatabaseAsync(ch.Guild.Id, ch.Id);
-            if (!LootChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
-            if (!channels.Contains(ch.Id)) return;
-            channels.Remove(ch.Id);
-            LootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => channels);
-        }
-
-        private static async Task AddToDatabaseAsync(ulong guildId, ulong channelId)
-        {
-            using (var db = new DbService())
-            {
-                var data = new LootChannel
+            var triggerMsg = await ch.SendMessageAsync(
+                $"```{user.Username} has spawned a crate! \nClick the reaction on this message to claim it```");
+            var emotes = _emote.ReturnEmotes();
+            foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
+                try
                 {
-                    ChannelId = channelId,
-                    GuildId = guildId
-                };
-                await db.LootChannels.AddAsync(data);
-                await db.SaveChangesAsync();
-            }
+                    if (x.Name == "realsip") _data.AddSpecial(user.Guild, triggerMsg);
+                    await triggerMsg.AddReactionAsync(x);
+                }
+                catch
+                {
+                    break;
+                }
         }
 
-        private static async Task RemoveFromDatabaseAsync(ulong guildId, ulong channelId)
+        private async Task ClaimSpecial(IMessage msg, ISocketMessageChannel channel, IGuildUser user)
         {
-            using (var db = new DbService())
-            {
-                var data = db.LootChannels.First(x => x.GuildId == guildId && x.ChannelId == channelId);
-                db.LootChannels.Remove(data);
-                await db.SaveChangesAsync();
-            }
+            _data.RemoveSpecial(user.Guild, msg);
+            var rand = _random.Next(150, 250);
+            await _level.AddExp(user, rand, rand);
+            var trgMsg =
+                await channel.SendMessageAsync(
+                    $"Rewarded {user.Mention} with {rand} exp & credit!");
+            await Task.Delay(5000);
+            await trgMsg.DeleteAsync();
+            await DropClaimed(user as SocketGuildUser);
         }
 
-        private static IEnumerable<Emote> ReturnEmotes()
+        private async Task ClaimNormal(IMessage msg, ISocketMessageChannel channel, IGuildUser user)
         {
-            var emotes = new List<Emote>();
-            Emote.TryParse("<:realsip:429809346222882836>", out var real);
-            Emote.TryParse("<:sip:430207651998334977>", out var sip1);
-            Emote.TryParse("<:roowut:430207652061118465>", out var sip2);
-            Emote.TryParse("<:rooWhine:430207965153460254>", out var sip3);
-
-            emotes.Add(real);
-            emotes.Add(sip1);
-            emotes.Add(sip2);
-            emotes.Add(sip3);
-
-            return emotes;
-        }
-
-        private bool CheckGuildCooldown(SocketTextChannel guild)
-        {
-            var check = GuildCooldown.TryGetValue(guild.Id, out var cd);
-            if (!check)
-            {
-                GuildCooldown.TryAdd(guild.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
-            GuildCooldown.AddOrUpdate(guild.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
-            return true;
-        }
-
-        private bool CheckUserCooldown(SocketGuildUser user)
-        {
-            var check = UserCooldown.TryGetValue(user.Guild.Id, out var cds);
-            if (!check)
-            {
-                var guildCooldown = UserCooldown.GetOrAdd(user.Guild.Id, new ConcurrentDictionary<ulong, DateTime>());
-                guildCooldown.TryAdd(user.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            var userCheck = cds.TryGetValue(user.Id, out var cd);
-            if (!userCheck)
-            {
-                cds.TryAdd(user.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            if (!((DateTime.UtcNow - cd).TotalSeconds >= 60)) return false;
-            cds.AddOrUpdate(user.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
-            return true;
+            _data.RemoveRegular(user.Guild, msg);
+            var rand = _random.Next(15, 150);
+            await _level.AddExp(user, rand, rand);
+            var trgMsg =
+                await channel.SendMessageAsync(
+                    $"Rewarded {user.Mention} with {rand} exp & credit!");
+            await Task.Delay(5000);
+            await trgMsg.DeleteAsync();
+            await DropClaimed(user as SocketGuildUser);
         }
     }
 }

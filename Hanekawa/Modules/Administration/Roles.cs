@@ -47,14 +47,14 @@ namespace Hanekawa.Modules.Administration
                     foreach (var x in roles)
                     {
                         var exclusiveRole = Context.Guild.GetRole(x.RoleId);
-                        if (gUser.Roles.Contains(exclusiveRole)) await gUser.RemoveRoleAsync(exclusiveRole);
+                        if (gUser.Roles.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
                     }
 
-                    await gUser.AddRoleAsync(role);
+                    await gUser.TryAddRoleAsync(role);
                 }
                 else
                 {
-                    await gUser.AddRoleAsync(role);
+                    await gUser.TryAddRoleAsync(role);
                 }
 
                 await ReplyAndDeleteAsync(null, false,
@@ -70,6 +70,7 @@ namespace Hanekawa.Modules.Administration
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
+            if (!((IGuildUser) Context.User).RoleIds.Contains(role.Id)) return;
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
@@ -81,7 +82,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await ((IGuildUser) Context.User).RemoveRoleAsync(role);
+                await ((IGuildUser) Context.User).TryRemoveRoleAsync(role);
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder()
                         .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)

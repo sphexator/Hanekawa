@@ -1,58 +1,37 @@
-﻿using System;
-using Discord.WebSocket;
-using Hanekawa.Entities.Interfaces;
+﻿using Hanekawa.Entities.Interfaces;
+using System;
 
 namespace Hanekawa.Services.Level.Util
 {
     public class Calculate : IHanaService
     {
-        public uint GetServerLevelRequirement(uint currentLevel)
+        private readonly Random _random;
+        private int VoiceCalculate(int hours, int minutes) => hours * 60 * minutes;
+
+        public Calculate(Random random) => _random = random;
+
+        public int GetServerLevelRequirement(int currentLevel) => 3 * currentLevel * currentLevel + 150;
+
+        public int GetGlobalLevelRequirement(int currentLevel) => 50 * currentLevel * currentLevel + 300;
+
+        public int GetMessageExp(bool reduced = false)
         {
-            return 3 * currentLevel * currentLevel + 150;
+            var xp = _random.Next(10, 20);
+            return reduced ? Convert.ToInt32(xp / 10) : Convert.ToInt32(xp);
         }
 
-        public uint GetGlobalLevelRequirement(uint currentLevel)
+        public int GetMessageCredit() => _random.Next(1, 3);
+
+        public int GetVoiceExp(DateTime vcTimer)
         {
-            return 50 * currentLevel * currentLevel + 300;
+            var diff = DateTime.UtcNow - vcTimer;
+            return VoiceCalculate(diff.Hours, diff.Minutes) * 2;
         }
 
-        public uint GetMessageExp(SocketMessage msg, bool reduced = false)
+        public int GetVoiceCredit(DateTime vcTimer)
         {
-            var rand = new Random();
-            var xp = rand.Next(10, 20);
-            return reduced ? Convert.ToUInt32(xp / 10) : Convert.ToUInt32(xp);
-        }
-
-        public uint GetMessageCredit()
-        {
-            var rand = new Random();
-            var credit = rand.Next(1, 3);
-            return Convert.ToUInt32(credit);
-        }
-
-        public uint GetVoiceExp(DateTime vcTimer)
-        {
-            var now = DateTime.UtcNow;
-
-            var diff = now - vcTimer;
-            var hours = int.Parse(diff.Hours.ToString());
-            var minutes = int.Parse(diff.Minutes.ToString());
-            var totalTime = hours * 60 + minutes;
-            var calculateXp = totalTime * 2;
-
-            return Convert.ToUInt32(calculateXp);
-        }
-
-        public uint GetVoiceCredit(DateTime vcTimer)
-        {
-            var now = DateTime.UtcNow;
-
-            var diff = now - vcTimer;
-            var hours = int.Parse(diff.Hours.ToString());
-            var minutes = int.Parse(diff.Minutes.ToString());
-            var totalTime = hours * 60 + minutes;
-
-            return Convert.ToUInt32(totalTime);
+            var diff = DateTime.UtcNow - vcTimer;
+            return VoiceCalculate(diff.Hours, diff.Minutes);
         }
     }
 }

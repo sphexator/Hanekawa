@@ -11,6 +11,7 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Level.Util;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 using SixLabors.ImageSharp;
@@ -26,6 +27,10 @@ namespace Hanekawa.Modules.Account.Profile
 {
     public class ProfileGenerator : IHanaService
     {
+        private readonly Calculate _calculate;
+
+        public ProfileGenerator(Calculate calculate) => _calculate = calculate;
+
         public async Task<Stream> Create(SocketGuildUser user)
         {
             var stream = new MemoryStream();
@@ -49,7 +54,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter().GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
             }
@@ -80,7 +85,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata).GetAwaiter().GetResult());
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter().GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
             }

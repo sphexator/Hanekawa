@@ -27,15 +27,15 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService : IHanaService, IRequiredService
     {
         private readonly Timer _cleanupTimer;
+        private readonly Timer _quickClearSingle;
+        private readonly Timer _moveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly LogService _log;
         private readonly ModerationService _moderationService;
-        private readonly Timer _moveToLongTerm;
         private readonly MuteService _muteService;
         private readonly PerspectiveClient _perspectiveClient;
         private readonly string _perspectiveToken;
-        private readonly Timer _quickClearSingle;
         private readonly WarnService _warnService;
 
         public NudeScoreService(DiscordSocketClient client, IConfiguration config, ModerationService moderationService,
@@ -510,14 +510,8 @@ namespace Hanekawa.Services.AutoModerator
             return roleFilter;
         }
 
-        private static int InHouseAverageToxicityTolerance(int level)
-        {
-            return 60 + level * level / 80;
-        }
+        private static int InHouseAverageToxicityTolerance(int level) => 60 + level * level / 80;
 
-        private static int InHouseSingleToxicityTolerance(int level)
-        {
-            return 70 + level * level / 160;
-        }
+        private static int InHouseSingleToxicityTolerance(int level) => 70 + level * level / 160;
     }
 }

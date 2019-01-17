@@ -22,14 +22,13 @@ namespace Hanekawa.Modules.Account.Profile
     {
         public static async Task ApplyTextAsync(this IImageProcessingContext<Rgba32> image, string name, ulong userId,
             ulong guildId,
-            Addons.Database.Tables.Account.Account userdata)
+            Addons.Database.Tables.Account.Account userdata, Calculate calc)
         {
             using (var db = new DbService())
             {
                 var fields = db.ProfileConfigs.ToListAsync();
                 var globalData = db.GetOrCreateGlobalUserData(userId);
                 await Task.WhenAll(fields, globalData);
-                var calc = new Calculate();
                 var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
                 var nameFont = SystemFonts.CreateFont("Arial", 32, FontStyle.Regular);
                 var nameOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center};
@@ -115,7 +114,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{userdata.Level}";
                 case "Exp":
                     return
-                        $"{userdata.Exp.FormatNumber()}/{calc.GetServerLevelRequirement(userdata.Level).FormatNumber()}";
+                        $"{userdata.Exp.FormatNumber()}/{calc.GetServerLevelRequirement((int)userdata.Level).FormatNumber()}";
                 //case "TotalExp":
                 //    return $"{userdata.TotalExp}";
                 case "Credit":
@@ -130,7 +129,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{globalData.Credit.FormatNumber()}";
                 case "Global Exp":
                     return
-                        $"{globalData.Exp.FormatNumber()}/{calc.GetGlobalLevelRequirement(globalData.Level).FormatNumber()}";
+                        $"{globalData.Exp.FormatNumber()}/{calc.GetGlobalLevelRequirement((int)globalData.Level).FormatNumber()}";
                 case "Global TotalExp":
                     return $"{globalData.TotalExp.FormatNumber()}";
                 case "Global Level":
