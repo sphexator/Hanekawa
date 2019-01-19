@@ -39,6 +39,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<InventoryGlobal> InventoryGlobals { get; set; }
 
         // Items
+        public virtual DbSet<Item> Items { get; set; }
 
         // Achievements
         public virtual DbSet<AchievementMeta> Achievements { get; set; }
@@ -106,6 +107,7 @@ namespace Hanekawa.Addons.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             InventoryBuilder(modelBuilder);
+            ItemBuilder(modelBuilder);
             StoreBuilder(modelBuilder);
             AccountBuilder(modelBuilder);
             AchievementBuilder(modelBuilder);
@@ -157,6 +159,15 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.GuildId, e.UserId, e.ItemId }); });
             modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new { e.UserId, e.ItemId }); });
+        }
+
+        private static void ItemBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Item>(x =>
+            {
+                x.HasKey(e => e.ItemId);
+                x.Property(e => e.ItemId).ValueGeneratedOnAdd();
+            });
         }
 
         private static void StoreBuilder(ModelBuilder modelBuilder)
