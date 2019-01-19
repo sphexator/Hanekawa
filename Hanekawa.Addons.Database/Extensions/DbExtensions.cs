@@ -16,33 +16,6 @@ namespace Hanekawa.Addons.Database.Extensions
 {
     public static class DbExtensions
     {
-        public static async Task<HungerGameConfig> GetOrCreateHungerGameConfig(this DbService context,
-            SocketGuild guild)
-        {
-            var config = await context.HungerGameConfigs.FindAsync(guild.Id);
-            if (config != null)
-            {
-                return config;
-            }
-
-            var data = new HungerGameConfig
-            {
-                GuildId = guild.Id,
-                Live = false,
-                MessageId = 0,
-                Round = 0,
-                SignupStage = false,
-                SignupTime = DateTime.UtcNow - TimeSpan.FromDays(2),
-                WinSpecialCredit = 500,
-                WinnerRoleId = null,
-                WinExp = 1000,
-                WinCredit = 1000
-            };
-            await context.HungerGameConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.HungerGameConfigs.FindAsync(guild.Id);
-        }
-
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
