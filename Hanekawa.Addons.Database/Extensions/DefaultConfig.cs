@@ -59,7 +59,7 @@ namespace Hanekawa.Addons.Database.Extensions
             cfg.DesignChannel = null;
             cfg.AutomaticEventSchedule = false;
             cfg.ClubAutoPrune = false;
-            cfg.EmbedColor = 10181046U;
+            cfg.EmbedColor = 10181046;
             return cfg;
         }
 
@@ -71,16 +71,12 @@ namespace Hanekawa.Addons.Database.Extensions
             account.Class = 1;
             account.Credit = 0;
             account.CreditSpecial = 0;
-            account.CustomRoleId = null;
             account.DailyCredit = DateTime.UtcNow;
             account.GameKillAmount = 0;
-            account.MvpCounter = 0;
             account.RepCooldown = DateTime.UtcNow;
             account.Exp = 0;
             account.VoiceExpTime = DateTime.UtcNow;
             account.TotalExp = 0;
-            account.MvpIgnore = false;
-            account.MvpImmunity = false;
             account.Level = 1;
             account.Sessions = 0;
             account.StatVoiceTime = TimeSpan.Zero;

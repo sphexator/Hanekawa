@@ -89,6 +89,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<SingleNudeServiceChannel> SingleNudeServiceChannels { get; set; }
 
         //Profiles
+        public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
 
         //Audio
@@ -185,7 +186,6 @@ namespace Hanekawa.Addons.Database
             {
                 x.HasKey(e => new { e.GuildId, e.UserId });
                 x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.CustomRoleId).HasConversion<long>();
                 x.Property(e => e.StatMessages).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -380,7 +380,7 @@ namespace Hanekawa.Addons.Database
                 x.Property(e => e.Premium).HasDefaultValue(false);
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
-
+                x.Property(E => E.EmbedColor).HasConversion<int>();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.LogBan).HasConversion<long>();
                 x.Property(e => e.LogAutoMod).HasConversion<long>();
@@ -448,6 +448,11 @@ namespace Hanekawa.Addons.Database
         private static void ProfileBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProfileConfig>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<Background>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();

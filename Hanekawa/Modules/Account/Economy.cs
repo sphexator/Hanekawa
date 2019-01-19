@@ -58,8 +58,9 @@ namespace Hanekawa.Modules.Account
         [Summary("Transfer credit between users")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
-        public async Task GiveCreditAsync(uint amount, SocketGuildUser user)
+        public async Task GiveCreditAsync(int amount, SocketGuildUser user)
         {
+            if (amount <= 0) return;
             if (user == Context.User) return;
             using (var db = new DbService())
             {
@@ -70,6 +71,7 @@ namespace Hanekawa.Modules.Account
                         Color.Red.RawValue);
                     return;
                 }
+
                 var receiverData = await db.GetOrCreateUserData(user);
 
                 userdata.Credit = userdata.Credit - amount;
@@ -97,7 +99,7 @@ namespace Hanekawa.Modules.Account
                     return;
                 }
 
-                uint reward;
+                int reward;
                 if (user == null || user == Context.User)
                 {
                     user = Context.User as SocketGuildUser;
@@ -110,7 +112,7 @@ namespace Hanekawa.Modules.Account
                 }
                 else
                 {
-                    reward = Convert.ToUInt32(new Random().Next(200, 300));
+                    reward = new Random().Next(200, 300);
                     var userData = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                     var recieverData = await db.GetOrCreateUserData(user);
                     userData.DailyCredit = DateTime.UtcNow;
@@ -146,7 +148,8 @@ namespace Hanekawa.Modules.Account
                     rank++;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Money leaderboard for {Context.Guild.Name}",
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Money leaderboard for {Context.Guild.Name}",
                     10));
             }
         }
@@ -157,8 +160,9 @@ namespace Hanekawa.Modules.Account
         [Summary("Rewards special credit to users (does not remove from yourself)")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RewardCreditAsync(uint amount, IGuildUser user)
+        public async Task RewardCreditAsync(int amount, IGuildUser user)
         {
+            if (amount <= 0) return;
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
@@ -196,7 +200,9 @@ namespace Hanekawa.Modules.Account
         [RequiredChannel]
         public async Task GlobalShopAsync()
         {
-            await PagedReplyAsync((await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser)).PaginateBuilder(Context.Guild.Id, "Global Store"));
+            await PagedReplyAsync(
+                (await _shopManager.GetGlobalStoreAsync(Context.User as IGuildUser)).PaginateBuilder(Context.Guild.Id,
+                    "Global Store"));
         }
 
         [Command("buy", RunMode = RunMode.Async)]
@@ -207,8 +213,8 @@ namespace Hanekawa.Modules.Account
         {
             using (var db = new DbService())
             {
-                var item = await db.Shops.FindAsync(Context.Guild.Id, itemId);
-                var globalItem = await db.StoreGlobals.FindAsync(Context.Guild.Id, itemId);
+                var item = await db.ServerStores.FindAsync(Context.Guild.Id, itemId);
+                var globalItem = await db.GlobalStores.FindAsync(Context.Guild.Id, itemId);
                 if (item == null && globalItem == null)
                 {
                     await Context.ReplyAsync("No item with said id");
@@ -299,7 +305,7 @@ namespace Hanekawa.Modules.Account
                     Price = price,
                     SpecialCredit = special
                 };
-                await db.Shops.AddAsync(storeItem);
+                await db.ServerStores.AddAsync(storeItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Added {role.Name} to the shop for {price}\nYou can add a description to your item by using `item description <{getItem.ItemId}> <description>`",
@@ -341,7 +347,7 @@ namespace Hanekawa.Modules.Account
                     Price = price,
                     SpecialCredit = special
                 };
-                await db.Shops.AddAsync(storeItem);
+                await db.ServerStores.AddAsync(storeItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
             }
@@ -379,41 +385,30 @@ namespace Hanekawa.Modules.Account
                     ItemId = getItem.ItemId,
                     Price = price
                 };
-                await db.StoreGlobals.AddAsync(storeItem);
+                await db.GlobalStores.AddAsync(storeItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {name} to the shop for {price}", Color.Green.RawValue);
             }
         }
 
-        private static string SpecialCurrencyResponse(GuildConfig cfg)
-        {
-            return cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
-        }
+        private static string SpecialCurrencyResponse(GuildConfig cfg) =>
+            cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
 
-        private static string GetRegularCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg)
-        {
-            return cfg.EmoteCurrency
+        private static string GetRegularCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg) =>
+            cfg.EmoteCurrency
                 ? EmoteCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign)
                 : RegularCurrencyResponse(userdata.Credit, cfg.CurrencyName, cfg.CurrencySign);
-        }
 
-        private static string GetSpecialCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg)
-        {
-            return cfg.SpecialEmoteCurrency
+        private static string GetSpecialCurrency(Addons.Database.Tables.Account.Account userdata, GuildConfig cfg) =>
+            cfg.SpecialEmoteCurrency
                 ? EmoteCurrencyResponse(userdata.CreditSpecial, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)
                 : RegularCurrencyResponse(userdata.CreditSpecial, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign);
-        }
 
-        private static string RegularCurrencyResponse(uint credit,
-            string name, string sign)
-        {
-            return $"{name}: {sign}{credit}";
-        }
+        private static string RegularCurrencyResponse(int credit,
+            string name, string sign) =>
+            $"{name}: {sign}{credit}";
 
-        private static string EmoteCurrencyResponse(uint credit, string name, string sign)
-        {
-            return $"{name}: {credit} {sign}";
-        }
+        private static string EmoteCurrencyResponse(int credit, string name, string sign) => $"{name}: {credit} {sign}";
 
         private static IEmote CurrencySignEmote(string emoteString)
         {
@@ -428,7 +423,6 @@ namespace Hanekawa.Modules.Account
     [RequireContext(ContextType.Guild)]
     public class AdminEconomy : InteractiveBase
     {
-
         [Command("regular name", RunMode = RunMode.Async)]
         [Alias("rn")]
         public async Task SetCurrencyNameAsync([Remainder] string name = null)
@@ -548,9 +542,7 @@ namespace Hanekawa.Modules.Account
             }
         }
 
-        private static string ParseEmoteString(Emote emote)
-        {
-            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
-        }
+        private static string ParseEmoteString(Emote emote) =>
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
     }
 }

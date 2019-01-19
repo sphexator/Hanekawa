@@ -64,8 +64,9 @@ namespace Hanekawa.Modules.Game
         [Summary("Duels a user, optinoally for money")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
-        public async Task AttackGameAsync(SocketGuildUser user, uint bet = 0)
+        public async Task AttackGameAsync(SocketGuildUser user, int bet = 0)
         {
+            if (bet < 0) return;
             if (user == Context.User) return;
             using (var db = new DbService())
             {

@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
@@ -6,9 +9,6 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.AutoModerator;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -40,7 +40,8 @@ namespace Hanekawa.Modules.Permission
                                    $"**URL filter:** {cfg.FilterUrls}\n" +
                                    $"**Average Toxicity enabled Channels:** {await db.NudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vat' for specifics)*\n" +
                                    $"**Single Toxicity enabled channels:** {await db.SingleNudeServiceChannels.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vst' for specifics)*\n" +
-                                   $"**URL filter enabled channels:** {await db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*", Context.Guild.Id)
+                                   $"**URL filter enabled channels:** {await db.UrlFilters.CountAsync(x => x.GuildId == Context.Guild.Id)} *('automod vuf' for specifics)*",
+                        Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder
                     {
                         IconUrl = Context.Guild.IconUrl,
@@ -76,8 +77,9 @@ namespace Hanekawa.Modules.Permission
         [Command("avg toxicity")]
         [Alias("at")]
         [Summary("Sets avg. toxicity tolerance between 1-100, 0 to disable")]
-        public async Task AverageToxicityFilter(ITextChannel ch = null, uint tolerance = 0)
+        public async Task AverageToxicityFilter(ITextChannel ch = null, int tolerance = 0)
         {
+            if (tolerance < 0) return;
             if (ch == null && tolerance == 0)
             {
                 ch = Context.Channel as ITextChannel;
@@ -138,7 +140,8 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var channels = await db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var channels = await db.SingleNudeServiceChannels.Where(x => x.GuildId == Context.Guild.Id)
+                    .ToListAsync();
                 if (channels.Count == 0)
                 {
                     await Context.ReplyAsync("No single toxicity channels enabled.", Color.Red.RawValue);
@@ -158,7 +161,8 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 await Context.ReplyAsync(new EmbedBuilder().CreateDefault(Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                        {IconUrl = Context.Guild.IconUrl, Name = "Single Toxicity enabled channels"})
                     .WithFields(fields));
             }
         }
@@ -190,7 +194,8 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 await Context.ReplyAsync(new EmbedBuilder().CreateDefault(Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                        {IconUrl = Context.Guild.IconUrl, Name = "Average Toxicity enabled channels"})
                     .WithFields(fields));
             }
         }
@@ -267,13 +272,11 @@ namespace Hanekawa.Modules.Permission
                 }
 
                 string fields = null;
-                foreach (var x in channels)
-                {
-                    fields += $"{Context.Guild.GetTextChannel(x.ChannelId).Mention}\n";
-                }
+                foreach (var x in channels) fields += $"{Context.Guild.GetTextChannel(x.ChannelId).Mention}\n";
 
                 await Context.ReplyAsync(new EmbedBuilder().CreateDefault(fields, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = "URL filter enabled channels" }));
+                    .WithAuthor(new EmbedAuthorBuilder
+                        {IconUrl = Context.Guild.IconUrl, Name = "URL filter enabled channels"}));
             }
         }
     }

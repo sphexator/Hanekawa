@@ -17,29 +17,19 @@ namespace Hanekawa.Services.Games.ShipGame.Data
             }
         }
 
-        private int DefaultHealth { get; }
-        private int DefaultDamage { get; }
+        private int DefaultHealth { get; set; } = 10;
+        private int DefaultDamage { get; set; } = 1;
 
-        public int GetHealth(uint level, GameClass ass)
-        {
-            return Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
-        }
+        public int GetHealth(int level, GameClass ass) =>
+            Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
 
-        public int GetHealth(uint level, GameEnemy enemyData, GameClass enemyClass)
-        {
-            return Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
-                                              enemyClass.ModifierHealth));
-        }
+        public int GetHealth(int level, GameEnemy enemyData, GameClass enemyClass) =>
+            Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
+                                       enemyClass.ModifierHealth));
 
-        public int GetDamage(uint level)
-        {
-            return Convert.ToInt32(DefaultDamage * level);
-        }
+        public int GetDamage(int level) => DefaultDamage * level;
 
-        public int GetDamage(uint level, GameEnemy enemyData)
-        {
-            return Convert.ToInt32((DefaultDamage + enemyData.Damage) * level);
-        }
+        public int GetDamage(int level, GameEnemy enemyData) => (DefaultDamage + enemyData.Damage) * level;
 
         public int CalculateDamage(int damage, GameClass AttackerClass, GameClass EnemyClass, EnemyType type)
         {

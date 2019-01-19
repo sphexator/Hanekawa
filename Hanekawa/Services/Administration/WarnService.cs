@@ -6,7 +6,6 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
@@ -69,7 +68,8 @@ namespace Hanekawa.Services.Administration
                               $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, user.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                        {IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"})
                     .WithFields(await GetWarnings(db, user));
                 return embed;
             }
@@ -82,12 +82,10 @@ namespace Hanekawa.Services.Administration
                 var result = new List<string>();
                 foreach (var x in await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
                     .ToListAsync())
-                {
                     result.Add($"Warn ID: {x.Id}\n" +
                                $"{x.Type} - <@{x.Moderator}>\n" +
                                $"{x.Reason.Truncate(700) ?? "I made this :)"}\n" +
                                $"{x.Time.Humanize()}\n");
-                }
                 if (result.Count == 0) result.Add("User has no warnings");
                 return result;
             }
@@ -106,17 +104,12 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff.Id,
                     Time = time,
                     Reason = reason,
-                    Type = (Addons.Database.Data.WarnReason)type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-                if (messages != null)
-                {
-                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                    await StoreMessages(db, warn.Id, user, messages);
-                }
 
                 await WarnUser(WarnReason.Warning, user, staff, reason);
                 await UserWarned(user, staff.Mention, reason);
@@ -136,19 +129,13 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff.Id,
                     Time = time,
                     Reason = reason,
-                    Type = (Addons.Database.Data.WarnReason)type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = after
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-
-                if (messages != null)
-                {
-                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                    await StoreMessages(db, warn.Id, user, messages);
-                }
 
                 await WarnUser(WarnReason.Mute, user, staff, reason, after);
             }
@@ -167,18 +154,13 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff,
                     Time = time,
                     Reason = reason,
-                    Type = (Addons.Database.Data.WarnReason)type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = null
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-                if (messages != null)
-                {
-                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                    await StoreMessages(db, warn.Id, user, messages);
-                }
 
                 await WarnUser(WarnReason.Warning, user, "Auto-Moderator", reason);
                 await UserWarned(user, "Auto-Moderator", reason);
@@ -198,19 +180,13 @@ namespace Hanekawa.Services.Administration
                     Moderator = staff,
                     Time = time,
                     Reason = reason,
-                    Type = (Addons.Database.Data.WarnReason)type,
+                    Type = (Addons.Database.Data.WarnReason) type,
                     Valid = true,
                     Id = number + 1,
                     MuteTimer = after
                 };
                 await db.Warns.AddAsync(data);
                 await db.SaveChangesAsync();
-
-                if (messages != null)
-                {
-                    var warn = await db.Warns.Where(x => x.Time == time).FirstOrDefaultAsync(x => x.UserId == user.Id);
-                    await StoreMessages(db, warn.Id, user, messages);
-                }
 
                 await WarnUser(WarnReason.Mute, user, "Auto-Moderator", reason, after);
                 await UserMuted(user, "Auto-Moderator", reason, after);
@@ -222,9 +198,10 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff.Mention}\n" +
-                                                             "Reason:\n" +
-                                                             $"{reason}", user.GuildId);
+                var embed = new EmbedBuilder().CreateDefault(
+                    $"You've been warned in {user.Guild.Name} by {staff.Mention}\n" +
+                    "Reason:\n" +
+                    $"{reason}", user.GuildId);
                 await dm.ReplyAsync(embed);
             }
             catch
@@ -239,9 +216,10 @@ namespace Hanekawa.Services.Administration
             try
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
-                var embed = new EmbedBuilder().CreateDefault($"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
-                                                             "Reason:\n" +
-                                                             $"{reason}", user.GuildId);
+                var embed = new EmbedBuilder().CreateDefault(
+                    $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
+                    "Reason:\n" +
+                    $"{reason}", user.GuildId);
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
                 await dm.ReplyAsync(embed);
             }
@@ -257,8 +235,8 @@ namespace Hanekawa.Services.Administration
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff}\n" +
-                                                               "Reason:\n" +
-                                                               $"{reason}", user.GuildId);
+                                                             "Reason:\n" +
+                                                             $"{reason}", user.GuildId);
                 await dm.ReplyAsync(embed);
             }
             catch
@@ -274,8 +252,8 @@ namespace Hanekawa.Services.Administration
             {
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been muted in {user.Guild.Name} by {staff}\n" +
-                                                                "Reason:\n" +
-                                                                $"{reason}", user.GuildId);
+                                                             "Reason:\n" +
+                                                             $"{reason}", user.GuildId);
                 embed.AddField("Duration", $"{after.Humanize()} ({after})");
                 await dm.ReplyAsync(embed);
             }
@@ -295,24 +273,11 @@ namespace Hanekawa.Services.Administration
                 var content = $"{x.Type} - <@{x.Moderator}>\n" +
                               $"{x.Reason ?? "No reason provided."}\n" +
                               $"{x.Time.Humanize()}\n";
-                result.Add( new EmbedFieldBuilder { Name = $"Warn ID: {x.Id}", IsInline = true, Value = content.Truncate(999) });
+                result.Add(new EmbedFieldBuilder
+                    {Name = $"Warn ID: {x.Id}", IsInline = true, Value = content.Truncate(999)});
             }
-            return result;
-        }
 
-        private async Task StoreMessages(DbService db, int id, IGuildUser user, IEnumerable<IMessage> messages)
-        {
-            var result = messages.Select(x => new WarnMsgLog
-                {
-                    WarnId = id,
-                    UserId = user.Id,
-                    MsgId = x.Id,
-                    Author = x.Author.Username,
-                    Message = x.Content,
-                    Time = x.Timestamp.UtcDateTime
-                })
-                .ToList();
-            await db.WarnMsgLogs.AddRangeAsync(result);
+            return result;
         }
 
         private static string GetStatus(IPresence user)

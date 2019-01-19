@@ -128,7 +128,7 @@ namespace Hanekawa.Addons.Database.Extensions
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id);
             var data = new ModLog
             {
-                Id = (uint)counter + 1,
+                Id = counter + 1,
                 GuildId = guild.Id,
                 UserId = user.Id,
                 Date = time,
@@ -204,14 +204,14 @@ namespace Hanekawa.Addons.Database.Extensions
             DateTime time)
         {
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
-            uint nr;
+            int nr;
             if (counter == 0)
             {
                 nr = 1;
             }
             else
             {
-                nr = (uint)counter + 1;
+                nr = counter + 1;
             }
 
             var data = new Suggestion
@@ -231,14 +231,14 @@ namespace Hanekawa.Addons.Database.Extensions
             DateTime time)
         {
             var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id);
-            uint nr;
+            int nr;
             if (counter == 0)
             {
                 nr = 1;
             }
             else
             {
-                nr = (uint)counter + 1;
+                nr = counter + 1;
             }
 
             var data = new QuestionAndAnswer
@@ -258,14 +258,14 @@ namespace Hanekawa.Addons.Database.Extensions
             DateTime time)
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
-            uint nr;
+            int nr;
             if (counter == 0)
             {
                 nr = 1;
             }
             else
             {
-                nr = (uint)counter + 1;
+                nr = counter + 1;
             }
 
             var data = new Report

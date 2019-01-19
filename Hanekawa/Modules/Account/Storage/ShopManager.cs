@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
@@ -6,11 +9,8 @@ using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Stores;
 using Hanekawa.Entities.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Extensions.Embed;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Account.Storage
 {
@@ -22,11 +22,9 @@ namespace Hanekawa.Modules.Account.Storage
             {
                 var result = new List<string>();
                 var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
-                foreach (var x in await db.Shops.Where(x => x.GuildId == user.GuildId).ToListAsync())
-                {
+                foreach (var x in await db.ServerStores.Where(x => x.GuildId == user.GuildId).ToListAsync())
                     result.Add(
                         $"Name: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - {GetPrice(cfg, x, x.Price)}\n");
-                }
 
                 if (result.Count == 0) result.Add("Store is empty");
                 return result;
@@ -38,10 +36,9 @@ namespace Hanekawa.Modules.Account.Storage
             using (var db = new DbService())
             {
                 var result = new List<string>();
-                foreach (var x in await db.StoreGlobals.ToListAsync())
-                {
-                    result.Add($"Item: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - Price: ${x.Price}\n");
-                }
+                foreach (var x in await db.GlobalStores.ToListAsync())
+                    result.Add(
+                        $"Item: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - Price: ${x.Price}\n");
 
                 if (result.Count == 0) result.Add("Store is empty");
                 return result;
@@ -67,7 +64,8 @@ namespace Hanekawa.Modules.Account.Storage
             var userdata = await db.GetOrCreateGlobalUserData(user.Id);
 
             if (userdata.Credit < price)
-                return new EmbedBuilder().CreateDefault($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                return new EmbedBuilder().CreateDefault(
+                    $"{user.Mention}, you don't have enough credit to buy {item.Name}",
                     Color.Red.RawValue);
 
             return await BuyNormalCredit(db, item, price, user, null, userdata);
@@ -78,11 +76,13 @@ namespace Hanekawa.Modules.Account.Storage
         {
             var userdata = await db.GetOrCreateUserData(user as SocketGuildUser);
             if (specialCredit && userdata.CreditSpecial < price)
-                return new EmbedBuilder().CreateDefault($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                return new EmbedBuilder().CreateDefault(
+                    $"{user.Mention}, you don't have enough credit to buy {item.Name}",
                     Color.Red.RawValue);
 
             if (!specialCredit && userdata.Credit < price)
-                return new EmbedBuilder().CreateDefault($"{user.Mention}, you don't have enough credit to buy {item.Name}",
+                return new EmbedBuilder().CreateDefault(
+                    $"{user.Mention}, you don't have enough credit to buy {item.Name}",
                     Color.Red.RawValue);
 
             if (specialCredit) return await BuySpecialCredit(db, item, price, user, userdata);
@@ -92,7 +92,7 @@ namespace Hanekawa.Modules.Account.Storage
         private static async Task<EmbedBuilder> BuySpecialCredit(DbService db, Item item, int price, IGuildUser user,
             Addons.Database.Tables.Account.Account account)
         {
-            account.Credit = account.Credit - (uint) price;
+            account.Credit = account.Credit - price;
             await db.PurchaseServerItem(user, item);
             await db.SaveChangesAsync();
             return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
@@ -103,52 +103,40 @@ namespace Hanekawa.Modules.Account.Storage
         {
             if (accountGlobal == null)
             {
-                account.Credit = account.Credit - (uint) price;
+                account.Credit = account.Credit - price;
                 await db.PurchaseServerItem(user, item);
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
+                return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}",
+                    user.GuildId);
             }
 
-            accountGlobal.Credit = accountGlobal.Credit - (uint) price;
+            accountGlobal.Credit = accountGlobal.Credit - price;
             await db.PurchaseGlobalItem(user, item);
             await db.SaveChangesAsync();
             return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
         }
 
-        private static string GetPrice(GuildConfig cfg, ServerStore shop, int price)
-        {
-            return shop.SpecialCredit ? GetSpecialCurrency(price, cfg) : GetRegularCurrency(price, cfg);
-        }
+        private static string GetPrice(GuildConfig cfg, ServerStore shop, int price) =>
+            shop.SpecialCredit ? GetSpecialCurrency(price, cfg) : GetRegularCurrency(price, cfg);
 
-        private static string SpecialCurrencyResponse(GuildConfig cfg)
-        {
-            return cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
-        }
+        private static string SpecialCurrencyResponse(GuildConfig cfg) =>
+            cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
 
-        private static string GetRegularCurrency(int price, GuildConfig cfg)
-        {
-            return cfg.EmoteCurrency
+        private static string GetRegularCurrency(int price, GuildConfig cfg) =>
+            cfg.EmoteCurrency
                 ? EmoteCurrencyResponse(price, cfg.CurrencyName, cfg.CurrencySign)
                 : RegularCurrencyResponse(price, cfg.CurrencyName, cfg.CurrencySign);
-        }
 
-        private static string GetSpecialCurrency(int price, GuildConfig cfg)
-        {
-            return cfg.SpecialEmoteCurrency
+        private static string GetSpecialCurrency(int price, GuildConfig cfg) =>
+            cfg.SpecialEmoteCurrency
                 ? EmoteCurrencyResponse(price, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)
                 : RegularCurrencyResponse(price, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign);
-        }
 
         private static string RegularCurrencyResponse(int credit,
-            string name, string sign)
-        {
-            return $"{name}: {sign}{credit}";
-        }
+            string name, string sign) =>
+            $"{name}: {sign}{credit}";
 
-        private static string EmoteCurrencyResponse(int credit, string name, string sign)
-        {
-            return $"{name}: {credit} {sign}";
-        }
+        private static string EmoteCurrencyResponse(int credit, string name, string sign) => $"{name}: {credit} {sign}";
 
         private static IEmote CurrencySignEmote(string emoteString)
         {

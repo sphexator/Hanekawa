@@ -7,7 +7,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong GuildId { get; set; }
         public string Prefix { get; set; } = "h.";
         public bool Premium { get; set; } = false;
-        public int EmbedColor { get; set; }
+        public uint EmbedColor { get; set; }
 
         // Premium
         public ulong? AnimeAirChannel { get; set; } = null;

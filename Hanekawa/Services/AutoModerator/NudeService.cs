@@ -27,15 +27,15 @@ namespace Hanekawa.Services.AutoModerator
     public class NudeScoreService : IHanaService, IRequiredService
     {
         private readonly Timer _cleanupTimer;
-        private readonly Timer _quickClearSingle;
-        private readonly Timer _moveToLongTerm;
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly LogService _log;
         private readonly ModerationService _moderationService;
+        private readonly Timer _moveToLongTerm;
         private readonly MuteService _muteService;
         private readonly PerspectiveClient _perspectiveClient;
         private readonly string _perspectiveToken;
+        private readonly Timer _quickClearSingle;
         private readonly WarnService _warnService;
 
         public NudeScoreService(DiscordSocketClient client, IConfiguration config, ModerationService moderationService,
@@ -57,7 +57,7 @@ namespace Hanekawa.Services.AutoModerator
             {
                 foreach (var x in db.NudeServiceChannels)
                 {
-                    var guild = NudeChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, uint>());
+                    var guild = NudeChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, int>());
                     guild.GetOrAdd(x.ChannelId, x.Tolerance);
                 }
 
@@ -100,7 +100,7 @@ namespace Hanekawa.Services.AutoModerator
                 foreach (var x in y.Value)
                 {
                     if (x.Value.Time.AddMinutes(10) > DateTime.UtcNow) continue;
-                    y.Value.Remove(x.Key, out var value);
+                    y.Value.Remove(x.Key, out var _);
                 }
             }, null, TimeSpan.FromHours(1), TimeSpan.FromMinutes(1));
             Console.WriteLine("Nudescore service loaded");
@@ -127,15 +127,15 @@ namespace Hanekawa.Services.AutoModerator
             = new ConcurrentDictionary<ulong,
                 ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, ToxicityEntry>>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> NudeChannels { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, int>> NudeChannels { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, int>>();
 
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, SingleNudeServiceChannel>>
             SingleNudeChannels { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, SingleNudeServiceChannel>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>> WarnAmount { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, uint>>();
+        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, int>> WarnAmount { get; }
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, int>>();
 
         private ConcurrentDictionary<ulong, LinkedList<Timer>> WarnTimer { get; }
             = new ConcurrentDictionary<ulong, LinkedList<Timer>>();
@@ -185,10 +185,7 @@ namespace Hanekawa.Services.AutoModerator
             }
 
             var topUsers = chanUsers.OrderBy(x => x.Value).Take(5);
-            foreach (var (id, score) in topUsers)
-            {
-                result.AppendLine($"{_client.GetUser(id)} Score: {score}");
-            }
+            foreach (var (id, score) in topUsers) result.AppendLine($"{_client.GetUser(id)} Score: {score}");
             return result.ToString();
         }
 
@@ -207,22 +204,20 @@ namespace Hanekawa.Services.AutoModerator
 
                     userScore.TryAdd(y.Key, score / y.Value.Count);
                 }
+
                 var page = new StringBuilder();
                 page.AppendLine($"{channel}");
                 var topUsers = userScore.OrderBy(x => x.Value).Take(5);
-                foreach (var (id, score) in topUsers)
-                {
-                    page.AppendLine($"{_client.GetUser(id).Mention} Score: {score}");
-                }
+                foreach (var (id, score) in topUsers) page.AppendLine($"{_client.GetUser(id).Mention} Score: {score}");
                 result.Add(page.ToString());
             }
 
             return result;
         }
 
-        public async Task<EmbedBuilder> SetNudeChannel(ITextChannel ch, uint tolerance)
+        public async Task<EmbedBuilder> SetNudeChannel(ITextChannel ch, int tolerance)
         {
-            var guild = NudeChannels.GetOrAdd(ch.GuildId, new ConcurrentDictionary<ulong, uint>());
+            var guild = NudeChannels.GetOrAdd(ch.GuildId, new ConcurrentDictionary<ulong, int>());
             guild.AddOrUpdate(ch.Id, tolerance, (key, old) => tolerance);
             using (var db = new DbService())
             {
@@ -352,8 +347,8 @@ namespace Hanekawa.Services.AutoModerator
                 var channelValue = toxList.GetOrAdd(ch.Id, new ConcurrentDictionary<ulong, ToxicityEntry>());
                 var userValue = channelValue.GetOrAdd(user.Id, new ToxicityEntry());
                 channelValue.AddOrUpdate(user.Id,
-                    new ToxicityEntry { Time = DateTime.UtcNow, Value = score, MessageId = msg.Id },
-                    (key, value) => new ToxicityEntry { Time = DateTime.UtcNow, Value = score, MessageId = msg.Id });
+                    new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id},
+                    (key, value) => new ToxicityEntry {Time = DateTime.UtcNow, Value = score, MessageId = msg.Id});
                 if (userValue == null) return;
 
                 var totalScore = (score + userValue.Value) / 2;
@@ -367,7 +362,7 @@ namespace Hanekawa.Services.AutoModerator
                 }
                 else if (cfg.InHouse)
                 {
-                    tolerance = InHouseSingleToxicityTolerance((int)userdata.Level);
+                    tolerance = InHouseSingleToxicityTolerance(userdata.Level);
                 }
                 else
                 {
@@ -433,7 +428,7 @@ namespace Hanekawa.Services.AutoModerator
         {
             var toAdd = new Timer(_ =>
             {
-                var guildWarn = WarnAmount.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, uint>());
+                var guildWarn = WarnAmount.GetOrAdd(user.GuildId, new ConcurrentDictionary<ulong, int>());
                 guildWarn.AddOrUpdate(user.Id, 0, (key, old) => old = old - 1);
 
                 var timers = WarnTimer.GetOrAdd(user.Id, new LinkedList<Timer>());
@@ -447,7 +442,7 @@ namespace Hanekawa.Services.AutoModerator
 
         private async Task NudeWarn(SocketGuildUser user, SocketTextChannel channel)
         {
-            var guildWarn = WarnAmount.GetOrAdd(user.Guild.Id, new ConcurrentDictionary<ulong, uint>());
+            var guildWarn = WarnAmount.GetOrAdd(user.Guild.Id, new ConcurrentDictionary<ulong, int>());
             var userWarn = guildWarn.GetOrAdd(user.Id, 0);
 
             switch (userWarn + 1)

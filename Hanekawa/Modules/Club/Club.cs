@@ -623,8 +623,9 @@ namespace Hanekawa.Modules.Club
 
         [Command("level", RunMode = RunMode.Async)]
         [Summary("Sets level requirement for people to create a club")]
-        public async Task ClubSetLevelRequirement(uint level)
+        public async Task ClubSetLevelRequirement(int level)
         {
+            if (level <= 0) return;
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
@@ -638,8 +639,9 @@ namespace Hanekawa.Modules.Club
 
         [Command("channel amount", RunMode = RunMode.Async)]
         [Summary("Sets amount required thats above the level requirement(club create) to create a channel")]
-        public async Task ClubSetAmountRequirement(uint amount)
+        public async Task ClubSetAmountRequirement(int amount)
         {
+            if (amount <= 0) return;
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);

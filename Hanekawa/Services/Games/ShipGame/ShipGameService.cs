@@ -102,18 +102,18 @@ namespace Hanekawa.Services.Games.ShipGame
             }
         }
 
-        private async Task<int> Health(DbService db, uint level, SocketGuildUser user)
+        private async Task<int> Health(DbService db, int level, SocketGuildUser user)
         {
             var userdata = await db.GetOrCreateUserData(user);
             return _gameStats.GetHealth(level, await GetClass(db, userdata.Class));
         }
 
-        private async Task<int> Health(DbService db, uint level, GameEnemy enemy) =>
+        private async Task<int> Health(DbService db, int level, GameEnemy enemy) =>
             _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
 
-        private int Damage(uint level) => _gameStats.GetDamage(level);
+        private int Damage(int level) => _gameStats.GetDamage(level);
 
-        private int Damage(uint level, GameEnemy enemy) => _gameStats.GetDamage(level, enemy);
+        private int Damage(int level, GameEnemy enemy) => _gameStats.GetDamage(level, enemy);
 
         public async Task AttackAsync(SocketCommandContext context)
         {
@@ -290,7 +290,7 @@ namespace Hanekawa.Services.Games.ShipGame
             Console.WriteLine("Completed game");
         }
 
-        public async Task AttackAsync(SocketCommandContext context, SocketGuildUser playerTwoUser, uint bet = 0)
+        public async Task AttackAsync(SocketCommandContext context, SocketGuildUser playerTwoUser, int bet = 0)
         {
             if (ActiveDuel(context))
             {

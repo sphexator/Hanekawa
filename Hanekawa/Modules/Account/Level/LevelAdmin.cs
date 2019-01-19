@@ -39,16 +39,16 @@ namespace Hanekawa.Modules.Account.Level
         public async Task SetLevel(SocketGuildUser user, int level)
         {
             if (level <= 0) return;
-            uint totalExp = 0;
+            var totalExp = 0;
             for (var i = 1; i < level + 1; i++)
             {
-                totalExp += (uint)_calculate.GetServerLevelRequirement(i);
+                totalExp += _calculate.GetServerLevelRequirement(i);
             }
 
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(user);
-                userdata.Level = (uint)level;
+                userdata.Level = level;
                 userdata.Exp = 0;
                 userdata.TotalExp = totalExp;
                 await db.SaveChangesAsync();
@@ -87,22 +87,23 @@ namespace Hanekawa.Modules.Account.Level
         [Summary("Adds a role reward")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task ExclusiveAdd(uint level, [Remainder] IRole role) =>
+        public async Task ExclusiveAdd(int level, [Remainder] IRole role) =>
             await AddLevelRole(Context, level, role, true);
 
         [Command("add", RunMode = RunMode.Async)]
         [Summary("Adds a role reward")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelAdd(uint level, [Remainder] IRole role) =>
+        public async Task LevelAdd(int level, [Remainder] IRole role) =>
             await AddLevelRole(Context, level, role, false);
 
         [Command("create", RunMode = RunMode.Async)]
         [Summary("Creates a role reward with given level and name")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelCreate(uint level, [Remainder] string roleName)
+        public async Task LevelCreate(int level, [Remainder] string roleName)
         {
+            if (level <= 0) return;
             if (roleName.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
             {
@@ -183,8 +184,9 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        private async Task AddLevelRole(SocketCommandContext context, uint level, IRole role, bool stack)
+        private async Task AddLevelRole(SocketCommandContext context, int level, IRole role, bool stack)
         {
+            if (level <= 0) return;
             using (var db = new DbService())
             {
                 var check = await db.LevelRewards.FindAsync(context.Guild.Id, level);

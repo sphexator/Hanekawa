@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Database", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.AnimeSimulCast", "Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.HungerGame", "Hanekawa.Addons.HungerGame\Hanekawa.Addons.HungerGame.csproj", "{F048F46C-E59C-4C0E-AE1F-E29B8479727D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Patreon", "Hanekawa.Addons.Patreon\Hanekawa.Addons.Patreon.csproj", "{054F731A-9028-4F71-8BC4-AF6EB13E40AA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
@@ -33,10 +31,6 @@ Global
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F048F46C-E59C-4C0E-AE1F-E29B8479727D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{054F731A-9028-4F71-8BC4-AF6EB13E40AA}.Release|Any CPU.ActiveCfg = Release|Any CPU

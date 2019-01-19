@@ -19,10 +19,8 @@ namespace Hanekawa.Modules.Board
     {
         private readonly BoardService _boardService;
 
-        public Board(BoardService boardService)
-        {
-            _boardService = boardService;
-        }
+        public Board(BoardService boardService) => _boardService = boardService;
+
         //TODO this need looks at for errors
         [Command("stats", RunMode = RunMode.Async)]
         [RequireContext(ContextType.Guild)]
@@ -32,25 +30,23 @@ namespace Hanekawa.Modules.Board
         {
             using (var db = new DbService())
             {
-
-
                 var emote = _boardService.GetGuildEmote(Context.Guild);
                 var amount = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id)
                     .OrderByDescending(x => x.StarAmount)
                     .Take(3).ToListAsync();
-                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
+                var topReceive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
                     .OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
 
                 string topR = null;
                 string topM = null;
                 var topRr = 1;
                 var topMr = 1;
-                uint stars = 0;
+                var stars = 0;
 
                 foreach (var x in amount) stars = stars + x.StarAmount;
 
-                foreach (var x in topRecieve)
+                foreach (var x in topReceive)
                     try
                     {
                         topR +=
@@ -70,7 +66,8 @@ namespace Hanekawa.Modules.Board
                 }
 
                 var embed = new EmbedBuilder()
-                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given", Context.Guild.Id).WithAuthor(
+                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given",
+                        Context.Guild.Id).WithAuthor(
                         new EmbedAuthorBuilder
                             {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} board stats"});
                 embed.AddField($"Top {emote} Posts", $"{topM ?? "N/A"}");
@@ -102,7 +99,7 @@ namespace Hanekawa.Modules.Board
                 else topStar += $"No {emote} messages";
 
                 var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
-                    { IconUrl = user.GetAvatar(), Name = user.GetName() });
+                    {IconUrl = user.GetAvatar(), Name = user.GetName()});
                 embed.AddField("Boarded Messages", $"{boardData.Count}", true);
                 embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
                 embed.AddField($"{emote} Given", $"{userData.StarGiven}", true);
@@ -151,9 +148,7 @@ namespace Hanekawa.Modules.Board
             }
         }
 
-        private static string ParseEmoteString(Emote emote)
-        {
-            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
-        }
+        private static string ParseEmoteString(Emote emote) =>
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
     }
 }

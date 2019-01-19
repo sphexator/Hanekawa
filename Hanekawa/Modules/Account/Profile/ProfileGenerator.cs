@@ -45,7 +45,7 @@ namespace Hanekawa.Modules.Account.Profile
                 var templateBg = GetTemplateBackground();
                 var pfpCircle = GetPfpCircle();
                 var circle = GetCircle();
-                var achievIcons = await GetAchievementIcons(user, db);
+                var achieveIcons = await GetAchievementIcons(user, db);
                 var avi = await GetAvatar(user, client);
 
                 img.Mutate(x => x
@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
                     x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter().GetResult());
-                img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
+                img.Mutate(x => x.ApplyAchievementCircles(circle, achieveIcons));
                 img.Save(stream, new PngEncoder());
             }
 

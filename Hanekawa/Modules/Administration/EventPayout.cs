@@ -87,7 +87,7 @@ namespace Hanekawa.Modules.Administration
                 foreach (var x in users)
                 {
                     var user = await db.GetOrCreateUserData(x.GuildId, x.UserId);
-                    user.CreditSpecial = user.CreditSpecial + (uint)x.Amount;
+                    user.CreditSpecial = user.CreditSpecial + x.Amount;
                     payout += $"{Context.Guild.GetUser(x.UserId).Mention} rewarded {x.Amount}\n";
                 }
 

@@ -105,7 +105,7 @@ namespace Hanekawa.Services.Level
             return roles;
         }
 
-        private IRole GetLevelUpRole(uint level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
+        private IRole GetLevelUpRole(int level, IGuildUser user, IEnumerable<LevelReward> rolesRewards)
         {
             var roleId = rolesRewards.FirstOrDefault(x => x.Level == level);
             return roleId == null ? null : _client.GetGuild(user.GuildId).GetRole(roleId.Role);

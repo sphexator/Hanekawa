@@ -56,7 +56,7 @@ namespace Hanekawa.Services.Welcome
             var _ = Task.Run(async () =>
             {
                 uint counter;
-                uint limit;
+                int limit;
                 using (var db = new DbService())
                 {
                     var cfg = await db.GuildConfigs.FindAsync(user.Guild.Id);

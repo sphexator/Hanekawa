@@ -53,21 +53,21 @@ namespace Hanekawa.Services.Level
         private async Task AddExperience(DbService db, IGuildUser user, int exp, int credit)
         {
             var userdata = await db.GetOrCreateUserData(user);
-            var levelExp = _calculate.GetServerLevelRequirement((int)userdata.Level);
+            var levelExp = _calculate.GetServerLevelRequirement(userdata.Level);
             exp = exp * _expMultiplier.GetOrAdd(user.GuildId, 1);
 
-            userdata.TotalExp = userdata.TotalExp + (uint)exp;
-            userdata.Credit = userdata.Credit + (uint)credit;
+            userdata.TotalExp = userdata.TotalExp + exp;
+            userdata.Credit = userdata.Credit + credit;
             if (userdata.Exp + exp >= levelExp)
             {
                 userdata.Level += 1;
-                userdata.Exp = userdata.Exp + (uint)exp - (uint)levelExp;
+                userdata.Exp = userdata.Exp + exp - levelExp;
                 await _roleHandler.NewLevelManagerAsync(db, userdata, user);
                 await _achievement.ServerLevelAchievement(user, userdata);
             }
             else
             {
-                userdata.Exp += (uint)exp;
+                userdata.Exp += exp;
             }
 
             await db.SaveChangesAsync();
@@ -76,18 +76,18 @@ namespace Hanekawa.Services.Level
         private async Task AddGlobalExperience(DbService db, IGuildUser user, int exp, int credit)
         {
             var userdata = await db.GetOrCreateGlobalUserData(user);
-            var levelExp = _calculate.GetGlobalLevelRequirement((int)userdata.Level);
-            userdata.TotalExp += (uint)exp;
-            userdata.Credit += (uint)credit;
+            var levelExp = _calculate.GetGlobalLevelRequirement(userdata.Level);
+            userdata.TotalExp += exp;
+            userdata.Credit += credit;
             if (userdata.Exp + exp >= levelExp)
             {
                 userdata.Level += 1;
-                userdata.Exp = userdata.Exp + (uint)exp - (uint)levelExp;
+                userdata.Exp = userdata.Exp + exp - levelExp;
                 await _achievement.GlobalLevelAchievement(user, userdata);
             }
             else
             {
-                userdata.Exp += (uint)exp;
+                userdata.Exp += exp;
             }
 
             await db.SaveChangesAsync();

@@ -32,8 +32,9 @@ namespace Hanekawa.Modules.Account.Level
 
         [Command("give")]
         [Summary("Gives a certain amount of experience to a user")]
-        public async Task GiveExperience(SocketGuildUser user, uint exp)
+        public async Task GiveExperience(SocketGuildUser user, int exp)
         {
+            if (exp <= 0) return;
             using (var db = new DbService())
             {
                 var userData = await db.GetOrCreateUserData(user);

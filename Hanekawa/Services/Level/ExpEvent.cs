@@ -96,7 +96,7 @@ namespace Hanekawa.Services.Level
                     GuildId = guildId,
                     MessageId = message,
                     ChannelId = channel,
-                    Multiplier = (uint) multiplier,
+                    Multiplier = multiplier,
                     Time = DateTime.UtcNow + after
                 };
                 await db.LevelExpEvents.AddAsync(data);
@@ -106,7 +106,7 @@ namespace Hanekawa.Services.Level
             {
                 check.ChannelId = channel;
                 check.Time = DateTime.UtcNow + after;
-                check.Multiplier = (uint) multiplier;
+                check.Multiplier = multiplier;
                 check.MessageId = message;
                 await db.SaveChangesAsync();
             }

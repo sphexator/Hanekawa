@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,8 +8,6 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
-using System;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Gamble
 {
@@ -16,9 +16,9 @@ namespace Hanekawa.Modules.Account.Gamble
         [Command("bet", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
-        public async Task BetAsync(uint bet)
+        public async Task BetAsync(int bet)
         {
-            if (bet == 0) return;
+            if (bet <= 0) return;
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
@@ -46,7 +46,8 @@ namespace Hanekawa.Modules.Account.Gamble
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().CreateDefault($"{Context.User.Mention} doesn't have any credit to gamble with",
+                        new EmbedBuilder().CreateDefault(
+                            $"{Context.User.Mention} doesn't have any credit to gamble with",
                             Color.Red.RawValue).Build());
                     return;
                 }
@@ -59,16 +60,17 @@ namespace Hanekawa.Modules.Account.Gamble
         [Command("roll", RunMode = RunMode.Async)]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
-        public async Task RollAsync(uint bet)
+        public async Task RollAsync(int bet)
         {
-            if (bet == 0) return;
+            if (bet <= 0) return;
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().CreateDefault($"{Context.User.Mention} doesn't have any credit to gamble with",
+                        new EmbedBuilder().CreateDefault(
+                            $"{Context.User.Mention} doesn't have any credit to gamble with",
                             Color.Red.RawValue).Build());
                     return;
                 }
@@ -89,7 +91,8 @@ namespace Hanekawa.Modules.Account.Gamble
                 if (userdata.Credit == 0)
                 {
                     await ReplyAsync(null, false,
-                        new EmbedBuilder().CreateDefault($"{Context.User.Mention} doesn't have any credit to gamble with",
+                        new EmbedBuilder().CreateDefault(
+                            $"{Context.User.Mention} doesn't have any credit to gamble with",
                             Color.Red.RawValue).Build());
                     return;
                 }
@@ -100,7 +103,7 @@ namespace Hanekawa.Modules.Account.Gamble
         }
 
         private async Task<EmbedBuilder> GambleBetAsync(DbService db, SocketCommandContext context,
-            Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
+            Addons.Database.Tables.Account.Account userdata, int bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -123,7 +126,7 @@ namespace Hanekawa.Modules.Account.Gamble
         }
 
         private async Task<EmbedBuilder> GambleRollAsync(DbService db, SocketCommandContext context,
-            Addons.Database.Tables.Account.Account userdata, uint bet, bool allin = false)
+            Addons.Database.Tables.Account.Account userdata, int bet, bool allin = false)
         {
             if (userdata.Credit < bet) bet = BetAdjust(userdata);
             if (bet > 5000 && !allin) bet = BetAdjust();
@@ -154,14 +157,9 @@ namespace Hanekawa.Modules.Account.Gamble
                 Color.Red.RawValue);
         }
 
-        private static uint BetAdjust(Addons.Database.Tables.Account.Account userdata)
-        {
-            return userdata.Credit >= 25000 ? 25000 : userdata.Credit;
-        }
+        private static int BetAdjust(Addons.Database.Tables.Account.Account userdata) =>
+            userdata.Credit >= 25000 ? 25000 : userdata.Credit;
 
-        private static uint BetAdjust()
-        {
-            return 5000;
-        }
+        private static int BetAdjust() => 5000;
     }
 }
