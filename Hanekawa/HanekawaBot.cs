@@ -96,7 +96,10 @@ namespace Hanekawa
             var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
 
             loggerFactory.AddNLog(new NLogProviderOptions
-                {CaptureMessageTemplates = true, CaptureMessageProperties = true});
+            {
+                CaptureMessageTemplates = true, 
+                CaptureMessageProperties = true
+            });
             LogManager.LoadConfiguration("nlog.config");
         }
     }
