@@ -7,43 +7,42 @@ namespace Hanekawa.Addons.Database.Tables.Account
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
 
-        public bool Active { get; set; }
+        public bool Active { get; set; } = true;
 
         // Economy
-        public int Credit { get; set; }
-        public int CreditSpecial { get; set; }
+        public int Credit { get; set; } = 0;
+        public int CreditSpecial { get; set; } = 0;
 
-        public DateTime DailyCredit { get; set; }
+        public DateTime DailyCredit { get; set; } = DateTime.UtcNow;
 
         // Level
-        public int Level { get; set; }
-        public int Exp { get; set; }
-        public int TotalExp { get; set; }
+        public int Level { get; set; } = 1;
+        public int Exp { get; set; } = 0;
+        public int TotalExp { get; set; } = 0;
 
-        public DateTime VoiceExpTime { get; set; }
+        public DateTime VoiceExpTime { get; set; } = DateTime.UtcNow;
 
         // Class Profile Role
-        public int Class { get; set; }
-        public string ProfilePic { get; set; }
-        public ulong? CustomRoleId { get; set; }
-        public int Rep { get; set; }
-        public DateTime RepCooldown { get; set; }
+        public int Class { get; set; } = 1;
+        public string ProfilePic { get; set; } = null;
+        public int Rep { get; set; } = 0;
+        public DateTime RepCooldown { get; set; } = DateTime.UtcNow;
 
-        public int GameKillAmount { get; set; }
+        public int GameKillAmount { get; set; } = 0;
 
         // Stats
-        public DateTime? FirstMessage { get; set; }
-        public DateTime LastMessage { get; set; }
-        public TimeSpan StatVoiceTime { get; set; }
-        public int Sessions { get; set; }
-        public ulong StatMessages { get; set; }
+        public DateTime? FirstMessage { get; set; } = null;
+        public DateTime LastMessage { get; set; } = DateTime.UtcNow;
+        public TimeSpan StatVoiceTime { get; set; } = TimeSpan.Zero;
+        public int Sessions { get; set; } = 0;
+        public ulong StatMessages { get; set; } = 0;
 
         // Board
-        public int StarGiven { get; set; }
+        public int StarGiven { get; set; } = 0;
 
-        public int StarReceived { get; set; }
+        public int StarReceived { get; set; } = 0;
 
         // Misc
-        public DateTime ChannelVoiceTime { get; set; }
+        public DateTime ChannelVoiceTime { get; set; } = DateTime.UtcNow;
     }
 }

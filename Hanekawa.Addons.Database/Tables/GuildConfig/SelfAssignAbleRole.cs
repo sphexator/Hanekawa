@@ -4,6 +4,6 @@
     {
         public ulong GuildId { get; set; }
         public ulong RoleId { get; set; }
-        public bool Exclusive { get; set; }
+        public bool Exclusive { get; set; } = false;
     }
 }

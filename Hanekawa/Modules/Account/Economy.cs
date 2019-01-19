@@ -292,7 +292,7 @@ namespace Hanekawa.Modules.Account
 
                 var getItem = await db.Items.FirstOrDefaultAsync(x =>
                     x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-                var storeItem = new Shop
+                var storeItem = new ServerStore
                 {
                     GuildId = Context.Guild.Id,
                     ItemId = getItem.ItemId,
@@ -334,7 +334,7 @@ namespace Hanekawa.Modules.Account
 
                 var getItem = await db.Items.FirstOrDefaultAsync(x =>
                     x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-                var storeItem = new Shop
+                var storeItem = new ServerStore
                 {
                     GuildId = Context.Guild.Id,
                     ItemId = getItem.ItemId,
@@ -374,7 +374,7 @@ namespace Hanekawa.Modules.Account
 
                 var getItem = await db.Items.FirstOrDefaultAsync(x =>
                     x.GuildId.Value == Context.Guild.Id && x.DateAdded == date);
-                var storeItem = new StoreGlobal
+                var storeItem = new GlobalStore
                 {
                     ItemId = getItem.ItemId,
                     Price = price

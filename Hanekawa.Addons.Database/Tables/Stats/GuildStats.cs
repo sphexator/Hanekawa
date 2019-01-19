@@ -3,7 +3,7 @@
     public class GuildStats
     {
         public ulong GuildId { get; set; }
-        public uint StarAmount { get; set; }
-        public uint StarMessages { get; set; }
+        public int StarAmount { get; set; } = 0;
+        public int StarMessages { get; set; } = 0;
     }
 }

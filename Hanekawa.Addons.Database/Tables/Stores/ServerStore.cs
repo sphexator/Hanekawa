@@ -1,6 +1,6 @@
 ﻿namespace Hanekawa.Addons.Database.Tables.Stores
 {
-    public class Shop
+    public class ServerStore
     {
         public ulong GuildId { get; set; }
         public int ItemId { get; set; }

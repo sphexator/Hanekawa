@@ -48,14 +48,14 @@ namespace Hanekawa.Modules.Account.Storage
             }
         }
 
-        public async Task<EmbedBuilder> PurchaseItem(DbService db, Shop shop, IGuildUser user)
+        public async Task<EmbedBuilder> PurchaseItem(DbService db, ServerStore shop, IGuildUser user)
         {
             var price = shop.Price;
             var item = await db.Items.FindAsync(shop.ItemId);
             return await PurchaseServer(db, item, price, shop.SpecialCredit, user);
         }
 
-        public async Task<EmbedBuilder> PurchaseItem(DbService db, StoreGlobal shop, IGuildUser user)
+        public async Task<EmbedBuilder> PurchaseItem(DbService db, GlobalStore shop, IGuildUser user)
         {
             var price = shop.Price;
             var item = await db.Items.FindAsync(shop.ItemId);
@@ -115,7 +115,7 @@ namespace Hanekawa.Modules.Account.Storage
             return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
         }
 
-        private static string GetPrice(GuildConfig cfg, Shop shop, int price)
+        private static string GetPrice(GuildConfig cfg, ServerStore shop, int price)
         {
             return shop.SpecialCredit ? GetSpecialCurrency(price, cfg) : GetRegularCurrency(price, cfg);
         }

@@ -6,6 +6,6 @@ namespace Hanekawa.Addons.Database.Tables.Moderation
     {
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
-        public DateTime Time { get; set; }
+        public DateTime Time { get; set; } = DateTime.UtcNow;
     }
 }
