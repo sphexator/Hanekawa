@@ -31,8 +31,8 @@ namespace Hanekawa.Preconditions
             if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
                 return PreconditionResult.FromSuccess();
 
-            var ignrAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
-            if (!ignrAll) status = await UpdateIgnoreAllStatus(context);
+            var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
+            if (!ignoreAll) status = await UpdateIgnoreAllStatus(context);
 
             var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
 
