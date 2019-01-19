@@ -7,15 +7,15 @@ namespace Hanekawa.Addons.Database.Tables.Club
         public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong Leader { get; set; }
-        public string Name { get; set; }
-        public DateTimeOffset CreationDate { get; set; }
-        public string Description { get; set; }
-        public string ImageUrl { get; set; }
-        public ulong? Channel { get; set; }
-        public ulong? RoleId { get; set; }
-        public bool Public { get; set; }
-        public bool AutoAdd { get; set; }
-        public ulong? AdMessage { get; set; }
-        public DateTime? InactiveTime { get; set; }
+        public string Name { get; set; } = "N/A";
+        public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.UtcNow;
+        public string Description { get; set; } = "N/A";
+        public string IconUrl { get; set; } = null;
+        public string ImageUrl { get; set; } = null;
+        public ulong? Channel { get; set; } = null;
+        public ulong? RoleId { get; set; } = null;
+        public bool Public { get; set; } = false;
+        public bool AutoAdd { get; set; } = false;
+        public ulong? AdMessage { get; set; } = null;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables
+﻿namespace Hanekawa.Addons.Database.Tables.Stats
 {
     public class GuildStats
     {

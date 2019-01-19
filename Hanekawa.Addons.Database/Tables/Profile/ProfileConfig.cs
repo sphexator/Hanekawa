@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Config
+﻿namespace Hanekawa.Addons.Database.Tables.Profile
 {
     public class ProfileConfig
     {

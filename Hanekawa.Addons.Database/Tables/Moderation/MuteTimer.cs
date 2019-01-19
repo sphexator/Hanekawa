@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables
+namespace Hanekawa.Addons.Database.Tables.Moderation
 {
     public class MuteTimer
     {

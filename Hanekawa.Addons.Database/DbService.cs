@@ -6,7 +6,6 @@ using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Addons.Database.Tables.Profile;
@@ -63,18 +62,12 @@ namespace Hanekawa.Addons.Database
 
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
-        public virtual DbSet<GuildInfo> GuildInfos { get; set; }
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
         public virtual DbSet<Board> Boards { get; set; }
         public virtual DbSet<LevelExpReduction> LevelExpReductions { get; set; }
         public virtual DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
-
-        //Hunger Game
-        public virtual DbSet<HungerGameConfig> HungerGameConfigs { get; set; }
-        public virtual DbSet<HungerGameDefault> HungerGameDefaults { get; set; }
-        public virtual DbSet<HungerGameLive> HungerGameLives { get; set; }
 
         //Moderation
         public virtual DbSet<ModLog> ModLogs { get; set; }
@@ -83,7 +76,6 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<Suggestion> Suggestions { get; set; }
         public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
-        public virtual DbSet<WarnMsgLog> WarnMsgLogs { get; set; }
         public virtual DbSet<SpamIgnore> SpamIgnores { get; set; }
         public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
         public virtual DbSet<UrlFilter> UrlFilters { get; set; }

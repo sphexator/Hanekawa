@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables
+namespace Hanekawa.Addons.Database.Tables.Moderation
 {
     public class Suggestion
     {
-        public uint Id { get; set; }
+        public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public bool Status { get; set; }

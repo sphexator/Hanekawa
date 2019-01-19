@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables;
+using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;

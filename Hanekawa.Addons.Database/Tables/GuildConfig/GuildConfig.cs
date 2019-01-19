@@ -7,7 +7,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong GuildId { get; set; }
         public string Prefix { get; set; }
         public bool Premium { get; set; }
-        public uint EmbedColor { get; set; }
+        public int EmbedColor { get; set; }
 
         // Premium
         public ulong? AnimeAirChannel { get; set; }
@@ -25,13 +25,13 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong? ClubChannelCategory { get; set; }
         public ulong? ClubAdvertisementChannel { get; set; }
         public bool ClubEnableVoiceChannel { get; set; }
-        public uint ClubChannelRequiredAmount { get; set; }
-        public uint ClubChannelRequiredLevel { get; set; }
+        public int ClubChannelRequiredAmount { get; set; }
+        public int ClubChannelRequiredLevel { get; set; }
         public bool ClubAutoPrune { get; set; }
 
         // Welcome Settings
         public ulong? WelcomeChannel { get; set; }
-        public uint WelcomeLimit { get; set; }
+        public int WelcomeLimit { get; set; }
         public bool WelcomeBanner { get; set; }
         public string WelcomeMessage { get; set; }
         public TimeSpan? WelcomeDelete { get; set; }
@@ -45,7 +45,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong? LogAutoMod { get;set; }
 
         // Leveling settings
-        public uint ExpMultiplier { get; set; }
+        public int ExpMultiplier { get; set; }
         public bool StackLvlRoles { get; set; }
 
         // Currency Settings
@@ -60,7 +60,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public ulong? MuteRole { get; set; }
         public bool FilterInvites { get; set; }
         public bool IgnoreAllChannels { get; set; }
-        public uint? FilterMsgLength { get; set; }
+        public int? FilterMsgLength { get; set; }
         public bool FilterUrls { get; set; }
         public bool FilterAllInv { get; set; }
         public int? EmoteCountFilter { get; set; }

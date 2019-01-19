@@ -2,7 +2,7 @@
 {
     public class GameEnemy
     {
-        public uint Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
 
         public bool Elite { get; set; }
@@ -10,12 +10,12 @@
 
         public string ImageUrl { get; set; }
 
-        public uint Health { get; set; }
-        public uint Damage { get; set; }
+        public int Health { get; set; }
+        public int Damage { get; set; }
 
         public int ClassId { get; set; }
 
-        public uint ExpGain { get; set; }
-        public uint CreditGain { get; set; }
+        public int ExpGain { get; set; }
+        public int CreditGain { get; set; }
     }
 }

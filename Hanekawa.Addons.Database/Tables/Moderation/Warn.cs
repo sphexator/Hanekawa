@@ -1,7 +1,7 @@
 ﻿using System;
 using Hanekawa.Addons.Database.Data;
 
-namespace Hanekawa.Addons.Database.Tables
+namespace Hanekawa.Addons.Database.Tables.Moderation
 {
     public class Warn
     {

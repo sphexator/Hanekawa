@@ -4,7 +4,7 @@ namespace Hanekawa.Addons.Database.Tables.Moderation
 {
     public class QuestionAndAnswer
     {
-        public uint Id { get; set; }
+        public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public bool Status { get; set; }
