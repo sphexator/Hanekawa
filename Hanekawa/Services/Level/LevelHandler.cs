@@ -1,9 +1,9 @@
-﻿using Discord;
+﻿using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Discord;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using Hanekawa.Services.Achievement;
 using Hanekawa.Services.Level.Util;
 
@@ -11,11 +11,13 @@ namespace Hanekawa.Services.Level
 {
     public class LevelHandler : IHanaService
     {
-        private readonly LevelRoleHandler _roleHandler;
-        private readonly Calculate _calculate;
         private readonly AchievementManager _achievement;
+        private readonly Calculate _calculate;
+
         private readonly ConcurrentDictionary<ulong, int> _expMultiplier
             = new ConcurrentDictionary<ulong, int>();
+
+        private readonly LevelRoleHandler _roleHandler;
 
         public LevelHandler(LevelRoleHandler roleHandler, Calculate calculate, AchievementManager achievement)
         {
@@ -46,7 +48,8 @@ namespace Hanekawa.Services.Level
         public async Task AddGlobalExp(DbService db, IGuildUser user, int exp, int credit) =>
             await AddGlobalExperience(db, user, exp, credit);
 
-        public void AdjustMultiplier(ulong guildId, int multiplier) => _expMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
+        public void AdjustMultiplier(ulong guildId, int multiplier) =>
+            _expMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
 
         public int GetMultiplier(ulong guildId) => _expMultiplier.GetOrAdd(guildId, 1);
 

@@ -45,7 +45,7 @@ namespace Hanekawa.Services.Club
         {
             var embed = new EmbedBuilder()
                 .CreateDefault(club.Description ?? "No description added", guild.Id)
-                .WithAuthor(new EmbedAuthorBuilder { Name = club.Name })
+                .WithAuthor(new EmbedAuthorBuilder {Name = club.Name})
                 .WithImageUrl(club.ImageUrl);
             var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).ReplyAsync(embed);
             club.AdMessage = msg.Id;
@@ -191,10 +191,9 @@ namespace Hanekawa.Services.Club
             return Task.CompletedTask;
         }
 
-        public async Task<int> IsChannelRequirementAsync(DbService db, IEnumerable<ClubPlayer> users, uint level = 40)
-        {
-            return await GetUsersOfLevelAsync(db, level, users);
-        }
+        public async Task<int>
+            IsChannelRequirementAsync(DbService db, IEnumerable<ClubPlayer> users, uint level = 40) =>
+            await GetUsersOfLevelAsync(db, level, users);
 
         public async Task CreateChannelAsync(DbService db, IGuild guild, GuildConfig cfg, string clubName,
             IGuildUser leader,

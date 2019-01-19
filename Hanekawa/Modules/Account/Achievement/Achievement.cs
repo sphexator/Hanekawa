@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
@@ -7,10 +11,6 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Achievement
 {
@@ -28,7 +28,7 @@ namespace Hanekawa.Modules.Account.Achievement
                 {
                     var tabs = await db.AchievementTypes.ToListAsync();
                     var content = new StringBuilder();
-                    foreach (var x in tabs)  content.Append($"{x.Name}\n");
+                    foreach (var x in tabs) content.Append($"{x.Name}\n");
                     var embed = new EmbedBuilder()
                         .CreateDefault(content.ToString(), Context.Guild.Id)
                         .WithAuthor(new EmbedAuthorBuilder {Name = "Achievement tabs"})
@@ -50,7 +50,8 @@ namespace Hanekawa.Modules.Account.Achievement
                     var pages = new List<string>();
                     foreach (var x in achievements) pages.Add($"{x.Name} - Req: {x.Requirement}\n");
 
-                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Achievements in {type.Name}"));
+                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                        $"Achievements in {type.Name}"));
                 }
             }
         }
@@ -91,7 +92,8 @@ namespace Hanekawa.Modules.Account.Achievement
                 foreach (var x in achievements)
                     pages.Add($"{x.Name}({x.AchievementId}) - Req: {x.Requirement}\n");
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Unlocked Achievements for {Context.User.Username}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Unlocked Achievements for {Context.User.Username}"));
             }
         }
 

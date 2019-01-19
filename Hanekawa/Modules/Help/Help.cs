@@ -34,8 +34,8 @@ namespace Hanekawa.Modules.Help
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
-                    .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" });
+                    .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
+                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
                 await Context.ReplyAsync(embed);
             }
             else
@@ -72,8 +72,9 @@ namespace Hanekawa.Modules.Help
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { Name = "Module list" })
-                    .WithFooter(new EmbedFooterBuilder { Text = "Use `h.help <module>` to get help with a module" }); ;
+                    .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
+                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
+                ;
                 embed.AddField("Support", "[Discord](https://discord.gg/gGu5TT6)", true);
                 embed.AddField("Bot Invite",
                     "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",

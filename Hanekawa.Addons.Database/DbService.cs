@@ -16,10 +16,12 @@ namespace Hanekawa.Addons.Database
     public class DbService : DbContext
     {
         public DbService()
-        {}
+        {
+        }
 
         public DbService(DbContextOptions options) : base(options)
-        {}
+        {
+        }
 
         // Account
         public virtual DbSet<Account> Accounts { get; set; }
@@ -60,7 +62,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<ClubInfo> ClubInfos { get; set; }
         public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
         public virtual DbSet<ClubBlacklist> ClubBlacklists { get; set; }
-        
+
         //Bot Game
         public virtual DbSet<GameClass> GameClasses { get; set; }
         public virtual DbSet<GameConfig> GameConfigs { get; set; }
@@ -131,26 +133,26 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<EventSchedule>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Host).HasConversion<long>();
                 x.Property(e => e.DesignerClaim).HasConversion<long>();
             });
             modelBuilder.Entity<WhitelistDesign>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<WhitelistEvent>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<Patreon>(x =>
             {
-                x.HasKey(e => new { e.BotId, e.UserId });
+                x.HasKey(e => new {e.BotId, e.UserId});
                 x.Property(e => e.BotId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -158,8 +160,8 @@ namespace Hanekawa.Addons.Database
 
         private static void InventoryBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new { e.GuildId, e.UserId, e.ItemId }); });
-            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new { e.UserId, e.ItemId }); });
+            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId}); });
+            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new {e.UserId, e.ItemId}); });
         }
 
         private static void ItemBuilder(ModelBuilder modelBuilder)
@@ -173,10 +175,7 @@ namespace Hanekawa.Addons.Database
 
         private static void StoreBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ServerStore>(x =>
-            {
-                x.HasKey(e => new { e.GuildId, e.ItemId });
-            });
+            modelBuilder.Entity<ServerStore>(x => { x.HasKey(e => new {e.GuildId, e.ItemId}); });
             modelBuilder.Entity<GlobalStore>(x => x.HasKey(e => e.ItemId));
         }
 
@@ -184,7 +183,7 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<Account>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.StatMessages).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
@@ -196,7 +195,7 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<LevelReward>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.Level });
+                x.HasKey(e => new {e.GuildId, e.Level});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Role).HasConversion<long>();
             });
@@ -209,7 +208,7 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<EventPayout>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -232,12 +231,12 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<AchievementTracker>(x =>
             {
-                x.HasKey(e => new { e.Type, e.UserId });
+                x.HasKey(e => new {e.Type, e.UserId});
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<AchievementUnlock>(x =>
             {
-                x.HasKey(e => new { e.AchievementId, e.UserId });
+                x.HasKey(e => new {e.AchievementId, e.UserId});
                 x.HasOne(p => p.Achievement).WithMany();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -263,7 +262,8 @@ namespace Hanekawa.Addons.Database
             modelBuilder.Entity<GameConfig>(x =>
             {
                 x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd(); ;
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                ;
             });
             modelBuilder.Entity<GameEnemy>(x =>
             {
@@ -276,7 +276,7 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<ModLog>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.MessageId).HasConversion<long>();
                 x.Property(e => e.ModId).HasConversion<long>();
@@ -284,13 +284,13 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<MuteTimer>(x =>
             {
-                x.HasKey(e => new { e.UserId, e.GuildId });
+                x.HasKey(e => new {e.UserId, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<Suggestion>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
                 x.Property(e => e.MessageId).HasConversion<long>();
@@ -298,7 +298,7 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<QuestionAndAnswer>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
                 x.Property(e => e.MessageId).HasConversion<long>();
@@ -306,39 +306,39 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<Report>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
                 x.Property(e => e.MessageId).HasConversion<long>();
             });
             modelBuilder.Entity<Warn>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId });
+                x.HasKey(e => new {e.Id, e.GuildId});
 
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<NudeServiceChannel>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<SingleNudeServiceChannel>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<UrlFilter>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<SpamIgnore>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
@@ -348,7 +348,7 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<ClubInfo>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId, e.Leader });
+                x.HasKey(e => new {e.Id, e.GuildId, e.Leader});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Leader).HasConversion<long>();
@@ -358,14 +358,14 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<ClubPlayer>(x =>
             {
-                x.HasKey(e => new { e.Id, e.ClubId, e.GuildId });
+                x.HasKey(e => new {e.Id, e.ClubId, e.GuildId});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
             modelBuilder.Entity<ClubBlacklist>(x =>
             {
-                x.HasKey(e => new { e.ClubId, e.GuildId, e.BlackListUser });
+                x.HasKey(e => new {e.ClubId, e.GuildId, e.BlackListUser});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.BlackListUser).HasConversion<long>();
                 x.Property(e => e.IssuedUser).HasConversion<long>();
@@ -407,39 +407,39 @@ namespace Hanekawa.Addons.Database
             });
             modelBuilder.Entity<IgnoreChannel>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<Board>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.MessageId });
+                x.HasKey(e => new {e.GuildId, e.MessageId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
                 x.Property(e => e.MessageId).HasConversion<long>();
             });
             modelBuilder.Entity<WelcomeBanner>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.Id });
+                x.HasKey(e => new {e.GuildId, e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Uploader).HasConversion<long>();
             });
             modelBuilder.Entity<LootChannel>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<LevelExpReduction>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.ChannelId });
+                x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
             });
             modelBuilder.Entity<SelfAssignAbleRole>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.RoleId });
+                x.HasKey(e => new {e.GuildId, e.RoleId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.RoleId).HasConversion<long>();
             });
@@ -463,7 +463,7 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<Playlist>(x =>
             {
-                x.HasKey(e => new { e.GuildId, e.Id });
+                x.HasKey(e => new {e.GuildId, e.Id});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.OwnerId).HasConversion<long>();
             });

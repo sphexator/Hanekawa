@@ -17,8 +17,8 @@ namespace Hanekawa.Services.Games.ShipGame.Data
             }
         }
 
-        private int DefaultHealth { get; set; } = 10;
-        private int DefaultDamage { get; set; } = 1;
+        private int DefaultHealth { get; } = 10;
+        private int DefaultDamage { get; } = 1;
 
         public int GetHealth(int level, GameClass ass) =>
             Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));

@@ -55,7 +55,7 @@ namespace Hanekawa.Services.Level
                         {
                             var upd = msg.Embeds.First().ToEmbedBuilder();
                             upd.Color = Color.Red;
-                            upd.Footer = new EmbedFooterBuilder{ Text = "Ended"};
+                            upd.Footer = new EmbedFooterBuilder {Text = "Ended"};
                             await msg.ModifyAsync(x => x.Embed = upd.Build());
                         }
 
@@ -81,7 +81,7 @@ namespace Hanekawa.Services.Level
             IUserMessage message = null;
             var cfg = await db.GetOrCreateGuildConfigAsync(guild as SocketGuild);
             if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
-            ExpEventHandler(db, guild.Id, multiplier, (int) cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
+            ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }
 

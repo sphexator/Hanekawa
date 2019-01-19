@@ -9,7 +9,6 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Preconditions
 {
@@ -18,7 +17,6 @@ namespace Hanekawa.Preconditions
     {
         public RequiredChannel() : base(ContextType.Guild)
         {
-            
         }
 
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }

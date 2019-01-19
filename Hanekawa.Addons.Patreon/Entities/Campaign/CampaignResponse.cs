@@ -180,5 +180,4 @@ namespace Hanekawa.Addons.Patreon.Entities.Campaign
     {
         public string related { get; set; }
     }
-
 }

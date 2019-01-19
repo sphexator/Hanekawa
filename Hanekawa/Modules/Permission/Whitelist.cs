@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,9 +9,6 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -73,9 +73,7 @@ namespace Hanekawa.Modules.Permission
 
                 var pages = new List<string>();
                 foreach (var x in events)
-                {
                     pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-                }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Whitelisted event organizers in {Context.Guild.Name}"));
@@ -139,12 +137,11 @@ namespace Hanekawa.Modules.Permission
 
                 var pages = new List<string>();
                 foreach (var x in designers)
-                {
                     pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-                }
 
                 await PagedReplyAsync(
-                    pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
+                    pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                        $"Whitelisted designers in {Context.Guild.Name}"));
             }
         }
     }

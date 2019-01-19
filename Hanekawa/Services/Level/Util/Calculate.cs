@@ -1,14 +1,14 @@
-﻿using Hanekawa.Entities.Interfaces;
-using System;
+﻿using System;
+using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Level.Util
 {
     public class Calculate : IHanaService
     {
         private readonly Random _random;
-        private int VoiceCalculate(int hours, int minutes) => hours * 60 * minutes;
 
         public Calculate(Random random) => _random = random;
+        private int VoiceCalculate(int hours, int minutes) => hours * 60 * minutes;
 
         public int GetServerLevelRequirement(int currentLevel) => 3 * currentLevel * currentLevel + 150;
 

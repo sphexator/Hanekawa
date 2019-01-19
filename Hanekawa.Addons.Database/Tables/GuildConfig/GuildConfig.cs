@@ -65,7 +65,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public bool FilterAllInv { get; set; } = false;
         public int? EmoteCountFilter { get; set; } = null;
         public int? MentionCountFilter { get; set; } = null;
-        
+
         // Board settings
         public string BoardEmote { get; set; }
         public ulong? BoardChannel { get; set; } = null;

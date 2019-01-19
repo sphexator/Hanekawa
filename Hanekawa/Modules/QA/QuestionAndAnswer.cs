@@ -27,8 +27,12 @@ namespace Hanekawa.Modules.QA
                 var caseId = await db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
 
                 var embed = new EmbedBuilder().CreateDefault(question, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
-                    .WithFooter(new EmbedFooterBuilder { Text = $"Question ID: {caseId.Id}" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                    {
+                        IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
+                        Name = (Context.User as SocketGuildUser).GetName()
+                    })
+                    .WithFooter(new EmbedFooterBuilder {Text = $"Question ID: {caseId.Id}"})
                     .WithTimestamp(DateTimeOffset.UtcNow);
 
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value).ReplyAsync(embed);
@@ -63,6 +67,7 @@ namespace Hanekawa.Modules.QA
                     await Context.ReplyAsync("Couldn't find the associated message to this question :(");
                     return;
                 }
+
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value)
                     .GetMessageAsync(question.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();

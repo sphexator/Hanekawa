@@ -1,13 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
-using Hanekawa.Services.Level.Util;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Services.Achievement;
+using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -15,16 +15,17 @@ namespace Hanekawa.Services.Level
 {
     public class LevelingService : IHanaService, IRequiredService
     {
+        private readonly AchievementManager _achievement;
         private readonly Calculate _calc;
         private readonly DiscordSocketClient _client;
-        private readonly LevelHandler _handler;
         private readonly LevelData _data;
-        private readonly LevelRoleHandler _roleManager;
         private readonly ExpEvent _expEvent;
+        private readonly LevelHandler _handler;
         private readonly LogService _log;
-        private readonly AchievementManager _achievement;
+        private readonly LevelRoleHandler _roleManager;
 
-        public LevelingService(DiscordSocketClient discord, Calculate calc, LevelData data, LevelHandler handler, LevelRoleHandler roleManager, ExpEvent expEvent, LogService log)
+        public LevelingService(DiscordSocketClient discord, Calculate calc, LevelData data, LevelHandler handler,
+            LevelRoleHandler roleManager, ExpEvent expEvent, LogService log)
         {
             _client = discord;
             _calc = calc;
@@ -46,11 +47,11 @@ namespace Hanekawa.Services.Level
                     var levelExpEvent = db.LevelExpEvents.Find(x.GuildId);
                     if (levelExpEvent == null)
                     {
-                        _handler.AdjustMultiplier(x.GuildId, (int)x.ExpMultiplier);
+                        _handler.AdjustMultiplier(x.GuildId, x.ExpMultiplier);
                     }
                     else if (levelExpEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
                     {
-                        _handler.AdjustMultiplier(x.GuildId, (int)x.ExpMultiplier);
+                        _handler.AdjustMultiplier(x.GuildId, x.ExpMultiplier);
                         var check = db.LevelExpEvents.FirstOrDefault(y => y.GuildId == x.GuildId);
                         if (check == null) continue;
                         db.LevelExpEvents.Remove(check);
@@ -59,7 +60,8 @@ namespace Hanekawa.Services.Level
                     else
                     {
                         var after = levelExpEvent.Time - DateTime.UtcNow;
-                        _expEvent.ExpEventHandler(db, levelExpEvent.GuildId, (int)levelExpEvent.Multiplier, (int)x.ExpMultiplier, levelExpEvent.MessageId,
+                        _expEvent.ExpEventHandler(db, levelExpEvent.GuildId, levelExpEvent.Multiplier, x.ExpMultiplier,
+                            levelExpEvent.MessageId,
                             levelExpEvent.ChannelId, after);
                     }
                 }
@@ -83,8 +85,8 @@ namespace Hanekawa.Services.Level
                     var userdata = await db.GetOrCreateUserData(user);
 
                     userdata.LastMessage = DateTime.UtcNow;
-                    if (!userdata.FirstMessage.HasValue || 
-                        userdata.FirstMessage.Value - TimeSpan.FromDays(999) > userdata.FirstMessage.Value) 
+                    if (!userdata.FirstMessage.HasValue ||
+                        userdata.FirstMessage.Value - TimeSpan.FromDays(999) > userdata.FirstMessage.Value)
                         userdata.FirstMessage = DateTime.UtcNow;
 
                     await _handler.AddExp(db, user, _calc.GetMessageExp(_data.IsReducedExp(channel)),
@@ -127,12 +129,13 @@ namespace Hanekawa.Services.Level
                             await db.SaveChangesAsync();
                             return;
                         }
+
                         if (oldState.VoiceChannel == null || newState.VoiceChannel != null) return;
-                        
+
                         userdata.StatVoiceTime = userdata.StatVoiceTime + (DateTime.UtcNow - userdata.VoiceExpTime);
                         userdata.Sessions = userdata.Sessions + 1;
-                        await _handler.AddExp(db, guser, (int) _calc.GetVoiceExp(userdata.VoiceExpTime),
-                            (int) _calc.GetVoiceCredit(userdata.VoiceExpTime));
+                        await _handler.AddExp(db, guser, _calc.GetVoiceExp(userdata.VoiceExpTime),
+                            _calc.GetVoiceCredit(userdata.VoiceExpTime));
                         await _achievement.AtOnce(guser, DateTime.UtcNow - userdata.VoiceExpTime);
                         await _achievement.TotalTime(guser, DateTime.UtcNow - userdata.VoiceExpTime);
                     }

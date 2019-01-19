@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{userdata.Level}";
                 case "Exp":
                     return
-                        $"{userdata.Exp.FormatNumber()}/{calc.GetServerLevelRequirement((int)userdata.Level).FormatNumber()}";
+                        $"{userdata.Exp.FormatNumber()}/{calc.GetServerLevelRequirement(userdata.Level).FormatNumber()}";
                 //case "TotalExp":
                 //    return $"{userdata.TotalExp}";
                 case "Credit":
@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{globalData.Credit.FormatNumber()}";
                 case "Global Exp":
                     return
-                        $"{globalData.Exp.FormatNumber()}/{calc.GetGlobalLevelRequirement((int)globalData.Level).FormatNumber()}";
+                        $"{globalData.Exp.FormatNumber()}/{calc.GetGlobalLevelRequirement(globalData.Level).FormatNumber()}";
                 case "Global TotalExp":
                     return $"{globalData.TotalExp.FormatNumber()}";
                 case "Global Level":

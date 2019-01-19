@@ -1,4 +1,6 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -7,9 +9,6 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Level;
 using Humanizer;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Level
 {
@@ -17,12 +16,13 @@ namespace Hanekawa.Modules.Account.Level
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Experience : InteractiveBase
     {
-        private readonly LevelingService _levelingService;
+        private readonly ExpEvent _expEvent;
         private readonly LevelData _levelData;
         private readonly LevelHandler _levelHandler;
-        private readonly ExpEvent _expEvent;
+        private readonly LevelingService _levelingService;
 
-        public Experience(LevelingService levelingService, LevelData levelData, ExpEvent expEvent, LevelHandler levelHandler)
+        public Experience(LevelingService levelingService, LevelData levelData, ExpEvent expEvent,
+            LevelHandler levelHandler)
         {
             _levelingService = levelingService;
             _levelData = levelData;
@@ -48,13 +48,15 @@ namespace Hanekawa.Modules.Account.Level
         [Alias("iadd")]
         [Priority(1)]
         [Summary("Adds a channel from reduced exp pool with provided channel")]
-        public async Task AddReducedExpChannel([Remainder] ITextChannel channel) => await Context.ReplyAsync(await _levelData.ReducedExpManager(channel, false));
+        public async Task AddReducedExpChannel([Remainder] ITextChannel channel) =>
+            await Context.ReplyAsync(await _levelData.ReducedExpManager(channel, false));
 
         [Command("ignore add", RunMode = RunMode.Async)]
         [Alias("iadd")]
         [Priority(2)]
         [Summary("Adds a channel from reduced exp pool with provided channel")]
-        public async Task AddReducedExpChannel([Remainder] ICategoryChannel category) => await Context.ReplyAsync(await _levelData.ReducedExpManager(category, false));
+        public async Task AddReducedExpChannel([Remainder] ICategoryChannel category) =>
+            await Context.ReplyAsync(await _levelData.ReducedExpManager(category, false));
 
         [Command("ignore remove")]
         [Alias("remove")]
@@ -78,7 +80,7 @@ namespace Hanekawa.Modules.Account.Level
         [Command("multiplier")]
         [Alias("multi")]
         [Summary("Gets the current level multiplier")]
-        public async Task LevelMultiplier() => 
+        public async Task LevelMultiplier() =>
             await Context.ReplyAsync($"Current server multiplier: x{_levelHandler.GetMultiplier(Context.Guild.Id)}");
 
         [Command("event", RunMode = RunMode.Async)]

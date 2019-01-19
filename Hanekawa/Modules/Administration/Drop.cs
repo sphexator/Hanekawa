@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,9 +9,6 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Drop;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -17,8 +17,8 @@ namespace Hanekawa.Modules.Administration
     [RequireContext(ContextType.Guild)]
     public class Drop : InteractiveBase
     {
-        private readonly DropService _dropService;
         private readonly DropData _dropData;
+        private readonly DropService _dropService;
 
         public Drop(DropService dropService, DropData dropData)
         {
@@ -79,15 +79,19 @@ namespace Hanekawa.Modules.Administration
             using (var db = new DbService())
             {
                 var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
-                    { Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl });
+                    {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                if (list.Count == 0) embed.Description = "No loot channels has been added to this server";
+                if (list.Count == 0)
+                {
+                    embed.Description = "No loot channels has been added to this server";
+                }
                 else
                 {
                     var result = new List<string>();
                     foreach (var x in list) result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
                     embed.Description = string.Join("\n", result);
                 }
+
                 await Context.ReplyAsync(embed);
             }
         }

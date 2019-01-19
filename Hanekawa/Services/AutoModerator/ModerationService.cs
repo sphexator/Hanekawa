@@ -10,12 +10,12 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Data;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -126,7 +126,8 @@ namespace Hanekawa.Services.AutoModerator
             await db.SpamIgnores.AddAsync(data);
             await db.SaveChangesAsync();
             guild.Add(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Added {channel.Mention} to url spam ignore list.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Added {channel.Mention} to url spam ignore list.",
+                Color.Green.RawValue);
         }
 
         private async Task<EmbedBuilder> AddUrlFilterChannel(ITextChannel channel, DbService db)
@@ -148,11 +149,13 @@ namespace Hanekawa.Services.AutoModerator
         {
             if (!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return null;
             if (!guild.Contains(channel.Id)) return null;
-            var entry = await db.SpamIgnores.FirstOrDefaultAsync(x => x.GuildId == channel.GuildId && x.ChannelId ==  channel.Id);
+            var entry = await db.SpamIgnores.FirstOrDefaultAsync(x =>
+                x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
             db.SpamIgnores.Remove(entry);
             await db.SaveChangesAsync();
             guild.Remove(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from spam ignore list.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from spam ignore list.",
+                Color.Green.RawValue);
         }
 
         private async Task<EmbedBuilder> RemoveUrlFilter(ITextChannel channel, DbService db)
@@ -164,7 +167,8 @@ namespace Hanekawa.Services.AutoModerator
             db.UrlFilters.Remove(entry);
             await db.SaveChangesAsync();
             guild.Remove(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from url filter.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from url filter.",
+                Color.Green.RawValue);
         }
 
         private Task GlobalBanChecker(SocketGuildUser user)

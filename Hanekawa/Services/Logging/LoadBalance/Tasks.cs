@@ -171,14 +171,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         {
                             var file = msg.Attachments.FirstOrDefault();
                             if (file != null)
-                            {
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
                                     x.Value = msg.Attachments.FirstOrDefault()?.Url;
                                 });
-                            }
                         }
 
                         await channel.ReplyAsync(embed);

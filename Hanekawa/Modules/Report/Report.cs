@@ -58,7 +58,7 @@ namespace Hanekawa.Modules.Report
                         IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
                         Name = (Context.User as SocketGuildUser).GetName()
                     })
-                    .WithFooter(new EmbedFooterBuilder { Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}" })
+                    .WithFooter(new EmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
                     .WithTimestamp(new DateTimeOffset(DateTime.UtcNow));
 
                 if (Context.Message.Attachments.FirstOrDefault() != null)
@@ -103,7 +103,7 @@ namespace Hanekawa.Modules.Report
                     /*IGNORE*/
                 }
 
-                await ((IUserMessage)msg).ModifyAsync(x => x.Embed = embed.Build());
+                await ((IUserMessage) msg).ModifyAsync(x => x.Embed = embed.Build());
             }
         }
     }

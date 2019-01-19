@@ -16,10 +16,7 @@ namespace Hanekawa.Modules.Audio
     {
         private readonly AudioService _audio;
 
-        public Music(AudioService audioService)
-        {
-            _audio = audioService;
-        }
+        public Music(AudioService audioService) => _audio = audioService;
 
         [Command("Join", RunMode = RunMode.Async)]
         [Alias("summon", "connect")]
@@ -39,9 +36,10 @@ namespace Hanekawa.Modules.Audio
         [Command("Play", RunMode = RunMode.Async)]
         [Alias("p")]
         [Summary("Plays or queues a song")]
-        public async Task PlayAsync([Remainder] string query) => await Context.ReplyAsync(
-            await _audio.PlayAsync(Context.Guild.Id, query, Context.Channel as ITextChannel,
-                Context.User as IGuildUser));
+        public async Task PlayAsync([Remainder] string query) =>
+            await Context.ReplyAsync(
+                await _audio.PlayAsync(Context.Guild.Id, query, Context.Channel as ITextChannel,
+                    Context.User as IGuildUser));
 
         [Command("Pause", RunMode = RunMode.Async)]
         [Summary("Pauses the player")]

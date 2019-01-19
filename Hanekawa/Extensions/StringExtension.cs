@@ -18,10 +18,8 @@ namespace Hanekawa.Extensions
             return sb.ToString();
         }
 
-        public static string SanitizeMentions(this string str)
-        {
-            return str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
-        }
+        public static string SanitizeMentions(this string str) =>
+            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
 
         public static bool IsPictureUrl(this string str)
         {

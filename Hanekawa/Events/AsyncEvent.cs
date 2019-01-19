@@ -60,7 +60,8 @@ namespace Hanekawa.Events
             return Task.WhenAll(eventTasks);
         }
 
-        public static Task InvokeAsync<T1, T2, T3, T4, T5>(this AsyncEvent<T1, T2, T3, T4, T5> asyncEvent, T1 arg1, T2 arg2,
+        public static Task InvokeAsync<T1, T2, T3, T4, T5>(this AsyncEvent<T1, T2, T3, T4, T5> asyncEvent, T1 arg1,
+            T2 arg2,
             T3 arg3, T4 arg4, T5 arg5)
         {
             if (asyncEvent == null)

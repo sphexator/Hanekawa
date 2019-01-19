@@ -1,27 +1,29 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Level
 {
     public class LevelData : IHanaService
     {
-        private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown
-            = new ConcurrentDictionary<ulong, MemoryCache>();
         private readonly MemoryCache _globalExpCooldown = new MemoryCache(new MemoryCacheOptions());
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverCategoryReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
+
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverChannelReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
+
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown
+            = new ConcurrentDictionary<ulong, MemoryCache>();
 
         public bool ServerCooldown(IGuildUser user)
         {
@@ -42,7 +44,7 @@ namespace Hanekawa.Services.Level
         {
             _serverChannelReduction.TryGetValue(channel.GuildId, out var channels);
             _serverCategoryReduction.TryGetValue(channel.GuildId, out var category);
-            if(channel.CategoryId.HasValue)
+            if (channel.CategoryId.HasValue)
                 if (channels.Contains(channel.CategoryId.Value))
                     return true;
             if (channels.Contains(channel.Id)) return true;
@@ -91,20 +93,12 @@ namespace Hanekawa.Services.Level
                 }
 
                 if (isChannel)
-                {
                     foreach (var x in channels)
-                    {
                         result.Add($"Channel: {(await guild.GetTextChannelAsync(x)).Name}");
-                    }
-                }
 
                 if (isCategory)
-                {
                     foreach (var x in categories)
-                    {
                         result.Add($"Category: {(await guild.GetCategoriesAsync()).First(y => y.Id == x).Name}\n");
-                    }
-                }
 
                 return result;
             }

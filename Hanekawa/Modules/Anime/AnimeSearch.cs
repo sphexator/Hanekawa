@@ -4,6 +4,5 @@ namespace Hanekawa.Modules.Anime
 {
     public class AnimeSearch : InteractiveBase
     {
-
     }
 }

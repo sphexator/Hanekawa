@@ -14,18 +14,19 @@ namespace Hanekawa.Services.Drop
 {
     public class DropData : IHanaService
     {
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _lootChannels
-            = new ConcurrentDictionary<ulong, List<ulong>>();
-
         private readonly MemoryCache _guildCooldown = new MemoryCache(new MemoryCacheOptions());
 
-        private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown = new ConcurrentDictionary<ulong, MemoryCache>();
+        private readonly ConcurrentDictionary<ulong, List<ulong>> _lootChannels
+            = new ConcurrentDictionary<ulong, List<ulong>>();
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _normalLoot =
             new ConcurrentDictionary<ulong, List<ulong>>();
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _spawnedLoot =
             new ConcurrentDictionary<ulong, List<ulong>>();
+
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
+            new ConcurrentDictionary<ulong, MemoryCache>();
 
         public DropData()
         {

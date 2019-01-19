@@ -1,6 +1,6 @@
-﻿using Hanekawa.Addons.Database.Tables.Account;
+﻿using System;
+using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
-using System;
 
 namespace Hanekawa.Addons.Database.Extensions
 {

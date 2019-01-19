@@ -490,10 +490,7 @@ namespace Hanekawa.Services.Games.ShipGame
             return game;
         }
 
-        private static Task<GameClass> GetClass(DbService db, int id)
-        {
-            return db.GameClasses.FindAsync(id);
-        }
+        private static Task<GameClass> GetClass(DbService db, int id) => db.GameClasses.FindAsync(id);
 
         private bool ActiveBattle(SocketCommandContext context)
         {
@@ -597,10 +594,7 @@ namespace Hanekawa.Services.Games.ShipGame
             return stream;
         }
 
-        private static string GetBorder()
-        {
-            return @"Data\Game\Border\Red-border.png";
-        }
+        private static string GetBorder() => @"Data\Game\Border\Red-border.png";
 
         private static async Task<Stream> GetAvatarAsync(IUser user)
         {
@@ -634,9 +628,6 @@ namespace Hanekawa.Services.Games.ShipGame
             return stream;
         }
 
-        private static string UpdateCombatLog(IEnumerable<string> log)
-        {
-            return string.Join("\n", log);
-        }
+        private static string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);
     }
 }

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Services.Drop
@@ -43,8 +41,8 @@ namespace Hanekawa.Services.Drop
             var result = new List<Emote>();
             foreach (var x in _client.GetGuild(123123).Emotes)
             {
-                if(result.Count >= 3) continue;
-                if(result.Contains(x)) continue;
+                if (result.Count >= 3) continue;
+                if (result.Contains(x)) continue;
                 result.Add(x);
             }
 
@@ -67,6 +65,6 @@ namespace Hanekawa.Services.Drop
         {
             Emote.TryParse("<:realsip:429809346222882836>", out var real);
             return real;
-        } 
+        }
     }
 }

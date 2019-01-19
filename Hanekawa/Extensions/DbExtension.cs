@@ -1,6 +1,4 @@
-﻿
-
-/*
+﻿/*
 namespace Hanekawa.Extensions
 {
     static class DbExtensionDepricated
@@ -324,3 +322,4 @@ namespace Hanekawa.Extensions
     }
 }
 */
+

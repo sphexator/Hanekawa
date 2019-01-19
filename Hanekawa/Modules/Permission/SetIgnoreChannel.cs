@@ -6,7 +6,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Microsoft.EntityFrameworkCore;
@@ -22,10 +21,7 @@ namespace Hanekawa.Modules.Permission
     {
         private readonly RequiredChannel _requiredChannel;
 
-        public SetIgnoreChannel(RequiredChannel requiredChannel)
-        {
-            _requiredChannel = requiredChannel;
-        }
+        public SetIgnoreChannel(RequiredChannel requiredChannel) => _requiredChannel = requiredChannel;
 
         [Command("add", RunMode = RunMode.Async)]
         public async Task AddIgnoreChannel(ITextChannel channel = null)
@@ -37,21 +33,18 @@ namespace Hanekawa.Modules.Permission
                 var result = await _requiredChannel.AddChannel(channel);
                 if (!result)
                 {
-                    await Context.ReplyAsync($"Couldn't add {channel?.Mention} to the list. Its either already added or doesn't exist.",
+                    await Context.ReplyAsync(
+                        $"Couldn't add {channel?.Mention} to the list. Its either already added or doesn't exist.",
                         Color.Red.RawValue);
                     return;
                 }
 
                 if (cfg.IgnoreAllChannels)
-                {
                     await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
                                              $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue);
-                }
                 else
-                {
                     await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
                                              $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue);
-                }
             }
         }
 
@@ -65,20 +58,18 @@ namespace Hanekawa.Modules.Permission
                 var result = await _requiredChannel.RemoveChannel(channel);
                 if (!result)
                 {
-                    await Context.ReplyAsync($"Couldn't remove {channel.Mention} from the list. Its either already not added or doesn't exist.",
+                    await Context.ReplyAsync(
+                        $"Couldn't remove {channel.Mention} from the list. Its either already not added or doesn't exist.",
                         Color.Red.RawValue);
                     return;
                 }
+
                 if (cfg.IgnoreAllChannels)
-                {
                     await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
                                              $"Commands are now disabled in {channel?.Mention}", Color.Green.RawValue);
-                }
                 else
-                {
                     await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
                                              $"Commands are now enabled in {channel?.Mention}", Color.Green.RawValue);
-                }
             }
         }
 
@@ -109,11 +100,12 @@ namespace Hanekawa.Modules.Permission
                 {
                     content = "Commands are usable in every channel";
                 }
+
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
                 var embed = new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = Context.Guild.IconUrl, Name = title });
+                    .WithAuthor(new EmbedAuthorBuilder {IconUrl = Context.Guild.IconUrl, Name = title});
                 await Context.ReplyAsync(embed);
             }
         }
@@ -132,7 +124,8 @@ namespace Hanekawa.Modules.Permission
                 else
                 {
                     cfg.IgnoreAllChannels = true;
-                    await Context.ReplyAsync("Commands are now usable in all channels beside those in the ignore list.");
+                    await Context.ReplyAsync(
+                        "Commands are now usable in all channels beside those in the ignore list.");
                 }
 
                 await db.SaveChangesAsync();

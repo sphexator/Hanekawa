@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.Giveaway
@@ -31,7 +30,8 @@ namespace Hanekawa.Modules.Giveaway
             var reactionAmount = GetReactionAmount(message, emote);
             var users = await message.GetReactionUsersAsync(emote, reactionAmount).FlattenAsync();
             if (users == null)
-                await Context.ReplyAsync("Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
+                await Context.ReplyAsync(
+                    "Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
                     Color.Red.RawValue);
             var rnd = new Random();
             var result = users.OrderBy(item => rnd.Next());

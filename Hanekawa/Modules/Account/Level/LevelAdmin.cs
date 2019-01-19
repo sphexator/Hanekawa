@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -10,22 +13,20 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Level;
 using Hanekawa.Services.Level.Util;
-using Microsoft.EntityFrameworkCore;
-using Quartz.Util;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Services.Logging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Account.Level
 {
     [Group("level")]
     public class LevelAdmin : InteractiveBase
     {
-        private readonly LevelingService _levelingService;
         private readonly Calculate _calculate;
+        private readonly LevelingService _levelingService;
         private readonly LogService _log;
+
         public LevelAdmin(LevelingService levelingService, Calculate calculate, LogService log)
         {
             _levelingService = levelingService;
@@ -40,10 +41,7 @@ namespace Hanekawa.Modules.Account.Level
         {
             if (level <= 0) return;
             var totalExp = 0;
-            for (var i = 1; i < level + 1; i++)
-            {
-                totalExp += _calculate.GetServerLevelRequirement(i);
-            }
+            for (var i = 1; i < level + 1; i++) totalExp += _calculate.GetServerLevelRequirement(i);
 
             using (var db = new DbService())
             {
@@ -117,7 +115,8 @@ namespace Hanekawa.Modules.Account.Level
                 };
                 await db.LevelRewards.AddAsync(data);
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Successfully created and added {role.Name} as a level reward for level{level}!",
+                await Context.ReplyAsync(
+                    $"Successfully created and added {role.Name} as a level reward for level{level}!",
                     Color.Green.RawValue);
             }
         }
@@ -130,12 +129,14 @@ namespace Hanekawa.Modules.Account.Level
         {
             using (var db = new DbService())
             {
-                var role = await db.LevelRewards.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Level == level);
+                var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.Level == level);
                 if (role == null)
                 {
                     await Context.ReplyAsync("Couldn't find a role with that level", Color.Red.RawValue);
                     return;
                 }
+
                 db.LevelRewards.Remove(role);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -159,28 +160,28 @@ namespace Hanekawa.Modules.Account.Level
                     await Context.ReplyAsync("No level roles added.");
                     return;
                 }
+
                 var pages = new List<string>();
                 foreach (var x in levels)
-                {
                     try
                     {
-                        var role = Context.Guild.GetRole(x.Role) ?? Context.Guild.Roles.FirstOrDefault(z => z.Id == x.Role);
-                        if(role == null) pages.Add("Role not found");
+                        var role = Context.Guild.GetRole(x.Role) ??
+                                   Context.Guild.Roles.FirstOrDefault(z => z.Id == x.Role);
+                        if (role == null) pages.Add("Role not found");
                         else
-                        {
                             pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
                                       $"Level: {x.Level}\n" +
                                       $"Stack: {x.Stackable}\n" +
                                       "\n");
-                        }
                     }
                     catch (Exception e)
                     {
                         pages.Add("Role not found\n");
                         _log.LogAction(LogLevel.Error, e.ToString(), "LevelAdmin");
                     }
-                }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level roles for {Context.Guild.Name}"));
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Level roles for {Context.Guild.Name}"));
             }
         }
 

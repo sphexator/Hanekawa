@@ -1,9 +1,8 @@
-﻿using Discord;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+﻿using System.Text.RegularExpressions;
+using Discord;
+using Discord.WebSocket;
 using Hanekawa.Entities.Interfaces;
 using Quartz.Util;
-using System.Text.RegularExpressions;
-using Discord.WebSocket;
 
 namespace Hanekawa.Services.Welcome
 {

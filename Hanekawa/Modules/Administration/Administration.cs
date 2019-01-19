@@ -252,7 +252,8 @@ namespace Hanekawa.Modules.Administration
             var msgs = (await Context.Channel.GetMessagesAsync().FlattenAsync()).Where(m => m.Author.Id == user.Id)
                 .Take(100).ToList();
             await _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Warning, msgs);
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault($"Warned {user.Mention}", Context.Guild.Id).Build());
+            await ReplyAndDeleteAsync(null, false,
+                new EmbedBuilder().CreateDefault($"Warned {user.Mention}", Context.Guild.Id).Build());
         }
 
         [Command("warnlog", RunMode = RunMode.Async)]
@@ -269,7 +270,8 @@ namespace Hanekawa.Modules.Administration
             else
             {
                 var pages = await _warnService.GetFullWarnlogAsync(user);
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, user, $"Full warn log for {user.Username}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, user,
+                    $"Full warn log for {user.Username}"));
             }
         }
 
@@ -289,7 +291,8 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Toxicity values in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Toxicity values in {Context.Guild.Name}"));
                 return;
             }
 
@@ -326,10 +329,12 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages, Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
-                {
-                    IconUrl = user.GetAvatar(), Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
-                }));
+                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages, Context.Guild.Id).WithAuthor(
+                    new EmbedAuthorBuilder
+                    {
+                        IconUrl = user.GetAvatar(),
+                        Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
+                    }));
             }
         }
 
@@ -347,11 +352,14 @@ namespace Hanekawa.Modules.Administration
                 var updMsg = await Context.Channel.GetMessageAsync(actionCase.MessageId) as IUserMessage;
                 if (updMsg == null)
                 {
-                    await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.", timeout: TimeSpan.FromSeconds(5));
+                    await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
+                        timeout: TimeSpan.FromSeconds(5));
                     var delay = Task.Delay(5000);
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild).ConfigureAwait(false);
                     await Task.WhenAll(delay);
-                    if(cfg.LogBan.HasValue) updMsg = await Context.Guild.GetTextChannel(cfg.LogBan.Value).GetMessageAsync(actionCase.MessageId) as IUserMessage;
+                    if (cfg.LogBan.HasValue)
+                        updMsg = await Context.Guild.GetTextChannel(cfg.LogBan.Value)
+                            .GetMessageAsync(actionCase.MessageId) as IUserMessage;
                 }
 
                 if (updMsg == null)
@@ -359,6 +367,7 @@ namespace Hanekawa.Modules.Administration
                     await ReplyAndDeleteAsync("Something went wrong, aborting.", timeout: TimeSpan.FromSeconds(10));
                     return;
                 }
+
                 var embed = updMsg.Embeds.FirstOrDefault().ToEmbedBuilder();
                 if (embed == null)
                 {

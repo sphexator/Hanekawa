@@ -1,14 +1,14 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Services.Welcome
@@ -16,8 +16,8 @@ namespace Hanekawa.Services.Welcome
     public class WelcomeService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
-        private readonly WelcomeMessage _message;
         private readonly ImageGenerator _image;
+        private readonly WelcomeMessage _message;
 
         public WelcomeService(DiscordSocketClient discord, WelcomeMessage message, ImageGenerator image)
         {
@@ -34,6 +34,7 @@ namespace Hanekawa.Services.Welcome
                 foreach (var x in db.GuildConfigs)
                     DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
             }
+
             Console.WriteLine("Welcome service loaded");
         }
 
@@ -108,8 +109,13 @@ namespace Hanekawa.Services.Welcome
             if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.WelcomeDelete.HasValue)
             {
                 await Task.Delay(cfg.WelcomeDelete.Value);
-                try { await msg.DeleteAsync(); }
-                catch { /* IGNORE */ }
+                try
+                {
+                    await msg.DeleteAsync();
+                }
+                catch
+                { /* IGNORE */
+                }
             }
         }
 

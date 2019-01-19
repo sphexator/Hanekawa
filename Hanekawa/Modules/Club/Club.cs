@@ -9,7 +9,6 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Club;
@@ -23,10 +22,8 @@ namespace Hanekawa.Modules.Club
     public class Club : InteractiveBase
     {
         private readonly ClubService _clubService;
-        public Club(ClubService clubService)
-        {
-            _clubService = clubService;
-        }
+
+        public Club(ClubService clubService) => _clubService = clubService;
 
         [Command("create", RunMode = RunMode.Async)]
         [Summary("Creates a club")]
@@ -78,8 +75,8 @@ namespace Hanekawa.Modules.Club
             using (var db = new DbService())
             {
                 var clubUser =
-    await db.ClubPlayers.FirstOrDefaultAsync(x =>
-        x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.Rank <= 2);
+                    await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.Rank <= 2);
                 if (clubUser == null) return;
                 if (clubUser.Rank > 2)
                 {
@@ -225,7 +222,8 @@ namespace Hanekawa.Modules.Club
 
                 db.ClubPlayers.Remove(club);
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
+                await Context.ReplyAsync(
+                    $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
                     Color.Green.RawValue);
             }
         }
@@ -401,7 +399,8 @@ namespace Hanekawa.Modules.Club
                               $"Leader {leader}\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Clubs in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Clubs in {Context.Guild.Name}"));
             }
         }
 
@@ -616,7 +615,6 @@ namespace Hanekawa.Modules.Club
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Club category channel set has been been set to {category.Name}",
                         Color.Green.RawValue);
-
                 }
             }
         }

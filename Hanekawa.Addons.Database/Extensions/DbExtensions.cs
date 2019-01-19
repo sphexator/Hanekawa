@@ -1,7 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database.Data;
-using Hanekawa.Addons.Database.Tables;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
@@ -9,8 +10,6 @@ using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -19,10 +18,7 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
             var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
-            if (userdata != null)
-            {
-                return userdata;
-            }
+            if (userdata != null) return userdata;
 
             var data = new EventPayout
             {
@@ -56,7 +52,8 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, IGuildUser user) =>
             await GetOrCreateGlobalUser(context, user.Id);
 
-        public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketGuildUser user) =>
+        public static async Task<AccountGlobal>
+            GetOrCreateGlobalUserData(this DbService context, SocketGuildUser user) =>
             await GetOrCreateGlobalUser(context, user.Id);
 
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketUser user) =>
@@ -65,7 +62,8 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
             await GetOrCreateConfigAsync(context, guild.Id);
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, SocketGuildUser user) =>
+        public static async Task<GuildConfig>
+            GetOrCreateGuildConfigAsync(this DbService context, SocketGuildUser user) =>
             await GetOrCreateConfigAsync(context, user.Guild.Id);
 
         public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, SocketGuild guild) =>
@@ -92,6 +90,7 @@ namespace Hanekawa.Addons.Database.Extensions
                 await context.SaveChangesAsync();
                 return;
             }
+
             var data = new Inventory
             {
                 GuildId = user.GuildId,
@@ -112,6 +111,7 @@ namespace Hanekawa.Addons.Database.Extensions
                 await context.SaveChangesAsync();
                 return;
             }
+
             var data = new InventoryGlobal
             {
                 UserId = user.Id,
@@ -176,16 +176,16 @@ namespace Hanekawa.Addons.Database.Extensions
                     x.GuildId == guild && x.Leader == user);
                 return leader;
             }
-            catch { return null; }
+            catch
+            {
+                return null;
+            }
         }
 
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id);
-            if (check != null)
-            {
-                return check;
-            }
+            if (check != null) return check;
 
             var data = new Board
             {
@@ -206,13 +206,9 @@ namespace Hanekawa.Addons.Database.Extensions
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
             int nr;
             if (counter == 0)
-            {
                 nr = 1;
-            }
             else
-            {
                 nr = counter + 1;
-            }
 
             var data = new Suggestion
             {
@@ -233,13 +229,9 @@ namespace Hanekawa.Addons.Database.Extensions
             var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id);
             int nr;
             if (counter == 0)
-            {
                 nr = 1;
-            }
             else
-            {
                 nr = counter + 1;
-            }
 
             var data = new QuestionAndAnswer
             {
@@ -260,13 +252,9 @@ namespace Hanekawa.Addons.Database.Extensions
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id);
             int nr;
             if (counter == 0)
-            {
                 nr = 1;
-            }
             else
-            {
                 nr = counter + 1;
-            }
 
             var data = new Report
             {
@@ -281,7 +269,8 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.Reports.FirstOrDefaultAsync(x => x.Date == time);
         }
 
-        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user, int type)
+        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, IGuildUser user,
+            int type)
         {
             var check = await context.AchievementTrackers.FindAsync(type, user.Id);
             if (check != null) return check;
@@ -296,7 +285,8 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.AchievementTrackers.FindAsync(type, user.Id);
         }
 
-        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, ulong userId, int type)
+        public static async Task<AchievementTracker> GetAchievementProgress(this DbService context, ulong userId,
+            int type)
         {
             var check = await context.AchievementTrackers.FindAsync(type, userId);
             if (check != null) return check;
@@ -326,7 +316,7 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var userdata = await context.AccountGlobals.FindAsync(userId);
             if (userdata != null) return userdata;
-            
+
             var data = new AccountGlobal().DefaultAccountGlobal(userId);
             await context.AccountGlobals.AddAsync(data);
             await context.SaveChangesAsync();

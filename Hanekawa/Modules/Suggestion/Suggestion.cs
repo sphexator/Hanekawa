@@ -27,13 +27,24 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                try { await Context.Message.DeleteAsync(); } catch { /* IGNORE */ }
+                try
+                {
+                    await Context.Message.DeleteAsync();
+                }
+                catch
+                { /* IGNORE */
+                }
+
                 var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                 if (!cfg.SuggestionChannel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
                 var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
-                    .WithFooter(new EmbedFooterBuilder { Text = $"Suggestion ID: {caseId.Id}" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                    {
+                        IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
+                        Name = (Context.User as SocketGuildUser).GetName()
+                    })
+                    .WithFooter(new EmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"})
                     .WithTimestamp(DateTimeOffset.UtcNow);
                 if (Context.Message.Attachments.Count > 0) embed.WithImageUrl(Context.Message.Attachments.First().Url);
                 var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).ReplyAsync(embed);
@@ -241,10 +252,8 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
-        private static string ParseEmoteString(Emote emote)
-        {
-            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
-        }
+        private static string ParseEmoteString(Emote emote) =>
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
 
         private static async Task SetEmotesAsync(IUserMessage msg, GuildConfig cfg)
         {

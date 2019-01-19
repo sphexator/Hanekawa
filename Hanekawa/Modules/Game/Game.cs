@@ -8,7 +8,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Games.ShipGame;
@@ -20,10 +19,7 @@ namespace Hanekawa.Modules.Game
     {
         private readonly ShipGameService _gameService;
 
-        public Game(ShipGameService gameService)
-        {
-            _gameService = gameService;
-        }
+        public Game(ShipGameService gameService) => _gameService = gameService;
 
         [Command("search", RunMode = RunMode.Async)]
         [Summary("Searches for a monster to fight")]
@@ -114,7 +110,7 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int)userdata.Level)
+                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= userdata.Level)
                     .ToListAsync();
                 var result = new List<string>
                 {
@@ -166,7 +162,7 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var classes = await db.GameClasses.ToListAsync();
-                var result = new List<string> { "Classes" };
+                var result = new List<string> {"Classes"};
                 foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
                 var content = string.Join("\n", result);
                 await Context.ReplyAsync(content);

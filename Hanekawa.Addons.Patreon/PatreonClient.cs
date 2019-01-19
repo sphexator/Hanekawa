@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -14,13 +13,15 @@ namespace Hanekawa.Addons.Patreon
 {
     public class PatreonClient : IDisposable
     {
-        private readonly string _token;
         private const string BaseUrl = "https://www.patreon.com/api/oauth2/api/";
+        private readonly string _token;
+
+        public PatreonClient(string token) => _token = token;
+
         private string CampaignId { get; set; }
 
-        public PatreonClient(string token)
+        public void Dispose()
         {
-            _token = token;
         }
 
         public async Task InitializeAsync()
@@ -76,11 +77,10 @@ namespace Hanekawa.Addons.Patreon
                     var deserialize = JsonConvert.DeserializeObject<PledgeResponse>(data);
                     result.Add(deserialize);
                     if (deserialize.links.next != null)
-                    {
                         url = deserialize.links.next;
-                    }
                     else paginate = false;
                 }
+
                 var parse = ToReadAble(result);
                 return parse;
             }
@@ -90,7 +90,6 @@ namespace Hanekawa.Addons.Patreon
         {
             var result = new List<PledgeReturn>();
             foreach (var x in response)
-            {
                 for (var i = 0; i < x.data.Length; i++)
                 {
                     var pledge = x.data[i];
@@ -98,10 +97,14 @@ namespace Hanekawa.Addons.Patreon
                     ulong dResult;
                     try
                     {
-                        if (user.attributes.social_connections.discord.user_id == null) dResult = 0;
+                        if (user.attributes.social_connections.discord.user_id == null)
+                        {
+                            dResult = 0;
+                        }
                         else
                         {
-                            var discordId = ulong.TryParse(user.attributes.social_connections.discord.user_id, out dResult);
+                            var discordId = ulong.TryParse(user.attributes.social_connections.discord.user_id,
+                                out dResult);
                             if (!discordId) dResult = 0;
                         }
                     }
@@ -129,18 +132,12 @@ namespace Hanekawa.Addons.Patreon
                             FullName = user.attributes.full_name,
                             IsEmailVerified = user.attributes.is_email_verified,
                             Url = user.attributes.url,
-                            Vanity = user.attributes.vanity,
+                            Vanity = user.attributes.vanity
                         }
                     });
                 }
-            }
 
             return result;
-        }
-
-        public void Dispose()
-        {
-
         }
     }
 }

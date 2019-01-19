@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
@@ -8,9 +11,6 @@ using Hanekawa.Entities.Interfaces;
 using Hanekawa.Services.Drop;
 using Hanekawa.Services.Games.ShipGame;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Achievement
 {
@@ -212,7 +212,7 @@ namespace Hanekawa.Services.Achievement
                 }
                 else
                 {
-                    var belowAchieves = achievements.Where(x => x.Requirement < (int) userData.Level).ToList();
+                    var belowAchieves = achievements.Where(x => x.Requirement < userData.Level).ToList();
                     if (belowAchieves.Count > 0)
                     {
                         var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();

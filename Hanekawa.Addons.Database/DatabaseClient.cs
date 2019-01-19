@@ -2,10 +2,7 @@
 {
     public class DatabaseClient
     {
-        public DatabaseClient(string connectionString)
-        {
-            Config.ConnectionString = connectionString;
-        }
+        public DatabaseClient(string connectionString) => Config.ConnectionString = connectionString;
     }
 
     internal static class Config

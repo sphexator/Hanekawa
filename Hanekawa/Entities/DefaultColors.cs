@@ -30,10 +30,10 @@ namespace Hanekawa.Entities
 
         public Color GetColor(string hex)
         {
-            if(hex.Contains("#")) hex = hex.Replace("#", "");
+            if (hex.Contains("#")) hex = hex.Replace("#", "");
             hex = hex.Insert(0, "0x");
             var hexToInt = Convert.ToInt32(hex, 16);
-            return new Color((uint)hexToInt);
+            return new Color((uint) hexToInt);
         }
 
         public Color GetColor(Colors type)

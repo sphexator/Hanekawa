@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Hanekawa.Addons.Database.Tables.Achievement
+﻿namespace Hanekawa.Addons.Database.Tables.Achievement
 {
     public class AchievementUnlock
     {

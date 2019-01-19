@@ -43,11 +43,10 @@ namespace Hanekawa.Addons.AnimeSimulCast
         private async Task MainAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
-            {
                 try
                 {
                     var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-                    if (LastItem == null)  UpdatePoll(feed);
+                    if (LastItem == null) UpdatePoll(feed);
                     if (LastItem != null && feed?.Id != LastItem.Id)
                     {
                         UpdatePoll(feed);
@@ -60,7 +59,6 @@ namespace Hanekawa.Addons.AnimeSimulCast
                 {
                     await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
                 }
-            }
         }
 
         private static AnimeData ToReturnType(SyndicationItem collection)

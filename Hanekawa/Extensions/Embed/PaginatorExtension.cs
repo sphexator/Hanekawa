@@ -1,32 +1,40 @@
-﻿using Discord;
-using Discord.Addons.Interactive;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
+using Discord;
+using Discord.Addons.Interactive;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class PaginatorExtension
     {
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild, string name) =>
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild,
+            string name) =>
             PaginatedMessageBuilder(pages, guildId, guild.IconUrl, name);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuildUser user, string name) =>
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuildUser user,
+            string name) =>
             PaginatedMessageBuilder(pages, guildId, user.GetAvatar(), name);
 
         public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, string name) =>
             PaginatedMessageBuilder(pages, guildId, null, name);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild, string name, int count) =>
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild,
+            string name, int count) =>
             PaginatedMessageBuilder(pages, guildId, guild.IconUrl, name, count);
 
 
-        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId, string icon,
-            string name) => new PaginatedMessage().Builder(pages, guildId, icon, name, 5);
+        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId,
+            string icon,
+            string name) =>
+            new PaginatedMessage().Builder(pages, guildId, icon, name, 5);
 
-        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId, string icon,
-            string name, int count) => new PaginatedMessage().Builder(pages, guildId, icon, name, count);
+        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId,
+            string icon,
+            string name, int count) =>
+            new PaginatedMessage().Builder(pages, guildId, icon, name, count);
 
-        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages, ulong guildId, string icon, string name, int count)
+        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages,
+            ulong guildId, string icon, string name, int count)
         {
             paginated.Color = new Color().GetDefaultColor(guildId);
             paginated.Pages = PageBuilder(pages, count);

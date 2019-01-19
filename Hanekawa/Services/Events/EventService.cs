@@ -21,10 +21,7 @@ namespace Hanekawa.Services.Events
             Console.WriteLine("Event service loaded");
         }
 
-        public Task Execute(IJobExecutionContext context)
-        {
-            return EventSchedulerAsync();
-        }
+        public Task Execute(IJobExecutionContext context) => EventSchedulerAsync();
 
         public async Task Execute()
         {
@@ -33,31 +30,30 @@ namespace Hanekawa.Services.Events
 
         public async Task<bool> TryAddEventAsync(string name, IGuildUser user, DateTime time, DbService db)
         {
-                var check = await db.EventSchedules.FindAsync(
-                    await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
-                    user.Guild.Id);
-                if (check != null) return false;
-                var data = new EventSchedule
-                {
-                    Id = await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
-                    GuildId = user.Guild.Id,
-                    Host = user.Id,
-                    Time = time,
-                    Name = name
-                };
-                await db.EventSchedules.AddAsync(data);
-                await db.SaveChangesAsync();
-                return true;
+            var check = await db.EventSchedules.FindAsync(
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
+                user.Guild.Id);
+            if (check != null) return false;
+            var data = new EventSchedule
+            {
+                Id = await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
+                GuildId = user.Guild.Id,
+                Host = user.Id,
+                Time = time,
+                Name = name
+            };
+            await db.EventSchedules.AddAsync(data);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> TryRemoveEventAsync(int id, IGuild guild, DbService db)
         {
-
-                var eventData = await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == id);
-                if (eventData == null) return false;
-                db.EventSchedules.Remove(eventData);
-                await db.SaveChangesAsync();
-                return true;
+            var eventData = await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == id);
+            if (eventData == null) return false;
+            db.EventSchedules.Remove(eventData);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         private async Task EventSchedulerAsync()
@@ -127,7 +123,7 @@ namespace Hanekawa.Services.Events
                 default:
                     result = Color.Purple;
                     break;
-           }
+            }
 
             return result;
         }

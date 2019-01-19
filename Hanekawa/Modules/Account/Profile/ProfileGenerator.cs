@@ -54,7 +54,8 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter().GetResult());
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter()
+                        .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achieveIcons));
                 img.Save(stream, new PngEncoder());
             }
@@ -85,7 +86,8 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter().GetResult());
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter()
+                        .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
             }
@@ -177,10 +179,7 @@ namespace Hanekawa.Modules.Account.Profile
             }
 
             var result = new List<Image<Rgba32>>();
-            foreach (var x in achievements)
-            {
-                result.Add(x.Value);
-            }
+            foreach (var x in achievements) result.Add(x.Value);
             return result;
         }
 

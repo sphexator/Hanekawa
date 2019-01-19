@@ -7,7 +7,6 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Events;
@@ -53,6 +52,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("No events scheduled");
                     return;
                 }
+
                 var pages = new List<string>();
                 foreach (var x in events)
                 {
@@ -67,7 +67,9 @@ namespace Hanekawa.Modules.Events
                               $"Image: {image}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Events in {Context.Guild.Name}"));
             }
         }
 
@@ -85,6 +87,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("No events scheduled");
                     return;
                 }
+
                 var pages = new List<string>();
                 foreach (var x in events)
                 {
@@ -93,7 +96,9 @@ namespace Hanekawa.Modules.Events
                               $"Date: {x.Time}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Events in {Context.Guild.Name}"));
             }
         }
 
@@ -155,7 +160,8 @@ namespace Hanekawa.Modules.Events
                 if (expEvent == null)
                     await Context.ReplyAsync("There's currently no event active.");
                 else
-                    await Context.ReplyAsync($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}");
+                    await Context.ReplyAsync(
+                        $"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}");
             }
         }
 
@@ -269,7 +275,7 @@ namespace Hanekawa.Modules.Events
                         await Context.ReplyAsync(
                             $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!");
                         if (cfg.DesignChannel.HasValue)
-                            await (Context.Guild.GetTextChannel(cfg.DesignChannel.Value)).ReplyAsync(embed,
+                            await Context.Guild.GetTextChannel(cfg.DesignChannel.Value).ReplyAsync(embed,
                                 $"New event added\nClaim to make a banner for this with `!event claim {id}`");
                         await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                     }
@@ -294,6 +300,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("Couldn't find a event with given ID.");
                     return;
                 }
+
                 var embed = new EmbedBuilder().CreateDefault(eventInfo.Description, Context.Guild.Id)
                     .WithImageUrl(eventInfo.ImageUrl)
                     .WithTitle(eventInfo.Name)

@@ -1,20 +1,20 @@
 ﻿namespace Hanekawa.Addons.Perspective.Models
 {
-    public class AnalyzeCommentRequest
+    internal class AnalyzeCommentRequest
     {
-#pragma warning disable IDE1006 // Naming Styles
-        public Comment comment { get; }
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning disable IDE1006 // Naming Styles
-        public RequestedAttributes requestedAttributes { get; }
-#pragma warning restore IDE1006 // Naming Styles
-        public bool doNotStore;
+        private bool _doNotStore;
 
-        public AnalyzeCommentRequest(string msg)
+        internal AnalyzeCommentRequest(string msg)
         {
             comment = new Comment(msg);
             requestedAttributes = new RequestedAttributes();
-            doNotStore = true;
+            _doNotStore = true;
         }
+#pragma warning disable IDE1006 // Naming Styles
+        private Comment comment { get; }
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning disable IDE1006 // Naming Styles
+        private RequestedAttributes requestedAttributes { get; }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

@@ -15,12 +15,10 @@ namespace Hanekawa.TypeReaders
         };
 
         public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input,
-            IServiceProvider services)
-        {
-            return DateTime.TryParseExact(input.ToLowerInvariant(), Formats, CultureInfo.InvariantCulture,
+            IServiceProvider services) =>
+            DateTime.TryParseExact(input.ToLowerInvariant(), Formats, CultureInfo.InvariantCulture,
                 DateTimeStyles.AdjustToUniversal, out var dateTime)
                 ? Task.FromResult(TypeReaderResult.FromSuccess(dateTime))
                 : Task.FromResult(TypeReaderResult.FromError(CommandError.ParseFailed, "Failed to parse TimeSpan"));
-        }
     }
 }

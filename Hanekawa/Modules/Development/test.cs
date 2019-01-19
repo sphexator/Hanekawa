@@ -1,12 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Addons.Patreon;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Services.Patreon;
@@ -55,10 +53,8 @@ namespace Hanekawa.Modules.Development
             }
         }
 
-        private string ParseEmoteString(Emote emote)
-        {
-            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
-        }
+        private string ParseEmoteString(Emote emote) =>
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<{emote.Name}:{emote.Id}>";
 
         [Command("patreon")]
         [RequireOwner]

@@ -47,7 +47,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement((int)userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }
@@ -72,7 +72,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, (uint)_calculate.GetServerLevelRequirement((int)userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }

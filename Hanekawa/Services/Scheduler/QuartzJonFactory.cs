@@ -13,10 +13,7 @@ namespace Hanekawa.Services.Scheduler
     {
         private readonly IServiceProvider _services;
 
-        public QuartzJonFactory(IServiceProvider services)
-        {
-            _services = services;
-        }
+        public QuartzJonFactory(IServiceProvider services) => _services = services;
 
         public IJob NewJob(TriggerFiredBundle bundle, IScheduler scheduler)
         {
