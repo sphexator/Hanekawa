@@ -47,10 +47,10 @@ namespace Hanekawa.Services.Level
                 {
                     if (x.Category)
                     {
-                        var cateogries = _serverCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
-                        cateogries.Add(x.ChannelId);
+                        var categories = _serverCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        categories.Add(x.ChannelId);
                         _serverCategoryReduction.AddOrUpdate(x.GuildId, new List<ulong>(),
-                            (arg1, list) => cateogries);
+                            (arg1, list) => categories);
                     }
 
                     if (x.Channel)

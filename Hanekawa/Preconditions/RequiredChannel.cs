@@ -47,17 +47,11 @@ namespace Hanekawa.Preconditions
             }
         }
 
-        public void UpdateIgnoreAll(ulong guildId, bool result)
-        {
-            IgnoreAll.AddOrUpdate(guildId, result, (arg1, b) => result);
-        }
-
         private async Task<bool> UpdateIgnoreAllStatus(ICommandContext context)
         {
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild as SocketGuild);
-                IgnoreAll.TryAdd(context.Guild.Id, cfg.IgnoreAllChannels); 
                 return cfg.IgnoreAllChannels;
             }
         }
