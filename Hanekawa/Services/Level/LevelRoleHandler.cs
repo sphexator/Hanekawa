@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -13,11 +15,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Services.Level
 {
-    public class LevelRoleHandler : IHanaService
+    public class LevelRoleHandler : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
+        public LevelRoleHandler(DiscordSocketClient client)
+        {
+            _client = client;
 
-        public LevelRoleHandler(DiscordSocketClient client) => _client = client;
+            _client.UserJoined += GiveRolesBackAsync;
+        }
 
         public async Task NewLevelManagerAsync(DbService db, Account userdata, IGuildUser user)
         {
@@ -35,7 +41,7 @@ namespace Hanekawa.Services.Level
             await user.TryAddRoleAsync(role);
         }
 
-        public async Task GiveRolesBackAsync(SocketGuildUser user)
+        private async Task GiveRolesBackAsync(SocketGuildUser user)
         {
             using (var db = new DbService())
             {

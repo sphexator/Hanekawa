@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -13,20 +8,26 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Level.Util;
+using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account
 {
     public class Account : InteractiveBase
     {
-        private readonly Calculate _calculate;
+        private readonly LevelGenerator _levelGenerator;
         private readonly ProfileGenerator _profileBuilder;
 
-        public Account(Calculate calculate, ProfileGenerator profileBuilder)
+        public Account(LevelGenerator levelGenerator, ProfileGenerator profileBuilder)
         {
-            _calculate = calculate;
+            _levelGenerator = levelGenerator;
             _profileBuilder = profileBuilder;
         }
 
@@ -50,7 +51,7 @@ namespace Hanekawa.Modules.Account
                 var globalUserRank = db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
 
                 await Task.WhenAll(rank, total, globalRank, globalUserRank);
-                var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
+                var nxtLevel = _levelGenerator.GetServerLevelRequirement(userdata.Level);
                 await Context.ReplyAsync(new EmbedBuilder()
                     .CreateDefault(Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {Name = user.GetName()})

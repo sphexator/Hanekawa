@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -9,6 +7,8 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Level;
 using Humanizer;
+using System;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account.Level
 {
@@ -16,18 +16,15 @@ namespace Hanekawa.Modules.Account.Level
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Experience : InteractiveBase
     {
-        private readonly ExpEvent _expEvent;
-        private readonly LevelData _levelData;
-        private readonly LevelHandler _levelHandler;
-        private readonly LevelingService _levelingService;
+        private readonly ExpEventHandler _expEvent;
+        private readonly ExperienceHandler _experienceHandler;
+        private readonly LevelService _levelService;
 
-        public Experience(LevelingService levelingService, LevelData levelData, ExpEvent expEvent,
-            LevelHandler levelHandler)
+        public Experience(ExpEventHandler expEvent, ExperienceHandler experienceHandler, LevelService levelService)
         {
-            _levelingService = levelingService;
-            _levelData = levelData;
             _expEvent = expEvent;
-            _levelHandler = levelHandler;
+            _experienceHandler = experienceHandler;
+            _levelService = levelService;
         }
 
         [Command("give")]
@@ -49,39 +46,39 @@ namespace Hanekawa.Modules.Account.Level
         [Priority(1)]
         [Summary("Adds a channel from reduced exp pool with provided channel")]
         public async Task AddReducedExpChannel([Remainder] ITextChannel channel) =>
-            await Context.ReplyAsync(await _levelData.ReducedExpManager(channel, false));
+            await Context.ReplyAsync(await _levelService.ReducedExpManager(channel, false));
 
         [Command("ignore add", RunMode = RunMode.Async)]
         [Alias("iadd")]
         [Priority(2)]
         [Summary("Adds a channel from reduced exp pool with provided channel")]
         public async Task AddReducedExpChannel([Remainder] ICategoryChannel category) =>
-            await Context.ReplyAsync(await _levelData.ReducedExpManager(category, false));
+            await Context.ReplyAsync(await _levelService.ReducedExpManager(category, false));
 
         [Command("ignore remove")]
         [Alias("remove")]
         [Summary("Removes a channel from reduced exp pool with provided channel")]
         public async Task RemoveReducedExpChannel([Remainder] ICategoryChannel category) =>
-            await Context.ReplyAsync(await _levelData.ReducedExpManager(category, true));
+            await Context.ReplyAsync(await _levelService.ReducedExpManager(category, true));
 
         [Command("ignore remove")]
         [Alias("remove")]
         [Summary("Removes a channel from reduced exp pool with provided channel")]
         public async Task RemoveReducedExpChannel([Remainder] ITextChannel channel) =>
-            await Context.ReplyAsync(await _levelData.ReducedExpManager(channel, true));
+            await Context.ReplyAsync(await _levelService.ReducedExpManager(channel, true));
 
         [Command("ignore list")]
         [Alias("list")]
         [Summary("List of channels and categories that got reduced exp enabled")]
         public async Task ListReducedExpChannels() =>
-            await PagedReplyAsync((await _levelData.ReducedExpList(Context.Guild))
+            await PagedReplyAsync((await _levelService.ReducedExpList(Context.Guild))
                 .PaginateBuilder(Context.Guild.Id, Context.Guild, "Reduced Exp channel list"));
 
         [Command("multiplier")]
         [Alias("multi")]
         [Summary("Gets the current level multiplier")]
         public async Task LevelMultiplier() =>
-            await Context.ReplyAsync($"Current server multiplier: x{_levelHandler.GetMultiplier(Context.Guild.Id)}");
+            await Context.ReplyAsync($"Current server multiplier: x{_experienceHandler.GetMultiplier(Context.Guild.Id)}");
 
         [Command("event", RunMode = RunMode.Async)]
         [Summary(

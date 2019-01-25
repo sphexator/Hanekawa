@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Hanekawa.Entities.Interfaces;
-using Hanekawa.Events;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Hanekawa.Services.Level;
 
 namespace Hanekawa.Services.Drop
@@ -14,22 +13,19 @@ namespace Hanekawa.Services.Drop
         private readonly DiscordSocketClient _client;
         private readonly DropData _data;
         private readonly DropEmote _emote;
-        private readonly LevelHandler _level;
         private readonly Random _random;
+        private readonly ExperienceHandler _experience;
 
-        public DropService(DiscordSocketClient client, Random random, DropData data, DropEmote emote,
-            LevelHandler level)
+        public DropService(DiscordSocketClient client, Random random, DropData data, DropEmote emote, ExperienceHandler experience)
         {
             _client = client;
             _random = random;
             _data = data;
             _emote = emote;
-            _level = level;
+            _experience = experience;
             _client.MessageReceived += CrateTriggerAsync;
             _client.ReactionAdded += CrateClaimerAsync;
         }
-
-        public event AsyncEvent<SocketGuildUser> DropClaimed;
 
         private Task CrateClaimerAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
             SocketReaction rct)
@@ -95,26 +91,24 @@ namespace Hanekawa.Services.Drop
         {
             _data.RemoveSpecial(user.Guild, msg);
             var rand = _random.Next(150, 250);
-            await _level.AddExp(user, rand, rand);
+            await _experience.AddDropExp(user, rand, rand);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
             await Task.Delay(5000);
             await trgMsg.DeleteAsync();
-            await DropClaimed(user as SocketGuildUser);
         }
 
         private async Task ClaimNormal(IMessage msg, ISocketMessageChannel channel, IGuildUser user)
         {
             _data.RemoveRegular(user.Guild, msg);
             var rand = _random.Next(15, 150);
-            await _level.AddExp(user, rand, rand);
+            await _experience.AddDropExp(user, rand, rand);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
             await Task.Delay(5000);
             await trgMsg.DeleteAsync();
-            await DropClaimed(user as SocketGuildUser);
         }
     }
 }

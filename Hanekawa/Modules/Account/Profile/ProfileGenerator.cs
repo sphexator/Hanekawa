@@ -1,35 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Level.Util;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Modules.Account.Profile
 {
     public class ProfileGenerator : IHanaService
     {
-        private readonly Calculate _calculate;
+        private readonly LevelGenerator _levelGenerator;
 
-        public ProfileGenerator(Calculate calculate) => _calculate = calculate;
+        public ProfileGenerator(LevelGenerator calculate) => _levelGenerator = calculate;
 
         public async Task<Stream> Create(SocketGuildUser user)
         {
@@ -54,7 +52,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter()
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achieveIcons));
                 img.Save(stream, new PngEncoder());
@@ -86,7 +84,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _calculate).GetAwaiter()
+                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());
@@ -121,7 +119,7 @@ namespace Hanekawa.Modules.Account.Profile
         {
             using (var stream = new MemoryStream())
             {
-                new FileStream(@"Data\Profile\Template\ProfileTemplate.png", FileMode.Open).CopyTo(stream);
+                new FileStream("Data/Profile/Template/ProfileTemplate.png", FileMode.Open).CopyTo(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 using (var img = Image.Load(stream))
                 {
@@ -132,7 +130,7 @@ namespace Hanekawa.Modules.Account.Profile
 
         private static Image<Rgba32> GetPfpCircle()
         {
-            using (var img = Image.Load(@"Data\Profile\Template\ProfileCircle.png"))
+            using (var img = Image.Load("Data/Profile/Template/ProfileCircle.png"))
             {
                 return img.Clone();
             }
@@ -140,7 +138,7 @@ namespace Hanekawa.Modules.Account.Profile
 
         private static Image<Rgba32> GetCircle()
         {
-            using (var img = Image.Load(@"Data\Profile\Template\ProfileCircle.png"))
+            using (var img = Image.Load("Data/Profile/Template/ProfileCircle.png"))
             {
                 img.Mutate(x => x.Resize(80, 80));
                 return img.Clone();

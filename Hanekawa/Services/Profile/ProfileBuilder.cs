@@ -1,29 +1,27 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Level.Util;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Services.Profile
 {
     public class ProfileBuilder : IHanaService
     {
-        private readonly Calculate _calculate;
+        private readonly LevelGenerator _levelGenerator;
 
-        public ProfileBuilder(Calculate calculate) => _calculate = calculate;
+        public ProfileBuilder(LevelGenerator levelGenerator) => _levelGenerator = levelGenerator;
 
         public async Task<MemoryStream> GetProfileAsync(SocketGuildUser user)
         {
@@ -47,7 +45,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement(userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint) _levelGenerator.GetServerLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }
@@ -72,7 +70,7 @@ namespace Hanekawa.Services.Profile
                         .DrawImage(GraphicsOptions.Default, template, new Point(0, 0))
                         .DrawImage(GraphicsOptions.Default, avatar, new Point(7, 87))
                         .DrawImage(GraphicsOptions.Default, shipClass, new Point(6, 178))
-                        .ApplyProfileText(userdata, user, (uint) _calculate.GetServerLevelRequirement(userdata.Level)));
+                        .ApplyProfileText(userdata, user, (uint) _levelGenerator.GetServerLevelRequirement(userdata.Level)));
                     img.Save(stream, new PngEncoder());
                 }
             }
@@ -103,7 +101,7 @@ namespace Hanekawa.Services.Profile
         private Image<Rgba32> GetBackgroundAsync()
         {
             var rand = new Random();
-            var banner = new DirectoryInfo(@"Data\Profile\Default\");
+            var banner = new DirectoryInfo("Data/Profile/Default/");
             var images = banner.GetFiles().ToList();
             var randomImage = images[rand.Next(images.Count)].Name;
             using (var img = Image.Load($"Data/Profile/Default/{randomImage}"))

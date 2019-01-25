@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -10,9 +6,12 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Events;
-using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Events
 {
@@ -21,14 +20,9 @@ namespace Hanekawa.Modules.Events
     [Summary("Event scheduler. Add, remove or manage scheduled events for your server.")]
     public class EventModule : InteractiveBase
     {
-        private readonly LevelingService _levelingService;
         private readonly EventService _service;
 
-        public EventModule(EventService service, LevelingService levelingService)
-        {
-            _service = service;
-            _levelingService = levelingService;
-        }
+        public EventModule(EventService service) => _service = service;
 
         [Command("post", RunMode = RunMode.Async)]
         [RequireOwner]

@@ -15,6 +15,7 @@ using Hanekawa.Entities.Interfaces;
 using Hanekawa.Services;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.Events;
+using Hanekawa.Services.Level;
 using Hanekawa.Services.Scheduler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -70,14 +71,13 @@ namespace Hanekawa
             foreach (var x in hanakawaServices) services.AddSingleton(x);
             var provider = services.BuildServiceProvider();
             ConfigureLogging(provider);
-
             using (var db = new DbService())
             {
                 await db.Database.MigrateAsync();
             }
 
+            await provider.GetRequiredService<ExpEventHandler>().InitializeAsync();
             foreach (var x in hanakawaServices) provider.GetRequiredService(x);
-
             var scheduler = provider.GetService<IScheduler>();
             QuartzServicesUtilities.StartCronJob<EventService>(scheduler, "0 0 10 1/1 * ? *");
             QuartzServicesUtilities.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
@@ -97,10 +97,17 @@ namespace Hanekawa
 
             loggerFactory.AddNLog(new NLogProviderOptions
             {
-                CaptureMessageTemplates = true, 
+                CaptureMessageTemplates = true,
                 CaptureMessageProperties = true
             });
-            LogManager.LoadConfiguration("nlog.config");
+            try
+            {
+                LogManager.LoadConfiguration("NLog.config");
+            }
+            catch
+            {
+                LogManager.LoadConfiguration("nlog.config");
+            }
         }
     }
 }

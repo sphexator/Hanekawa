@@ -15,19 +15,48 @@ using Humanizer;
 
 namespace Hanekawa.Services.Level
 {
-    public class ExpEvent : IHanaService
+    public class ExpEventHandler : IHanaService
     {
         private readonly DiscordSocketClient _client;
+        private readonly ExperienceHandler _handler;
 
         private readonly ConcurrentDictionary<ulong, Timer> _expEvent
             = new ConcurrentDictionary<ulong, Timer>();
 
-        private readonly LevelHandler _levelHandler;
-
-        public ExpEvent(LevelHandler levelHandler, DiscordSocketClient client)
+        public ExpEventHandler(DiscordSocketClient client, ExperienceHandler handler)
         {
-            _levelHandler = levelHandler;
             _client = client;
+            _handler = handler;
+        }
+
+        public async Task InitializeAsync()
+        {
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs)
+                {
+                    var levelExpEvent = await db.LevelExpEvents.FindAsync(x.GuildId);
+                    if (levelExpEvent == null)
+                    {
+                        _handler.AdjustMultiplier(x.GuildId, x.ExpMultiplier);
+                    }
+                    else if (levelExpEvent.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow)
+                    {
+                        _handler.AdjustMultiplier(x.GuildId, x.ExpMultiplier);
+                        var check = db.LevelExpEvents.FirstOrDefault(y => y.GuildId == x.GuildId);
+                        if (check == null) continue;
+                        db.LevelExpEvents.Remove(check);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        var after = levelExpEvent.Time - DateTime.UtcNow;
+                        CreateEvent(levelExpEvent.GuildId, levelExpEvent.Multiplier, x.ExpMultiplier,
+                            levelExpEvent.MessageId,
+                            levelExpEvent.ChannelId, after);
+                    }
+                }
+            }
         }
 
         public async Task StartAsync(DbService db, IGuild guild, int multiplier, TimeSpan after) =>
@@ -40,32 +69,35 @@ namespace Hanekawa.Services.Level
             ITextChannel fallbackChannel) =>
             await ExecuteAsync(db, guild, multiplier, after, announce, fallbackChannel);
 
-        public void ExpEventHandler(DbService db, ulong guildId, int multiplier, int defaultMulti, ulong? messageId,
+        public void CreateEvent(ulong guildId, int multiplier, int defaultMulti, ulong? messageId,
             ulong? channelId, TimeSpan after)
         {
-            _levelHandler.AdjustMultiplier(guildId, multiplier);
+            _handler.AdjustMultiplier(guildId, multiplier);
             var toAdd = new Timer(async _ =>
             {
-                try
+                using (var db = new DbService())
                 {
-                    _levelHandler.AdjustMultiplier(guildId, defaultMulti);
-                    if (messageId.HasValue && channelId.HasValue)
-                        if (await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
-                            .GetMessageAsync(messageId.Value) is IUserMessage msg)
-                        {
-                            var upd = msg.Embeds.First().ToEmbedBuilder();
-                            upd.Color = Color.Red;
-                            upd.Footer = new EmbedFooterBuilder {Text = "Ended"};
-                            await msg.ModifyAsync(x => x.Embed = upd.Build());
-                        }
+                    try
+                    {
+                        _handler.AdjustMultiplier(guildId, defaultMulti);
+                        if (messageId.HasValue && channelId.HasValue)
+                            if (await _client.GetGuild(guildId).GetTextChannel(channelId.Value)
+                                .GetMessageAsync(messageId.Value) is IUserMessage msg)
+                            {
+                                var upd = msg.Embeds.First().ToEmbedBuilder();
+                                upd.Color = Color.Red;
+                                upd.Footer = new EmbedFooterBuilder {Text = "Ended"};
+                                await msg.ModifyAsync(x => x.Embed = upd.Build());
+                            }
 
-                    RemoveFromDatabase(db, guildId);
-                    _expEvent.Remove(guildId, out var _);
-                }
-                catch
-                {
-                    _levelHandler.AdjustMultiplier(guildId, defaultMulti);
-                    RemoveFromDatabase(db, guildId);
+                        RemoveFromDatabase(db, guildId);
+                        _expEvent.Remove(guildId, out var _);
+                    }
+                    catch
+                    {
+                        _handler.AdjustMultiplier(guildId, defaultMulti);
+                        RemoveFromDatabase(db, guildId);
+                    }
                 }
             }, null, after, Timeout.InfiniteTimeSpan);
             _expEvent.AddOrUpdate(guildId, key => toAdd, (key, old) =>
@@ -81,7 +113,7 @@ namespace Hanekawa.Services.Level
             IUserMessage message = null;
             var cfg = await db.GetOrCreateGuildConfigAsync(guild as SocketGuild);
             if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
-            ExpEventHandler(db, guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
+            CreateEvent(guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }
 

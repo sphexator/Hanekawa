@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database;
+﻿using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Extensions;
-using Hanekawa.Services.Level.Util;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account.Profile
 {
@@ -22,15 +19,18 @@ namespace Hanekawa.Modules.Account.Profile
     {
         public static async Task ApplyTextAsync(this IImageProcessingContext<Rgba32> image, string name, ulong userId,
             ulong guildId,
-            Addons.Database.Tables.Account.Account userdata, Calculate calc)
+            Addons.Database.Tables.Account.Account userdata, LevelGenerator levelGenerator)
         {
             using (var db = new DbService())
             {
                 var fields = db.ProfileConfigs.ToListAsync();
                 var globalData = db.GetOrCreateGlobalUserData(userId);
                 await Task.WhenAll(fields, globalData);
-                var font = SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
-                var nameFont = SystemFonts.CreateFont("Arial", 32, FontStyle.Regular);
+                var fonts = new FontCollection();
+                var arial = fonts.Install(@"Data/Fonts/ARIAL.TTF");
+                var font = new Font(arial, 20, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
+                var nameFont = new Font(arial, 32, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 32, FontStyle.Regular);
+
                 var nameOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center};
                 var leftOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Left};
                 var rightOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Right};
@@ -40,7 +40,7 @@ namespace Hanekawa.Modules.Account.Profile
                     {
                         image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height));
                         image.DrawText(rightOptions,
-                            await GetValueAsync(x.Name, db, userdata, globalData.Result, calc, guildId), font,
+                            await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator, guildId), font,
                             Rgba32.White,
                             new PointF(x.ValueWidth, x.Height));
                     }
@@ -48,7 +48,7 @@ namespace Hanekawa.Modules.Account.Profile
                     {
                         image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height));
                         image.DrawText(rightOptions,
-                            await GetValueAsync(x.Name, db, userdata, globalData.Result, calc, guildId), font,
+                            await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator, guildId), font,
                             Rgba32.White,
                             new PointF(x.ValueWidth, x.Height));
                     }
@@ -100,7 +100,7 @@ namespace Hanekawa.Modules.Account.Profile
 
         private static async Task<string> GetValueAsync(string name, DbService db,
             Addons.Database.Tables.Account.Account userdata,
-            AccountGlobal globalData, Calculate calc, ulong guildId)
+            AccountGlobal globalData, LevelGenerator levelGenerator, ulong guildId)
         {
             switch (name)
             {
@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{userdata.Level}";
                 case "Exp":
                     return
-                        $"{userdata.Exp.FormatNumber()}/{calc.GetServerLevelRequirement(userdata.Level).FormatNumber()}";
+                        $"{userdata.Exp.FormatNumber()}/{levelGenerator.GetServerLevelRequirement(userdata.Level).FormatNumber()}";
                 //case "TotalExp":
                 //    return $"{userdata.TotalExp}";
                 case "Credit":
@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Account.Profile
                     return $"{globalData.Credit.FormatNumber()}";
                 case "Global Exp":
                     return
-                        $"{globalData.Exp.FormatNumber()}/{calc.GetGlobalLevelRequirement(globalData.Level).FormatNumber()}";
+                        $"{globalData.Exp.FormatNumber()}/{levelGenerator.GetGlobalLevelRequirement(globalData.Level).FormatNumber()}";
                 case "Global TotalExp":
                     return $"{globalData.TotalExp.FormatNumber()}";
                 case "Global Level":

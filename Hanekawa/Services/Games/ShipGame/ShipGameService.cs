@@ -21,8 +21,6 @@ using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -12,26 +8,28 @@ using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Level;
-using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Quartz.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account.Level
 {
     [Group("level")]
     public class LevelAdmin : InteractiveBase
     {
-        private readonly Calculate _calculate;
-        private readonly LevelingService _levelingService;
+        private readonly LevelGenerator _levelGenerator;
         private readonly LogService _log;
 
-        public LevelAdmin(LevelingService levelingService, Calculate calculate, LogService log)
+        public LevelAdmin(LogService log, LevelGenerator levelGenerator)
         {
-            _levelingService = levelingService;
-            _calculate = calculate;
             _log = log;
+            _levelGenerator = levelGenerator;
         }
 
         [Command("setlevel")]
@@ -41,7 +39,7 @@ namespace Hanekawa.Modules.Account.Level
         {
             if (level <= 0) return;
             var totalExp = 0;
-            for (var i = 1; i < level + 1; i++) totalExp += _calculate.GetServerLevelRequirement(i);
+            for (var i = 1; i < level + 1; i++) totalExp += _levelGenerator.GetServerLevelRequirement(i);
 
             using (var db = new DbService())
             {
