@@ -89,6 +89,7 @@ namespace Hanekawa.Services.Drop
 
         private async Task ClaimSpecial(IMessage msg, ISocketMessageChannel channel, IGuildUser user)
         {
+            await msg.DeleteAsync();
             _data.RemoveSpecial(user.Guild, msg);
             var rand = _random.Next(150, 250);
             await _experience.AddDropExp(user, rand, rand);
@@ -101,6 +102,7 @@ namespace Hanekawa.Services.Drop
 
         private async Task ClaimNormal(IMessage msg, ISocketMessageChannel channel, IGuildUser user)
         {
+            await msg.DeleteAsync();
             _data.RemoveRegular(user.Guild, msg);
             var rand = _random.Next(15, 150);
             await _experience.AddDropExp(user, rand, rand);
