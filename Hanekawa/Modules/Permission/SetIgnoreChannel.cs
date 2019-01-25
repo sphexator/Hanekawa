@@ -119,13 +119,15 @@ namespace Hanekawa.Modules.Permission
                 if (cfg.IgnoreAllChannels)
                 {
                     cfg.IgnoreAllChannels = false;
-                    await Context.ReplyAsync("Commands are now only usable in channels on the list.");
+                    _requiredChannel.UpdateIgnoreAll(Context.Guild.Id, false);
+                    await Context.ReplyAsync(
+                        "Commands are now usable in all channels beside those in the ignore list.");
                 }
                 else
                 {
                     cfg.IgnoreAllChannels = true;
-                    await Context.ReplyAsync(
-                        "Commands are now usable in all channels beside those in the ignore list.");
+                    _requiredChannel.UpdateIgnoreAll(Context.Guild.Id, true);
+                    await Context.ReplyAsync("Commands are now only usable in channels on the list.");
                 }
 
                 await db.SaveChangesAsync();
