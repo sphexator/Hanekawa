@@ -36,13 +36,13 @@ namespace Hanekawa.Services.Games.ShipGame
             Console.WriteLine("Game service loaded");
         }
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> ExistingBattles { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> _existingBattles
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveBattles { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveBattles
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveDuels { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _activeDuels
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
         public event AsyncEvent<ulong> NpcKill;
@@ -483,7 +483,7 @@ namespace Hanekawa.Services.Games.ShipGame
 
         private GameEnemy GetEnemyData(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryGetValue(context.User.Id, out var game);
             return game;
         }
@@ -522,26 +522,26 @@ namespace Hanekawa.Services.Games.ShipGame
 
         private bool IsInBattle(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            var check = battles.TryGetValue(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var check = battles.TryGetValue(context.User.Id, out _);
             return check;
         }
 
         private void AddBattle(SocketCommandContext context, GameEnemy enemy)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryAdd(context.User.Id, enemy);
         }
 
         private void RemoveBattle(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id, out var game);
         }
 
         public void ClearUser(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id, out var game);
 
             var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());

@@ -215,9 +215,9 @@ namespace Hanekawa.Services.AutoModerator
 
                 var invite = InviteFilter(msg, user, cfg);
                 var scam = ScamLinkFilter(msg, user, cfg);
-                // var spam = SpamFilter(msg, user, cfg);
-                // var url = UrlFilter(msg, user, cfg, userdata);
-                // var world = WordFilter(msg, user, cfg, userdata);
+                // var spam = SpamFilter(msg, user, cfg); TODO: Add this - Spam filter
+                // var url = UrlFilter(msg, user, cfg, userdata); 
+                // var world = WordFilter(msg, user, cfg, userdata); TODO: ADD this - Word filter
                 var length = LengthFilter(msg, user, cfg, userdata);
                 var emote = EmoteFilter(msg, user, cfg, userdata);
                 var mention = MentionFilter(msg, user, cfg);
@@ -286,37 +286,6 @@ namespace Hanekawa.Services.AutoModerator
                 await AutoModPermMute(msg.Author as SocketGuildUser);
                 await AutoModPermLog(msg.Author as SocketGuildUser, AutoModActionType.ScamLink, msg.Content);
             }
-        }
-
-        private async Task SpamFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
-        {
-            // IGNORE TODO: ADD spam filter
-        }
-
-        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
-        {
-            using (var db = new DbService())
-            {
-                var channel = await db.UrlFilters.FindAsync(user.GuildId, msg.Channel.Id);
-                if (channel == null) return;
-                if (msg.Channel.Id != channel.ChannelId) return;
-                if (msg.Content.IsUrl())
-                    try
-                    {
-                        await msg.DeleteAsync();
-                    }
-                    catch
-                    {
-                        /* ignored */
-                    }
-
-                var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Url, 0, msg.Content);
-            }
-        }
-
-        private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
-        {
-            // IGNORE Todo: Add word filter
         }
 
         private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)

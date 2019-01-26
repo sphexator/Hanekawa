@@ -144,10 +144,12 @@ namespace Hanekawa.Services.Achievement
                 var achievements = await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global)
                     .ToListAsync();
                 if (achievements == null || achievements.Count == 0) return;
-
+                var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
                 if (achievements.Any(x => x.Requirement == userData.Level))
                 {
                     var achieve = achievements.First(x => x.Requirement == userData.Level);
+                    var check = unlocked.FirstOrDefault(x => x.Achievement == achieve);
+                    if (check != null) return;
                     var data = new AchievementUnlock
                     {
                         AchievementId = achieve.AchievementId,
@@ -164,7 +166,6 @@ namespace Hanekawa.Services.Achievement
                         .Where(x => x.Requirement < userData.Level).ToList();
                     if (belowAchieves.Count > 0)
                     {
-                        var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
                         foreach (var x in belowAchieves)
                         {
                             if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;

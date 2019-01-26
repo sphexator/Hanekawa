@@ -105,6 +105,7 @@ namespace Hanekawa.Services.Level
                 if (userdata.Level >= x.Level)
                 {
                     var getRole = user.Guild.GetRole(x.Role);
+                    if (getRole == null) continue;
                     if ((currentUser as SocketGuildUser).HierarchyCheck(getRole)) roles.Add(getRole);
                 }
 
