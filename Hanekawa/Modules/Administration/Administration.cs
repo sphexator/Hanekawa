@@ -343,7 +343,7 @@ namespace Hanekawa.Modules.Administration
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [Summary("Inputs reason for moderation log entry")]
-        public async Task ApplyReason(uint id, [Remainder] string reason)
+        public async Task ApplyReason(int id, [Remainder] string reason)
         {
             using (var db = new DbService())
             {
