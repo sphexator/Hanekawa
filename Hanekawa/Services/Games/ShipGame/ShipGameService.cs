@@ -551,7 +551,7 @@ namespace Hanekawa.Services.Games.ShipGame
         private static async Task<Stream> CreateBanner(IUser userOne, GameEnemy npc)
         {
             var stream = new MemoryStream();
-            using (var img = Image.Load(@"Data\Game\background.png"))
+            using (var img = Image.Load("Data/Game/background.png"))
             {
                 var border = Image.Load(GetBorder());
                 var aviOne = await GetAvatarAsync(userOne);
@@ -573,7 +573,7 @@ namespace Hanekawa.Services.Games.ShipGame
         private static async Task<Stream> CreateBanner(IUser userOne, IUser userTwo)
         {
             var stream = new MemoryStream();
-            using (var img = Image.Load(@"Data\Game\background.png"))
+            using (var img = Image.Load("Data/Game/background.png"))
             {
                 var border = Image.Load(GetBorder());
                 var aviOne = await GetAvatarAsync(userOne);
@@ -592,7 +592,7 @@ namespace Hanekawa.Services.Games.ShipGame
             return stream;
         }
 
-        private static string GetBorder() => @"Data\Game\Border\Red-border.png";
+        private static string GetBorder() => "Data/Game/Border/Red-border.png";
 
         private static async Task<Stream> GetAvatarAsync(IUser user)
         {
