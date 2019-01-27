@@ -52,11 +52,11 @@ namespace Hanekawa.Services.Drop
                 if (msg.Author.IsBot) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
                 if (!_data.IsLootChannel(ch.Guild.Id, ch.Id)) return;
+                if (_data.OnGuildCooldown(ch)) return;
                 if (_data.OnUserCooldown(user)) return;
                 var rand = _random.Next(0, 10000);
                 if (rand < 200)
                 {
-                    if (_data.OnGuildCooldown(ch)) return;
                     var triggerMsg = await ch.SendMessageAsync(
                         "A drop event has been triggered \nClick the roosip reaction on this message to claim it!");
                     var emotes = _emote.ReturnEmotes();

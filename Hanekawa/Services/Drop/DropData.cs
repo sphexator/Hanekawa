@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -16,14 +17,14 @@ namespace Hanekawa.Services.Drop
     {
         private readonly MemoryCache _guildCooldown = new MemoryCache(new MemoryCacheOptions());
 
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _lootChannels
-            = new ConcurrentDictionary<ulong, List<ulong>>();
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _lootChannels
+            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _normalLoot =
-            new ConcurrentDictionary<ulong, List<ulong>>();
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _normalLoot =
+            new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _spawnedLoot =
-            new ConcurrentDictionary<ulong, List<ulong>>();
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _spawnedLoot =
+            new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
         private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
             new ConcurrentDictionary<ulong, MemoryCache>();
@@ -36,24 +37,23 @@ namespace Hanekawa.Services.Drop
                 {
                     var result = db.LootChannels.Where(c => c.GuildId == x.GuildId).ToList();
                     if (result.Count == 0) continue;
-                    var channels = new List<ulong>();
-                    foreach (var y in result) channels.Add(y.ChannelId);
-                    _lootChannels.GetOrAdd(x.GuildId, channels);
+                    var channelList = _lootChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, bool>());
+                    foreach (var y in result) channelList.GetOrAdd(y.ChannelId, true);
                 }
             }
         }
 
         public bool IsLootMessage(ulong guildId, ulong messageId, out bool special)
         {
-            var regular = _normalLoot.GetOrAdd(guildId, new List<ulong>());
-            var spawned = _spawnedLoot.GetOrAdd(guildId, new List<ulong>());
-            if (regular.Contains(messageId))
+            var regular = _normalLoot.GetOrAdd(guildId, new ConcurrentDictionary<ulong, bool>());
+            var spawned = _spawnedLoot.GetOrAdd(guildId, new ConcurrentDictionary<ulong, bool>());
+            if (regular.TryGetValue(messageId, out _))
             {
                 special = false;
                 return true;
             }
 
-            if (spawned.Contains(messageId))
+            if (regular.TryGetValue(messageId, out _))
             {
                 special = true;
                 return true;
@@ -65,8 +65,8 @@ namespace Hanekawa.Services.Drop
 
         public bool IsLootChannel(ulong guildId, ulong channelId)
         {
-            var regular = _lootChannels.GetOrAdd(guildId, new List<ulong>());
-            return regular.Contains(channelId);
+            var regular = _lootChannels.GetOrAdd(guildId, new ConcurrentDictionary<ulong, bool>());
+            return regular.TryGetValue(channelId, out _);
         }
 
         public bool OnGuildCooldown(ITextChannel guild)
@@ -86,33 +86,33 @@ namespace Hanekawa.Services.Drop
 
         public void AddRegular(IGuild guild, IMessage message)
         {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new List<ulong>());
-            normal.Add(message.Id);
+            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
+            normal.TryAdd(message.Id, true);
         }
 
         public void AddSpecial(IGuild guild, IMessage message)
         {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new List<ulong>());
-            normal.Add(message.Id);
+            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
+            normal.TryAdd(message.Id, true);
         }
 
         public void RemoveRegular(IGuild guild, IMessage message)
         {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new List<ulong>());
-            normal.Remove(message.Id);
+            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
+            normal.TryRemove(message.Id, out _);
         }
 
         public void RemoveSpecial(IGuild guild, IMessage message)
         {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new List<ulong>());
-            normal.Remove(message.Id);
+            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
+            normal.TryRemove(message.Id, out _);
         }
 
         public async Task AddLootChannelAsync(SocketTextChannel ch)
         {
             await AddToDatabaseAsync(ch.Guild.Id, ch.Id);
-            var channels = _lootChannels.GetOrAdd(ch.Guild.Id, new List<ulong>());
-            channels.Add(ch.Id);
+            var channels = _lootChannels.GetOrAdd(ch.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            channels.TryAdd(ch.Id, true);
             _lootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => old = channels);
         }
 
@@ -120,8 +120,8 @@ namespace Hanekawa.Services.Drop
         {
             await RemoveFromDatabaseAsync(ch.Guild.Id, ch.Id);
             if (!_lootChannels.TryGetValue(ch.Guild.Id, out var channels)) return;
-            if (!channels.Contains(ch.Id)) return;
-            channels.Remove(ch.Id);
+            if (!channels.TryGetValue(ch.Id, out _)) return;
+            channels.TryRemove(ch.Id, out _);
             _lootChannels.AddOrUpdate(ch.Guild.Id, channels, (key, old) => channels);
         }
 
