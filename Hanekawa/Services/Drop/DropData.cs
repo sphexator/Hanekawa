@@ -53,7 +53,7 @@ namespace Hanekawa.Services.Drop
                 return true;
             }
 
-            if (regular.TryGetValue(messageId, out _))
+            if (spawned.TryGetValue(messageId, out _))
             {
                 special = true;
                 return true;
