@@ -151,7 +151,7 @@ namespace Hanekawa.Modules.Welcome
                     "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
-            await Context.Channel.SendFileAsync(@"Data\Welcome\WelcomeTemplate.psd", null, false, embed.Build());
+            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
         }
 
         [Command("message", RunMode = RunMode.Async)]
