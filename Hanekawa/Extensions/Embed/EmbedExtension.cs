@@ -21,20 +21,20 @@ namespace Hanekawa.Extensions.Embed
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed, string message) =>
             channel.SendEmbedAsync(embed, message);
 
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string content, uint color) =>
+        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, string content, uint color) =>
             context.Channel.SendEmbedAsync(Create(content, new Color(color)));
 
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string embedMsg, string message,
+        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, string embedMsg, string message,
             uint color) =>
             context.Channel.SendEmbedAsync(Create(embedMsg, new Color(color)), message);
 
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, string content) =>
+        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, string content) =>
             context.Channel.SendEmbedAsync(Create(content, new Color().GetDefaultColor(context.Guild.Id)));
 
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, EmbedBuilder embed) =>
+        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
 
-        public static Task<IUserMessage> ReplyAsync(this SocketCommandContext context, EmbedBuilder embed,
+        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, EmbedBuilder embed,
             string message) =>
             context.Channel.SendEmbedAsync(embed, message);
 

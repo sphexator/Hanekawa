@@ -2,7 +2,7 @@
 
 namespace Hanekawa.Addons.Database.Tables.Club
 {
-    public class ClubPlayer
+    public class ClubUser
     {
         public int Id { get; set; }
         public int ClubId { get; set; }

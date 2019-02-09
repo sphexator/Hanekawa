@@ -59,8 +59,8 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<Patreon> Patreons { get; set; }
 
         //Clubs
-        public virtual DbSet<ClubInfo> ClubInfos { get; set; }
-        public virtual DbSet<ClubPlayer> ClubPlayers { get; set; }
+        public virtual DbSet<ClubInformation> ClubInfos { get; set; }
+        public virtual DbSet<ClubUser> ClubPlayers { get; set; }
         public virtual DbSet<ClubBlacklist> ClubBlacklists { get; set; }
 
         //Bot Game
@@ -346,23 +346,25 @@ namespace Hanekawa.Addons.Database
 
         private static void ClubBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ClubInfo>(x =>
+            modelBuilder.Entity<ClubInformation>(x =>
             {
-                x.HasKey(e => new {e.Id, e.GuildId, e.Leader});
+                x.HasKey(e => new { e.Id, e.GuildId, e.LeaderId });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.Leader).HasConversion<long>();
+                x.Property(e => e.LeaderId).HasConversion<long>();
                 x.Property(e => e.AdMessage).HasConversion<long>();
                 x.Property(e => e.Channel).HasConversion<long>();
-                x.Property(e => e.RoleId).HasConversion<long>();
+                x.Property(e => e.Role).HasConversion<long>();
             });
-            modelBuilder.Entity<ClubPlayer>(x =>
+
+            modelBuilder.Entity<ClubUser>(x =>
             {
-                x.HasKey(e => new {e.Id, e.ClubId, e.GuildId});
+                x.HasKey(e => new { e.Id, e.ClubId });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
+
             modelBuilder.Entity<ClubBlacklist>(x =>
             {
                 x.HasKey(e => new {e.ClubId, e.GuildId, e.BlackListUser});

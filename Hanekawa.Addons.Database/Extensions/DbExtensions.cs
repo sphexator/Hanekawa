@@ -140,13 +140,14 @@ namespace Hanekawa.Addons.Database.Extensions
                 x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id);
         }
 
-        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
+        public static async Task<ClubInformation> CreateClub(this DbService context, IUser user, IGuild guild,
             string name, DateTimeOffset time)
         {
-            var data = new ClubInfo
+            var data = new ClubInformation
             {
+                ClubId = 123, //TODO: redo
                 GuildId = guild.Id,
-                Leader = user.Id,
+                LeaderId = user.Id,
                 Name = name,
                 CreationDate = time,
                 Channel = null,
@@ -155,25 +156,25 @@ namespace Hanekawa.Addons.Database.Extensions
                 AutoAdd = false,
                 ImageUrl = null,
                 Public = false,
-                RoleId = null
+                IconUrl = null
             };
             await context.ClubInfos.AddAsync(data);
             await context.SaveChangesAsync();
-            return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Leader == user.Id);
+            return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.LeaderId == user.Id);
         }
 
-        public static async Task<ClubInfo> GetClubAsync(this DbService context, int id, SocketGuild guild)
+        public static async Task<ClubInformation> GetClubAsync(this DbService context, int id, IGuild guild)
         {
             var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == guild.Id);
             return check ?? null;
         }
 
-        public static async Task<ClubInfo> IsClubLeader(this DbService context, ulong guild, ulong user)
+        public static async Task<ClubInformation> IsClubLeader(this DbService context, ulong guild, ulong user)
         {
             try
             {
                 var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == guild && x.Leader == user);
+                    x.GuildId == guild && x.LeaderId == user);
                 return leader;
             }
             catch
