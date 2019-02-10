@@ -5,7 +5,6 @@ namespace Hanekawa.Addons.Database.Tables.Club
     public class ClubInformation
     {
         public int Id { get; set; }
-        public int ClubId { get; set; }
         public ulong GuildId { get; set; }
         public ulong LeaderId { get; set; }
         public string Name { get; set; } = "N/A";

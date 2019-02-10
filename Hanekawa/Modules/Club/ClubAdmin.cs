@@ -1,21 +1,31 @@
-﻿using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Modules.Club.Handler;
+using Microsoft.EntityFrameworkCore;
+using Quartz.Util;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Club
 {
-    [Group("club settings")]
+    [Name("Club settings")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireContext(ContextType.Guild)]
     public class ClubAdmin : InteractiveBase
     {
-        [Command("advertisement", RunMode = RunMode.Async)]
+        private readonly Advertise _advertise;
+
+        public ClubAdmin(Advertise advertise) => _advertise = advertise;
+
+        [Name("Club setting advertisement")]
+        [Command("Club set advertisement", RunMode = RunMode.Async)]
+        [Alias("csa")]
         [Summary("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
-        public async Task ClubSetAdvertismentChannel(ITextChannel channel = null)
+        [Remarks("h.csa #general")]
+        public async Task ClubSetAdvertisementChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -44,8 +54,11 @@ namespace Hanekawa.Modules.Club
             }
         }
 
-        [Command("category", RunMode = RunMode.Async)]
+        [Name("Club setting category")]
+        [Command("Club set category", RunMode = RunMode.Async)]
+        [Alias("clubscategory", "cscat")]
         [Summary("Sets location in where club channels will be created. \nLeave empty to disable")]
+        [Remarks("h.cscat general")]
         public async Task ClubSetCategory(ICategoryChannel category = null)
         {
             using (var db = new DbService())
@@ -75,8 +88,11 @@ namespace Hanekawa.Modules.Club
             }
         }
 
-        [Command("level", RunMode = RunMode.Async)]
+        [Name("Club setting level")]
+        [Command("Club set level", RunMode = RunMode.Async)]
+        [Alias("csl")]
         [Summary("Sets level requirement for people to create a club")]
+        [Remarks("h.csl 10")]
         public async Task ClubSetLevelRequirement(int level)
         {
             if (level <= 0) return;
@@ -91,8 +107,11 @@ namespace Hanekawa.Modules.Club
             }
         }
 
-        [Command("channel amount", RunMode = RunMode.Async)]
-        [Summary("Sets amount required thats above the level requirement(club create) to create a channel")]
+        [Name("Club setting channel amount")]
+        [Command("club set channel amount", RunMode = RunMode.Async)]
+        [Alias("csca")]
+        [Summary("Sets amount required that's above the level requirement to create a channel")]
+        [Remarks("h.csca 2")]
         public async Task ClubSetAmountRequirement(int amount)
         {
             if (amount <= 0) return;
@@ -107,28 +126,119 @@ namespace Hanekawa.Modules.Club
             }
         }
 
-        [Command("Auto prune")]
-        [Alias("autoprune", "prune")]
-        [Summary("Automatically prune inactive clubs by their member count")]
-        public async Task ClubAutoPruneToggle()
+        [Name("Rename club")]
+        [Command("club set name", RunMode = RunMode.Async)]
+        [Alias("csn")]
+        [Summary("Force changes a name of a club")]
+        [Remarks("h.csn 15 Change name")]
+        public async Task ClubForceRename(int clubId, [Remainder] string name)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.ClubAutoPrune)
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                if (club == null)
                 {
-                    cfg.ClubAutoPrune = false;
-                    await Context.ReplyAsync("Disabled automatic deletion of low member count clubs with a channel.",
-                        Color.Green.RawValue);
-                }
-                else
-                {
-                    cfg.ClubAutoPrune = true;
-                    await Context.ReplyAsync("Enabled automatic deletion of low member count clubs with a channel.",
-                        Color.Green.RawValue);
+                    await Context.ReplyAsync("There's no club with that ID in this guild");
+                    return;
                 }
 
+                if (name.IsNullOrWhiteSpace())
+                {
+                    await Context.ReplyAsync("Please provide a proper name");
+                    return;
+                }
+
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                club.Name = name;
                 await db.SaveChangesAsync();
+                if (club.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                {
+                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    await _advertise.UpdatePostNameAsync(msg, name);
+                }
+            }
+        }
+
+        [Name("Change club icon")]
+        [Command("club set icon", RunMode = RunMode.Async)]
+        [Alias("csicon")]
+        [Summary("Force changes icon of a club")]
+        [Remarks("h.csn 15 https://i.imgur.com/p3Xxvij.png")]
+        public async Task ClubForceReIcon(int clubId, [Remainder] string icon)
+        {
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                if (club == null)
+                {
+                    await Context.ReplyAsync("There's no club with that ID in this guild");
+                    return;
+                }
+
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                club.IconUrl = icon;
+                await db.SaveChangesAsync();
+                if (club.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                {
+                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    await _advertise.UpdatePostIconAsync(msg, icon);
+                }
+            }
+        }
+
+        [Name("Change club image")]
+        [Command("club set image", RunMode = RunMode.Async)]
+        [Alias("csimage")]
+        [Summary("Force changes image of a club")]
+        [Remarks("h.csn 15 https://i.imgur.com/p3Xxvij.png")]
+        public async Task ClubForceReImage(int clubId, [Remainder] string image)
+        {
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                if (club == null)
+                {
+                    await Context.ReplyAsync("There's no club with that ID in this guild");
+                    return;
+                }
+
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                club.ImageUrl = image;
+                await db.SaveChangesAsync();
+                if (club.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                {
+                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    await _advertise.UpdatePostImageAsync(msg, image);
+                }
+            }
+        }
+
+        [Name("Change club description")]
+        [Command("club set description", RunMode = RunMode.Async)]
+        [Alias("csd")]
+        [Summary("Force changes a name of a club")]
+        [Remarks("h.csn 15 Change description")]
+        public async Task ClubForceReDescription(int clubId, [Remainder] string desc)
+        {
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                if (club == null)
+                {
+                    await Context.ReplyAsync("There's no club with that ID in this guild");
+                    return;
+                }
+
+                if (desc.IsNullOrWhiteSpace()) desc = "N/A";
+
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                club.Description = desc;
+                await db.SaveChangesAsync();
+                if (club.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                {
+                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    await _advertise.UpdatePostDescriptionAsync(msg, desc);
+                }
             }
         }
     }

@@ -57,23 +57,31 @@ namespace Hanekawa.Modules.Club.Handler
             await RemoveUserAsync(db, user, clubUser.ClubId).ConfigureAwait(false);
 
         public async Task RemoveUserAsync(DbService db, IUser user, ClubUser clubUser) =>
-            await RemoveUserAsync(db, user, clubUser.ClubId).ConfigureAwait(false);
-
-        public async Task RemoveUserAsync(DbService db, IUser user, int clubId) =>
-            await RemoveUserAsync(db, user, clubId).ConfigureAwait(false);
+            await RemoveUserAsync(db, user as IGuildUser, clubUser.ClubId).ConfigureAwait(false);
 
         public async Task<string> RemoveUserAsync(DbService db, IGuildUser user, int clubId)
         {
-            var clubUser = await db.ClubPlayers.FindAsync(user.Id, user.GuildId, clubId);
+            var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.UserId == user.Id && x.GuildId == user.GuildId && x.ClubId == clubId);
             if (clubUser == null) return $"Can't remove {user.Mention}.";
             db.ClubPlayers.Remove(clubUser);
             await db.SaveChangesAsync();
             return null;
         }
 
-        public async Task BlackListUserAsync(IGuildUser user, int id)
+        public async Task<bool> BlackListUserAsync(DbService db, IGuildUser blacklistUser, IGuildUser leader, int clubId, string reason = "N/A")
         {
-
+            var check = await db.ClubBlacklists.FindAsync(clubId, blacklistUser.GuildId, blacklistUser.Id);
+            if (check != null) return false;
+            await db.ClubBlacklists.AddAsync(new ClubBlacklist
+            {
+                ClubId = clubId,
+                GuildId = blacklistUser.GuildId,
+                BlackListUser = blacklistUser.Id,
+                IssuedUser = leader.Id,
+                Reason = reason,
+                Time = DateTimeOffset.UtcNow
+            });
+            return true;
         }
     }
 }

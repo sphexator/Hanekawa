@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
@@ -12,7 +13,10 @@ using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Services.Logging;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
 namespace Hanekawa.Modules.Club.Handler
@@ -28,7 +32,13 @@ namespace Hanekawa.Modules.Club.Handler
             embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
 
         private readonly Management _management;
-        public Admin(Management management) => _management = management;
+        private readonly LogService _log;
+
+        public Admin(Management management, LogService log)
+        {
+            _management = management;
+            _log = log;
+        }
 
         public async Task CreateAsync(ICommandContext context, string name)
         {
@@ -179,7 +189,7 @@ namespace Hanekawa.Modules.Club.Handler
                         }
                         catch (Exception e)
                         {
-                            //TODO Add logging
+                            _log.LogAction(LogLevel.Error, e.ToString(), "Club add user channel");
                         }
                 }
                 else
@@ -192,7 +202,7 @@ namespace Hanekawa.Modules.Club.Handler
                         }
                         catch (Exception e)
                         {
-                            //TODO Add logging
+                            _log.LogAction(LogLevel.Error, e.ToString(), "Club add user channel");
                         }
                 }
 
@@ -250,9 +260,9 @@ namespace Hanekawa.Modules.Club.Handler
                                     Color.Green.RawValue);
                                 status = false;
                             }
-                            catch
+                            catch(Exception e)
                             {
-                                // IGNORE TODO: Add logging
+                                _log.LogAction(LogLevel.Error, e.ToString(), "Club user leave");
                             }
 
                         break;
@@ -331,6 +341,54 @@ namespace Hanekawa.Modules.Club.Handler
                 await _management.DemoteUserAsync(db, user, toDemote, club);
                 await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {club.Name}",
                     Color.Green.RawValue);
+            }
+        }
+
+        public async Task BlackListUserAsync(ICommandContext context, IGuildUser blacklistUser, string reason)
+        {
+            if (context.User == blacklistUser) return;
+            using (var db = new DbService())
+            {
+                var club = await db.IsClubLeader(context.Guild.Id, context.User.Id);
+                if (club == null) return;
+                var toBlacklist = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.ClubId == club.Id && x.UserId == blacklistUser.Id && x.GuildId == context.Guild.Id);
+                if (toBlacklist == null) return;
+                var blacklist = await _management.BlackListUserAsync(db, blacklistUser, context.User as IGuildUser, club.Id, reason);
+                if (!blacklist)
+                {
+                    await context.ReplyAsync(
+                        "User is already blacklisted.");
+                }
+            }
+        }
+
+        public async Task GetBlackListAsync(ICommandContext context)
+        {
+            using (var db = new DbService())
+            {
+                var club = await db.IsClubLeader(context.Guild.Id, context.User.Id);
+                if (club == null) return;
+                var blacklist = await db.ClubBlacklists.Where(x => x.ClubId == club.Id).ToListAsync();
+                if (blacklist == null || blacklist.Count == 0)
+                {
+                    await context.ReplyAsync("No users currently blacklisted");
+                    return;
+                }
+
+                var result = new List<string>();
+                foreach (var x in blacklist)
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(
+                        $"{x.BlackListUser} blacklisted by {x.IssuedUser} on {x.Time.Humanize()} ({x.Time})");
+                    stringBuilder.AppendLine($"Reason: {x.Reason}");
+                    stringBuilder.AppendLine();
+                    result.Add(stringBuilder.ToString());
+                }
+
+                await PagedReplyAsync(result.PaginateBuilder(context.Guild.Id, context.Guild,
+                    $"Blacklisted users for {club.Name}"));
             }
         }
 

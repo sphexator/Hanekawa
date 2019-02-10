@@ -145,7 +145,6 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var data = new ClubInformation
             {
-                ClubId = 123, //TODO: redo
                 GuildId = guild.Id,
                 LeaderId = user.Id,
                 Name = name,

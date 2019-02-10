@@ -348,7 +348,7 @@ namespace Hanekawa.Addons.Database
         {
             modelBuilder.Entity<ClubInformation>(x =>
             {
-                x.HasKey(e => new { e.Id, e.GuildId, e.LeaderId });
+                x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.LeaderId).HasConversion<long>();
@@ -359,7 +359,7 @@ namespace Hanekawa.Addons.Database
 
             modelBuilder.Entity<ClubUser>(x =>
             {
-                x.HasKey(e => new { e.Id, e.ClubId });
+                x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();

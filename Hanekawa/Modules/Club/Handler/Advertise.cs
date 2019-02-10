@@ -155,28 +155,28 @@ namespace Hanekawa.Modules.Club.Handler
             }
         }
 
-        private async Task UpdatePostNameAsync(IUserMessage msg, string name)
+        public async Task UpdatePostNameAsync(IUserMessage msg, string name)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Author.Name = name;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        private async Task UpdatePostDescriptionAsync(IUserMessage msg, string content)
+        public async Task UpdatePostDescriptionAsync(IUserMessage msg, string content)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Description = content;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        private async Task UpdatePostIconAsync(IUserMessage msg, string icon)
+        public async Task UpdatePostIconAsync(IUserMessage msg, string icon)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Author.IconUrl = icon;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        private async Task UpdatePostImageAsync(IUserMessage msg, string image)
+        public async Task UpdatePostImageAsync(IUserMessage msg, string image)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.ImageUrl = image;
