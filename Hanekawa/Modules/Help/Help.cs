@@ -24,7 +24,7 @@ namespace Hanekawa.Modules.Help
 
         [Command("help")]
         [Summary("Lists this bots commands.")]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         [Priority(1)]
         [RequiredChannel]
         public async Task HelpAsync([Remainder] string path = "")
@@ -64,7 +64,7 @@ namespace Hanekawa.Modules.Help
 
         [Command("help")]
         [Summary("Lists this bots commands.")]
-        [Ratelimit(1, 5, Measure.Seconds)]
+        [Ratelimit(1, 2, Measure.Seconds)]
         public async Task DmHelpAsync([Remainder] string path = "")
         {
             if (path == "")
