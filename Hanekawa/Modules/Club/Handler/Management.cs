@@ -123,6 +123,15 @@ namespace Hanekawa.Modules.Club.Handler
             return true;
         }
 
+        public async Task<bool> RemoveBlackListUserAsync(DbService db, IGuildUser blacklistUser, int clubId)
+        {
+            var user = await db.ClubBlacklists.FindAsync(clubId, blacklistUser.GuildId, blacklistUser.Id);
+            if (user == null) return false;
+            db.ClubBlacklists.Remove(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+
         private async Task AddRoleOrChannelPermissions(DbService db, IUser user, IGuild guild, ClubInformation club,
             GuildConfig cfg)
         {

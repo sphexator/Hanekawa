@@ -344,8 +344,18 @@ namespace Hanekawa.Modules.Club.Handler
                 if (!blacklist)
                 {
                     await context.ReplyAsync(
-                        "User is already blacklisted.");
+                        "User is already blacklisted. Do you wish to remove it? (y/n)");
+                    var response = await NextMessageAsync();
+                    if (response == null || response.Content.IsNullOrWhiteSpace()) return;
+                    if (response.Content.ToLower() != "y")
+                    {
+                        await context.ReplyAsync("User stays blacklisted");
+                    }
+                    await _management.RemoveBlackListUserAsync(db, blacklistUser, club.Id);
+                    await context.ReplyAsync($"Removed blacklist for {blacklistUser.Mention} in {club.Name}", Color.Green.RawValue);
                 }
+
+                await context.ReplyAsync($"Blacklisted {blacklistUser.Mention} from {club.Name}", Color.Green.RawValue);
             }
         }
 

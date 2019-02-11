@@ -156,6 +156,17 @@ namespace Hanekawa.Modules.Club
                     var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await _advertise.UpdatePostNameAsync(msg, name);
                 }
+                if (club.Role.HasValue)
+                {
+                    var role = Context.Guild.GetRole(club.Role.Value);
+                    await role.ModifyAsync(x => x.Name = name);
+                }
+
+                if (club.Channel.HasValue)
+                {
+                    var channel = Context.Guild.GetTextChannel(club.Channel.Value);
+                    await channel.ModifyAsync(x => x.Name = name);
+                }
             }
         }
 

@@ -149,5 +149,25 @@ namespace Hanekawa.Modules.Club
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ClubAdvertiseAsync() => await _advertise.AdvertiseAsync(Context);
+
+        [Name("Club blacklist")]
+        [Command("club blacklist", RunMode = RunMode.Async)]
+        [Alias("cb")]
+        [Summary("Blacklist a user from their club")]
+        [Remarks("h.cb @bob#0000")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task BlackListUser(IGuildUser user, [Remainder] string reason = null) =>
+            await _admin.BlackListUserAsync(Context, user, reason);
+
+        [Name("Club blacklist")]
+        [Command("club blacklist", RunMode = RunMode.Async)]
+        [Alias("cb")]
+        [Summary("Gets current blacklist for their club")]
+        [Remarks("h.cb")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task GetBlackList() =>
+            await _admin.GetBlackListAsync(Context);
     }
 }
