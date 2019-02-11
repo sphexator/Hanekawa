@@ -19,8 +19,8 @@ namespace Hanekawa.Services.Club
         {
             _client = client;
             _management = management;
-
-            _client.ReactionRemoved += ClubJoinLeave;
+            _client.ReactionAdded += ClubJoin;
+            _client.ReactionRemoved += ClubLeave;
             _client.UserLeft += ClubRemoveAsync;
         }
 
@@ -50,6 +50,13 @@ namespace Hanekawa.Services.Club
             });
             return Task.CompletedTask;
         }
+
+        private Task ClubJoin(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
+            SocketReaction reaction) =>
+            ClubJoinLeave(msg, channel, reaction);
+
+        private Task ClubLeave(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction reaction) =>
+            ClubJoinLeave(msg, channel, reaction);
 
         private Task ClubJoinLeave(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan,
             SocketReaction reaction)

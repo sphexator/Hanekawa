@@ -59,7 +59,7 @@ namespace Hanekawa.Modules.Club.Handler
                 }
                 else
                 {
-                    var msg = (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value))
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value))
                         .GetMessageAsync(leader.AdMessage.Value);
                     if (msg == null)
                     {
@@ -68,7 +68,9 @@ namespace Hanekawa.Modules.Club.Handler
                     }
                     else
                     {
-                        await context.ReplyAsync("There's already an ad up!", Color.Red.RawValue);
+                        await msg.DeleteAsync();
+                        await SendPostAsync(db, cfg, context.Guild, leader);
+                        await context.ReplyAsync("Re-posted ad!", Color.Green.RawValue);
                     }
                 }
             }
@@ -91,6 +93,18 @@ namespace Hanekawa.Modules.Club.Handler
                     var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)
                         ).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await UpdatePostNameAsync(msg, name);
+                }
+
+                if (club.Role.HasValue)
+                {
+                    var role = context.Guild.GetRole(club.Role.Value);
+                    await role.ModifyAsync(x => x.Name = name);
+                }
+
+                if (club.Channel.HasValue)
+                {
+                    var channel = await context.Guild.GetTextChannelAsync(club.Channel.Value);
+                    await channel.ModifyAsync(x => x.Name = name);
                 }
             }
         }

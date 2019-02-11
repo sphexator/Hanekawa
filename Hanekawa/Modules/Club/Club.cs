@@ -143,6 +143,7 @@ namespace Hanekawa.Modules.Club
 
         [Name("Club advertise")]
         [Command("club advertise", RunMode = RunMode.Async)]
+        [Alias("club post")]
         [Summary("Posts a advertisement of club to designated advertisement channel")]
         [Remarks("h.club advertise")]
         [Ratelimit(1, 5, Measure.Seconds)]
