@@ -28,6 +28,7 @@ namespace Hanekawa.Addons.Database.Tables.GuildConfig
         public int ClubChannelRequiredAmount { get; set; } = 4;
         public int ClubChannelRequiredLevel { get; set; } = 40;
         public bool ClubAutoPrune { get; set; } = false;
+        public bool ClubRole { get; set; } = false;
 
         // Welcome Settings
         public ulong? WelcomeChannel { get; set; } = null;
