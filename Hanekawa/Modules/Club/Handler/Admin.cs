@@ -109,24 +109,9 @@ namespace Hanekawa.Modules.Club.Handler
                         await context.ReplyAsync("Invite expired.", Color.Red.RawValue);
                         return;
                     }
-
+                await context.Channel.TriggerTypingAsync();
                 await _management.AddUserAsync(db, user, clubUser);
                 await context.ReplyAsync($"Added {user.Mention} to {clubData.Name}", Color.Green.RawValue);
-                if (clubData.Channel.HasValue)
-                {
-                    var channel =
-                        (await context.Guild.GetTextChannelsAsync()).FirstOrDefault(x =>
-                            x.Id == clubData.Channel.Value);
-                    if (channel == null)
-                    {
-                        clubData.Channel = null;
-                        await db.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        await channel.AddPermissionOverwriteAsync(user, _allowOverwrite);
-                    }
-                }
             }
         }
 
@@ -137,10 +122,11 @@ namespace Hanekawa.Modules.Club.Handler
             {
                 var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (club == null) return;
+                await context.Channel.TriggerTypingAsync();
                 var response = await _management.RemoveUserAsync(db, user, club.Id);
-                if (response != null)
+                if (!response)
                 {
-                    await context.ReplyAsync(response, Color.Red.RawValue);
+                    await context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red.RawValue);
                     return;
                 }
 
@@ -224,7 +210,7 @@ namespace Hanekawa.Modules.Club.Handler
                         return;
                     case 1:
                         club = clubs.FirstOrDefault();
-                        await _management.RemoveUserAsync(db, context.User, club);
+                        await _management.RemoveUserAsync(db, context.User, context.Guild, club);
                         await context.ReplyAsync(
                             $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}!");
                         return;
@@ -254,7 +240,7 @@ namespace Hanekawa.Modules.Club.Handler
                                 if (!int.TryParse(response.Content, out var result)) continue;
                                 club = clubs.FirstOrDefault(x => x.ClubId == result);
                                 if (club == null) continue;
-                                await _management.RemoveUserAsync(db, context.User, club);
+                                await _management.RemoveUserAsync(db, context.User, context.Guild, club);
                                 await Context.ReplyAsync(
                                     $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
                                     Color.Green.RawValue);

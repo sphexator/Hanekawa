@@ -1,16 +1,26 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
+using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
+using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Club.Handler
 {
     public class Management : IHanaService
     {
+        private readonly OverwritePermissions _allowOverwrite =
+            new OverwritePermissions(addReactions: PermValue.Allow, sendMessages: PermValue.Allow,
+                attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
+
+        private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(
+            addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny,
+            embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
+
         public async Task PromoteUserAsync(DbService db, IGuildUser user, ClubUser clubUser, ClubInformation club)
         {
             if (clubUser.Rank == 2)
@@ -26,6 +36,7 @@ namespace Hanekawa.Modules.Club.Handler
             {
                 clubUser.Rank--;
             }
+
             await db.SaveChangesAsync();
         }
 
@@ -36,39 +47,63 @@ namespace Hanekawa.Modules.Club.Handler
             await db.SaveChangesAsync();
         }
 
-        public async Task AddUserAsync(DbService db, IGuildUser user, ClubUser clubUser) =>
-            await AddUserAsync(db, user, clubUser.ClubId).ConfigureAwait(false);
+        public async Task AddUserAsync(DbService db, IGuildUser user, int clubId, GuildConfig cfg = null) =>
+            await AddUserAsync(db, user, user.Guild, clubId, cfg).ConfigureAwait(false);
 
-        public async Task AddUserAsync(DbService db, IGuildUser user, int id)
+        public async Task
+            AddUserAsync(DbService db, IUser user, IGuild guild, ClubUser clubId, GuildConfig cfg = null) =>
+            await AddUserAsync(db, user, guild, clubId.ClubId, cfg).ConfigureAwait(false);
+
+        public async Task AddUserAsync(DbService db, IGuildUser user, ClubInformation clubId, GuildConfig cfg = null) =>
+            await AddUserAsync(db, user, user.Guild, clubId.Id, cfg).ConfigureAwait(false);
+
+        public async Task AddUserAsync(DbService db, IGuildUser user, ClubUser clubUser, GuildConfig cfg = null) =>
+            await AddUserAsync(db, user, user.Guild, clubUser.ClubId, cfg).ConfigureAwait(false);
+
+        public async Task AddUserAsync(DbService db, IUser user, IGuild guild, int id, GuildConfig cfg = null)
         {
             var data = new ClubUser
             {
                 ClubId = id,
-                GuildId = user.GuildId,
+                GuildId = guild.Id,
                 JoinDate = DateTimeOffset.UtcNow,
                 Rank = 3,
                 UserId = user.Id
             };
             await db.ClubPlayers.AddAsync(data);
             await db.SaveChangesAsync();
+            await AddRoleOrChannelPermissions(db, user, guild, await db.ClubInfos.FindAsync(id), cfg);
         }
 
-        public async Task RemoveUserAsync(DbService db, IGuildUser user, ClubUser clubUser) =>
-            await RemoveUserAsync(db, user, clubUser.ClubId).ConfigureAwait(false);
+        public async Task<bool> RemoveUserAsync(DbService db, IGuildUser user, int clubId, GuildConfig cfg = null) =>
+            await RemoveUserAsync(db, user, user.Guild, clubId, cfg).ConfigureAwait(false);
 
-        public async Task RemoveUserAsync(DbService db, IUser user, ClubUser clubUser) =>
-            await RemoveUserAsync(db, user as IGuildUser, clubUser.ClubId).ConfigureAwait(false);
+        public async Task<bool> RemoveUserAsync(DbService db, IUser user, IGuild guild, ClubUser clubId,
+            GuildConfig cfg = null) =>
+            await RemoveUserAsync(db, user, guild, clubId.ClubId, cfg).ConfigureAwait(false);
 
-        public async Task<string> RemoveUserAsync(DbService db, IGuildUser user, int clubId)
+        public async Task<bool>
+            RemoveUserAsync(DbService db, IGuildUser user, ClubInformation clubId, GuildConfig cfg = null) =>
+            await RemoveUserAsync(db, user, user.Guild, clubId.Id, cfg).ConfigureAwait(false);
+
+        public async Task<bool> RemoveUserAsync(DbService db, IGuildUser user, ClubUser clubUser, GuildConfig cfg = null) =>
+            await RemoveUserAsync(db, user, user.Guild, clubUser.ClubId, cfg).ConfigureAwait(false);
+
+        public async Task<bool> RemoveUserAsync(DbService db, IUser user, IGuild guild, int clubId,
+            GuildConfig cfg = null)
         {
-            var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x => x.UserId == user.Id && x.GuildId == user.GuildId && x.ClubId == clubId);
-            if (clubUser == null) return $"Can't remove {user.Mention}.";
+            var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                x.UserId == user.Id && x.GuildId == guild.Id && x.ClubId == clubId);
+            if (clubUser == null) return false;
             db.ClubPlayers.Remove(clubUser);
             await db.SaveChangesAsync();
-            return null;
+
+            await RemoveRoleOrChannelPermissions(db, user, guild, await db.ClubInfos.FindAsync(clubUser.Id), cfg);
+            return true;
         }
 
-        public async Task<bool> BlackListUserAsync(DbService db, IGuildUser blacklistUser, IGuildUser leader, int clubId, string reason = "N/A")
+        public async Task<bool> BlackListUserAsync(DbService db, IGuildUser blacklistUser, IGuildUser leader,
+            int clubId, string reason = "N/A")
         {
             var check = await db.ClubBlacklists.FindAsync(clubId, blacklistUser.GuildId, blacklistUser.Id);
             if (check != null) return false;
@@ -81,7 +116,32 @@ namespace Hanekawa.Modules.Club.Handler
                 Reason = reason,
                 Time = DateTimeOffset.UtcNow
             });
+            await db.SaveChangesAsync();
+            var club = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                x.UserId == blacklistUser.Id && x.GuildId == blacklistUser.GuildId && x.ClubId == clubId);
+            if (club != null) await RemoveUserAsync(db, blacklistUser, clubId);
             return true;
+        }
+
+        private async Task AddRoleOrChannelPermissions(DbService db, IUser user, IGuild guild, ClubInformation club,
+            GuildConfig cfg)
+        {
+            if (cfg == null) cfg = await db.GetOrCreateGuildConfigAsync(guild);
+            if (cfg.ClubRole && club.Role.HasValue)
+                await (await guild.GetUserAsync(user.Id)).TryAddRoleAsync(guild.GetRole(club.Role.Value));
+            if (!cfg.ClubRole && club.Channel.HasValue)
+                await (await guild.GetTextChannelAsync(club.Channel.Value)).AddPermissionOverwriteAsync(user,
+                    _allowOverwrite);
+        }
+
+        private async Task RemoveRoleOrChannelPermissions(DbService db, IUser user, IGuild guild, ClubInformation club,
+            GuildConfig cfg)
+        {
+            if (cfg == null) cfg = await db.GetOrCreateGuildConfigAsync(guild);
+            if (cfg.ClubRole && club.Role.HasValue)
+                await (await guild.GetUserAsync(user.Id)).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
+            if (!cfg.ClubRole && club.Channel.HasValue)
+                await (await guild.GetTextChannelAsync(club.Channel.Value)).RemovePermissionOverwriteAsync(user);
         }
     }
 }
