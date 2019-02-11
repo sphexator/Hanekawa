@@ -9,13 +9,13 @@ namespace Hanekawa.Addons.Database.Tables.Club
         public ulong LeaderId { get; set; }
         public string Name { get; set; } = "N/A";
         public string Description { get; set; } = "N/A";
-        public string IconUrl { get; set; } = null;
-        public string ImageUrl { get; set; } = null;
-        public bool Public { get; set; } = false;
-        public bool AutoAdd { get; set; } = false;
-        public ulong? AdMessage { get; set; } = null;
-        public ulong? Channel { get; set; } = null;
-        public ulong? Role { get; set; } = null;
+        public string IconUrl { get; set; }
+        public string ImageUrl { get; set; } 
+        public bool Public { get; set; } 
+        public bool AutoAdd { get; set; } 
+        public ulong? AdMessage { get; set; } 
+        public ulong? Channel { get; set; } 
+        public ulong? Role { get; set; } 
         public DateTimeOffset CreationDate { get; set; } = DateTimeOffset.UtcNow;
     }
 }

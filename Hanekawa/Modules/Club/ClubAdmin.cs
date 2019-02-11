@@ -241,5 +241,32 @@ namespace Hanekawa.Modules.Club
                 }
             }
         }
+
+        [Name("Club role toggle")]
+        [Command("club toggle role")]
+        [Alias("ctr")]
+        [Summary("Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
+        [Remarks("h.ctr")]
+        public async Task ToggleClubRole()
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                if (cfg.ClubRole)
+                {
+                    cfg.ClubRole = false;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled creation of roles for clubs.\n" +
+                                             "Now using channel permissions to add users to their designated channel");
+                }
+                else
+                {
+                    cfg.ClubRole = true;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Enabled creation of roles for clubs.\n" +
+                                             "Now using their designated role to add users to their channel");
+                }
+            }
+        }
     }
 }
