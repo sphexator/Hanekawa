@@ -7,7 +7,8 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -31,8 +32,8 @@ namespace Hanekawa.Services.Welcome
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs)
-                    DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
+                foreach (var x in db.WelcomeConfigs)
+                    DisableBanner.AddOrUpdate(x.GuildId, x.Channel.HasValue, (arg1, b) => false);
             }
 
             Console.WriteLine("Welcome service loaded");
@@ -60,8 +61,8 @@ namespace Hanekawa.Services.Welcome
                 int limit;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GuildConfigs.FindAsync(user.Guild.Id);
-                    limit = cfg.WelcomeLimit;
+                    var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
+                    limit = cfg.Limit;
                     counter = JoinCount.GetOrAdd(user.Guild.Id, 0);
                 }
 
@@ -87,28 +88,28 @@ namespace Hanekawa.Services.Welcome
                 if (AntiRaidDisable.GetOrAdd(user.Guild.Id, false)) return;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
-                    if (!cfg.WelcomeChannel.HasValue) return;
+                    var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild).ConfigureAwait(false);
+                    if (!cfg.Channel.HasValue) return;
 
-                    var channel = user.Guild.GetTextChannel(cfg.WelcomeChannel.Value);
+                    var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
                     if (channel == null) return;
 
-                    if (cfg.WelcomeBanner) await WelcomeBanner(channel, user, cfg).ConfigureAwait(false);
-                    else await channel.SendMessageAsync(_message.Message(cfg.WelcomeMessage, user));
+                    if (cfg.Banner) await WelcomeBanner(channel, user, cfg).ConfigureAwait(false);
+                    else await channel.SendMessageAsync(_message.Message(cfg.Message, user));
                 }
             });
             return Task.CompletedTask;
         }
 
-        private async Task WelcomeBanner(ISocketMessageChannel channel, SocketGuildUser user, GuildConfig cfg)
+        private async Task WelcomeBanner(ISocketMessageChannel channel, SocketGuildUser user, WelcomeConfig cfg)
         {
-            var (stream, message) = await _image.Banner(user, cfg.WelcomeMessage).ConfigureAwait(false);
+            var (stream, message) = await _image.Banner(user, cfg.Message).ConfigureAwait(false);
             stream.Seek(0, SeekOrigin.Begin);
             var msg = await channel.SendFileAsync(stream, "Welcome.png", message)
                 .ConfigureAwait(false);
-            if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.WelcomeDelete.HasValue)
+            if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.TimeToDelete.HasValue)
             {
-                await Task.Delay(cfg.WelcomeDelete.Value);
+                await Task.Delay(cfg.TimeToDelete.Value);
                 try
                 {
                     await msg.DeleteAsync();

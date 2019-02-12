@@ -3,11 +3,12 @@ using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Quartz.Util;
 
 namespace Hanekawa.Modules.Club.Handler
@@ -44,8 +45,8 @@ namespace Hanekawa.Modules.Club.Handler
             {
                 var leader = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (leader == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
-                if (!cfg.ClubAdvertisementChannel.HasValue)
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+                if (!cfg.AdvertisementChannel.HasValue)
                 {
                     await context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
                         Color.Red.RawValue);
@@ -59,7 +60,7 @@ namespace Hanekawa.Modules.Club.Handler
                 }
                 else
                 {
-                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value))
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value))
                         .GetMessageAsync(leader.AdMessage.Value);
                     if (msg == null)
                     {
@@ -84,13 +85,13 @@ namespace Hanekawa.Modules.Club.Handler
                 var club = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (club == null) return;
                 await context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 club.Name = name;
                 await db.SaveChangesAsync();
                 await context.ReplyAsync($"Updated club name to `{name}` !");
-                if (club.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value)
                         ).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await UpdatePostNameAsync(msg, name);
                 }
@@ -116,13 +117,13 @@ namespace Hanekawa.Modules.Club.Handler
                 var leader = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (leader == null) return;
                 await context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.Description = desc;
                 await db.SaveChangesAsync();
                 await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
-                if (leader.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value)
                         ).GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
                     await UpdatePostDescriptionAsync(msg, desc);
                 }
@@ -136,13 +137,13 @@ namespace Hanekawa.Modules.Club.Handler
                 var leader = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (leader == null) return;
                 await context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.ImageUrl = image;
                 await db.SaveChangesAsync();
                 await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
-                if (leader.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value)
                         ).GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
                     await UpdatePostImageAsync(msg, image);
                 }
@@ -156,13 +157,13 @@ namespace Hanekawa.Modules.Club.Handler
                 var leader = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (leader == null) return;
                 await context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.IconUrl = icon;
                 await db.SaveChangesAsync();
                 await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
-                if (leader.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
+                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)
+                    var msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value)
                         ).GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
                     await UpdatePostIconAsync(msg, icon);
                 }
@@ -197,14 +198,14 @@ namespace Hanekawa.Modules.Club.Handler
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        private async Task SendPostAsync(DbService db, GuildConfig cfg, IGuild guild, ClubInformation club)
+        private async Task SendPostAsync(DbService db, ClubConfig cfg, IGuild guild, ClubInformation club)
         {
-            if (!cfg.ClubAdvertisementChannel.HasValue) return;
+            if (!cfg.AdvertisementChannel.HasValue) return;
             var embed = new EmbedBuilder()
                 .CreateDefault(club.Description ?? "No description added", guild.Id)
                 .WithAuthor(new EmbedAuthorBuilder { Name = club.Name })
                 .WithImageUrl(club.ImageUrl);
-            var msg = await (await guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value)).ReplyAsync(embed);
+            var msg = await (await guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value)).ReplyAsync(embed);
             club.AdMessage = msg.Id;
             await db.SaveChangesAsync();
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
@@ -212,11 +213,11 @@ namespace Hanekawa.Modules.Club.Handler
 
         private async Task PublicHandle(DbService db, ICommandContext context, ClubInformation club, IGuild guild, bool enabled)
         {
-            var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
-            if (cfg.ClubAdvertisementChannel.HasValue)
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            if (cfg.AdvertisementChannel.HasValue)
             {
                 IUserMessage msg = null;
-                if(club.AdMessage.HasValue) msg = await (await context.Guild.GetTextChannelAsync(cfg.ClubAdvertisementChannel.Value))
+                if(club.AdMessage.HasValue) msg = await (await context.Guild.GetTextChannelAsync(cfg.AdvertisementChannel.Value))
                     .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                 if (enabled)
                 {

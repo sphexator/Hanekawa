@@ -103,7 +103,7 @@ namespace Hanekawa.Modules.Events
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventSchedulerChannel = null;
@@ -127,7 +127,7 @@ namespace Hanekawa.Modules.Events
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventChannel = null;
@@ -265,7 +265,7 @@ namespace Hanekawa.Modules.Events
                     if (response.Content.ToLower() == "y")
                     {
                         await _service.TryAddEventAsync(name, Context.User as IGuildUser, date, db);
-                        var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                        var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                         await Context.ReplyAsync(
                             $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!");
                         if (cfg.DesignChannel.HasValue)

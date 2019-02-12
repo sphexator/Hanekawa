@@ -8,7 +8,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Welcome;
@@ -161,8 +161,8 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync("Updated welcome message!\n\n" +
                                          $"{_message.Message(message, Context.User, Context.Guild)}",
@@ -177,16 +177,16 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (!cfg.WelcomeDelete.HasValue && timer == null) return;
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (!cfg.TimeToDelete.HasValue && timer == null) return;
                 if (timer == null)
                 {
-                    cfg.WelcomeDelete = null;
+                    cfg.TimeToDelete = null;
                     await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeDelete = timer.Value;
+                    cfg.TimeToDelete = timer.Value;
                     await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
                                              $"I will now delete the message after {timer.Value.Humanize()}!",
                         Color.Green.RawValue);
@@ -202,15 +202,15 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.WelcomeBanner)
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Banner)
                 {
-                    cfg.WelcomeBanner = false;
+                    cfg.Banner = false;
                     await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeBanner = true;
+                    cfg.Banner = true;
                     await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
                 }
 
@@ -224,35 +224,35 @@ namespace Hanekawa.Modules.Welcome
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.WelcomeChannel.HasValue && channel == null)
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Channel.HasValue && channel == null)
                 {
-                    cfg.WelcomeChannel = null;
+                    cfg.Channel = null;
                     await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
                 }
-                else if (cfg.WelcomeChannel.HasValue && channel != null)
+                else if (cfg.Channel.HasValue && channel != null)
                 {
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
-                else if (!cfg.WelcomeChannel.HasValue && channel == null)
+                else if (!cfg.Channel.HasValue && channel == null)
                 {
                     if (Context.Channel is ITextChannel textChannel) channel = textChannel;
                     else return;
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
-                else if (!cfg.WelcomeChannel.HasValue)
+                else if (!cfg.Channel.HasValue)
                 {
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeChannel = null;
+                    cfg.Channel = null;
                     await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
                 }
 

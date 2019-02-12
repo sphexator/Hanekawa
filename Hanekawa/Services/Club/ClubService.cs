@@ -67,9 +67,9 @@ namespace Hanekawa.Services.Club
                 if (!reaction.Emote.Equals(new Emoji("\u2714"))) return;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(channel.Guild);
-                    if (!cfg.ClubAdvertisementChannel.HasValue) return;
-                    if (cfg.ClubAdvertisementChannel.Value != channel.Id) return;
+                    var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
+                    if (!cfg.AdvertisementChannel.HasValue) return;
+                    if (cfg.AdvertisementChannel.Value != channel.Id) return;
 
                     var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                         x.GuildId == channel.Guild.Id && x.AdMessage == reaction.MessageId);

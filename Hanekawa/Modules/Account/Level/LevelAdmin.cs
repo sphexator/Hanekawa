@@ -4,7 +4,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Level;
@@ -16,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account.Level
@@ -60,7 +60,7 @@ namespace Hanekawa.Modules.Account.Level
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 if (cfg.StackLvlRoles)
                 {
                     cfg.StackLvlRoles = false;

@@ -140,8 +140,8 @@ namespace Hanekawa.Modules.Club.Handler
             {
                 var leader = await db.IsClubLeader(context.Guild.Id, context.User.Id);
                 if (leader.Channel.HasValue) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
-                if (!cfg.ClubChannelCategory.HasValue)
+                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+                if (!cfg.ChannelCategory.HasValue)
                 {
                     await Context.ReplyAsync("This server doesn\'t allow club channels", Color.Red.RawValue);
                     return;
@@ -149,20 +149,20 @@ namespace Hanekawa.Modules.Club.Handler
 
                 var users = await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == leader.Id)
                     .ToListAsync();
-                var amount = await GetUsersOfLevelAsync(db, cfg.ClubChannelRequiredLevel, users);
-                if (amount < cfg.ClubChannelRequiredAmount)
+                var amount = await GetUsersOfLevelAsync(db, cfg.ChannelRequiredLevel, users);
+                if (amount < cfg.ChannelRequiredAmount)
                 {
                     await Context.ReplyAsync(
-                        $"Club does not have the required amount({cfg.ClubChannelRequiredAmount}) of people that's of level {cfg.ClubChannelRequiredLevel} or higher to create a channel",
+                        $"Club does not have the required amount({cfg.ChannelRequiredAmount}) of people that's of level {cfg.ChannelRequiredLevel} or higher to create a channel",
                         Color.Red.RawValue);
                     return;
                 }
 
                 var channel = await context.Guild.CreateTextChannelAsync(leader.Name,
-                    x => x.CategoryId = cfg.ClubChannelCategory.Value);
+                    x => x.CategoryId = cfg.ChannelCategory.Value);
                 await channel.AddPermissionOverwriteAsync(context.Guild.EveryoneRole, _denyOverwrite);
                 leader.Channel = channel.Id;
-                if (cfg.ClubRole)
+                if (cfg.RoleEnabled)
                 {
                     var role = await context.Guild.CreateRoleAsync(leader.Name, GuildPermissions.All);
                     await channel.AddPermissionOverwriteAsync(role, _allowOverwrite);

@@ -6,7 +6,8 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Addons.Database.Tables.Stores;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
@@ -21,7 +22,7 @@ namespace Hanekawa.Modules.Account.Storage
             using (var db = new DbService())
             {
                 var result = new List<string>();
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                var cfg = await db.GetOrCreateCurrencyConfigAsync(user.Guild);
                 foreach (var x in await db.ServerStores.Where(x => x.GuildId == user.GuildId).ToListAsync())
                     result.Add(
                         $"Name: {(await db.Items.FindAsync(x.ItemId)).Name} (id:{x.ItemId}) - {GetPrice(cfg, x, x.Price)}\n");
@@ -116,18 +117,18 @@ namespace Hanekawa.Modules.Account.Storage
             return new EmbedBuilder().CreateDefault($"{user.Mention} purchased {item.Name} for {price}", user.GuildId);
         }
 
-        private static string GetPrice(GuildConfig cfg, ServerStore shop, int price) =>
+        private static string GetPrice(CurrencyConfig cfg, ServerStore shop, int price) =>
             shop.SpecialCredit ? GetSpecialCurrency(price, cfg) : GetRegularCurrency(price, cfg);
 
-        private static string SpecialCurrencyResponse(GuildConfig cfg) =>
+        private static string SpecialCurrencyResponse(CurrencyConfig cfg) =>
             cfg.SpecialEmoteCurrency ? $"{CurrencySignEmote(cfg.SpecialCurrencySign)}" : cfg.SpecialCurrencySign;
 
-        private static string GetRegularCurrency(int price, GuildConfig cfg) =>
+        private static string GetRegularCurrency(int price, CurrencyConfig cfg) =>
             cfg.EmoteCurrency
                 ? EmoteCurrencyResponse(price, cfg.CurrencyName, cfg.CurrencySign)
                 : RegularCurrencyResponse(price, cfg.CurrencyName, cfg.CurrencySign);
 
-        private static string GetSpecialCurrency(int price, GuildConfig cfg) =>
+        private static string GetSpecialCurrency(int price, CurrencyConfig cfg) =>
             cfg.SpecialEmoteCurrency
                 ? EmoteCurrencyResponse(price, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign)
                 : RegularCurrencyResponse(price, cfg.SpecialCurrencyName, cfg.SpecialCurrencySign);

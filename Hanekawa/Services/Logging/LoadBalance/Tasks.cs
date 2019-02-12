@@ -81,7 +81,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     var user = userJoined.User;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -114,7 +114,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     var user = userJoined.User;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -147,7 +147,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(messageDeleted.Channel is SocketGuildChannel chx)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(chx.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild).ConfigureAwait(false);
                         if (!cfg.LogMsg.HasValue) return;
                         var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
                         if (channel == null) return;
@@ -204,7 +204,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(messageUpdated.Channel is ITextChannel chtx)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(chtx.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(chtx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
 
                         if (!messageUpdated.OldMessage.HasValue) return;
@@ -256,7 +256,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfigAsync(userBanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateLoggingConfigAsync(userBanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userBanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
@@ -302,7 +302,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfigAsync(userUnbanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateLoggingConfigAsync(userUnbanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userUnbanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
@@ -348,7 +348,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(userUpdated.NewUser is SocketGuildUser gusr)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(gusr.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(gusr.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;
@@ -400,7 +400,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                 while (queue.TryDequeue(out var guildUserUpdated))
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(guildUserUpdated.NewUser.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(guildUserUpdated.NewUser.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = guildUserUpdated.NewUser.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;

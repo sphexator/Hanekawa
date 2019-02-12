@@ -10,7 +10,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Perspective;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Interfaces;

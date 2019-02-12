@@ -5,7 +5,8 @@ using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Addons.Database.Tables.Profile;
 using Hanekawa.Addons.Database.Tables.Stores;
@@ -15,13 +16,8 @@ namespace Hanekawa.Addons.Database
 {
     public class DbService : DbContext
     {
-        public DbService()
-        {
-        }
-
-        public DbService(DbContextOptions options) : base(options)
-        {
-        }
+        public DbService() { }
+        public DbService(DbContextOptions options) : base(options) { }
 
         // Account
         public virtual DbSet<Account> Accounts { get; set; }
@@ -71,6 +67,16 @@ namespace Hanekawa.Addons.Database
 
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
+        public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
+        public virtual DbSet<BoardConfig> BoardConfigs { get; set; }
+        public virtual DbSet<ChannelConfig> ChannelConfigs { get; set; }
+        public virtual DbSet<ClubConfig> ClubConfigs { get; set; }
+        public virtual DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
+        public virtual DbSet<LevelConfig> LevelConfigs { get; set; }
+        public virtual DbSet<LoggingConfig> LoggingConfigs { get; set; }
+        public virtual DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
+        public virtual DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
+
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
         public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
@@ -380,33 +386,79 @@ namespace Hanekawa.Addons.Database
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
-                x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
-                x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
                 x.Property(E => E.EmbedColor).HasConversion<int>();
                 x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.LogBan).HasConversion<long>();
-                x.Property(e => e.LogAutoMod).HasConversion<long>();
-                x.Property(e => e.LogAvi).HasConversion<long>();
-                x.Property(e => e.LogJoin).HasConversion<long>();
-                x.Property(e => e.LogMsg).HasConversion<long>();
-                x.Property(e => e.LogWarn).HasConversion<long>();
-                x.Property(e => e.WelcomeChannel).HasConversion<long>();
                 x.Property(e => e.AnimeAirChannel).HasConversion<long>();
-                x.Property(e => e.BoardChannel).HasConversion<long>();
-                x.Property(e => e.ClubAdvertisementChannel).HasConversion<long>();
-                x.Property(e => e.ClubChannelCategory).HasConversion<long>();
-                x.Property(e => e.DesignChannel).HasConversion<long>();
-                x.Property(e => e.EventChannel).HasConversion<long>();
                 x.Property(e => e.EmbedColor).HasConversion<int>();
-                x.Property(e => e.SuggestionChannel).HasConversion<long>();
-                x.Property(e => e.ReportChannel).HasConversion<long>();
-                x.Property(e => e.QuestionAndAnswerChannel).HasConversion<long>();
-                x.Property(e => e.EventSchedulerChannel).HasConversion<long>();
-                x.Property(e => e.ModChannel).HasConversion<long>();
-                x.Property(e => e.MuteRole).HasConversion<long>();
                 x.Property(e => e.MusicChannel).HasConversion<long>();
                 x.Property(e => e.MusicVcChannel).HasConversion<long>();
             });
+            modelBuilder.Entity<AdminConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.MuteRole).HasConversion<long>();
+            });
+            modelBuilder.Entity<BoardConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Channel).HasConversion<long>();
+            });
+            modelBuilder.Entity<ChannelConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.DesignChannel).HasConversion<long>();
+                x.Property(e => e.EventChannel).HasConversion<long>();
+                x.Property(e => e.EventSchedulerChannel).HasConversion<long>();
+                x.Property(e => e.ModChannel).HasConversion<long>();
+                x.Property(e => e.QuestionAndAnswerChannel).HasConversion<long>();
+                x.Property(e => e.ReportChannel).HasConversion<long>();
+            });
+            modelBuilder.Entity<ClubConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.AdvertisementChannel).HasConversion<long>();
+                x.Property(e => e.ChannelCategory).HasConversion<long>();
+            });
+            modelBuilder.Entity<CurrencyConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
+                x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
+            });
+            modelBuilder.Entity<LevelConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+            });
+            modelBuilder.Entity<LoggingConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.LogAutoMod).HasConversion<long>();
+                x.Property(e => e.LogAvi).HasConversion<long>();
+                x.Property(e => e.LogBan).HasConversion<long>();
+                x.Property(e => e.LogJoin).HasConversion<long>();
+                x.Property(e => e.LogWarn).HasConversion<long>();
+                x.Property(e => e.LogMsg).HasConversion<long>();
+            });
+            modelBuilder.Entity<SuggestionConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Channel).HasConversion<long>();
+            });
+            modelBuilder.Entity<WelcomeConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Channel).HasConversion<long>();
+            });
+
             modelBuilder.Entity<IgnoreChannel>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.ChannelId});

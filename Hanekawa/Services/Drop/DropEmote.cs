@@ -36,6 +36,7 @@ namespace Hanekawa.Services.Drop
             return emotes;
         }
 
+        // TODO: Custom drop emotes
         private async Task<List<Emote>> GetEmotes(ulong guildId)
         {
             var result = new List<Emote>();
@@ -54,9 +55,9 @@ namespace Hanekawa.Services.Drop
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(guildId);
+                var cfg = await db.GetOrCreateBoardConfigAsync(guildId);
                 // Change board emote to new drop emote
-                var isEmote = Emote.TryParse(cfg.BoardEmote, out var emote);
+                var isEmote = Emote.TryParse(cfg.Emote, out var emote);
                 return isEmote ? emote : GetDefaultEmote();
             }
         }

@@ -9,7 +9,8 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Data;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
@@ -205,11 +206,11 @@ namespace Hanekawa.Services.AutoModerator
                 if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
-                GuildConfig cfg;
+                AdminConfig cfg;
                 Account userdata;
                 using (var db = new DbService())
                 {
-                    cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                     userdata = await db.GetOrCreateUserData(user);
                 }
 
@@ -227,7 +228,7 @@ namespace Hanekawa.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task InviteFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (!cfg.FilterInvites) return;
             if (user.GuildPermissions.ManageGuild) return;
@@ -249,7 +250,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
             if (msg.Content.IsGoogleLink())
@@ -288,7 +289,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task LengthFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg, Account userdata)
         {
             if (user.GuildId != 339370914724446208) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -308,7 +309,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task MentionFilter(IMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task MentionFilter(IMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (!cfg.MentionCountFilter.HasValue || cfg.MentionCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -327,7 +328,7 @@ namespace Hanekawa.Services.AutoModerator
             var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Mention, amount, msg.Content);
         }
 
-        private async Task EmoteFilter(IMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task EmoteFilter(IMessage msg, IGuildUser user, AdminConfig cfg, Account userdata)
         {
             if (!cfg.EmoteCountFilter.HasValue || cfg.EmoteCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;

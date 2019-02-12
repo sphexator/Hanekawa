@@ -116,10 +116,10 @@ namespace Hanekawa.Modules.Board
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 var emoteString = ParseEmoteString(emote);
                 _boardService.SetBoardEmote(Context.Guild, emoteString);
-                cfg.BoardEmote = emoteString;
+                cfg.Emote = emoteString;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green.RawValue);
             }
@@ -133,16 +133,16 @@ namespace Hanekawa.Modules.Board
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 if (channel == null)
                 {
-                    cfg.BoardChannel = null;
+                    cfg.Channel = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Disabled the board", Color.Green.RawValue);
                     return;
                 }
 
-                cfg.BoardChannel = channel.Id;
+                cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green.RawValue);
             }

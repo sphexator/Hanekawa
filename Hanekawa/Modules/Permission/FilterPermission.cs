@@ -32,7 +32,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 await Context.ReplyAsync(new EmbedBuilder()
                     .CreateDefault($"**Invite filter:** {cfg.FilterInvites}\n" +
                                    $"**Emote filter:** {cfg.EmoteCountFilter ?? 0}\n" +
@@ -57,7 +57,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (cfg.FilterInvites)
                 {
                     cfg.FilterInvites = false;
@@ -207,7 +207,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (amount > 0)
                 {
                     cfg.EmoteCountFilter = amount;
@@ -230,7 +230,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (amount > 0)
                 {
                     cfg.MentionCountFilter = amount;

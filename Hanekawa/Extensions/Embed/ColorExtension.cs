@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using Discord;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 
 namespace Hanekawa.Extensions.Embed
 {

@@ -2,7 +2,6 @@
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Logging;
@@ -12,6 +11,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Addons.Database.Tables.Config;
 
 namespace Hanekawa.Services.Level
 {

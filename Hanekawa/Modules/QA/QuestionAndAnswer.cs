@@ -22,7 +22,7 @@ namespace Hanekawa.Modules.QA
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue) return;
                 var caseId = await db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
 
@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.QA
                 await Context.Message.DeleteAsync();
                 var question = await db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
                 if (question == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue)
                 {
                     await Context.ReplyAsync("No QnA channel has been setup", Color.Red.RawValue);
@@ -105,7 +105,7 @@ namespace Hanekawa.Modules.QA
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (cfg.QuestionAndAnswerChannel.HasValue && channel == null)
                 {
                     cfg.QuestionAndAnswerChannel = null;

@@ -6,7 +6,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,7 +51,7 @@ namespace Hanekawa.Preconditions
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild as SocketGuild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild as SocketGuild);
                 return cfg.IgnoreAllChannels;
             }
         }

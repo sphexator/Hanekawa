@@ -8,7 +8,8 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ namespace Hanekawa.Services.Level
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.GuildId).ToListAsync();
             var role = GetLevelUpRole(userdata.Level, user, roles);
-            var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild as SocketGuild);
+            var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild as SocketGuild);
 
             if (role == null)
             {
@@ -47,7 +48,7 @@ namespace Hanekawa.Services.Level
             {
                 var userdata = await db.GetOrCreateUserData(user);
                 if (userdata == null || userdata.Level < 2) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                 if (cfg.StackLvlRoles)
                 {
                     var roleCollection = await GetRoleCollectionAsync(db, user, userdata);
@@ -60,7 +61,7 @@ namespace Hanekawa.Services.Level
             }
         }
 
-        private async Task RoleCheckAsync(DbService db, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task RoleCheckAsync(DbService db, IGuildUser user, LevelConfig cfg, Account userdata)
         {
             List<IRole> roles;
             if (cfg.StackLvlRoles) roles = await GetRoleCollectionAsync(db, user, userdata);

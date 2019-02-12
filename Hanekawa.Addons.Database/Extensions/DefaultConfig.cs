@@ -1,6 +1,7 @@
 ﻿using System;
 using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -9,57 +10,112 @@ namespace Hanekawa.Addons.Database.Extensions
         internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, ulong guild)
         {
             cfg.GuildId = guild;
-            cfg.WelcomeChannel = null;
+            cfg.Prefix = "h.";
+            cfg.MusicVcChannel = null;
+            cfg.MusicChannel = null;
+            cfg.Premium = false;
+            cfg.AnimeAirChannel = null;
+            cfg.AutomaticEventSchedule = false;
+            cfg.EmbedColor = 10181046;
+            return cfg;
+        }
+
+        internal static AdminConfig DefaultAdminConfig(this AdminConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.FilterAllInv = true;
+            cfg.FilterInvites = false;
+            cfg.FilterUrls = false;
+            cfg.IgnoreAllChannels = false;
+            cfg.MuteRole = null;
+            cfg.MentionCountFilter = null;
+            cfg.EmoteCountFilter = null;
+            cfg.FilterMsgLength = null;
+            return cfg;
+        }
+
+        internal static BoardConfig DefaultBoardConfig(this BoardConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.Channel = null;
+            cfg.Emote = null;
+            return cfg;
+        }
+
+        internal static ChannelConfig DefaultChannelConfig(this ChannelConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.DesignChannel = null;
+            cfg.EventChannel = null;
+            cfg.EventSchedulerChannel = null;
+            cfg.ModChannel = null;
+            cfg.QuestionAndAnswerChannel = null;
+            cfg.ReportChannel = null;
+            return cfg;
+        }
+
+        internal static ClubConfig DefaultClubConfig(this ClubConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.AdvertisementChannel = null;
+            cfg.AutoPrune = false;
+            cfg.ChannelCategory = null;
+            cfg.ChannelRequiredAmount = 4;
+            cfg.ChannelRequiredLevel = 10;
+            cfg.EnableVoiceChannel = false;
+            cfg.RoleEnabled = true;
+            return cfg;
+        }
+
+        internal static CurrencyConfig DefaultCurrencyConfig(this CurrencyConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.CurrencyName = "Credit";
+            cfg.CurrencySign = "$";
+            cfg.EmoteCurrency = false;
+            cfg.SpecialCurrencyName = "Special credit";
+            cfg.SpecialCurrencySign = "$";
+            cfg.SpecialEmoteCurrency = false;
+            return cfg;
+        }
+
+        internal static LevelConfig DefaultLevelConfig(this LevelConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.ExpMultiplier = 1;
+            cfg.StackLvlRoles = true;
+            return cfg;
+        }
+
+        internal static LoggingConfig DefaultLoggingConfig(this LoggingConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
             cfg.LogMsg = null;
             cfg.LogJoin = null;
             cfg.LogBan = null;
             cfg.LogAvi = null;
-            cfg.StackLvlRoles = true;
-            cfg.ExpMultiplier = 1;
-            cfg.MuteRole = null;
-            cfg.WelcomeLimit = 5;
-            cfg.Prefix = "h.";
-            cfg.BoardChannel = null;
-            cfg.IgnoreAllChannels = false;
-            cfg.WelcomeBanner = true;
-            cfg.WelcomeMessage = null;
-            cfg.FilterInvites = false;
-            cfg.ReportChannel = null;
-            cfg.SuggestionChannel = null;
-            cfg.EventChannel = null;
-            cfg.MusicVcChannel = null;
-            cfg.ModChannel = null;
-            cfg.MusicChannel = null;
-            cfg.BoardEmote = null;
-            cfg.EventSchedulerChannel = null;
-            cfg.FilterAllInv = true;
-            cfg.FilterMsgLength = null;
-            cfg.FilterUrls = false;
-            cfg.LogWarn = null;
-            cfg.WelcomeDelete = null;
-            cfg.Premium = false;
-            cfg.SpecialCurrencySign = "$";
-            cfg.SpecialCurrencyName = "Special Credit";
-            cfg.SpecialEmoteCurrency = false;
-            cfg.CurrencyName = "Credit";
-            cfg.CurrencySign = "$";
-            cfg.EmoteCurrency = false;
-            cfg.AnimeAirChannel = null;
-            cfg.SuggestionEmoteYes = "<:1yes:403870491749777411>";
-            cfg.SuggestionEmoteNo = "<:2no:403870492206825472>";
-            cfg.ClubAdvertisementChannel = null;
-            cfg.ClubChannelCategory = null;
-            cfg.ClubChannelRequiredAmount = 4;
-            cfg.ClubChannelRequiredLevel = 40;
-            cfg.ClubEnableVoiceChannel = false;
             cfg.LogAutoMod = null;
-            cfg.EmoteCountFilter = null;
-            cfg.MentionCountFilter = null;
-            cfg.QuestionAndAnswerChannel = null;
-            cfg.DesignChannel = null;
-            cfg.AutomaticEventSchedule = false;
-            cfg.ClubAutoPrune = false;
-            cfg.EmbedColor = 10181046;
+            cfg.LogWarn = null;
+            return cfg;
+        }
+
+        internal static SuggestionConfig DefaultSuggestionConfig(this SuggestionConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.Channel = null;
+            cfg.EmoteYes = "<:1yes:403870491749777411>";
+            cfg.EmoteNo = "<:2no:403870492206825472>";
+            return cfg;
+        }
+
+        internal static WelcomeConfig DefaultWelcomeConfig(this WelcomeConfig cfg, ulong guild)
+        {
+            cfg.GuildId = guild;
+            cfg.Channel = null;
+            cfg.Banner = false;
+            cfg.Limit = 5;
+            cfg.Message = null;
+            cfg.TimeToDelete = null;
             return cfg;
         }
 

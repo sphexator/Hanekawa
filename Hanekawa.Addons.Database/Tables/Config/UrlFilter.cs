@@ -1,6 +1,6 @@
-﻿namespace Hanekawa.Addons.Database.Tables.GuildConfig
+﻿namespace Hanekawa.Addons.Database.Tables.Config
 {
-    public class IgnoreChannel
+    public class UrlFilter
     {
         public ulong GuildId { get; set; }
         public ulong ChannelId { get; set; }

@@ -19,7 +19,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogWarn = null;
@@ -40,7 +40,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogJoin = null;
@@ -63,7 +63,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogMsg = null;
@@ -86,7 +86,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogBan = null;
@@ -107,7 +107,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogAutoMod = null;
@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Permission
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.LogAvi = null;

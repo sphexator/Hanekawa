@@ -8,7 +8,8 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
@@ -33,7 +34,7 @@ namespace Hanekawa.Services.Level
         {
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs)
+                foreach (var x in db.LevelConfigs)
                 {
                     var levelExpEvent = await db.LevelExpEvents.FindAsync(x.GuildId);
                     if (levelExpEvent == null)
@@ -111,8 +112,8 @@ namespace Hanekawa.Services.Level
             ITextChannel fallbackChannel)
         {
             IUserMessage message = null;
-            var cfg = await db.GetOrCreateGuildConfigAsync(guild as SocketGuild);
-            if (announce) message = await AnnounceExpEventAsync(db, cfg, guild, multiplier, after, fallbackChannel);
+            var cfg = await db.GetOrCreateLevelConfigAsync(guild as SocketGuild);
+            if (announce) message = await AnnounceExpEventAsync(db, await db.ChannelConfigs.FindAsync(guild), guild, multiplier, after, fallbackChannel);
             CreateEvent(guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }
@@ -152,7 +153,7 @@ namespace Hanekawa.Services.Level
             db.SaveChanges();
         }
 
-        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, GuildConfig cfg, IGuild guild,
+        private async Task<IUserMessage> AnnounceExpEventAsync(DbService db, ChannelConfig cfg, IGuild guild,
             int multiplier, TimeSpan after, IMessageChannel fallbackChannel)
         {
             var check = await db.LevelExpEvents.FindAsync(guild.Id);
@@ -173,7 +174,7 @@ namespace Hanekawa.Services.Level
             }
         }
 
-        private static async Task<IUserMessage> PostAnnouncementAsync(IGuild guild, GuildConfig cfg, int multiplier,
+        private static async Task<IUserMessage> PostAnnouncementAsync(IGuild guild, ChannelConfig cfg, int multiplier,
             TimeSpan after, IMessageChannel fallbackChannel)
         {
             if (cfg.EventChannel.HasValue)

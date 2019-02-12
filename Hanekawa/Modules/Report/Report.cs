@@ -24,7 +24,7 @@ namespace Hanekawa.Modules.Report
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (cfg.ReportChannel.HasValue && channel == null)
                 {
                     cfg.ReportChannel = null;
@@ -50,7 +50,7 @@ namespace Hanekawa.Modules.Report
             using (var db = new DbService())
             {
                 var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!cfg.ReportChannel.HasValue) return;
                 var embed = new EmbedBuilder().CreateDefault(text, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder
@@ -79,7 +79,7 @@ namespace Hanekawa.Modules.Report
             using (var db = new DbService())
             {
                 var report = await db.Reports.FindAsync(id, Context.Guild.Id);
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
 
                 if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
 

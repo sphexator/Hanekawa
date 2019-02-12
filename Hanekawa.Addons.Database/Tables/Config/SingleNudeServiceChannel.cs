@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.GuildConfig
+﻿namespace Hanekawa.Addons.Database.Tables.Config
 {
     public class SingleNudeServiceChannel
     {

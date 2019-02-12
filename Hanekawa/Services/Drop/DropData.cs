@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 

@@ -355,7 +355,7 @@ namespace Hanekawa.Modules.Administration
                     await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
                         timeout: TimeSpan.FromSeconds(5));
                     var delay = Task.Delay(5000);
-                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
                     await Task.WhenAll(delay);
                     if (cfg.LogBan.HasValue)
                         updMsg = await Context.Guild.GetTextChannel(cfg.LogBan.Value)

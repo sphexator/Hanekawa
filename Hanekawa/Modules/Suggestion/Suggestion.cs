@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Suggestion
 {
@@ -35,8 +35,8 @@ namespace Hanekawa.Modules.Suggestion
                 { /* IGNORE */
                 }
 
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (!cfg.SuggestionChannel.HasValue) return;
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (!cfg.Channel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
                 var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder
@@ -47,7 +47,7 @@ namespace Hanekawa.Modules.Suggestion
                     .WithFooter(new EmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"})
                     .WithTimestamp(DateTimeOffset.UtcNow);
                 if (Context.Message.Attachments.Count > 0) embed.WithImageUrl(Context.Message.Attachments.First().Url);
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value).ReplyAsync(embed);
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).ReplyAsync(embed);
                 caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
@@ -67,8 +67,9 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (!cfg.Channel.HasValue && !suggestion.MessageId.HasValue) return;
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
                 embed.Color = Color.Green;
@@ -109,8 +110,8 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
                 embed.Color = Color.Red;
@@ -150,8 +151,8 @@ namespace Hanekawa.Modules.Suggestion
                 await Context.Message.DeleteAsync();
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                var msg = await Context.Guild.GetTextChannel(cfg.SuggestionChannel.Value)
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
                     .GetMessageAsync(suggestion.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
                 var field = new EmbedFieldBuilder
@@ -188,16 +189,16 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.SuggestionChannel.HasValue && channel == null)
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (cfg.Channel.HasValue && channel == null)
                 {
-                    cfg.SuggestionChannel = null;
+                    cfg.Channel = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Disabled suggestion channel", Color.Green.RawValue);
                     return;
                 }
-
-                cfg.SuggestionChannel = channel.Id;
+                if(channel == null) channel = Context.Channel as ITextChannel;
+                cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
                     Color.Green.RawValue);
@@ -213,16 +214,16 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (emote == null)
                 {
-                    cfg.SuggestionEmoteNo = null;
+                    cfg.EmoteNo = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
                     return;
                 }
 
-                cfg.SuggestionEmoteNo = ParseEmoteString(emote);
+                cfg.EmoteNo = ParseEmoteString(emote);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
             }
@@ -237,16 +238,16 @@ namespace Hanekawa.Modules.Suggestion
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (emote == null)
                 {
-                    cfg.SuggestionEmoteYes = null;
+                    cfg.EmoteYes = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
                     return;
                 }
 
-                cfg.SuggestionEmoteYes = ParseEmoteString(emote);
+                cfg.EmoteYes = ParseEmoteString(emote);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
             }
@@ -255,11 +256,11 @@ namespace Hanekawa.Modules.Suggestion
         private static string ParseEmoteString(Emote emote) =>
             emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
 
-        private static async Task SetEmotesAsync(IUserMessage msg, GuildConfig cfg)
+        private static async Task SetEmotesAsync(IUserMessage msg, SuggestionConfig cfg)
         {
             IEmote iYes;
             IEmote iNo;
-            if (Emote.TryParse(cfg.SuggestionEmoteYes, out var yesEmote))
+            if (Emote.TryParse(cfg.EmoteYes, out var yesEmote))
             {
                 iYes = yesEmote;
             }
@@ -269,7 +270,7 @@ namespace Hanekawa.Modules.Suggestion
                 iYes = defaultYes;
             }
 
-            if (Emote.TryParse(cfg.SuggestionEmoteNo, out var noEmote))
+            if (Emote.TryParse(cfg.EmoteNo, out var noEmote))
             {
                 iNo = noEmote;
             }

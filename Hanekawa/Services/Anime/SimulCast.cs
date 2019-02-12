@@ -6,7 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Addons.AnimeSimulCast;
 using Hanekawa.Addons.AnimeSimulCast.Entity;
 using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;

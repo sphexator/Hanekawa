@@ -7,7 +7,7 @@ using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,28 +58,6 @@ namespace Hanekawa.Addons.Database.Extensions
 
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketUser user) =>
             await GetOrCreateGlobalUser(context, user.Id);
-
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateConfigAsync(context, guild.Id);
-
-        public static async Task<GuildConfig>
-            GetOrCreateGuildConfigAsync(this DbService context, SocketGuildUser user) =>
-            await GetOrCreateConfigAsync(context, user.Guild.Id);
-
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, SocketGuild guild) =>
-            await GetOrCreateConfigAsync(context, guild.Id);
-
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, ulong guild) =>
-            await GetOrCreateConfigAsync(context, guild);
-
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, ulong guild) =>
-            GetOrCreateConfig(context, guild);
-
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, SocketGuildUser guild) =>
-            GetOrCreateConfig(context, guild.Guild.Id);
-
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
-            GetOrCreateConfig(context, guild.Id);
 
         public static async Task PurchaseServerItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
         {
@@ -321,28 +299,6 @@ namespace Hanekawa.Addons.Database.Extensions
             await context.AccountGlobals.AddAsync(data);
             await context.SaveChangesAsync();
             return await context.AccountGlobals.FindAsync(userId);
-        }
-
-        private static async Task<GuildConfig> GetOrCreateConfigAsync(DbService context, ulong guild)
-        {
-            var response = await context.GuildConfigs.FindAsync(guild);
-            if (response != null) return response;
-
-            var data = new GuildConfig().DefaultGuildConfig(guild);
-            await context.GuildConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.GuildConfigs.FindAsync(guild);
-        }
-
-        private static GuildConfig GetOrCreateConfig(DbService context, ulong guild)
-        {
-            var response = context.GuildConfigs.Find(guild);
-            if (response != null) return response;
-
-            var data = new GuildConfig().DefaultGuildConfig(guild);
-            context.GuildConfigs.Add(data);
-            context.SaveChanges();
-            return context.GuildConfigs.Find(guild);
         }
     }
 }

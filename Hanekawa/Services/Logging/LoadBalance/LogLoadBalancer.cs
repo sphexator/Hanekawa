@@ -90,7 +90,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             using (var db = new DbService())
             {
                 var user = usr.User;
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                 if (!cfg.LogJoin.HasValue) return;
                 var queue = _tasks.UserJoinedQueue.GetOrAdd(user.Guild.Id, new ConcurrentQueue<UserJoined>());
                 queue.Enqueue(usr);
@@ -112,7 +112,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             using (var db = new DbService())
             {
                 var user = usr.User;
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                 if (!cfg.LogJoin.HasValue) return;
 
                 var queue = _tasks.UserLeftQueue.GetOrAdd(user.Guild.Id, new ConcurrentQueue<UserLeft>());
@@ -134,7 +134,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                 if (!cfg.LogBan.HasValue) return;
                 var queue = _tasks.BanQueue.GetOrAdd(user.Guild.Id, new ConcurrentQueue<UserBanned>());
                 queue.Enqueue(user);
@@ -155,7 +155,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                 if (!cfg.LogBan.HasValue) return;
                 var queue = _tasks.UnBanQueue.GetOrAdd(user.Guild.Id, new ConcurrentQueue<UserUnbanned>());
                 queue.Enqueue(user);
@@ -177,7 +177,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (!(message.Channel is SocketGuildChannel chx)) return;
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(chx.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
                 if (!cfg.LogMsg.HasValue) return;
                 var queue = _tasks.MessageDeletedQueue.GetOrAdd(chx.Guild.Id, new ConcurrentQueue<MessageDeleted>());
                 queue.Enqueue(message);
@@ -199,7 +199,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (!(message.Channel is SocketGuildChannel chx)) return;
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(chx.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
                 if (!cfg.LogMsg.HasValue) return;
                 var queue = _tasks.MessageUpdatedQueue.GetOrAdd(chx.Guild.Id, new ConcurrentQueue<MessageUpdated>());
                 queue.Enqueue(message);
@@ -221,7 +221,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             if (!(user.NewUser is SocketGuildUser gusr)) return;
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(gusr.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(gusr.Guild);
                 if (!cfg.LogAvi.HasValue) return;
                 var queue = _tasks.UserUpdatedQueue.GetOrAdd(gusr.Guild.Id, new ConcurrentQueue<UserUpdated>());
                 queue.Enqueue(user);
@@ -243,7 +243,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
             using (var db = new DbService())
             {
                 var usr = user.NewUser;
-                var cfg = await db.GetOrCreateGuildConfigAsync(usr.Guild);
+                var cfg = await db.GetOrCreateLoggingConfigAsync(usr.Guild);
                 if (!cfg.LogAvi.HasValue) return;
                 var queue = _tasks.GuildMemberUpdatedQueue.GetOrAdd(usr.Guild.Id,
                     new ConcurrentQueue<GuildUserUpdated>());
