@@ -4,15 +4,17 @@
 Hanekawa is something special
 
 ## Useful links
-
+- [Documentation](hanekawabot.moe)
+- [Invite bot](invite.hanekawabot.moe)
+- [Support server](support.hanekawabot.moe)
 
 ## Requirement
-- .NET Core Runtime ( minimum v2.2 ) 
-- PostgreSQL 10
+- [.NET Core Runtime ( minimum v2.2 )](https://dotnet.microsoft.com/download) 
+- [PostgreSQL 10](https://www.postgresql.org/download/)
 
 For music
-- Java 10
-- Lavalink
+- [Java](https://www.oracle.com/technetwork/java/javase/downloads/index.html)
+- [Lavalink](https://github.com/Frederikam/Lavalink)
 
 ## Installation
 I'll do this some other time
