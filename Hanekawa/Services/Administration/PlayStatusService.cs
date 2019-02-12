@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Entities.Interfaces;
@@ -10,29 +8,15 @@ namespace Hanekawa.Services.Administration
     public class PlayStatusService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
-        private int _memberCount;
-        private Timer _updateStatus;
 
         public PlayStatusService(DiscordSocketClient client)
         {
             _client = client;
 
-            _client.Ready += _client_Ready;
-            _memberCount = 0;
-            Console.WriteLine("Play status service loaded");
-        }
-
-        private Task _client_Ready()
-        {
-            _updateStatus = new Timer(async _ =>
+            _client.Ready += () => new Task(async () =>
             {
-                var users = 0;
-                foreach (var x in _client.Guilds) users += x.MemberCount;
-                if (users == _memberCount) return;
-                _memberCount = users;
-                await _client.SetGameAsync($"Serving {users} users", null, ActivityType.Playing);
-            }, null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
-            return Task.CompletedTask;
+                await _client.SetGameAsync($"'@{_client.CurrentUser.Username} help' for help", "http://www.hanekawabot.moe/", ActivityType.Streaming);
+            });
         }
     }
 }
