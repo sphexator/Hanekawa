@@ -4,9 +4,9 @@
 Hanekawa is something special
 
 ## Useful links
-- [Documentation](hanekawabot.moe)
-- [Invite bot](invite.hanekawabot.moe)
-- [Support server](support.hanekawabot.moe)
+- [Documentation](http://www.hanekawabot.moe)
+- [Invite bot](https://discordapp.com/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)
+- [Support server](https://discordapp.com/invite/gGu5TT6)
 
 ## Requirement
 - [.NET Core Runtime ( minimum v2.2 )](https://dotnet.microsoft.com/download) 
