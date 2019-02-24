@@ -8,7 +8,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Modules.Account.Profile;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Level;
+using Hanekawa.Services.Level.Util;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,7 +16,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account
 {
@@ -96,7 +95,7 @@ namespace Hanekawa.Modules.Account
                 }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
-                    $"Level leaderboard for {Context.Guild.Name}",
+                    $"Leaderboard for {Context.Guild.Name}",
                     10));
             }
         }

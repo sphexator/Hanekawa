@@ -116,6 +116,7 @@ namespace Hanekawa.Addons.Database.Extensions
             cfg.Limit = 5;
             cfg.Message = null;
             cfg.TimeToDelete = null;
+            cfg.AutoDelOnLeave = false;
             return cfg;
         }
 

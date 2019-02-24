@@ -3,7 +3,7 @@
     public class ServerStore
     {
         public ulong GuildId { get; set; }
-        public int ItemId { get; set; }
+        public ulong RoleId { get; set; }
         public int Price { get; set; }
         public bool SpecialCredit { get; set; }
     }

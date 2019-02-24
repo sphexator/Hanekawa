@@ -1,7 +1,6 @@
 ﻿using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.Administration;
-using Hanekawa.Addons.Database.Tables.Audio;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
 using Hanekawa.Addons.Database.Tables.BotGame;
 using Hanekawa.Addons.Database.Tables.Club;
@@ -28,13 +27,9 @@ namespace Hanekawa.Addons.Database
 
         // Stores
         public virtual DbSet<ServerStore> ServerStores { get; set; }
-        public virtual DbSet<GlobalStore> GlobalStores { get; set; }
-
-        // Auction House
 
         // Inventory
         public virtual DbSet<Inventory> Inventories { get; set; }
-        public virtual DbSet<InventoryGlobal> InventoryGlobals { get; set; }
 
         // Items
         public virtual DbSet<Item> Items { get; set; }
@@ -52,7 +47,6 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<EventSchedule> EventSchedules { get; set; }
         public virtual DbSet<WhitelistDesign> WhitelistDesigns { get; set; }
         public virtual DbSet<WhitelistEvent> WhitelistEvents { get; set; }
-        public virtual DbSet<Patreon> Patreons { get; set; }
 
         //Clubs
         public virtual DbSet<ClubInformation> ClubInfos { get; set; }
@@ -100,13 +94,10 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
 
-        //Audio
-        public virtual DbSet<Playlist> Playlists { get; set; }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if DEBUG
-            Config.ConnectionString = "Server=localhost;database=hanekawa-test;Uid=postgres;Pwd=12345";
+            Config.ConnectionString = "Server=localhost;database=hanekawa-test2;Uid=postgres;Pwd=12345";
 #endif
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder
@@ -126,7 +117,6 @@ namespace Hanekawa.Addons.Database
             GameBuilder(modelBuilder);
             AdministrationBuilder(modelBuilder);
             ProfileBuilder(modelBuilder);
-            AudioBuilder(modelBuilder);
         }
 
         private static void OwnerBuilder(ModelBuilder modelBuilder)
@@ -156,33 +146,37 @@ namespace Hanekawa.Addons.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
-            modelBuilder.Entity<Patreon>(x =>
-            {
-                x.HasKey(e => new {e.BotId, e.UserId});
-                x.Property(e => e.BotId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
-            });
         }
 
         private static void InventoryBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Inventory>(x => { x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId}); });
-            modelBuilder.Entity<InventoryGlobal>(x => { x.HasKey(e => new {e.UserId, e.ItemId}); });
+            modelBuilder.Entity<Inventory>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
+            });
         }
 
         private static void ItemBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Item>(x =>
             {
-                x.HasKey(e => e.ItemId);
-                x.Property(e => e.ItemId).ValueGeneratedOnAdd();
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Role).HasConversion<long>();
             });
         }
 
         private static void StoreBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ServerStore>(x => { x.HasKey(e => new {e.GuildId, e.ItemId}); });
-            modelBuilder.Entity<GlobalStore>(x => x.HasKey(e => e.ItemId));
+            modelBuilder.Entity<ServerStore>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.RoleId });
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.RoleId).HasConversion<long>();
+            });
         }
 
         private static void AccountBuilder(ModelBuilder modelBuilder)
@@ -510,16 +504,6 @@ namespace Hanekawa.Addons.Database
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-        }
-
-        private static void AudioBuilder(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Playlist>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.Id});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.OwnerId).HasConversion<long>();
             });
         }
     }

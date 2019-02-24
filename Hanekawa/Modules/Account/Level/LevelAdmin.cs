@@ -103,6 +103,23 @@ namespace Hanekawa.Modules.Account.Level
             if (roleName.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
             {
+                var check = await db.LevelRewards.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.Level == level);
+                if (check != null)
+                {
+                    var guildRole = Context.Guild.GetRole(check.Role);
+                    if (guildRole == null)
+                    {
+                        db.LevelRewards.Remove(check);
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        await Context.ReplyAsync(
+                            $"Can't create role as {guildRole.Name} is already reward for level {level}");
+                        return;
+                    }
+                }
                 var role = await Context.Guild.CreateRoleAsync(roleName, GuildPermissions.None);
                 var data = new LevelReward
                 {
@@ -123,7 +140,7 @@ namespace Hanekawa.Modules.Account.Level
         [Summary("Removes a role reward with given level")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
-        public async Task LevelRemove(uint level)
+        public async Task LevelRemove(int level)
         {
             using (var db = new DbService())
             {

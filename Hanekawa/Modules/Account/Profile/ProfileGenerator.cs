@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Hanekawa.Services.Level.Util;
+using Humanizer;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Modules.Account.Profile
@@ -52,7 +53,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
+                    x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achieveIcons));
                 img.Save(stream, new PngEncoder());
@@ -84,7 +85,7 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(aviOptions, avi, new Point(149, 8))
                     .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
                 img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username, user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
+                    x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());
                 img.Mutate(x => x.ApplyAchievementCircles(circle, achievIcons));
                 img.Save(stream, new PngEncoder());

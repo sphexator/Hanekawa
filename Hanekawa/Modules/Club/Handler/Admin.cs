@@ -91,7 +91,13 @@ namespace Hanekawa.Modules.Club.Handler
                     await context.ReplyAsync("You're not high enough rank to use that command!", Color.Red.RawValue);
                     return;
                 }
-
+                var check = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.UserId == user.Id && x.GuildId == user.GuildId && x.ClubId == clubUser.Id);
+                if (check != null)
+                {
+                    await context.ReplyAsync($"{user.Mention} is already a member of your club.");
+                    return;
+                }
                 var clubData = await db.GetClubAsync(clubUser.ClubId, context.Guild);
                 await ReplyAsync(
                     $"{user.Mention}, {context.User.Mention} has invited you to {clubData.Name}, do you accept? (y/n)");
@@ -101,6 +107,7 @@ namespace Hanekawa.Modules.Club.Handler
                     {
                         var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id),
                             TimeSpan.FromSeconds(30));
+
                         if (response.Content.ToLower() == "y") status = false;
                         if (response.Content.ToLower() == "n") return;
                     }
@@ -269,7 +276,14 @@ namespace Hanekawa.Modules.Club.Handler
                         Color.Red.RawValue);
                     return;
                 }
-
+                var clubUser =
+                    await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.GuildId == user.GuildId && x.UserId == user.Id && x.Rank <= 2);
+                if (clubUser != null)
+                {
+                    await context.ReplyAsync($"{user.Mention} is already an officer in a club");
+                    return;
+                }
                 var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.ClubId == club.Id && x.GuildId == user.GuildId && x.UserId == user.Id);
                 if (toPromote == null)

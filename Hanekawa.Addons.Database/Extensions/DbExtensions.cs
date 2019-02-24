@@ -59,47 +59,6 @@ namespace Hanekawa.Addons.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, SocketUser user) =>
             await GetOrCreateGlobalUser(context, user.Id);
 
-        public static async Task PurchaseServerItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
-        {
-            var check = await context.Inventories.FindAsync(user.GuildId, user.Id, shop.ItemId);
-            if (check != null)
-            {
-                check.Amount = check.Amount + amount;
-                await context.SaveChangesAsync();
-                return;
-            }
-
-            var data = new Inventory
-            {
-                GuildId = user.GuildId,
-                UserId = user.Id,
-                ItemId = shop.ItemId,
-                Amount = amount
-            };
-            await context.Inventories.AddAsync(data);
-            await context.SaveChangesAsync();
-        }
-
-        public static async Task PurchaseGlobalItem(this DbService context, IGuildUser user, Item shop, int amount = 1)
-        {
-            var check = await context.InventoryGlobals.FindAsync(user.Id, shop.ItemId);
-            if (check != null)
-            {
-                check.Amount = check.Amount + amount;
-                await context.SaveChangesAsync();
-                return;
-            }
-
-            var data = new InventoryGlobal
-            {
-                UserId = user.Id,
-                ItemId = shop.ItemId,
-                Amount = amount
-            };
-            await context.InventoryGlobals.AddAsync(data);
-            await context.SaveChangesAsync();
-        }
-
         public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild,
             DateTime time, ModAction action)
         {

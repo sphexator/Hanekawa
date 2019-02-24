@@ -12,8 +12,16 @@ namespace Hanekawa.Services.Games.ShipGame.Data
             using (var db = new DbService())
             {
                 var cfg = db.GameConfigs.Find(1);
-                DefaultHealth = cfg.DefaultHealth;
-                DefaultDamage = cfg.DefaultDamage;
+                if (cfg == null)
+                {
+                    DefaultHealth = 10;
+                    DefaultDamage = 1;
+                }
+                else
+                {
+                    DefaultHealth = cfg.DefaultHealth;
+                    DefaultDamage = cfg.DefaultDamage;
+                }
             }
         }
 
