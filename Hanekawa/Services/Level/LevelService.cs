@@ -1,27 +1,28 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Logging;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.Config;
 
 namespace Hanekawa.Services.Level
 {
     public class LevelService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
-        private readonly Random _random;
         private readonly Cooldown _cooldown;
         private readonly ExperienceHandler _experience;
         private readonly LogService _log;
+        private readonly Random _random;
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverCategoryReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
@@ -29,7 +30,8 @@ namespace Hanekawa.Services.Level
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverChannelReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
 
-        public LevelService(DiscordSocketClient client, Random random, Cooldown cooldown, ExperienceHandler experience, LogService log)
+        public LevelService(DiscordSocketClient client, Random random, Cooldown cooldown, ExperienceHandler experience,
+            LogService log)
         {
             _client = client;
             _random = random;
@@ -176,16 +178,12 @@ namespace Hanekawa.Services.Level
             var isChannel = _serverChannelReduction.TryGetValue(channel.GuildId, out var channels);
             var isCategory = _serverCategoryReduction.TryGetValue(channel.GuildId, out var category);
             if (isCategory)
-            {
                 if (channel.CategoryId.HasValue)
-                {
-                    if (category.Contains(channel.CategoryId.Value)) return true;
-                }
-            }
+                    if (category.Contains(channel.CategoryId.Value))
+                        return true;
             if (isChannel)
-            {
-                if (channels.Contains(channel.Id)) return true;
-            }
+                if (channels.Contains(channel.Id))
+                    return true;
 
             return false;
         }
@@ -220,29 +218,42 @@ namespace Hanekawa.Services.Level
 
         public async Task<List<string>> ReducedExpList(IGuild guild)
         {
-            using (var db = new DbService())
+            var channels = _serverChannelReduction.GetOrAdd(guild.Id, new List<ulong>());
+            var categories = _serverCategoryReduction.GetOrAdd(guild.Id, new List<ulong>());
+            var result = new List<string>();
+            if (channels.Count == 0 && categories.Count == 0)
             {
-                var channels = _serverChannelReduction.GetOrAdd(guild.Id, new List<ulong>());
-                var categories = _serverCategoryReduction.GetOrAdd(guild.Id, new List<ulong>());
-                var result = new List<string>();
-                if (channels.Count == 0 && categories.Count == 0)
-                {
-                    result.Add("No channels");
-                    return result;
-                }
-
-                if (channels.Count > 0)
-                    foreach (var x in channels)
-                        result.Add($"Channel: {(await guild.GetTextChannelAsync(x)).Name}");
-
-                if (categories.Count <= 0) return result;
-                {
-                    foreach (var x in categories)
-                        result.Add($"Category: {(await guild.GetCategoriesAsync()).First(y => y.Id == x).Name}\n");
-                }
-
+                result.Add("No channels");
                 return result;
             }
+
+            if (channels.Count > 0)
+            {
+                var stringBuilder = new StringBuilder();
+                foreach (var x in channels)
+                {
+                    var channel = await guild.GetTextChannelAsync(x);
+                    if (channel == null) continue;
+                    stringBuilder.Append($"Channel: {channel.Mention}");
+                }
+
+                result.Add(stringBuilder.ToString());
+            }
+
+            if (categories.Count <= 0) return result;
+            {
+                var stringBuilder = new StringBuilder();
+                foreach (var x in categories)
+                {
+                    var category = (await guild.GetCategoriesAsync()).FirstOrDefault(z => z.Id == x);
+                    if (category == null) continue;
+                    stringBuilder.AppendLine($"Category: {category.Name}");
+                }
+
+                result.Add(stringBuilder.ToString());
+            }
+
+            return result;
         }
 
         private async Task<EmbedBuilder> AddReducedExp(DbService db, ITextChannel channel)

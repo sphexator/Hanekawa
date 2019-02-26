@@ -87,7 +87,9 @@ namespace Hanekawa.Modules.Permission
                     foreach (var x in list)
                         try
                         {
-                            channels.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                            var channel = Context.Guild.GetTextChannel(x.ChannelId);
+                            if (channel == null) continue;
+                            channels.Add(channel.Mention);
                         }
                         catch
                         {
