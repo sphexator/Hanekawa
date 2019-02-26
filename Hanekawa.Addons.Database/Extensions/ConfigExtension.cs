@@ -16,9 +16,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new GuildConfig().DefaultGuildConfig(guild);
-            await context.GuildConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.GuildConfigs.FindAsync(guild);
+            try
+            {
+                await context.GuildConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.GuildConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
@@ -30,9 +37,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new GuildConfig().DefaultGuildConfig(guild);
-            context.GuildConfigs.Add(data);
-            context.SaveChanges();
-            return context.GuildConfigs.Find(guild);
+            try
+            {
+                context.GuildConfigs.Add(data);
+                context.SaveChanges();
+                return context.GuildConfigs.Find(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, IGuild guild) =>
@@ -44,9 +58,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new AdminConfig().DefaultAdminConfig(guild);
-            await context.AdminConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AdminConfigs.FindAsync(guild);
+            try
+            {
+                await context.AdminConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.AdminConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, IGuild guild) =>
@@ -58,9 +79,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new BoardConfig().DefaultBoardConfig(guild);
-            await context.BoardConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.BoardConfigs.FindAsync(guild);
+            try
+            {
+                await context.BoardConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.BoardConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, IGuild guild) =>
@@ -72,9 +100,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new ChannelConfig().DefaultChannelConfig(guild);
-            await context.ChannelConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.ChannelConfigs.FindAsync(guild);
+            try
+            {
+                await context.ChannelConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.ChannelConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, IGuild guild) =>
@@ -84,11 +119,17 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var response = await context.ClubConfigs.FindAsync(guild);
             if (response != null) return response;
-
             var data = new ClubConfig().DefaultClubConfig(guild);
-            await context.ClubConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.ClubConfigs.FindAsync(guild);
+            try
+            {
+                await context.ClubConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.ClubConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, IGuild guild) =>
@@ -98,11 +139,17 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var response = await context.CurrencyConfigs.FindAsync(guild);
             if (response != null) return response;
-
             var data = new CurrencyConfig().DefaultCurrencyConfig(guild);
-            await context.CurrencyConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.CurrencyConfigs.FindAsync(guild);
+            try
+            {
+                await context.CurrencyConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.CurrencyConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, IGuild guild) =>
@@ -112,11 +159,17 @@ namespace Hanekawa.Addons.Database.Extensions
         {
             var response = await context.LevelConfigs.FindAsync(guild);
             if (response != null) return response;
-
             var data = new LevelConfig().DefaultLevelConfig(guild);
-            await context.LevelConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.LevelConfigs.FindAsync(guild);
+            try
+            {
+                await context.LevelConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.LevelConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, IGuild guild) =>
@@ -128,12 +181,20 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new LoggingConfig().DefaultLoggingConfig(guild);
-            await context.LoggingConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.LoggingConfigs.FindAsync(guild);
+            try
+            {
+                await context.LoggingConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.LoggingConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
-        public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context, IGuild guild) =>
+        public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context,
+            IGuild guild) =>
             await GetOrCreateSuggestionConfigAsync(context, guild.Id);
 
         public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context, ulong guild)
@@ -142,9 +203,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new SuggestionConfig().DefaultSuggestionConfig(guild);
-            await context.SuggestionConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.SuggestionConfigs.FindAsync(guild);
+            try
+            {
+                await context.SuggestionConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.SuggestionConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, IGuild guild) =>
@@ -156,9 +224,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (response != null) return response;
 
             var data = new WelcomeConfig().DefaultWelcomeConfig(guild);
-            await context.WelcomeConfigs.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.WelcomeConfigs.FindAsync(guild);
+            try
+            {
+                await context.WelcomeConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.WelcomeConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
     }
 }
