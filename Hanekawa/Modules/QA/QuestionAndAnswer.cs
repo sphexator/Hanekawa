@@ -48,7 +48,7 @@ namespace Hanekawa.Modules.QA
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Users with manage guild perms can answer questions sent in.")]
-        public async Task CommentAsync(uint id, [Remainder] string response)
+        public async Task CommentAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
             {
