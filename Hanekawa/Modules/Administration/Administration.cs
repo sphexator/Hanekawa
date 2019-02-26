@@ -12,6 +12,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Administration
 {
@@ -279,13 +280,13 @@ namespace Hanekawa.Modules.Administration
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [Summary("Shows toxicity values of users if server has toxicity enabled channels")]
-        public async Task ViewToxicity(SocketGuildUser user = null, ITextChannel channel = null,
-            WarnToxicityType type = WarnToxicityType.Single)
+        [Priority(1)]
+        public async Task ViewToxicity(SocketGuildUser user = null)
         {
-            if (channel == null && user == null)
+            if (user == null)
             {
                 var pages = _nudeScore.GetGuildTopScore(Context.Guild).ToList();
-                if (pages.Count == 0 || !pages.Any())
+                if (pages.Count == 0)
                 {
                     await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
@@ -293,48 +294,48 @@ namespace Hanekawa.Modules.Administration
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Toxicity values in {Context.Guild.Name}"));
-                return;
-            }
-
-            if (user == null)
-            {
-                var page = _nudeScore.GetChannelTopScores(channel);
-                if (page == null)
-                {
-                    await Context.ReplyAsync("No values", Color.Red.RawValue);
-                    return;
-                }
-
-                await Context.ReplyAsync(page);
-                return;
-            }
-
-            if (channel != null && type == WarnToxicityType.Single)
-            {
-                var page = _nudeScore.GetSingleScore(channel, user);
-                if (page == 0)
-                {
-                    await Context.ReplyAsync("No values", Color.Red.RawValue);
-                    return;
-                }
-
-                await Context.ReplyAsync($"Toxicity score in {channel.Mention}: {page}");
             }
             else
             {
-                var pages = _nudeScore.GetAllScores(user);
-                if (pages == null || !pages.Any())
+                var toxicity = _nudeScore.GetAllScores(user);
+                if (toxicity == null || toxicity.IsNullOrWhiteSpace())
                 {
                     await Context.ReplyAsync("No values", Color.Red.RawValue);
                     return;
                 }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(pages, Context.Guild.Id).WithAuthor(
-                    new EmbedAuthorBuilder
-                    {
-                        IconUrl = user.GetAvatar(),
-                        Name = $"Toxicity values for {user.GetName()} in {Context.Guild.Name}"
-                    }));
+                await Context.ReplyAsync(toxicity);
+            }
+        }
+
+        [Command("toxicity", RunMode = RunMode.Async)]
+        [RequireContext(ContextType.Guild)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [Summary("Shows toxicity values of users in a channel if server has toxicity enabled channels")]
+        public async Task ViewToxicity(ITextChannel channel = null)
+        {
+            if (channel == null)
+            {
+                var pages = _nudeScore.GetGuildTopScore(Context.Guild).ToList();
+                if (pages.Count == 0)
+                {
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
+                    return;
+                }
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Toxicity values in {Context.Guild.Name}"));
+            }
+            else
+            {
+                var toxicity = _nudeScore.GetChannelTopScores(channel);
+                if (toxicity == null || toxicity.IsNullOrWhiteSpace())
+                {
+                    await Context.ReplyAsync("No values", Color.Red.RawValue);
+                    return;
+                }
+
+                await Context.ReplyAsync(toxicity);
             }
         }
 

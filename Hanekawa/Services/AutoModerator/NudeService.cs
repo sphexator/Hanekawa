@@ -195,7 +195,8 @@ namespace Hanekawa.Services.AutoModerator
             if (!SlowNudeValue.TryGetValue(guild.Id, out var channels)) return null;
             foreach (var a in channels)
             {
-                var channel = _client.GetGuild(guild.Id).GetTextChannel(a.Key).Mention;
+                var channel = _client.GetGuild(guild.Id).GetTextChannel(a.Key);
+                if (channel == null) continue;
                 var userScore = new Dictionary<ulong, double>();
                 foreach (var y in a.Value)
                 {
@@ -206,9 +207,9 @@ namespace Hanekawa.Services.AutoModerator
                 }
 
                 var page = new StringBuilder();
-                page.AppendLine($"{channel}");
+                page.AppendLine($"{channel.Mention}");
                 var topUsers = userScore.OrderBy(x => x.Value).Take(5);
-                foreach (var (id, score) in topUsers) page.AppendLine($"{_client.GetUser(id).Mention} Score: {score}");
+                foreach (var (id, score) in topUsers) page.AppendLine($"{_client.GetUser(id).Mention ?? $"User left server ({id})"} Score: {score}");
                 result.Add(page.ToString());
             }
 
