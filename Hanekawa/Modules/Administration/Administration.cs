@@ -147,7 +147,7 @@ namespace Hanekawa.Modules.Administration
             await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
             try
             {
-                await user.AddRoleAsync(muteRole);
+                await user.TryAddRoleAsync(muteRole);
             }
             catch
             {
