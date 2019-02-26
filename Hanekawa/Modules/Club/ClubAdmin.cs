@@ -102,7 +102,7 @@ namespace Hanekawa.Modules.Club
                 cfg.ChannelRequiredLevel = level;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Set required amount of club members above the level limit to create a channel to {level}",
+                    $"Set required level limit to create a club to {level}",
                     Color.Green.RawValue);
             }
         }

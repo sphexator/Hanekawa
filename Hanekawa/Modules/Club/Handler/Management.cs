@@ -6,6 +6,7 @@ using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.Config.Guild;
@@ -76,31 +77,34 @@ namespace Hanekawa.Modules.Club.Handler
             await AddRoleOrChannelPermissions(db, user, guild, await db.ClubInfos.FindAsync(id), cfg);
         }
 
-        public async Task<bool> RemoveUserAsync(DbService db, IGuildUser user, int clubId, ClubConfig cfg = null) =>
+        public async Task<ClubInformation> RemoveUserAsync(DbService db, IGuildUser user, int clubId, ClubConfig cfg = null) =>
             await RemoveUserAsync(db, user, user.Guild, clubId, cfg).ConfigureAwait(false);
 
-        public async Task<bool> RemoveUserAsync(DbService db, IUser user, IGuild guild, ClubUser clubId,
+        public async Task<ClubInformation> RemoveUserAsync(DbService db, IUser user, IGuild guild, ClubUser clubId,
             ClubConfig cfg = null) =>
             await RemoveUserAsync(db, user, guild, clubId.ClubId, cfg).ConfigureAwait(false);
 
-        public async Task<bool>
+        public async Task<ClubInformation>
             RemoveUserAsync(DbService db, IGuildUser user, ClubInformation clubId, ClubConfig cfg = null) =>
             await RemoveUserAsync(db, user, user.Guild, clubId.Id, cfg).ConfigureAwait(false);
 
-        public async Task<bool> RemoveUserAsync(DbService db, IGuildUser user, ClubUser clubUser, ClubConfig cfg = null) =>
+        public async Task<ClubInformation> RemoveUserAsync(DbService db, IGuildUser user, ClubUser clubUser, ClubConfig cfg = null) =>
             await RemoveUserAsync(db, user, user.Guild, clubUser.ClubId, cfg).ConfigureAwait(false);
 
-        public async Task<bool> RemoveUserAsync(DbService db, IUser user, IGuild guild, int clubId,
+        public async Task<ClubInformation> RemoveUserAsync(DbService db, IUser user, IGuild guild, int clubId,
             ClubConfig cfg = null)
         {
+            if (cfg == null) cfg = await db.GetOrCreateClubConfigAsync(guild);
             var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                 x.UserId == user.Id && x.GuildId == guild.Id && x.ClubId == clubId);
-            if (clubUser == null) return false;
+            if (clubUser == null) return null;
             db.ClubPlayers.Remove(clubUser);
+            var clubInfo =
+                await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == clubUser.ClubId);
+            await RemoveRoleOrChannelPermissions(db, user, guild, clubInfo, cfg);
+            await DisbandClub(db, clubInfo, user);
             await db.SaveChangesAsync();
-
-            await RemoveRoleOrChannelPermissions(db, user, guild, await db.ClubInfos.FindAsync(clubUser.Id), cfg);
-            return true;
+            return clubInfo;
         }
 
         public async Task<bool> BlackListUserAsync(DbService db, IGuildUser blacklistUser, IGuildUser leader,
@@ -147,11 +151,28 @@ namespace Hanekawa.Modules.Club.Handler
         private async Task RemoveRoleOrChannelPermissions(DbService db, IUser user, IGuild guild, ClubInformation club,
             ClubConfig cfg)
         {
-            if (cfg == null) cfg = await db.GetOrCreateClubConfigAsync(guild);
+            if (!club.Channel.HasValue) return;
             if (cfg.RoleEnabled && club.Role.HasValue)
                 await (await guild.GetUserAsync(user.Id)).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
-            if (!cfg.RoleEnabled && club.Channel.HasValue)
+            if (!cfg.RoleEnabled)
                 await (await guild.GetTextChannelAsync(club.Channel.Value)).RemovePermissionOverwriteAsync(user);
+        }
+
+        private async Task DisbandClub(DbService db, ClubInformation club, IUser user)
+        {
+            var clubMembers = await db.ClubPlayers.Where(x => x.ClubId == club.Id).ToListAsync();
+            if (clubMembers.Count == 0)
+            {
+                db.ClubInfos.Remove(club);
+            }
+
+            if (clubMembers.Count == 1)
+            {
+                if (clubMembers.First().UserId == user.Id)
+                {
+                    db.ClubInfos.Remove(club);
+                }
+            }
         }
     }
 }

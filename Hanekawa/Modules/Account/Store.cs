@@ -52,6 +52,12 @@ namespace Hanekawa.Modules.Account
                     result.Add($"{role.Name} - Amount: {x.Amount}");
                 }
 
+                if (result.Count == 0)
+                {
+                    await Context.ReplyAsync("Your inventory is empty");
+                    return;
+                }
+
                 await PagedReplyAsync(result.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Inventory for {Context.User}"));
             }
@@ -197,6 +203,7 @@ namespace Hanekawa.Modules.Account
                 });
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Purchased {Context.Guild.GetRole(item.Role)}");
+                await (Context.User as SocketGuildUser).TryAddRoleAsync(role);
             }
         }
 
@@ -271,7 +278,7 @@ namespace Hanekawa.Modules.Account
         }
 
         [Name("Store remove")]
-        [Command("store add", RunMode = RunMode.Async)]
+        [Command("store remove", RunMode = RunMode.Async)]
         [Alias("sr")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [Summary("Removes a role from the store")]
@@ -290,8 +297,7 @@ namespace Hanekawa.Modules.Account
                 }
                 var serverItem = await db.ServerStores.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
-                
-                db.Items.Remove(itemCheck);
+
                 db.ServerStores.Remove(serverItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Removed {role.Name} from the server store");

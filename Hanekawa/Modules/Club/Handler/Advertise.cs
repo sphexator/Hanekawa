@@ -3,13 +3,12 @@ using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
+using Quartz.Util;
 using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
-using Quartz.Util;
 
 namespace Hanekawa.Modules.Club.Handler
 {
