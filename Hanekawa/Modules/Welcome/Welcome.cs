@@ -18,8 +18,7 @@ using Quartz.Util;
 
 namespace Hanekawa.Modules.Welcome
 {
-    [Group("welcome")]
-    [Alias("welc")]
+    [Name("welcome")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Welcome : InteractiveBase
     {
