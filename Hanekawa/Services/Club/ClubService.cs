@@ -1,12 +1,12 @@
-﻿using Discord;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Modules.Club.Handler;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Club
 {
@@ -33,19 +33,7 @@ namespace Hanekawa.Services.Club
                     var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
                         .ToListAsync();
                     if (clubs.Count == 0) return;
-                    foreach (var x in clubs)
-                    {
-                        if (x.Rank == 1)
-                        {
-                            var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(y =>
-                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 2) ??
-                                            await db.ClubPlayers.FirstOrDefaultAsync(y =>
-                                                y.GuildId == x.GuildId && y.ClubId == x.Id && y.Rank == 3);
-                            toPromote.Rank = 1;
-                        }   
-                        db.ClubPlayers.Remove(x);
-                    }
-                    await db.SaveChangesAsync();
+                    foreach (var x in clubs) await _management.RemoveUserAsync(db, user, x);
                 }
             });
             return Task.CompletedTask;
@@ -55,7 +43,8 @@ namespace Hanekawa.Services.Club
             SocketReaction reaction) =>
             ClubJoinLeave(msg, channel, reaction);
 
-        private Task ClubLeave(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction reaction) =>
+        private Task ClubLeave(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
+            SocketReaction reaction) =>
             ClubJoinLeave(msg, channel, reaction);
 
         private Task ClubJoinLeave(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel chan,
@@ -81,7 +70,8 @@ namespace Hanekawa.Services.Club
                         await _management.AddUserAsync(db, reaction.User.GetValueOrDefault(), channel.Guild, club.Id,
                             cfg);
                     else
-                        await _management.RemoveUserAsync(db, reaction.User.GetValueOrDefault(), channel.Guild, club.Id, cfg);
+                        await _management.RemoveUserAsync(db, reaction.User.GetValueOrDefault(), channel.Guild, club.Id,
+                            cfg);
                 }
             });
             return Task.CompletedTask;

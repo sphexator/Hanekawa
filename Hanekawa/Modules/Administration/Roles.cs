@@ -22,8 +22,8 @@ namespace Hanekawa.Modules.Administration
         private readonly LogService _log;
         public Roles(LogService log) => _log = log;
 
-        [Command("Assign")]
-        [Alias("iam", "give")]
+        [Command("iam")]
+        [Alias("give")]
         [Summary("Assigns a role that's setup as self-assignable")]
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] IRole role)
@@ -65,13 +65,14 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("Remove")]
+        [Command("iamnot")]
         [Alias("iamn")]
         [Summary("Removes a role that's setup as self-assignable")]
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
-            if (!((IGuildUser) Context.User).RoleIds.Contains(role.Id)) return;
+            if (!(Context.User is SocketGuildUser user)) return;
+            if (user.Roles.FirstOrDefault(x => x.Id == role.Id) == null) return;
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
@@ -83,7 +84,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await ((IGuildUser) Context.User).TryRemoveRoleAsync(role);
+                await user.TryRemoveRoleAsync(role);
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder()
                         .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)

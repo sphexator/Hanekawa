@@ -221,7 +221,7 @@ namespace Hanekawa.Modules.Club
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
                         x.GuildId == user.GuildId && x.UserId == user.Id && x.Rank <= 2);
-                if (clubUser != null)
+                if (clubUser != null && clubUser.ClubId != club.Id)
                 {
                     await Context.ReplyAsync($"{user.Mention} is already an officer in a club");
                     return;
@@ -241,11 +241,10 @@ namespace Hanekawa.Modules.Club
                     var response = await NextMessageAsync(timeout: TimeSpan.FromSeconds(45));
                     if (response == null || response.Content.ToLower() != "y")
                     {
-                        await _management.PromoteUserAsync(db, user, toPromote, club);
                         await Context.ReplyAsync("Cancelling...");
                         return;
                     }
-
+                    await _management.PromoteUserAsync(db, user, toPromote, club);
                     await Context.ReplyAsync($"Transferred ownership of {club.Name} to {user.Mention}");
                 }
                 else
@@ -383,9 +382,29 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                await Context.ReplyAsync($"**{club.Name} (ID:{club.Id}**\n" +
-                                         $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
-                                         $"Leader {Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}");
+                var clubUsers =
+                    await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id).ToListAsync();
+                string officers = null;
+                foreach (var x in clubUsers.Where(x => x.Rank == 2))
+                {
+                    officers += $"{Context.Guild.GetUser(x.UserId).Mention}\n";
+                }
+
+                if (officers == null) officers += "No officers";
+
+                var embed = new EmbedBuilder
+                {
+                    ThumbnailUrl = club.ImageUrl,
+                    Timestamp = club.CreationDate,
+                    Author = new EmbedAuthorBuilder { IconUrl = club.IconUrl, Name = $"{club.Name} (ID:{club.Id})"},
+                    Footer = new EmbedFooterBuilder { Text = "Created:"},
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder { IsInline = false, Name = "Leader", Value = $"{Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}"},
+                        new EmbedFieldBuilder { IsInline = false, Name = "Officers", Value = officers}
+                    }
+                }.CreateDefault(club.Description, Context.Guild.Id);
+                await Context.ReplyAsync(embed);
             }
         }
 

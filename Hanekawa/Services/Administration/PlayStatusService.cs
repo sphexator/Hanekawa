@@ -1,7 +1,6 @@
-﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Hanekawa.Entities.Interfaces;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Services.Administration
 {
@@ -13,10 +12,16 @@ namespace Hanekawa.Services.Administration
         {
             _client = client;
 
-            _client.Ready += () => new Task(async () =>
+            _client.Ready += ClientOnReady;
+        }
+
+        private Task ClientOnReady()
+        {
+            var _ = Task.Run(async () =>
             {
-                await _client.SetGameAsync($"'@{_client.CurrentUser.Username} help' for help", "http://www.hanekawabot.moe/", ActivityType.Streaming);
+                await _client.SetGameAsync($"'@{_client.CurrentUser.Username} help' for help");
             });
+            return Task.CompletedTask;
         }
     }
 }

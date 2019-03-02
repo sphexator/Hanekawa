@@ -22,6 +22,10 @@ namespace Hanekawa.Modules.Club.Handler
             addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny,
             embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
 
+        private readonly Random _random;
+
+        public Management(Random random) => _random = random;
+
         public async Task PromoteUserAsync(DbService db, IGuildUser user, ClubUser clubUser, ClubInformation club)
         {
             if (clubUser.Rank == 2)
@@ -97,9 +101,22 @@ namespace Hanekawa.Modules.Club.Handler
             var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                 x.UserId == user.Id && x.GuildId == guild.Id && x.ClubId == clubId);
             if (clubUser == null) return null;
-            db.ClubPlayers.Remove(clubUser);
             var clubInfo =
                 await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == clubUser.ClubId);
+            if (clubUser.Rank == 1)
+            {
+                var clubMembers = await db.ClubPlayers.Where(x => x.GuildId == guild.Id && x.ClubId == clubUser.ClubId)
+                    .ToListAsync();
+                if (clubMembers.Count > 1)
+                {
+                    var officers = clubMembers.Where(x => x.Rank == 2).ToList();
+                    var newLeader = officers.Count >= 1 ? officers[_random.Next(officers.Count)] : clubMembers[_random.Next(clubMembers.Count)];
+                    
+                    newLeader.Rank = 1;
+                    clubInfo.LeaderId = newLeader.UserId;
+                }
+            }
+            db.ClubPlayers.Remove(clubUser);
             await RemoveRoleOrChannelPermissions(db, user, guild, clubInfo, cfg);
             await DisbandClub(db, clubInfo, user);
             await db.SaveChangesAsync();
@@ -150,11 +167,18 @@ namespace Hanekawa.Modules.Club.Handler
         private async Task RemoveRoleOrChannelPermissions(DbService db, IUser user, IGuild guild, ClubInformation club,
             ClubConfig cfg)
         {
-            if (!club.Channel.HasValue) return;
-            if (cfg.RoleEnabled && club.Role.HasValue)
-                await (await guild.GetUserAsync(user.Id)).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
-            if (!cfg.RoleEnabled)
-                await (await guild.GetTextChannelAsync(club.Channel.Value)).RemovePermissionOverwriteAsync(user);
+            try
+            {
+                if (!club.Channel.HasValue) return;
+                if (cfg.RoleEnabled && club.Role.HasValue)
+                    await (await guild.GetUserAsync(user.Id)).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
+                if (!cfg.RoleEnabled)
+                    await (await guild.GetTextChannelAsync(club.Channel.Value)).RemovePermissionOverwriteAsync(user);
+            }
+            catch
+            {
+                // Ignore
+            }
         }
 
         private async Task DisbandClub(DbService db, ClubInformation club, IUser user)
