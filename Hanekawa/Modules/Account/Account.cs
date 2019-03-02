@@ -30,8 +30,10 @@ namespace Hanekawa.Modules.Account
             _profileBuilder = profileBuilder;
         }
 
+        [Name("Rank")]
         [Command("rank", RunMode = RunMode.Async)]
         [Summary("Displays your rank")]
+        [Remarks("h.rank")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -69,8 +71,10 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Name("Top")]
         [Command("top", RunMode = RunMode.Async)]
         [Summary("Displays top 10 users on the level leaderboard")]
+        [Remarks("h.top")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -100,7 +104,10 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Name("Rep")]
         [Command("rep", RunMode = RunMode.Async)]
+        [Summary("Rewards a reputation to a user. Usable once a day.")]
+        [Remarks("h.rep @bob#0000")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -144,7 +151,10 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Name("Profile")]
         [Command("profile", RunMode = RunMode.Async)]
+        [Summary("Displays your own profile")]
+        [Remarks("h.profile")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ProfileAsync(SocketGuildUser user = null)

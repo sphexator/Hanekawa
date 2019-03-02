@@ -4,9 +4,10 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
-using Hanekawa.Services.Level;
+using Hanekawa.Services.Level.Util;
 using Hanekawa.Services.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,12 +16,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account.Level
 {
-    [Group("level")]
+    [Name("Level admin")]
     public class LevelAdmin : InteractiveBase
     {
         private readonly LevelGenerator _levelGenerator;
@@ -32,7 +31,9 @@ namespace Hanekawa.Modules.Account.Level
             _levelGenerator = levelGenerator;
         }
 
-        [Command("setlevel")]
+        [Name("Set level")]
+        [Command("level set level")]
+        [Alias("level setlevel", "lsl", "level sl")]
         [Summary("Toggles between level roles stacking or keep the highest earned one")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetLevel(SocketGuildUser user, int level)
@@ -52,9 +53,11 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("role stack", RunMode = RunMode.Async)]
-        [Alias("stack", "rolestack", "rs")]
+        [Name("Level role stack")]
+        [Command("level role stack", RunMode = RunMode.Async)]
+        [Alias("lvl stack", "lvl rolestack", "lvrs")]
         [Summary("Toggles between level roles stacking or keep the highest earned one")]
+        [Remarks("h.lvl stack")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task LevelStack()
         {
@@ -78,23 +81,31 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("stack add", RunMode = RunMode.Async)]
-        [Alias("sadd")]
+        [Name("level stack add")]
+        [Command("level stack add", RunMode = RunMode.Async)]
+        [Alias("lvl sadd")]
         [Summary("Adds a role reward")]
+        [Remarks("h.lvl sadd 50 premiere")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
         public async Task ExclusiveAdd(int level, [Remainder] IRole role) =>
             await AddLevelRole(Context, level, role, true);
 
-        [Command("add", RunMode = RunMode.Async)]
+        [Name("Level add")]
+        [Command("level add", RunMode = RunMode.Async)]
+        [Alias("lvl add")]
         [Summary("Adds a role reward")]
+        [Remarks("h.lvl add 50 premiere")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
         public async Task LevelAdd(int level, [Remainder] IRole role) =>
             await AddLevelRole(Context, level, role, false);
 
-        [Command("create", RunMode = RunMode.Async)]
+        [Name("Level create")]
+        [Command("level create", RunMode = RunMode.Async)]
+        [Alias("lvl create")]
         [Summary("Creates a role reward with given level and name")]
+        [Remarks("h.lvl create 50 premiere")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
         public async Task LevelCreate(int level, [Remainder] string roleName)
@@ -136,8 +147,11 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
+        [Name("Level remove")]
+        [Command("level remove", RunMode = RunMode.Async)]
+        [Alias("lvl remove")]
         [Summary("Removes a role reward with given level")]
+        [Remarks("h.lvl remove 50")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireBotPermission(ChannelPermission.ManageRoles)]
         public async Task LevelRemove(int level)
@@ -160,8 +174,11 @@ namespace Hanekawa.Modules.Account.Level
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Level list")]
+        [Command("level list", RunMode = RunMode.Async)]
+        [Alias("lvl list")]
         [Summary("Lists all role rewards")]
+        [Remarks("h.lvl list")]
         [RequiredChannel]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LevelAdd()

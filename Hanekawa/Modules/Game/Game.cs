@@ -21,8 +21,10 @@ namespace Hanekawa.Modules.Game
 
         public Game(ShipGameService gameService) => _gameService = gameService;
 
+        [Name("Search")]
         [Command("search", RunMode = RunMode.Async)]
         [Summary("Searches for a monster to fight")]
+        [Remarks("h.search")]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 1, Measure.Seconds)]
         [RequiredChannel]
@@ -39,8 +41,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Attack")]
         [Command("attack", RunMode = RunMode.Async)]
         [Summary("Starts a fight with a monster you've searched for")]
+        [Remarks("h.attack")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task AttackGameAsync()
@@ -56,8 +60,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Duel")]
         [Command("duel", RunMode = RunMode.Async)]
         [Summary("Duels a user, optinoally for money")]
+        [Remarks("h.duel @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task AttackGameAsync(SocketGuildUser user, int bet = 0)
@@ -101,8 +107,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Class")]
         [Command("class", RunMode = RunMode.Async)]
         [Summary("Displays available classes and switch to them")]
+        [Remarks("h.class")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task PickClassAsync()
@@ -153,8 +161,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Class list")]
         [Command("class list", RunMode = RunMode.Async)]
         [Summary("Displays all classes")]
+        [Remarks("h.class list")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ListClassesAsync()
@@ -169,8 +179,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Class info")]
         [Command("class info", RunMode = RunMode.Async)]
         [Summary("Displays information on specific class providing ID")]
+        [Remarks("h.class info 5")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ClassInfoAsync(int id)

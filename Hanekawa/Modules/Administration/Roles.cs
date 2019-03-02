@@ -22,9 +22,11 @@ namespace Hanekawa.Modules.Administration
         private readonly LogService _log;
         public Roles(LogService log) => _log = log;
 
+        [Name("I am")]
         [Command("iam")]
         [Alias("give")]
         [Summary("Assigns a role that's setup as self-assignable")]
+        [Remarks("h.iam red")]
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] IRole role)
         {
@@ -65,9 +67,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("I am not")]
         [Command("iamnot")]
         [Alias("iamn")]
         [Summary("Removes a role that's setup as self-assignable")]
+        [Remarks("h.iamn red")]
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
@@ -92,9 +96,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Role list")]
         [Command("role list")]
         [Alias("rl")]
         [Summary("Displays list of self-assignable roles")]
+        [Remarks("h.rl")]
         [RequiredChannel]
         public async Task ListSelfAssignAbleRolesAsync()
         {
@@ -126,24 +132,30 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Exclusive role add")]
         [Command("exclusive role add")]
         [Alias("era")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("adds a role to the list of self-assignable roles")]
+        [Remarks("h.era red")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ExclusiveRole([Remainder] IRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, true);
 
+        [Name("Role add")]
         [Command("role add")]
         [Alias("ra")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("adds a role to the list of self-assignable roles")]
+        [Remarks("h.ra red")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task NonExclusiveRole([Remainder] IRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, false);
 
+        [Name("Role remove")]
         [Command("role remove")]
         [Alias("rr")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Summary("Removes a role from the list of self-assignable roles")]
+        [Remarks("h.rr red")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveSelfAssignAbleRoleAsync([Remainder] IRole role)
         {
             if ((Context.User as SocketGuildUser).HierarchyCheck(role))

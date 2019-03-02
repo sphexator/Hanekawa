@@ -13,7 +13,10 @@ namespace Hanekawa.Modules.Account.Gamble
 {
     public class Gamble : InteractiveBase
     {
+        [Name("Bet")]
         [Command("bet", RunMode = RunMode.Async)]
+        [Summary("Place a bet against the bot and see if you win")]
+        [Remarks("h.bet 50")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task BetAsync(int bet)
@@ -33,7 +36,10 @@ namespace Hanekawa.Modules.Account.Gamble
             }
         }
 
+        [Name("Bet")]
         [Command("bet", RunMode = RunMode.Async)]
+        [Summary("Go all in against the bot and see if you win")]
+        [Remarks("h.bet all")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task BetAllAsync(string amount)
@@ -57,7 +63,10 @@ namespace Hanekawa.Modules.Account.Gamble
             }
         }
 
+        [Name("Roll")]
         [Command("roll", RunMode = RunMode.Async)]
+        [Summary("Place a roll and see if you win roll above 50 to win")]
+        [Remarks("h.roll 50")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task RollAsync(int bet)
@@ -79,7 +88,10 @@ namespace Hanekawa.Modules.Account.Gamble
             }
         }
 
+        [Name("Roll")]
         [Command("roll", RunMode = RunMode.Async)]
+        [Summary("Go all in on a roll and see if you win roll above 50 to win")]
+        [Remarks("h.roll All")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequiredChannel]
         public async Task RollAllAsync(string amount)

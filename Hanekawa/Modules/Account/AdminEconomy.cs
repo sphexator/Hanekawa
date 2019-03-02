@@ -10,7 +10,7 @@ using Quartz.Util;
 
 namespace Hanekawa.Modules.Account
 {
-    [Name("currency")]
+    [Name("Currency")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireContext(ContextType.Guild)]
     public class AdminEconomy : InteractiveBase

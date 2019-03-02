@@ -15,7 +15,10 @@ namespace Hanekawa.Modules.Audio
 {
     public class Move : InteractiveBase
     {
+        [Name("Move")]
         [Command("move", RunMode = RunMode.Async)]
+        [Summary("Prompt to move someone to your channel, useful in locked or full channels. Only usable by the one being longest in VC.")]
+        [Remarks("h.move @bob#0000")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]

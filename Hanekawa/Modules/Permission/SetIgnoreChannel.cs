@@ -23,7 +23,11 @@ namespace Hanekawa.Modules.Permission
 
         public SetIgnoreChannel(RequiredChannel requiredChannel) => _requiredChannel = requiredChannel;
 
-        [Command("add", RunMode = RunMode.Async)]
+        [Name("Channel ignore add")]
+        [Command("channel ignore add", RunMode = RunMode.Async)]
+        [Alias("ignore add")]
+        [Summary("Adds a channel to the command ignore list")]
+        [Remarks("h.ignore add #general")]
         public async Task AddIgnoreChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -48,7 +52,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
+        [Name("Channel ignore remove")]
+        [Command("channel ignore remove", RunMode = RunMode.Async)]
+        [Alias("ignore remove")]
+        [Summary("Removes a channel to the command ignore list")]
+        [Remarks("h.ignore remove #general")]
         public async Task RemoveIgnoreChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -73,7 +81,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Channel ignore list")]
+        [Command("channel ignore list", RunMode = RunMode.Async)]
+        [Alias("ignore list")]
+        [Summary("List channels on the ignore list")]
+        [Remarks("h.ignore list")]
         public async Task ListIgnoreChannel()
         {
             using (var db = new DbService())
@@ -112,7 +124,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("toggle", RunMode = RunMode.Async)]
+        [Name("Channel ignore toggle")]
+        [Command("channel ignore toggle", RunMode = RunMode.Async)]
+        [Alias("ignore toggle")]
+        [Summary("Toggles whether the channels on the list are ignored, or only channels you can use commands on.")]
+        [Remarks("h.ignore toggle")]
         public async Task ToggleIgnore()
         {
             using (var db = new DbService())

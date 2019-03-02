@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
 {
-    [Group("drop")]
     [RequireUserPermission(GuildPermission.Administrator)]
     [RequireContext(ContextType.Guild)]
     public class Drop : InteractiveBase
@@ -26,8 +25,10 @@ namespace Hanekawa.Modules.Administration
             _dropData = dropData;
         }
 
-        [Command(RunMode = RunMode.Async)]
+        [Name("Drop")]
+        [Command("drop", RunMode = RunMode.Async)]
         [Summary("Spawns a crate for people to claim. Higher reward then regular crates")]
+        [Remarks("h.drop")]
         public async Task SpawnDrop()
         {
             await Context.Message.DeleteAsync();
@@ -35,8 +36,10 @@ namespace Hanekawa.Modules.Administration
             await _dropService.SpawnCrateAsync(ch, Context.User as SocketGuildUser);
         }
 
-        [Command("Add", RunMode = RunMode.Async)]
+        [Name("Drop add")]
+        [Command("drop Add", RunMode = RunMode.Async)]
         [Summary("Adds a channel to be eligible for drops")]
+        [Remarks("h.drop add #general")]
         public async Task AddDropChannel(ITextChannel channel = null)
         {
             try
@@ -54,8 +57,10 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
+        [Name("Drop remove")]
+        [Command("drop remove", RunMode = RunMode.Async)]
         [Summary("Removes a channel from being eligible for drops")]
+        [Remarks("h.drop remove #general")]
         public async Task RemoveDropChannel(ITextChannel channel = null)
         {
             try
@@ -72,8 +77,10 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
-        [Summary("Lists channels that're available for drops")]
+        [Name("Drop list")]
+        [Command("drop list", RunMode = RunMode.Async)]
+        [Summary("Lists channels that are available for drops")]
+        [Remarks("h.drop list")]
         public async Task ListDropChannelsAsync()
         {
             using (var db = new DbService())

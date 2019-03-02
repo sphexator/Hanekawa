@@ -11,13 +11,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
 {
+    [Name("Event payout")]
     [Summary("Event modules for managing events, add participants and award them all at once")]
     [RequireContext(ContextType.Guild)]
     public class EventPayout : InteractiveBase
     {
+        [Name("Add reward")]
         [Command("reward Add", RunMode = RunMode.Async)]
-        [Alias("eadd", "eventadd")]
+        [Alias("radd", "rewardadd")]
         [Summary("Add event participants to the event payout queue (handled by server admins)")]
+        [Remarks("h.radd @bob#000 100")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddEventParticipantsAsync(IGuildUser user, int amount = 100)
         {
@@ -33,9 +36,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Remove reward")]
         [Command("reward Remove", RunMode = RunMode.Async)]
-        [Alias("eremove", "eventremove")]
+        [Alias("rremove", "rewardremove")]
         [Summary("Remove users from the event payout queue")]
+        [Remarks("h.rremove @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventParticipantAsync(IGuildUser user)
         {
@@ -59,9 +64,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Reward adjust")]
         [Command("reward Adjust", RunMode = RunMode.Async)]
-        [Alias("eadjust", "ea", "eventadjust")]
+        [Alias("radjust", "ea", "eventadjust")]
         [Summary("Adjust the reward for a user in the event payout queue")]
+        [Remarks("h.radjust @bob#000 200")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AdjustEventParticipant(IGuildUser user, int amount)
         {
@@ -74,9 +81,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Reward payout")]
         [Command("reward payout", RunMode = RunMode.Async)]
         [Alias("rp", "rewardpayout")]
         [Summary("Payout people that're queued up")]
+        [Remarks("h.rp")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task PayoutEventParticipants()
         {
@@ -98,9 +107,11 @@ namespace Hanekawa.Modules.Administration
             }
         }
 
+        [Name("Reward list")]
         [Command("reward list", RunMode = RunMode.Async)]
-        [Alias("el", "elist", "eventlist")]
+        [Alias("rl", "rlist", "rewardlist")]
         [Summary("List all users in the event payout queue")]
+        [Remarks("h.rl")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ListEventParticipantsAsync()
         {

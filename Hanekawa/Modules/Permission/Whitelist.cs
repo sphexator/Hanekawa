@@ -16,7 +16,10 @@ namespace Hanekawa.Modules.Permission
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Whitelist : InteractiveBase
     {
+        [Name("Event add")]
         [Command("event add", RunMode = RunMode.Async)]
+        [Summary("Adds a user as a whitelisted event organizer")]
+        [Remarks("h.event add @bob#0000")]
         public async Task Eventadd(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -39,7 +42,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Event Remove")]
         [Command("event remove", RunMode = RunMode.Async)]
+        [Summary("Removes a user from being a whitelisted event organizer")]
+        [Remarks("h.event remove @bob#0000")]
         public async Task EventRemove(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -58,8 +64,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Event list")]
         [Command("event list", RunMode = RunMode.Async)]
-        public async Task EventList(SocketGuildUser user)
+        [Summary("List all whitelisted event organizers")]
+        [Remarks("h.event list")]
+        public async Task EventList()
         {
             using (var db = new DbService())
             {
@@ -80,7 +89,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Design add")]
         [Command("design add", RunMode = RunMode.Async)]
+        [Summary("Adds a user as a whitelisted designer")]
+        [Remarks("h.design add @bob#0000")]
         public async Task DesignAdd(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -103,7 +115,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Design remove")]
         [Command("design remove", RunMode = RunMode.Async)]
+        [Summary("Removes a user from being a whitelisted designer")]
+        [Remarks("h.design remove @bob#0000")]
         public async Task DesignRemove(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -122,7 +137,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Design list")]
         [Command("design list", RunMode = RunMode.Async)]
+        [Summary("Lists all whitelisted designers")]
+        [Remarks("h.design list")]
         public async Task DesignList()
         {
             using (var db = new DbService())

@@ -34,8 +34,11 @@ namespace Hanekawa.Modules.Welcome
             _message = message;
         }
 
-        [Command("add", RunMode = RunMode.Async)]
+        [Name("Welcome add")]
+        [Command("welcome add", RunMode = RunMode.Async)]
+        [Alias("welc add")]
         [Summary("Adds a banner to the bot")]
+        [Remarks("h.welc add imgur.com")]
         public async Task AddWelcomeBanner(string url)
         {
             if (!url.IsPictureUrl())
@@ -77,8 +80,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
+        [Name("Welcome remove")]
+        [Command("welcome remove", RunMode = RunMode.Async)]
+        [Alias("welc remove")]
         [Summary("Removes a banner from the bot")]
+        [Remarks("h.welc remove 5")]
         public async Task RemoveWelcomeBanner(int id)
         {
             using (var db = new DbService())
@@ -98,8 +104,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Welcome list")]
+        [Command("welcome list", RunMode = RunMode.Async)]
+        [Alias("welc list")]
         [Summary("Lists all banners for this guild")]
+        [Remarks("h.welc list")]
         public async Task ListWelcomeBanner()
         {
             using (var db = new DbService())
@@ -124,8 +133,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("test", RunMode = RunMode.Async)]
+        [Name("Welcome test")]
+        [Command("welcome test", RunMode = RunMode.Async)]
+        [Alias("welc test")]
         [Summary("Tests a banner from a url to see how it looks")]
+        [Remarks("h.welc test")]
         public async Task TestWelcomeBanner(string url)
         {
             if (!url.IsPictureUrl())
@@ -140,8 +152,11 @@ namespace Hanekawa.Modules.Welcome
             await Context.Channel.SendFileAsync(stream, "welcome.png");
         }
 
-        [Command("template", RunMode = RunMode.Async)]
+        [Name("Welcome template")]
+        [Command("welcome template", RunMode = RunMode.Async)]
+        [Alias("welc template")]
         [Summary("Sends banner template")]
+        [Remarks("h.welc template")]
         public async Task TemplateWelcomeBanner()
         {
             var embed = new EmbedBuilder()
@@ -154,9 +169,11 @@ namespace Hanekawa.Modules.Welcome
             await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
         }
 
-        [Command("message", RunMode = RunMode.Async)]
-        [Alias("msg")]
+        [Name("Welcome message")]
+        [Command("welcome message", RunMode = RunMode.Async)]
+        [Alias("welc msg")]
         [Summary("Sets welcome message")]
+        [Remarks("h.welc msg Welcome %user% to %guild%")]
         public async Task SetWelcomeMessage([Remainder] string message)
         {
             using (var db = new DbService())
@@ -170,9 +187,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("autodelete", RunMode = RunMode.Async)]
-        [Alias("autodel")]
+        [Name("Welcome auto delete")]
+        [Command("welcome autodelete", RunMode = RunMode.Async)]
+        [Alias("welc autodel")]
         [Summary("Sets when a welcome message should delete on its own")]
+        [Remarks("h.autodel 5m")]
         public async Task SetAutoDeleteTimer(TimeSpan? timer = null)
         {
             using (var db = new DbService())
@@ -196,8 +215,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("banner", RunMode = RunMode.Async)]
+        [Name("Welcome banner")]
+        [Command("welcome banner", RunMode = RunMode.Async)]
+        [Alias("welc banner")]
         [Summary("Toggles welcome banner")]
+        [Remarks("h.welc banner")]
         public async Task ToggleBannerWelcomeBanner()
         {
             using (var db = new DbService())
@@ -218,8 +240,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("toggle", RunMode = RunMode.Async)]
-        [Summary("Toggles welcome messages")]
+        [Name("Welcome channel")]
+        [Command("welcome channel", RunMode = RunMode.Async)]
+        [Alias("welc channel")]
+        [Summary("Enables or disables welcome messages in a channel")]
+        [Remarks("h.welc channel #general")]
         public async Task ToggleWelcome(ITextChannel channel = null)
         {
             using (var db = new DbService())

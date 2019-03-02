@@ -22,18 +22,11 @@ namespace Hanekawa.Modules.Permission
             _colors = colors;
         }
 
-        [Command("permissions", RunMode = RunMode.Async)]
-        [Alias("perm")]
-        [Summary("Permission overview")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ViewPermissionsAsync()
-        {
-            await Context.ReplyAsync("Currently disabled");
-        }
-
+        [Name("Set prefix")]
         [Command("prefix", RunMode = RunMode.Async)]
         [Alias("set prefix")]
         [Summary("Sets custom prefix for this guild/server")]
+        [Remarks("h.prefix !")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetPrefix(string prefix)
         {
@@ -49,9 +42,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed 16669612")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(uint color)
         {
@@ -70,9 +65,11 @@ namespace Hanekawa.Modules.Permission
                 await Context.ReplyAsync("Canceled");
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed 99 00 00")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(int r, int g, int b)
         {
@@ -92,9 +89,11 @@ namespace Hanekawa.Modules.Permission
                 await Context.ReplyAsync("Canceled");
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed pink")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(Colors type)
         {
@@ -114,9 +113,11 @@ namespace Hanekawa.Modules.Permission
                 await Context.ReplyAsync("Canceled");
         }
 
+        [Name("Embed")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed #ff0022")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(string hex)
         {

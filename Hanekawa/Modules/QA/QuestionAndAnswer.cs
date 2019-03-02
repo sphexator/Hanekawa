@@ -12,11 +12,15 @@ using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.QA
 {
+    [Name("Q&A")]
+    [Summary("Question and answer or AMA")]
     public class QuestionAndAnswer : InteractiveBase
     {
+        [Name("Question")]
         [Command("question", RunMode = RunMode.Async)]
-        [RequireContext(ContextType.Guild)]
         [Summary("Sends a question to server owners to answer (QnA)")]
+        [Remarks("h.question Here is my question :pog:")]
+        [RequireContext(ContextType.Guild)]
         public async Task QuestionAsync([Remainder] string question)
         {
             using (var db = new DbService())
@@ -43,11 +47,13 @@ namespace Hanekawa.Modules.QA
             }
         }
 
+        [Name("Question answer")]
         [Command("qa answer", RunMode = RunMode.Async)]
         [Alias("qaa")]
+        [Summary("Users with manage guild perms can answer questions sent in.")]
+        [Remarks("h.qaa 1 Yes, here's your answer :pog:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Summary("Users with manage guild perms can answer questions sent in.")]
         public async Task CommentAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
@@ -96,9 +102,11 @@ namespace Hanekawa.Modules.QA
             }
         }
 
+        [Name("Q&A channel")]
         [Command("qa set channel", RunMode = RunMode.Async)]
         [Alias("qac", "qachannel", "qa channel")]
         [Summary("Sets a channel for QnA. Leave empty channel to disable QnA.")]
+        [Remarks("h.qac #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task SetQuestionChannelAsync(ITextChannel channel = null)

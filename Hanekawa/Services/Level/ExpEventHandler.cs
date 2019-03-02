@@ -113,7 +113,7 @@ namespace Hanekawa.Services.Level
         {
             IUserMessage message = null;
             var cfg = await db.GetOrCreateLevelConfigAsync(guild as SocketGuild);
-            if (announce) message = await AnnounceExpEventAsync(db, await db.ChannelConfigs.FindAsync(guild), guild, multiplier, after, fallbackChannel);
+            if (announce) message = await AnnounceExpEventAsync(db, await db.GetOrCreateChannelConfigAsync(guild), guild, multiplier, after, fallbackChannel);
             CreateEvent(guild.Id, multiplier, cfg.ExpMultiplier, message?.Id, message?.Channel.Id, after);
             await EventAddOrUpdateDatabaseAsync(db, guild.Id, multiplier, message?.Id, message?.Channel.Id, after);
         }

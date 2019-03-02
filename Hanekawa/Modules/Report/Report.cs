@@ -14,12 +14,16 @@ using Humanizer;
 
 namespace Hanekawa.Modules.Report
 {
+    [Name("Report")]
+    [Summary("Allows users to send reports to moderation team through the bot")]
     public class Report : InteractiveBase
     {
+        [Name("Report channel")]
         [Command("report channel", RunMode = RunMode.Async)]
+        [Summary("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
+        [Remarks("h.report channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
-        [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
         public async Task SetReportChannelAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -41,7 +45,10 @@ namespace Hanekawa.Modules.Report
             }
         }
 
+        [Name("Report")]
         [Command("report", RunMode = RunMode.Async)]
+        [Summary("Send a report to the moderator team")]
+        [Remarks("h.report This is a report")]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 30, Measure.Seconds)]
         public async Task ReportGuildAsync([Remainder] string text)
@@ -71,10 +78,13 @@ namespace Hanekawa.Modules.Report
             }
         }
 
+        [Name("Respond")]
         [Command("respond", RunMode = RunMode.Async)]
+        [Summary("Respond to a report that's been sent")]
+        [Remarks("h.respond 1 this is my response :pog:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RespondAsync(uint id, [Remainder] string text)
+        public async Task RespondAsync(int id, [Remainder] string text)
         {
             using (var db = new DbService())
             {

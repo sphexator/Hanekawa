@@ -24,15 +24,18 @@ namespace Hanekawa.Modules.Events
 
         public EventModule(EventService service) => _service = service;
 
-        [Command("post", RunMode = RunMode.Async)]
+        [Name("Event post")]
+        [Command("event post", RunMode = RunMode.Async)]
         [RequireOwner]
         public async Task PostEventsAsync()
         {
             await _service.Execute();
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Event list")]
+        [Command("event list", RunMode = RunMode.Async)]
         [Summary("Lists all upcoming events")]
+        [Remarks("h.event list")]
         [Priority(1)]
         [WhiteListedOverAll]
         public async Task ListDesignerEventsAsync()
@@ -67,8 +70,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Event list")]
+        [Command("event list", RunMode = RunMode.Async)]
         [Summary("Lists all upcoming events")]
+        [Remarks("h.event list")]
         [RequiredChannel]
         public async Task ListEventsAsync()
         {
@@ -96,8 +101,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("schedule", RunMode = RunMode.Async)]
+        [Name("Event schedule")]
+        [Command("event schedule", RunMode = RunMode.Async)]
         [Summary("Sets event scheduling channel")]
+        [Remarks("h.event schedule #general")]
         [RequireOwner]
         public async Task SetSchedulingChannel(ITextChannel channel = null)
         {
@@ -120,8 +127,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("channel", RunMode = RunMode.Async)]
+        [Name("Event channel")]
+        [Command("event channel", RunMode = RunMode.Async)]
         [Summary("Sets event channel")]
+        [Remarks("h.event channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEventChannel(ITextChannel channel = null)
         {
@@ -143,8 +152,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("exp")]
+        [Name("Event exp")]
+        [Command("event exp")]
         [Summary("Displays current on-going exp events if there is one.")]
+        [Remarks("h.event exp")]
         [RequiredChannel]
         public async Task ShowExpEvent()
         {
@@ -159,8 +170,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Add", RunMode = RunMode.Async)]
+        [Name("Event add")]
+        [Command("event Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
+        [Remarks("h.event add")]
         [WhiteListedEventOrg]
         public async Task AddEventAsync()
         {
@@ -281,8 +294,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("preview", RunMode = RunMode.Async)]
+        [Name("Event preview")]
+        [Command("event preview", RunMode = RunMode.Async)]
         [Summary("Previews a event given the ID")]
+        [Remarks("h.event preview 1")]
         [WhiteListedOverAll]
         public async Task PreviewEvent(int id)
         {
@@ -304,8 +319,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Remove", RunMode = RunMode.Async)]
+        [Name("Event remove")]
+        [Command("event Remove", RunMode = RunMode.Async)]
         [Summary("Removes a event from the list given the ID")]
+        [Remarks("h.event remove 1")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)
         {
@@ -327,8 +344,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("claim", RunMode = RunMode.Async)]
+        [Name("Event claim")]
+        [Command("event claim", RunMode = RunMode.Async)]
         [Summary("Claims a event to make a image for it")]
+        [Remarks("h.event claim 1")]
         [WhiteListedDesigner]
         public async Task ClaimEventAsync(int id)
         {
@@ -353,9 +372,11 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Description", RunMode = RunMode.Async)]
+        [Name("Event description")]
+        [Command("event Description", RunMode = RunMode.Async)]
         [Alias("desc")]
         [Summary("Sets a description to the event")]
+        [Remarks("h.event description 1 description here")]
         [WhiteListedEventOrg]
         public async Task SetEventDescriptionAsync(int id, [Remainder] string content)
         {
@@ -371,9 +392,11 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Image", RunMode = RunMode.Async)]
+        [Name("Event image")]
+        [Command("event Image", RunMode = RunMode.Async)]
         [Alias("img")]
         [Summary("Sets a image to the event")]
+        [Remarks("h.event image imageurl")]
         [WhiteListedOverAll]
         public async Task SetEventImageUrlAsync(int id, string url)
         {

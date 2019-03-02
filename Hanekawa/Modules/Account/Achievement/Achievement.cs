@@ -16,8 +16,11 @@ namespace Hanekawa.Modules.Account.Achievement
 {
     public class Achievement : InteractiveBase
     {
+        [Name("Achievement")]
         [Command("achievement", RunMode = RunMode.Async)]
         [Alias("achieve", "achiev")]
+        [Summary("Displays available achievements")]
+        [Remarks("h.achievement level")]
         [RequiredChannel]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievementLog([Remainder] string tab = null)
@@ -56,8 +59,11 @@ namespace Hanekawa.Modules.Account.Achievement
             }
         }
 
+        [Name("Achievement inspect")]
         [Command("achievement inspect", RunMode = RunMode.Async)]
         [Alias("ainspect", "achiv inspect", "inspect achieve")]
+        [Summary("Displays more details about specific achievement by ID")]
+        [Remarks("h.achiv inspect 1")]
         [RequiredChannel]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievementInspect(int id)
@@ -72,7 +78,10 @@ namespace Hanekawa.Modules.Account.Achievement
             }
         }
 
+        [Name("Achieved")]
         [Command("achieved")]
+        [Summary("Lists achievements you've achieved, if any.")]
+        [Remarks("h.achieved")]
         [RequiredChannel]
         [Ratelimit(1, 2, Measure.Seconds)]
         public async Task AchievedList()
@@ -87,7 +96,10 @@ namespace Hanekawa.Modules.Account.Achievement
                 }
 
                 var achievements = new List<AchievementMeta>();
-                unlock.ForEach(x => achievements.Add(db.Achievements.Find(x.AchievementId)));
+                foreach (var x in unlock)
+                {
+                    achievements.Add(await db.Achievements.FindAsync(x.AchievementId));
+                }
                 var pages = new List<string>();
                 foreach (var x in achievements)
                     pages.Add($"{x.Name}({x.AchievementId}) - Req: {x.Requirement}\n");

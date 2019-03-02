@@ -17,7 +17,10 @@ namespace Hanekawa.Modules.Suggestion
 {
     public class Suggestion : InteractiveBase
     {
+        [Name("Suggest")]
         [Command("Suggest", RunMode = RunMode.Async)]
+        [Summary("Sends a suggestion")]
+        [Remarks("h.suggest this is a suggestion")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.AddReactions)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
@@ -56,11 +59,14 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Approve suggestion")]
         [Command("approve", RunMode = RunMode.Async)]
         [Alias("ar")]
+        [Summary("Approves a suggestion")]
+        [Remarks("h.approve 5 yes, this suggestion we will approve")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ApproveAsync(uint id, [Remainder] string response)
+        public async Task ApproveAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
             {
@@ -99,11 +105,14 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Decline suggestion")]
         [Command("deny", RunMode = RunMode.Async)]
         [Alias("dr")]
+        [Summary("Declines a suggestion")]
+        [Remarks("h.deny 5 no, this suggestion has been declined")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task DenyAsync(uint id, [Remainder] string response)
+        public async Task DenyAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
             {
@@ -140,11 +149,14 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Comment suggestion")]
         [Command("comment", RunMode = RunMode.Async)]
         [Alias("rr")]
+        [Summary("Comments a suggestion")]
+        [Remarks("h.comment 5 yes this is a response")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task CommentAsync(uint id, [Remainder] string response)
+        public async Task CommentAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
             {
@@ -180,9 +192,11 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Suggestion channel")]
         [Command("suggestion set channel", RunMode = RunMode.Async)]
         [Alias("ssc", "sschannel", "ss channel")]
         [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+        [Remarks("h.ss channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionChannelAsync(ITextChannel channel = null)
@@ -205,9 +219,11 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Suggestion down vote emote")]
         [Command("suggestion set no", RunMode = RunMode.Async)]
         [Alias("ssn", "ssno", "ss no")]
         [Summary("Set custom no emote for suggestions")]
+        [Remarks("h.ss no :noEmote:")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionNoEmoteAsync(Emote emote = null)
@@ -229,9 +245,11 @@ namespace Hanekawa.Modules.Suggestion
             }
         }
 
+        [Name("Suggestion up vote emote")]
         [Command("suggestion set yes", RunMode = RunMode.Async)]
         [Alias("ssy", "ssyes", "ss yes")]
         [Summary("Set custom yes emote for suggestions")]
+        [Remarks("h.ss yes :yesEmote:")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task SetSuggestionYesEmoteAsync(Emote emote = null)

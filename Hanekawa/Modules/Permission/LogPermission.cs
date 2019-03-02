@@ -8,13 +8,15 @@ using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.Permission
 {
-    [Group("log")]
+    [Name("log")]
     [Summary("Manage logging settings")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class LogPermission : InteractiveBase
     {
-        [Command("warn", RunMode = RunMode.Async)]
+        [Name("Warn logging")]
+        [Command("log warn", RunMode = RunMode.Async)]
         [Summary("Enable/disable warn logging, leave empty to disable")]
+        [Remarks("h.log warn #general")]
         public async Task LogWarnAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -34,8 +36,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("join", RunMode = RunMode.Async)]
+        [Name("Join/Leave logging")]
+        [Command("log join", RunMode = RunMode.Async)]
         [Summary("Enable/disable join/leaves logging, leave empty to disable")]
+        [Remarks("h.log join #general")]
         public async Task LogJoinAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -56,9 +60,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("message", RunMode = RunMode.Async)]
+        [Name("Message logging")]
+        [Command("log message", RunMode = RunMode.Async)]
         [Alias("msg")]
         [Summary("Enable/Disable message logging, leave empty to disable")]
+        [Remarks("h.log msg #general")]
         public async Task LogMessageAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -79,9 +85,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("ban", RunMode = RunMode.Async)]
+        [Name("Ban logging")]
+        [Command("log ban", RunMode = RunMode.Async)]
         [Alias("ban")]
         [Summary("Enable/Disable moderation logging, leave empty to disable")]
+        [Remarks("h.log ban #general")]
         public async Task LogBanAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -101,8 +109,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("automod", RunMode = RunMode.Async)]
+        [Name("Automod logging")]
+        [Command("log automod", RunMode = RunMode.Async)]
         [Summary("Enable/Disable separate logging of auto-moderator")]
+        [Remarks("h.log automod #general")]
         public async Task LogAutoModAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
@@ -123,8 +133,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
-        [Command("user")]
+        [Name("User logging")]
+        [Command("log user")]
         [Summary("Enable/Disable logging of user changes (avatar and name/nickname)")]
+        [Remarks("h.log user #general")]
         public async Task LogUserUpdates(ITextChannel channel = null)
         {
             using (var db = new DbService())

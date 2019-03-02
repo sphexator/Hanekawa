@@ -11,10 +11,12 @@ namespace Hanekawa.Modules.Giveaway
 {
     public class Giveaway : InteractiveBase
     {
+        [Name("Draw")]
         [Command("draw", RunMode = RunMode.Async)]
+        [Summary("Draw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
+        [Remarks("h.draw 5 <emote> 5435346235434 #general")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
-        [Summary("Draw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
         public async Task DrawWinnerAsync(int draw, Emote emote, ulong messageId, ITextChannel channel = null)
         {
             await Context.Message.DeleteAsync();
