@@ -49,9 +49,9 @@ namespace Hanekawa.Modules.Account.Profile
 
                 img.Mutate(x => x
                     .DrawImage(background, 1)
-                    .DrawImage(gpOptions, templateBg, new Point(0, 0))
-                    .DrawImage(aviOptions, avi, new Point(149, 8))
-                    .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
+                    .DrawImage(templateBg, new Point(0, 0), gpOptions)
+                    .DrawImage(avi, new Point(149, 8), aviOptions)
+                    .DrawImage(pfpCircle, new Point(149, 8), gpOptions));
                 img.Mutate(x =>
                     x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());
@@ -81,9 +81,9 @@ namespace Hanekawa.Modules.Account.Profile
 
                 img.Mutate(x => x
                     .DrawImage(background, 1)
-                    .DrawImage(gpOptions, templateBg, new Point(0, 0))
-                    .DrawImage(aviOptions, avi, new Point(149, 8))
-                    .DrawImage(gpOptions, pfpCircle, new Point(149, 8)));
+                    .DrawImage(templateBg, new Point(0, 0), gpOptions)
+                    .DrawImage(avi, new Point(149, 8), aviOptions)
+                    .DrawImage(pfpCircle, new Point(149, 8), gpOptions));
                 img.Mutate(x =>
                     x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
                         .GetResult());

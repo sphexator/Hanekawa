@@ -63,7 +63,7 @@ namespace Hanekawa.Services.Welcome
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 img.Mutate(ctx => ctx
-                    .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
+                    .DrawImage(avatar, new Point(10, 10), GraphicsOptions.Default)
                     .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }

@@ -24,11 +24,9 @@ namespace Hanekawa.Modules.Welcome
     {
         private readonly ImageGenerator _banner;
         private readonly WelcomeMessage _message;
-        private readonly WelcomeService _service;
 
-        public Welcome(WelcomeService welcomeService, ImageGenerator banner, WelcomeMessage message)
+        public Welcome(ImageGenerator banner, WelcomeMessage message)
         {
-            _service = welcomeService;
             _banner = banner;
             _message = message;
         }

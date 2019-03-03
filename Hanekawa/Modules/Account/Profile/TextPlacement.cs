@@ -73,15 +73,15 @@ namespace Hanekawa.Modules.Account.Profile
                     if (amount >= images.Count) continue;
                     var icon = images[amount];
                     icon.Mutate(y => y.Resize(39, 39));
-                    image.DrawImage(new GraphicsOptions(false), icon,
-                        new Point(width + spacerW * j, height + spacerH * i));
+                    image.DrawImage(icon,
+                        new Point(width + spacerW * j, height + spacerH * i), new GraphicsOptions(false));
                     amount++;
                 }
 
                 for (var i = 0; i < 2; i++)
                 for (var j = 0; j < 8; j++)
-                    image.DrawImage(new GraphicsOptions(false), circle,
-                        new Point(width + spacerW * j, height + spacerH * i));
+                    image.DrawImage(circle,
+                        new Point(width + spacerW * j, height + spacerH * i), new GraphicsOptions(false));
             }
             else
             {
@@ -89,12 +89,12 @@ namespace Hanekawa.Modules.Account.Profile
                 var amount = 0;
                 foreach (var x in images)
                 {
-                    image.DrawImage(new GraphicsOptions(false), x, new Point(width + spacerW * amount, height));
+                    image.DrawImage(x, new Point(width + spacerW * amount, height), new GraphicsOptions(false));
                     amount++;
                 }
 
                 for (var i = 0; i < 4; i++)
-                    image.DrawImage(new GraphicsOptions(false), circle, new Point(width + spacerW * i, height));
+                    image.DrawImage(circle, new Point(width + spacerW * i, height), new GraphicsOptions(false));
             }
         }
 

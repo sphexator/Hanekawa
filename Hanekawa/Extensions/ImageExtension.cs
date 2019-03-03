@@ -42,10 +42,7 @@ namespace Hanekawa.Extensions
         {
             var corners = BuildCorners(img.Width, img.Height, cornerRadius);
 
-            var graphicOptions = new GraphicsOptions(true)
-            {
-                BlenderMode = PixelBlenderMode.Src
-            };
+            var graphicOptions = new GraphicsOptions(true);
             img.Mutate(x => x.Fill(graphicOptions, Rgba32.Transparent, corners));
         }
 

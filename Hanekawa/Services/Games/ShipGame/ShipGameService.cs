@@ -561,9 +561,9 @@ namespace Hanekawa.Services.Games.ShipGame
                 var playerOne = Image.Load(aviOne);
                 var playerTwo = Image.Load(aviTwo);
                 img.Mutate(x => x
-                    .DrawImage(GraphicsOptions.Default, playerOne, new Point(3, 92))
-                    .DrawImage(GraphicsOptions.Default, playerTwo, new Point(223, 92))
-                    .DrawImage(GraphicsOptions.Default, border, new Point(0, 0)));
+                    .DrawImage(playerOne, new Point(3, 92), GraphicsOptions.Default)
+                    .DrawImage(playerTwo, new Point(223, 92), GraphicsOptions.Default)
+                    .DrawImage(border, new Point(0, 0), GraphicsOptions.Default));
                 img.Save(stream, new PngEncoder());
             }
 
@@ -583,9 +583,9 @@ namespace Hanekawa.Services.Games.ShipGame
                 var playerOne = Image.Load(aviOne);
                 var playerTwo = Image.Load(aviTwo);
                 img.Mutate(x => x
-                    .DrawImage(GraphicsOptions.Default, playerOne, new Point(3, 92))
-                    .DrawImage(GraphicsOptions.Default, playerTwo, new Point(223, 92))
-                    .DrawImage(GraphicsOptions.Default, border, new Point(0, 0)));
+                    .DrawImage(playerOne, new Point(3, 92), GraphicsOptions.Default)
+                    .DrawImage(playerTwo, new Point(223, 92), GraphicsOptions.Default)
+                    .DrawImage(border, new Point(0, 0), GraphicsOptions.Default));
                 img.Save(stream, new PngEncoder());
             }
 
