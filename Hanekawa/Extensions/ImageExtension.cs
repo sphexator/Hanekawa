@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database.Tables.Account;
 using SixLabors.Fonts;
@@ -13,7 +12,7 @@ namespace Hanekawa.Extensions
 {
     public static class ImageExtension
     {
-        private static IImageProcessingContext<Rgba32> ConvertToAvatar(
+        public static IImageProcessingContext<Rgba32> ConvertToAvatar(
             this IImageProcessingContext<Rgba32> processingContext, Size size, float cornerRadius)
         {
             return processingContext.Resize(new ResizeOptions
@@ -42,26 +41,27 @@ namespace Hanekawa.Extensions
         {
             var corners = BuildCorners(img.Width, img.Height, cornerRadius);
 
-            var graphicOptions = new GraphicsOptions(true);
-            img.Mutate(x => x.Fill(graphicOptions, Rgba32.Transparent, corners));
+            var graphicOptions = new GraphicsOptions(true)
+            {
+                AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
+            };
+            img.Mutate(x => x.Fill(graphicOptions, Rgba32.LimeGreen, corners));
         }
 
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)
         {
             var rect = new RectangularPolygon(-0.5f, -0.5f, cornerRadius, cornerRadius);
 
-            var cornerToptLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
+            var cornerTopLeft = rect.Clip(new EllipsePolygon(cornerRadius - 0.5f, cornerRadius - 0.5f, cornerRadius));
 
-            var center = new Vector2(imageWidth / 2F, imageHeight / 2F);
+            var rightPos = imageWidth - cornerTopLeft.Bounds.Width + 1;
+            var bottomPos = imageHeight - cornerTopLeft.Bounds.Height + 1;
 
-            var rightPos = imageWidth - cornerToptLeft.Bounds.Width + 1;
-            var bottomPos = imageHeight - cornerToptLeft.Bounds.Height + 1;
+            var cornerTopRight = cornerTopLeft.RotateDegree(90).Translate(rightPos, 0);
+            var cornerBottomLeft = cornerTopLeft.RotateDegree(-90).Translate(0, bottomPos);
+            var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
-            var cornerTopRight = cornerToptLeft.RotateDegree(90).Translate(rightPos, 0);
-            var cornerBottomLeft = cornerToptLeft.RotateDegree(-90).Translate(0, bottomPos);
-            var cornerBottomRight = cornerToptLeft.RotateDegree(180).Translate(rightPos, bottomPos);
-
-            return new PathCollection(cornerToptLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
+            return new PathCollection(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
         }
 
         public static IImageProcessingContext<Rgba32> ApplyProfileText(

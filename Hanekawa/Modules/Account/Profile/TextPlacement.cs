@@ -28,8 +28,8 @@ namespace Hanekawa.Modules.Account.Profile
                 await Task.WhenAll(fields, globalData);
                 var fonts = new FontCollection();
                 var arial = fonts.Install(@"Data/Fonts/ARIAL.TTF");
-                var font = new Font(arial, 20, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
-                var nameFont = new Font(arial, 32, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 32, FontStyle.Regular);
+                var font = new Font(arial, 20, FontStyle.Regular);
+                var nameFont = new Font(arial, 32, FontStyle.Regular);
 
                 var nameOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center};
                 var leftOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Left};
@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle,
+        public static void ApplyAchievementCircles123(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle,
             IEnumerable<Image<Rgba32>> icons)
         {
             const int height = 306;

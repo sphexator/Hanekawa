@@ -69,7 +69,7 @@ namespace Hanekawa.Services.Level
         {
             using (var db = new DbService())
             {
-                await AddExperience(db, user, exp, credit);
+                await AddGlobalExperience(db, user, exp, credit);
             }
         }
 

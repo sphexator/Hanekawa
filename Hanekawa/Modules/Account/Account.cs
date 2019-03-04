@@ -161,10 +161,11 @@ namespace Hanekawa.Modules.Account
         {
             if (user == null) user = Context.User as SocketGuildUser;
             await Context.Channel.TriggerTypingAsync();
-            using (var stream = await _profileBuilder.Create(user))
+            using(var stream = new MemoryStream())
+            using (var image = await _profileBuilder.Create(user, stream))
             {
-                stream.Seek(0, SeekOrigin.Begin);
-                await Context.Channel.SendFileAsync(stream, "profile.png");
+                image.Seek(0, SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(image, "profile.png");
             }
         }
 
