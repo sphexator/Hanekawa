@@ -5,53 +5,53 @@ using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Level.Util;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
+using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Hanekawa.Services.Level.Util;
-using Humanizer;
-using SixLabors.Fonts;
-using SixLabors.Shapes;
+using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
+using Path = SixLabors.Shapes.Path;
+using Rgba32 = SixLabors.ImageSharp.PixelFormats.Rgba32;
 
 namespace Hanekawa.Modules.Account.Profile
 {
     public class ProfileGenerator : IHanaService
     {
         private readonly LevelGenerator _levelGenerator;
+        private readonly TextPlacement _text;
         private readonly HttpClient _client;
+        private readonly Image<Rgba32> _template;
+
         private readonly FontCollection _fonts;
         private readonly FontFamily _arial;
         private readonly Font _regular;
-        private readonly Font _name;
-        private readonly Image<Rgba32> _template;
-        
-        private readonly TextGraphicsOptions _nameOptions = 
-            new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center};
-        private readonly TextGraphicsOptions _rightOptions = 
-            new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Center };
-        private readonly TextGraphicsOptions _leftOptions = 
-            new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Center };
-        private readonly GraphicsOptions _options = new GraphicsOptions(true);
 
-        public ProfileGenerator(LevelGenerator calculate, HttpClient client)
+        private readonly GraphicsOptions _options = new GraphicsOptions(true);
+        private readonly GraphicsOptions _levelOptions = new GraphicsOptions(true, PixelColorBlendingMode.Screen, 1);
+
+        public ProfileGenerator(LevelGenerator calculate, HttpClient client, TextPlacement text)
         {
             _levelGenerator = calculate;
             _client = client;
+            _text = text;
+
             _fonts = new FontCollection();
             _arial = _fonts.Install(@"Data/Fonts/ARIAL.TTF");
             _regular = new Font(_arial, 20, FontStyle.Regular);
-            _name = new Font(_arial, 32, FontStyle.Regular);
+
             _template = Image.Load("Data/Profile/Template/ProfileTemplate.png");
         }
 
@@ -70,13 +70,14 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(_template, new Point(0, 0), _options)
                     .DrawImage(avi.Result, new Point(145, 8), _options)
                     .Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 63, 55).GenerateOutline(4)));
-                img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
-                        .GetResult());
-                await AddAchievementCircles(img, achieveIcons.Result);
+                CreateProgressBar(img, userdata);
+                CreateLevelZone(img, userdata.Level);
+                var text = _text.ApplyTextAsync(img, user.GetName().Truncate(25), user.Id, user.Guild.Id, userdata,
+                    _levelGenerator);
+                var achievement = AddAchievementCircles(img, achieveIcons.Result);
+                await Task.WhenAll(text, achievement);
                 img.Save(stream, new PngEncoder());
             }
-
             return stream;
         }
 
@@ -99,9 +100,8 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(_template, new Point(0, 0), gpOptions)
                     .DrawImage(avi, new Point(149, 8), aviOptions)
                     .Fill(_options, Rgba32.Gray, new EllipsePolygon(149, 8, 50).GenerateOutline(1)));
-                img.Mutate(x =>
-                    x.ApplyTextAsync(user.Username.Truncate(25), user.Id, user.Guild.Id, userdata, _levelGenerator).GetAwaiter()
-                        .GetResult());
+                await _text.ApplyTextAsync(img, user.GetName().Truncate(25), user.Id, user.Guild.Id, userdata,
+                    _levelGenerator);
                 await AddAchievementCircles(img, achievIcons);
                 img.Save(stream, new PngEncoder());
             }
@@ -138,6 +138,69 @@ namespace Hanekawa.Modules.Account.Profile
             {
                 return img.CloneAndConvertToAvatarWithoutApply(new Size(110, 110), 61).Clone();
             }
+        }
+
+        private void CreateProgressBar(Image<Rgba32> image, Addons.Database.Tables.Account.Account userdata)
+        {
+            var percentage = userdata.Exp / (float) _levelGenerator.GetServerLevelRequirement(userdata.Level);
+            var numb = (percentage * 100) / 100 * 360 * 2;
+            var points = new List<PointF>();
+            const double radius = 55;
+
+            for (var i = 0; i < numb; i++)
+            {
+                var radians = i * Math.PI / 360;
+
+                var x = 200 + radius * Math.Cos(radians - (Math.PI / 2));
+                var y = 63 + radius * Math.Sin(radians - (Math.PI / 2));
+                points.Add(new PointF((float)x, (float)y));
+            }
+
+            image.Mutate(x => x.DrawLines(_options, Rgba32.BlueViolet, 4, points.ToArray()));
+        }
+
+        private void CreateLevelZone(Image<Rgba32> image, int level)
+        {
+            const int heightTop = 107;
+            const int heightBot = 124;
+            const int width = 199; 
+
+            var padding = DetermineLevelWidth(level);
+            image.Mutate(x => x
+                //Center
+                .FillPolygon(_options, Rgba32.Gray, 
+                    new PointF(width - padding, heightTop),
+                    new PointF(width + padding, heightTop),
+                    new PointF(width + padding, heightBot),
+                    new PointF(width - padding, heightBot))
+                //Left
+                .Fill(_options, Rgba32.Gray, new ComplexPolygon(
+                    new Path(
+                        new CubicBezierLineSegment(
+                            new PointF(width - padding, heightBot), 
+                            new PointF(width - padding - 3, heightBot - 4), 
+                            new PointF(width - padding - 3, heightTop + 4), 
+                            new PointF(width - padding, heightTop)
+                            ))))
+                //Right
+                .Fill(_options, Rgba32.Gray, new ComplexPolygon(
+                    new Path(
+                        new CubicBezierLineSegment(
+                            new PointF(width + padding, heightBot),
+                            new PointF(width + padding + 3, heightBot - 4),
+                            new PointF(width + padding + 3, heightTop + 4),
+                            new PointF(width + padding, heightTop)
+                        ))))
+                .DrawText($"{level}", _regular, Rgba32.White, new PointF(width - padding, 108))
+            );
+        }
+
+        private int DetermineLevelWidth(int level)
+        {
+            if (level > 0 && level < 10) return 5 * 1;
+            if (level > 9 && level < 100) return 5 * 2;
+            if (level > 99 && level < 1000) return 5 * 3;
+            return 100;
         }
 
         private async Task<IEnumerable<Image<Rgba32>>> GetAchievementIcons(IGuildUser user, DbService db)
