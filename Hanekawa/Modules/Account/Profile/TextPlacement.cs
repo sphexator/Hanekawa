@@ -38,19 +38,18 @@ namespace Hanekawa.Modules.Account.Profile
 
         public async Task ApplyTextAsync(Image<Rgba32> image, string name, ulong userId,
             ulong guildId,
-            Addons.Database.Tables.Account.Account userdata, LevelGenerator levelGenerator)
+            Addons.Database.Tables.Account.Account userdata, AccountGlobal globalData, LevelGenerator levelGenerator)
         {
             using (var db = new DbService())
             {
-                var fields = db.ProfileConfigs.ToListAsync();
-                var globalData = db.GetOrCreateGlobalUserData(userId);
-                await Task.WhenAll(fields, globalData);
-                image.Mutate(x => x.DrawText(_nameOptions, name, _name, Rgba32.WhiteSmoke, new PointF(200, 118)));
-                foreach (var x in fields.Result)
+                var fields = await db.ProfileConfigs.ToListAsync();
+
+                image.Mutate(x => x.DrawText(_nameOptions, name, _name, Rgba32.WhiteSmoke, new PointF(200, 120)));
+                foreach (var x in fields)
 
                         if (x.Name == "Achievement Points")
                         {
-                            var value = await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator,
+                            var value = await GetValueAsync(x.Name, db, userdata, globalData, levelGenerator,
                                 guildId);
                             image.Mutate(z => z.DrawText(_leftOptions, x.Value, _regular, Rgba32.White,
                                 new PointF(x.NameWidth, x.Height)));
@@ -59,7 +58,7 @@ namespace Hanekawa.Modules.Account.Profile
                         }
                         else
                         {
-                            var value = await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator,
+                            var value = await GetValueAsync(x.Name, db, userdata, globalData, levelGenerator,
                                 guildId);
                             image.Mutate(z => z.DrawText(_leftOptions, x.Value, _regular, Rgba32.White,
                                 new PointF(x.NameWidth, x.Height)));
