@@ -8,6 +8,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
+using Hanekawa.Services.CommandHandler;
 
 namespace Hanekawa.Modules.Help
 {
@@ -15,10 +16,12 @@ namespace Hanekawa.Modules.Help
     {
         private readonly CommandService _commands;
         private readonly IServiceProvider _map;
+        private readonly CommandHandlingService _commandHandling;
 
-        public Help(IServiceProvider map, CommandService commands)
+        public Help(IServiceProvider map, CommandService commands, CommandHandlingService commandHandling)
         {
             _commands = commands;
+            _commandHandling = commandHandling;
             _map = map;
         }
 
@@ -29,13 +32,14 @@ namespace Hanekawa.Modules.Help
         [RequiredChannel]
         public async Task HelpAsync([Remainder] string path = "")
         {
+            var prefix = _commandHandling.GetPrefix(Context.Guild.Id);
             if (path == "")
             {
                 var content = string.Join(", ", await GetModulesAsync(_commands, Context));
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
-                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
+                    .WithFooter(new EmbedFooterBuilder {Text = $"Use `{prefix}help <module>` to get help with a module"});
                 await Context.ReplyAsync(embed);
             }
             else
@@ -106,77 +110,24 @@ namespace Hanekawa.Modules.Help
             }
         }
 
-        private static async Task<IEnumerable<string>> GetModulesAsync(CommandService commandService,
-            ICommandContext context)
+        private string GetModules()
         {
-            var modules = new List<string>();
-            foreach (var module in commandService.Modules)
+            string result = null;
+            var modules = _commands.Modules.ToList();
+            for (var i = 0; i < _commands.Modules.Count();)
             {
-                var resultingList = new List<string>();
-                foreach (var cmd in module.Commands)
+                var stringBuilder = new StringBuilder();
+                for (var j = 0; j < 5; j++)
                 {
-                    var result = await cmd.CheckPreconditionsAsync(context);
-                    if (result.IsSuccess) resultingList.Add(cmd.Name);
+                    var x = modules[i];
+                    stringBuilder.Append(j == 4 ? $"`{x.Name}`" : $"`{x.Name}` - ");
+                    i++;
                 }
 
-                if (resultingList.Count != 0) modules.Add($"`{module.Name}`");
+                result += $"{stringBuilder}\n";
             }
 
-            return modules;
-        }
-
-        private void AddCommands(ModuleInfo module, ref EmbedBuilder builder)
-        {
-            foreach (var command in module.Commands)
-            {
-                var check = command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
-                if (check.IsSuccess) AddCommand(command, ref builder);
-            }
-        }
-
-        private static void AddCommand(CommandInfo command, ref EmbedBuilder builder)
-        {
-            builder.AddField(f =>
-            {
-                f.Name = $"**{command.Name}**";
-                f.Value = $"{command.Summary}\n" +
-                          (!string.IsNullOrEmpty(command.Remarks) ? $"({command.Remarks})\n" : "") +
-                          (command.Aliases.Any()
-                              ? $"**Aliases:** {string.Join(", ", command.Aliases.Select(x => $"`{x}`"))}\n"
-                              : "") +
-                          $"**Usage:** `{GetPrefix(command)} {GetAliases(command)}`";
-            });
-        }
-
-        private static string GetAliases(CommandInfo command)
-        {
-            var output = new StringBuilder();
-            if (!command.Parameters.Any()) return output.ToString();
-            foreach (var param in command.Parameters)
-                if (param.IsOptional)
-                    output.Append($"[{param.Name} = {param.DefaultValue}] ");
-                else if (param.IsMultiple)
-                    output.Append($"|{param.Name}| ");
-                else if (param.IsRemainder)
-                    output.Append($"...{param.Name} ");
-                else
-                    output.Append($"<{param.Name}> ");
-            return output.ToString();
-        }
-
-        private static string GetPrefix(CommandInfo command)
-        {
-            var output = GetPrefix(command.Module);
-            output += $"{command.Aliases.FirstOrDefault()} ";
-            return output;
-        }
-
-        private static string GetPrefix(ModuleInfo module)
-        {
-            var output = "";
-            if (module.Parent != null) output = $"{GetPrefix(module.Parent)}{output}";
-            //if (module.Aliases.Any()) output += string.Concat(module.Aliases.FirstOrDefault(), " ");
-            return output;
+            return result;
         }
     }
 }
