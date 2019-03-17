@@ -31,7 +31,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Ban")]
         [Command("ban", RunMode = RunMode.Async)]
-        [Summary("Bans a user")]
+        [Summary("**Require Ban Members**\nBans a user")]
         [Remarks("h.ban @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
@@ -64,7 +64,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Kick")]
         [Command("kick", RunMode = RunMode.Async)]
-        [Summary("Kicks a user")]
+        [Summary("**Require Ban Members**\nKicks a user")]
         [Remarks("h.kick @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
@@ -97,7 +97,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Prune")]
         [Command("prune", RunMode = RunMode.Async)]
-        [Summary("Prunes X messages, user specific is optional")]
+        [Summary("**Require Manage Messages**\nPrunes X messages, user specific is optional")]
         [Remarks("h.prune 500")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
@@ -132,7 +132,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Soft ban")]
         [Command("softban", RunMode = RunMode.Async)]
         [Alias("sb")]
-        [Summary("In the last 1000 messages, deletes the messages user has sent and mutes")]
+        [Summary("**Require Manage Messages**\nIn the last 1000 messages, deletes the messages user has sent and mutes")]
         [Remarks("h.softban @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
@@ -179,7 +179,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Mute")]
         [Command("mute", RunMode = RunMode.Async)]
-        [Summary("mutes a user for a duration specified in minutes (max 1440)")]
+        [Summary("**Require Manage Messages**\nmutes a user for a duration specified in minutes (max 1440)")]
         [Remarks("h.mute @bob#0000 400")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -199,7 +199,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Mute")]
         [Command("mute", RunMode = RunMode.Async)]
-        [Summary("Mutes a user for 12hrs")]
+        [Summary("**Require Manage Messages**\nMutes a user for 12hrs")]
         [Remarks("h.mute @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -218,7 +218,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Mute")]
         [Command("mute", RunMode = RunMode.Async)]
-        [Summary("Mutes a user for a duration (default 12hrs) with the use of 1s 2h 1d")]
+        [Summary("**Require Manage Messages**\nMutes a user for a duration (default 12hrs) with the use of 1s 2h 1d")]
         [Remarks("h.mute @bob#0000 12h")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -241,7 +241,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Unmute")]
         [Command("unmute", RunMode = RunMode.Async)]
-        [Summary("Unmutes a user")]
+        [Summary("**Require Manage Messages**\nUnmutes a user")]
         [Remarks("h.unmute @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -261,7 +261,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Warn")]
         [Command("warn", RunMode = RunMode.Async)]
         [Alias("warning")]
-        [Summary("Sends a warning to a user, bot dms them the warning.")]
+        [Summary("**Require Manage Roles**\nSends a warning to a user, bot dms them the warning.")]
         [Remarks("h.warn @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
@@ -277,7 +277,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Warnlog")]
         [Command("warnlog", RunMode = RunMode.Async)]
-        [Summary("Pulls up warnlog and admin profile of a user.")]
+        [Summary("**Require Manage Roles**\nPulls up warnlog and admin profile of a user.")]
         [Remarks("h.warnlog @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(ChannelPermission.ManageRoles)]
@@ -298,7 +298,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Toxicity")]
         [Command("toxicity", RunMode = RunMode.Async)]
-        [Summary("Shows toxicity values of users if server has toxicity enabled channels")]
+        [Summary("**Require Manage Messages**\nShows toxicity values of users if server has toxicity enabled channels")]
         [Remarks("h.toxicity @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -332,7 +332,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Toxicity")]
         [Command("toxicity", RunMode = RunMode.Async)]
-        [Summary("Shows toxicity values of users in a channel if server has toxicity enabled channels")]
+        [Summary("**Require Manage Messages**\nShows toxicity values of users in a channel if server has toxicity enabled channels")]
         [Remarks("h.toxicity #general")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -365,7 +365,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Reason")]
         [Command("reason", RunMode = RunMode.Async)]
-        [Summary("Inputs reason for moderation log entry")]
+        [Summary("**Require Manage Messages**\nInputs reason for moderation log entry")]
         [Remarks("h.reason 1337 reason")]
         [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageMessages)]

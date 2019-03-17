@@ -13,7 +13,7 @@ namespace Hanekawa.Modules.Giveaway
     {
         [Name("Draw")]
         [Command("draw", RunMode = RunMode.Async)]
-        [Summary("Draw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
+        [Summary("**Require Manage Messages**\nDraw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
         [Remarks("h.draw 5 <emote> 5435346235434 #general")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]

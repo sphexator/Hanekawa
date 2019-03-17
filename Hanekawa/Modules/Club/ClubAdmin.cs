@@ -23,7 +23,7 @@ namespace Hanekawa.Modules.Club
         [Name("Club setting advertisement")]
         [Command("Club set advertisement", RunMode = RunMode.Async)]
         [Alias("csa")]
-        [Summary("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
+        [Summary("**Require Manage Server**\nSets channel where club advertisements will be posted. \nLeave empty to disable")]
         [Remarks("h.csa #general")]
         public async Task ClubSetAdvertisementChannel(ITextChannel channel = null)
         {
@@ -57,7 +57,7 @@ namespace Hanekawa.Modules.Club
         [Name("Club setting category")]
         [Command("Club set category", RunMode = RunMode.Async)]
         [Alias("clubscategory", "cscat")]
-        [Summary("Sets location in where club channels will be created. \nLeave empty to disable")]
+        [Summary("**Require Manage Server**\nSets location in where club channels will be created. \nLeave empty to disable")]
         [Remarks("h.cscat general")]
         public async Task ClubSetCategory(ICategoryChannel category = null)
         {
@@ -91,7 +91,7 @@ namespace Hanekawa.Modules.Club
         [Name("Club setting level")]
         [Command("Club set level", RunMode = RunMode.Async)]
         [Alias("csl")]
-        [Summary("Sets level requirement for people to create a club")]
+        [Summary("**Require Manage Server**\nSets level requirement for people to create a club")]
         [Remarks("h.csl 10")]
         public async Task ClubSetLevelRequirement(int level)
         {
@@ -110,7 +110,7 @@ namespace Hanekawa.Modules.Club
         [Name("Club setting channel amount")]
         [Command("club set channel amount", RunMode = RunMode.Async)]
         [Alias("csca")]
-        [Summary("Sets amount required that's above the level requirement to create a channel")]
+        [Summary("**Require Manage Server**\nSets amount required that's above the level requirement to create a channel")]
         [Remarks("h.csca 2")]
         public async Task ClubSetAmountRequirement(int amount)
         {
@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Club
         [Name("Rename club")]
         [Command("club set name", RunMode = RunMode.Async)]
         [Alias("csn")]
-        [Summary("Force changes a name of a club")]
+        [Summary("**Require Manage Server**\nForce changes a name of a club")]
         [Remarks("h.csn 15 Change name")]
         public async Task ClubForceRename(int clubId, [Remainder] string name)
         {
@@ -173,7 +173,7 @@ namespace Hanekawa.Modules.Club
         [Name("Change club icon")]
         [Command("club set icon", RunMode = RunMode.Async)]
         [Alias("csicon")]
-        [Summary("Force changes icon of a club")]
+        [Summary("**Require Manage Server**\nForce changes icon of a club")]
         [Remarks("h.csn 15 https://i.imgur.com/p3Xxvij.png")]
         public async Task ClubForceReIcon(int clubId, [Remainder] string icon)
         {
@@ -200,7 +200,7 @@ namespace Hanekawa.Modules.Club
         [Name("Change club image")]
         [Command("club set image", RunMode = RunMode.Async)]
         [Alias("csimage")]
-        [Summary("Force changes image of a club")]
+        [Summary("**Require Manage Server**\nForce changes image of a club")]
         [Remarks("h.csn 15 https://i.imgur.com/p3Xxvij.png")]
         public async Task ClubForceReImage(int clubId, [Remainder] string image)
         {
@@ -227,7 +227,7 @@ namespace Hanekawa.Modules.Club
         [Name("Change club description")]
         [Command("club set description", RunMode = RunMode.Async)]
         [Alias("csd")]
-        [Summary("Force changes a name of a club")]
+        [Summary("**Require Manage Server**\nForce changes a name of a club")]
         [Remarks("h.csn 15 Change description")]
         public async Task ClubForceReDescription(int clubId, [Remainder] string desc)
         {
@@ -256,7 +256,7 @@ namespace Hanekawa.Modules.Club
         [Name("Club role toggle")]
         [Command("club toggle role")]
         [Alias("ctr")]
-        [Summary("Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
+        [Summary("**Require Manage Server**\nToggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
         [Remarks("h.ctr")]
         public async Task ToggleClubRole()
         {

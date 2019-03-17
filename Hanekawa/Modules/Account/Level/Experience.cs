@@ -28,7 +28,7 @@ namespace Hanekawa.Modules.Account.Level
 
         [Name("Give experience")]
         [Command("exp give")]
-        [Summary("Gives a certain amount of experience to a user")]
+        [Summary("**Require Manage Server**\nGives a certain amount of experience to a user")]
         [Remarks("h.exp give @bob#0000 1000")]
         public async Task GiveExperience(SocketGuildUser user, int exp)
         {
@@ -46,7 +46,7 @@ namespace Hanekawa.Modules.Account.Level
         [Command("exp ignore add", RunMode = RunMode.Async)]
         [Alias("eia", "exp add")]
         [Priority(1)]
-        [Summary("Adds a channel from reduced exp pool with provided channel")]
+        [Summary("**Require Manage Server**\nAdds a channel from reduced exp pool with provided channel")]
         [Remarks("h.eia @general")]
         public async Task AddReducedExpChannel([Remainder] ITextChannel channel) =>
             await Context.ReplyAsync(await _levelService.ReducedExpManager(channel, false));
@@ -55,7 +55,7 @@ namespace Hanekawa.Modules.Account.Level
         [Command("exp ignore add", RunMode = RunMode.Async)]
         [Alias("eia")]
         [Priority(2)]
-        [Summary("Adds a category from reduced exp pool with provided channel")]
+        [Summary("**Require Manage Server**\nAdds a category from reduced exp pool with provided channel")]
         [Remarks("h.eia general")]
         public async Task AddReducedExpChannel([Remainder] ICategoryChannel category) =>
             await Context.ReplyAsync(await _levelService.ReducedExpManager(category, false));
@@ -63,7 +63,7 @@ namespace Hanekawa.Modules.Account.Level
         [Name("Exp ignore remove")]
         [Command("exp ignore remove")]
         [Alias("eir", "exp remove")]
-        [Summary("Removes a channel from reduced exp pool with provided channel")]
+        [Summary("**Require Manage Server**\nRemoves a channel from reduced exp pool with provided channel")]
         [Remarks("h.eir #general")]
         public async Task RemoveReducedExpChannel([Remainder] ICategoryChannel category) =>
             await Context.ReplyAsync(await _levelService.ReducedExpManager(category, true));
@@ -71,7 +71,7 @@ namespace Hanekawa.Modules.Account.Level
         [Name("Exp ignore remove")]
         [Command("exp ignore remove")]
         [Alias("eir", "exp remove")]
-        [Summary("Removes a category from reduced exp pool with provided channel")]
+        [Summary("**Require Manage Server**\nRemoves a category from reduced exp pool with provided channel")]
         [Remarks("h.eir general")]
         public async Task RemoveReducedExpChannel([Remainder] ITextChannel channel) =>
             await Context.ReplyAsync(await _levelService.ReducedExpManager(channel, true));
@@ -79,7 +79,7 @@ namespace Hanekawa.Modules.Account.Level
         [Name("Exp ignore list")]
         [Command("exp ignore list")]
         [Alias("exp list")]
-        [Summary("List of channels and categories that got reduced exp enabled")]
+        [Summary("**Require Manage Server**\nList of channels and categories that got reduced exp enabled")]
         [Remarks("h.exp list")]
         public async Task ListReducedExpChannels() =>
             await PagedReplyAsync((await _levelService.ReducedExpList(Context.Guild))
@@ -88,7 +88,7 @@ namespace Hanekawa.Modules.Account.Level
         [Name("Exp multiplier")]
         [Command("exp multiplier")]
         [Alias("exp multi")]
-        [Summary("Gets the current level multiplier")]
+        [Summary("**Require Manage Server**\nGets the current level multiplier")]
         [Remarks("h.exp multi 2")]
         public async Task LevelMultiplier() =>
             await Context.ReplyAsync($"Current server multiplier: x{_experienceHandler.GetMultiplier(Context.Guild.Id)}");
@@ -96,7 +96,7 @@ namespace Hanekawa.Modules.Account.Level
         [Name("Exp event")]
         [Command("exp event", RunMode = RunMode.Async)]
         [Summary(
-            "Starts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
+            "**Require Manage Server**\nStarts a exp event with specified multiplier and duration. Auto-announced in Event channel if desired")]
         [Remarks("h.exp event 2 5h")]
         public async Task ExpEventAsync(int multiplier, TimeSpan? duration = null)
         {

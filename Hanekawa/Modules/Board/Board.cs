@@ -114,7 +114,7 @@ namespace Hanekawa.Modules.Board
 
         [Name("Board Emote")]
         [Command("board emote", RunMode = RunMode.Async)]
-        [Summary("Sets a custom emote to be used toward the board")]
+        [Summary("**Require Manage Server**\nSets a custom emote to be used toward the board")]
         [Remarks("h.board emote :winkyface:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -133,7 +133,7 @@ namespace Hanekawa.Modules.Board
 
         [Name("Board Channel")]
         [Command("board channel", RunMode = RunMode.Async)]
-        [Summary("Sets channel for board to be used in")]
+        [Summary("**Require Manage Server**\nSets channel for board to be used in")]
         [Remarks("h.board channel #general")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]

@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Events
 
         [Name("Event channel")]
         [Command("event channel", RunMode = RunMode.Async)]
-        [Summary("Sets event channel")]
+        [Summary("**Require Manage Server**\nSets event channel")]
         [Remarks("h.event channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEventChannel(ITextChannel channel = null)
@@ -321,7 +321,7 @@ namespace Hanekawa.Modules.Events
 
         [Name("Event remove")]
         [Command("event Remove", RunMode = RunMode.Async)]
-        [Summary("Removes a event from the list given the ID")]
+        [Summary("**Require Manage Server**\nRemoves a event from the list given the ID")]
         [Remarks("h.event remove 1")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)

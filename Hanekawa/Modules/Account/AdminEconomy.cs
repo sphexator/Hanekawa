@@ -18,7 +18,7 @@ namespace Hanekawa.Modules.Account
         [Name("Regular currency name")]
         [Command("currency regular name", RunMode = RunMode.Async)]
         [Alias("crn")]
-        [Summary("Change the name of regular currency (default: credit)")]
+        [Summary("**Require Manage Server**\nChange the name of regular currency (default: credit)")]
         [Remarks("h.crn credit")]
         public async Task SetCurrencyNameAsync([Remainder] string name = null)
         {
@@ -42,7 +42,7 @@ namespace Hanekawa.Modules.Account
         [Name("Regular currency symbol")]
         [Command("currency regular symbol", RunMode = RunMode.Async)]
         [Alias("crs")]
-        [Summary("Change the symbol of regular currency to an emote (default: $")]
+        [Summary("**Require Manage Server**\nChange the symbol of regular currency to an emote (default: $")]
         [Remarks("h.crs <emote>")]
         [Priority(1)]
         public async Task SetCurrencySignAsync(Emote emote)
@@ -60,7 +60,7 @@ namespace Hanekawa.Modules.Account
         [Name("Regular currency symbol")]
         [Command("currency regular symbol", RunMode = RunMode.Async)]
         [Alias("crs")]
-        [Summary("Changes the symbol of a regular currency (default: $)")]
+        [Summary("**Require Manage Server**\nChanges the symbol of a regular currency (default: $)")]
         [Remarks("h.crs $")]
         public async Task SetCurrencySignAsync([Remainder] string name = null)
         {
@@ -86,7 +86,7 @@ namespace Hanekawa.Modules.Account
         [Name("Currency special name")]
         [Command("currency special name", RunMode = RunMode.Async)]
         [Alias("csn")]
-        [Summary("Changes the name of special currency (default: Special credit)")]
+        [Summary("**Require Manage Server**\nChanges the name of special currency (default: Special credit)")]
         [Remarks("h.csn special credit")]
         public async Task SetSpecialCurrencyNameAsync([Remainder] string name = null)
         {
@@ -111,7 +111,7 @@ namespace Hanekawa.Modules.Account
         [Name("Currency special symbol")]
         [Command("currency special symbol", RunMode = RunMode.Async)]
         [Alias("css")]
-        [Summary("Changes the symbol of special currency to an emote (default: $)")]
+        [Summary("**Require Manage Server**\nChanges the symbol of special currency to an emote (default: $)")]
         [Remarks("h.css <emote>")]
         [Priority(1)]
         public async Task SetSpecialCurrencySignAsync(Emote emote)
@@ -129,7 +129,7 @@ namespace Hanekawa.Modules.Account
         [Name("Currency special symbol")]
         [Command("currency special symbol", RunMode = RunMode.Async)]
         [Alias("css")]
-        [Summary("Changes the symbol of special currency (default: $)")]
+        [Summary("**Require Manage Server**\nChanges the symbol of special currency (default: $)")]
         [Remarks("h.css $")]
         public async Task SetSpecialCurrencySignAsync([Remainder] string name = null)
         {

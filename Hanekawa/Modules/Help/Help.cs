@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.CommandHandler;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Help
 {
@@ -35,7 +35,7 @@ namespace Hanekawa.Modules.Help
             var prefix = _commandHandling.GetPrefix(Context.Guild.Id);
             if (path == "")
             {
-                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
+                var content = GetModules();
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
@@ -44,69 +44,17 @@ namespace Hanekawa.Modules.Help
             }
             else
             {
-                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
                 var mod = _commands.Modules.FirstOrDefault(
-                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
+                    m => string.Equals(m.Name.Replace("Module", "").ToLower(), path.ToLower(), StringComparison.CurrentCultureIgnoreCase));
                 if (mod == null)
                 {
-                    await Context.ReplyAsync("No module could be found with that name.", Color.Red.RawValue);
+                    await Context.ReplyAsync("No module could be found with that name.\n" +
+                                             "Modules:\n" +
+                                             $"{GetModules()}", Color.Red.RawValue);
                     return;
                 }
-
-                output.Title = mod.Name;
-                output.Description = $"{mod.Summary}\n" +
-                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
-                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
-                                     (mod.Submodules.Any()
-                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
-                                         : "") + " ";
-                AddCommands(mod, ref output);
-
-                await ReplyAsync(null, false, output.Build());
-            }
-        }
-
-        [Command("help")]
-        [Summary("Lists this bots commands.")]
-        [Ratelimit(1, 2, Measure.Seconds)]
-        public async Task DmHelpAsync([Remainder] string path = "")
-        {
-            if (path == "")
-            {
-                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
-                var embed = new EmbedBuilder()
-                    .CreateDefault(content, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
-                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
-                ;
-                embed.AddField("Support", "[Discord](https://discord.gg/gGu5TT6)", true);
-                embed.AddField("Bot Invite",
-                    "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
-                    true);
-                var eng = await Context.User.GetOrCreateDMChannelAsync();
-                await eng.ReplyAsync(embed);
-            }
-            else
-            {
-                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
-                var mod = _commands.Modules.FirstOrDefault(
-                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
-                if (mod == null)
-                {
-                    await ReplyAsync("No module could be found with that name.");
-                    return;
-                }
-
-                output.Title = mod.Name;
-                output.Description = $"{mod.Summary}\n" +
-                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
-                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
-                                     (mod.Submodules.Any()
-                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
-                                         : "") + " ";
-                AddCommands(mod, ref output);
-
-                await (await Context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, output.Build());
+                var pages = GetCommands(mod, prefix).PaginateBuilder(Context.Guild.Id, $"Commands for {mod.Name}");
+                await PagedReplyAsync(pages);
             }
         }
 
@@ -114,13 +62,15 @@ namespace Hanekawa.Modules.Help
         {
             string result = null;
             var modules = _commands.Modules.ToList();
-            for (var i = 0; i < _commands.Modules.Count();)
+            for (var i = 0; i < modules.Count;)
             {
                 var stringBuilder = new StringBuilder();
                 for (var j = 0; j < 5; j++)
                 {
+                    if(i >= modules.Count) continue;
                     var x = modules[i];
-                    stringBuilder.Append(j == 4 ? $"`{x.Name}`" : $"`{x.Name}` - ");
+
+                    stringBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }
 
@@ -128,6 +78,61 @@ namespace Hanekawa.Modules.Help
             }
 
             return result;
+        }
+
+        private List<string> GetCommands(ModuleInfo module, string prefix)
+        {
+            var result = new List<string>();
+            foreach (var x in module.Commands)
+            {
+                result.Add($"**{x.Name}**\n" +
+                           $"{x.Summary}\n" +
+                           $"Usage: **{prefix}{GetPrefix(x)} {ParamBuilder(x)}**\n" +
+                           $"Example: **{x.Remarks}**\n");
+            }
+
+            return result;
+        }
+
+        private string ParamBuilder(CommandInfo command)
+        {
+            var output = new StringBuilder();
+            if (!command.Parameters.Any()) return output.ToString();
+            foreach (var x in command.Parameters)
+            {
+                if (x.IsOptional)
+                {
+                    output.Append($"[{x.Name} = {x.DefaultValue}] ");
+                }
+                else if (x.IsRemainder)
+                {
+                    output.Append($"...{x.Name} ");
+                }
+                else if (x.IsMultiple)
+                {
+                    output.Append($"|{x.Name}| ");
+                }
+                else
+                {
+                    output.Append($"<{x.Name}> ");
+                }
+            }
+
+            return output.ToString();
+        }
+
+        private string GetPrefix(CommandInfo command)
+        {
+            var output = GetPrefix(command.Module);
+            output += $"{command.Aliases.FirstOrDefault()} ";
+            return output;
+        }
+
+        private string GetPrefix(ModuleInfo module)
+        {
+            var output = "";
+            if (module.Parent != null) output = $"{GetPrefix(module.Parent)}{output}";
+            return output;
         }
     }
 }

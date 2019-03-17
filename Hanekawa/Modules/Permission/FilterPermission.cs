@@ -27,7 +27,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Auto mod")]
         [Command("automod", RunMode = RunMode.Async)]
-        [Summary("Display all automod configurations")]
+        [Summary("**Require Manage Server**\nDisplay all automod configurations")]
         [Remarks("h.automod")]
         public async Task AutoModConfig()
         {
@@ -54,7 +54,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Invite filter")]
         [Command("automod invite")]
         [Alias("automod srvfilter")]
-        [Summary("Toggles guild invite filter, auto-deletes invites")]
+        [Summary("**Require Manage Server**\nToggles guild invite filter, auto-deletes invites")]
         [Remarks("h.automod srvfilter")]
         public async Task InviteFilter()
         {
@@ -80,7 +80,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Average toxicity")]
         [Command("automod avg toxicity")]
         [Alias("automod at")]
-        [Summary("Sets avg. toxicity tolerance between 1-100, 0 to disable")]
+        [Summary("**Require Manage Server**\nSets avg. toxicity tolerance between 1-100, 0 to disable")]
         [Remarks("h.automod at #general 70")]
         public async Task AverageToxicityFilter(ITextChannel ch = null, int tolerance = 0)
         {
@@ -110,7 +110,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Single toxicity")]
         [Command("automod single toxicity")]
         [Alias("automod st")]
-        [Summary("Sets single toxicity tolerance between 1-100 with level it affects, 0 or empty to disable")]
+        [Summary("**Require Manage Server**\nSets single toxicity tolerance between 1-100 with level it affects, 0 or empty to disable")]
         [Remarks("h.autmod st #general 80")]
         public async Task SingleToxicityFilter(ITextChannel ch = null, int tolerance = 0, int level = 0)
         {
@@ -143,7 +143,7 @@ namespace Hanekawa.Modules.Permission
         [Name("View single toxicity")]
         [Command("automod view st", RunMode = RunMode.Async)]
         [Alias("automod vst")]
-        [Summary("View single toxicity enabled channels with tolerance and level")]
+        [Summary("**Require Manage Server**\nView single toxicity enabled channels with tolerance and level")]
         [Remarks("h.automod vst")]
         public async Task ViewSingleToxicityChannels()
         {
@@ -179,7 +179,7 @@ namespace Hanekawa.Modules.Permission
         [Name("View average toxicity")]
         [Command("automod view at", RunMode = RunMode.Async)]
         [Alias("automod vat")]
-        [Summary("View average toxicity enabled channels with tolerance")]
+        [Summary("**Require Manage Server**\nView average toxicity enabled channels with tolerance")]
         [Remarks("h.automod vat")]
         public async Task ViewAverageToxicityChannels()
         {
@@ -214,7 +214,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Emote filter")]
         [Command("automod emote filter")]
         [Alias("automod emote")]
-        [Summary("Sets an amount of emotes, if more it'll deleted the message, 0 or empty to disable")]
+        [Summary("**Require Manage Server**\nSets an amount of emotes, if more it'll deleted the message, 0 or empty to disable")]
         [Remarks("h.automod emote 5")]
         public async Task EmoteFilter(int amount = 0)
         {
@@ -239,7 +239,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Mention filter")]
         [Command("automod mention filter")]
         [Alias("automod mention")]
-        [Summary("Sets an amount of mentions, if more it'll deleted the message, 0 or empty to disable")]
+        [Summary("**Require Manage Server**\nSets an amount of mentions, if more it'll deleted the message, 0 or empty to disable")]
         [Remarks("h.automod mention 5")]
         public async Task MentionFilter(int amount = 0)
         {

@@ -20,7 +20,7 @@ namespace Hanekawa.Modules.Report
     {
         [Name("Report channel")]
         [Command("report channel", RunMode = RunMode.Async)]
-        [Summary("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
+        [Summary("**Require Manage Server**\nSets a channel as channel to receive reports. don't mention a channel to disable reports.")]
         [Remarks("h.report channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
@@ -80,7 +80,7 @@ namespace Hanekawa.Modules.Report
 
         [Name("Respond")]
         [Command("respond", RunMode = RunMode.Async)]
-        [Summary("Respond to a report that's been sent")]
+        [Summary("**Require Manage Server**\nRespond to a report that's been sent")]
         [Remarks("h.respond 1 this is my response :pog:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
