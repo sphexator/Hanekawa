@@ -300,7 +300,7 @@ namespace Hanekawa.Modules.Club
                 leader.Channel = channel.Id;
                 if (cfg.RoleEnabled)
                 {
-                    var role = await Context.Guild.CreateRoleAsync(leader.Name, GuildPermissions.All);
+                    var role = await Context.Guild.CreateRoleAsync(leader.Name, GuildPermissions.None);
                     await channel.AddPermissionOverwriteAsync(role, _allowOverwrite);
                     leader.Role = role.Id;
                     foreach (var x in users)
