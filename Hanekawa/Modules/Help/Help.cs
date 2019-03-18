@@ -46,7 +46,7 @@ namespace Hanekawa.Modules.Help
             {
                 var mod = _commands.Modules.FirstOrDefault(
                     m => string.Equals(m.Name.Replace("Module", "").ToLower(), path.ToLower(), StringComparison.CurrentCultureIgnoreCase));
-                if (mod == null)
+                if (mod == null || (mod.Name == "test" || mod.Name == "owner"))
                 {
                     await Context.ReplyAsync("No module could be found with that name.\n" +
                                              "Modules:\n" +
@@ -69,7 +69,7 @@ namespace Hanekawa.Modules.Help
                 {
                     if(i >= modules.Count) continue;
                     var x = modules[i];
-
+                    if (x.Name == "test" || x.Name == "owner") continue;
                     stringBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }

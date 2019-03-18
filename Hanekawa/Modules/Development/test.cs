@@ -20,6 +20,8 @@ using SixLabors.Primitives;
 
 namespace Hanekawa.Modules.Development
 {
+    [Name("test")]
+    [RequireOwner]
     public class Test : InteractiveBase
     {
         private readonly ProfileGenerator _generator;

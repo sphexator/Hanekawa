@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Owner
 {
+    [Name("owner")]
     [RequireOwner]
     public class OwnerCommands : InteractiveBase
     {

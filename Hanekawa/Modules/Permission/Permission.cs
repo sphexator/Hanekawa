@@ -25,9 +25,9 @@ namespace Hanekawa.Modules.Permission
         [Name("Set prefix")]
         [Command("prefix", RunMode = RunMode.Async)]
         [Alias("set prefix")]
-        [Summary("**Require Administrator**\nSets custom prefix for this guild/server")]
+        [Summary("**Require Manage Server**\nSets custom prefix for this guild/server")]
         [Remarks("h.prefix !")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetPrefix(string prefix)
         {
             try
