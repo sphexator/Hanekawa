@@ -9,6 +9,7 @@ using Discord.Commands;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.CommandHandler;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Help
 {
@@ -95,12 +96,13 @@ namespace Hanekawa.Modules.Help
             foreach (var x in module.Commands)
             {
                 var perm = GetPermissions(x);
-                perm = perm != null ? $"{perm}\n" : "";
-                result.Add($"**{x.Name}**\n" +
-                           $"{x.Summary}\n" +
-                           $"{perm}" +
-                           $"Usage: **{prefix}{GetPrefix(x)} {ParamBuilder(x)}**\n" +
-                           $"Example: **{x.Remarks}**\n");
+                var content = new StringBuilder();
+                if (!x.Name.IsNullOrWhiteSpace())content.AppendLine($"**{x.Name}**");
+                if (!perm.IsNullOrWhiteSpace()) content.Append($"{perm}");
+                if (!x.Summary.IsNullOrWhiteSpace()) content.AppendLine($"{x.Summary}");
+                content.AppendLine($"Usage: **{prefix}{GetPrefix(x)} {ParamBuilder(x)}**");
+                if (!x.Remarks.IsNullOrWhiteSpace()) content.AppendLine($"Example: **{x.Remarks}**");
+                result.Add(content.ToString());
             }
 
             return result;
@@ -139,15 +141,28 @@ namespace Hanekawa.Modules.Help
 
         private string GetPermissions(CommandInfo cmd)
         {
-            string result = null;
-            foreach (var x in cmd.Preconditions)
+            var result = new StringBuilder();
+            foreach (var x in cmd.Module.Preconditions)
             {
-                if (!(x is RequireUserPermissionAttribute test)) continue;
-                if (test.GuildPermission.HasValue) result = GuildPermissionString(test.GuildPermission.Value);
-                if (test.ChannelPermission.HasValue) result = ChannelPermissionString(test.ChannelPermission.Value);
+                if (x is RequireUserPermissionAttribute perm)
+                {
+                    if (perm.GuildPermission.HasValue) result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue) result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                }
+                if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
             }
 
-            return result;
+            foreach (var x in cmd.Preconditions)
+            {
+                if (x is RequireUserPermissionAttribute perm)
+                {
+                    if (perm.GuildPermission.HasValue) result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue) result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                }
+                if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
+            }
+
+            return result.Length == 0 ? null : result.ToString();
         }
 
         private string GuildPermissionString(GuildPermission perm)
@@ -156,91 +171,91 @@ namespace Hanekawa.Modules.Help
             switch (perm)
             {
                 case GuildPermission.CreateInstantInvite:
-                    result += "**Require Instant Invite**";
+                    result = "**Require Instant Invite**";
                     break;
                 case GuildPermission.KickMembers:
-                    result += "**Require Kick Members**";
+                    result = "**Require Kick Members**";
                     break;
                 case GuildPermission.BanMembers:
-                    result += "**Require Ban Members**";
+                    result = "**Require Ban Members**";
                     break;
                 case GuildPermission.Administrator:
-                    result += "**Require Administrator**";
+                    result = "**Require Administrator**";
                     break;
                 case GuildPermission.ManageChannels:
-                    result += "**Require Manage Channels**";
+                    result = "**Require Manage Channels**";
                     break;
                 case GuildPermission.ManageGuild:
-                    result += "**Require Manage Server**";
+                    result = "**Require Manage Server**";
                     break;
                 case GuildPermission.AddReactions:
-                    result += "**Require Add Reaction**";
+                    result = "**Require Add Reaction**";
                     break;
                 case GuildPermission.ViewAuditLog:
-                    result += "**Require View Audit Log**";
+                    result = "**Require View Audit Log**";
                     break;
-                case GuildPermission.ReadMessages:
-                    result += "**Require View Messages**";
+                case GuildPermission.ViewChannel:
+                    result = "**Require View Messages**";
                     break;
                 case GuildPermission.SendMessages:
-                    result += "**Require Send Messages**";
+                    result = "**Require Send Messages**";
                     break;
                 case GuildPermission.SendTTSMessages:
-                    result += "**Require Send TTS Messages**";
+                    result = "**Require Send TTS Messages**";
                     break;
                 case GuildPermission.ManageMessages:
-                    result += "**Require Manage Messages**";
+                    result = "**Require Manage Messages**";
                     break;
                 case GuildPermission.EmbedLinks:
-                    result += "**Require Embed Links**";
+                    result = "**Require Embed Links**";
                     break;
                 case GuildPermission.AttachFiles:
-                    result += "**Require Attach Files**";
+                    result = "**Require Attach Files**";
                     break;
                 case GuildPermission.ReadMessageHistory:
-                    result += "**Require Read Message History**";
+                    result = "**Require Read Message History**";
                     break;
                 case GuildPermission.MentionEveryone:
-                    result += "**Require Mention Everyone**";
+                    result = "**Require Mention Everyone**";
                     break;
                 case GuildPermission.UseExternalEmojis:
-                    result += "**Require Use External Emojis**";
+                    result = "**Require Use External Emojis**";
                     break;
                 case GuildPermission.Connect:
-                    result += "**Require Voice Connect**";
+                    result = "**Require Voice Connect**";
                     break;
                 case GuildPermission.Speak:
-                    result += "**Require Voice Speak**";
+                    result = "**Require Voice Speak**";
                     break;
                 case GuildPermission.MuteMembers:
-                    result += "**Require Voice Mute**";
+                    result = "**Require Voice Mute**";
                     break;
                 case GuildPermission.DeafenMembers:
-                    result += "**Require Voice Deafen**";
+                    result = "**Require Voice Deafen**";
                     break;
                 case GuildPermission.MoveMembers:
-                    result += "**Require Voice Move**";
+                    result = "**Require Voice Move**";
                     break;
                 case GuildPermission.UseVAD:
-                    result += "";
+                    result = "";
                     break;
                 case GuildPermission.PrioritySpeaker:
-                    result += "";
+                    result = "";
                     break;
                 case GuildPermission.ChangeNickname:
-                    result += "**Require Change Nicknames**";
+                    result = "**Require Change Nicknames**";
                     break;
                 case GuildPermission.ManageNicknames:
-                    result += "**Require Manage Nicknames**";
+                    result = "**Require Manage Nicknames**";
                     break;
                 case GuildPermission.ManageRoles:
-                    result += "**Require Manage Roles**";
+                    result = "**Require Manage Roles**";
                     break;
                 case GuildPermission.ManageWebhooks:
-                    result += "**Require ManageWebHooks**";
+                    result = "**Require ManageWebHooks**";
                     break;
                 case GuildPermission.ManageEmojis:
-                    result += "**Require Manage Emojis**";
+                    result = "**Require Manage Emojis**";
                     break;
             }
 
@@ -253,69 +268,67 @@ namespace Hanekawa.Modules.Help
             switch (perm)
             {
                 case ChannelPermission.CreateInstantInvite:
-                    result += "**Require Create Invite**";
+                    result = "**Require Create Invite**";
                     break;
                 case ChannelPermission.ManageChannels:
-                    result += "**Require Manage Channels**";
+                    result = "**Require Manage Channels**";
                     break;
                 case ChannelPermission.AddReactions:
-                    result += "**Require Add Reactions**";
+                    result = "**Require Add Reactions**";
                     break;
-                case ChannelPermission.ReadMessages:
-                    result += "**Require View Messages**";
+                case ChannelPermission.ViewChannel:
+                    result = "**Require View Messages**";
                     break;
                 case ChannelPermission.SendMessages:
-                    result += "**Require Send Messages**";
+                    result = "**Require Send Messages**";
                     break;
                 case ChannelPermission.SendTTSMessages:
-                    result += "**Require Send TTS Messages**";
+                    result = "**Require Send TTS Messages**";
                     break;
                 case ChannelPermission.ManageMessages:
-                    result += "**Require Manage Messages**";
+                    result = "**Require Manage Messages**";
                     break;
                 case ChannelPermission.EmbedLinks:
-                    result += "**Require Embed Links**";
+                    result = "**Require Embed Links**";
                     break;
                 case ChannelPermission.AttachFiles:
-                    result += "**Require Attach Files**";
+                    result = "**Require Attach Files**";
                     break;
                 case ChannelPermission.ReadMessageHistory:
-                    result += "**Require Read Message History**";
+                    result = "**Require Read Message History**";
                     break;
                 case ChannelPermission.MentionEveryone:
-                    result += "**Require Mention Everyone**";
+                    result = "**Require Mention Everyone**";
                     break;
                 case ChannelPermission.UseExternalEmojis:
-                    result += "**Require Use External Emojis**";
+                    result = "**Require Use External Emojis**";
                     break;
                 case ChannelPermission.Connect:
-                    result += "**Require Voice Connect**";
+                    result = "**Require Voice Connect**";
                     break;
                 case ChannelPermission.Speak:
-                    result += "**Require Voice Speak**";
+                    result = "**Require Voice Speak**";
                     break;
                 case ChannelPermission.MuteMembers:
-                    result += "**Require Voice Mute**";
+                    result = "**Require Voice Mute**";
                     break;
                 case ChannelPermission.DeafenMembers:
-                    result += "**Require Voice Deafen**";
+                    result = "**Require Voice Deafen**";
                     break;
                 case ChannelPermission.MoveMembers:
-                    result += "**Require Voice Move**";
+                    result = "**Require Voice Move**";
                     break;
                 case ChannelPermission.UseVAD:
                     break;
                 case ChannelPermission.PrioritySpeaker:
-                    result += "**Require Priority Speaker**";
+                    result = "**Require Priority Speaker**";
                     break;
                 case ChannelPermission.ManageRoles:
-                    result += "**Require Manage Roles**";
+                    result = "**Require Manage Roles**";
                     break;
                 case ChannelPermission.ManageWebhooks:
-                    result += "**Require Manage Webhook**";
+                    result = "**Require Manage Webhook**";
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(perm), perm, null);
             }
 
             return result;
