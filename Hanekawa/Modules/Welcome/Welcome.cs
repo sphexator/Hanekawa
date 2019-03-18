@@ -34,7 +34,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome add")]
         [Command("welcome add", RunMode = RunMode.Async)]
         [Alias("welc add")]
-        [Summary("**Require Manage Server**\nAdds a banner to the bot")]
+        [Summary("Adds a banner to the bot")]
         [Remarks("h.welc add imgur.com")]
         public async Task AddWelcomeBanner(string url)
         {
@@ -80,7 +80,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome remove")]
         [Command("welcome remove", RunMode = RunMode.Async)]
         [Alias("welc remove")]
-        [Summary("**Require Manage Server**\nRemoves a banner from the bot")]
+        [Summary("Removes a banner from the bot")]
         [Remarks("h.welc remove 5")]
         public async Task RemoveWelcomeBanner(int id)
         {
@@ -104,7 +104,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome list")]
         [Command("welcome list", RunMode = RunMode.Async)]
         [Alias("welc list")]
-        [Summary("**Require Manage Server**\nLists all banners for this guild")]
+        [Summary("Lists all banners for this guild")]
         [Remarks("h.welc list")]
         public async Task ListWelcomeBanner()
         {
@@ -133,7 +133,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome test")]
         [Command("welcome test", RunMode = RunMode.Async)]
         [Alias("welc test")]
-        [Summary("**Require Manage Server**\nTests a banner from a url to see how it looks")]
+        [Summary("Tests a banner from a url to see how it looks")]
         [Remarks("h.welc test")]
         public async Task TestWelcomeBanner(string url)
         {
@@ -152,7 +152,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome template")]
         [Command("welcome template", RunMode = RunMode.Async)]
         [Alias("welc template")]
-        [Summary("**Require Manage Server**\nSends banner template")]
+        [Summary("Sends banner template")]
         [Remarks("h.welc template")]
         public async Task TemplateWelcomeBanner()
         {
@@ -169,7 +169,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome message")]
         [Command("welcome message", RunMode = RunMode.Async)]
         [Alias("welc msg")]
-        [Summary("**Require Manage Server**\nSets welcome message")]
+        [Summary("Sets welcome message")]
         [Remarks("h.welc msg Welcome %user% to %guild%")]
         public async Task SetWelcomeMessage([Remainder] string message)
         {
@@ -187,7 +187,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome auto delete")]
         [Command("welcome autodelete", RunMode = RunMode.Async)]
         [Alias("welc autodel")]
-        [Summary("**Require Manage Server**\nSets when a welcome message should delete on its own")]
+        [Summary("Sets when a welcome message should delete on its own")]
         [Remarks("h.autodel 5m")]
         public async Task SetAutoDeleteTimer(TimeSpan? timer = null)
         {
@@ -215,7 +215,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome banner")]
         [Command("welcome banner", RunMode = RunMode.Async)]
         [Alias("welc banner")]
-        [Summary("**Require Manage Server**\nToggles welcome banner")]
+        [Summary("Toggles welcome banner")]
         [Remarks("h.welc banner")]
         public async Task ToggleBannerWelcomeBanner()
         {
@@ -240,7 +240,7 @@ namespace Hanekawa.Modules.Welcome
         [Name("Welcome channel")]
         [Command("welcome channel", RunMode = RunMode.Async)]
         [Alias("welc channel")]
-        [Summary("**Require Manage Server**\nEnables or disables welcome messages in a channel")]
+        [Summary("Enables or disables welcome messages in a channel")]
         [Remarks("h.welc channel #general")]
         public async Task ToggleWelcome(ITextChannel channel = null)
         {

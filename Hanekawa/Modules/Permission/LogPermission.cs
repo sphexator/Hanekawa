@@ -15,7 +15,7 @@ namespace Hanekawa.Modules.Permission
     {
         [Name("Warn logging")]
         [Command("log warn", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nEnable/disable warn logging, leave empty to disable")]
+        [Summary("Enable/disable warn logging, leave empty to disable")]
         [Remarks("h.log warn #general")]
         public async Task LogWarnAsync(ITextChannel channel = null)
         {
@@ -38,7 +38,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Join/Leave logging")]
         [Command("log join", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nEnable/disable join/leaves logging, leave empty to disable")]
+        [Summary("Enable/disable join/leaves logging, leave empty to disable")]
         [Remarks("h.log join #general")]
         public async Task LogJoinAsync(ITextChannel channel = null)
         {
@@ -63,7 +63,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Message logging")]
         [Command("log message", RunMode = RunMode.Async)]
         [Alias("msg")]
-        [Summary("**Require Manage Server**\nEnable/Disable message logging, leave empty to disable")]
+        [Summary("Enable/Disable message logging, leave empty to disable")]
         [Remarks("h.log msg #general")]
         public async Task LogMessageAsync(ITextChannel channel = null)
         {
@@ -88,7 +88,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Ban logging")]
         [Command("log ban", RunMode = RunMode.Async)]
         [Alias("ban")]
-        [Summary("**Require Manage Server**\nEnable/Disable moderation logging, leave empty to disable")]
+        [Summary("Enable/Disable moderation logging, leave empty to disable")]
         [Remarks("h.log ban #general")]
         public async Task LogBanAsync(ITextChannel channel = null)
         {
@@ -111,7 +111,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Automod logging")]
         [Command("log automod", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nEnable/Disable separate logging of auto-moderator")]
+        [Summary("Enable/Disable separate logging of auto-moderator")]
         [Remarks("h.log automod #general")]
         public async Task LogAutoModAsync(ITextChannel channel = null)
         {
@@ -135,7 +135,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("User logging")]
         [Command("log user")]
-        [Summary("**Require Manage Server**\nEnable/Disable logging of user changes (avatar and name/nickname)")]
+        [Summary("Enable/Disable logging of user changes (avatar and name/nickname)")]
         [Remarks("h.log user #general")]
         public async Task LogUserUpdates(ITextChannel channel = null)
         {

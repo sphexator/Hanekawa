@@ -27,7 +27,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Drop")]
         [Command("drop", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nSpawns a crate for people to claim. Higher reward then regular crates")]
+        [Summary("Spawns a crate for people to claim. Higher reward then regular crates")]
         [Remarks("h.drop")]
         public async Task SpawnDrop()
         {
@@ -38,7 +38,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Drop add")]
         [Command("drop Add", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nAdds a channel to be eligible for drops")]
+        [Summary("Adds a channel to be eligible for drops")]
         [Remarks("h.drop add #general")]
         public async Task AddDropChannel(ITextChannel channel = null)
         {
@@ -59,7 +59,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Drop remove")]
         [Command("drop remove", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nRemoves a channel from being eligible for drops")]
+        [Summary("Removes a channel from being eligible for drops")]
         [Remarks("h.drop remove #general")]
         public async Task RemoveDropChannel(ITextChannel channel = null)
         {
@@ -79,7 +79,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Drop list")]
         [Command("drop list", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nLists channels that are available for drops")]
+        [Summary("Lists channels that are available for drops")]
         [Remarks("h.drop list")]
         public async Task ListDropChannelsAsync()
         {

@@ -157,7 +157,7 @@ namespace Hanekawa.Modules.Account
         [Name("Reward")]
         [Command("reward", RunMode = RunMode.Async)]
         [Alias("award")]
-        [Summary("**Require Manage Server**\nRewards special credit to users (does not remove from yourself)")]
+        [Summary("Rewards special credit to users (does not remove from yourself)")]
         [Remarks("h.reward 100 @bob#0000")]
         [Ratelimit(1, 1, Measure.Seconds)]
         [RequireUserPermission(GuildPermission.ManageGuild)]

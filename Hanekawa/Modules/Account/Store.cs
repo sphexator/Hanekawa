@@ -212,7 +212,7 @@ namespace Hanekawa.Modules.Account
         [Alias("sa")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [Priority(1)]
-        [Summary("**Require Manage Server**\nAdds an item to the store with regular credit")]
+        [Summary("Adds an item to the store with regular credit")]
         [Remarks("h.sa 500 red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] IRole role)
@@ -247,7 +247,7 @@ namespace Hanekawa.Modules.Account
         [Alias("sas")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [Priority(1)]
-        [Summary("**Require Manage Server**\nAdds an item to the store with special credit")]
+        [Summary("Adds an item to the store with special credit")]
         [Remarks("h.sas 500 red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] IRole role)
@@ -281,7 +281,7 @@ namespace Hanekawa.Modules.Account
         [Command("store remove", RunMode = RunMode.Async)]
         [Alias("sr")]
         [Ratelimit(1, 2, Measure.Seconds)]
-        [Summary("**Require Manage Server**\nRemoves a role from the store")]
+        [Summary("Removes a role from the store")]
         [Remarks("h.sr red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveStoreItemAsync([Remainder] IRole role)

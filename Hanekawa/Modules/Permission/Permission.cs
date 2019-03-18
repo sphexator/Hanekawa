@@ -25,7 +25,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Set prefix")]
         [Command("prefix", RunMode = RunMode.Async)]
         [Alias("set prefix")]
-        [Summary("**Require Manage Server**\nSets custom prefix for this guild/server")]
+        [Summary("Sets custom prefix for this guild/server")]
         [Remarks("h.prefix !")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetPrefix(string prefix)
@@ -45,7 +45,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
-        [Summary("**Require Manage Server**\nSets a custom colour for embeds")]
+        [Summary("Sets a custom colour for embeds")]
         [Remarks("h.embed 16669612")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(uint color)
@@ -68,7 +68,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
-        [Summary("**Require Manage Server**\nSets a custom colour for embeds")]
+        [Summary("Sets a custom colour for embeds")]
         [Remarks("h.embed 99 00 00")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(int r, int g, int b)
@@ -92,7 +92,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
-        [Summary("**Require Manage Server**\nSets a custom colour for embeds")]
+        [Summary("Sets a custom colour for embeds")]
         [Remarks("h.embed pink")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(Colors type)
@@ -116,7 +116,7 @@ namespace Hanekawa.Modules.Permission
         [Name("Embed")]
         [Command("embed")]
         [Alias("set embed")]
-        [Summary("**Require Manage Server**\nSets a custom colour for embeds")]
+        [Summary("Sets a custom colour for embeds")]
         [Remarks("h.embed #ff0022")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(string hex)

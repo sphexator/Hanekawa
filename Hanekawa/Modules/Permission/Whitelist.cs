@@ -18,7 +18,7 @@ namespace Hanekawa.Modules.Permission
     {
         [Name("Event add")]
         [Command("event add", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nAdds a user as a whitelisted event organizer")]
+        [Summary("Adds a user as a whitelisted event organizer")]
         [Remarks("h.event add @bob#0000")]
         public async Task Eventadd(SocketGuildUser user)
         {
@@ -44,7 +44,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Event Remove")]
         [Command("event remove", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nRemoves a user from being a whitelisted event organizer")]
+        [Summary("Removes a user from being a whitelisted event organizer")]
         [Remarks("h.event remove @bob#0000")]
         public async Task EventRemove(SocketGuildUser user)
         {
@@ -66,7 +66,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Event list")]
         [Command("event list", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nList all whitelisted event organizers")]
+        [Summary("List all whitelisted event organizers")]
         [Remarks("h.event list")]
         public async Task EventList()
         {
@@ -91,7 +91,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Design add")]
         [Command("design add", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nAdds a user as a whitelisted designer")]
+        [Summary("Adds a user as a whitelisted designer")]
         [Remarks("h.design add @bob#0000")]
         public async Task DesignAdd(SocketGuildUser user)
         {
@@ -117,7 +117,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Design remove")]
         [Command("design remove", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nRemoves a user from being a whitelisted designer")]
+        [Summary("Removes a user from being a whitelisted designer")]
         [Remarks("h.design remove @bob#0000")]
         public async Task DesignRemove(SocketGuildUser user)
         {
@@ -139,7 +139,7 @@ namespace Hanekawa.Modules.Permission
 
         [Name("Design list")]
         [Command("design list", RunMode = RunMode.Async)]
-        [Summary("**Require Manage Server**\nLists all whitelisted designers")]
+        [Summary("Lists all whitelisted designers")]
         [Remarks("h.design list")]
         public async Task DesignList()
         {

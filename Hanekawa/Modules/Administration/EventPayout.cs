@@ -19,7 +19,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Add reward")]
         [Command("reward Add", RunMode = RunMode.Async)]
         [Alias("radd", "rewardadd")]
-        [Summary("**Require Manage Messages**\nAdd event participants to the event payout queue (handled by server admins)")]
+        [Summary("Add event participants to the event payout queue (handled by server admins)")]
         [Remarks("h.radd @bob#000 100")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task AddEventParticipantsAsync(IGuildUser user, int amount = 100)
@@ -39,7 +39,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Remove reward")]
         [Command("reward Remove", RunMode = RunMode.Async)]
         [Alias("rremove", "rewardremove")]
-        [Summary("**Require Manage Server**\nRemove users from the event payout queue")]
+        [Summary("Remove users from the event payout queue")]
         [Remarks("h.rremove @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventParticipantAsync(IGuildUser user)
@@ -67,7 +67,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Reward adjust")]
         [Command("reward Adjust", RunMode = RunMode.Async)]
         [Alias("radjust", "ea", "eventadjust")]
-        [Summary("**Require Manage Server**\nAdjust the reward for a user in the event payout queue")]
+        [Summary("Adjust the reward for a user in the event payout queue")]
         [Remarks("h.radjust @bob#000 200")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AdjustEventParticipant(IGuildUser user, int amount)
@@ -84,7 +84,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Reward payout")]
         [Command("reward payout", RunMode = RunMode.Async)]
         [Alias("rp", "rewardpayout")]
-        [Summary("**Require Manage Server**\nPayout people that're queued up")]
+        [Summary("Payout people that're queued up")]
         [Remarks("h.rp")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task PayoutEventParticipants()
@@ -110,7 +110,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Reward list")]
         [Command("reward list", RunMode = RunMode.Async)]
         [Alias("rl", "rlist", "rewardlist")]
-        [Summary("**Require Manage Messages**\nList all users in the event payout queue")]
+        [Summary("List all users in the event payout queue")]
         [Remarks("h.rl")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ListEventParticipantsAsync()
