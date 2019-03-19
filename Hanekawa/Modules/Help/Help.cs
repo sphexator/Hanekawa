@@ -97,7 +97,7 @@ namespace Hanekawa.Modules.Help
             {
                 var perm = GetPermissions(x);
                 var content = new StringBuilder();
-                if (!x.Name.IsNullOrWhiteSpace())content.AppendLine($"**{x.Name}**");
+                if (!x.Name.IsNullOrWhiteSpace()) content.AppendLine($"**{x.Name}**");
                 if (!perm.IsNullOrWhiteSpace()) content.Append($"{perm}");
                 if (!x.Summary.IsNullOrWhiteSpace()) content.AppendLine($"{x.Summary}");
                 content.AppendLine($"Usage: **{prefix}{GetPrefix(x)} {ParamBuilder(x)}**");
@@ -146,9 +146,12 @@ namespace Hanekawa.Modules.Help
             {
                 if (x is RequireUserPermissionAttribute perm)
                 {
-                    if (perm.GuildPermission.HasValue) result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
-                    if (perm.ChannelPermission.HasValue) result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                    if (perm.GuildPermission.HasValue)
+                        result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue)
+                        result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
                 }
+
                 if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
             }
 
@@ -156,10 +159,16 @@ namespace Hanekawa.Modules.Help
             {
                 if (x is RequireUserPermissionAttribute perm)
                 {
-                    if (perm.GuildPermission.HasValue) result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
-                    if (perm.ChannelPermission.HasValue) result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                    if (perm.GuildPermission.HasValue)
+                        result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue)
+                        result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
                 }
+
                 if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
+                if (x is WhiteListedDesigner) result.AppendLine("**Require Whitelisted Designer**");
+                if (x is WhiteListedEventOrg) result.AppendLine("**Require Whitelisted Event Organizer**");
+                if (x is WhiteListedOverAll) result.AppendLine("**Require Whitelisted Member**");
             }
 
             return result.Length == 0 ? null : result.ToString();
