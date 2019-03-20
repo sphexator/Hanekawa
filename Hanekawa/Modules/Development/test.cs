@@ -20,6 +20,8 @@ using SixLabors.Primitives;
 
 namespace Hanekawa.Modules.Development
 {
+    [Name("test")]
+    [RequireOwner]
     public class Test : InteractiveBase
     {
         private readonly ProfileGenerator _generator;
@@ -53,7 +55,8 @@ namespace Hanekawa.Modules.Development
         [RequireContext(ContextType.Guild)]
         public async Task TestRules(int size)
         {
-            using (var profile = await _generator.Create(Context.User as SocketGuildUser))
+            using(var stream = new MemoryStream())
+            using (var profile = await _generator.Create(Context.User as SocketGuildUser, stream))
             {
                 profile.Seek(0, SeekOrigin.Begin);
                 await Context.Channel.SendFileAsync(profile, "banner.png");

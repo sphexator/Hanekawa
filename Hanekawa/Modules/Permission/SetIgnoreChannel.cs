@@ -13,8 +13,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Hanekawa.Modules.Permission
 {
     [Name("Channel ignore")]
-    [Group("channel ignore")]
-    [Alias("ignore", "chignore", "chi")]
     [Summary("Manages channels its to ignore or only use common commands on")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class SetIgnoreChannel : InteractiveBase

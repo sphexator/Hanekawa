@@ -46,6 +46,8 @@ namespace Hanekawa.Services.CommandHandler
             }
         }
 
+        public string GetPrefix(ulong guildId) => Prefix.GetOrAdd(guildId, "h.");
+
         private async Task MessageRecieved(SocketMessage rawMessage)
         {
             if (rawMessage.Author.IsBot) return;

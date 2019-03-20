@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Administration
 {
-    [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireContext(ContextType.Guild)]
     public class Drop : InteractiveBase
     {

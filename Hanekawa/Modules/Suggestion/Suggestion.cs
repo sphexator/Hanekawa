@@ -195,7 +195,7 @@ namespace Hanekawa.Modules.Suggestion
         [Name("Suggestion channel")]
         [Command("suggestion set channel", RunMode = RunMode.Async)]
         [Alias("ssc", "sschannel", "ss channel")]
-        [Summary("Sets a channel as channel to recieve reports. don't mention a channel to disable reports.")]
+        [Summary("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
         [Remarks("h.ss channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]

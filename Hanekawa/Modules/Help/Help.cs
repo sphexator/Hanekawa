@@ -8,17 +8,21 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
+using Hanekawa.Services.CommandHandler;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Help
 {
     public class Help : InteractiveBase
     {
+        private readonly CommandHandlingService _commandHandling;
         private readonly CommandService _commands;
         private readonly IServiceProvider _map;
 
-        public Help(IServiceProvider map, CommandService commands)
+        public Help(IServiceProvider map, CommandService commands, CommandHandlingService commandHandling)
         {
             _commands = commands;
+            _commandHandling = commandHandling;
             _map = map;
         }
 
@@ -29,154 +33,314 @@ namespace Hanekawa.Modules.Help
         [RequiredChannel]
         public async Task HelpAsync([Remainder] string path = "")
         {
+            var prefix = _commandHandling.GetPrefix(Context.Guild.Id);
             if (path == "")
             {
-                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
+                var content = GetModules();
                 var embed = new EmbedBuilder()
                     .CreateDefault(content, Context.Guild.Id)
                     .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
-                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
+                    .WithFooter(
+                        new EmbedFooterBuilder {Text = $"Use `{prefix}help <module>` to get help with a module"});
                 await Context.ReplyAsync(embed);
             }
             else
             {
-                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
                 var mod = _commands.Modules.FirstOrDefault(
-                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
-                if (mod == null)
+                    m => string.Equals(m.Name.Replace("Module", "").ToLower(), path.ToLower(),
+                        StringComparison.CurrentCultureIgnoreCase));
+                if (mod == null || mod.Name == "test" || mod.Name == "owner")
                 {
-                    await Context.ReplyAsync("No module could be found with that name.", Color.Red.RawValue);
+                    await Context.ReplyAsync("No module could be found with that name.\n" +
+                                             "Modules:\n" +
+                                             $"{GetModules()}", Color.Red.RawValue);
                     return;
                 }
 
-                output.Title = mod.Name;
-                output.Description = $"{mod.Summary}\n" +
-                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
-                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
-                                     (mod.Submodules.Any()
-                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
-                                         : "") + " ";
-                AddCommands(mod, ref output);
-
-                await ReplyAsync(null, false, output.Build());
+                var pages = GetCommands(mod, prefix).PaginateBuilder(Context.Guild.Id, $"Commands for {mod.Name}");
+                await PagedReplyAsync(pages);
             }
         }
 
-        [Command("help")]
-        [Summary("Lists this bots commands.")]
-        [Ratelimit(1, 2, Measure.Seconds)]
-        public async Task DmHelpAsync([Remainder] string path = "")
+        private string GetModules()
         {
-            if (path == "")
+            string result = null;
+            var modules = _commands.Modules.ToList();
+            for (var i = 0; i < modules.Count;)
             {
-                var content = string.Join(", ", await GetModulesAsync(_commands, Context));
-                var embed = new EmbedBuilder()
-                    .CreateDefault(content, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder {Name = "Module list"})
-                    .WithFooter(new EmbedFooterBuilder {Text = "Use `h.help <module>` to get help with a module"});
-                ;
-                embed.AddField("Support", "[Discord](https://discord.gg/gGu5TT6)", true);
-                embed.AddField("Bot Invite",
-                    "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
-                    true);
-                var eng = await Context.User.GetOrCreateDMChannelAsync();
-                await eng.ReplyAsync(embed);
-            }
-            else
-            {
-                var output = new EmbedBuilder().CreateDefault(Context.Guild.Id);
-                var mod = _commands.Modules.FirstOrDefault(
-                    m => string.Equals(m.Name.Replace("Module", ""), path, StringComparison.CurrentCultureIgnoreCase));
-                if (mod == null)
+                var stringBuilder = new StringBuilder();
+                for (var j = 0; j < 5; j++)
                 {
-                    await ReplyAsync("No module could be found with that name.");
-                    return;
+                    if (i >= modules.Count) continue;
+                    var x = modules[i];
+                    if (x.Name == "test" || x.Name == "owner")
+                    {
+                        j--;
+                        i++;
+                        continue;
+                    }
+
+                    stringBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
+                    i++;
                 }
 
-                output.Title = mod.Name;
-                output.Description = $"{mod.Summary}\n" +
-                                     (!string.IsNullOrEmpty(mod.Remarks) ? $"({mod.Remarks})\n" : "") +
-                                     (mod.Aliases.Any() ? $"Prefix(es): {string.Join(",", mod.Aliases)}\n" : "") +
-                                     (mod.Submodules.Any()
-                                         ? $"Submodules: {mod.Submodules.Select(m => m.Name)}\n"
-                                         : "") + " ";
-                AddCommands(mod, ref output);
-
-                await (await Context.User.GetOrCreateDMChannelAsync()).SendMessageAsync(null, false, output.Build());
-            }
-        }
-
-        private static async Task<IEnumerable<string>> GetModulesAsync(CommandService commandService,
-            ICommandContext context)
-        {
-            var modules = new List<string>();
-            foreach (var module in commandService.Modules)
-            {
-                var resultingList = new List<string>();
-                foreach (var cmd in module.Commands)
-                {
-                    var result = await cmd.CheckPreconditionsAsync(context);
-                    if (result.IsSuccess) resultingList.Add(cmd.Name);
-                }
-
-                if (resultingList.Count != 0) modules.Add($"`{module.Name}`");
+                result += $"{stringBuilder}\n";
             }
 
-            return modules;
+            return result;
         }
 
-        private void AddCommands(ModuleInfo module, ref EmbedBuilder builder)
+        private List<string> GetCommands(ModuleInfo module, string prefix)
         {
-            foreach (var command in module.Commands)
+            var result = new List<string>();
+            foreach (var x in module.Commands)
             {
-                var check = command.CheckPreconditionsAsync(Context, _map).GetAwaiter().GetResult();
-                if (check.IsSuccess) AddCommand(command, ref builder);
+                var perm = GetPermissions(x);
+                var content = new StringBuilder();
+                if (!x.Name.IsNullOrWhiteSpace()) content.AppendLine($"**{x.Name}**");
+                if (!perm.IsNullOrWhiteSpace()) content.Append($"{perm}");
+                if (!x.Summary.IsNullOrWhiteSpace()) content.AppendLine($"{x.Summary}");
+                content.AppendLine($"Usage: **{prefix}{GetPrefix(x)} {ParamBuilder(x)}**");
+                if (!x.Remarks.IsNullOrWhiteSpace()) content.AppendLine($"Example: **{x.Remarks}**");
+                result.Add(content.ToString());
             }
+
+            return result;
         }
 
-        private static void AddCommand(CommandInfo command, ref EmbedBuilder builder)
-        {
-            builder.AddField(f =>
-            {
-                f.Name = $"**{command.Name}**";
-                f.Value = $"{command.Summary}\n" +
-                          (!string.IsNullOrEmpty(command.Remarks) ? $"({command.Remarks})\n" : "") +
-                          (command.Aliases.Any()
-                              ? $"**Aliases:** {string.Join(", ", command.Aliases.Select(x => $"`{x}`"))}\n"
-                              : "") +
-                          $"**Usage:** `{GetPrefix(command)} {GetAliases(command)}`";
-            });
-        }
-
-        private static string GetAliases(CommandInfo command)
+        private string ParamBuilder(CommandInfo command)
         {
             var output = new StringBuilder();
             if (!command.Parameters.Any()) return output.ToString();
-            foreach (var param in command.Parameters)
-                if (param.IsOptional)
-                    output.Append($"[{param.Name} = {param.DefaultValue}] ");
-                else if (param.IsMultiple)
-                    output.Append($"|{param.Name}| ");
-                else if (param.IsRemainder)
-                    output.Append($"...{param.Name} ");
+            foreach (var x in command.Parameters)
+                if (x.IsOptional)
+                    output.Append($"[{x.Name} = {x.DefaultValue}] ");
+                else if (x.IsRemainder)
+                    output.Append($"...{x.Name} ");
+                else if (x.IsMultiple)
+                    output.Append($"|{x.Name}| ");
                 else
-                    output.Append($"<{param.Name}> ");
+                    output.Append($"<{x.Name}> ");
+
             return output.ToString();
         }
 
-        private static string GetPrefix(CommandInfo command)
+        private string GetPrefix(CommandInfo command)
         {
             var output = GetPrefix(command.Module);
             output += $"{command.Aliases.FirstOrDefault()} ";
             return output;
         }
 
-        private static string GetPrefix(ModuleInfo module)
+        private string GetPrefix(ModuleInfo module)
         {
             var output = "";
             if (module.Parent != null) output = $"{GetPrefix(module.Parent)}{output}";
-            //if (module.Aliases.Any()) output += string.Concat(module.Aliases.FirstOrDefault(), " ");
             return output;
+        }
+
+        private string GetPermissions(CommandInfo cmd)
+        {
+            var result = new StringBuilder();
+            foreach (var x in cmd.Module.Preconditions)
+            {
+                if (x is RequireUserPermissionAttribute perm)
+                {
+                    if (perm.GuildPermission.HasValue)
+                        result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue)
+                        result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                }
+
+                if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
+            }
+
+            foreach (var x in cmd.Preconditions)
+            {
+                if (x is RequireUserPermissionAttribute perm)
+                {
+                    if (perm.GuildPermission.HasValue)
+                        result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                    if (perm.ChannelPermission.HasValue)
+                        result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                }
+
+                if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
+                if (x is WhiteListedDesigner) result.AppendLine("**Require Whitelisted Designer**");
+                if (x is WhiteListedEventOrg) result.AppendLine("**Require Whitelisted Event Organizer**");
+                if (x is WhiteListedOverAll) result.AppendLine("**Require Whitelisted Member**");
+            }
+
+            return result.Length == 0 ? null : result.ToString();
+        }
+
+        private string GuildPermissionString(GuildPermission perm)
+        {
+            string result = null;
+            switch (perm)
+            {
+                case GuildPermission.CreateInstantInvite:
+                    result = "**Require Instant Invite**";
+                    break;
+                case GuildPermission.KickMembers:
+                    result = "**Require Kick Members**";
+                    break;
+                case GuildPermission.BanMembers:
+                    result = "**Require Ban Members**";
+                    break;
+                case GuildPermission.Administrator:
+                    result = "**Require Administrator**";
+                    break;
+                case GuildPermission.ManageChannels:
+                    result = "**Require Manage Channels**";
+                    break;
+                case GuildPermission.ManageGuild:
+                    result = "**Require Manage Server**";
+                    break;
+                case GuildPermission.AddReactions:
+                    result = "**Require Add Reaction**";
+                    break;
+                case GuildPermission.ViewAuditLog:
+                    result = "**Require View Audit Log**";
+                    break;
+                case GuildPermission.ViewChannel:
+                    result = "**Require View Messages**";
+                    break;
+                case GuildPermission.SendMessages:
+                    result = "**Require Send Messages**";
+                    break;
+                case GuildPermission.SendTTSMessages:
+                    result = "**Require Send TTS Messages**";
+                    break;
+                case GuildPermission.ManageMessages:
+                    result = "**Require Manage Messages**";
+                    break;
+                case GuildPermission.EmbedLinks:
+                    result = "**Require Embed Links**";
+                    break;
+                case GuildPermission.AttachFiles:
+                    result = "**Require Attach Files**";
+                    break;
+                case GuildPermission.ReadMessageHistory:
+                    result = "**Require Read Message History**";
+                    break;
+                case GuildPermission.MentionEveryone:
+                    result = "**Require Mention Everyone**";
+                    break;
+                case GuildPermission.UseExternalEmojis:
+                    result = "**Require Use External Emojis**";
+                    break;
+                case GuildPermission.Connect:
+                    result = "**Require Voice Connect**";
+                    break;
+                case GuildPermission.Speak:
+                    result = "**Require Voice Speak**";
+                    break;
+                case GuildPermission.MuteMembers:
+                    result = "**Require Voice Mute**";
+                    break;
+                case GuildPermission.DeafenMembers:
+                    result = "**Require Voice Deafen**";
+                    break;
+                case GuildPermission.MoveMembers:
+                    result = "**Require Voice Move**";
+                    break;
+                case GuildPermission.UseVAD:
+                    result = "";
+                    break;
+                case GuildPermission.PrioritySpeaker:
+                    result = "";
+                    break;
+                case GuildPermission.ChangeNickname:
+                    result = "**Require Change Nicknames**";
+                    break;
+                case GuildPermission.ManageNicknames:
+                    result = "**Require Manage Nicknames**";
+                    break;
+                case GuildPermission.ManageRoles:
+                    result = "**Require Manage Roles**";
+                    break;
+                case GuildPermission.ManageWebhooks:
+                    result = "**Require ManageWebHooks**";
+                    break;
+                case GuildPermission.ManageEmojis:
+                    result = "**Require Manage Emojis**";
+                    break;
+            }
+
+            return result;
+        }
+
+        private string ChannelPermissionString(ChannelPermission perm)
+        {
+            string result = null;
+            switch (perm)
+            {
+                case ChannelPermission.CreateInstantInvite:
+                    result = "**Require Create Invite**";
+                    break;
+                case ChannelPermission.ManageChannels:
+                    result = "**Require Manage Channels**";
+                    break;
+                case ChannelPermission.AddReactions:
+                    result = "**Require Add Reactions**";
+                    break;
+                case ChannelPermission.ViewChannel:
+                    result = "**Require View Messages**";
+                    break;
+                case ChannelPermission.SendMessages:
+                    result = "**Require Send Messages**";
+                    break;
+                case ChannelPermission.SendTTSMessages:
+                    result = "**Require Send TTS Messages**";
+                    break;
+                case ChannelPermission.ManageMessages:
+                    result = "**Require Manage Messages**";
+                    break;
+                case ChannelPermission.EmbedLinks:
+                    result = "**Require Embed Links**";
+                    break;
+                case ChannelPermission.AttachFiles:
+                    result = "**Require Attach Files**";
+                    break;
+                case ChannelPermission.ReadMessageHistory:
+                    result = "**Require Read Message History**";
+                    break;
+                case ChannelPermission.MentionEveryone:
+                    result = "**Require Mention Everyone**";
+                    break;
+                case ChannelPermission.UseExternalEmojis:
+                    result = "**Require Use External Emojis**";
+                    break;
+                case ChannelPermission.Connect:
+                    result = "**Require Voice Connect**";
+                    break;
+                case ChannelPermission.Speak:
+                    result = "**Require Voice Speak**";
+                    break;
+                case ChannelPermission.MuteMembers:
+                    result = "**Require Voice Mute**";
+                    break;
+                case ChannelPermission.DeafenMembers:
+                    result = "**Require Voice Deafen**";
+                    break;
+                case ChannelPermission.MoveMembers:
+                    result = "**Require Voice Move**";
+                    break;
+                case ChannelPermission.UseVAD:
+                    break;
+                case ChannelPermission.PrioritySpeaker:
+                    result = "**Require Priority Speaker**";
+                    break;
+                case ChannelPermission.ManageRoles:
+                    result = "**Require Manage Roles**";
+                    break;
+                case ChannelPermission.ManageWebhooks:
+                    result = "**Require Manage Webhook**";
+                    break;
+            }
+
+            return result;
         }
     }
 }

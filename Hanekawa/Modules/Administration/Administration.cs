@@ -179,7 +179,7 @@ namespace Hanekawa.Modules.Administration
 
         [Name("Mute")]
         [Command("mute", RunMode = RunMode.Async)]
-        [Summary("mutes a user for a duration specified in minutes (max 1440)")]
+        [Summary("Mutes a user for a duration specified in minutes (max 1440)")]
         [Remarks("h.mute @bob#0000 400")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageMessages)]

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Events
 {
-    [Group("Event")]
+    [Name("Event")]
     [RequireContext(ContextType.Guild)]
     [Summary("Event scheduler. Add, remove or manage scheduled events for your server.")]
     public class EventModule : InteractiveBase
@@ -26,6 +26,7 @@ namespace Hanekawa.Modules.Events
 
         [Name("Event post")]
         [Command("event post", RunMode = RunMode.Async)]
+        [Summary("Force posts pending events into their designated channels")]
         [RequireOwner]
         public async Task PostEventsAsync()
         {

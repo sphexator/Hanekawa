@@ -1,104 +1,74 @@
 ﻿using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
+using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
+using Hanekawa.Services.Level.Util;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Services.Level.Util;
 
 namespace Hanekawa.Modules.Account.Profile
 {
-    public static class TextPlacement
+    public class TextPlacement : IHanaService
     {
-        public static async Task ApplyTextAsync(this IImageProcessingContext<Rgba32> image, string name, ulong userId,
+        private readonly FontCollection _fonts;
+        private readonly FontFamily _arial;
+        private readonly Font _regular;
+        private readonly Font _name;
+
+        private readonly TextGraphicsOptions _nameOptions =
+            new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Center };
+        private readonly TextGraphicsOptions _rightOptions =
+            new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Right };
+        private readonly TextGraphicsOptions _leftOptions =
+            new TextGraphicsOptions { HorizontalAlignment = HorizontalAlignment.Left };
+
+        public TextPlacement()
+        {
+            _fonts = new FontCollection();
+            _arial = _fonts.Install(@"Data/Fonts/ARIAL.TTF");
+            _regular = new Font(_arial, 20, FontStyle.Regular);
+            _name = new Font(_arial, 32, FontStyle.Regular);
+        }
+
+        public async Task ApplyTextAsync(Image<Rgba32> image, string name, ulong userId,
             ulong guildId,
-            Addons.Database.Tables.Account.Account userdata, LevelGenerator levelGenerator)
+            Addons.Database.Tables.Account.Account userdata, AccountGlobal globalData, LevelGenerator levelGenerator)
         {
             using (var db = new DbService())
             {
-                var fields = db.ProfileConfigs.ToListAsync();
-                var globalData = db.GetOrCreateGlobalUserData(userId);
-                await Task.WhenAll(fields, globalData);
-                var fonts = new FontCollection();
-                var arial = fonts.Install(@"Data/Fonts/ARIAL.TTF");
-                var font = new Font(arial, 20, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 20, FontStyle.Regular);
-                var nameFont = new Font(arial, 32, FontStyle.Regular);//SystemFonts.CreateFont("Arial", 32, FontStyle.Regular);
+                var fields = await db.ProfileConfigs.ToListAsync();
 
-                var nameOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Center};
-                var leftOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Left};
-                var rightOptions = new TextGraphicsOptions {HorizontalAlignment = HorizontalAlignment.Right};
-                image.DrawText(nameOptions, name, nameFont, Rgba32.WhiteSmoke, new PointF(200, 118));
-                foreach (var x in fields.Result)
-                    if (x.Name == "Achievement Points")
-                    {
-                        image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height));
-                        image.DrawText(rightOptions,
-                            await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator, guildId), font,
-                            Rgba32.White,
-                            new PointF(x.ValueWidth, x.Height));
-                    }
-                    else
-                    {
-                        image.DrawText(leftOptions, x.Value, font, Rgba32.White, new PointF(x.NameWidth, x.Height));
-                        image.DrawText(rightOptions,
-                            await GetValueAsync(x.Name, db, userdata, globalData.Result, levelGenerator, guildId), font,
-                            Rgba32.White,
-                            new PointF(x.ValueWidth, x.Height));
-                    }
+                image.Mutate(x => x.DrawText(_nameOptions, name, _name, Rgba32.WhiteSmoke, new PointF(200, 120)));
+                foreach (var x in fields)
+
+                        if (x.Name == "Achievement Points")
+                        {
+                            var value = await GetValueAsync(x.Name, db, userdata, globalData, levelGenerator,
+                                guildId);
+                            image.Mutate(z => z.DrawText(_leftOptions, x.Value, _regular, Rgba32.White,
+                                new PointF(x.NameWidth, x.Height)));
+                            image.Mutate(z => z.DrawText(_rightOptions, value, _regular, Rgba32.White,
+                                new PointF(x.ValueWidth, x.Height)));
+                        }
+                        else
+                        {
+                            var value = await GetValueAsync(x.Name, db, userdata, globalData, levelGenerator,
+                                guildId);
+                            image.Mutate(z => z.DrawText(_leftOptions, x.Value, _regular, Rgba32.White,
+                                new PointF(x.NameWidth, x.Height)));
+                            image.Mutate(z => z.DrawText(_rightOptions, value, _regular, Rgba32.White,
+                                new PointF(x.ValueWidth, x.Height)));
+                        }
             }
         }
 
-        public static void ApplyAchievementCircles(this IImageProcessingContext<Rgba32> image, Image<Rgba32> circle,
-            IEnumerable<Image<Rgba32>> icons)
-        {
-            const int height = 306;
-            const int width = 22;
-            var images = icons.ToList();
-            if (images.Count > 4)
-            {
-                circle.Mutate(x => x.Resize(39, 39));
-                const int spacerW = 45;
-                const int spacerH = 45;
-                var amount = 0;
-                for (var i = 0; i < 2; i++)
-                for (var j = 0; j < 8; j++)
-                {
-                    if (amount >= images.Count) continue;
-                    var icon = images[amount];
-                    icon.Mutate(y => y.Resize(39, 39));
-                    image.DrawImage(icon,
-                        new Point(width + spacerW * j, height + spacerH * i), new GraphicsOptions(false));
-                    amount++;
-                }
-
-                for (var i = 0; i < 2; i++)
-                for (var j = 0; j < 8; j++)
-                    image.DrawImage(circle,
-                        new Point(width + spacerW * j, height + spacerH * i), new GraphicsOptions(false));
-            }
-            else
-            {
-                const int spacerW = 93;
-                var amount = 0;
-                foreach (var x in images)
-                {
-                    image.DrawImage(x, new Point(width + spacerW * amount, height), new GraphicsOptions(false));
-                    amount++;
-                }
-
-                for (var i = 0; i < 4; i++)
-                    image.DrawImage(circle, new Point(width + spacerW * i, height), new GraphicsOptions(false));
-            }
-        }
-
-        private static async Task<string> GetValueAsync(string name, DbService db,
+        private async Task<string> GetValueAsync(string name, DbService db,
             Addons.Database.Tables.Account.Account userdata,
             AccountGlobal globalData, LevelGenerator levelGenerator, ulong guildId)
         {
@@ -139,7 +109,7 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        private static async Task<string> GetRankAsync(DbService db,
+        private async Task<string> GetRankAsync(DbService db,
             Addons.Database.Tables.Account.Account userdata = null,
             AccountGlobal globalData = null, ulong? guildId = null)
         {
@@ -158,7 +128,7 @@ namespace Hanekawa.Modules.Account.Profile
             }
         }
 
-        private static async Task<int> GetAchievementPoints(DbService db, ulong userid)
+        private async Task<int> GetAchievementPoints(DbService db, ulong userid)
         {
             var achievements = await db.AchievementUnlocks.CountAsync(x => x.UserId == userid);
             return 10 * achievements;

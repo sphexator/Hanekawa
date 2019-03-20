@@ -135,7 +135,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Exclusive role add")]
         [Command("exclusive role add")]
         [Alias("era")]
-        [Summary("adds a role to the list of self-assignable roles")]
+        [Summary("Adds a role to the list of self-assignable roles")]
         [Remarks("h.era red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ExclusiveRole([Remainder] IRole role) =>
@@ -144,7 +144,7 @@ namespace Hanekawa.Modules.Administration
         [Name("Role add")]
         [Command("role add")]
         [Alias("ra")]
-        [Summary("adds a role to the list of self-assignable roles")]
+        [Summary("Adds a role to the list of self-assignable roles")]
         [Remarks("h.ra red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task NonExclusiveRole([Remainder] IRole role) =>

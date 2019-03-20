@@ -120,7 +120,7 @@ namespace Hanekawa.Modules.Account
                     await Context.ReplyAsync("You don't have this role added");
                     return;
                 }
-                await guser.TryAddRoleAsync(role);
+                await guser.TryRemoveRoleAsync(role);
                 await Context.ReplyAsync($"{Context.User.Mention} unequipped {role.Name}"); ;
             }
         }
