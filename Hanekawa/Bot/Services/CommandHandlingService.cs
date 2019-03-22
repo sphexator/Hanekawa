@@ -12,7 +12,11 @@ namespace Hanekawa.Bot.Services
     public class CommandHandlingService : INService
     {
         private readonly DiscordSocketClient _client;
-        private readonly CommandService _command = new CommandService();
+        private readonly CommandService _command = new CommandService(new CommandServiceConfiguration
+        {
+            CaseSensitive = false,
+            DefaultRunMode = RunMode.Parallel
+        });
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
         private readonly DbService _db;
 
@@ -27,6 +31,13 @@ namespace Hanekawa.Bot.Services
             }
 
             _client.MessageReceived += OnMessageReceived;
+            _client.LeftGuild += ClientLeft;
+        }
+
+        private Task ClientLeft(SocketGuild socketGuild)
+        {
+            _prefixes.TryRemove(socketGuild.Id, out _);
+            return Task.CompletedTask;
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
