@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Entities.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Qmmands;
 
 namespace Hanekawa
 {
@@ -26,6 +34,36 @@ namespace Hanekawa
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+            {
+                MessageCacheSize = 35,
+                AlwaysDownloadUsers = true,
+                LogLevel = LogSeverity.Info
+            }));
+            services.AddSingleton(new CommandService(new CommandServiceConfiguration
+            {
+                CaseSensitive = false,
+                DefaultRunMode = RunMode.Parallel
+            }));
+            
+            services.AddDbContextPool<DbService>(x =>
+            {
+                x.UseNpgsql("");
+                x.EnableDetailedErrors();
+                x.EnableSensitiveDataLogging();
+            }, 200);
+            services.AddSingleton<Random>();
+            services.AddHttpClient();
+            
+            var assembly = Assembly.GetAssembly(typeof(Program));
+            var servicelist = assembly.GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(INService))
+                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
+            foreach (var x in servicelist)
+            {
+                services.AddSingleton(x);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
