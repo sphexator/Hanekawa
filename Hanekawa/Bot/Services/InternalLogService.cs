@@ -9,13 +9,13 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa.Bot.Services
 {
-    public class LogService : INService, IRequired
+    public class InternalLogService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
-        private readonly ILogger<LogService> _logger;
+        private readonly ILogger<InternalLogService> _logger;
 
-        public LogService(DiscordSocketClient client, CommandService command, ILogger<LogService> logger)
+        public InternalLogService(DiscordSocketClient client, CommandService command, ILogger<InternalLogService> logger)
         {
             _client = client;
             _command = command;
