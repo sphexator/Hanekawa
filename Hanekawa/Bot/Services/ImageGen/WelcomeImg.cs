@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly ImageGenerator _image;
         
         private readonly GraphicsOptions _options = new GraphicsOptions(true);
-        private readonly TextGraphicsOptions center = new TextGraphicsOptions
+        private readonly TextGraphicsOptions _center = new TextGraphicsOptions
         {
             Antialias = true,
             HorizontalAlignment = HorizontalAlignment.Center
@@ -60,11 +60,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
                 try
                 {
-                    img.Mutate(x => x.DrawText(center, user.GetName().Truncate(15), _regular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_center, user.GetName().Truncate(15), _regular, Rgba32.White, new Point(245, 46)));
                 }
                 catch
                 {
-                    img.Mutate(x => x.DrawText(center, "Bad Name", _regular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_center, "Bad Name", _regular, Rgba32.White, new Point(245, 46)));
                 }
 
                 img.Save(stream, new PngEncoder());
