@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            var host = CreateWebHostBuilder(args).Build();
+            await host.Services.GetRequiredService<Bot.Hanekawa>().StartAsync();
+            await host.RunAsync();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
