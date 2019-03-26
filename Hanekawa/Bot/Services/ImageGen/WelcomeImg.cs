@@ -57,9 +57,16 @@ namespace Hanekawa.Bot.Services.ImageGen
             {
                 var avatar = await _image.GetAvatarAsync(user, new Size(60, 60), 32);
                 
-                img.Mutate(x => x
-                    .DrawImage(avatar, new Point(10, 10), _options)
-                    .DrawText(center, user.GetName().Truncate(15), _regular, Rgba32.White, new Point(245, 46)));
+                img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
+                try
+                {
+                    img.Mutate(x => x.DrawText(center, user.GetName().Truncate(15), _regular, Rgba32.White, new Point(245, 46)));
+                }
+                catch
+                {
+                    img.Mutate(x => x.DrawText(center, "Bad Name", _regular, Rgba32.White, new Point(245, 46)));
+                }
+
                 img.Save(stream, new PngEncoder());
             }
             return stream;
