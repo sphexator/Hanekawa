@@ -21,7 +21,22 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
             new ConcurrentDictionary<ulong, MemoryCache>();
 
-        
+        public bool AddLootChannel(SocketTextChannel channel)
+        {
+            var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            if (channels.ContainsKey(channel.Id)) return false;
+            channels.TryAdd(channel.Id, true);
+            return true;
+        }
+
+        public bool RemoveLootChannel(SocketTextChannel channel)
+        {
+            var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+            if (!channels.ContainsKey(channel.Id)) return false;
+            channels.TryRemove(channel.Id, out _);
+            return true;
+        }
+
         private bool IsDropChannel(SocketTextChannel channel)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());

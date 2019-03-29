@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -10,10 +11,13 @@ namespace Hanekawa.Bot.Services.Drop
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;
-        public DropService(DiscordSocketClient client, DbService db)
+        private readonly Random _random;
+
+        public DropService(DiscordSocketClient client, DbService db, Random random)
         {
             _client = client;
             _db = db;
+            _random = random;
 
             _client.MessageReceived += DropChance;
             _client.ReactionAdded += OnReactionAdded;
@@ -24,7 +28,9 @@ namespace Hanekawa.Bot.Services.Drop
             _ = Task.Run(async () =>
             {
                 if (!(chx is SocketTextChannel ch)) return;
-                
+                if (rct.User.GetValueOrDefault().IsBot) return;
+                if (IsDropChannel(ch)) return;
+                if (IsDropMessage(ch.Guild.Id, msg.Id, out var special)) return;
             });
             return Task.CompletedTask;
         }

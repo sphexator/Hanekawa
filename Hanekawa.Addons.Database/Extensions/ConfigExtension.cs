@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.Config.Guild;
@@ -229,6 +230,26 @@ namespace Hanekawa.Addons.Database.Extensions
                 await context.WelcomeConfigs.AddAsync(data);
                 await context.SaveChangesAsync();
                 return await context.WelcomeConfigs.FindAsync(guild);
+            }
+            catch
+            {
+                return data;
+            }
+        }
+
+        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, IGuild guild) =>
+            await GetOrCreateDropConfig(context, guild.Id).ConfigureAwait(false);
+
+        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, ulong guildId)
+        {
+            var response = await context.DropConfigs.FindAsync(guildId);
+            if (response != null) return response;
+            var data = new DropConfig().DefaultDropConfig(guildId);
+            try
+            {
+                await context.DropConfigs.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.DropConfigs.FindAsync(guildId);
             }
             catch
             {

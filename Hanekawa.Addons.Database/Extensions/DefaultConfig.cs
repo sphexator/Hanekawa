@@ -158,5 +158,12 @@ namespace Hanekawa.Addons.Database.Extensions
             account.Credit = 0;
             return account;
         }
+
+        internal static DropConfig DefaultDropConfig(this DropConfig cfg, ulong guildId)
+        {
+            cfg.GuildId = guildId;
+            cfg.Emote = "<:realsip:429809346222882836>";
+            return cfg;
+        }
     }
 }

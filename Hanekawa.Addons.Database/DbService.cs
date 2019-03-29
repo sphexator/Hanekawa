@@ -70,6 +70,7 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<LoggingConfig> LoggingConfigs { get; set; }
         public virtual DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
         public virtual DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
+        public virtual DbSet<DropConfig> DropConfigs { get; set; }
 
         public virtual DbSet<LootChannel> LootChannels { get; set; }
         public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
@@ -451,6 +452,11 @@ namespace Hanekawa.Addons.Database
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Channel).HasConversion<long>();
+            });
+            modelBuilder.Entity<DropConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
             });
 
             modelBuilder.Entity<IgnoreChannel>(x =>
