@@ -59,7 +59,13 @@ namespace Hanekawa.Bot.Services.Board
         {
             _ = Task.Run(async () =>
             {
-
+                if (!(channel is SocketTextChannel ch)) return;
+                var msgCheck= _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
+                if (!msgCheck) return;
+                if (messages.TryGetValue(message.Id, out _))
+                {
+                    messages.Remove(message.Id);
+                }
             });
             return Task.CompletedTask;
         }
