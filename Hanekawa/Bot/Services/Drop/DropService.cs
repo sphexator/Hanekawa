@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -27,6 +28,18 @@ namespace Hanekawa.Bot.Services.Drop
 
             _client.MessageReceived += DropChance;
             _client.ReactionAdded += OnReactionAdded;
+
+            foreach (var x in _db.DropConfigs)
+            {
+                var emote = Emote.TryParse(x.Emote, out var result) ? result : GetDefaultEmote();
+                _emotes.TryAdd(x.GuildId, emote);
+            }
+
+            foreach (var x in _db.LootChannels)
+            {
+                var channels = _lootChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, bool>());
+                channels.TryAdd(x.ChannelId, true);
+            }
         }
 
         private Task DropChance(SocketMessage msg)
