@@ -9,20 +9,17 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Services
 {
-    public class CommandHandlingService : INService
+    public class CommandHandlingService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly CommandService _command = new CommandService(new CommandServiceConfiguration
-        {
-            CaseSensitive = false,
-            DefaultRunMode = RunMode.Parallel
-        });
+        private readonly CommandService _command;
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
         private readonly DbService _db;
 
-        public CommandHandlingService(DiscordSocketClient client, DbService db)
+        public CommandHandlingService(DiscordSocketClient client, CommandService command, DbService db)
         {
             _client = client;
+            _command = command;
             _db = db;
 
             foreach (var x in _db.GuildConfigs)
@@ -32,22 +29,32 @@ namespace Hanekawa.Bot.Services
 
             _client.MessageReceived += OnMessageReceived;
             _client.LeftGuild += ClientLeft;
-        }
-
-        private Task ClientLeft(SocketGuild socketGuild)
-        {
-            _prefixes.TryRemove(socketGuild.Id, out _);
-            return Task.CompletedTask;
+            _client.JoinedGuild += ClientJoined;
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
-
         public async Task UpdatePrefix(ulong id, string prefix)
         {
             var cfg = await _db.GetOrCreateGuildConfigAsync(id);
             cfg.Prefix = prefix;
             _prefixes.AddOrUpdate(id, "h.", (key, old) => prefix);
             await _db.SaveChangesAsync();
+        }
+
+        private Task ClientJoined(SocketGuild guild)
+        {
+            _ = Task.Run(async () =>
+            {
+                var cfg = await _db.GetOrCreateGuildConfigAsync(guild);
+                _prefixes.TryAdd(guild.Id, cfg.Prefix);
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task ClientLeft(SocketGuild socketGuild)
+        {
+            _prefixes.TryRemove(socketGuild.Id, out _);
+            return Task.CompletedTask;
         }
 
         private async Task OnMessageReceived(SocketMessage rawMsg)

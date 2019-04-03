@@ -58,7 +58,6 @@ namespace Hanekawa.Addons.Database
         public virtual DbSet<GameConfig> GameConfigs { get; set; }
         public virtual DbSet<GameEnemy> GameEnemies { get; set; }
 
-
         //Config
         public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
         public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
