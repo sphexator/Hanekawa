@@ -1,14 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Data;
-using Hanekawa.Addons.Database.Tables.Achievement;
 using Hanekawa.Addons.Database.Tables.BoardConfig;
-using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Addons.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -110,9 +107,16 @@ namespace Hanekawa.Addons.Database.Extensions
                 UserId = user.Id,
                 Status = true
             };
-            await context.QuestionAndAnswers.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time);
+            try
+            {
+                await context.QuestionAndAnswers.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time);
+            }
+            catch
+            {
+                return data;
+            }
         }
     }
 }

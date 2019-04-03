@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database.Tables.Account;
@@ -41,9 +42,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (userdata != null) return userdata;
 
             var data = new Account().DefaultAccount(guild, user);
-            await context.Accounts.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.Accounts.FindAsync(user, guild);
+            try
+            {
+                await context.Accounts.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.Accounts.FindAsync(user, guild);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         private static async Task<AccountGlobal> GetOrCreateGlobalUser(this DbService context, ulong userId)
@@ -52,9 +60,16 @@ namespace Hanekawa.Addons.Database.Extensions
             if (userdata != null) return userdata;
 
             var data = new AccountGlobal().DefaultAccountGlobal(userId);
-            await context.AccountGlobals.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AccountGlobals.FindAsync(userId);
+            try
+            {
+                await context.AccountGlobals.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.AccountGlobals.FindAsync(userId);
+            }
+            catch
+            {
+                return data;
+            }
         }
     }
 }

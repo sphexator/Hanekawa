@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Hanekawa.Addons.Database.Tables.Club;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
+using Discord.WebSocket;
 
 namespace Hanekawa.Addons.Database.Extensions
 {
@@ -32,24 +31,10 @@ namespace Hanekawa.Addons.Database.Extensions
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.LeaderId == user.Id);
         }
 
-        public static async Task<ClubInformation> GetClubAsync(this DbService context, int id, IGuild guild)
+        public static async Task<ClubInformation> GetClubAsync(this DbService context, SocketGuildUser user, int id)
         {
-            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == guild.Id);
+            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.Guild.Id);
             return check;
-        }
-
-        public static async Task<ClubInformation> IsClubLeader(this DbService context, ulong guild, ulong user)
-        {
-            try
-            {
-                var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == guild && x.LeaderId == user);
-                return leader;
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }

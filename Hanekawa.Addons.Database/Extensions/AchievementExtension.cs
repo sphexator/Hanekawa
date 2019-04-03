@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Hanekawa.Addons.Database.Tables.Achievement;
 using System.Threading.Tasks;
 
@@ -17,9 +18,16 @@ namespace Hanekawa.Addons.Database.Extensions
                 Type = type,
                 UserId = user.Id
             };
-            await context.AchievementTrackers.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AchievementTrackers.FindAsync(type, user.Id);
+            try
+            {
+                await context.AchievementTrackers.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.AchievementTrackers.FindAsync(type, user.Id);
+            }
+            catch
+            {
+                return data;
+            }
         }
 
         public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, ulong userId,
@@ -33,9 +41,16 @@ namespace Hanekawa.Addons.Database.Extensions
                 Type = type,
                 UserId = userId
             };
-            await context.AchievementTrackers.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.AchievementTrackers.FindAsync(type, userId);
+            try
+            {
+                await context.AchievementTrackers.AddAsync(data);
+                await context.SaveChangesAsync();
+                return await context.AchievementTrackers.FindAsync(type, userId);
+            }
+            catch
+            {
+                return data;
+            }
         }
     }
 }
