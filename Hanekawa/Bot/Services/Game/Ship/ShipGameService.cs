@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Discord.WebSocket;
+using Hanekawa.Addons.Database.Tables.BotGame;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -30,9 +32,19 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        public async Task SearchAsync()
+        public async Task SearchAsync(SocketGuildUser user)
         {
+            if(!_activeBattles.TryGetValue(user.Guild.Id, out var battles)) return;
+            if (battles.TryGetValue(user.Id, out _)) return;
+            var enemy = GetEnemy();
+            if (enemy == null)
+            {
 
+            }
+            else
+            {
+                _activeBattles.TryAdd(x)
+            }
         }
 
         public async Task PvPBattle()
@@ -43,6 +55,15 @@ namespace Hanekawa.Bot.Services.Game.Ship
         public async Task PvEBattle()
         {
 
+        }
+
+        private GameEnemy GetEnemy()
+        {
+            var chance = _random.Next(1000);
+            if (chance <= 50) return _eliteEnemies[_random.Next(_eliteEnemies.Count)];
+            if (chance <= 150) return _rareEnemies[_random.Next(_rareEnemies.Count)];
+            if (chance > 150 && chance < 600) return _regularEnemies[_random.Next(_regularEnemies.Count)];
+            return null;
         }
     }
 }
