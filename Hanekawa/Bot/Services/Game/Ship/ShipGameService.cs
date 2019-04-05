@@ -2,11 +2,15 @@
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Entities.Interfaces;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database.Tables.BotGame;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -32,27 +36,30 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        public async Task SearchAsync(SocketGuildUser user)
+        public async Task<EmbedBuilder> SearchAsync(SocketGuildUser user)
         {
-            if(!_activeBattles.TryGetValue(user.Guild.Id, out var battles)) return;
-            if (battles.TryGetValue(user.Id, out _)) return;
+            var battles = _existingBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+            if (battles.TryGetValue(user.Id, out _)) return new EmbedBuilder();
             var enemy = GetEnemy();
             if (enemy == null)
             {
-
+                return new EmbedBuilder();
             }
-            else
-            {
-                _activeBattles.TryAdd(x)
-            }
+            battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
+            return new EmbedBuilder();
         }
 
-        public async Task PvPBattle()
+        public async Task PvPBattle(SocketCommandContext context)
         {
 
         }
 
-        public async Task PvEBattle()
+        public async Task PvEBattle(SocketCommandContext context)
+        {
+
+        }
+
+        private async Task BattleAsync()
         {
 
         }

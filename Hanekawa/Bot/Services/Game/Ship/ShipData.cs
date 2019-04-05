@@ -1,5 +1,6 @@
 ﻿using Hanekawa.Addons.Database.Tables.BotGame;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -14,13 +15,13 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly ConcurrentDictionary<int, GameEnemy> _eliteEnemies
             = new ConcurrentDictionary<int, GameEnemy>();
 
-        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> _existingBattles
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>>();
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _existingBattles
+            = new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _activeBattles
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _activeBattles
+            = new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _activeDuels
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _activeDuels
+            = new ConcurrentDictionary<ulong, MemoryCache>();
     }
 }
