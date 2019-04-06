@@ -12,10 +12,10 @@ namespace Hanekawa.Bot.Services.Welcome
     public partial class WelcomeService
     {
         private readonly DiscordSocketClient _client;
-        private readonly WelcomeImg _img;
+        private readonly ImageGenerator _img;
         private readonly DbService _db;
         
-        public WelcomeService(DiscordSocketClient client, DbService db, WelcomeImg img)
+        public WelcomeService(DiscordSocketClient client, DbService db, ImageGenerator img)
         {
             _client = client;
             _db = db;
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 IMessage message;
                 if (cfg.Banner)
                 {
-                    var banner = await _img.Builder(user);
+                    var banner = await _img.WelcomeBuilder(user);
                     banner.Seek(0, SeekOrigin.Begin);
                     message = await user.Guild.GetTextChannel(cfg.Channel.Value)
                         .SendFileAsync(banner, "Welcome.png", msg);

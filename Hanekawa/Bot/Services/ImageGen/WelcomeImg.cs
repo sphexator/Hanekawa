@@ -1,15 +1,11 @@
-using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -18,39 +14,9 @@ using SixLabors.Primitives;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
-    public class WelcomeImg : INService
+    public partial class ImageGenerator : INService
     {
-        private readonly HttpClient _client;
-        private readonly Random _random;
-        private readonly DbService _db;
-        private readonly ImageGenerator _image;
-        
-        private readonly GraphicsOptions _options = new GraphicsOptions(true);
-        private readonly TextGraphicsOptions _center = new TextGraphicsOptions
-        {
-            Antialias = true,
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
-        
-        private readonly Font _regular;
-        private readonly FontCollection _fonts;
-        private readonly FontFamily _times;
-        private readonly Image<Rgba32> _template;
-
-        public WelcomeImg(HttpClient client, Random random, DbService db, ImageGenerator image)
-        {
-            _client = client;
-            _random = random;
-            _db = db;
-            _image = image;
-            
-            _fonts = new FontCollection();
-            _times = _fonts.Install("Data/Fonts/TIMES.TTF");
-            _regular = new Font(_times, 33, FontStyle.Regular);
-            _template = Image.Load("Data/Welcome/Default.png");
-        }
-
-        public async Task<Stream> Builder(SocketGuildUser user)
+        public async Task<Stream> WelcomeBuilder(SocketGuildUser user)
         {
             var stream = new MemoryStream();
             using (var img = await GetBanner(user.Guild.Id))

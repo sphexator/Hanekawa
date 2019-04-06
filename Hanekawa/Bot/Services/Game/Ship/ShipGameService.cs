@@ -2,14 +2,16 @@
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Entities.Interfaces;
 using System;
-using System.Collections.Concurrent;
-using System.IO;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship
@@ -34,6 +36,13 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 else if (x.Rare) _rareEnemies.TryAdd(x.Id, x);
                 else _regularEnemies.TryAdd(x.Id, x);
             }
+
+            var cfg = _db.GameConfigs.Find(1);
+            if (cfg != null)
+            {
+                DefaultDamage = cfg.DefaultDamage;
+                DefaultHealth = cfg.DefaultHealth;
+            }
         }
 
         public async Task<EmbedBuilder> SearchAsync(SocketGuildUser user)
@@ -43,10 +52,19 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var enemy = GetEnemy();
             if (enemy == null)
             {
-                return new EmbedBuilder();
+                return new EmbedBuilder().CreateDefault($"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red.RawValue);
             }
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
-            return new EmbedBuilder();
+            var embed = new EmbedBuilder().CreateDefault($"You've encountered an enemy!\n" +
+                                                    $"**{enemy.Name}**", Color.Green.RawValue);
+            var userdata = await _db.GetOrCreateUserData(user);
+            embed.Fields = new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder { Name = "Type", Value = "", IsInline = true },
+                new EmbedFieldBuilder { Name = "Health", Value = "", IsInline = true },
+                new EmbedFieldBuilder { Name = "Level", Value = $"{userdata.Level}", IsInline = true }
+            };
+            return embed;
         }
 
         public async Task PvPBattle(SocketCommandContext context)
