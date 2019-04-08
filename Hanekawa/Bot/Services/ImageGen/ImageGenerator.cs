@@ -24,15 +24,27 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly ExpService _expService;
 
         private readonly GraphicsOptions _options = new GraphicsOptions(true);
-        private readonly TextGraphicsOptions _center = new TextGraphicsOptions
+        private readonly TextGraphicsOptions _centerText = new TextGraphicsOptions
         {
             Antialias = true,
             HorizontalAlignment = HorizontalAlignment.Center
+        };
+        private readonly TextGraphicsOptions _rightText = new TextGraphicsOptions
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Antialias = true
+        };
+        private readonly TextGraphicsOptions _leftText = new TextGraphicsOptions
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Antialias = true
+
         };
 
         // Fonts
         private readonly FontCollection _fonts;
         private readonly FontFamily _times;
+        private readonly FontFamily _arial;
 
         // Welcome
         private readonly Font _welcomeFontRegular;
@@ -42,7 +54,9 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly Font _profileName;
         private readonly Font _profileText;
         private readonly Image<Rgba32> _profileTemplate;
-        public ImageGenerator(HttpClient client, Random random, DbService db, ImageGenerator image, ExpService expService)
+
+        public ImageGenerator(HttpClient client, Random random, DbService db, ImageGenerator image,
+            ExpService expService)
         {
             _client = client;
             _random = random;
@@ -52,9 +66,14 @@ namespace Hanekawa.Bot.Services.ImageGen
 
             _fonts = new FontCollection();
             _times = _fonts.Install("Data/Fonts/TIMES.TTF");
+            _arial = _fonts.Install("Data/Fonts/ARIAL.TFF");
+
             _welcomeFontRegular = new Font(_times, 33, FontStyle.Regular);
             _welcomeTemplate = Image.Load("Data/Welcome/Default.png");
-        } 
+
+            _profileText = new Font(_arial, 20, FontStyle.Regular);
+            _profileName = new Font(_arial, 32, FontStyle.Regular);
+        }
 
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size, int radius)
         {

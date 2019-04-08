@@ -25,11 +25,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
                 try
                 {
-                    img.Mutate(x => x.DrawText(_center, user.GetName().Truncate(15), _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_centerText, user.GetName().Truncate(15), _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 }
                 catch
                 {
-                    img.Mutate(x => x.DrawText(_center, "Bad Name", _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_centerText, "Bad Name", _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 }
 
                 img.Save(stream, new PngEncoder());
