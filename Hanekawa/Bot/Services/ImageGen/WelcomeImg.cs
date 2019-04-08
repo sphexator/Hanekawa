@@ -2,7 +2,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +13,7 @@ using SixLabors.Primitives;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
-    public partial class ImageGenerator : INService
+    public partial class ImageGenerator
     {
         public async Task<Stream> WelcomeBuilder(SocketGuildUser user)
         {
@@ -26,11 +25,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
                 try
                 {
-                    img.Mutate(x => x.DrawText(_center, user.GetName().Truncate(15), _regular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_center, user.GetName().Truncate(15), _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 }
                 catch
                 {
-                    img.Mutate(x => x.DrawText(_center, "Bad Name", _regular, Rgba32.White, new Point(245, 46)));
+                    img.Mutate(x => x.DrawText(_center, "Bad Name", _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 }
 
                 img.Save(stream, new PngEncoder());
@@ -41,7 +40,7 @@ namespace Hanekawa.Bot.Services.ImageGen
         private async Task<Image<Rgba32>> GetBanner(ulong guildId)
         {
             var list = await _db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
-            if (list.Count == 0) return _template;
+            if (list.Count == 0) return _welcomeTemplate;
             using (var img = Image.Load(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url)))
             {
                 img.Mutate(x => x.Resize(600, 78));
