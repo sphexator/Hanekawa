@@ -10,7 +10,6 @@ using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -35,6 +34,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var serverRank = await GetRankAsync(user, userdata);
                 var globalRank = await GetRankAsync(user, globalData);
+                var achievePoints = await GetAchievementPoints(user);
 
                 await Task.WhenAll(background, avi);
 
@@ -48,11 +48,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                         x.DrawLines(_options, Rgba32.BlueViolet, 4, progBar.ToArray());
                     try
                     {
-                        x.DrawText(_leftText, $"{user.GetName().Truncate(25)}", _profileName, Rgba32.White, new PointF(200, 120));
+                        x.DrawText(_centerText, $"{user.GetName().Truncate(25)}", _profileName, Rgba32.White, new PointF(200, 120));
                     }
                     catch
                     {
-                        x.DrawText(_leftText, "Bad Name", _profileName, Rgba32.White, new PointF(200, 120));
+                        x.DrawText(_centerText, "Bad Name", _profileName, Rgba32.White, new PointF(200, 120));
                     }
 
                     //Text
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.DrawText(_rightText, $"{userdata.CreditSpecial}", _profileText, Rgba32.White, new PointF());
 
                     x.DrawText(_leftText, "Achievement Points", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_rightText, $"{achievePoints}", _profileText, Rgba32.White, new PointF());
 
                     x.DrawText(_leftText, "Global Rank", _profileText, Rgba32.White, new PointF());
                     x.DrawText(_rightText, $"{globalRank}", _profileText, Rgba32.White, new PointF());
@@ -109,9 +109,9 @@ namespace Hanekawa.Bot.Services.ImageGen
             }
         }
 
-        private List<PointF> CreateProfileProgressBar(Account userdata)
+        private List<PointF> CreateProfileProgressBar(Account userData)
         {
-            var perc = userdata.Exp / (float)_expService.ExpToNextLevel(userdata);
+            var perc = userData.Exp / (float)_expService.ExpToNextLevel(userData);
             var numb = perc * 100 / 100 * 360 * 2;
             var points = new List<PointF>();
             const double radius = 55;
@@ -141,6 +141,12 @@ namespace Hanekawa.Bot.Services.ImageGen
             var total = await _db.AccountGlobals.CountAsync();
             var rank = await _db.AccountGlobals.CountAsync(x => x.TotalExp >= userdata.TotalExp);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
+        }
+
+        private async Task<string> GetAchievementPoints(SocketGuildUser user)
+        {
+            var points = await _db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
+            return $"{points * 10}";
         }
     }
 }
