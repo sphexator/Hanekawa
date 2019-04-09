@@ -73,6 +73,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
             _profileText = new Font(_arial, 20, FontStyle.Regular);
             _profileName = new Font(_arial, 32, FontStyle.Regular);
+            _profileTemplate = Image.Load("Data/Profile/Template.png");
         }
 
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size, int radius)
