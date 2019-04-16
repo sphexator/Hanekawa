@@ -186,14 +186,36 @@ namespace Hanekawa.Modules.Club.Handler
             var clubMembers = await db.ClubPlayers.Where(x => x.ClubId == club.Id).ToListAsync();
             if (clubMembers.Count == 0)
             {
-                db.ClubInfos.Remove(club);
+                club.AdMessage = null;
+                club.AutoAdd = false;
+                club.Channel = null;
+                club.Description = null;
+                club.IconUrl = null;
+                club.ImageUrl = null;
+                club.LeaderId = 1;
+                club.Public = false;
+                club.Role = null;
+                club.Name = null;
+                db.Update(club);
+                await db.SaveChangesAsync();
             }
 
             if (clubMembers.Count == 1)
             {
                 if (clubMembers.First().UserId == user.Id)
                 {
-                    db.ClubInfos.Remove(club);
+                    club.AdMessage = null;
+                    club.AutoAdd = false;
+                    club.Channel = null;
+                    club.Description = null;
+                    club.IconUrl = null;
+                    club.ImageUrl = null;
+                    club.LeaderId = 1;
+                    club.Public = false;
+                    club.Role = null;
+                    club.Name = null;
+                    db.Update(club);
+                    await db.SaveChangesAsync();
                 }
             }
         }
