@@ -353,6 +353,7 @@ namespace Hanekawa.Modules.Club
                 var pages = new List<string>();
                 foreach (var x in clubs)
                 {
+                    if (x.LeaderId == 1) continue;
                     var leader = (Context.Guild.GetUser(x.LeaderId)).Mention ??
                                  "Couldn't find user or left server.";
                     pages.Add($"**{x.Name} (id: {x.Id})**\n" +

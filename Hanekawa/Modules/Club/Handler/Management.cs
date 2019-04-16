@@ -195,14 +195,16 @@ namespace Hanekawa.Modules.Club.Handler
                 club.LeaderId = 1;
                 club.Public = false;
                 club.Role = null;
-                club.Name = null;
+                club.Name = "Disbanded";
                 db.Update(club);
                 await db.SaveChangesAsync();
             }
 
             if (clubMembers.Count == 1)
             {
-                if (clubMembers.First().UserId == user.Id)
+                var clubUser = clubMembers.FirstOrDefault();
+                if (clubUser == null) return;
+                if (clubUser.UserId == user.Id)
                 {
                     club.AdMessage = null;
                     club.AutoAdd = false;
@@ -213,7 +215,7 @@ namespace Hanekawa.Modules.Club.Handler
                     club.LeaderId = 1;
                     club.Public = false;
                     club.Role = null;
-                    club.Name = null;
+                    club.Name = "Disbanded";
                     db.Update(club);
                     await db.SaveChangesAsync();
                 }
