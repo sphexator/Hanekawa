@@ -93,7 +93,7 @@ namespace Hanekawa.Services.Welcome
 
         private static Image<Rgba32> GetDefaultImage()
         {
-            using (var img = Image.Load(@"Data\Welcome\Default.png"))
+            using (var img = Image.Load("Data/Welcome/Default.png"))
             {
                 img.Mutate(x => x.Resize(600, 78));
                 return img.Clone();
