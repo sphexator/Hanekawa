@@ -105,7 +105,7 @@ namespace Hanekawa.Services.Welcome
             var response = await _httpClient.GetStreamAsync(user.GetAvatar());
             using (var img = Image.Load(response))
             {
-                var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
+                var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 30);
                 return avi.Clone();
             }
         }

@@ -41,6 +41,7 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
+                bool addedRole;
                 var gUser = (SocketGuildUser) Context.User;
                 if (dbRole.Exclusive)
                 {
@@ -52,18 +53,29 @@ namespace Hanekawa.Modules.Administration
                         if (gUser.Roles.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
                     }
 
-                    await gUser.TryAddRoleAsync(role);
+                    addedRole = await gUser.TryAddRoleAsync(role);
                 }
                 else
                 {
-                    await gUser.TryAddRoleAsync(role);
+                    addedRole = await gUser.TryAddRoleAsync(role);
                 }
 
-                await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().CreateDefault($"Added {role.Name} to {Context.User.Mention}",
-                            Color.Green.RawValue)
-                        .Build(),
-                    TimeSpan.FromSeconds(10));
+                if (addedRole)
+                {
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder().CreateDefault($"Added {role.Name} to {Context.User.Mention}",
+                                Color.Green.RawValue)
+                            .Build(),
+                        TimeSpan.FromSeconds(10));
+                }
+                else
+                {
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder().CreateDefault($"Couldn't add {role.Name} to {Context.User.Mention}, missing permission or role position?",
+                                Color.Red.RawValue)
+                            .Build(),
+                        TimeSpan.FromSeconds(10));
+                }
             }
         }
 
@@ -88,11 +100,20 @@ namespace Hanekawa.Modules.Administration
                     return;
                 }
 
-                await user.TryRemoveRoleAsync(role);
-                await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder()
-                        .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
-                        .Build(), TimeSpan.FromSeconds(10));
+                if (await user.TryRemoveRoleAsync(role))
+                {
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder()
+                            .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
+                            .Build(), TimeSpan.FromSeconds(10));
+                }
+                else
+                {
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder()
+                            .CreateDefault($"Couldn't remove {role.Name} from {Context.User.Mention}, missing permission or role position?", Color.Red.RawValue)
+                            .Build(), TimeSpan.FromSeconds(10));
+                }
             }
         }
 
