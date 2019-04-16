@@ -39,7 +39,7 @@ namespace Hanekawa.Modules.Administration
         public async Task BanAsync(SocketGuildUser user)
         {
             await Context.Message.DeleteAsync().ConfigureAwait(false);
-            if (Context.Guild.GetUser(Context.Client.CurrentUser.Id).HierarchyCheck(user))
+            if (Context.Guild.CurrentUser.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().CreateDefault("Cannot ban someone that's higher than me in hierarchy.",
@@ -192,6 +192,13 @@ namespace Hanekawa.Modules.Administration
             var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
                 TimeSpan.FromMinutes(minutes));
             await Task.WhenAll(mute, warn);
+            if (!mute.Result)
+            {
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Couldn't apply mute role to {user.Mention}", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(15));
+                return;
+            }
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
@@ -211,6 +218,13 @@ namespace Hanekawa.Modules.Administration
             var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
                 TimeSpan.FromMinutes(1440));
             await Task.WhenAll(mute, warn);
+            if (!mute.Result)
+            {
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Couldn't apply mute role to {user.Mention}", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(15));
+                return;
+            }
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
@@ -234,6 +248,13 @@ namespace Hanekawa.Modules.Administration
             var warn = _warnService.AddWarning(user, Context.User, DateTime.UtcNow, reason, WarnReason.Mute,
                 timer.Value);
             await Task.WhenAll(mute, warn);
+            if (!mute.Result)
+            {
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Couldn't apply mute role to {user.Mention}", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(15));
+                return;
+            }
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder().CreateDefault($"Muted {user.Mention}", Color.Green.RawValue).Build(),
                 TimeSpan.FromSeconds(15));
@@ -380,7 +401,7 @@ namespace Hanekawa.Modules.Administration
                 if (updMsg == null)
                 {
                     await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
-                        timeout: TimeSpan.FromSeconds(5));
+                        timeout: TimeSpan.FromSeconds(10));
                     var delay = Task.Delay(5000);
                     var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
                     await Task.WhenAll(delay);

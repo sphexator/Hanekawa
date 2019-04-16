@@ -68,14 +68,17 @@ namespace Hanekawa.Services.Administration
         }
 
         // MUTE AREA
-        public async Task Mute(IGuildUser user)
+        public async Task<bool> Mute(IGuildUser user)
         {
             using (var db = new DbService())
             {
                 await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                 var muteRole = await GetMuteRole(user.Guild);
-                if (!user.RoleIds.Contains(muteRole.Id)) await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
+                var canMute = true;
+                if (!user.RoleIds.Contains(muteRole.Id)) canMute = await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
+                if (!canMute) return false;
                 await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+                return true;
             }
         }
 
@@ -93,9 +96,10 @@ namespace Hanekawa.Services.Administration
         }
 
         // TIMED MUTE AREA
-        public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
+        public async Task<bool> TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
-            await Mute(user).ConfigureAwait(false);
+            var check = await Mute(user).ConfigureAwait(false);
+            if (!check) return false;
             using (var db = new DbService())
             {
                 var unMuteAt = DateTime.UtcNow + after;
@@ -119,6 +123,7 @@ namespace Hanekawa.Services.Administration
 
                 StartUnmuteTimer(user.GuildId, user.Id, after);
                 await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
+                return true;
             }
         }
 
