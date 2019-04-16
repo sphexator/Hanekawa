@@ -11,6 +11,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Humanizer;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Report
 {
@@ -54,6 +55,7 @@ namespace Hanekawa.Modules.Report
         public async Task ReportGuildAsync([Remainder] string text)
         {
             await Context.Message.DeleteAsync();
+            if (text.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
             {
                 var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
@@ -86,6 +88,7 @@ namespace Hanekawa.Modules.Report
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RespondAsync(int id, [Remainder] string text)
         {
+            if (text.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
             {
                 var report = await db.Reports.FindAsync(id, Context.Guild.Id);
