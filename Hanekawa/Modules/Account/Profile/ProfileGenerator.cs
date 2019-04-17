@@ -70,7 +70,6 @@ namespace Hanekawa.Modules.Account.Profile
                     .DrawImage(avi.Result, new Point(145, 4), _options)
                     .Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4)));
                 CreateProgressBar(img, userdata);
-                CreateLevelZone(img, userdata.Level);
                 var text = _text.ApplyTextAsync(img, user.GetName().Truncate(25), user.Id, user.Guild.Id, userdata,
                     globalData, _levelGenerator);
                 var achievement = AddAchievementCircles(img, achieveIcons.Result);
@@ -128,68 +127,6 @@ namespace Hanekawa.Modules.Account.Profile
             }
 
             if (points.Count >= 2) image.Mutate(x => x.DrawLines(_options, Rgba32.BlueViolet, 4, points.ToArray()));
-        }
-
-        private void CreateLevelZone(Image<Rgba32> image, int level)
-        {
-            const int heightTop = 104;
-            const int heightBot = 120;
-            const int width = 199;
-
-            var padding = DetermineLevelWidth(level);
-            var pathBuilder = new PathBuilder();
-            pathBuilder.AddLine(new PointF(width - padding - 1, heightBot - 1),
-                new PointF(width + padding, heightBot - 1));
-            var path = pathBuilder.Build();
-
-            var textGraphicsOptions = new TextGraphicsOptions(true);
-            var glyphs = TextBuilder.GenerateGlyphs($"{level}", path,
-                new RendererOptions(_regular, textGraphicsOptions.DpiX, textGraphicsOptions.DpiY)
-                {
-                    HorizontalAlignment = textGraphicsOptions.HorizontalAlignment,
-                    TabWidth = textGraphicsOptions.TabWidth,
-                    VerticalAlignment = textGraphicsOptions.VerticalAlignment,
-                    WrappingWidth = textGraphicsOptions.WrapTextWidth,
-                    ApplyKerning = textGraphicsOptions.ApplyKerning
-                });
-
-            image.Mutate(x => x
-                    //Center
-                    .FillPolygon(_options, Rgba32.Gray,
-                        new PointF(width - padding, heightTop),
-                        new PointF(width + padding, heightTop),
-                        new PointF(width + padding, heightBot),
-                        new PointF(width - padding, heightBot))
-                    .Fill((GraphicsOptions) textGraphicsOptions, Rgba32.White, glyphs)
-
-                    //Left
-                    .Fill(_options, Rgba32.Gray, new ComplexPolygon(
-                        new Path(
-                            new CubicBezierLineSegment(
-                                new PointF(width - padding, heightBot),
-                                new PointF(width - padding - 3, heightBot - 4),
-                                new PointF(width - padding - 3, heightTop + 4),
-                                new PointF(width - padding, heightTop)
-                            ))))
-
-                    //Right
-                    .Fill(_options, Rgba32.Gray, new ComplexPolygon(
-                        new Path(
-                            new CubicBezierLineSegment(
-                                new PointF(width + padding, heightBot),
-                                new PointF(width + padding + 3, heightBot - 4),
-                                new PointF(width + padding + 3, heightTop + 4),
-                                new PointF(width + padding, heightTop)
-                            ))))
-            );
-        }
-
-        private int DetermineLevelWidth(int level)
-        {
-            if (level > 0 && level < 10) return 5 * 1;
-            if (level > 9 && level < 100) return 5 * 2;
-            if (level > 99 && level < 1000) return 5 * 3;
-            return 100;
         }
 
         private async Task<IEnumerable<Image<Rgba32>>> GetAchievementIcons(IGuildUser user, DbService db)

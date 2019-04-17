@@ -1,4 +1,5 @@
-﻿using Hanekawa.Addons.Database;
+﻿using System;
+using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
 using Hanekawa.Entities.Interfaces;
@@ -43,10 +44,15 @@ namespace Hanekawa.Modules.Account.Profile
             using (var db = new DbService())
             {
                 var fields = await db.ProfileConfigs.ToListAsync();
-
-                image.Mutate(x => x.DrawText(_nameOptions, name, _name, Rgba32.WhiteSmoke, new PointF(200, 120)));
+                try
+                {
+                    image.Mutate(x => x.DrawText(_nameOptions, name, _name, Rgba32.WhiteSmoke, new PointF(200, 120)));
+                }
+                catch 
+                {
+                    image.Mutate(x => x.DrawText(_nameOptions, "Bad Name", _name, Rgba32.WhiteSmoke, new PointF(200, 120)));
+                }
                 foreach (var x in fields)
-
                         if (x.Name == "Achievement Points")
                         {
                             var value = await GetValueAsync(x.Name, db, userdata, globalData, levelGenerator,
