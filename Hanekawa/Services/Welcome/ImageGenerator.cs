@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -55,9 +56,8 @@ namespace Hanekawa.Services.Welcome
                 var fonts = new FontCollection();
                 var times = fonts.Install(@"Data/Fonts/TIMES.TTF");
                 var font = new Font(times, 33, FontStyle.Regular);
-
+                var text = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
                 //var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
-                var text = user.Username.Truncate(15);
                 var optionsCenter = new TextGraphicsOptions
                 {
                     HorizontalAlignment = HorizontalAlignment.Center
