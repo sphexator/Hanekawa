@@ -14,8 +14,8 @@ namespace Hanekawa.Bot.Services.Logging
         public async Task Mute(SocketGuildUser user, SocketGuildUser staff, string reason)
         {
             var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
-            if (!cfg.LogWarn.HasValue) return;
-            var channel = user.Guild.GetTextChannel(cfg.LogWarn.Value);
+            if (!cfg.LogBan.HasValue) return;
+            var channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
             if (channel == null) return;
             var caseId = await _db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new EmbedBuilder
@@ -39,8 +39,8 @@ namespace Hanekawa.Bot.Services.Logging
         public async Task Mute(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration)
         {
             var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
-            if (!cfg.LogWarn.HasValue) return;
-            var channel = user.Guild.GetTextChannel(cfg.LogWarn.Value);
+            if (!cfg.LogBan.HasValue) return;
+            var channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
             if (channel == null) return;
             var caseId = await _db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new EmbedBuilder
