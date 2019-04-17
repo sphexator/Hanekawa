@@ -1,9 +1,9 @@
 ﻿using System;
-using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 
-namespace Hanekawa.Addons.Database.Extensions
+namespace Hanekawa.Database.Extensions
 {
     internal static class DefaultConfig
     {

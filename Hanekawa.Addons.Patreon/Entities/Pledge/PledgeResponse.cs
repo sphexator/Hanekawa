@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Patreon.Entities.Pledge
+namespace Hanekawa.Patreon.Entities.Pledge
 {
     public class PledgeResponse
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables.BoardConfig
+namespace Hanekawa.Database.Tables.BoardConfig
 {
     public class Board
     {

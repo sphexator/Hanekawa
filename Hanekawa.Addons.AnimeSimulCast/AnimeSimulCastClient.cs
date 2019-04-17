@@ -4,10 +4,10 @@ using System.ServiceModel.Syndication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using Hanekawa.Addons.AnimeSimulCast.Entity;
-using Hanekawa.Addons.AnimeSimulCast.Events;
+using Hanekawa.AnimeSimulCast.Entity;
+using Hanekawa.AnimeSimulCast.Events;
 
-namespace Hanekawa.Addons.AnimeSimulCast
+namespace Hanekawa.AnimeSimulCast
 {
     public class AnimeSimulCastClient
     {

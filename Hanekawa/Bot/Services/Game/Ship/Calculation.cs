@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Entities.Game;
 
 namespace Hanekawa.Bot.Services.Game.Ship

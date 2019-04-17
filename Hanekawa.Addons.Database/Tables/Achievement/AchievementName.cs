@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Achievement
+﻿namespace Hanekawa.Database.Tables.Achievement
 {
     public class AchievementName
     {

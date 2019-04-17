@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Perspective.Models
+﻿namespace Hanekawa.Perspective.Models
 {
     public class Comment
     {

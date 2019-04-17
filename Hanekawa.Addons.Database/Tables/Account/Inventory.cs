@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Account
+﻿namespace Hanekawa.Database.Tables.Account
 {
     public class Inventory
     {

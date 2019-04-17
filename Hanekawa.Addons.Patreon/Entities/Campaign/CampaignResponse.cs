@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Patreon.Entities.Campaign
+namespace Hanekawa.Patreon.Entities.Campaign
 {
     public class CampaignResponse
     {

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 

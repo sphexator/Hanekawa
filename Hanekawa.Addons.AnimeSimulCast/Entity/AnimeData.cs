@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.AnimeSimulCast.Entity
+namespace Hanekawa.AnimeSimulCast.Entity
 {
     public class AnimeData
     {

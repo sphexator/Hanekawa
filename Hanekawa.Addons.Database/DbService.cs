@@ -1,17 +1,17 @@
-﻿using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.Achievement;
-using Hanekawa.Addons.Database.Tables.Administration;
-using Hanekawa.Addons.Database.Tables.BoardConfig;
-using Hanekawa.Addons.Database.Tables.BotGame;
-using Hanekawa.Addons.Database.Tables.Club;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
-using Hanekawa.Addons.Database.Tables.Moderation;
-using Hanekawa.Addons.Database.Tables.Profile;
-using Hanekawa.Addons.Database.Tables.Stores;
+﻿using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Achievement;
+using Hanekawa.Database.Tables.Administration;
+using Hanekawa.Database.Tables.BoardConfig;
+using Hanekawa.Database.Tables.BotGame;
+using Hanekawa.Database.Tables.Club;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Moderation;
+using Hanekawa.Database.Tables.Profile;
+using Hanekawa.Database.Tables.Stores;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hanekawa.Addons.Database
+namespace Hanekawa.Database
 {
     public class DbService : DbContext
     {

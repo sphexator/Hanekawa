@@ -1,10 +1,10 @@
 ﻿using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Perspective.Models;
+using Hanekawa.Perspective.Models;
 using Newtonsoft.Json;
 
-namespace Hanekawa.Addons.Perspective
+namespace Hanekawa.Perspective
 {
     public class PerspectiveClient
     {

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Patreon.Entities.old.Shared
+﻿namespace Hanekawa.Patreon.Entities.old.Shared
 {
     public class SocialConnections
     {

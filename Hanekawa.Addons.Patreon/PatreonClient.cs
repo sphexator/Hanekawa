@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Patreon.Entities;
-using Hanekawa.Addons.Patreon.Entities.Campaign;
-using Hanekawa.Addons.Patreon.Entities.old;
-using Hanekawa.Addons.Patreon.Entities.Pledge;
+using Hanekawa.Patreon.Entities;
+using Hanekawa.Patreon.Entities.Campaign;
+using Hanekawa.Patreon.Entities.old;
+using Hanekawa.Patreon.Entities.Pledge;
 using Newtonsoft.Json;
 
-namespace Hanekawa.Addons.Patreon
+namespace Hanekawa.Patreon
 {
     public class PatreonClient : IDisposable
     {

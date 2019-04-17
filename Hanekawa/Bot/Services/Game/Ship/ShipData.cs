@@ -1,5 +1,5 @@
-﻿using Hanekawa.Addons.Database.Tables.BotGame;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using Hanekawa.Database.Tables.BotGame;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship

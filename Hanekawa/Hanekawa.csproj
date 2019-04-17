@@ -59,10 +59,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj" />
-      <ProjectReference Include="..\Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj" />
-      <ProjectReference Include="..\Hanekawa.Addons.Patreon\Hanekawa.Addons.Patreon.csproj" />
-      <ProjectReference Include="..\Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj" />
+      <ProjectReference Include="..\Hanekawa.Addons.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj" />
+      <ProjectReference Include="..\Hanekawa.Addons.Database\Hanekawa.Database.csproj" />
+      <ProjectReference Include="..\Hanekawa.Addons.Patreon\Hanekawa.Patreon.csproj" />
+      <ProjectReference Include="..\Hanekawa.Addons.Perspective\Hanekawa.Perspective.csproj" />
+      <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Core.csproj" />
     </ItemGroup>
 
 </Project>

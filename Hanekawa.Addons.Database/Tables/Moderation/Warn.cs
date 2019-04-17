@@ -1,7 +1,7 @@
-﻿using Hanekawa.Core;
-using System;
+﻿using System;
+using Hanekawa.Core;
 
-namespace Hanekawa.Addons.Database.Tables.Moderation
+namespace Hanekawa.Database.Tables.Moderation
 {
     public class Warn
     {

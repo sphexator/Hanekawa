@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Hanekawa.Addons.AnimeSimulCast.Extensions
+namespace Hanekawa.AnimeSimulCast.Extensions
 {
     public static class StringExtensions
     {

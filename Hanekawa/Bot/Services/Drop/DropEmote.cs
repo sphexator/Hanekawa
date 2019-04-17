@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Drop
 {

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Config
+﻿namespace Hanekawa.Database.Tables.Config
 {
     public class IgnoreChannel
     {

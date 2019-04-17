@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Database.Extensions;
 using Humanizer;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Services.Logging
                 var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
                 if (channel == null) return;
 
-
+                // TODO: Add this
             });
             return Task.CompletedTask;
         }

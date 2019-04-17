@@ -1,5 +1,4 @@
-﻿using Hanekawa.Addons.Database;
-using Hanekawa.Bot.Services.ImageGen;
+﻿using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Entities.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -8,8 +7,9 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.BotGame;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.Extensions.Caching.Memory;

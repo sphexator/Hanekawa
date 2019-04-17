@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
+using Hanekawa.Database;
 
 namespace Hanekawa.Entities
 {

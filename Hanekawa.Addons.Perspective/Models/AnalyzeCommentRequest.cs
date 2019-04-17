@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Perspective.Models
+﻿namespace Hanekawa.Perspective.Models
 {
     internal class AnalyzeCommentRequest
     {

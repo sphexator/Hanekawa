@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Config.Guild
+﻿namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class CurrencyConfig
     {

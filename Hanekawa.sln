@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Database", "Hanekawa.Addons.Database\Hanekawa.Addons.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Database", "Hanekawa.Addons.Database\Hanekawa.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.AnimeSimulCast", "Hanekawa.Addons.AnimeSimulCast\Hanekawa.Addons.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.AnimeSimulCast", "Hanekawa.Addons.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Patreon", "Hanekawa.Addons.Patreon\Hanekawa.Addons.Patreon.csproj", "{054F731A-9028-4F71-8BC4-AF6EB13E40AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Patreon", "Hanekawa.Addons.Patreon\Hanekawa.Patreon.csproj", "{054F731A-9028-4F71-8BC4-AF6EB13E40AA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Addons.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Addons.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Perspective", "Hanekawa.Addons.Perspective\Hanekawa.Perspective.csproj", "{D322C873-3DA8-4963-A5AC-FCED69F8FCC7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
 EndProject

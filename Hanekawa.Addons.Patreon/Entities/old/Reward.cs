@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Hanekawa.Addons.Patreon.Entities.old
+namespace Hanekawa.Patreon.Entities.old
 {
     public class Reward
     {

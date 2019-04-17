@@ -1,11 +1,10 @@
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Bot.Services.ImageGen;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Welcome
 {

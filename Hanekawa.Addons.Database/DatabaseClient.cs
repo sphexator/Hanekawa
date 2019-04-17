@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database
+﻿namespace Hanekawa.Database
 {
     public class DatabaseClient
     {

@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Board
 {

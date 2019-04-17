@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Core;
+using Hanekawa.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hanekawa.Addons.Database.Extensions
+namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {

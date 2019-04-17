@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables.Moderation
+namespace Hanekawa.Database.Tables.Moderation
 {
     public class QuestionAndAnswer
     {

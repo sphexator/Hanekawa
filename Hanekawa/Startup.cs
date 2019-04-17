@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
+using Hanekawa.Database;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

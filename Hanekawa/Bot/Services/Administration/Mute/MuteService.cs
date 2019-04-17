@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Moderation;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 

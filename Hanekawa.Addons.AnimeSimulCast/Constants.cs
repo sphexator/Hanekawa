@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.AnimeSimulCast
+﻿namespace Hanekawa.AnimeSimulCast
 {
     public static class Constants
     {

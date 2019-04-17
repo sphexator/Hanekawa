@@ -1,6 +1,6 @@
 using System;
 
-namespace Hanekawa.Addons.Database.Tables.Administration
+namespace Hanekawa.Database.Tables.Administration
 {
     public class EventSchedule
     {

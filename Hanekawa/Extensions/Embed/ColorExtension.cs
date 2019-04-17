@@ -1,8 +1,8 @@
 ﻿using System;
 using Discord;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Extensions.Embed

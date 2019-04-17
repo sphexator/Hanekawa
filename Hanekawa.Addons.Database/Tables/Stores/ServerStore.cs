@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Tables.Stores
+﻿namespace Hanekawa.Database.Tables.Stores
 {
     public class ServerStore
     {

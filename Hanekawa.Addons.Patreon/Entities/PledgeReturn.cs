@@ -1,6 +1,6 @@
-﻿using Hanekawa.Addons.Patreon.Entities.old;
+﻿using Hanekawa.Patreon.Entities.old;
 
-namespace Hanekawa.Addons.Patreon.Entities
+namespace Hanekawa.Patreon.Entities
 {
     public class PledgeReturn
     {

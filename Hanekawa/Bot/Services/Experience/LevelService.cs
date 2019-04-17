@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Experience
 {

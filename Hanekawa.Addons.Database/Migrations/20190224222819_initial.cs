@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Hanekawa.Addons.Database.Migrations
+namespace Hanekawa.Database.Migrations
 {
     public partial class initial : Migration
     {

@@ -3,7 +3,7 @@ using System.Text;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
+using Hanekawa.Database;
 
 namespace Hanekawa.Extensions.Embed
 {

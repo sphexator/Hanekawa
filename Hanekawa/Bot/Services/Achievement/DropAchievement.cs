@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using Discord.WebSocket;
 using System.Threading.Tasks;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Achievement;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Achievement;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Services.Achievement

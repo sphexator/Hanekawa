@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables.Club
+namespace Hanekawa.Database.Tables.Club
 {
     public class ClubInformation
     {

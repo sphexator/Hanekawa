@@ -1,13 +1,13 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Addons.Database.Tables.BoardConfig;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Addons.Database.Tables.Moderation;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Database.Tables.BoardConfig;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Moderation;
+using Microsoft.EntityFrameworkCore;
 
-namespace Hanekawa.Addons.Database.Extensions
+namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {

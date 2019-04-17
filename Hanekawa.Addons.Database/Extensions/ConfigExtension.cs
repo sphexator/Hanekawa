@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Addons.Database.Tables.Config;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 
-namespace Hanekawa.Addons.Database.Extensions
+namespace Hanekawa.Database.Extensions
 {
     public static class ConfigExtension
     {

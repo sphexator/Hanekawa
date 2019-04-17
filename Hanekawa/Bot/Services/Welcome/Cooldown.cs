@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Config.Guild;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Welcome

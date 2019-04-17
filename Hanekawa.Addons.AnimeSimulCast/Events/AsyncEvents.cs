@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
-namespace Hanekawa.Addons.AnimeSimulCast.Events
+namespace Hanekawa.AnimeSimulCast.Events
 {
     public delegate Task AsyncEvent<in T1>(T1 arg1);
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Hanekawa.Addons.Perspective.Models
+namespace Hanekawa.Perspective.Models
 {
     public class AnalyzeCommentResponse
     {
