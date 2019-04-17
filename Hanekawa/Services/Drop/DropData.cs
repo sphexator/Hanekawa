@@ -49,12 +49,14 @@ namespace Hanekawa.Services.Drop
             var spawned = _spawnedLoot.GetOrAdd(guildId, new ConcurrentDictionary<ulong, bool>());
             if (regular.TryGetValue(messageId, out _))
             {
+                regular.TryRemove(messageId, out _);
                 special = false;
                 return true;
             }
 
             if (spawned.TryGetValue(messageId, out _))
             {
+                spawned.TryRemove(messageId, out _);
                 special = true;
                 return true;
             }
@@ -94,18 +96,6 @@ namespace Hanekawa.Services.Drop
         {
             var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
             normal.TryAdd(message.Id, true);
-        }
-
-        public void RemoveRegular(IGuild guild, IMessage message)
-        {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
-            normal.TryRemove(message.Id, out _);
-        }
-
-        public void RemoveSpecial(IGuild guild, IMessage message)
-        {
-            var normal = _normalLoot.GetOrAdd(guild.Id, new ConcurrentDictionary<ulong, bool>());
-            normal.TryRemove(message.Id, out _);
         }
 
         public async Task AddLootChannelAsync(SocketTextChannel ch)
