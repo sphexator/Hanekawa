@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 if (cfg.Banner)
                 {
                     var banner = await _img.WelcomeBuilder(user);
-                    banner.Seek(0, SeekOrigin.Begin);
+                    banner.Position = 0;
                     message = await user.Guild.GetTextChannel(cfg.Channel.Value)
                         .SendFileAsync(banner, "Welcome.png", msg);
                 }

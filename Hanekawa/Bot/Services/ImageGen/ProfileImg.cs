@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database.Extensions;
@@ -46,14 +47,8 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
                     if (progressBar.Count >= 2) // TODO: Make the color scheme of the profile customizable
                         x.DrawLines(_options, Rgba32.BlueViolet, 4, progressBar.ToArray());
-                    try
-                    {
-                        x.DrawText(_centerText, $"{user.GetName().Truncate(25)}", _profileName, Rgba32.White, new PointF(200, 120));
-                    }
-                    catch
-                    {
-                        x.DrawText(_centerText, "Bad Name", _profileName, Rgba32.White, new PointF(200, 120));
-                    }
+                    var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(25)));
+                    x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
 
                     //Text
                     x.DrawText(_centerText, "Server", _profileText, Rgba32.White, new PointF());
