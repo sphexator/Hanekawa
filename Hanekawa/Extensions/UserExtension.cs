@@ -30,10 +30,60 @@ namespace Hanekawa.Extensions
             return user.GetDefaultAvatarUrl();
         }
 
-        public static string GetGame(this SocketUser user)
+        public static string GetGame(IPresence user)
         {
-            if (user.Activity.Name != null) return user.Activity.Name;
-            return "N/A";
+            string result;
+            switch (user.Activity.Type)
+            {
+                case ActivityType.Listening:
+                    result = $"Listening: {user.Activity.Name}";
+                    break;
+                case ActivityType.Playing:
+                    result = $"Playing: {user.Activity.Name}";
+                    break;
+                case ActivityType.Streaming:
+                    result = $"Streaming: {user.Activity.Name}";
+                    break;
+                case ActivityType.Watching:
+                    result = $"Watching: {user.Activity.Name}";
+                    break;
+                default:
+                    result = "Currently not playing";
+                    break;
+            }
+
+            return result;
+        }
+
+        public static string GetStatus(IPresence user)
+        {
+            string result;
+            switch (user.Status)
+            {
+                case UserStatus.Online:
+                    result = "Online";
+                    break;
+                case UserStatus.Idle:
+                    result = "Idle";
+                    break;
+                case UserStatus.AFK:
+                    result = "AFK";
+                    break;
+                case UserStatus.DoNotDisturb:
+                    result = "DND";
+                    break;
+                case UserStatus.Invisible:
+                    result = "Invisible";
+                    break;
+                case UserStatus.Offline:
+                    result = "Offline";
+                    break;
+                default:
+                    result = "N/A";
+                    break;
+            }
+
+            return result;
         }
     }
 }

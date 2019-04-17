@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Addons.Database.Data
+﻿namespace Hanekawa.Core
 {
     public enum ModAction
     {

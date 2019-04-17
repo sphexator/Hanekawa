@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Core;
 
 namespace Hanekawa.Bot.Services.Logging
 {

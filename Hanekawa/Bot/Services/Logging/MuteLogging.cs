@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Core;
 using Humanizer;
 
 namespace Hanekawa.Bot.Services.Logging

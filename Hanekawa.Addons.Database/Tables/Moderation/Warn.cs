@@ -1,5 +1,5 @@
-﻿using System;
-using Hanekawa.Addons.Database.Data;
+﻿using Hanekawa.Core;
+using System;
 
 namespace Hanekawa.Addons.Database.Tables.Moderation
 {
@@ -8,7 +8,7 @@ namespace Hanekawa.Addons.Database.Tables.Moderation
         public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
-        public WarnReason Type { get; set; } = WarnReason.Warning;
+        public WarnReason Type { get; set; } = WarnReason.Warned;
         public string Reason { get; set; } = "No reason provided";
         public DateTime Time { get; set; } = DateTime.UtcNow;
         public ulong Moderator { get; set; }

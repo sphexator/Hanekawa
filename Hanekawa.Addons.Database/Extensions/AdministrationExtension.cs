@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database.Data;
 using Hanekawa.Addons.Database.Tables.Moderation;
+using Hanekawa.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Addons.Database.Extensions
