@@ -14,6 +14,7 @@ using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using Quartz.Util;
 
 namespace Hanekawa.Services.Administration
 {
@@ -197,6 +198,7 @@ namespace Hanekawa.Services.Administration
         {
             try
             {
+                if (reason.IsNullOrWhiteSpace()) reason = "No reason provided";
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault(
                     $"You've been warned in {user.Guild.Name} by {staff.Mention}\n" +
@@ -215,6 +217,7 @@ namespace Hanekawa.Services.Administration
         {
             try
             {
+                if (reason.IsNullOrWhiteSpace()) reason = "No reason provided";
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault(
                     $"You've been muted on {user.Guild.Name} by {staff.Mention}\n" +
@@ -233,6 +236,7 @@ namespace Hanekawa.Services.Administration
         {
             try
             {
+                if (reason.IsNullOrWhiteSpace()) reason = "No reason provided";
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been warned in {user.Guild.Name} by {staff}\n" +
                                                              "Reason:\n" +
@@ -250,6 +254,7 @@ namespace Hanekawa.Services.Administration
         {
             try
             {
+                if (reason.IsNullOrWhiteSpace()) reason = "No reason provided";
                 var dm = await user.GetOrCreateDMChannelAsync();
                 var embed = new EmbedBuilder().CreateDefault($"You've been muted in {user.Guild.Name} by {staff}\n" +
                                                              "Reason:\n" +
