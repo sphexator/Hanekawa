@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -128,28 +129,22 @@ namespace Hanekawa.Modules.Administration
             using (var db = new DbService())
             {
                 var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                if (list.Count == 0)
+                if (list == null || list.Count == 0)
                 {
                     await Context.ReplyAsync("No self-assignable roles added");
                     return;
                 }
 
-                string roles = null;
-                if (list.Count > 0)
-                    foreach (var x in list)
-                        try
-                        {
-                            var role = Context.Guild.GetRole(x.RoleId) ??
-                                       Context.Guild.Roles.FirstOrDefault(z => z.Id == x.RoleId);
-                            if (role != null) roles += $"**{role.Name}**, ";
-                        }
-                        catch (Exception e)
-                        {
-                            _log.LogAction(LogLevel.Error, e.ToString(), "Role module");
-                        }
-                else roles += "No self-assignable roles added";
+                var result = new List<string>();
+                foreach (var x in list)
+                {
+                    var role = Context.Guild.GetRole(x.RoleId) ??
+                               Context.Guild.Roles.FirstOrDefault(z => z.Id == x.RoleId);
+                    if (role != null) result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
+                }
 
-                await Context.ReplyAsync(roles);
+                await PagedReplyAsync(result.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Self-assignable roles for {Context.Guild.Name}", 10));
             }
         }
 
