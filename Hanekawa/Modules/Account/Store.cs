@@ -175,13 +175,26 @@ namespace Hanekawa.Modules.Account
 
                 var userData = await db.GetOrCreateUserData(Context.User as IGuildUser);
                 var item = await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);
-                if ((serverData.SpecialCredit && userData.CreditSpecial < serverData.Price)
-                    || !serverData.SpecialCredit && userData.Credit < serverData.Price)
+                var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                if (serverData.SpecialCredit)
                 {
-                    await Context.ReplyAsync(
-                        $"You do not have enough special credit for that item. {serverData.Price}",
-                        Color.Red.RawValue);
-                    return;
+                    if (userData.CreditSpecial < serverData.Price)
+                    {
+                        await Context.ReplyAsync(
+                            $"You do not have enough {_currencyService.ToCurrency(creditCfg, serverData.Price, true)} to purchase {role.Name}",
+                            Color.Red.RawValue);
+                        return;
+                    }
+                }
+                else
+                {
+                    if (userData.Credit < serverData.Price)
+                    {
+                        await Context.ReplyAsync(
+                            $"You do not have enough {_currencyService.ToCurrency(creditCfg, serverData.Price)} to purchase {role.Name}",
+                            Color.Red.RawValue);
+                        return;
+                    }
                 }
 
                 var invItem = await db.Inventories.FirstOrDefaultAsync(x =>
@@ -202,7 +215,9 @@ namespace Hanekawa.Modules.Account
                     ItemId = item.Id
                 });
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Purchased {Context.Guild.GetRole(item.Role)}");
+                await Context.ReplyAsync(
+                    $"Purchased {Context.Guild.GetRole(item.Role)} for {_currencyService.ToCurrency(creditCfg, serverData.Price, serverData.SpecialCredit)}",
+                    Color.Green.RawValue);
                 await (Context.User as SocketGuildUser).TryAddRoleAsync(role);
             }
         }
@@ -233,11 +248,12 @@ namespace Hanekawa.Modules.Account
                     SpecialCredit = false,
                     RoleId = role.Id
                 };
+                var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 await db.Items.AddAsync(item);
                 await db.ServerStores.AddAsync(storeItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Added {role.Name} to the shop for {price}",
+                    $"Added {role.Name} to the shop for {_currencyService.ToCurrency(creditCfg, price)}",
                     Color.Green.RawValue);
             }
         }
@@ -268,11 +284,12 @@ namespace Hanekawa.Modules.Account
                     SpecialCredit = true,
                     RoleId = role.Id
                 };
+                var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 await db.Items.AddAsync(item);
                 await db.ServerStores.AddAsync(storeItem);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Added {role.Name} to the shop for {price}",
+                    $"Added {role.Name} to the shop for {_currencyService.ToCurrency(creditCfg, price, true)}",
                     Color.Green.RawValue);
             }
         }

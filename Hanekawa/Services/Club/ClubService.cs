@@ -54,6 +54,7 @@ namespace Hanekawa.Services.Club
             {
                 if (!(chan is ITextChannel channel)) return;
                 if (!reaction.Emote.Equals(new Emoji("\u2714"))) return;
+                if (reaction.User.GetValueOrDefault().IsBot) return;
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
