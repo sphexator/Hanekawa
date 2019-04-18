@@ -143,11 +143,11 @@ namespace Hanekawa.Modules.Account
                     await Context.ReplyAsync("Store is empty");
                     return;
                 }
-                var regular = store.Where(x => x.SpecialCredit).ToList();
-                var special = store.Where(x => !x.SpecialCredit).ToList();
-                var result = regular.OrderBy(x => x.Price).Select(x => $"{Context.Guild.GetRole(x.RoleId).Name} - {_currencyService.ToCurrency(cfg, x.Price)}").ToList();
-                result.AddRange(special.OrderBy(x => x.Price).Select(x => $"{Context.Guild.GetRole(x.RoleId).Name} - {_currencyService.ToCurrency(cfg, x.Price, true)}"));
-
+                var result = new List<string>();
+                foreach (var x in store)
+                {
+                    result.Add($"{Context.Guild.GetRole(x.RoleId).Name ?? "No role found"} - {_currencyService.ToCurrency(cfg, x.Price, x.SpecialCredit)}");
+                }
                 await PagedReplyAsync(result.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Store for {Context.Guild.Name}"));
             }
