@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Core;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Moderation;
@@ -19,7 +20,14 @@ namespace Hanekawa.Bot.Services.Administration.Warning
     public partial class WarnService : INService, IJob
     {
         private readonly DbService _db;
-        public WarnService(DbService db) => _db = db;
+        private readonly LogService _logService;
+        private readonly InternalLogService _log;
+        public WarnService(DbService db, LogService logService, InternalLogService log)
+        {
+            _db = db;
+            _logService = logService;
+            _log = log;
+        }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
         private async Task VoidWarning()
@@ -47,6 +55,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             });
             await _db.SaveChangesAsync();
             await NotifyUser(user, staff, warnType, reason, muteTime);
+            await _logService.Warn(user, staff, reason);
         }
 
         private async Task NotifyUser(SocketGuildUser user, IMentionable staff, WarnReason type, string reason,
