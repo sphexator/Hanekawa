@@ -162,7 +162,9 @@ namespace Hanekawa.Modules.Club
                         string content = null;
                         if (clubs.Count != 0)
                             foreach (var x in clubs)
+                            {
                                 content += $"{x.ClubId} - {(await db.GetClubAsync(x.ClubId, Context.Guild)).Name}\n";
+                            }
                         await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
                             .WithTitle("Reply with the ID of club you wish to leave")
                             .WithFooter("Exit to cancel"));
@@ -354,10 +356,13 @@ namespace Hanekawa.Modules.Club
                 foreach (var x in clubs)
                 {
                     if (x.LeaderId == 1) continue;
-                    var leader = (Context.Guild.GetUser(x.LeaderId)).Mention ??
+                    var memberCount =
+                        await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id);
+                    if (memberCount == 0) continue;
+                    var leader = Context.Guild.GetUser(x.LeaderId).Mention ??
                                  "Couldn't find user or left server.";
                     pages.Add($"**{x.Name} (id: {x.Id})**\n" +
-                              $"Members: {await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id)}\n" +
+                              $"Members: {memberCount}\n" +
                               $"Leader {leader}\n");
                 }
 
