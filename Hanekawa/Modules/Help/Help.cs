@@ -157,18 +157,32 @@ namespace Hanekawa.Modules.Help
 
             foreach (var x in cmd.Preconditions)
             {
-                if (x is RequireUserPermissionAttribute perm)
+                switch (x)
                 {
-                    if (perm.GuildPermission.HasValue)
-                        result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
-                    if (perm.ChannelPermission.HasValue)
-                        result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                    case RequireUserPermissionAttribute perm:
+                    {
+                        if (perm.GuildPermission.HasValue)
+                            result.AppendLine(GuildPermissionString(perm.GuildPermission.Value));
+                        if (perm.ChannelPermission.HasValue)
+                            result.AppendLine(ChannelPermissionString(perm.ChannelPermission.Value));
+                        break;
+                    }
+                    case RequireOwnerAttribute _:
+                        result.AppendLine("**Require Bot Owner**");
+                        break;
+                    case WhiteListedDesigner _:
+                        result.AppendLine("**Require Whitelisted Designer**");
+                        break;
+                    case WhiteListedEventOrg _:
+                        result.AppendLine("**Require Whitelisted Event Organizer**");
+                        break;
+                    case WhiteListedOverAll _:
+                        result.AppendLine("**Require Whitelisted Member**");
+                        break;
+                    case RequireServerOwner _:
+                        result.AppendLine("**Require Server Owner**");
+                        break;
                 }
-
-                if (x is RequireOwnerAttribute) result.AppendLine("**Require Bot Owner**");
-                if (x is WhiteListedDesigner) result.AppendLine("**Require Whitelisted Designer**");
-                if (x is WhiteListedEventOrg) result.AppendLine("**Require Whitelisted Event Organizer**");
-                if (x is WhiteListedOverAll) result.AppendLine("**Require Whitelisted Member**");
             }
 
             return result.Length == 0 ? null : result.ToString();
