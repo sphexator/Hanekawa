@@ -31,6 +31,45 @@ namespace Hanekawa.Modules.Account.Level
             _levelGenerator = levelGenerator;
         }
 
+        [Name("Level Reset")]
+        [Command("level reset", RunMode = RunMode.Async)]
+        [Alias("lvl reset")]
+        [Summary("Resets the servers level/exp back to 0")]
+        [Remarks("h.lvl reset")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        public async Task LevelReset()
+        {
+            await Context.ReplyAsync("You sure you want to completely reset server levels/exp on this server?(y/n) this change can't be reversed.");
+            var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
+            if (response == null || response.Content.ToLower() != "yes" || response.Content.ToLower() != "y")
+            {
+                await Context.ReplyAsync("Aborting...");
+                return;
+            }
+
+            var msg = await Context.ReplyAsync("Server level reset in progress...");
+            using (var db = new DbService())
+            {
+                var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id);
+                db.Accounts.
+                foreach (var x in users)
+                {
+                    x.Level = 1;
+                    x.Exp = 0;
+                    x.TotalExp = 0;
+                }
+
+                db.Accounts.UpdateRange(users);
+                await db.SaveChangesAsync();
+            }
+
+            var updEmbed = msg.Embeds.First().ToEmbedBuilder();
+            updEmbed.Color = Color.Green;
+            updEmbed.Description = "Server level reset complete.";
+            await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
+        }
+
         [Name("Set level")]
         [Command("level set level")]
         [Alias("level setlevel", "lsl", "level sl")]
