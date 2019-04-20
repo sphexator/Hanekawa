@@ -52,7 +52,6 @@ namespace Hanekawa.Modules.Account.Level
             using (var db = new DbService())
             {
                 var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id);
-                db.Accounts.
                 foreach (var x in users)
                 {
                     x.Level = 1;
