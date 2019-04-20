@@ -36,7 +36,7 @@ namespace Hanekawa.Modules.Account.Level
         [Alias("lvl reset")]
         [Summary("Resets the servers level/exp back to 0")]
         [Remarks("h.lvl reset")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireServerOwner]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LevelReset()
         {
