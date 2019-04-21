@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Entities.Interfaces;
 
 namespace Hanekawa.Bot.Services.Economy
 {
-    public class CurrencyService
+    public class CurrencyService : INService
     {
         private readonly DbService _db;
         public CurrencyService(DbService db) => _db = db;
