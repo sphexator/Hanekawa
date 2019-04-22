@@ -47,10 +47,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (user.GuildPermissions.ManageMessages) return;
                 var cfg = await _db.GetOrCreateAdminConfigAsync(user.Guild);
                 if (!cfg.FilterMsgLength.HasValue) return;
-                if (message.Content.Length >= cfg.FilterMsgLength.Value)
-                {
-                    await message.TryDeleteMessagesAsync();
-                }
+                if (message.Content.Length < cfg.FilterMsgLength.Value) return;
+                await message.TryDeleteMessagesAsync();
             });
             return Task.CompletedTask;
         }
