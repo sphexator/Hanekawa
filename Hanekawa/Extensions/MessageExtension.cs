@@ -57,5 +57,21 @@ namespace Hanekawa.Extensions
 
             return false;
         }
+
+        public static async Task<bool> TryDeleteMessagesAsync(this SocketMessage msg)
+        {
+            if (!(msg.Channel is SocketTextChannel chn)) return false;
+            if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;
+            await msg.DeleteAsync();
+            return true;
+        }
+
+        public static async Task<bool> TryDeleteMessageAsync(this SocketUserMessage msg)
+        {
+            if (!(msg.Channel is SocketTextChannel chn)) return false;
+            if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;
+            await msg.DeleteAsync();
+            return true;
+        }
     }
 }
