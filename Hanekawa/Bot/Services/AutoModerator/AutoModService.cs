@@ -3,7 +3,6 @@ using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Hanekawa.Bot.Services.AutoModerator
 {
