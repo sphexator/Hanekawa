@@ -1,10 +1,10 @@
 ﻿using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
-using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using Hanekawa.Core.Interfaces;
 
 namespace Hanekawa.Bot.Services.Achievement
 {

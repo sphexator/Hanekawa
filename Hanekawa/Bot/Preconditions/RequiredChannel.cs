@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

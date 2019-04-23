@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.AnimeSimulCast.Entity;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 

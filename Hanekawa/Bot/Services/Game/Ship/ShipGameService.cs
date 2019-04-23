@@ -1,5 +1,4 @@
 ﻿using Hanekawa.Bot.Services.ImageGen;
-using Hanekawa.Entities.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -7,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.BotGame;

@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
-using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 
 namespace Hanekawa.Bot.Services.Administration.Mute

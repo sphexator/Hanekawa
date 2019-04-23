@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
-using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Services.Experience

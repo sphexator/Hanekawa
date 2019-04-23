@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
-using Hanekawa.Entities.Interfaces;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 

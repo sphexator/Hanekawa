@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Experience;
+using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Entities.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Drop

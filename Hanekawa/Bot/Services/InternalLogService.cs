@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Entities.Interfaces;
+using Hanekawa.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using Qmmands;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
