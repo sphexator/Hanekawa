@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Administration.Mute;
+using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
@@ -10,11 +12,15 @@ namespace Hanekawa.Bot.Services.AutoModerator
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;
+        private readonly LogService _logService;
+        private readonly MuteService _muteService;
 
-        public AutoModService(DiscordSocketClient client, DbService db)
+        public AutoModService(DiscordSocketClient client, DbService db, LogService logService, MuteService muteService)
         {
             _client = client;
             _db = db;
+            _logService = logService;
+            _muteService = muteService;
 
             _client.MessageReceived += MessageLength;
             _client.MessageReceived += InviteFilter;
@@ -32,6 +38,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 var cfg = await _db.GetOrCreateAdminConfigAsync(user.Guild);
                 if (!cfg.FilterInvites) return;
                 await message.TryDeleteMessagesAsync();
+                await _muteService.Mute(user);
+                await _logService.Mute(user, user.Guild.CurrentUser, "Invite link");
             });
             return Task.CompletedTask;
         }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -15,15 +16,17 @@ namespace Hanekawa.Bot.Services.Administration.Mute
     {
         private readonly DiscordSocketClient _client;
         private readonly DbService _db;
+        private readonly LogService _logService;
 
         private readonly OverwritePermissions _denyOverwrite =
             new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
                 attachFiles: PermValue.Deny);
 
-        public MuteService(DiscordSocketClient client, DbService db)
+        public MuteService(DiscordSocketClient client, DbService db, LogService logService)
         {
             _client = client;
             _db = db;
+            _logService = logService;
 
             foreach (var x in _db.MuteTimers)
             {
@@ -47,10 +50,11 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await _db.SaveChangesAsync();
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
             //TODO: Connect to discord logs
+            await _logService.Mute(user, staff, "N/A", after);
             return true;
         }
 
-        private async Task<bool> Mute(SocketGuildUser user)
+        public async Task<bool> Mute(SocketGuildUser user)
         {
             var role = await GetMuteRoleAsync(user.Guild);
             var check = await user.TryAddRoleAsync(role as SocketRole);
