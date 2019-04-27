@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
+using Hanekawa.Extensions.Embed;
 using Victoria;
+using Victoria.Entities;
 
 namespace Hanekawa.Bot.Services.Music
 {
@@ -21,48 +23,41 @@ namespace Hanekawa.Bot.Services.Music
             _random = random;
             _lavaClient = lavaClient;
 
-            _lavaClient.Log += _lavaClient_Log;
-            _lavaClient.OnPlayerUpdated += _lavaClient_OnPlayerUpdated;
-            _lavaClient.OnServerStats += _lavaClient_OnServerStats;
-            _lavaClient.OnSocketClosed += _lavaClient_OnSocketClosed;
-            _lavaClient.OnTrackException += _lavaClient_OnTrackException;
-            _lavaClient.OnTrackFinished += _lavaClient_OnTrackFinished;
-            _lavaClient.OnTrackStuck += _lavaClient_OnTrackStuck;
+            _lavaClient.OnTrackFinished += OnTrackFinished;
+            _lavaClient.OnTrackException += OnTrackException;
+            _lavaClient.OnTrackStuck += OnTrackStuck;
         }
 
-        private Task _lavaClient_OnTrackStuck(LavaPlayer arg1, Victoria.Entities.LavaTrack arg2, long arg3)
+        private Task OnTrackFinished(LavaPlayer player, LavaTrack track, TrackEndReason reason)
         {
-            throw new NotImplementedException();
+            _ = Task.Run(async () =>
+            {
+                if (!reason.ShouldPlayNext()) return;
+
+                if (!player.Queue.TryDequeue(out var item) || !(item is LavaTrack nextTrack))
+                {
+                    await player.TextChannel.ReplyAsync("There are no more items left in queue.",
+                        player.TextChannel.GuildId);
+                    return;
+                }
+
+                await player.PlayAsync(nextTrack);
+                await player.TextChannel.ReplyAsync($"Finished playing: {track.Title}\nNow playing: {nextTrack.Title}",
+                    player.TextChannel.GuildId);
+            });
+            return Task.CompletedTask;
         }
 
-        private Task _lavaClient_OnTrackFinished(LavaPlayer arg1, Victoria.Entities.LavaTrack arg2, Victoria.Entities.TrackEndReason arg3)
+        private Task OnTrackException(LavaPlayer player, LavaTrack track, string reason)
         {
-            throw new NotImplementedException();
+            _ = Task.Run(async () => { });
+            return Task.CompletedTask;
         }
 
-        private Task _lavaClient_OnTrackException(LavaPlayer arg1, Victoria.Entities.LavaTrack arg2, string arg3)
+        private Task OnTrackStuck(LavaPlayer player, LavaTrack track, long position)
         {
-            throw new NotImplementedException();
-        }
-
-        private Task _lavaClient_OnSocketClosed(int arg1, string arg2, bool arg3)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Task _lavaClient_OnServerStats(Victoria.Entities.ServerStats arg)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Task _lavaClient_OnPlayerUpdated(LavaPlayer arg1, Victoria.Entities.LavaTrack arg2, TimeSpan arg3)
-        {
-            throw new NotImplementedException();
-        }
-
-        private Task _lavaClient_Log(Discord.LogMessage arg)
-        {
-            throw new NotImplementedException();
+            _ = Task.Run(async () => { });
+            return Task.CompletedTask;
         }
     }
 }
