@@ -15,13 +15,15 @@ namespace Hanekawa.Bot.Services.Music
         private readonly DbService _db;
         private readonly Random _random;
         private readonly LavaSocketClient _lavaClient;
+        private readonly LavaRestClient _lavaRest;
 
-        public MusicService(DiscordSocketClient client, DbService db, Random random, LavaSocketClient lavaClient)
+        public MusicService(DiscordSocketClient client, DbService db, Random random, LavaSocketClient lavaClient, LavaRestClient lavaRest)
         {
             _client = client;
             _db = db;
             _random = random;
             _lavaClient = lavaClient;
+            _lavaRest = lavaRest;
 
             _lavaClient.OnTrackFinished += OnTrackFinished;
             _lavaClient.OnTrackException += OnTrackException;
