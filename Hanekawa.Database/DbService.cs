@@ -6,6 +6,7 @@ using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
@@ -94,6 +95,9 @@ namespace Hanekawa.Database
         public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
 
+        // Internal
+        public virtual DbSet<Log> Logs { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if DEBUG
@@ -117,9 +121,10 @@ namespace Hanekawa.Database
             GameBuilder(modelBuilder);
             AdministrationBuilder(modelBuilder);
             ProfileBuilder(modelBuilder);
+            InternalBuilder(modelBuilder);
         }
 
-        private static void OwnerBuilder(ModelBuilder modelBuilder)
+        private void OwnerBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Blacklist>(x =>
             {
@@ -148,7 +153,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void InventoryBuilder(ModelBuilder modelBuilder)
+        private void InventoryBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Inventory>(x =>
             {
@@ -158,7 +163,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void ItemBuilder(ModelBuilder modelBuilder)
+        private void ItemBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Item>(x =>
             {
@@ -169,7 +174,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void StoreBuilder(ModelBuilder modelBuilder)
+        private void StoreBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ServerStore>(x =>
             {
@@ -179,7 +184,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void AccountBuilder(ModelBuilder modelBuilder)
+        private void AccountBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(x =>
             {
@@ -214,7 +219,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void AchievementBuilder(ModelBuilder modelBuilder)
+        private void AchievementBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AchievementMeta>(x =>
             {
@@ -252,7 +257,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void GameBuilder(ModelBuilder modelBuilder)
+        private void GameBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GameClass>(x =>
             {
@@ -272,7 +277,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void AdministrationBuilder(ModelBuilder modelBuilder)
+        private void AdministrationBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModLog>(x =>
             {
@@ -344,7 +349,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void ClubBuilder(ModelBuilder modelBuilder)
+        private void ClubBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClubInformation>(x =>
             {
@@ -374,7 +379,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void ConfigBuilder(ModelBuilder modelBuilder)
+        private void ConfigBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GuildConfig>(x =>
             {
@@ -498,7 +503,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private static void ProfileBuilder(ModelBuilder modelBuilder)
+        private void ProfileBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProfileConfig>(x =>
             {
@@ -506,6 +511,15 @@ namespace Hanekawa.Database
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<Background>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+        }
+
+        private void InternalBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Log>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
