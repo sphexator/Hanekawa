@@ -72,6 +72,7 @@ namespace Hanekawa
 
             app.UseHttpsRedirection();
             app.UseMvc();
+            _ = app.ApplicationServices.GetRequiredService<Bot.Hanekawa>().StartAsync();
         }
     }
 }
