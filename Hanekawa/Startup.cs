@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
@@ -24,8 +25,9 @@ namespace Hanekawa
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var dbClient = new DatabaseClient(Configuration["connectionString"]);
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
+            services.AddSingleton(services);
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
@@ -37,13 +39,6 @@ namespace Hanekawa
                 CaseSensitive = false,
                 DefaultRunMode = RunMode.Parallel
             }));
-            
-            services.AddDbContextPool<DbService>(x =>
-            {
-                x.UseNpgsql("");
-                x.EnableDetailedErrors();
-                x.EnableSensitiveDataLogging();
-            }, 200);
             services.AddSingleton<Random>();
             services.AddHttpClient();
             

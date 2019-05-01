@@ -1,18 +1,15 @@
 ﻿using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
-using Hanekawa.Database;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public LogService(DiscordSocketClient client, DbService db)
+        public LogService(DiscordSocketClient client)
         {
             _client = client;
-            _db = db;
 
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;

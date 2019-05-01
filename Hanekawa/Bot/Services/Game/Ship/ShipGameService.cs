@@ -18,34 +18,34 @@ namespace Hanekawa.Bot.Services.Game.Ship
 {
     public partial class ShipGameService : INService
     {
-        private readonly DbService _db;
         private readonly HttpClient _client;
         private readonly Random _random;
         private readonly ImageGenerator _img;
 
-        public ShipGameService(DbService db, HttpClient client, Random random, ImageGenerator img)
+        public ShipGameService(HttpClient client, Random random, ImageGenerator img)
         {
-            _db = db;
             _client = client;
             _random = random;
             _img = img;
-
-            foreach (var x in _db.GameEnemies)
+            using (var db = new DbService())
             {
-                if (x.Elite) _eliteEnemies.TryAdd(x.Id, x);
-                else if (x.Rare) _rareEnemies.TryAdd(x.Id, x);
-                else _regularEnemies.TryAdd(x.Id, x);
-            }
+                foreach (var x in db.GameEnemies)
+                {
+                    if (x.Elite) _eliteEnemies.TryAdd(x.Id, x);
+                    else if (x.Rare) _rareEnemies.TryAdd(x.Id, x);
+                    else _regularEnemies.TryAdd(x.Id, x);
+                }
 
-            var cfg = _db.GameConfigs.Find(1);
-            if (cfg != null)
-            {
-                DefaultDamage = cfg.DefaultDamage;
-                DefaultHealth = cfg.DefaultHealth;
+                var cfg = db.GameConfigs.Find(1);
+                if (cfg != null)
+                {
+                    DefaultDamage = cfg.DefaultDamage;
+                    DefaultHealth = cfg.DefaultHealth;
+                }
             }
         }
 
-        public async Task<EmbedBuilder> SearchAsync(SocketGuildUser user)
+        public async Task<EmbedBuilder> SearchAsync(SocketGuildUser user, DbService db)
         {
             var battles = _existingBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             if (battles.TryGetValue(user.Id, out _)) return new EmbedBuilder();
@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
             var embed = new EmbedBuilder().CreateDefault($"You've encountered an enemy!\n" +
                                                     $"**{enemy.Name}**", Color.Green.RawValue);
-            var userdata = await _db.GetOrCreateUserData(user);
+            var userdata = await db.GetOrCreateUserData(user);
             embed.Fields = new List<EmbedFieldBuilder>
             {
                 new EmbedFieldBuilder { Name = "Type", Value = "", IsInline = true },

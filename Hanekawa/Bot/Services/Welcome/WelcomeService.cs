@@ -12,12 +12,10 @@ namespace Hanekawa.Bot.Services.Welcome
     {
         private readonly DiscordSocketClient _client;
         private readonly ImageGenerator _img;
-        private readonly DbService _db;
         
-        public WelcomeService(DiscordSocketClient client, DbService db, ImageGenerator img)
+        public WelcomeService(DiscordSocketClient client, ImageGenerator img)
         {
             _client = client;
-            _db = db;
             _img = img;
 
             _client.UserJoined += WelcomeUser;
@@ -30,26 +28,29 @@ namespace Hanekawa.Bot.Services.Welcome
             {
                 if (user.IsBot) return;
                 if (OnCooldown(user)) return;
-                var cfg = await _db.GetOrCreateWelcomeConfigAsync(user.Guild);
-                if (!cfg.Channel.HasValue) return;
-                if (IsRatelimited(user, cfg)) return;
-                var msg = CreateMessage(cfg.Message, user, user.Guild);
-                IMessage message;
-                if (cfg.Banner)
+                using (var db = new DbService())
                 {
-                    var banner = await _img.WelcomeBuilder(user);
-                    banner.Position = 0;
-                    message = await user.Guild.GetTextChannel(cfg.Channel.Value)
-                        .SendFileAsync(banner, "Welcome.png", msg);
-                }
-                else
-                {
-                    message = await user.Guild.GetTextChannel(cfg.Channel.Value).SendMessageAsync(msg);
-                }
-                if (cfg.TimeToDelete.HasValue)
-                {
-                    await Task.Delay(cfg.TimeToDelete.Value);
-                    await message.DeleteAsync();
+                    var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
+                    if (!cfg.Channel.HasValue) return;
+                    if (IsRatelimited(user, cfg)) return;
+                    var msg = CreateMessage(cfg.Message, user, user.Guild);
+                    IMessage message;
+                    if (cfg.Banner)
+                    {
+                        var banner = await _img.WelcomeBuilder(user, db);
+                        banner.Position = 0;
+                        message = await user.Guild.GetTextChannel(cfg.Channel.Value)
+                            .SendFileAsync(banner, "Welcome.png", msg);
+                    }
+                    else
+                    {
+                        message = await user.Guild.GetTextChannel(cfg.Channel.Value).SendMessageAsync(msg);
+                    }
+                    if (cfg.TimeToDelete.HasValue)
+                    {
+                        await Task.Delay(cfg.TimeToDelete.Value);
+                        await message.DeleteAsync();
+                    }
                 }
             });
             return Task.CompletedTask;
@@ -59,9 +60,12 @@ namespace Hanekawa.Bot.Services.Welcome
         {
             _ = Task.Run(async () =>
             {
-                var banners = _db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
-                _db.WelcomeBanners.RemoveRange(banners);
-                await _db.SaveChangesAsync();
+                using (var db = new DbService())
+                {
+                    var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
+                    db.WelcomeBanners.RemoveRange(banners);
+                    await db.SaveChangesAsync();
+                }
             });
             return Task.CompletedTask;
         }

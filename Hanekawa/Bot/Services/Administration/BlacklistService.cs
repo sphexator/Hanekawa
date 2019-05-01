@@ -8,12 +8,10 @@ namespace Hanekawa.Bot.Services.Administration
     public class BlacklistService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public BlacklistService(DiscordSocketClient client, DbService db)
+        public BlacklistService(DiscordSocketClient client)
         {
             _client = client;
-            _db = db;
 
             _client.JoinedGuild += _client_JoinedGuild;
         }
@@ -22,9 +20,12 @@ namespace Hanekawa.Bot.Services.Administration
         {
             _ = Task.Run(async () =>
             {
-                var check = await _db.Blacklists.FindAsync(guild.Id);
-                if (check == null) return;
-                await guild.LeaveAsync();
+                using (var db = new DbService())
+                {
+                    var check = await db.Blacklists.FindAsync(guild.Id);
+                    if (check == null) return;
+                    await guild.LeaveAsync();
+                }
             });
             return Task.CompletedTask;
         }

@@ -16,9 +16,9 @@ namespace Hanekawa.Extensions.Embed
 
         public static Color GetDefaultColor(this Color color, ulong guildId, DbService db)
         {
+            if(db == null) db = new DbService();
             GuildConfig cfg;
             var check = Config.TryGetValue(guildId, out var result);
-            if (!check && db == null) return Color.Purple;
             if (!check) cfg = GetAndUpdateConfig(guildId, db);
             else cfg = (GuildConfig)result;
             return new Color(cfg.EmbedColor);

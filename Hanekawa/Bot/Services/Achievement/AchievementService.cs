@@ -11,12 +11,10 @@ namespace Hanekawa.Bot.Services.Achievement
     public partial class AchievementService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public AchievementService(DiscordSocketClient client, DbService db)
+        public AchievementService(DiscordSocketClient client)
         {
             _client = client;
-            _db = db;
 
             _client.MessageReceived += MessageCount;
         }
@@ -28,24 +26,26 @@ namespace Hanekawa.Bot.Services.Achievement
                 if (!(msg.Author is SocketGuildUser user)) return;
                 if (user.IsBot) return;
                 if (msg.Content.Length != 1499) return;
-
-                var achievements = await _db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
-                if (achievements == null) return;
-
-                if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                using (var db = new DbService())
                 {
-                    var achieve = achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
-                    if (achieve != null)
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
+                    if (achievements == null) return;
+
+                    if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
                     {
-                        var data = new AchievementUnlock
+                        var achieve = achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
+                        if (achieve != null)
                         {
-                            AchievementId = achieve.AchievementId,
-                            TypeId = Fun,
-                            UserId = user.Id,
-                            Achievement = achieve
-                        };
-                        await _db.AchievementUnlocks.AddAsync(data);
-                        await _db.SaveChangesAsync();
+                            var data = new AchievementUnlock
+                            {
+                                AchievementId = achieve.AchievementId,
+                                TypeId = Fun,
+                                UserId = user.Id,
+                                Achievement = achieve
+                            };
+                            await db.AchievementUnlocks.AddAsync(data);
+                            await db.SaveChangesAsync();
+                        }
                     }
                 }
             });

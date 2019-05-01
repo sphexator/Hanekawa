@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Drop
@@ -15,7 +16,7 @@ namespace Hanekawa.Bot.Services.Drop
         public void ChangeEmote(SocketGuild guild, Emote emote) 
             => _emotes.AddOrUpdate(guild.Id, GetDefaultEmote(), (key, value) => emote);
 
-        private async Task<List<Emote>> ReturnEmotes(SocketGuild guild)
+        private async Task<List<Emote>> ReturnEmotes(SocketGuild guild, DbService db)
         {
             var emotes = guild.Roles.Count >= 4 
                 ? guild.Emotes.ToList() 
@@ -33,13 +34,13 @@ namespace Hanekawa.Bot.Services.Drop
                 result.Add(emote);
             }
 
-            result.Add(_emotes.GetOrAdd(guild.Id, await GetClaimEmote(guild)));
+            result.Add(_emotes.GetOrAdd(guild.Id, await GetClaimEmote(guild, db)));
             return result;
         }
 
-        private async Task<Emote> GetClaimEmote(SocketGuild guild)
+        private async Task<Emote> GetClaimEmote(SocketGuild guild, DbService db)
         {
-            var cfg = await _db.GetOrCreateDropConfig(guild);
+            var cfg = await db.GetOrCreateDropConfig(guild);
             var isEmote = Emote.TryParse(cfg.Emote, out var emote);
             return isEmote ? emote : GetDefaultEmote();
         }

@@ -1,58 +1,58 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
+using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Services.Experience
 {
-    public partial class ExpService : INService
+    // TODO Role service for exp service
+    public partial class ExpService
     {
-        private readonly DbService _db;
-        private readonly DiscordSocketClient _client;
         private readonly ConcurrentDictionary<ulong, int> _expMultiplier = new ConcurrentDictionary<ulong, int>();
-        
-        public ExpService(DbService db, DiscordSocketClient client)
-        {
-            _db = db;
-            _client = client;
-        }
-        
+
         public int ExpToNextLevel(Account userdata) => 3 * userdata.Level * userdata.Level + 150;
         public int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
 
-        public async Task AddExp(SocketGuildUser user, Account userdata, int exp, int credit)
+        public async Task AddExp(SocketGuildUser user, Account userdata, int exp, int credit, DbService db)
         {
             if (userdata.Exp + exp >= ExpToNextLevel(userdata))
             {
-                var roles = await GetRoles(user.Guild.Id);
-                if (roles != null) await AddRoles(user, roles);
+                var roles = await GetRoles(user.Guild.Id, db);
+                if (roles != null) await AddRoles(user, db, roles);
                 userdata.Level += 1;
                 userdata.Exp = (userdata.Exp + exp - ExpToNextLevel(userdata));
             }
             else userdata.Exp += exp;
             userdata.TotalExp += exp;
             userdata.Credit += credit;
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
         
-        public async Task AddExp(SocketGuildUser user, AccountGlobal userdata, int exp, int credit)
+        public async Task AddExp(AccountGlobal userdata, int exp, int credit, DbService db)
         {
-            
+            if (userdata.Exp + exp >= ExpToNextLevel(userdata))
+            {
+                userdata.Level += 1;
+                userdata.Exp = (userdata.Exp + exp - ExpToNextLevel(userdata));
+            }
+            else userdata.Exp += exp;
+            userdata.TotalExp += exp;
+            userdata.Credit += credit;
+            await db.SaveChangesAsync();
         }
 
         public void AdjustMultiplier(ulong guildId, int multiplier) 
             => _expMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
 
-        private async Task<List<SocketRole>> GetRoles(ulong guildId)
+        private async Task<List<SocketRole>> GetRoles(ulong guildId, DbService db)
         {
-            var roles = await _db.LevelRewards.Where(x => x.GuildId == guildId).ToListAsync();
+            var roles = await db.LevelRewards.Where(x => x.GuildId == guildId).ToListAsync();
             if (roles.Count == 0) return null;
             var result = new List<SocketRole>();
             var guild = _client.GetGuild(guildId);
@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Services.Experience
                 var role = guild.GetRole(x.Role);
                 if (role == null)
                 {
-                    _db.LevelRewards.Remove(x);
+                    db.LevelRewards.Remove(x);
                     continue;
                 }
                 result.Add(role);
@@ -70,16 +70,16 @@ namespace Hanekawa.Bot.Services.Experience
             return result.Count == 0 ? null : result;
         }
 
-        private async Task AddRoles(SocketGuildUser user, List<SocketRole> roles)
+        private async Task AddRoles(SocketGuildUser user, DbService db, List<SocketRole> roles)
         {
-            var cfg = await _db.GetOrCreateLevelConfigAsync(user.Guild.Id);
+            var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild.Id);
             if (cfg.StackLvlRoles)
             {
-                
+                await user.TryAddRolesAsync(roles);
             }
             else
             {
-                
+                // TODO: Look into this later
             }
         }
 

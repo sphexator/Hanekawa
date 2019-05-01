@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
 
@@ -13,20 +14,23 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
-                if (!cfg.LogJoin.HasValue) return;
-                var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                if (channel == null) return;
-
-                var embed = new EmbedBuilder
+                using (var db = new DbService())
                 {
-                    Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
-                    Color = Color.Green,
-                    Footer = new EmbedFooterBuilder { Text = $"Username: {user}" },
-                    Timestamp = DateTimeOffset.UtcNow
-                };
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogJoin.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                    if (channel == null) return;
 
-                await channel.SendMessageAsync(null, false, embed.Build());
+                    var embed = new EmbedBuilder
+                    {
+                        Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
+                        Color = Color.Green,
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
+                        Timestamp = DateTimeOffset.UtcNow
+                    };
+
+                    await channel.SendMessageAsync(null, false, embed.Build());
+                }
             });
             return Task.CompletedTask;
         }
@@ -35,21 +39,24 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
-                if (!cfg.LogJoin.HasValue) return;
-                var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                if (channel == null) return;
-
-                var embed = new EmbedBuilder
+                using (var db = new DbService())
                 {
-                    Description = $"📥 {user.Mention} has joined ( *{user.Id}* )\n" +
-                                  $"Account created: {user.CreatedAt.Humanize()}",
-                    Color = Color.Green,
-                    Footer = new EmbedFooterBuilder { Text = $"Username: {user}"},
-                    Timestamp = DateTimeOffset.UtcNow
-                };
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogJoin.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                    if (channel == null) return;
 
-                await channel.SendMessageAsync(null, false, embed.Build());
+                    var embed = new EmbedBuilder
+                    {
+                        Description = $"📥 {user.Mention} has joined ( *{user.Id}* )\n" +
+                                      $"Account created: {user.CreatedAt.Humanize()}",
+                        Color = Color.Green,
+                        Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
+                        Timestamp = DateTimeOffset.UtcNow
+                    };
+
+                    await channel.SendMessageAsync(null, false, embed.Build());
+                }
             });
             return Task.CompletedTask;
         }

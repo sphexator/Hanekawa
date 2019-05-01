@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
 
@@ -10,9 +11,9 @@ namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        public async Task MuteWarn(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration)
+        public async Task MuteWarn(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration, DbService db)
         {
-            var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
+            var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
             if (!cfg.LogWarn.HasValue) return;
             var channel = user.Guild.GetTextChannel(cfg.LogWarn.Value);
             if (channel == null) return;
@@ -34,9 +35,9 @@ namespace Hanekawa.Bot.Services.Logging
             await channel.SendMessageAsync(null, false, embed.Build());
         }
 
-        public async Task Warn(SocketGuildUser user, SocketGuildUser staff, string reason)
+        public async Task Warn(SocketGuildUser user, SocketGuildUser staff, string reason, DbService db)
         {
-            var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
+            var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
             if (!cfg.LogWarn.HasValue) return;
             var channel = user.Guild.GetTextChannel(cfg.LogWarn.Value);
             if (channel == null) return;

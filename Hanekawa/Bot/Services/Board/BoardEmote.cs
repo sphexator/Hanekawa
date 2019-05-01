@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System.Threading.Tasks;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 
 namespace Hanekawa.Bot.Services.Board
@@ -10,12 +11,12 @@ namespace Hanekawa.Bot.Services.Board
         public void SetBoardEmote(SocketGuild guild, string emote) =>
             _reactionEmote.AddOrUpdate(guild.Id, emote, (key, value) => emote);
 
-        public async Task<IEmote> GetEmote(SocketGuild guild)
+        public async Task<IEmote> GetEmote(SocketGuild guild, DbService db)
         {
             var check = _reactionEmote.TryGetValue(guild.Id, out var emoteString);
             if (!check)
             {
-                var cfg = await _db.GetOrCreateBoardConfigAsync(guild);
+                var cfg = await db.GetOrCreateBoardConfigAsync(guild);
                 if (Emote.TryParse(cfg.Emote, out var dbEmote))
                 {
                     _reactionEmote.TryAdd(guild.Id, cfg.Emote);
@@ -23,7 +24,7 @@ namespace Hanekawa.Bot.Services.Board
                 }
 
                 cfg.Emote = null;
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 return new Emoji("⭐");
             }
 

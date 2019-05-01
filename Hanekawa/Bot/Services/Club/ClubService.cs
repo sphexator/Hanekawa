@@ -21,13 +21,11 @@ namespace Hanekawa.Bot.Services.Club
             embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
 
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly Random _random;
 
-        public ClubService(DiscordSocketClient client, DbService db, Random random)
+        public ClubService(DiscordSocketClient client, Random random)
         {
             _client = client;
-            _db = db;
             _random = random;
 
             _client.ReactionAdded += _client_ReactionAdded;
@@ -39,11 +37,14 @@ namespace Hanekawa.Bot.Services.Club
         {
             _ = Task.Run(async () =>
             {
-                var clubs = await _db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
-                    .ToListAsync();
-                if (clubs.Count == 0) return;
-                var cfg = await _db.GetOrCreateClubConfigAsync(user.Guild);
-                foreach (var x in clubs) await RemoveUserAsync(user, x.Id, cfg);
+                using (var db = new DbService())
+                {
+                    var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
+                        .ToListAsync();
+                    if (clubs.Count == 0) return;
+                    var cfg = await db.GetOrCreateClubConfigAsync(user.Guild);
+                    foreach (var x in clubs) await RemoveUserAsync(user, x.Id, db, cfg);
+                }
             });
             return Task.CompletedTask;
         }
@@ -65,19 +66,21 @@ namespace Hanekawa.Bot.Services.Club
                 if (!reaction.Emote.Equals(new Emoji("\u2714"))) return;
                 if (!(reaction.User.GetValueOrDefault() is SocketGuildUser user)) return;
                 if (user.IsBot) return;
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
+                    if (!cfg.AdvertisementChannel.HasValue) return;
+                    if (cfg.AdvertisementChannel.Value != channel.Id) return;
 
-                var cfg = await _db.GetOrCreateClubConfigAsync(channel.Guild);
-                if (!cfg.AdvertisementChannel.HasValue) return;
-                if (cfg.AdvertisementChannel.Value != channel.Id) return;
+                    var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                        x.GuildId == channel.Guild.Id && x.AdMessage == reaction.MessageId);
+                    if (club == null || !club.Public) return;
 
-                var club = await _db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == channel.Guild.Id && x.AdMessage == reaction.MessageId);
-                if (club == null || !club.Public) return;
-
-                var clubUser = await _db.ClubPlayers.FirstOrDefaultAsync(x =>
-                    x.UserId == reaction.UserId && x.GuildId == channel.GuildId && x.ClubId == club.Id);
-                if (clubUser == null) await AddUserAsync(user, club.Id, cfg);
-                else await RemoveUserAsync(user, club.Id, cfg);
+                    var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.UserId == reaction.UserId && x.GuildId == channel.GuildId && x.ClubId == club.Id);
+                    if (clubUser == null) await AddUserAsync(user, club.Id, db, cfg);
+                    else await RemoveUserAsync(user, club.Id, db, cfg);
+                }
             });
             return Task.CompletedTask;
         }

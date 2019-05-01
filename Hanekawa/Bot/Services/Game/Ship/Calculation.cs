@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Hanekawa.Core.Game;
+using Hanekawa.Database;
 using Hanekawa.Database.Tables.BotGame;
 
 namespace Hanekawa.Bot.Services.Game.Ship
@@ -9,7 +10,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
     {
         private int DefaultHealth { get; set; } = 10;
         private int DefaultDamage { get; set; } = 1;
-        private async Task<GameClass> GetClassName(int classId) => await _db.GameClasses.FindAsync(classId);
+        private async Task<GameClass> GetClassName(int classId, DbService db) => await db.GameClasses.FindAsync(classId);
 
         public int GetPlayerHealth(int level, GameClass gameClass) =>
             Convert.ToInt32(Math.Round(DefaultHealth * level * gameClass.ModifierHealth));

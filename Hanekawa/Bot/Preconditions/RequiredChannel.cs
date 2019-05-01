@@ -49,9 +49,11 @@ namespace Hanekawa.Bot.Preconditions
 
         private async Task<bool> UpdateIgnoreAllStatus(ICommandContext context, IServiceProvider servcies)
         {
-            var db = servcies.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild as SocketGuild);
-            return cfg.IgnoreAllChannels;
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild as SocketGuild);
+                return cfg.IgnoreAllChannels;
+            }
         }
 
         private bool EligibleChannel(ICommandContext context, IServiceProvider service, bool ignoreAll = false)
@@ -68,12 +70,14 @@ namespace Hanekawa.Bot.Preconditions
 
         private bool DoubleCheckChannel(ICommandContext context, IServiceProvider services)
         {
-            var db = services.GetRequiredService<DbService>();
-            var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
-            if (check == null) return false;
-            var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            ch.TryAdd(context.Channel.Id, true);
-            return true;
+            using (var db = new DbService())
+            {
+                var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
+                if (check == null) return false;
+                var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+                ch.TryAdd(context.Channel.Id, true);
+                return true;
+            }
         }
 
         public async Task<bool> AddChannel(ITextChannel channel, DbService db)
@@ -100,7 +104,7 @@ namespace Hanekawa.Bot.Preconditions
             if (check == null) return false;
 
             var ch = ChannelEnable.GetOrAdd(channel.GuildId, new ConcurrentDictionary<ulong, bool>());
-            ch.TryRemove(channel.Id, out var value);
+            ch.TryRemove(channel.Id, out _);
 
             var result =
                 await db.IgnoreChannels.FirstOrDefaultAsync(x =>

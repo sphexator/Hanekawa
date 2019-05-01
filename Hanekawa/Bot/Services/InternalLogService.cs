@@ -39,7 +39,8 @@ namespace Hanekawa.Bot.Services
 
         private Task CommandErrored(ExecutionFailedResult result, ICommandContext context, IServiceProvider provider)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(result.Exception.ToString());
+            return Task.CompletedTask;
         }
 
         private Task CommandExecuted(Command command, CommandResult result, ICommandContext context, IServiceProvider provider)
@@ -49,6 +50,7 @@ namespace Hanekawa.Bot.Services
 
         private Task Logdiscord(LogMessage log)
         {
+            Console.WriteLine(log.ToString());
             switch (log.Severity)
             {
                 case LogSeverity.Critical:

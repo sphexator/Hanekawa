@@ -27,12 +27,37 @@ namespace Hanekawa.Bot
         private void Initialize()
         {
             var assembly = Assembly.GetEntryAssembly();
-            var servicelist = assembly.GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            foreach (var x in servicelist)
+            if (assembly != null)
             {
-                _provider.GetRequiredService(x);
+                var servicelist = assembly.GetTypes()
+                    .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
+                                && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
+                foreach (var x in servicelist)
+                {
+                    try
+                    {
+                        _provider.GetRequiredService(x);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                        Console.WriteLine(x.Name);
+                    }
+                }
             }
 
             _startUp = true;
@@ -41,8 +66,12 @@ namespace Hanekawa.Bot
         public async Task StartAsync()
         {
             if(!_startUp) Initialize();
+            Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
+            Console.WriteLine("Logged in");
+            Console.WriteLine("Starting...");
             await _client.StartAsync();
+            Console.WriteLine("Started");
         }
 
         public async Task StopAsync()

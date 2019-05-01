@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
 
@@ -15,13 +16,16 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                if (!(after.Author is SocketGuildUser user)) return;
-                var cfg = await _db.GetOrCreateLoggingConfigAsync(user.Guild);
-                if (!cfg.LogMsg.HasValue) return;
-                var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
-                if (channel == null) return;
+                using (var db = new DbService())
+                {
+                    if (!(after.Author is SocketGuildUser user)) return;
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogMsg.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
+                    if (channel == null) return;
 
-                // TODO: Add this
+                    // TODO: Add this
+                }
             });
             return Task.CompletedTask;
         }
@@ -30,40 +34,45 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                if (!(ch is ITextChannel chx)) return;
-                var cfg = await _db.GetOrCreateLoggingConfigAsync(chx.Guild);
-                if (!cfg.LogMsg.HasValue) return;
-                var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
-                if (channel == null) return;
-
-                if (!message.HasValue) await message.GetOrDownloadAsync();
-
-                var embed = new EmbedBuilder
+                using (var db = new DbService())
                 {
-                    Color = Color.Purple,
-                    Author = new EmbedAuthorBuilder { Name = "Message Deleted"},
-                    Description = $"{message.Value.Author.Mention} deleted a message in {chx.Mention}",
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Footer = new EmbedFooterBuilder { Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}"},
-                    Fields = new List<EmbedFieldBuilder>
+                    if (!(ch is ITextChannel chx)) return;
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
+                    if (!cfg.LogMsg.HasValue) return;
+                    var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+                    if (channel == null) return;
+
+                    if (!message.HasValue) await message.GetOrDownloadAsync();
+
+                    var embed = new EmbedBuilder
                     {
-                        new EmbedFieldBuilder {Name = "Message", Value = message.Value.Content.Truncate(900), IsInline = false }
-                    }
-                };
-
-                if (message.Value.Attachments.Count > 0 && !chx.IsNsfw)
-                {
-                    var file = message.Value.Attachments.FirstOrDefault();
-                    if (file != null)
-                        embed.AddField(x =>
+                        Color = Color.Purple,
+                        Author = new EmbedAuthorBuilder {Name = "Message Deleted"},
+                        Description = $"{message.Value.Author.Mention} deleted a message in {chx.Mention}",
+                        Timestamp = DateTimeOffset.UtcNow,
+                        Footer = new EmbedFooterBuilder
+                            {Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}"},
+                        Fields = new List<EmbedFieldBuilder>
                         {
-                            x.Name = "File";
-                            x.IsInline = false;
-                            x.Value = message.Value.Attachments.FirstOrDefault()?.Url;
-                        });
-                }
+                            new EmbedFieldBuilder
+                                {Name = "Message", Value = message.Value.Content.Truncate(900), IsInline = false}
+                        }
+                    };
 
-                await channel.SendMessageAsync(null, false, embed.Build());
+                    if (message.Value.Attachments.Count > 0 && !chx.IsNsfw)
+                    {
+                        var file = message.Value.Attachments.FirstOrDefault();
+                        if (file != null)
+                            embed.AddField(x =>
+                            {
+                                x.Name = "File";
+                                x.IsInline = false;
+                                x.Value = message.Value.Attachments.FirstOrDefault()?.Url;
+                            });
+                    }
+
+                    await channel.SendMessageAsync(null, false, embed.Build());
+                }
             });
             return Task.CompletedTask;
         }

@@ -12,15 +12,13 @@ namespace Hanekawa.Bot.Services.Music
     public partial class MusicService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly Random _random;
         private readonly LavaSocketClient _lavaClient;
         private readonly LavaRestClient _lavaRest;
 
-        public MusicService(DiscordSocketClient client, DbService db, Random random, LavaSocketClient lavaClient, LavaRestClient lavaRest)
+        public MusicService(DiscordSocketClient client, Random random, LavaSocketClient lavaClient, LavaRestClient lavaRest)
         {
             _client = client;
-            _db = db;
             _random = random;
             _lavaClient = lavaClient;
             _lavaRest = lavaRest;

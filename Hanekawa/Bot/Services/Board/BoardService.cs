@@ -15,16 +15,16 @@ namespace Hanekawa.Bot.Services.Board
     public partial class BoardService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public BoardService(DiscordSocketClient client, DbService db)
+        public BoardService(DiscordSocketClient client)
         {
             _client = client;
-            _db = db;
-
-            foreach (var x in _db.BoardConfigs)
+            using (var db = new DbService())
             {
-                _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
+                foreach (var x in db.BoardConfigs)
+                {
+                    _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
+                }
             }
 
             _client.ReactionAdded += ReactionAddedAsync;
@@ -40,25 +40,28 @@ namespace Hanekawa.Bot.Services.Board
                 if (ch.IsNsfw) return;
                 if (!(rct.User.Value is SocketGuildUser user)) return;
                 if (user.IsBot) return;
-                var emote = await GetEmote(user.Guild);
-                if (!rct.Emote.Equals(emote)) return;
-                var cfg = await _db.GetOrCreateBoardConfigAsync(ch.Guild);
-                if (!cfg.Channel.HasValue) return;
-                
-                var message = await msg.GetOrDownloadAsync();
-                var stat = await _db.GetOrCreateBoard(ch.Guild, message);
-                var giver = await _db.GetOrCreateUserData(user);
-                var receiver = await _db.GetOrCreateUserData(message.Author as SocketGuildUser);
-                receiver.StarReceived++;
-                giver.StarGiven++;
-                stat.StarAmount++;
-                await _db.SaveChangesAsync();
-                IncreaseReactionAmount(user.Guild, message);
-                if (GetReactionAmount(user.Guild, message) >= 4 && !stat.Boarded.HasValue)
+                using (var db = new DbService())
                 {
-                    stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
-                    await _db.SaveChangesAsync();
-                    await SendMessageAsync(user, message, cfg);
+                    var emote = await GetEmote(user.Guild, db);
+                    if (!rct.Emote.Equals(emote)) return;
+                    var cfg = await db.GetOrCreateBoardConfigAsync(ch.Guild);
+                    if (!cfg.Channel.HasValue) return;
+
+                    var message = await msg.GetOrDownloadAsync();
+                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                    var giver = await db.GetOrCreateUserData(user);
+                    var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
+                    receiver.StarReceived++;
+                    giver.StarGiven++;
+                    stat.StarAmount++;
+                    await db.SaveChangesAsync();
+                    IncreaseReactionAmount(user.Guild, message);
+                    if (GetReactionAmount(user.Guild, message) >= 4 && !stat.Boarded.HasValue)
+                    {
+                        stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
+                        await db.SaveChangesAsync();
+                        await SendMessageAsync(user, message, cfg);
+                    }
                 }
             });
             return Task.CompletedTask;
@@ -72,28 +75,30 @@ namespace Hanekawa.Bot.Services.Board
                 if (ch.IsNsfw) return;
                 if (!(rct.User.Value is SocketGuildUser user)) return;
                 if (user.IsBot) return;
-                var emote = await GetEmote(user.Guild);
-                if (!rct.Emote.Equals(emote)) return;
-                
-                var message = await msg.GetOrDownloadAsync(); 
-                var stat = await _db.GetOrCreateBoard(ch.Guild, message);
-                var giver = await _db.GetOrCreateUserData(user);
-                var receiver = await _db.GetOrCreateUserData(message.Author as SocketGuildUser);
-                receiver.StarReceived--;
-                giver.StarGiven--;
-                stat.StarAmount--;
-                await _db.SaveChangesAsync();
-                DecreaseReactionAmount(user.Guild, message);
+                using (var db = new DbService())
+                {
+                    var emote = await GetEmote(user.Guild, db);
+                    if (!rct.Emote.Equals(emote)) return;
+                    var message = await msg.GetOrDownloadAsync();
+                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                    var giver = await db.GetOrCreateUserData(user);
+                    var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
+                    receiver.StarReceived--;
+                    giver.StarGiven--;
+                    stat.StarAmount--;
+                    await db.SaveChangesAsync();
+                    DecreaseReactionAmount(user.Guild, message);
+                }
             });
             return Task.CompletedTask;
         }
         
         private Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel)
         {
-            _ = Task.Run(async () =>
+            _ = Task.Run(() =>
             {
                 if (!(channel is SocketTextChannel ch)) return;
-                var msgCheck= _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
+                var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
                 if (!msgCheck) return;
                 if (messages.TryGetValue(message.Id, out _))
                 {
@@ -120,6 +125,7 @@ namespace Hanekawa.Bot.Services.Board
                 Timestamp = msg.Timestamp,
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
+            if (!cfg.Channel.HasValue) return null;
             var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
             return await channel.SendMessageAsync(null, false, embed.Build());
         }

@@ -10,12 +10,10 @@ namespace Hanekawa.Bot.Services.Economy
 {
     public class CurrencyService : INService
     {
-        private readonly DbService _db;
-        public CurrencyService(DbService db) => _db = db;
         private readonly string[] _currencySigns = { "$", "€", "£" };
 
-        public async Task<string> ToCurrency(ulong guildId, int amount, bool isSpecial = false) 
-            => ToCurrency(await _db.GetOrCreateCurrencyConfigAsync(guildId), amount, isSpecial);
+        public async Task<string> ToCurrency(DbService db, ulong guildId, int amount, bool isSpecial = false) 
+            => ToCurrency(await db.GetOrCreateCurrencyConfigAsync(guildId), amount, isSpecial);
 
         public string ToCurrency(CurrencyConfig cfg, int amount, bool isSpecial = false)
         {

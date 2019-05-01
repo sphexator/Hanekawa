@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Extensions;
@@ -21,21 +22,21 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> ProfileBuilder(SocketGuildUser user)
+        public async Task<Stream> ProfileBuilder(SocketGuildUser user, DbService db)
         {
             var stream = new MemoryStream();
             using (var img = new Image<Rgba32>(400, 400))
             {
-                var userData = await _db.GetOrCreateUserData(user);
-                var globalData = await _db.GetOrCreateGlobalUserData(user);
+                var userData = await db.GetOrCreateUserData(user);
+                var globalData = await db.GetOrCreateGlobalUserData(user);
                 var progressBar = CreateProfileProgressBar(userData);
                 // TODO: Create a inventory for backgrounds
-                var background = GetProfileBackground();
+                var background = GetProfileBackground(db);
                 var avi = GetAvatarAsync(user, new Size(110, 110), 61);
 
-                var serverRank = await GetRankAsync(user, userData);
-                var globalRank = await GetRankAsync(user, globalData);
-                var achievePoints = await GetAchievementPoints(user);
+                var serverRank = await GetRankAsync(user, userData, db);
+                var globalRank = await GetRankAsync(user, globalData, db);
+                var achievePoints = await GetAchievementPoints(user, db);
 
                 await Task.WhenAll(background, avi);
 
@@ -94,9 +95,9 @@ namespace Hanekawa.Bot.Services.ImageGen
             return stream;
         }
 
-        private async Task<Image<Rgba32>> GetProfileBackground()
+        private async Task<Image<Rgba32>> GetProfileBackground(DbService db)
         {
-            var background = await _db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstAsync();
+            var background = await db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstAsync();
             using (var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl)))
             {
                 img.Mutate(x => x.Resize(400, 400));
@@ -123,24 +124,24 @@ namespace Hanekawa.Bot.Services.ImageGen
             return points;
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, Account userdata)
+        private async Task<string> GetRankAsync(SocketGuildUser user, Account userdata, DbService db)
         {
-            var total = await _db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
-            var rank = await _db.Accounts.CountAsync(x =>
+            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
+            var rank = await db.Accounts.CountAsync(x =>
                 x.TotalExp >= userdata.TotalExp && x.GuildId == user.Guild.Id);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, AccountGlobal userdata)
+        private async Task<string> GetRankAsync(SocketGuildUser user, AccountGlobal userdata, DbService db)
         {
-            var total = await _db.AccountGlobals.CountAsync();
-            var rank = await _db.AccountGlobals.CountAsync(x => x.TotalExp >= userdata.TotalExp);
+            var total = await db.AccountGlobals.CountAsync();
+            var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userdata.TotalExp);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetAchievementPoints(SocketGuildUser user)
+        private async Task<string> GetAchievementPoints(SocketGuildUser user, DbService db)
         {
-            var points = await _db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
+            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
             return $"{points * 10}";
         }
     }

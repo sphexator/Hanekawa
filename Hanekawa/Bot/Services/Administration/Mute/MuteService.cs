@@ -15,48 +15,47 @@ namespace Hanekawa.Bot.Services.Administration.Mute
     public partial class MuteService : INService
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly LogService _logService;
 
         private readonly OverwritePermissions _denyOverwrite =
             new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
                 attachFiles: PermValue.Deny);
 
-        public MuteService(DiscordSocketClient client, DbService db, LogService logService)
+        public MuteService(DiscordSocketClient client, LogService logService)
         {
             _client = client;
-            _db = db;
             _logService = logService;
-
-            foreach (var x in _db.MuteTimers)
+            using (var db = new DbService())
             {
-                TimeSpan after;
-                if (x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow) after = TimeSpan.FromMinutes(2);
-                else after = x.Time - DateTime.UtcNow;
-                StartUnMuteTimer(x.GuildId, x.UserId, after);
+                foreach (var x in db.MuteTimers)
+                {
+                    TimeSpan after;
+                    if (x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow) after = TimeSpan.FromMinutes(2);
+                    else after = x.Time - DateTime.UtcNow;
+                    StartUnMuteTimer(x.GuildId, x.UserId, after);
+                }
             }
         }
 
-        public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after)
+        public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after, DbService db)
         {
-            await Mute(user).ConfigureAwait(false);
+            await Mute(user, db).ConfigureAwait(false);
             var unMuteAt = DateTime.UtcNow + after;
-            await _db.MuteTimers.AddAsync(new MuteTimer
+            await db.MuteTimers.AddAsync(new MuteTimer
             {
                 GuildId = user.Guild.Id,
                 UserId = user.Id,
                 Time = unMuteAt
             });
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
-            //TODO: Connect to discord logs
-            await _logService.Mute(user, staff, "N/A", after);
+            await _logService.Mute(user, staff, "N/A", after, db);
             return true;
         }
 
-        public async Task<bool> Mute(SocketGuildUser user)
+        public async Task<bool> Mute(SocketGuildUser user, DbService db)
         {
-            var role = await GetMuteRoleAsync(user.Guild);
+            var role = await GetMuteRoleAsync(user.Guild, db);
             var check = await user.TryAddRoleAsync(role as SocketRole);
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
@@ -64,15 +63,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return true;
         }
 
-        private async Task<IRole> GetMuteRoleAsync(SocketGuild guild)
+        private async Task<IRole> GetMuteRoleAsync(SocketGuild guild, DbService db)
         {
-            var cfg = await _db.GetOrCreateAdminConfigAsync(guild);
+            var cfg = await db.GetOrCreateAdminConfigAsync(guild);
             IRole role;
             if (!cfg.MuteRole.HasValue)
             {
                 role = await CreateRole(guild);
                 cfg.MuteRole = role.Id;
-                await _db.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
             else role = guild.GetRole(cfg.MuteRole.Value);
 

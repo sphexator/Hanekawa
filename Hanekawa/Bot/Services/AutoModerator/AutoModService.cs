@@ -11,14 +11,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
     public class AutoModService
     {
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
 
-        public AutoModService(DiscordSocketClient client, DbService db, LogService logService, MuteService muteService)
+        public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService)
         {
             _client = client;
-            _db = db;
             _logService = logService;
             _muteService = muteService;
 
@@ -35,11 +33,14 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (user.IsBot) return;
                 if (user.GuildPermissions.ManageGuild) return;
                 if(!message.Content.IsDiscordInvite(out var invite)) return;
-                var cfg = await _db.GetOrCreateAdminConfigAsync(user.Guild);
-                if (!cfg.FilterInvites) return;
-                await message.TryDeleteMessagesAsync();
-                await _muteService.Mute(user);
-                await _logService.Mute(user, user.Guild.CurrentUser, "Invite link");
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
+                    if (!cfg.FilterInvites) return;
+                    await message.TryDeleteMessagesAsync();
+                    await _muteService.Mute(user, db);
+                    await _logService.Mute(user, user.Guild.CurrentUser, "Invite link", db);
+                }
             });
             return Task.CompletedTask;
         }
@@ -52,10 +53,13 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (!(message.Author is SocketGuildUser user)) return;
                 if (user.IsBot) return;
                 if (user.GuildPermissions.ManageMessages) return;
-                var cfg = await _db.GetOrCreateAdminConfigAsync(user.Guild);
-                if (!cfg.FilterMsgLength.HasValue) return;
-                if (message.Content.Length < cfg.FilterMsgLength.Value) return;
-                await message.TryDeleteMessagesAsync();
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
+                    if (!cfg.FilterMsgLength.HasValue) return;
+                    if (message.Content.Length < cfg.FilterMsgLength.Value) return;
+                    await message.TryDeleteMessagesAsync();
+                }
             });
             return Task.CompletedTask;
         }

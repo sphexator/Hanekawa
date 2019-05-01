@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,10 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> WelcomeBuilder(SocketGuildUser user)
+        public async Task<Stream> WelcomeBuilder(SocketGuildUser user, DbService db)
         {
             var stream = new MemoryStream();
-            using (var img = await GetBanner(user.Guild.Id))
+            using (var img = await GetBanner(user.Guild.Id, db))
             {
                 var avatar = await _image.GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
@@ -31,9 +32,9 @@ namespace Hanekawa.Bot.Services.ImageGen
             return stream;
         }
 
-        private async Task<Image<Rgba32>> GetBanner(ulong guildId)
+        private async Task<Image<Rgba32>> GetBanner(ulong guildId, DbService db)
         {
-            var list = await _db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
+            var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
             using (var img = Image.Load(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url)))
             {

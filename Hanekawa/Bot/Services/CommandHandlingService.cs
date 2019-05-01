@@ -14,17 +14,18 @@ namespace Hanekawa.Bot.Services
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
-        private readonly DbService _db;
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService command, DbService db)
+        public CommandHandlingService(DiscordSocketClient client, CommandService command)
         {
             _client = client;
             _command = command;
-            _db = db;
 
-            foreach (var x in _db.GuildConfigs)
+            using (var db = new DbService())
             {
-                _prefixes.TryAdd(x.GuildId, x.Prefix);
+                foreach (var x in db.GuildConfigs)
+                {
+                    _prefixes.TryAdd(x.GuildId, x.Prefix);
+                }
             }
 
             _client.MessageReceived += OnMessageReceived;
@@ -33,20 +34,23 @@ namespace Hanekawa.Bot.Services
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
-        public async Task UpdatePrefix(ulong id, string prefix)
+        public async Task UpdatePrefix(ulong id, string prefix, DbService db)
         {
-            var cfg = await _db.GetOrCreateGuildConfigAsync(id);
+            var cfg = await db.GetOrCreateGuildConfigAsync(id);
             cfg.Prefix = prefix;
             _prefixes.AddOrUpdate(id, "h.", (key, old) => prefix);
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
 
         private Task ClientJoined(SocketGuild guild)
         {
             _ = Task.Run(async () =>
             {
-                var cfg = await _db.GetOrCreateGuildConfigAsync(guild);
-                _prefixes.TryAdd(guild.Id, cfg.Prefix);
+                using (var db = new DbService())
+                {
+                    var cfg = await db.GetOrCreateGuildConfigAsync(guild);
+                    _prefixes.TryAdd(guild.Id, cfg.Prefix);
+                }
             });
             return Task.CompletedTask;
         }

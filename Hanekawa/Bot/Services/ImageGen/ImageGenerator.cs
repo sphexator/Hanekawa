@@ -19,7 +19,6 @@ namespace Hanekawa.Bot.Services.ImageGen
     {
         private readonly HttpClient _client;
         private readonly Random _random;
-        private readonly DbService _db;
         private readonly ImageGenerator _image;
         private readonly ExpService _expService;
 
@@ -55,12 +54,10 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly Font _profileText;
         private readonly Image<Rgba32> _profileTemplate;
 
-        public ImageGenerator(HttpClient client, Random random, DbService db, ImageGenerator image,
-            ExpService expService)
+        public ImageGenerator(HttpClient client, Random random, ImageGenerator image, ExpService expService)
         {
             _client = client;
             _random = random;
-            _db = db;
             _image = image;
             _expService = expService;
 

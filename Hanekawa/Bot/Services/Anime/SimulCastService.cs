@@ -17,13 +17,11 @@ namespace Hanekawa.Bot.Services.Anime
     {
         private readonly AnimeSimulCastClient _anime;
         private readonly DiscordSocketClient _client;
-        private readonly DbService _db;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, DbService db)
+        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client)
         {
             _anime = anime;
             _client = client;
-            _db = db;
 
             _anime.AnimeAired += _anime_AnimeAired;
             _client.Ready += SetupSimulCast;
@@ -40,12 +38,15 @@ namespace Hanekawa.Bot.Services.Anime
             _ = Task.Run(async () =>
             {
                 Console.WriteLine("Anime air announced");
-                    var premiumList = await _db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
+                using (var db = new DbService())
+                {
+                    var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
                     foreach (var x in premiumList)
                     {
                         await PostAsync(x, data).ConfigureAwait(false);
                         await Task.Delay(5000).ConfigureAwait(false);
                     }
+                }
             });
             return Task.CompletedTask;
         }
