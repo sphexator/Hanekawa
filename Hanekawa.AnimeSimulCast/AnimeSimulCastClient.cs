@@ -11,7 +11,8 @@ namespace Hanekawa.AnimeSimulCast
 {
     public class AnimeSimulCastClient
     {
-        private SyndicationItem LastItem;
+        private SyndicationItem _lastItem;
+        private Timer _timer;
 
         public AnimeSimulCastClient()
         {
@@ -32,33 +33,26 @@ namespace Hanekawa.AnimeSimulCast
             {
                 var reader = XmlReader.Create(Constants.RssFeed);
                 var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
-                LastItem = feed;
+                _lastItem = feed;
             }
             catch
             {
-                LastItem = null;
+                _lastItem = null;
             }
         }
 
         private async Task MainAsync(CancellationToken token)
         {
-            while (!token.IsCancellationRequested)
-                try
+            _timer = new Timer(state =>
+            {
+                var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
+                if (_lastItem == null) UpdatePoll(feed);
+                if (_lastItem != null && feed?.Id != _lastItem.Id)
                 {
-                    var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-                    if (LastItem == null) UpdatePoll(feed);
-                    if (LastItem != null && feed?.Id != LastItem.Id)
-                    {
-                        UpdatePoll(feed);
-                        _ = AnimeAired(ToReturnType(feed));
-                    }
-
-                    await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                    UpdatePoll(feed);
+                    _ = AnimeAired(ToReturnType(feed));
                 }
-                catch
-                {
-                    await Task.Delay(TimeSpan.FromMinutes(10)).ConfigureAwait(false);
-                }
+            }, token, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
         }
 
         private static AnimeData ToReturnType(SyndicationItem collection)
@@ -66,12 +60,13 @@ namespace Hanekawa.AnimeSimulCast
             var data = new AnimeData
             {
                 Title = collection.Title.Text,
-                Time = collection.PublishDate,
-                Url = collection.Links.FirstOrDefault().Uri.AbsoluteUri
+                Time = collection.PublishDate
             };
+            var url = collection.Links.FirstOrDefault();
+            if (url != null) data.Url = url.Uri.AbsoluteUri;
             return data;
         }
 
-        private void UpdatePoll(SyndicationItem item) => LastItem = item;
+        private void UpdatePoll(SyndicationItem item) => _lastItem = item;
     }
 }
