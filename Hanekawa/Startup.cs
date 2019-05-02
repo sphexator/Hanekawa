@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Core.Interfaces;
@@ -9,9 +10,9 @@ using Hanekawa.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
 using Victoria;
 
 namespace Hanekawa
@@ -26,6 +27,8 @@ namespace Hanekawa
         public void ConfigureServices(IServiceCollection services)
         {
             var dbClient = new DatabaseClient(Configuration["connectionString"]);
+            using (var db = new DbService()) db.Database.Migrate();
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddSingleton(services);
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
@@ -34,10 +37,11 @@ namespace Hanekawa
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Info
             }));
-            services.AddSingleton(new CommandService(new CommandServiceConfiguration
+            services.AddSingleton(new CommandService(new CommandServiceConfig
             {
-                CaseSensitive = false,
-                DefaultRunMode = RunMode.Parallel
+                CaseSensitiveCommands = false,
+                LogLevel = LogSeverity.Info,
+                DefaultRunMode = RunMode.Async
             }));
             services.AddSingleton<AnimeSimulCastClient>();
             services.AddSingleton(new LavaSocketClient());
