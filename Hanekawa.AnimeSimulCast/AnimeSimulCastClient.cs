@@ -20,6 +20,7 @@ namespace Hanekawa.AnimeSimulCast
         }
 
         public event AsyncEvent<AnimeData> AnimeAired;
+        public event AsyncEvent<Exception> Log; 
 
         public Task StartAsync()
         {
@@ -45,12 +46,19 @@ namespace Hanekawa.AnimeSimulCast
         {
             _timer = new Timer(state =>
             {
-                var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-                if (_lastItem == null) UpdatePoll(feed);
-                if (_lastItem != null && feed?.Id != _lastItem.Id)
+                try
                 {
-                    UpdatePoll(feed);
-                    _ = AnimeAired(ToReturnType(feed));
+                    var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
+                    if (_lastItem == null) UpdatePoll(feed);
+                    if (_lastItem != null && feed?.Id != _lastItem.Id)
+                    {
+                        UpdatePoll(feed);
+                        _ = AnimeAired(ToReturnType(feed));
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log(e);
                 }
             }, token, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
         }

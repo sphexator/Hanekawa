@@ -1251,7 +1251,6 @@ html {
 }
 
 .justify-content-around {
-    -ms-flex-pack: distribute !important;
     justify-content: space-around !important;
 }
 
@@ -1422,7 +1421,6 @@ html {
     }
 
     .justify-content-sm-around {
-        -ms-flex-pack: distribute !important;
         justify-content: space-around !important;
     }
 
@@ -1594,7 +1592,6 @@ html {
     }
 
     .justify-content-md-around {
-        -ms-flex-pack: distribute !important;
         justify-content: space-around !important;
     }
 
@@ -1766,7 +1763,6 @@ html {
     }
 
     .justify-content-lg-around {
-        -ms-flex-pack: distribute !important;
         justify-content: space-around !important;
     }
 
@@ -1938,7 +1934,6 @@ html {
     }
 
     .justify-content-xl-around {
-        -ms-flex-pack: distribute !important;
         justify-content: space-around !important;
     }
 

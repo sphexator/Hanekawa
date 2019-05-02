@@ -35,13 +35,13 @@ namespace Hanekawa.Bot.Services
             _lavaClient.OnSocketClosed += LavaClientOnSocketClosed;
         }
 
+        public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
+
         private Task CommandLog(LogMessage arg)
         {
             Console.WriteLine(arg.Exception.ToString());
             return Task.CompletedTask;
         }
-
-        public void LogAction(LogLevel level, string log) => _logger.Log(level, log);
 
         private Task Logdiscord(LogMessage log)
         {
