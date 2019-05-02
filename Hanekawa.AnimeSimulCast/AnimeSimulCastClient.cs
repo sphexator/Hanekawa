@@ -24,7 +24,7 @@ namespace Hanekawa.AnimeSimulCast
 
         public Task StartAsync()
         {
-            _ = MainAsync(new CancellationToken());
+            _ = Main(new CancellationToken());
             return Task.CompletedTask;
         }
 
@@ -42,7 +42,7 @@ namespace Hanekawa.AnimeSimulCast
             }
         }
 
-        private async Task MainAsync(CancellationToken token)
+        private Task Main(CancellationToken token)
         {
             _timer = new Timer(state =>
             {
@@ -60,7 +60,8 @@ namespace Hanekawa.AnimeSimulCast
                 {
                     Log(e);
                 }
-            }, token, TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
+            }, token, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+            return Task.CompletedTask;
         }
 
         private static AnimeData ToReturnType(SyndicationItem collection)

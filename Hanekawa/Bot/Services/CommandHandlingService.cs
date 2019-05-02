@@ -57,13 +57,13 @@ namespace Hanekawa.Bot.Services
 
         private Task ClientLeft(SocketGuild socketGuild)
         {
-            _prefixes.TryRemove(socketGuild.Id, out _);
+            _ = Task.Run(() => _prefixes.TryRemove(socketGuild.Id, out _));
             return Task.CompletedTask;
         }
 
         private async Task OnMessageReceived(SocketMessage rawMsg)
-        {
-            if (!(rawMsg.Author is SocketGuildUser user)) return;
+        { 
+            if (!(rawMsg.Author is SocketGuildUser user)) return; 
             if (user.IsBot) return;
         }
     }

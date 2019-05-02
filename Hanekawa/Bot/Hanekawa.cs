@@ -41,21 +41,6 @@ namespace Hanekawa.Bot
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
-                        Console.WriteLine(x.Name);
                     }
                 }
             }

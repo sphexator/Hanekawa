@@ -10,6 +10,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Anime
 {
@@ -17,11 +18,13 @@ namespace Hanekawa.Bot.Services.Anime
     {
         private readonly AnimeSimulCastClient _anime;
         private readonly DiscordSocketClient _client;
+        private readonly InternalLogService _log;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client)
+        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, InternalLogService log)
         {
             _anime = anime;
             _client = client;
+            _log = log;
 
             _anime.AnimeAired += _anime_AnimeAired;
             _client.Ready += SetupSimulCast;
@@ -53,11 +56,18 @@ namespace Hanekawa.Bot.Services.Anime
 
         private async Task PostAsync(GuildConfig cfg, AnimeData data)
         {
-            if (!cfg.AnimeAirChannel.HasValue) return;
-            var guild = _client.GetGuild(cfg.GuildId);
-            Console.WriteLine($"Posting anime event to {guild.Name}");
-            await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
-                .ReplyAsync(BuildEmbed(data, cfg.GuildId));
+            try
+            {
+                if (!cfg.AnimeAirChannel.HasValue) return;
+                var guild = _client.GetGuild(cfg.GuildId);
+                Console.WriteLine($"Posting anime event to {guild.Name}");
+                await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
+                    .ReplyAsync(BuildEmbed(data, cfg.GuildId));
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, $"Error for {cfg.GuildId} - {e.Message}");
+            }
         }
 
         private static EmbedBuilder BuildEmbed(AnimeData data, ulong guild)

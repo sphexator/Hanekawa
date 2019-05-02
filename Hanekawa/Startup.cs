@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using Discord;
+using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
@@ -13,6 +14,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Extensions.Logging;
 using Victoria;
 
 namespace Hanekawa
@@ -28,9 +32,10 @@ namespace Hanekawa
         {
             var dbClient = new DatabaseClient(Configuration["connectionString"]);
             using (var db = new DbService()) db.Database.Migrate();
-            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddSingleton(services);
+            services.AddSingleton(Configuration);
+            services.AddLogging();
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
@@ -43,7 +48,8 @@ namespace Hanekawa
                 LogLevel = LogSeverity.Info,
                 DefaultRunMode = RunMode.Async
             }));
-            services.AddSingleton<AnimeSimulCastClient>();
+            services.AddSingleton<InteractiveService>();
+            services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new LavaSocketClient());
             services.AddSingleton(new LavaRestClient(new Configuration()));
             services.AddSingleton<Random>();
@@ -74,6 +80,22 @@ namespace Hanekawa
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            loggerFactory.AddNLog(new NLogProviderOptions
+            {
+                CaptureMessageProperties = true,
+                CaptureMessageTemplates = true
+            });
+            try
+            {
+                LogManager.LoadConfiguration("NLog.config");
+            }
+            catch
+            {
+                LogManager.LoadConfiguration("nlog.config");
+            }
+
             await app.ApplicationServices.GetRequiredService<Bot.Hanekawa>().StartAsync();
         }
     }

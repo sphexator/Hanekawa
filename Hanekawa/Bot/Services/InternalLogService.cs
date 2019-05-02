@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.AnimeSimulCast;
 using Hanekawa.Core.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Entities;
@@ -18,16 +18,20 @@ namespace Hanekawa.Bot.Services
         private readonly CommandService _command;
         private readonly ILogger<InternalLogService> _logger;
         private readonly LavaSocketClient _lavaClient;
+        private readonly AnimeSimulCastClient _castClient;
 
-        public InternalLogService(DiscordSocketClient client, CommandService command, ILogger<InternalLogService> logger, LavaSocketClient lavaClient)
+        public InternalLogService(DiscordSocketClient client, CommandService command, ILogger<InternalLogService> logger, LavaSocketClient lavaClient, AnimeSimulCastClient castClient)
         {
             _client = client;
             _command = command;
             _logger = logger;
             _lavaClient = lavaClient;
+            _castClient = castClient;
 
             _client.Log += Logdiscord;
             _command.Log += CommandLog;
+
+            _castClient.Log += SimulCastClientLog;
 
             _lavaClient.Log += LavaClientLog;
             _lavaClient.OnPlayerUpdated += LavaClientOnPlayerUpdated;
@@ -37,31 +41,21 @@ namespace Hanekawa.Bot.Services
 
         public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
 
-        private Task CommandLog(LogMessage arg)
+        private Task SimulCastClientLog(Exception e)
         {
-            Console.WriteLine(arg.Exception.ToString());
+            _logger.Log(LogLevel.Error, e, e.Message);
+            return Task.CompletedTask;
+        }
+
+        private Task CommandLog(LogMessage log)
+        {
+            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
             return Task.CompletedTask;
         }
 
         private Task Logdiscord(LogMessage log)
         {
-            Console.WriteLine(log.ToString());
-            switch (log.Severity)
-            {
-                case LogSeverity.Critical:
-                    _logger.LogCritical(log.Exception, log.Message);
-                    break;
-                case LogSeverity.Error:
-                    _logger.LogError(log.Exception, log.Message);
-                    break;
-                case LogSeverity.Warning:
-                    _logger.LogWarning(log.Exception, log.Message);
-                    break;
-                case LogSeverity.Info:
-                    _logger.LogInformation(log.Exception, log.Message);
-                    break;
-            }
-
+            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
             return Task.CompletedTask;
         }
 
@@ -85,23 +79,29 @@ namespace Hanekawa.Bot.Services
 
         private Task LavaClientLog(LogMessage log)
         {
-            switch (log.Severity)
+            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
+            return Task.CompletedTask;
+        }
+
+        private LogLevel LogSevToLogLevel(LogSeverity log)
+        {
+            switch (log)
             {
                 case LogSeverity.Critical:
-                    _logger.LogCritical(log.Exception, log.Message);
-                    break;
+                    return LogLevel.Critical;
                 case LogSeverity.Error:
-                    _logger.LogError(log.Exception, log.Message);
-                    break;
+                    return LogLevel.Error;
                 case LogSeverity.Warning:
-                    _logger.LogWarning(log.Exception, log.Message);
-                    break;
+                    return LogLevel.Warning;
                 case LogSeverity.Info:
-                    _logger.LogInformation(log.Exception, log.Message);
-                    break;
+                    return LogLevel.Information;
+                case LogSeverity.Verbose:
+                    return LogLevel.Trace;
+                case LogSeverity.Debug:
+                    return LogLevel.Trace;
+                default:
+                    return LogLevel.None;
             }
-
-            return Task.CompletedTask;
         }
     }
 }
