@@ -9,5 +9,6 @@
         public ulong? LogAvi { get; set; } = null;
         public ulong? LogWarn { get; set; } = null;
         public ulong? LogAutoMod { get; set; } = null;
+        public ulong? LogVoice { get; set; } = null;
     }
 }

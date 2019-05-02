@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Qmmands;
 using Victoria;
 using Victoria.Entities;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -26,8 +27,7 @@ namespace Hanekawa.Bot.Services
             _lavaClient = lavaClient;
 
             _client.Log += Logdiscord;
-            _command.CommandExecuted += CommandExecuted;
-            _command.CommandErrored += CommandErrored;
+            _command.Log += CommandLog;
 
             _lavaClient.Log += LavaClientLog;
             _lavaClient.OnPlayerUpdated += LavaClientOnPlayerUpdated;
@@ -35,18 +35,13 @@ namespace Hanekawa.Bot.Services
             _lavaClient.OnSocketClosed += LavaClientOnSocketClosed;
         }
 
-        public void LogAction(LogLevel level, string log) => _logger.Log(level, log);
-
-        private Task CommandErrored(ExecutionFailedResult result, ICommandContext context, IServiceProvider provider)
+        private Task CommandLog(LogMessage arg)
         {
-            Console.WriteLine(result.Exception.ToString());
+            Console.WriteLine(arg.Exception.ToString());
             return Task.CompletedTask;
         }
 
-        private Task CommandExecuted(Command command, CommandResult result, ICommandContext context, IServiceProvider provider)
-        {
-            throw new NotImplementedException();
-        }
+        public void LogAction(LogLevel level, string log) => _logger.Log(level, log);
 
         private Task Logdiscord(LogMessage log)
         {

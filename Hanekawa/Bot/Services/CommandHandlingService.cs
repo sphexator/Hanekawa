@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Qmmands;
 
 namespace Hanekawa.Bot.Services
 {
@@ -65,17 +65,6 @@ namespace Hanekawa.Bot.Services
         {
             if (!(rawMsg.Author is SocketGuildUser user)) return;
             if (user.IsBot) return;
-            if (!CommandUtilities.HasPrefix(rawMsg.Content, GetPrefix(user.Guild.Id), out var output)) return;
-
-            var result = await _command.ExecuteAsync(output, null, null);
-            if (result is FailedResult failedResult)
-            {
-                await rawMsg.Channel.SendMessageAsync(null, false, new EmbedBuilder
-                {
-                    Color = Color.Red,
-                    Description = "An error occured."
-                }.Build());
-            }
         }
     }
 }
