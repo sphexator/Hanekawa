@@ -9,7 +9,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, IGuildUser user,
             int type)
         {
-            var check = await context.AchievementTrackers.FindAsync(type, user.Id);
+            var check = await context.AchievementTrackers.FindAsync(type, user.Id).ConfigureAwait(false);
             if (check != null) return check;
             var data = new AchievementTracker
             {
@@ -19,9 +19,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.AchievementTrackers.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.AchievementTrackers.FindAsync(type, user.Id);
+                await context.AchievementTrackers.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.AchievementTrackers.FindAsync(type, user.Id).ConfigureAwait(false);
             }
             catch
             {
@@ -32,7 +32,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, ulong userId,
             int type)
         {
-            var check = await context.AchievementTrackers.FindAsync(type, userId);
+            var check = await context.AchievementTrackers.FindAsync(type, userId).ConfigureAwait(false);
             if (check != null) return check;
             var data = new AchievementTracker
             {
@@ -42,9 +42,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.AchievementTrackers.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.AchievementTrackers.FindAsync(type, userId);
+                await context.AchievementTrackers.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.AchievementTrackers.FindAsync(type, userId).ConfigureAwait(false);
             }
             catch
             {

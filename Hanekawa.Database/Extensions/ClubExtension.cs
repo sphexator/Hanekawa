@@ -26,14 +26,14 @@ namespace Hanekawa.Database.Extensions
                 Public = false,
                 IconUrl = null
             };
-            await context.ClubInfos.AddAsync(data);
-            await context.SaveChangesAsync();
-            return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.LeaderId == user.Id);
+            await context.ClubInfos.AddAsync(data).ConfigureAwait(false);
+            await context.SaveChangesAsync().ConfigureAwait(false);
+            return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.LeaderId == user.Id).ConfigureAwait(false);
         }
 
         public static async Task<ClubInformation> GetClubAsync(this DbService context, SocketGuildUser user, int id)
         {
-            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.Guild.Id);
+            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.Guild.Id).ConfigureAwait(false);
             return check;
         }
     }

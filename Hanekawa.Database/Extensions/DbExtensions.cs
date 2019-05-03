@@ -13,7 +13,7 @@ namespace Hanekawa.Database.Extensions
     {
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
         {
-            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id).ConfigureAwait(false);
             if (userdata != null) return userdata;
 
             var data = new EventPayout
@@ -24,9 +24,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.EventPayouts.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id);
+                await context.EventPayouts.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.EventPayouts.FindAsync(user.Guild.Id, user.Id).ConfigureAwait(false);
             }
             catch
             {
@@ -36,7 +36,7 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
         {
-            var check = await context.Boards.FindAsync(guild.Id, msg.Id);
+            var check = await context.Boards.FindAsync(guild.Id, msg.Id).ConfigureAwait(false);
             if (check != null) return check;
 
             var data = new Board
@@ -49,9 +49,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.Boards.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.Boards.FindAsync(guild.Id, msg.Id);
+                await context.Boards.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.Boards.FindAsync(guild.Id, msg.Id).ConfigureAwait(false);
             }
             catch
             {
@@ -62,7 +62,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild,
             DateTime time)
         {
-            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id);
+            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
             int nr;
             if (counter == 0)
                 nr = 1;
@@ -79,9 +79,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.Suggestions.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time);
+                await context.Suggestions.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
             }
             catch
             {
@@ -92,7 +92,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<QuestionAndAnswer> CreateQnA(this DbService context, IUser user, SocketGuild guild,
             DateTime time)
         {
-            var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id);
+            var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
             int nr;
             if (counter == 0)
                 nr = 1;
@@ -109,9 +109,9 @@ namespace Hanekawa.Database.Extensions
             };
             try
             {
-                await context.QuestionAndAnswers.AddAsync(data);
-                await context.SaveChangesAsync();
-                return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time);
+                await context.QuestionAndAnswers.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
             }
             catch
             {
