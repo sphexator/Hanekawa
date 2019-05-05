@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -78,20 +79,38 @@ namespace Hanekawa.Bot.Services.Logging
                         if (channel == null) return;
 
                         var embed = new EmbedBuilder().CreateDefault("", before.Guild.Id);
-                        if(before.Nickname != after.Nickname) { }
+                        embed.Title = $"{after} | {after.Id}";
+                        embed.Footer = new EmbedFooterBuilder{ IconUrl = after.GetAvatar(), Text = "" };
+                        if (before.Nickname != after.Nickname)
+                        {
+                            embed.Author = new EmbedAuthorBuilder { Name = "Nickname Change" };
+                            embed.Fields = new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder{ Name = "New Nick", Value = after.Nickname ?? after.Username },
+                                new EmbedFieldBuilder { Name = "Old Nick", Value = before.Nickname ?? before.Username }
+                            };
+                        }
                         else if (before.Roles.SequenceEqual(after.Roles))
                         {
                             if (before.Roles.Count < after.Roles.Count)
                             {
-
+                                var roleDiffer = after.Roles
+                                    .Where(x => !before.Roles.Contains(x)).Select(x => x.Name);
+                                embed.WithAuthor(x => x.WithName("User Role Added"))
+                                    .WithDescription(string.Join(", ", roleDiffer));
                             }
                             else if (before.Roles.Count > after.Roles.Count)
                             {
-
+                                var roleDiffer = before.Roles
+                                    .Where(x => !after.Roles.Contains(x)).Select(x => x.Name);
+                                embed.WithAuthor(x => x.WithName("User Role Removed"))
+                                    .WithDescription(string.Join(", ", roleDiffer));
                             }
                             else return;
                         }
                         else return;
+
+                        await channel.ReplyAsync(embed);
                     }
                 }
                 catch (Exception e)
