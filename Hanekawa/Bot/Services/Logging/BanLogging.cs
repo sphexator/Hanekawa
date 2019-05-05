@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Core;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -15,29 +16,36 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                try
                 {
-                    var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
-                    if (!cfg.LogBan.HasValue) return;
-                    var channel = guild.GetTextChannel(cfg.LogBan.Value);
-                    if (channel == null) return;
-                    var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
-                    var embed = new EmbedBuilder
+                    using (var db = new DbService())
                     {
-                        Color = Color.Green,
-                        Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId} | {user}"},
-                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
-                        Timestamp = DateTimeOffset.UtcNow,
-                        Fields = new List<EmbedFieldBuilder>
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                        if (!cfg.LogBan.HasValue) return;
+                        var channel = guild.GetTextChannel(cfg.LogBan.Value);
+                        if (channel == null) return;
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
+                        var embed = new EmbedBuilder
                         {
-                            new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
-                            new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
-                            new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
-                        }
-                    };
-                    var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                    caseId.MessageId = msg.Id;
-                    await db.SaveChangesAsync();
+                            Color = Color.Green,
+                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId} | {user}" },
+                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
+                            Timestamp = DateTimeOffset.UtcNow,
+                            Fields = new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
+                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
+                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                            }
+                        };
+                        var msg = await channel.SendMessageAsync(null, false, embed.Build());
+                        caseId.MessageId = msg.Id;
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"Error in UnBan log in {guild.Id} - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -47,30 +55,37 @@ namespace Hanekawa.Bot.Services.Logging
         {
             _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                try
                 {
-                    var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
-                    if (!cfg.LogBan.HasValue) return;
-                    var channel = guild.GetTextChannel(cfg.LogBan.Value);
-                    if (channel == null) return;
-
-                    var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
-                    var embed = new EmbedBuilder
+                    using (var db = new DbService())
                     {
-                        Color = Color.Red,
-                        Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId} | {user}"},
-                        Fields = new List<EmbedFieldBuilder>
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                        if (!cfg.LogBan.HasValue) return;
+                        var channel = guild.GetTextChannel(cfg.LogBan.Value);
+                        if (channel == null) return;
+
+                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
+                        var embed = new EmbedBuilder
                         {
-                            new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
-                            new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
-                            new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
-                        },
-                        Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
-                        Timestamp = DateTimeOffset.UtcNow
-                    };
-                    var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                    caseId.MessageId = msg.Id;
-                    await db.SaveChangesAsync();
+                            Color = Color.Red,
+                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId} | {user}" },
+                            Fields = new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
+                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
+                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                            },
+                            Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
+                            Timestamp = DateTimeOffset.UtcNow
+                        };
+                        var msg = await channel.SendMessageAsync(null, false, embed.Build());
+                        caseId.MessageId = msg.Id;
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"Error in Ban log in {guild.Id} - {e.Message}");
                 }
             });
             return Task.CompletedTask;

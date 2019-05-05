@@ -54,7 +54,7 @@ namespace Hanekawa
             services.AddSingleton(new LavaRestClient(new Configuration()));
             services.AddSingleton<Random>();
             services.AddHttpClient();
-            
+
             var assembly = Assembly.GetAssembly(typeof(Program));
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))

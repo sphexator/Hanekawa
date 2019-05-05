@@ -6,10 +6,12 @@ namespace Hanekawa.Bot.Services.Logging
     public partial class LogService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
+        private readonly InternalLogService _log;
 
-        public LogService(DiscordSocketClient client)
+        public LogService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
+            _log = log;
 
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;
