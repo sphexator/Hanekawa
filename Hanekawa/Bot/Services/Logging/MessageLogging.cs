@@ -6,6 +6,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
@@ -18,17 +19,34 @@ namespace Hanekawa.Bot.Services.Logging
             _ = Task.Run(async () =>
             {                        
                 if (!(after.Author is SocketGuildUser user)) return;
+                if (user.IsBot) return;
+                if (!(ch is ITextChannel chx)) return;
                 try
                 {
                     using (var db = new DbService())
                     {
-
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogMsg.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
                         if (channel == null) return;
 
-                        // TODO: Add this
+                        IUserMessage beforeMsg;
+                        if (!before.HasValue) beforeMsg = await before.GetOrDownloadAsync() as IUserMessage;
+                        else beforeMsg = before.Value as IUserMessage;
+                        if (beforeMsg == null) return;
+                        if (beforeMsg.Content == after.Content) return;
+
+                        var embed = new EmbedBuilder().CreateDefault($"{user.Mention} updated a message in {chx.Mention}", user.Guild.Id);
+                        embed.Author = new EmbedAuthorBuilder { Name = "Message Updated" };
+                        embed.Timestamp = after.EditedTimestamp ?? after.Timestamp;
+                        embed.Fields = new List<EmbedFieldBuilder>
+                        {
+                            new EmbedFieldBuilder { Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true },
+                            new EmbedFieldBuilder { Name = "Old Message", Value = beforeMsg.Content.Truncate(980), IsInline = true }
+                        };
+                        embed.Footer = new EmbedFooterBuilder { Text = $"User: {user.Id} | {after.Id}" };
+
+                        await channel.ReplyAsync(embed);
                     }
                 }
                 catch (Exception e)
