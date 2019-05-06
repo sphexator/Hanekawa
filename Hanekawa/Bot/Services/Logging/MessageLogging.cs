@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (channel == null) return;
 
                         if (!message.HasValue) await message.GetOrDownloadAsync();
-
+                        if (message.Value.Author.IsBot) return;
                         var embed = new EmbedBuilder
                         {
                             Color = Color.Purple,
