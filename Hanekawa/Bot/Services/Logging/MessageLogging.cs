@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error in Message Updated log in {user.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for Message Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -106,7 +106,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error in Message Deleted log in {chx.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;

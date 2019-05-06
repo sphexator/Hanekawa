@@ -9,12 +9,14 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
+        private readonly InternalLogService _log;
 
         public BoardService(DiscordSocketClient client)
         {
@@ -40,28 +42,35 @@ namespace Hanekawa.Bot.Services.Board
                 if (ch.IsNsfw) return;
                 if (!(rct.User.Value is SocketGuildUser user)) return;
                 if (user.IsBot) return;
-                using (var db = new DbService())
+                try
                 {
-                    var emote = await GetEmote(user.Guild, db);
-                    if (!rct.Emote.Equals(emote)) return;
-                    var cfg = await db.GetOrCreateBoardConfigAsync(ch.Guild);
-                    if (!cfg.Channel.HasValue) return;
-
-                    var message = await msg.GetOrDownloadAsync();
-                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                    var giver = await db.GetOrCreateUserData(user);
-                    var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
-                    receiver.StarReceived++;
-                    giver.StarGiven++;
-                    stat.StarAmount++;
-                    await db.SaveChangesAsync();
-                    IncreaseReactionAmount(user.Guild, message);
-                    if (GetReactionAmount(user.Guild, message) >= 4 && !stat.Boarded.HasValue)
+                    using (var db = new DbService())
                     {
-                        stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
+                        var emote = await GetEmote(user.Guild, db);
+                        if (!rct.Emote.Equals(emote)) return;
+                        var cfg = await db.GetOrCreateBoardConfigAsync(ch.Guild);
+                        if (!cfg.Channel.HasValue) return;
+
+                        var message = await msg.GetOrDownloadAsync();
+                        var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                        var giver = await db.GetOrCreateUserData(user);
+                        var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
+                        receiver.StarReceived++;
+                        giver.StarGiven++;
+                        stat.StarAmount++;
                         await db.SaveChangesAsync();
-                        await SendMessageAsync(user, message, cfg);
+                        IncreaseReactionAmount(user.Guild, message);
+                        if (GetReactionAmount(user.Guild, message) >= 4 && !stat.Boarded.HasValue)
+                        {
+                            stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
+                            await db.SaveChangesAsync();
+                            await SendMessageAsync(user, message, cfg);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Board Service) Error in {ch.Guild.Id} for Reaction Added - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -75,19 +84,26 @@ namespace Hanekawa.Bot.Services.Board
                 if (ch.IsNsfw) return;
                 if (!(rct.User.Value is SocketGuildUser user)) return;
                 if (user.IsBot) return;
-                using (var db = new DbService())
+                try
                 {
-                    var emote = await GetEmote(user.Guild, db);
-                    if (!rct.Emote.Equals(emote)) return;
-                    var message = await msg.GetOrDownloadAsync();
-                    var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                    var giver = await db.GetOrCreateUserData(user);
-                    var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
-                    receiver.StarReceived--;
-                    giver.StarGiven--;
-                    stat.StarAmount--;
-                    await db.SaveChangesAsync();
-                    DecreaseReactionAmount(user.Guild, message);
+                    using (var db = new DbService())
+                    {
+                        var emote = await GetEmote(user.Guild, db);
+                        if (!rct.Emote.Equals(emote)) return;
+                        var message = await msg.GetOrDownloadAsync();
+                        var stat = await db.GetOrCreateBoard(ch.Guild, message);
+                        var giver = await db.GetOrCreateUserData(user);
+                        var receiver = await db.GetOrCreateUserData(message.Author as SocketGuildUser);
+                        receiver.StarReceived--;
+                        giver.StarGiven--;
+                        stat.StarAmount--;
+                        await db.SaveChangesAsync();
+                        DecreaseReactionAmount(user.Guild, message);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Board Service) Error in {ch.Guild.Id} for Reaction Removed - {e.Message}");
                 }
             });
             return Task.CompletedTask;

@@ -72,7 +72,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error in Voice log in {user.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for Voice Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

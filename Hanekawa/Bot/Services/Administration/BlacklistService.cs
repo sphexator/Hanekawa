@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Services.Administration
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error for {guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Blacklist Service) Error for {guild.Id} - {e.Message}");
                 }
             });
             return Task.CompletedTask;

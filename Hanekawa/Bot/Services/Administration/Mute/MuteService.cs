@@ -16,15 +16,18 @@ namespace Hanekawa.Bot.Services.Administration.Mute
     {
         private readonly DiscordSocketClient _client;
         private readonly LogService _logService;
+        private readonly InternalLogService _log;
 
         private readonly OverwritePermissions _denyOverwrite =
             new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
                 attachFiles: PermValue.Deny);
 
-        public MuteService(DiscordSocketClient client, LogService logService)
+        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log)
         {
             _client = client;
             _logService = logService;
+            _log = log;
+
             using (var db = new DbService())
             {
                 foreach (var x in db.MuteTimers)

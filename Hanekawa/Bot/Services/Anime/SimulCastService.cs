@@ -66,7 +66,7 @@ namespace Hanekawa.Bot.Services.Anime
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"Error for {cfg.GuildId} - {e.Message}");
+                _log.LogAction(LogLevel.Error, e, $"(Anime Simulcast) Error for {cfg.GuildId} - {e.Message}");
             }
         }
 

@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -13,18 +14,18 @@ namespace Hanekawa.Bot.Services.Experience
     {
         private readonly DiscordSocketClient _client;
         private readonly Random _random;
-        private readonly InternalLogService _logService;
+        private readonly InternalLogService _log;
 
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverCategoryReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
         private readonly ConcurrentDictionary<ulong, List<ulong>> _serverChannelReduction =
             new ConcurrentDictionary<ulong, List<ulong>>();
 
-        public ExpService(DiscordSocketClient client, Random random, InternalLogService logService)
+        public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
         {
             _client = client;
             _random = random;
-            _logService = logService;
+            _log = log;
 
             using (var db = new DbService())
             {
@@ -62,10 +63,17 @@ namespace Hanekawa.Bot.Services.Experience
                 if (!(msg.Channel is SocketTextChannel channel)) return;
                 if (user.IsBot) return;
                 if (OnGlobalCooldown(user)) return;
-                using (var db = new DbService())
+                try
                 {
-                    var userdata = await db.GetOrCreateGlobalUserData(user);
-                    await AddExp(userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                    using (var db = new DbService())
+                    {
+                        var userdata = await db.GetOrCreateGlobalUserData(user);
+                        await AddExp(userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Global Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -79,13 +87,20 @@ namespace Hanekawa.Bot.Services.Experience
                 if (!(msg.Channel is SocketTextChannel channel)) return;
                 if (user.IsBot) return;
                 if (OnServerCooldown(user)) return;
-                using (var db = new DbService())
+                try
                 {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    userdata.LastMessage = DateTime.UtcNow;
-                    if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
+                    using (var db = new DbService())
+                    {
+                        var userdata = await db.GetOrCreateUserData(user);
+                        userdata.LastMessage = DateTime.UtcNow;
+                        if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
 
-                    await AddExp(user, userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                        await AddExp(user, userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Server Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -96,6 +111,14 @@ namespace Hanekawa.Bot.Services.Experience
             _ = Task.Run(async () =>
             {
                 if (!(usr is SocketGuildUser user)) return;
+                try
+                {
+
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Voice - {e.Message}");
+                }
             });
             return Task.CompletedTask;
         }

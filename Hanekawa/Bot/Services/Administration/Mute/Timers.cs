@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
@@ -39,9 +40,10 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                         var user = guild.GetUser(userId);
                         await UnMuteUser(user, db);
                     }
-                    catch
+                    catch(Exception e)
                     {
                         await RemoveTimerFromDbAsync(guildId, userId, db);
+                        _log.LogAction(LogLevel.Error, e, $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
                 }
             }, null, duration, Timeout.InfiniteTimeSpan);

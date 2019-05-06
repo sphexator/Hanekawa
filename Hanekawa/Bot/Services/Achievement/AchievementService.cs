@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error for {user.Id} in {user.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Achievement Service) Error for {user.Id} in {user.Guild.Id} for Message Count - {e.Message}");
                 }
             });
             return Task.CompletedTask;

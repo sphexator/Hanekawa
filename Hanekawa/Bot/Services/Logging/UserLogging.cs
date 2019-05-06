@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error in User Update log in {user.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for User Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Error in Guild Member Update log in {before.Guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {before.Guild.Id} for Guild Member Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;
