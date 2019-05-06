@@ -6,6 +6,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Drop;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ namespace Hanekawa.Modules.Administration
         [Remarks("h.drop")]
         public async Task SpawnDrop()
         {
-            await Context.Message.DeleteAsync();
+            await Context.Message.TryDeleteMessageAsync();
             if (!(Context.Channel is SocketTextChannel ch)) return;
             await _dropService.SpawnCrateAsync(ch, Context.User as SocketGuildUser);
         }
@@ -46,7 +47,7 @@ namespace Hanekawa.Modules.Administration
             {
                 if (channel == null) channel = Context.Channel as ITextChannel;
                 await _dropData.AddLootChannelAsync(channel as SocketTextChannel);
-                await Context.Message.DeleteAsync();
+                await Context.Message.TryDeleteMessageAsync();
                 await Context.ReplyAsync($"Added {channel.Mention} to loot eligible channels.",
                     Color.Green.RawValue);
             }
