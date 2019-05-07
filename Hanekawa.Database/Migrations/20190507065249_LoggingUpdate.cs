@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Hanekawa.Database.Migrations
 {
-    public partial class LoggingUpdated : Migration
+    public partial class LoggingUpdate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -37,7 +36,7 @@ namespace Hanekawa.Database.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    TimeStamp = table.Column<DateTime>(nullable: false),
+                    TimeStamp = table.Column<string>(nullable: true),
                     Level = table.Column<string>(nullable: true),
                     Message = table.Column<string>(nullable: true),
                     Logger = table.Column<string>(nullable: true),

@@ -101,7 +101,7 @@ namespace Hanekawa.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if DEBUG
-            if(Config.ConnectionString == null) Config.ConnectionString = "Server=localhost;database=hanekawa-test2;Uid=postgres;Pwd=12345";
+            if(Config.ConnectionString == null) Config.ConnectionString = "Server=localhost;database=hanekawa-dev1;Uid=postgres;Pwd=12345";
 #endif
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder

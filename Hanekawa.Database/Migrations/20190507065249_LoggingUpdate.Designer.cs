@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Hanekawa.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    [Migration("20190502134111_LoggingUpdated")]
-    partial class LoggingUpdated
+    [Migration("20190507065249_LoggingUpdate")]
+    partial class LoggingUpdate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -868,7 +868,7 @@ namespace Hanekawa.Database.Migrations
 
                     b.Property<string>("Message");
 
-                    b.Property<DateTime>("TimeStamp");
+                    b.Property<string>("TimeStamp");
 
                     b.HasKey("Id");
 

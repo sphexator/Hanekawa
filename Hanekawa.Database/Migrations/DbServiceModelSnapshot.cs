@@ -866,7 +866,7 @@ namespace Hanekawa.Database.Migrations
 
                     b.Property<string>("Message");
 
-                    b.Property<DateTime>("TimeStamp");
+                    b.Property<string>("TimeStamp");
 
                     b.HasKey("Id");
 
