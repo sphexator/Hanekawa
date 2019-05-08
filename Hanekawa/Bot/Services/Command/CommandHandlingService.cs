@@ -1,13 +1,12 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 
-namespace Hanekawa.Bot.Services
+namespace Hanekawa.Bot.Services.Command
 {
     public class CommandHandlingService : INService, IRequired
     {

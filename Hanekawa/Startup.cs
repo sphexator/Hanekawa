@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Reflection;
 using Discord;
-using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
+using Hanekawa.Core.Interactive;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Microsoft.AspNetCore.Builder;

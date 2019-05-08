@@ -8,9 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
         <PackageReference Include="Discord.Net" Version="2.0.1" />
-        <PackageReference Include="Discord.Net.Commands" Version="2.0.1" />
         <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
         <PackageReference Include="Discord.Net.Rest" Version="2.0.1" />
         <PackageReference Include="Discord.Net.Webhook" Version="2.0.1" />
@@ -28,14 +26,15 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.4.10" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.8" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
         <PackageReference Include="NLog" Version="4.6.3" />
         <PackageReference Include="NLog.Config" Version="4.6.3" />
         <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.1" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.2" />
         <PackageReference Include="Npgsql" Version="4.0.6" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
+        <PackageReference Include="Qmmands" Version="3.0.0-nightly-00187" />
         <PackageReference Include="Quartz" Version="3.0.7" />
         <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0007" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0008" />
@@ -44,7 +43,7 @@
         <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0008" />
         <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0008" />
         <PackageReference Include="System.Linq" Version="4.3.0" />
-        <PackageReference Include="Victoria" Version="4.0.8" />
+        <PackageReference Include="Victoria" Version="4.0.9" />
     </ItemGroup>
 
     <ItemGroup>
