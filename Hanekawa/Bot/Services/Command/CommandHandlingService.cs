@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Command
             if (!(message.Author is SocketGuildUser user)) return;
             if (user.IsBot) return;
 
-            if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id), out var output)) return;
+            if (!CommandUtilities.HasPrefix(message.Content, _prefixes.GetOrAdd(user.Guild.Id, "h."), out var output)) return;
             await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user));
         }
 
