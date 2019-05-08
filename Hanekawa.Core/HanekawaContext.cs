@@ -6,7 +6,7 @@ namespace Hanekawa.Core
 {
     public class HanekawaContext : CommandContext
     {
-        public HanekawaContext(DiscordSocketClient client, IUserMessage msg, SocketGuildUser user)
+        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user)
         {
             Client = client;
             Message = msg;

@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Qmmands;
 
 namespace Hanekawa.Bot.Services.Command
 {
@@ -41,6 +42,16 @@ namespace Hanekawa.Bot.Services.Command
             await db.SaveChangesAsync();
         }
 
+        private async Task OnMessageReceived(SocketMessage rawMsg)
+        {
+            if (!(rawMsg is SocketUserMessage message)) return;
+            if (!(message.Author is SocketGuildUser user)) return;
+            if (user.IsBot) return;
+
+            if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id), out var output)) return;
+            await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user));
+        }
+
         private Task ClientJoined(SocketGuild guild)
         {
             _ = Task.Run(async () =>
@@ -58,12 +69,6 @@ namespace Hanekawa.Bot.Services.Command
         {
             _ = Task.Run(() => _prefixes.TryRemove(socketGuild.Id, out _));
             return Task.CompletedTask;
-        }
-
-        private async Task OnMessageReceived(SocketMessage rawMsg)
-        { 
-            if (!(rawMsg.Author is SocketGuildUser user)) return; 
-            if (user.IsBot) return;
         }
     }
 }
