@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Reflection;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Core.Interactive;
@@ -17,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
+using Qmmands;
 using Victoria;
 
 namespace Hanekawa
@@ -42,11 +42,9 @@ namespace Hanekawa
                 AlwaysDownloadUsers = true,
                 LogLevel = LogSeverity.Info
             }));
-            services.AddSingleton(new CommandService(new CommandServiceConfig
+            services.AddSingleton(new CommandService(new CommandServiceConfiguration
             {
-                CaseSensitiveCommands = false,
-                LogLevel = LogSeverity.Info,
-                DefaultRunMode = RunMode.Async
+                DefaultRunMode = RunMode.Parallel
             }));
             services.AddSingleton<InteractiveService>();
             services.AddSingleton(new AnimeSimulCastClient());
