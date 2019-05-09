@@ -48,7 +48,6 @@
 
     <ItemGroup>
       <Folder Include="Bot\Modules\Account" />
-      <Folder Include="Bot\Modules\Administration" />
       <Folder Include="Bot\Modules\Board" />
       <Folder Include="Bot\Modules\Club" />
       <Folder Include="Bot\Modules\Drop" />

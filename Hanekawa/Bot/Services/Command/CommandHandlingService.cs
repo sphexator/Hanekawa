@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
@@ -31,6 +33,18 @@ namespace Hanekawa.Bot.Services.Command
             _client.MessageReceived += OnMessageReceived;
             _client.LeftGuild += ClientLeft;
             _client.JoinedGuild += ClientJoined;
+        }
+
+        public void InitializeAsync()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            _command.AddModules(assembly);
+            _command.AddTypeParser(new EmoteTypeReader());
+            _command.AddTypeParser(new GuildUserParser());
+            _command.AddTypeParser(new RoleParser());
+            _command.AddTypeParser(new TextChannelParser());
+            _command.AddTypeParser(new TimeSpanTypeParser());
+            _command.AddTypeParser(new VoiceChannelParser());
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");

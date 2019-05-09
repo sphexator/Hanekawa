@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Hanekawa.Core;
+using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders
 {
-    public class EmoteTypeReader : TypeReader
+    public class EmoteTypeReader : HanekawaTypeParser<Emote>
     {
-        public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input,
-            IServiceProvider services) =>
-            Task.FromResult(Emote.TryParse(input, out var result)
-                ? TypeReaderResult.FromSuccess(result)
-                : TypeReaderResult.FromError(CommandError.ParseFailed, "Input could not be parsed into an emote."));
+        public override ValueTask<TypeParserResult<Emote>> ParseAsync(Parameter parameter, string value,
+            HanekawaContext context, IServiceProvider provider)
+        {
+            return Emote.TryParse(value, out var emote)
+                ? TypeParserResult<Emote>.Successful(emote)
+                : TypeParserResult<Emote>.Unsuccessful("Failed to parse into a emote");
+        }
     }
 }

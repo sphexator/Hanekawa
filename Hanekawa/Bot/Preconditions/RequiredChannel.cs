@@ -2,22 +2,20 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
 {
-    public class RequiredChannel : RequireContextAttribute, INService
+    public class RequiredChannel : HanekawaAttribute, INService
     {
-        public RequiredChannel() : base(ContextType.Guild)
-        {
-        }
+        public RequiredChannel() {  }
 
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
@@ -25,50 +23,49 @@ namespace Hanekawa.Bot.Preconditions
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ChannelEnable { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
-            CommandInfo command, IServiceProvider services)
+        public override async ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
         {
             if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
-                return PreconditionResult.FromSuccess();
+                return CheckResult.Successful;
 
             var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
-            if (!ignoreAll) status = await UpdateIgnoreAllStatus(context, services);
+            if (!ignoreAll) status = await UpdateIgnoreAllStatus(context);
 
-            var pass = status ? EligibleChannel(context, services, true) : EligibleChannel(context, services);
+            var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
 
             switch (pass)
             {
                 case true:
-                    return PreconditionResult.FromSuccess();
+                    return CheckResult.Successful;
                 case false:
-                    return PreconditionResult.FromError("Not a eligible channel");
+                    return CheckResult.Unsuccessful("Not a eligible channel");
                 default:
-                    return PreconditionResult.FromError("Not a eligible channel");
+                    return CheckResult.Unsuccessful("Not a eligible channel");
             }
         }
 
-        private async Task<bool> UpdateIgnoreAllStatus(ICommandContext context, IServiceProvider servcies)
+        private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild as SocketGuild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
                 return cfg.IgnoreAllChannels;
             }
         }
 
-        private bool EligibleChannel(ICommandContext context, IServiceProvider service, bool ignoreAll = false)
+        private bool EligibleChannel(HanekawaContext context, bool ignoreAll = false)
         {
             // True = command passes
             // False = command fails
             var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             var ignore = ch.TryGetValue(context.Channel.Id, out var status);
-            if (!ignore) ignore = DoubleCheckChannel(context, service);
+            if (!ignore) ignore = DoubleCheckChannel(context);
             if (!ignoreAll) // If its only ignoring specific channels in the dictionary
                 return !ignore;
             return ignore;
         }
 
-        private bool DoubleCheckChannel(ICommandContext context, IServiceProvider services)
+        private bool DoubleCheckChannel(HanekawaContext context)
         {
             using (var db = new DbService())
             {

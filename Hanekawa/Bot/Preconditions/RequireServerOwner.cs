@@ -1,24 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord.Commands;
-using Discord.WebSocket;
+using Hanekawa.Core;
+using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class RequireServerOwner : RequireContextAttribute
+    public class RequireServerOwner : HanekawaAttribute
     {
-        public RequireServerOwner() : base(ContextType.Guild)
-        {
-        }
+        public RequireServerOwner()  { }
 
-        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
-            CommandInfo command, IServiceProvider services)
-        {
-            if (!(context.User is SocketGuildUser user))
-                return PreconditionResult.FromError("Command only usable within a guild");
-            if (user.Guild.OwnerId == user.Id) return PreconditionResult.FromSuccess();
-            return PreconditionResult.FromError("Command only usable by server owners");
-        }
+        public override ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider) 
+            => context.Guild.OwnerId == context.User.Id 
+                ? CheckResult.Successful 
+                : CheckResult.Unsuccessful("Command only usable by server owners");
     }
 }

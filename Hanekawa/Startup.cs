@@ -4,6 +4,7 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
+using Hanekawa.Core;
 using Hanekawa.Core.Interactive;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
