@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Hanekawa.Core;
 using Hanekawa.Database;
 
 namespace Hanekawa.Extensions.Embed
@@ -19,11 +20,11 @@ namespace Hanekawa.Extensions.Embed
             channel.SendEmbedAsync(embed);
 
         // Reply from command context
-        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, string content, uint color) =>
+        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, uint color) =>
             context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
-        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, string content, ulong guildId, DbService db = null) =>
+        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, ulong guildId, DbService db = null) =>
             context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId, db)));
-        public static Task<IUserMessage> ReplyAsync(this ICommandContext context, EmbedBuilder embed) =>
+        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
 
         // Create default embed - used outside of this class

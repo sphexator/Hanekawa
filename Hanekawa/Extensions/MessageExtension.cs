@@ -8,14 +8,14 @@ namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<IMessage>> FilterMessagesAsync(this SocketTextChannel channel, int amount = 100, 
-            SocketUser filterBy = null)
+        public static async Task<List<IMessage>> FilterMessagesAsync(this SocketTextChannel channel, int amount = 100,
+            SocketGuildUser filterBy = null)
         {
             var messages = await channel.GetMessagesAsync(amount).FlattenAsync();
             return messages.FilterMessages(filterBy);
         }
         
-        public static List<IMessage> FilterMessages(this IEnumerable<IMessage> msgs, SocketUser filterBy = null)
+        public static List<IMessage> FilterMessages(this IEnumerable<IMessage> msgs, SocketGuildUser filterBy = null)
         {
             var result = new List<IMessage>();
             foreach (var x in msgs)
@@ -58,7 +58,7 @@ namespace Hanekawa.Extensions
             return false;
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this SocketMessage msg)
+        public static async Task<bool> TryDeleteMessagesAsync(this IMessage msg)
         {
             if (!(msg.Channel is SocketTextChannel chn)) return false;
             if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;
@@ -66,7 +66,7 @@ namespace Hanekawa.Extensions
             return true;
         }
 
-        public static async Task<bool> TryDeleteMessageAsync(this SocketUserMessage msg)
+        public static async Task<bool> TryDeleteMessageAsync(this IMessage msg)
         {
             if (!(msg.Channel is SocketTextChannel chn)) return false;
             if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;

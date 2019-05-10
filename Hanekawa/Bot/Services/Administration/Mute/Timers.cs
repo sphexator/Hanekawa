@@ -15,18 +15,6 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> _unMuteTimers 
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
 
-        public async Task UnMuteUser(SocketGuildUser user, DbService db)
-        {
-            await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
-            try
-            {
-                await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
-            }
-            catch { /* Ignore */ }
-
-            await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
-        }
-
         private void StartUnMuteTimer(ulong guildId, ulong userId, TimeSpan duration)
         {
             var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());

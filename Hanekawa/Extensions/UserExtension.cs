@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 
@@ -15,6 +16,20 @@ namespace Hanekawa.Extensions
         {
             if (mainUser.Hierarchy > role.Position) return true;
             return false;
+        }
+
+        public static async Task<bool> TryMute(this SocketGuildUser user)
+        {
+            if (!user.VoiceState.HasValue) return false;
+            await user.ModifyAsync(x => x.Mute = true);
+            return true;
+        }
+
+        public static async Task<bool> TryUnMute(this SocketGuildUser user)
+        {
+            if (!user.VoiceState.HasValue) return false;
+            await user.ModifyAsync(x => x.Mute = false);
+            return true;
         }
 
         public static string GetName(this SocketGuildUser user)
