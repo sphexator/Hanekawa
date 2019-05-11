@@ -1,9 +1,11 @@
-﻿namespace Hanekawa.Database.Tables.Config
+﻿using System.Collections.Generic;
+
+namespace Hanekawa.Database.Tables.Config
 {
     public class GuildConfig
     {
         public ulong GuildId { get; set; }
-        public string Prefix { get; set; } = "h.";
+        public List<string> Prefix { get; set; } = new List<string> { "h." };
         public bool Premium { get; set; } = false;
         public uint EmbedColor { get; set; }
 

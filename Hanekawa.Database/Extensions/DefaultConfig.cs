@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -10,7 +11,7 @@ namespace Hanekawa.Database.Extensions
         internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, ulong guild)
         {
             cfg.GuildId = guild;
-            cfg.Prefix = "h.";
+            cfg.Prefix = new List<string> { "h." };
             cfg.MusicVcChannel = null;
             cfg.MusicChannel = null;
             cfg.Premium = false;

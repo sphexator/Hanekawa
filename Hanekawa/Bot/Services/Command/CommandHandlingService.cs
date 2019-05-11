@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord.WebSocket;
@@ -15,7 +16,7 @@ namespace Hanekawa.Bot.Services.Command
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
-        private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
+        private readonly ConcurrentDictionary<ulong, List<string>> _prefixes = new ConcurrentDictionary<ulong, List<string>>();
 
         public CommandHandlingService(DiscordSocketClient client, CommandService command)
         {
@@ -47,12 +48,12 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new VoiceChannelParser());
         }
 
-        public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
+        public List<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new List<string> {"h."});
         public async Task UpdatePrefix(ulong id, string prefix, DbService db)
         {
             var cfg = await db.GetOrCreateGuildConfigAsync(id);
-            cfg.Prefix = prefix;
-            _prefixes.AddOrUpdate(id, "h.", (key, old) => prefix);
+            cfg.Prefix.Add(prefix);
+            _prefixes.AddOrUpdate(id, new List<string> { "h." }, (key, old) => cfg.Prefix);
             await db.SaveChangesAsync();
         }
 
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Services.Command
             if (!(message.Author is SocketGuildUser user)) return;
             if (user.IsBot) return;
 
-            if (!CommandUtilities.HasPrefix(message.Content, _prefixes.GetOrAdd(user.Guild.Id, "h."), out var output)) return;
+            if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix, out var output)) return;
             await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user));
         }
 
@@ -73,7 +74,7 @@ namespace Hanekawa.Bot.Services.Command
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(guild);
-                    _prefixes.TryAdd(guild.Id, cfg.Prefix);
+                    _prefixes.TryAdd(guild.Id, new List<string> { "h." });
                 }
             });
             return Task.CompletedTask;

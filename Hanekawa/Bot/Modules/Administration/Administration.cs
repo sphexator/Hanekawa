@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (amount <= 0) return;
             await Context.Message.TryDeleteMessageAsync();
-            var messages = (await Context.Channel.GetMessagesAsync(amount).FlattenAsync()).FilterMessages(user);
+            var messages = await Context.Channel.FilterMessagesAsync(amount, user);
             if (await Context.Channel.TryDeleteMessagesAsync(messages))
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().CreateDefault($"Deleted {amount} messages", Color.Green.RawValue).Build(),
@@ -144,7 +144,8 @@ namespace Hanekawa.Bot.Modules.Administration
                         new EmbedBuilder().CreateDefault("Couldn't mute user. ", Color.Red.RawValue).Build(),
                         TimeSpan.FromSeconds(20));
                 }
-                var messages = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).FilterMessages(user);
+
+                var messages = await Context.Channel.FilterMessagesAsync(50, user);
                 await Context.Channel.TryDeleteMessagesAsync(messages);
             }
         }

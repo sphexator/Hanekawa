@@ -8,7 +8,7 @@ namespace Hanekawa.Extensions
 {
     public static class ImageExtension
     {
-                public static IImageProcessingContext<Rgba32> ConvertToAvatar(
+        public static IImageProcessingContext<Rgba32> ConvertToAvatar(
             this IImageProcessingContext<Rgba32> processingContext, Size size, float cornerRadius)
         {
             return processingContext.Resize(new ResizeOptions
