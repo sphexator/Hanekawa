@@ -6,11 +6,14 @@ using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
+using Hanekawa.Core;
 using Hanekawa.Core.Interactive;
+using Hanekawa.Core.Interactive.Paginator;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Administration
@@ -35,6 +38,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
         {
+            if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
             if (Context.User == user) return;
             if (Context.Guild.CurrentUser.HierarchyCheck(user))
@@ -71,8 +75,8 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task KickAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
         {
+            if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            if (Context.User == user) return;
             if (Context.Guild.CurrentUser.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
@@ -139,7 +143,6 @@ namespace Hanekawa.Bot.Modules.Administration
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder().CreateDefault("Couldn't mute user. ", Color.Red.RawValue).Build(),
                         TimeSpan.FromSeconds(20));
-                    return;
                 }
                 var messages = (await Context.Channel.GetMessagesAsync(50).FlattenAsync()).FilterMessages(user);
                 await Context.Channel.TryDeleteMessagesAsync(messages);
@@ -154,12 +157,22 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteAsync(SocketGuildUser user, TimeSpan? duration = null, [Remainder]string reason = "No reason")
         {
+            if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
             if (!duration.HasValue) duration = TimeSpan.FromHours(12);
             using (var db = new DbService())
             {
                 var muteRes = await _mute.TimedMute(user, Context.User, duration.Value, db, reason);
-
+                if (muteRes)
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder().CreateDefault($"Muted {user.Mention} for {duration.Value.Humanize()}",
+                            Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
+                else
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder()
+                            .CreateDefault($"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
+                                Color.Red.RawValue).Build(),
+                        TimeSpan.FromSeconds(20));
             }
         }
 
@@ -171,7 +184,19 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason")
         {
-
+            if (user == Context.User) return;
+            await Context.Message.TryDeleteMessageAsync();
+            using (var db = new DbService())
+            {
+                var muteRes = await _mute.Mute(user, db);
+                if (muteRes)
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder().CreateDefault($"Muted {user.Mention}",
+                            Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
+                else await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Couldn't mute {user.Mention}, missing permission or role not accessible ?", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(20));
+            }
         }
 
         [Name("UnMute")]
@@ -180,9 +205,20 @@ namespace Hanekawa.Bot.Modules.Administration
         [Remarks("unmute @bob#0000")]
         [RequireBotPermission(GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task UnMuteAsync(SocketGuildUser user)
+        public async Task UnMuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
         {
-
+            if (user == Context.User) return;
+            await Context.Message.TryDeleteMessageAsync();
+            using (var db = new DbService())
+            {
+                if (await _mute.UnMuteUser(user, db))
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder().CreateDefault($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
+                        TimeSpan.FromSeconds(20));
+                else await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Couldn't unmute {user.Mention}, missing permissions or role not accessible ?", Color.Red.RawValue).Build(),
+                    TimeSpan.FromSeconds(20));
+            }
         }
 
         [Name("Warn")]
@@ -194,6 +230,15 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WarnAsync(SocketGuildUser user, [Remainder]string reason = "No reason")
         {
+            if (user == Context.User) return;
+            await Context.Message.TryDeleteMessageAsync();
+            using (var db = new DbService())
+            {
+                await _warn.AddWarn(db, user, Context.User, reason, WarnReason.Warned, true);
+                await ReplyAndDeleteAsync(null, false,
+                    new EmbedBuilder().CreateDefault($"Warned {user.Mention}", Color.Green.RawValue).Build(),
+                    TimeSpan.FromSeconds(20));
+            }
         }
 
         [Name("Warn Log")]
@@ -201,8 +246,21 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("")]
         [Remarks("")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task WarnLogAsync()
+        public async Task WarnLogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
+            await Context.Message.TryDeleteMessageAsync();
+            using (var db = new DbService())
+            {
+                if (type == WarnLogType.Simple)
+                {
+                    await Context.ReplyAsync(await _warn.GetSimpleWarnlogAsync(user, db));
+                }
+                else
+                {
+                    var pages = await _warn.GetFullWarnlogAsync(user, db);
+                    await PagedReplyAsync(pages.PaginateBuilder(user, $"Warn log for {user}", null, 5, db));
+                }
+            }
         }
 
         [Name("Reason")]

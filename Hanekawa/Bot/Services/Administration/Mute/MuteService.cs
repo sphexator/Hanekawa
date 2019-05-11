@@ -69,12 +69,12 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return true;
         }
 
-        public async Task UnMuteUser(SocketGuildUser user, DbService db)
+        public async Task<bool> UnMuteUser(SocketGuildUser user, DbService db)
         {
             await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
             await user.TryUnMute();
 
-            await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
+            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
         }
 
         private async Task<IRole> GetMuteRoleAsync(SocketGuild guild, DbService db)

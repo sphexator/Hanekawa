@@ -45,7 +45,7 @@ namespace Hanekawa.Extensions
             return user.GetDefaultAvatarUrl();
         }
 
-        public static string GetGame(IPresence user)
+        public static string GetGame(this SocketUser user)
         {
             string result;
             switch (user.Activity.Type)
@@ -70,7 +70,7 @@ namespace Hanekawa.Extensions
             return result;
         }
 
-        public static string GetStatus(IPresence user)
+        public static string GetStatus(this SocketUser user)
         {
             string result;
             switch (user.Status)
