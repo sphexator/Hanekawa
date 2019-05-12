@@ -14,6 +14,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Quartz.Util;
 
 namespace Hanekawa.Bot.Modules.Settings
 {
@@ -102,9 +103,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
                 cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated welcome message!\n\n" +
-                                         $"{_image. .Message(message, Context.User, Context.Guild)}",
-                    Color.Green.RawValue);
+                await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
             }
         }
 
