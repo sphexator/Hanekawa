@@ -14,10 +14,10 @@ namespace Hanekawa.Extensions
 
         public static bool IsPictureUrl(this string str)
         {
-            var isGif = str.EndsWith(".gif", true, null);
-            var isPng = str.EndsWith(".png", true, null);
-            var isJpeg = str.EndsWith(".jpeg", true, null);
-            var isJpg = str.EndsWith(".jpg", true, null);
+            var isGif = str.EndsWith(".gif");
+            var isPng = str.EndsWith(".png");
+            var isJpeg = str.EndsWith(".jpeg");
+            var isJpg = str.EndsWith(".jpg");
 
             if (isGif) return true;
             if (isPng) return true;

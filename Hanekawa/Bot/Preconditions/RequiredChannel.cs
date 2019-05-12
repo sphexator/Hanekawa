@@ -77,38 +77,36 @@ namespace Hanekawa.Bot.Preconditions
             }
         }
 
-        public async Task<bool> AddChannel(ITextChannel channel, DbService db)
+        public async Task<bool> AddOrRemoveChannel(SocketTextChannel channel, DbService db)
         {
-            var check = await db.IgnoreChannels.FindAsync(channel.GuildId, channel.Id);
-            if (check != null) return false;
-
-            var ch = ChannelEnable.GetOrAdd(channel.GuildId, new ConcurrentDictionary<ulong, bool>());
-            ch.TryAdd(channel.Id, true);
-
-            var data = new IgnoreChannel
+            var check = await db.IgnoreChannels.FindAsync(channel.Guild.Id, channel.Id);
+            if (check != null)
             {
-                GuildId = channel.GuildId,
-                ChannelId = channel.Id
-            };
-            await db.IgnoreChannels.AddAsync(data);
-            await db.SaveChangesAsync();
-            return true;
-        }
+                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+                ch.TryRemove(channel.Id, out _);
 
-        public async Task<bool> RemoveChannel(ITextChannel channel, DbService db)
-        {
-            var check = await db.IgnoreChannels.FindAsync(channel.GuildId, channel.Id);
-            if (check == null) return false;
+                var result =
+                    await db.IgnoreChannels.FirstOrDefaultAsync(x =>
+                        x.GuildId == channel.Guild.Id && x.ChannelId == channel.Id);
+                db.IgnoreChannels.Remove(result);
+                await db.SaveChangesAsync();
+                return false;
+            }
+            else
+            {
+                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
+                ch.TryAdd(channel.Id, true);
 
-            var ch = ChannelEnable.GetOrAdd(channel.GuildId, new ConcurrentDictionary<ulong, bool>());
-            ch.TryRemove(channel.Id, out _);
-
-            var result =
-                await db.IgnoreChannels.FirstOrDefaultAsync(x =>
-                    x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
-            db.IgnoreChannels.Remove(result);
-            await db.SaveChangesAsync();
-            return true;
+                var data = new IgnoreChannel
+                {
+                    GuildId = channel.Guild.Id,
+                    ChannelId = channel.Id
+                };
+                await db.IgnoreChannels.AddAsync(data);
+                db.IgnoreChannels.Update(data);
+                await db.SaveChangesAsync();
+                return true;
+            }
         }
     }
 }

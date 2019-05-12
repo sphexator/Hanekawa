@@ -8,7 +8,6 @@ using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Core;
 using Hanekawa.Core.Interactive;
-using Hanekawa.Core.Interactive.Paginator;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
@@ -224,8 +223,8 @@ namespace Hanekawa.Bot.Modules.Administration
 
         [Name("Warn")]
         [Command("warn")]
-        [Description("")]
-        [Remarks("")]
+        [Description("Warns a user, bot dms them the warning. Warning accessible through warnlog")]
+        [Remarks("warn @bob#0000 this is a warning")]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.KickMembers, GuildPermission.ManageRoles,
             GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -244,8 +243,8 @@ namespace Hanekawa.Bot.Modules.Administration
 
         [Name("Warn Log")]
         [Command("warnlog")]
-        [Description("")]
-        [Remarks("")]
+        [Description("Pulls up warnlog and admin profile of a user.")]
+        [Remarks("warnlog @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WarnLogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
