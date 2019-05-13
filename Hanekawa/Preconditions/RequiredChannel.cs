@@ -6,10 +6,9 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Preconditions
 {
@@ -18,7 +17,6 @@ namespace Hanekawa.Preconditions
     {
         public RequiredChannel() : base(ContextType.Guild)
         {
-            
         }
 
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
@@ -33,8 +31,8 @@ namespace Hanekawa.Preconditions
             if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
                 return PreconditionResult.FromSuccess();
 
-            var ignrAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
-            if (!ignrAll) status = await UpdateIgnoreAllStatus(context);
+            var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
+            if (!ignoreAll) status = await UpdateIgnoreAllStatus(context);
 
             var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
 
@@ -49,11 +47,11 @@ namespace Hanekawa.Preconditions
             }
         }
 
-        private static async Task<bool> UpdateIgnoreAllStatus(ICommandContext context)
+        private async Task<bool> UpdateIgnoreAllStatus(ICommandContext context)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild as SocketGuild);
+                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild as SocketGuild);
                 return cfg.IgnoreAllChannels;
             }
         }

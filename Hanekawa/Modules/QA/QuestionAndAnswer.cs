@@ -12,23 +12,31 @@ using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.QA
 {
+    [Name("Q&A")]
+    [Summary("Question and answer or AMA")]
     public class QuestionAndAnswer : InteractiveBase
     {
+        [Name("Question")]
         [Command("question", RunMode = RunMode.Async)]
-        [RequireContext(ContextType.Guild)]
         [Summary("Sends a question to server owners to answer (QnA)")]
+        [Remarks("h.question Here is my question :pog:")]
+        [RequireContext(ContextType.Guild)]
         public async Task QuestionAsync([Remainder] string question)
         {
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue) return;
                 var caseId = await db.CreateQnA(Context.User, Context.Guild, DateTime.UtcNow);
 
                 var embed = new EmbedBuilder().CreateDefault(question, Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { IconUrl = (Context.User as SocketGuildUser).GetAvatar(), Name = (Context.User as SocketGuildUser).GetName() })
-                    .WithFooter(new EmbedFooterBuilder { Text = $"Question ID: {caseId.Id}" })
+                    .WithAuthor(new EmbedAuthorBuilder
+                    {
+                        IconUrl = (Context.User as SocketGuildUser).GetAvatar(),
+                        Name = (Context.User as SocketGuildUser).GetName()
+                    })
+                    .WithFooter(new EmbedFooterBuilder {Text = $"Question ID: {caseId.Id}"})
                     .WithTimestamp(DateTimeOffset.UtcNow);
 
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value).ReplyAsync(embed);
@@ -39,19 +47,21 @@ namespace Hanekawa.Modules.QA
             }
         }
 
+        [Name("Question answer")]
         [Command("qa answer", RunMode = RunMode.Async)]
         [Alias("qaa")]
+        [Summary("Users with manage guild perms can answer questions sent in.")]
+        [Remarks("h.qaa 1 Yes, here's your answer :pog:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Summary("Users with manage guild perms can answer questions sent in.")]
-        public async Task CommentAsync(uint id, [Remainder] string response)
+        public async Task CommentAsync(int id, [Remainder] string response)
         {
             using (var db = new DbService())
             {
                 await Context.Message.DeleteAsync();
                 var question = await db.QuestionAndAnswers.FindAsync(id, Context.Guild.Id);
                 if (question == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!cfg.QuestionAndAnswerChannel.HasValue)
                 {
                     await Context.ReplyAsync("No QnA channel has been setup", Color.Red.RawValue);
@@ -63,6 +73,7 @@ namespace Hanekawa.Modules.QA
                     await Context.ReplyAsync("Couldn't find the associated message to this question :(");
                     return;
                 }
+
                 var msg = await Context.Guild.GetTextChannel(cfg.QuestionAndAnswerChannel.Value)
                     .GetMessageAsync(question.MessageId.Value);
                 var embed = msg.Embeds.First().ToEmbedBuilder();
@@ -91,16 +102,18 @@ namespace Hanekawa.Modules.QA
             }
         }
 
+        [Name("Q&A channel")]
         [Command("qa set channel", RunMode = RunMode.Async)]
         [Alias("qac", "qachannel", "qa channel")]
         [Summary("Sets a channel for QnA. Leave empty channel to disable QnA.")]
+        [Remarks("h.qac #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequireContext(ContextType.Guild)]
         public async Task SetQuestionChannelAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (cfg.QuestionAndAnswerChannel.HasValue && channel == null)
                 {
                     cfg.QuestionAndAnswerChannel = null;

@@ -4,9 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
-using Hanekawa.Addons.Database;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.TypeReaders;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +19,8 @@ namespace Hanekawa.Services
         private readonly IConfiguration _config;
         private readonly IServiceProvider _provider;
 
-        public StartupService(CommandService command, IConfiguration config, IServiceProvider provider, DiscordSocketClient client)
+        public StartupService(CommandService command, IConfiguration config, IServiceProvider provider,
+            DiscordSocketClient client)
         {
             _command = command;
             _config = config;

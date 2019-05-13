@@ -8,7 +8,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Games.ShipGame;
@@ -20,13 +19,12 @@ namespace Hanekawa.Modules.Game
     {
         private readonly ShipGameService _gameService;
 
-        public Game(ShipGameService gameService)
-        {
-            _gameService = gameService;
-        }
+        public Game(ShipGameService gameService) => _gameService = gameService;
 
+        [Name("Search")]
         [Command("search", RunMode = RunMode.Async)]
         [Summary("Searches for a monster to fight")]
+        [Remarks("h.search")]
         [RequireContext(ContextType.Guild)]
         [Ratelimit(1, 1, Measure.Seconds)]
         [RequiredChannel]
@@ -43,8 +41,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Attack")]
         [Command("attack", RunMode = RunMode.Async)]
         [Summary("Starts a fight with a monster you've searched for")]
+        [Remarks("h.attack")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task AttackGameAsync()
@@ -60,12 +60,15 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Duel")]
         [Command("duel", RunMode = RunMode.Async)]
         [Summary("Duels a user, optinoally for money")]
+        [Remarks("h.duel @bob#0000")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
-        public async Task AttackGameAsync(SocketGuildUser user, uint bet = 0)
+        public async Task AttackGameAsync(SocketGuildUser user, int bet = 0)
         {
+            if (bet < 0) return;
             if (user == Context.User) return;
             using (var db = new DbService())
             {
@@ -104,8 +107,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Class")]
         [Command("class", RunMode = RunMode.Async)]
         [Summary("Displays available classes and switch to them")]
+        [Remarks("h.class")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task PickClassAsync()
@@ -113,7 +118,7 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= (int)userdata.Level)
+                var classes = await db.GameClasses.Where(x => x.LevelRequirement <= userdata.Level)
                     .ToListAsync();
                 var result = new List<string>
                 {
@@ -156,8 +161,10 @@ namespace Hanekawa.Modules.Game
             }
         }
 
+        [Name("Class list")]
         [Command("class list", RunMode = RunMode.Async)]
         [Summary("Displays all classes")]
+        [Remarks("h.class list")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ListClassesAsync()
@@ -165,15 +172,17 @@ namespace Hanekawa.Modules.Game
             using (var db = new DbService())
             {
                 var classes = await db.GameClasses.ToListAsync();
-                var result = new List<string> { "Classes" };
+                var result = new List<string> {"Classes"};
                 foreach (var x in classes) result.Add($"{x.Id} - {x.Name} (Level:{x.LevelRequirement}");
                 var content = string.Join("\n", result);
                 await Context.ReplyAsync(content);
             }
         }
 
+        [Name("Class info")]
         [Command("class info", RunMode = RunMode.Async)]
         [Summary("Displays information on specific class providing ID")]
+        [Remarks("h.class info 5")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ClassInfoAsync(int id)

@@ -8,7 +8,7 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Services.Welcome;
@@ -18,24 +18,24 @@ using Quartz.Util;
 
 namespace Hanekawa.Modules.Welcome
 {
-    [Group("welcome")]
-    [Alias("welc")]
+    [Name("welcome")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Welcome : InteractiveBase
     {
         private readonly ImageGenerator _banner;
         private readonly WelcomeMessage _message;
-        private readonly WelcomeService _service;
 
-        public Welcome(WelcomeService welcomeService, ImageGenerator banner, WelcomeMessage message)
+        public Welcome(ImageGenerator banner, WelcomeMessage message)
         {
-            _service = welcomeService;
             _banner = banner;
             _message = message;
         }
 
-        [Command("add", RunMode = RunMode.Async)]
+        [Name("Welcome add")]
+        [Command("welcome add", RunMode = RunMode.Async)]
+        [Alias("welc add")]
         [Summary("Adds a banner to the bot")]
+        [Remarks("h.welc add imgur.com")]
         public async Task AddWelcomeBanner(string url)
         {
             if (!url.IsPictureUrl())
@@ -50,6 +50,7 @@ namespace Hanekawa.Modules.Welcome
             var msg = await Context.Channel.SendFileAsync(stream, "Welcome.png",
                 "Do you want to add this banner? (Y/N");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+            if (response == null) return;
             if (response.Content.ToLower() != "y")
             {
                 await msg.DeleteAsync();
@@ -76,8 +77,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
+        [Name("Welcome remove")]
+        [Command("welcome remove", RunMode = RunMode.Async)]
+        [Alias("welc remove")]
         [Summary("Removes a banner from the bot")]
+        [Remarks("h.welc remove 5")]
         public async Task RemoveWelcomeBanner(int id)
         {
             using (var db = new DbService())
@@ -97,8 +101,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Welcome list")]
+        [Command("welcome list", RunMode = RunMode.Async)]
+        [Alias("welc list")]
         [Summary("Lists all banners for this guild")]
+        [Remarks("h.welc list")]
         public async Task ListWelcomeBanner()
         {
             using (var db = new DbService())
@@ -123,8 +130,11 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("test", RunMode = RunMode.Async)]
+        [Name("Welcome test")]
+        [Command("welcome test", RunMode = RunMode.Async)]
+        [Alias("welc test")]
         [Summary("Tests a banner from a url to see how it looks")]
+        [Remarks("h.welc test")]
         public async Task TestWelcomeBanner(string url)
         {
             if (!url.IsPictureUrl())
@@ -139,8 +149,11 @@ namespace Hanekawa.Modules.Welcome
             await Context.Channel.SendFileAsync(stream, "welcome.png");
         }
 
-        [Command("template", RunMode = RunMode.Async)]
+        [Name("Welcome template")]
+        [Command("welcome template", RunMode = RunMode.Async)]
+        [Alias("welc template")]
         [Summary("Sends banner template")]
+        [Remarks("h.welc template")]
         public async Task TemplateWelcomeBanner()
         {
             var embed = new EmbedBuilder()
@@ -150,18 +163,20 @@ namespace Hanekawa.Modules.Welcome
                     "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
-            await Context.Channel.SendFileAsync(@"Data\Welcome\WelcomeTemplate.psd", null, false, embed.Build());
+            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
         }
 
-        [Command("message", RunMode = RunMode.Async)]
-        [Alias("msg")]
+        [Name("Welcome message")]
+        [Command("welcome message", RunMode = RunMode.Async)]
+        [Alias("welc msg")]
         [Summary("Sets welcome message")]
+        [Remarks("h.welc msg Welcome %user% to %guild%")]
         public async Task SetWelcomeMessage([Remainder] string message)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                cfg.WelcomeMessage = message.IsNullOrWhiteSpace() ? null : message;
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync("Updated welcome message!\n\n" +
                                          $"{_message.Message(message, Context.User, Context.Guild)}",
@@ -169,23 +184,25 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("autodelete", RunMode = RunMode.Async)]
-        [Alias("autodel")]
+        [Name("Welcome auto delete")]
+        [Command("welcome autodelete", RunMode = RunMode.Async)]
+        [Alias("welc autodel")]
         [Summary("Sets when a welcome message should delete on its own")]
+        [Remarks("h.autodel 5m")]
         public async Task SetAutoDeleteTimer(TimeSpan? timer = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (!cfg.WelcomeDelete.HasValue && timer == null) return;
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (!cfg.TimeToDelete.HasValue && timer == null) return;
                 if (timer == null)
                 {
-                    cfg.WelcomeDelete = null;
+                    cfg.TimeToDelete = null;
                     await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeDelete = timer.Value;
+                    cfg.TimeToDelete = timer.Value;
                     await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
                                              $"I will now delete the message after {timer.Value.Humanize()}!",
                         Color.Green.RawValue);
@@ -195,21 +212,24 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("banner", RunMode = RunMode.Async)]
+        [Name("Welcome banner")]
+        [Command("welcome banner", RunMode = RunMode.Async)]
+        [Alias("welc banner")]
         [Summary("Toggles welcome banner")]
+        [Remarks("h.welc banner")]
         public async Task ToggleBannerWelcomeBanner()
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.WelcomeBanner)
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Banner)
                 {
-                    cfg.WelcomeBanner = false;
+                    cfg.Banner = false;
                     await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeBanner = true;
+                    cfg.Banner = true;
                     await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
                 }
 
@@ -217,41 +237,44 @@ namespace Hanekawa.Modules.Welcome
             }
         }
 
-        [Command("toggle", RunMode = RunMode.Async)]
-        [Summary("Toggles welcome messages")]
+        [Name("Welcome channel")]
+        [Command("welcome channel", RunMode = RunMode.Async)]
+        [Alias("welc channel")]
+        [Summary("Enables or disables welcome messages in a channel")]
+        [Remarks("h.welc channel #general")]
         public async Task ToggleWelcome(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.WelcomeChannel.HasValue && channel == null)
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Channel.HasValue && channel == null)
                 {
-                    cfg.WelcomeChannel = null;
+                    cfg.Channel = null;
                     await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
                 }
-                else if (cfg.WelcomeChannel.HasValue && channel != null)
+                else if (cfg.Channel.HasValue && channel != null)
                 {
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
-                else if (!cfg.WelcomeChannel.HasValue && channel == null)
+                else if (!cfg.Channel.HasValue && channel == null)
                 {
                     if (Context.Channel is ITextChannel textChannel) channel = textChannel;
                     else return;
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
-                else if (!cfg.WelcomeChannel.HasValue)
+                else if (!cfg.Channel.HasValue)
                 {
-                    cfg.WelcomeChannel = channel.Id;
+                    cfg.Channel = channel.Id;
                     await Context.ReplyAsync($"Enabled welcome notifications in {channel.Mention}!",
                         Color.Green.RawValue);
                 }
                 else
                 {
-                    cfg.WelcomeChannel = null;
+                    cfg.Channel = null;
                     await Context.ReplyAsync("disabled welcome notifications!", Color.Green.RawValue);
                 }
 

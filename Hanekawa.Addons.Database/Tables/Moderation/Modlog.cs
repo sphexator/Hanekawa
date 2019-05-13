@@ -1,16 +1,16 @@
 ﻿using System;
 
-namespace Hanekawa.Addons.Database.Tables
+namespace Hanekawa.Addons.Database.Tables.Moderation
 {
     public class ModLog
     {
-        public uint Id { get; set; }
+        public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
-        public string Action { get; set; }
+        public string Action { get; set; } = "Test";
         public ulong MessageId { get; set; }
         public ulong? ModId { get; set; }
-        public string Response { get; set; }
-        public DateTime Date { get; set; }
+        public string Response { get; set; } = "No response";
+        public DateTime Date { get; set; } = DateTime.UtcNow;
     }
 }

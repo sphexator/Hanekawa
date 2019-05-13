@@ -1,75 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Discord.WebSocket;
+using Hanekawa.Modules.Club.Handler;
+using Hanekawa.Preconditions;
+using System.Threading.Tasks;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Club;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Preconditions;
-using Hanekawa.Services.Club;
+using Hanekawa.Services.Logging;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using static Hanekawa.Services.Club.ClubService;
+using Microsoft.Extensions.Logging;
+using Quartz.Util;
 
 namespace Hanekawa.Modules.Club
 {
-    [Group("club")]
     [RequireContext(ContextType.Guild)]
+    [Name("Club")]
     public class Club : InteractiveBase
     {
-        private readonly ClubService _clubService;
-        public Club(ClubService clubService)
+        private readonly OverwritePermissions _allowOverwrite =
+            new OverwritePermissions(addReactions: PermValue.Allow,
+                attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
+
+        private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(
+            addReactions: PermValue.Deny, attachFiles: PermValue.Deny,
+            embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
+
+        private readonly Admin _admin;
+        private readonly Advertise _advertise;
+        private readonly Management _management;
+        private readonly LogService _log;
+
+        public Club(Admin admin, Advertise advertise, Management management, LogService log)
         {
-            _clubService = clubService;
+            _admin = admin;
+            _advertise = advertise;
+            _management = management;
+            _log = log;
         }
 
-        [Command("create", RunMode = RunMode.Async)]
+        [Name("Create")]
+        [Command("club create", RunMode = RunMode.Async)]
         [Summary("Creates a club")]
+        [Remarks("h.club create Fan service club")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task CreateClub([Remainder] string name)
-        {
-            using (var db = new DbService())
-            {
-                var userdata = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
-                if (userdata.Level < 40)
-                {
-                    await Context.ReplyAsync("You do not meet the requirement to make a club (Level 40).",
-                        Color.Red.RawValue);
-                    return;
-                }
+        public async Task CreateClub([Remainder] string name) => await _admin.CreateAsync(Context, name);
 
-                var leaderCheck = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leaderCheck != null)
-                {
-                    await Context.ReplyAsync("You're already a leader of a club, you can't create multiple clubs.",
-                        Color.Red.RawValue);
-                    return;
-                }
-
-                var club = await db.CreateClub(Context.User, Context.Guild, name, DateTimeOffset.UtcNow);
-                var data = new ClubPlayer
-                {
-                    ClubId = club.Id,
-                    GuildId = Context.Guild.Id,
-                    JoinDate = DateTimeOffset.UtcNow,
-                    Rank = 1,
-                    UserId = Context.User.Id,
-                    Id = await db.ClubPlayers.CountAsync() + 1
-                };
-                await db.ClubPlayers.AddAsync(data);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Successfully created club {name} !", Color.Green.RawValue);
-            }
-        }
-
-        [Command("add", RunMode = RunMode.Async)]
+        [Name("Club add")]
+        [Command("club add", RunMode = RunMode.Async)]
         [Summary("Adds a member to your club")]
+        [Remarks("h.club add @bob#0000")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task AddClubMemberAsync(IGuildUser user)
@@ -78,15 +66,21 @@ namespace Hanekawa.Modules.Club
             using (var db = new DbService())
             {
                 var clubUser =
-    await db.ClubPlayers.FirstOrDefaultAsync(x =>
-        x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.Rank <= 2);
+                    await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.Rank <= 2);
                 if (clubUser == null) return;
                 if (clubUser.Rank > 2)
                 {
                     await Context.ReplyAsync("You're not high enough rank to use that command!", Color.Red.RawValue);
                     return;
                 }
-
+                var check = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.UserId == user.Id && x.GuildId == user.GuildId && x.ClubId == clubUser.Id);
+                if (check != null)
+                {
+                    await Context.ReplyAsync($"{user.Mention} is already a member of your club.");
+                    return;
+                }
                 var clubData = await db.GetClubAsync(clubUser.ClubId, Context.Guild);
                 await ReplyAsync(
                     $"{user.Mention}, {Context.User.Mention} has invited you to {clubData.Name}, do you accept? (y/n)");
@@ -96,6 +90,7 @@ namespace Hanekawa.Modules.Club
                     {
                         var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id),
                             TimeSpan.FromSeconds(30));
+
                         if (response.Content.ToLower() == "y") status = false;
                         if (response.Content.ToLower() == "n") return;
                     }
@@ -104,38 +99,17 @@ namespace Hanekawa.Modules.Club
                         await Context.ReplyAsync("Invite expired.", Color.Red.RawValue);
                         return;
                     }
-
-                var data = new ClubPlayer
-                {
-                    ClubId = clubUser.ClubId,
-                    GuildId = Context.Guild.Id,
-                    JoinDate = DateTimeOffset.UtcNow,
-                    Rank = 3,
-                    UserId = user.Id,
-                    Id = DateTime.UnixEpoch.Millisecond
-                };
-                await db.ClubPlayers.AddAsync(data);
-                await db.SaveChangesAsync();
+                await Context.Channel.TriggerTypingAsync();
+                await _management.AddUserAsync(db, user, clubUser);
                 await Context.ReplyAsync($"Added {user.Mention} to {clubData.Name}", Color.Green.RawValue);
-                if (clubData.RoleId.HasValue)
-                {
-                    var role = Context.Guild.GetRole(clubData.RoleId.Value);
-                    if (role == null)
-                    {
-                        clubData.RoleId = null;
-                        await db.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        await user.AddRoleAsync(role);
-                    }
-                }
             }
         }
 
-        [Command("remove", RunMode = RunMode.Async)]
-        [Alias("kick")]
+        [Name("Club remove")]
+        [Command("club remove", RunMode = RunMode.Async)]
+        [Alias("club kick")]
         [Summary("Removes a user from your club")]
+        [Remarks("h.club remove @bob#0000")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task RemoveClubMemberAsync(IGuildUser user)
@@ -143,24 +117,24 @@ namespace Hanekawa.Modules.Club
             if (user == Context.User) return;
             using (var db = new DbService())
             {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leader == null) return;
-                var clubUser = await db.ClubPlayers.FindAsync(Context.User.Id, Context.Guild.Id, leader.Id);
-                if (clubUser == null)
+                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                if (club == null) return;
+                await Context.Channel.TriggerTypingAsync();
+                var response = await _management.RemoveUserAsync(db, user, club.Id);
+                if (response == null)
                 {
-                    await Context.ReplyAsync($"Can't remove {user.Mention} because he/she is not part of {leader.Name}",
-                        Color.Red.RawValue);
+                    await Context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red.RawValue);
                     return;
                 }
 
-                db.ClubPlayers.Remove(clubUser);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Removed {user.Mention} from {leader.Name}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Removed {user.Mention} from {club.Name}", Color.Green.RawValue);
             }
         }
 
-        [Command("leave", RunMode = RunMode.Async)]
+        [Name("Club leave")]
+        [Command("club leave", RunMode = RunMode.Async)]
         [Summary("Leaves a club you're part of")]
+        [Remarks("h.club leave")]
         [Ratelimit(1, 5, Measure.Seconds)]
         public async Task LeaveClubAsync()
         {
@@ -168,170 +142,134 @@ namespace Hanekawa.Modules.Club
             {
                 var clubs = await db.ClubPlayers
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
-                var nr = 1;
-                string content = null;
-                if (clubs.Count != 0)
-                    foreach (var x in clubs)
+                ClubUser club = null;
+                switch (clubs.Count)
+                {
+                    case 0:
+                        await Context.ReplyAsync("You're currently not in a club.", Color.Red.RawValue);
+                        break;
+                    case 1:
+                        club = clubs.FirstOrDefault();
+                        var clubInfo = await _management.RemoveUserAsync(db, Context.User, Context.Guild, club);
+                        if (clubInfo != null)
+                        {
+                            await Context.ReplyAsync(
+                                $"Successfully left {clubInfo.Name}!");
+                        }
+                        break;
+                    default:
                     {
-                        content += $"{x.ClubId} - {(await db.GetClubAsync(x.ClubId, Context.Guild)).Name}\n";
-                        nr++;
-                    }
-                else content += "Currently not in any clubs";
+                        string content = null;
+                        if (clubs.Count != 0)
+                            foreach (var x in clubs)
+                            {
+                                content += $"{x.ClubId} - {(await db.GetClubAsync(x.ClubId, Context.Guild)).Name}\n";
+                            }
+                        await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
+                            .WithTitle("Reply with the ID of club you wish to leave")
+                            .WithFooter("Exit to cancel"));
+                        var status = true;
+                        var retries = 0;
+                        while (status)
+                            try
+                            {
+                                retries++;
+                                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
+                                if (response == null)
+                                {
+                                    if (retries >= 3) status = false;
+                                    continue;
+                                }
 
-                await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
-                    .WithTitle("Reply with the ID of club you wish to leave")
-                    .WithFooter("Exit to cancel"));
-                var status = true;
-                try
-                {
-                    while (status)
-                    {
-                        var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-                        if (response.Content.ToLower() == "exit") return;
-                        if (!int.TryParse(response.Content, out var result)) continue;
-                        var club = clubs.FirstOrDefault(x => x.ClubId == result);
-                        if (club == null) continue;
-                        db.ClubPlayers.Remove(club);
-                        await db.SaveChangesAsync();
-                        await Context.ReplyAsync(
-                            $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
-                            Color.Green.RawValue);
-                        status = false;
+                                if (response.Content.ToLower() == "exit") return;
+                                if (!int.TryParse(response.Content, out var result)) continue;
+                                club = clubs.FirstOrDefault(x => x.ClubId == result);
+                                if (club == null) continue;
+                                await _management.RemoveUserAsync(db, Context.User, Context.Guild, club);
+                                await Context.ReplyAsync(
+                                    $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
+                                    Color.Green.RawValue);
+                                status = false;
+                            }
+                            catch (Exception e)
+                            {
+                                _log.LogAction(LogLevel.Error, e.ToString(), "Club user leave");
+                            }
+
+                        break;
                     }
-                }
-                catch
-                {
-                    // IGNORE TODO: Add logging
                 }
             }
         }
 
-        [Command("leave", RunMode = RunMode.Async)]
-        [Summary("Leaves a club you're part of")]
-        [Ratelimit(1, 5, Measure.Seconds)]
-        [RequiredChannel]
-        public async Task LeaveClubAsync(uint id)
-        {
-            using (var db = new DbService())
-            {
-                var clubs = await db.ClubPlayers
-                    .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
-                var club = clubs.FirstOrDefault(x => x.ClubId == id);
-                if (club == null)
-                {
-                    await Context.ReplyAsync("You're not in a club by that ID.", Color.Red.RawValue);
-                    return;
-                }
-
-                db.ClubPlayers.Remove(club);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
-                    Color.Green.RawValue);
-            }
-        }
-
-        [Command("promote", RunMode = RunMode.Async)]
+        [Name("Club promote")]
+        [Command("club promote", RunMode = RunMode.Async)]
         [Summary("Promotes someone to a higher rank")]
+        [Remarks("h.club promote @bob#0000")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ClubPromoteAsync(IGuildUser user)
         {
-            if (user.Id == Context.User.Id) return;
+            if (Context.User == user) return;
             using (var db = new DbService())
             {
-                var leaderCheck = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leaderCheck == null)
+                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                if (club == null)
                 {
                     await Context.ReplyAsync("You can't use this command as you're not a leader of any clubs",
                         Color.Red.RawValue);
                     return;
                 }
-
-                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                    x.GuildId == user.GuildId && x.ClubId == leaderCheck.Id && x.UserId == user.Id);
-                if (clubUser == null)
+                var clubUser =
+                    await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.GuildId == user.GuildId && x.UserId == user.Id && x.Rank <= 2);
+                if (clubUser != null && clubUser.ClubId != club.Id)
                 {
-                    await Context.ReplyAsync($"{user.Mention} is not part of {leaderCheck.Name}", Color.Red.RawValue);
+                    await Context.ReplyAsync($"{user.Mention} is already an officer in a club");
                     return;
                 }
-
-                if (await db.ClubPlayers
-                        .Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id && x.Rank < 3).CountAsync() >=
-                    1)
+                var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.ClubId == club.Id && x.GuildId == user.GuildId && x.UserId == user.Id);
+                if (toPromote == null)
                 {
-                    await Context.ReplyAsync($"{user.Mention} is already promoted in a different club",
+                    await Context.ReplyAsync($"{user.Mention} is not part of {club.Name}",
                         Color.Red.RawValue);
                     return;
                 }
 
-                if (clubUser.Rank == 2)
+                if (toPromote.Rank == 2)
                 {
-                    await Context.ReplyAsync(
-                        $"{Context.User.Mention}, you sure you want to transfer ownership to {user.Mention}? (y/n)");
-                    var status = true;
-                    while (status)
+                    await Context.ReplyAsync($"Are you sure you want to transfer ownership of {club.Name} to {user.Mention}? (y/n)");
+                    var response = await NextMessageAsync(timeout: TimeSpan.FromSeconds(45));
+                    if (response == null || response.Content.ToLower() != "y")
                     {
-                        var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-                        if (response.Content.ToLower() == "n")
-                        {
-                            await Context.ReplyAsync("Cancelled.", Color.Green.RawValue);
-                            status = false;
-                        }
-                        else if (response.Content.ToLower() == "y")
-                        {
-                            var leader =
-                                await db.ClubPlayers.FindAsync(leaderCheck.Id, Context.Guild.Id, Context.User.Id);
-                            leader.Rank = 2;
-                            clubUser.Rank = 1;
-                            await db.SaveChangesAsync();
-                            await Context.ReplyAsync($"Transferred ownership of {leaderCheck.Name} to {user.Mention}",
-                                Color.Green.RawValue);
-                            status = false;
-                        }
+                        await Context.ReplyAsync("Cancelling...");
+                        return;
                     }
+                    await _management.PromoteUserAsync(db, user, toPromote, club);
+                    await Context.ReplyAsync($"Transferred ownership of {club.Name} to {user.Mention}");
                 }
-                else if (clubUser.Rank == 3)
+                else
                 {
-                    clubUser.Rank = 2;
-                    await Context.ReplyAsync($"Promoted {user.Mention} to rank 2",
-                        Color.Green.RawValue);
-                    await db.SaveChangesAsync();
+                    await _management.PromoteUserAsync(db, user, toPromote, club);
+                    await Context.ReplyAsync($"Promoted {user.Mention} to rank 2.");
                 }
+
             }
         }
 
-        [Command("demote", RunMode = RunMode.Async)]
+        [Name("Club demote")]
+        [Command("club demote", RunMode = RunMode.Async)]
         [Summary("Demotes someone to a lower rank")]
+        [Remarks("club demote @bob#0000")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task ClubDemoteAsync(IGuildUser user)
-        {
-            if (user == Context.User) return;
-            using (var db = new DbService())
-            {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                    x.GuildId == user.GuildId && x.ClubId == leader.Id && x.UserId == user.Id);
-                if (clubUser == null)
-                {
-                    await Context.ReplyAsync($"Can't demote {user.Mention} because he/she is not part of {leader.Name}",
-                        Color.Red.RawValue);
-                    return;
-                }
+        public async Task ClubDemoteAsync(IGuildUser user) => await _admin.DemoteAsync(Context, user);
 
-                if (clubUser.Rank == 3)
-                    return;
-                if (clubUser.Rank == 1) return;
-
-                clubUser.Rank = 3;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {leader.Name}",
-                    Color.Green.RawValue);
-            }
-        }
-
-        [Command("channel", RunMode = RunMode.Async)]
+        [Name("Club channel")]
+        [Command("club channel", RunMode = RunMode.Async)]
         [Summary("Creates a channel and role for the club")]
+        [Remarks("h.club channel")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ClubChannelAsync()
@@ -340,9 +278,8 @@ namespace Hanekawa.Modules.Club
             {
                 var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
                 if (leader.Channel.HasValue) return;
-                if (leader.RoleId.HasValue) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (!cfg.ClubChannelCategory.HasValue)
+                var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
+                if (!cfg.ChannelCategory.HasValue)
                 {
                     await Context.ReplyAsync("This server doesn\'t allow club channels", Color.Red.RawValue);
                     return;
@@ -350,34 +287,58 @@ namespace Hanekawa.Modules.Club
 
                 var users = await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == leader.Id)
                     .ToListAsync();
-                var amount = await _clubService.IsChannelRequirementAsync(db, users);
-                if (amount < 4)
+                var amount = await GetUsersOfLevelAsync(db, cfg.ChannelRequiredLevel, users);
+                if (amount < cfg.ChannelRequiredAmount)
                 {
                     await Context.ReplyAsync(
-                        "Club does not have the required amount of people that's of level 40 or higher to create a channel",
+                        $"Club does not have the required amount({cfg.ChannelRequiredAmount}) of people that's of level {cfg.ChannelRequiredLevel} or higher to create a channel",
                         Color.Red.RawValue);
                     return;
                 }
 
-                try
+                var channel = await Context.Guild.CreateTextChannelAsync(leader.Name,
+                    x => x.CategoryId = cfg.ChannelCategory.Value);
+                await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, _denyOverwrite);
+                leader.Channel = channel.Id;
+                if (cfg.RoleEnabled)
                 {
-                    await _clubService.CreateChannelAsync(db, Context.Guild, cfg, leader.Name,
-                        Context.User as IGuildUser,
-                        users, leader);
-                    await Context.ReplyAsync($"Successfully created channel for club {leader.Name} !",
-                        Color.Green.RawValue);
+                    var role = await Context.Guild.CreateRoleAsync(leader.Name, GuildPermissions.None);
+                    await channel.AddPermissionOverwriteAsync(role, _allowOverwrite);
+                    leader.Role = role.Id;
+                    foreach (var x in users)
+                        try
+                        {
+                            await Context.Guild.GetUser(x.UserId).TryAddRoleAsync(role)
+                                .ConfigureAwait(false);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.LogAction(LogLevel.Error, e.ToString(), "Club add user channel");
+                        }
                 }
-                catch (Exception e)
+                else
                 {
-                    await Context.ReplyAsync("Something went wrong...", Color.Red.RawValue);
-                    Console.WriteLine(e);
+                    foreach (var x in users)
+                        try
+                        {
+                            await channel.AddPermissionOverwriteAsync(Context.Guild.GetUser(x.UserId),
+                                _allowOverwrite);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.LogAction(LogLevel.Error, e.ToString(), "Club add user channel");
+                        }
                 }
+
+                await db.SaveChangesAsync();
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
-        [Alias("clubs")]
+        [Name("Club list")]
+        [Command("club list", RunMode = RunMode.Async)]
+        [Alias("club clubs")]
         [Summary("Paginates all clubs")]
+        [Remarks("h.club list")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ClubListAsync()
@@ -394,19 +355,26 @@ namespace Hanekawa.Modules.Club
                 var pages = new List<string>();
                 foreach (var x in clubs)
                 {
-                    var leader = Context.Guild.GetUser(x.Leader).Mention ??
+                    if (x.LeaderId == 1) continue;
+                    var memberCount =
+                        await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id);
+                    if (memberCount == 0) continue;
+                    var leader = Context.Guild.GetUser(x.LeaderId).Mention ??
                                  "Couldn't find user or left server.";
                     pages.Add($"**{x.Name} (id: {x.Id})**\n" +
-                              $"Members: {await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id)}\n" +
+                              $"Members: {memberCount}\n" +
                               $"Leader {leader}\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Clubs in {Context.Guild.Name}"));
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Clubs in {Context.Guild.Name}"));
             }
         }
 
-        [Command("check", RunMode = RunMode.Async)]
+        [Name("Club check")]
+        [Command("club check", RunMode = RunMode.Async)]
         [Summary("Checks specific club information")]
+        [Remarks("h.club check 15")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
         public async Task ClubCheckAsync(int id)
@@ -420,260 +388,169 @@ namespace Hanekawa.Modules.Club
                     return;
                 }
 
-                await Context.ReplyAsync($"**{club.Name} (ID:{club.Id}**\n" +
-                                         $"Members: {await db.ClubPlayers.CountAsync(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id)}\n" +
-                                         $"Leader {Context.Guild.GetUser(club.Leader).Mention ?? "Couldn't find user or left server."}");
+                var clubUsers =
+                    await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id).ToListAsync();
+                string officers = null;
+                foreach (var x in clubUsers.Where(x => x.Rank == 2))
+                {
+                    officers += $"{Context.Guild.GetUser(x.UserId).Mention}\n";
+                }
+
+                if (officers == null) officers += "No officers";
+
+                var embed = new EmbedBuilder
+                {
+                    ThumbnailUrl = club.ImageUrl,
+                    Timestamp = club.CreationDate,
+                    Author = new EmbedAuthorBuilder { IconUrl = club.IconUrl, Name = $"{club.Name} (ID:{club.Id})"},
+                    Footer = new EmbedFooterBuilder { Text = "Created:"},
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder { IsInline = false, Name = "Leader", Value = $"{Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}"},
+                        new EmbedFieldBuilder { IsInline = false, Name = "Officers", Value = officers}
+                    }
+                }.CreateDefault(club.Description, Context.Guild.Id);
+                await Context.ReplyAsync(embed);
             }
         }
 
-        [Command("description", RunMode = RunMode.Async)]
-        [Alias("desc")]
+        [Name("Club name")]
+        [Command("club name", RunMode = RunMode.Async)]
+        [Alias("club name")]
+        [Summary("Changes club name")]
+        [Remarks("h.club name Google Town")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task ClubNameChangeAsync([Remainder] string content) =>
+            await _advertise.NameAsync(Context, content);
+
+        [Name("Club description")]
+        [Command("club description", RunMode = RunMode.Async)]
+        [Alias("club desc")]
         [Summary("Sets description of a club")]
+        [Remarks("h.club desc this is a description")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task ClubDescriptionAsync([Remainder] string content)
-        {
-            using (var db = new DbService())
-            {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leader == null) return;
-                await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                leader.Description = content;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
-                if (leader.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
-                {
-                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                    await _clubService.UpdatePostAsync(cfg, msg, leader, UpdateType.Description, content);
-                }
-            }
-        }
+        public async Task ClubDescriptionAsync([Remainder] string content) =>
+            await _advertise.DescriptionAsync(Context, content);
 
-        [Command("image", RunMode = RunMode.Async)]
-        [Alias("pic")]
+        [Name("Club image")]
+        [Command("club image", RunMode = RunMode.Async)]
+        [Alias("club pic", "cimage")]
         [Summary("Sets a picture to a club")]
+        [Remarks("h.club pic https://i.imgur.com/p3Xxvij.png")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task ClubImageAsync(string image)
-        {
-            using (var db = new DbService())
-            {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leader == null) return;
-                await Context.Message.DeleteAsync();
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                leader.ImageUrl = image;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated image to club!", Color.Green.RawValue);
-                if (leader.AdMessage.HasValue && cfg.ClubAdvertisementChannel.HasValue)
-                {
-                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                    await _clubService.UpdatePostAsync(cfg, msg, leader, UpdateType.Image, image);
-                }
-            }
-        }
+        public async Task ClubImageAsync(string image) => await _advertise.ImageAsync(Context, image);
 
-        [Command("public", RunMode = RunMode.Async)]
+        [Name("Club icon")]
+        [Command("club icon", RunMode = RunMode.Async)]
+        [Alias("cicon")]
+        [Summary("Sets a icon to a club")]
+        [Remarks("h.club icon https://i.imgur.com/p3Xxvij.png")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task ClubIconAsync(string image) => await _advertise.IconAsync(Context, image);
+
+        [Name("Club public")]
+        [Command("club public", RunMode = RunMode.Async)]
         [Summary("Toggles a club to be public or not")]
+        [Remarks("h.club public")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task ClubPublicAsync()
-        {
-            using (var db = new DbService())
-            {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leader == null) return;
-                if (leader.Public)
-                {
-                    leader.Public = false;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Club is no longer public. People need invite to enter the club.",
-                        Color.Green.RawValue);
-                }
-                else
-                {
-                    leader.Public = true;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set club as public. Anyone can join!", Color.Green.RawValue);
-                    if (leader.AdMessage.HasValue)
-                    {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                        if (cfg.ClubAdvertisementChannel.HasValue)
-                        {
-                            var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
-                                .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                            await msg.AddReactionAsync(new Emoji("\u2714"));
-                        }
-                    }
-                }
-            }
-        }
+        public async Task ClubPublicAsync() => await _advertise.PublicAsync(Context);
 
-        [Command("advertise", RunMode = RunMode.Async)]
+        [Name("Club advertise")]
+        [Command("club advertise", RunMode = RunMode.Async)]
+        [Alias("club post")]
         [Summary("Posts a advertisement of club to designated advertisement channel")]
+        [Remarks("h.club advertise")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequiredChannel]
-        public async Task ClubAdvertiseAsync()
+        public async Task ClubAdvertiseAsync() => await _advertise.AdvertiseAsync(Context);
+
+        [Name("Club blacklist")]
+        [Command("club blacklist", RunMode = RunMode.Async)]
+        [Alias("cb")]
+        [Summary("Blacklist a user from their club")]
+        [Remarks("h.cb @bob#0000")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task BlackListUser(IGuildUser user, [Remainder] string reason = null)
         {
+            if (Context.User == user) return;
             using (var db = new DbService())
             {
-                var leader = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
-                if (leader == null) return;
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (!cfg.ClubAdvertisementChannel.HasValue)
+                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                if (club == null) return;
+                var toBlacklist = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.ClubId == club.Id && x.UserId == user.Id && x.GuildId == Context.Guild.Id);
+                if (toBlacklist == null) return;
+                var blacklist = await _management.BlackListUserAsync(db, user, Context.User as IGuildUser, club.Id, reason);
+                if (!blacklist)
                 {
-                    await Context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
-                        Color.Red.RawValue);
-                    return;
-                }
-
-                if (!leader.AdMessage.HasValue)
-                {
-                    await _clubService.PostAdvertisementAsync(db, cfg, Context.Guild, leader);
-                    await Context.ReplyAsync("Posted ad!", Color.Green.RawValue);
-                }
-                else
-                {
-                    var msg = await Context.Guild.GetTextChannel(cfg.ClubAdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value);
-                    if (msg == null)
+                    await Context.ReplyAsync(
+                        "User is already blacklisted. Do you wish to remove it? (y/n)");
+                    var response = await NextMessageAsync();
+                    if (response == null || response.Content.IsNullOrWhiteSpace()) return;
+                    if (response.Content.ToLower() != "y")
                     {
-                        await _clubService.PostAdvertisementAsync(db, cfg, Context.Guild, leader);
-                        await Context.ReplyAsync("Posted ad!", Color.Green.RawValue);
+                        await Context.ReplyAsync("User stays blacklisted");
                     }
-                    else
-                    {
-                        await Context.ReplyAsync("There's already an ad up!", Color.Red.RawValue);
-                    }
+                    await _management.RemoveBlackListUserAsync(db, user, club.Id);
+                    await Context.ReplyAsync($"Removed blacklist for {user.Mention} in {club.Name}", Color.Green.RawValue);
                 }
+
+                await Context.ReplyAsync($"Blacklisted {user.Mention} from {club.Name}", Color.Green.RawValue);
             }
         }
-    }
 
-    [Group("club settings")]
-    [RequireUserPermission(GuildPermission.ManageGuild)]
-    [RequireContext(ContextType.Guild)]
-    public class ClubAdmin : InteractiveBase
-    {
-        [Command("advertisement", RunMode = RunMode.Async)]
-        [Summary("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
-        public async Task ClubSetAdvertismentChannel(ITextChannel channel = null)
+        [Name("Club blacklist")]
+        [Command("club blacklist", RunMode = RunMode.Async)]
+        [Alias("cb")]
+        [Summary("Gets current blacklist for their club")]
+        [Remarks("h.cb")]
+        [Ratelimit(1, 5, Measure.Seconds)]
+        [RequiredChannel]
+        public async Task GetBlackList()
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (channel == null)
+                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                if (club == null) return;
+                var blacklist = await db.ClubBlacklists.Where(x => x.ClubId == club.Id).ToListAsync();
+                if (blacklist == null || blacklist.Count == 0)
                 {
-                    cfg.ClubAdvertisementChannel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled Advertisement creation of clubs.",
-                        Color.Green.RawValue);
+                    await Context.ReplyAsync("No users currently blacklisted");
                     return;
                 }
 
-                if (cfg.ClubAdvertisementChannel.HasValue && cfg.ClubAdvertisementChannel.Value == channel.Id)
+                var result = new List<string>();
+                foreach (var x in blacklist)
                 {
-                    await Context.ReplyAsync($"Advertisement channel has already been set to {channel.Mention}",
-                        Color.Red.RawValue);
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(
+                        $"{x.BlackListUser} blacklisted by {x.IssuedUser} on {x.Time.Humanize()} ({x.Time})");
+                    stringBuilder.AppendLine($"Reason: {x.Reason}");
+                    stringBuilder.AppendLine();
+                    result.Add(stringBuilder.ToString());
                 }
-                else
-                {
-                    cfg.ClubAdvertisementChannel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Advertisement channel set has been been set to {channel.Mention}",
-                        Color.Green.RawValue);
-                }
+
+                await PagedReplyAsync(result.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Blacklisted users for {club.Name}"));
             }
         }
 
-        [Command("category", RunMode = RunMode.Async)]
-        [Summary("Sets location in where club channels will be created. \nLeave empty to disable")]
-        public async Task ClubSetCategory(ICategoryChannel category = null)
+        private async Task<int> GetUsersOfLevelAsync(DbService db, int level, IEnumerable<ClubUser> players)
         {
-            using (var db = new DbService())
+            var nr = 0;
+            foreach (var x in players)
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.ClubChannelCategory.HasValue && cfg.ClubChannelCategory.Value == category.Id)
-                {
-                    await Context.ReplyAsync($"Club category channel has already been set to {category.Name}",
-                        Color.Red.RawValue);
-                    return;
-                }
-
-                if (category == null)
-                {
-                    cfg.ClubChannelCategory = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled club channel creation",
-                        Color.Green.RawValue);
-                }
-                else
-                {
-                    cfg.ClubChannelCategory = category.Id;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Club category channel set has been been set to {category.Name}",
-                        Color.Green.RawValue);
-
-                }
+                var user = await db.GetOrCreateUserData(x.GuildId, x.UserId);
+                if (user.Level >= level) nr++;
             }
-        }
 
-        [Command("level", RunMode = RunMode.Async)]
-        [Summary("Sets level requirement for people to create a club")]
-        public async Task ClubSetLevelRequirement(uint level)
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                cfg.ClubChannelRequiredLevel = level;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(
-                    $"Set required amount of club members above the level limit to create a channel to {level}",
-                    Color.Green.RawValue);
-            }
-        }
-
-        [Command("channel amount", RunMode = RunMode.Async)]
-        [Summary("Sets amount required thats above the level requirement(club create) to create a channel")]
-        public async Task ClubSetAmountRequirement(uint amount)
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                cfg.ClubChannelRequiredAmount = amount;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(
-                    $"Set required amount of club members above the level limit to create a channel to {amount}",
-                    Color.Green.RawValue);
-            }
-        }
-
-        [Command("Auto prune")]
-        [Alias("autoprune", "prune")]
-        [Summary("Automatically prune inactive clubs by their member count")]
-        public async Task ClubAutoPruneToggle()
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                if (cfg.ClubAutoPrune)
-                {
-                    cfg.ClubAutoPrune = false;
-                    await Context.ReplyAsync("Disabled automatic deletion of low member count clubs with a channel.",
-                        Color.Green.RawValue);
-                }
-                else
-                {
-                    cfg.ClubAutoPrune = true;
-                    await Context.ReplyAsync("Enabled automatic deletion of low member count clubs with a channel.",
-                        Color.Green.RawValue);
-                }
-
-                await db.SaveChangesAsync();
-            }
+            return nr;
         }
     }
 }

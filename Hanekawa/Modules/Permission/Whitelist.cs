@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,9 +9,6 @@ using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Permission
 {
@@ -16,7 +16,10 @@ namespace Hanekawa.Modules.Permission
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Whitelist : InteractiveBase
     {
+        [Name("Event add")]
         [Command("event add", RunMode = RunMode.Async)]
+        [Summary("Adds a user as a whitelisted event organizer")]
+        [Remarks("h.event add @bob#0000")]
         public async Task Eventadd(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -39,7 +42,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Event Remove")]
         [Command("event remove", RunMode = RunMode.Async)]
+        [Summary("Removes a user from being a whitelisted event organizer")]
+        [Remarks("h.event remove @bob#0000")]
         public async Task EventRemove(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -58,8 +64,11 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Event list")]
         [Command("event list", RunMode = RunMode.Async)]
-        public async Task EventList(SocketGuildUser user)
+        [Summary("List all whitelisted event organizers")]
+        [Remarks("h.event list")]
+        public async Task EventList()
         {
             using (var db = new DbService())
             {
@@ -73,16 +82,17 @@ namespace Hanekawa.Modules.Permission
 
                 var pages = new List<string>();
                 foreach (var x in events)
-                {
                     pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-                }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
                     $"Whitelisted event organizers in {Context.Guild.Name}"));
             }
         }
 
+        [Name("Design add")]
         [Command("design add", RunMode = RunMode.Async)]
+        [Summary("Adds a user as a whitelisted designer")]
+        [Remarks("h.design add @bob#0000")]
         public async Task DesignAdd(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -105,7 +115,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Design remove")]
         [Command("design remove", RunMode = RunMode.Async)]
+        [Summary("Removes a user from being a whitelisted designer")]
+        [Remarks("h.design remove @bob#0000")]
         public async Task DesignRemove(SocketGuildUser user)
         {
             using (var db = new DbService())
@@ -124,7 +137,10 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Design list")]
         [Command("design list", RunMode = RunMode.Async)]
+        [Summary("Lists all whitelisted designers")]
+        [Remarks("h.design list")]
         public async Task DesignList()
         {
             using (var db = new DbService())
@@ -139,12 +155,11 @@ namespace Hanekawa.Modules.Permission
 
                 var pages = new List<string>();
                 foreach (var x in designers)
-                {
                     pages.Add($"{Context.Guild.GetUser(x.UserId).Mention ?? "User left server"}\n");
-                }
 
                 await PagedReplyAsync(
-                    pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Whitelisted designers in {Context.Guild.Name}"));
+                    pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                        $"Whitelisted designers in {Context.Guild.Name}"));
             }
         }
     }

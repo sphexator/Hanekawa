@@ -9,8 +9,8 @@ namespace Hanekawa.Addons.Perspective.Models
 
     public class TOXICITY
     {
-        public float value;
         public string type;
+        public float value;
         public IList<SpanScore> SpanScores { get; set; }
         public SummaryScore SummaryScore { get; set; }
     }

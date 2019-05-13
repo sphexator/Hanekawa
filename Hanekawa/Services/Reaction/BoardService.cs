@@ -24,8 +24,9 @@ namespace Hanekawa.Services.Reaction
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs) ReactionEmote.TryAdd(x.GuildId, x.BoardEmote ?? "⭐");
+                foreach (var x in db.BoardConfigs) ReactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
             }
+
             Console.WriteLine("Board service loaded");
         }
 
@@ -40,10 +41,7 @@ namespace Hanekawa.Services.Reaction
             ReactionEmote.AddOrUpdate(guild.Id, emote, (key, old) => old = emote);
         }
 
-        public IEmote GetGuildEmote(SocketGuild guild)
-        {
-            return GetEmote(guild);
-        }
+        public IEmote GetGuildEmote(SocketGuild guild) => GetEmote(guild);
 
         private Task BoardReactionAddedAsync(Cacheable<IUserMessage, ulong> msges, ISocketMessageChannel channel,
             SocketReaction reaction)
@@ -119,18 +117,18 @@ namespace Hanekawa.Services.Reaction
                     using (var db = new DbService())
                     {
                         var stat = await db.GetOrCreateBoard(ch.Guild, message);
-                        if ((int) stat.StarAmount - 1 < 0)
+                        if (stat.StarAmount - 1 < 0)
                             stat.StarAmount = 0;
                         else stat.StarAmount = stat.StarAmount - 1;
 
                         var giver = await db.GetOrCreateUserData(ch.Guild.Id, reaction.UserId);
                         var reciever = await db.GetOrCreateUserData(ch.Guild, message.Author);
 
-                        if ((int) giver.StarGiven - 1 < 0)
+                        if (giver.StarGiven - 1 < 0)
                             giver.StarGiven = 0;
                         else giver.StarGiven = giver.StarGiven - 1;
 
-                        if ((int) reciever.StarReceived - 1 < 0)
+                        if (reciever.StarReceived - 1 < 0)
                             reciever.StarReceived = 0;
                         else reciever.StarReceived = reciever.StarReceived - 1;
                         await db.SaveChangesAsync();
@@ -154,12 +152,12 @@ namespace Hanekawa.Services.Reaction
 
         private async Task SendBoardAsync(DbService db, ITextChannel channel, ulong messageId)
         {
-            var cfg = await db.GetOrCreateGuildConfigAsync(channel.Guild as SocketGuild);
-            if (!cfg.BoardChannel.HasValue) return;
+            var cfg = await db.GetOrCreateBoardConfigAsync(channel.Guild as SocketGuild);
+            if (!cfg.Channel.HasValue) return;
             var guild = _client.GetGuild(channel.GuildId);
             var message = await channel.GetMessageAsync(messageId);
             var user = message.Author as SocketGuildUser;
-            var channelz = guild.GetTextChannel(cfg.BoardChannel.Value);
+            var channelz = guild.GetTextChannel(cfg.Channel.Value);
             var author = new EmbedAuthorBuilder
             {
                 IconUrl = user.GetAvatar(),
@@ -186,10 +184,8 @@ namespace Hanekawa.Services.Reaction
             return user.Roles.OrderByDescending(x => x.Position).FirstOrDefault(x => x.Color.RawValue != 0);
         }
 
-        private IEmote GetEmote(SocketGuild guild)
-        {
-            return GetDictionaryEmote(guild, out var emote) ? emote : GetDatabaseEmote(guild);
-        }
+        private IEmote GetEmote(SocketGuild guild) =>
+            GetDictionaryEmote(guild, out var emote) ? emote : GetDatabaseEmote(guild);
 
         private bool GetDictionaryEmote(SocketGuild guild, out IEmote emote)
         {
@@ -214,16 +210,16 @@ namespace Hanekawa.Services.Reaction
         {
             using (var db = new DbService())
             {
-                var cfg = db.GuildConfigs.Find(guild.Id);
-                if (cfg.BoardEmote == null)
+                var cfg = db.BoardConfigs.Find(guild.Id);
+                if (cfg.Emote == null)
                 {
                     ReactionEmote.TryAdd(guild.Id, "⭐");
                     return new Emoji("⭐");
                 }
 
-                if (Emote.TryParse(cfg.BoardEmote, out var result))
+                if (Emote.TryParse(cfg.Emote, out var result))
                 {
-                    ReactionEmote.TryAdd(guild.Id, cfg.BoardEmote);
+                    ReactionEmote.TryAdd(guild.Id, cfg.Emote);
                     return result;
                 }
 

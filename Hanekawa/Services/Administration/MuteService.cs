@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Tables;
+using Hanekawa.Addons.Database.Tables.Moderation;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
+using Hanekawa.Extensions;
 using Hanekawa.Services.AutoModerator;
 
 namespace Hanekawa.Services.Administration
@@ -42,6 +43,7 @@ namespace Hanekawa.Services.Administration
                     StartUnmuteTimer(x.GuildId, x.UserId, after);
                 }
             }
+
             Console.WriteLine("Mute service loaded");
         }
 
@@ -66,14 +68,17 @@ namespace Hanekawa.Services.Administration
         }
 
         // MUTE AREA
-        public async Task Mute(IGuildUser user)
+        public async Task<bool> Mute(IGuildUser user)
         {
             using (var db = new DbService())
             {
                 await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                 var muteRole = await GetMuteRole(user.Guild);
-                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                var canMute = true;
+                if (!user.RoleIds.Contains(muteRole.Id)) canMute = await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
+                if (!canMute) return false;
                 await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+                return true;
             }
         }
 
@@ -83,7 +88,7 @@ namespace Hanekawa.Services.Administration
             {
                 await user.ModifyAsync(x => x.Mute = true).ConfigureAwait(false);
                 var muteRole = await GetMuteRole(user.Guild);
-                if (!user.RoleIds.Contains(muteRole.Id)) await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                if (!user.RoleIds.Contains(muteRole.Id)) await user.TryAddRoleAsync(muteRole).ConfigureAwait(false);
                 var stopTimer = StopUnmuteTimerAsync(db, user.GuildId, user.Id);
                 var unmute = UserMuted?.Invoke(user as SocketGuildUser, staff as SocketGuildUser);
                 await Task.WhenAll(stopTimer, unmute);
@@ -91,9 +96,10 @@ namespace Hanekawa.Services.Administration
         }
 
         // TIMED MUTE AREA
-        public async Task TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
+        public async Task<bool> TimedMute(IGuildUser user, IGuildUser staff, TimeSpan after)
         {
-            await Mute(user).ConfigureAwait(false);
+            var check = await Mute(user).ConfigureAwait(false);
+            if (!check) return false;
             using (var db = new DbService())
             {
                 var unMuteAt = DateTime.UtcNow + after;
@@ -117,6 +123,7 @@ namespace Hanekawa.Services.Administration
 
                 StartUnmuteTimer(user.GuildId, user.Id, after);
                 await UserTimedMuted(user as SocketGuildUser, staff as SocketGuildUser, after);
+                return true;
             }
         }
 
@@ -193,26 +200,26 @@ namespace Hanekawa.Services.Administration
         // Unmute AREA
         public async Task UnmuteUser(DbService db, IGuildUser user)
         {
-                await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
-                try
-                {
-                    await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
-                }
-                catch
-                {
-                    /*IGNORE*/
-                }
+            await StopUnmuteTimerAsync(db, user.GuildId, user.Id);
+            try
+            {
+                await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
+            }
+            catch
+            {
+                /*IGNORE*/
+            }
 
-                try
-                {
-                    await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
-                }
-                catch
-                {
-                    /*IGNORE*/
-                }
+            try
+            {
+                await user.TryRemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+            }
+            catch
+            {
+                /*IGNORE*/
+            }
 
-                await UserUnmuted(user as SocketGuildUser);
+            await UserUnmuted(user as SocketGuildUser);
         }
 
         // GET ROLE AREA

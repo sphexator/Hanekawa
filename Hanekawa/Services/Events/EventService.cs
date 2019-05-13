@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Administration;
 using Hanekawa.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -21,10 +22,7 @@ namespace Hanekawa.Services.Events
             Console.WriteLine("Event service loaded");
         }
 
-        public Task Execute(IJobExecutionContext context)
-        {
-            return EventSchedulerAsync();
-        }
+        public Task Execute(IJobExecutionContext context) => EventSchedulerAsync();
 
         public async Task Execute()
         {
@@ -33,31 +31,30 @@ namespace Hanekawa.Services.Events
 
         public async Task<bool> TryAddEventAsync(string name, IGuildUser user, DateTime time, DbService db)
         {
-                var check = await db.EventSchedules.FindAsync(
-                    await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
-                    user.Guild.Id);
-                if (check != null) return false;
-                var data = new EventSchedule
-                {
-                    Id = await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
-                    GuildId = user.Guild.Id,
-                    Host = user.Id,
-                    Time = time,
-                    Name = name
-                };
-                await db.EventSchedules.AddAsync(data);
-                await db.SaveChangesAsync();
-                return true;
+            var check = await db.EventSchedules.FindAsync(
+                await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
+                user.Guild.Id);
+            if (check != null) return false;
+            var data = new EventSchedule
+            {
+                Id = await db.EventSchedules.CountAsync(x => x.GuildId == user.Guild.Id) + 1,
+                GuildId = user.Guild.Id,
+                Host = user.Id,
+                Time = time,
+                Name = name
+            };
+            await db.EventSchedules.AddAsync(data);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> TryRemoveEventAsync(int id, IGuild guild, DbService db)
         {
-
-                var eventData = await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == id);
-                if (eventData == null) return false;
-                db.EventSchedules.Remove(eventData);
-                await db.SaveChangesAsync();
-                return true;
+            var eventData = await db.EventSchedules.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Id == id);
+            if (eventData == null) return false;
+            db.EventSchedules.Remove(eventData);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         private async Task EventSchedulerAsync()
@@ -65,15 +62,16 @@ namespace Hanekawa.Services.Events
             using (var db = new DbService())
             {
                 var guilds = await db.GuildConfigs.Where(x => x.Premium && x.AutomaticEventSchedule).ToListAsync();
-                foreach (var x in guilds)
+                foreach (var y in guilds)
                 {
+                    var x = await db.GetOrCreateChannelConfigAsync(y.GuildId);
                     if (!x.EventSchedulerChannel.HasValue) continue;
 
                     var guild = _client.GetGuild(x.GuildId);
                     if (guild == null) continue;
                     var channel = guild.GetTextChannel(x.EventSchedulerChannel.Value);
                     var events = await db.EventSchedules
-                        .Where(y => y.GuildId == x.GuildId && y.Time.Date >= DateTime.UtcNow.Date && !y.Posted)
+                        .Where(z => z.GuildId == x.GuildId && z.Time.Date >= DateTime.UtcNow.Date && !z.Posted)
                         .OrderBy(z => z.Time).Take(5).ToListAsync();
                     if (events.Count == 0) continue;
                     foreach (var e in events.OrderByDescending(t => t.Time))
@@ -127,7 +125,7 @@ namespace Hanekawa.Services.Events
                 default:
                     result = Color.Purple;
                     break;
-           }
+            }
 
             return result;
         }

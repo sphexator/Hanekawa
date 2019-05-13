@@ -4,6 +4,7 @@ using Hanekawa.Addons.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Hanekawa.Addons.Database.Migrations
 {
@@ -14,76 +15,55 @@ namespace Hanekawa.Addons.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
+                .HasAnnotation("ProductVersion", "2.2.1-servicing-10028")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Account.Account", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<bool>("Active");
 
                     b.Property<DateTime>("ChannelVoiceTime");
 
-                    b.Property<int>("Class")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(1);
+                    b.Property<int>("Class");
 
-                    b.Property<uint>("Credit")
-                        .HasMaxLength(999);
+                    b.Property<int>("Credit");
 
-                    b.Property<uint>("CreditSpecial")
-                        .HasMaxLength(999);
-
-                    b.Property<ulong?>("CustomRoleId");
+                    b.Property<int>("CreditSpecial");
 
                     b.Property<DateTime>("DailyCredit");
 
-                    b.Property<uint>("Exp")
-                        .HasMaxLength(999);
+                    b.Property<int>("Exp");
 
                     b.Property<DateTime?>("FirstMessage");
 
-                    b.Property<uint>("GameKillAmount")
-                        .HasMaxLength(999);
+                    b.Property<int>("GameKillAmount");
 
                     b.Property<DateTime>("LastMessage");
 
-                    b.Property<uint>("Level")
-                        .HasMaxLength(999);
-
-                    b.Property<uint>("MvpCounter")
-                        .HasMaxLength(999);
-
-                    b.Property<bool>("MvpIgnore");
-
-                    b.Property<bool>("MvpImmunity");
+                    b.Property<int>("Level");
 
                     b.Property<string>("ProfilePic");
 
-                    b.Property<uint>("Rep")
-                        .HasMaxLength(999);
+                    b.Property<int>("Rep");
 
                     b.Property<DateTime>("RepCooldown");
 
-                    b.Property<uint>("Sessions")
-                        .HasMaxLength(999);
+                    b.Property<int>("Sessions");
 
-                    b.Property<uint>("StarGiven")
-                        .HasMaxLength(999);
+                    b.Property<int>("StarGiven");
 
-                    b.Property<uint>("StarReceived")
-                        .HasMaxLength(999);
+                    b.Property<int>("StarReceived");
 
-                    b.Property<ulong>("StatMessages")
-                        .HasMaxLength(999);
+                    b.Property<long>("StatMessages");
 
                     b.Property<TimeSpan>("StatVoiceTime");
 
-                    b.Property<uint>("TotalExp")
-                        .HasMaxLength(999);
+                    b.Property<int>("TotalExp");
 
                     b.Property<DateTime>("VoiceExpTime");
 
@@ -94,26 +74,22 @@ namespace Hanekawa.Addons.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Account.AccountGlobal", b =>
                 {
-                    b.Property<ulong>("UserId")
+                    b.Property<long>("UserId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<uint>("Credit");
+                    b.Property<int>("Credit");
 
-                    b.Property<uint>("Exp")
-                        .HasMaxLength(999);
+                    b.Property<int>("Exp");
 
-                    b.Property<uint>("Level")
-                        .HasMaxLength(999);
+                    b.Property<int>("Level");
 
-                    b.Property<uint>("Rep")
-                        .HasMaxLength(999);
+                    b.Property<int>("Rep");
 
-                    b.Property<uint>("StarGive");
+                    b.Property<int>("StarGive");
 
-                    b.Property<uint>("StarReceive");
+                    b.Property<int>("StarReceive");
 
-                    b.Property<uint>("TotalExp")
-                        .HasMaxLength(999);
+                    b.Property<int>("TotalExp");
 
                     b.HasKey("UserId");
 
@@ -122,9 +98,9 @@ namespace Hanekawa.Addons.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Account.Inventory", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<int>("ItemId");
 
@@ -135,47 +111,18 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("Inventories");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Account.InventoryGlobal", b =>
-                {
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("ItemId");
-
-                    b.Property<int>("Amount");
-
-                    b.HasKey("UserId", "ItemId");
-
-                    b.ToTable("InventoryGlobals");
-                });
-
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Account.Item", b =>
                 {
-                    b.Property<int>("ItemId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<bool>("ConsumeOnUse");
+                    b.Property<DateTimeOffset>("DateAdded");
 
-                    b.Property<DateTime>("DateAdded");
+                    b.Property<long>("GuildId");
 
-                    b.Property<string>("Description");
+                    b.Property<long>("Role");
 
-                    b.Property<bool>("Global");
-
-                    b.Property<ulong?>("GuildId");
-
-                    b.Property<string>("Name");
-
-                    b.Property<ulong?>("Role");
-
-                    b.Property<bool>("Secret");
-
-                    b.Property<string>("SecretValue");
-
-                    b.Property<bool>("Unique");
-
-                    b.Property<string>("Value");
-
-                    b.HasKey("ItemId");
+                    b.HasKey("Id");
 
                     b.ToTable("Items");
                 });
@@ -252,7 +199,7 @@ namespace Hanekawa.Addons.Database.Migrations
                 {
                     b.Property<int>("Type");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<int>("Count");
 
@@ -277,7 +224,7 @@ namespace Hanekawa.Addons.Database.Migrations
                 {
                     b.Property<int>("AchievementId");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.Property<int>("TypeId");
 
@@ -288,12 +235,12 @@ namespace Hanekawa.Addons.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Administration.Blacklist", b =>
                 {
-                    b.Property<ulong>("GuildId")
+                    b.Property<long>("GuildId")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Reason");
 
-                    b.Property<ulong>("ResponsibleUser");
+                    b.Property<long>("ResponsibleUser");
 
                     b.Property<DateTimeOffset?>("Unban");
 
@@ -306,13 +253,13 @@ namespace Hanekawa.Addons.Database.Migrations
                 {
                     b.Property<int>("Id");
 
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
                     b.Property<string>("Description");
 
-                    b.Property<ulong?>("DesignerClaim");
+                    b.Property<long?>("DesignerClaim");
 
-                    b.Property<ulong>("Host");
+                    b.Property<long>("Host");
 
                     b.Property<string>("ImageUrl");
 
@@ -327,30 +274,11 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("EventSchedules");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Administration.Patreon", b =>
-                {
-                    b.Property<ulong>("BotId");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<DateTime>("Added");
-
-                    b.Property<DateTime>("Created");
-
-                    b.Property<string>("Email");
-
-                    b.Property<DateTime?>("Rewarded");
-
-                    b.HasKey("BotId", "UserId");
-
-                    b.ToTable("Patreons");
-                });
-
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Administration.WhitelistDesign", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.HasKey("GuildId", "UserId");
 
@@ -359,45 +287,26 @@ namespace Hanekawa.Addons.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Administration.WhitelistEvent", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.HasKey("GuildId", "UserId");
 
                     b.ToTable("WhitelistEvents");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Audio.Playlist", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<string>("Id");
-
-                    b.Property<bool>("IsPrivate");
-
-                    b.Property<ulong>("OwnerId");
-
-                    b.Property<TimeSpan>("Playtime");
-
-                    b.Property<int>("Streams");
-
-                    b.HasKey("GuildId", "Id");
-
-                    b.ToTable("Playlists");
-                });
-
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.BoardConfig.Board", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("MessageId");
+                    b.Property<long>("MessageId");
 
                     b.Property<DateTimeOffset?>("Boarded");
 
-                    b.Property<uint>("StarAmount");
+                    b.Property<int>("StarAmount");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
                     b.HasKey("GuildId", "MessageId");
 
@@ -413,7 +322,7 @@ namespace Hanekawa.Addons.Database.Migrations
 
                     b.Property<int>("ChanceCrit");
 
-                    b.Property<uint>("LevelRequirement");
+                    b.Property<long>("LevelRequirement");
 
                     b.Property<double>("ModifierAvoidance");
 
@@ -435,13 +344,9 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("DefaultDamage")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(10);
+                    b.Property<int>("DefaultDamage");
 
-                    b.Property<int>("DefaultHealth")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(10);
+                    b.Property<int>("DefaultHealth");
 
                     b.HasKey("Id");
 
@@ -450,30 +355,26 @@ namespace Hanekawa.Addons.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.BotGame.GameEnemy", b =>
                 {
-                    b.Property<uint>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("ClassId");
 
-                    b.Property<uint>("CreditGain");
+                    b.Property<int>("CreditGain");
 
-                    b.Property<uint>("Damage");
+                    b.Property<int>("Damage");
 
-                    b.Property<bool>("Elite")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
+                    b.Property<bool>("Elite");
 
-                    b.Property<uint>("ExpGain");
+                    b.Property<int>("ExpGain");
 
-                    b.Property<uint>("Health");
+                    b.Property<int>("Health");
 
                     b.Property<string>("ImageUrl");
 
                     b.Property<string>("Name");
 
-                    b.Property<bool>("Rare")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
+                    b.Property<bool>("Rare");
 
                     b.HasKey("Id");
 
@@ -484,11 +385,11 @@ namespace Hanekawa.Addons.Database.Migrations
                 {
                     b.Property<int>("ClubId");
 
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("BlackListUser");
+                    b.Property<long>("BlackListUser");
 
-                    b.Property<ulong>("IssuedUser");
+                    b.Property<long>("IssuedUser");
 
                     b.Property<string>("Reason");
 
@@ -499,76 +400,584 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("ClubBlacklists");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Club.ClubInfo", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Club.ClubInformation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("Leader");
-
-                    b.Property<ulong?>("AdMessage");
+                    b.Property<long?>("AdMessage");
 
                     b.Property<bool>("AutoAdd");
 
-                    b.Property<ulong?>("Channel");
+                    b.Property<long?>("Channel");
 
                     b.Property<DateTimeOffset>("CreationDate");
 
                     b.Property<string>("Description");
 
+                    b.Property<long>("GuildId");
+
+                    b.Property<string>("IconUrl");
+
                     b.Property<string>("ImageUrl");
 
-                    b.Property<DateTime?>("InactiveTime");
+                    b.Property<long>("LeaderId");
 
                     b.Property<string>("Name");
 
                     b.Property<bool>("Public");
 
-                    b.Property<ulong?>("RoleId");
+                    b.Property<long?>("Role");
 
-                    b.HasKey("Id", "GuildId", "Leader");
+                    b.HasKey("Id");
 
                     b.ToTable("ClubInfos");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Club.ClubPlayer", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Club.ClubUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<int>("ClubId");
 
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
                     b.Property<DateTimeOffset>("JoinDate");
 
-                    b.Property<uint>("Rank");
+                    b.Property<int>("Rank");
 
-                    b.Property<ulong>("UserId");
+                    b.Property<long>("UserId");
 
-                    b.HasKey("Id", "ClubId", "GuildId");
+                    b.HasKey("Id");
 
                     b.ToTable("ClubPlayers");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.GuildInfo", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.EventPayout", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("ChannelId");
+                    b.Property<long>("UserId");
 
-                    b.Property<ulong>("MessageId");
+                    b.Property<int>("Amount");
 
-                    b.Property<string>("Type");
+                    b.HasKey("GuildId", "UserId");
 
-                    b.HasKey("GuildId", "ChannelId", "MessageId");
-
-                    b.ToTable("GuildInfos");
+                    b.ToTable("EventPayouts");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.ProfileConfig", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.AdminConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int?>("EmoteCountFilter");
+
+                    b.Property<bool>("FilterAllInv");
+
+                    b.Property<bool>("FilterInvites");
+
+                    b.Property<int?>("FilterMsgLength");
+
+                    b.Property<bool>("FilterUrls");
+
+                    b.Property<bool>("IgnoreAllChannels");
+
+                    b.Property<int?>("MentionCountFilter");
+
+                    b.Property<long?>("MuteRole");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("AdminConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.BoardConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("Channel");
+
+                    b.Property<string>("Emote");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("BoardConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.ChannelConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("DesignChannel");
+
+                    b.Property<long?>("EventChannel");
+
+                    b.Property<long?>("EventSchedulerChannel");
+
+                    b.Property<long?>("ModChannel");
+
+                    b.Property<long?>("QuestionAndAnswerChannel");
+
+                    b.Property<long?>("ReportChannel");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("ChannelConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.ClubConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("AdvertisementChannel");
+
+                    b.Property<bool>("AutoPrune");
+
+                    b.Property<long?>("ChannelCategory");
+
+                    b.Property<int>("ChannelRequiredAmount");
+
+                    b.Property<int>("ChannelRequiredLevel");
+
+                    b.Property<bool>("EnableVoiceChannel");
+
+                    b.Property<bool>("RoleEnabled");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("ClubConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.CurrencyConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("CurrencyName");
+
+                    b.Property<string>("CurrencySign");
+
+                    b.Property<bool>("EmoteCurrency")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("SpecialCurrencyName");
+
+                    b.Property<string>("SpecialCurrencySign");
+
+                    b.Property<bool>("SpecialEmoteCurrency")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(false);
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("CurrencyConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.LevelConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ExpMultiplier");
+
+                    b.Property<bool>("StackLvlRoles");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("LevelConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.LoggingConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("LogAutoMod");
+
+                    b.Property<long?>("LogAvi");
+
+                    b.Property<long?>("LogBan");
+
+                    b.Property<long?>("LogJoin");
+
+                    b.Property<long?>("LogMsg");
+
+                    b.Property<long?>("LogWarn");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("LoggingConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.SuggestionConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("Channel");
+
+                    b.Property<string>("EmoteNo");
+
+                    b.Property<string>("EmoteYes");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("SuggestionConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.Guild.WelcomeConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<bool>("AutoDelOnLeave");
+
+                    b.Property<bool>("Banner");
+
+                    b.Property<long?>("Channel");
+
+                    b.Property<int>("Limit");
+
+                    b.Property<string>("Message");
+
+                    b.Property<TimeSpan?>("TimeToDelete");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("WelcomeConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.GuildConfig", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("AnimeAirChannel");
+
+                    b.Property<bool>("AutomaticEventSchedule");
+
+                    b.Property<int>("EmbedColor");
+
+                    b.Property<long?>("MusicChannel");
+
+                    b.Property<long?>("MusicVcChannel");
+
+                    b.Property<string>("Prefix");
+
+                    b.Property<bool>("Premium")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(false);
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("GuildConfigs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.IgnoreChannel", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("IgnoreChannels");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.LevelExpEvent", b =>
+                {
+                    b.Property<long>("GuildId")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<long?>("ChannelId");
+
+                    b.Property<long?>("MessageId");
+
+                    b.Property<int>("Multiplier");
+
+                    b.Property<DateTime>("Time");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("LevelExpEvents");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.LevelExpReduction", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.Property<bool>("Category");
+
+                    b.Property<bool>("Channel");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("LevelExpReductions");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.LevelReward", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<int>("Level");
+
+                    b.Property<long>("Role");
+
+                    b.Property<bool>("Stackable");
+
+                    b.HasKey("GuildId", "Level");
+
+                    b.ToTable("LevelRewards");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.LootChannel", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("LootChannels");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.NudeServiceChannel", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.Property<bool>("InHouse");
+
+                    b.Property<int>("Tolerance");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("NudeServiceChannels");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.SelfAssignAbleRole", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("RoleId");
+
+                    b.Property<bool>("Exclusive");
+
+                    b.HasKey("GuildId", "RoleId");
+
+                    b.ToTable("SelfAssignAbleRoles");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.SingleNudeServiceChannel", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.Property<bool>("InHouse");
+
+                    b.Property<int?>("Level");
+
+                    b.Property<int?>("Tolerance");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("SingleNudeServiceChannels");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.SpamIgnore", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("SpamIgnores");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.UrlFilter", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<long>("ChannelId");
+
+                    b.HasKey("GuildId", "ChannelId");
+
+                    b.ToTable("UrlFilters");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Config.WelcomeBanner", b =>
+                {
+                    b.Property<long>("GuildId");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTimeOffset>("UploadTimeOffset");
+
+                    b.Property<long>("Uploader");
+
+                    b.Property<string>("Url");
+
+                    b.HasKey("GuildId", "Id");
+
+                    b.ToTable("WelcomeBanners");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.ModLog", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<string>("Action");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<long>("MessageId");
+
+                    b.Property<long?>("ModId");
+
+                    b.Property<string>("Response");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("ModLogs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.MuteTimer", b =>
+                {
+                    b.Property<long>("UserId");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<DateTime>("Time");
+
+                    b.HasKey("UserId", "GuildId");
+
+                    b.ToTable("MuteTimers");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.QuestionAndAnswer", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<long?>("MessageId");
+
+                    b.Property<string>("Response");
+
+                    b.Property<long?>("ResponseUser");
+
+                    b.Property<bool>("Status");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("QuestionAndAnswers");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.Report", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<string>("Attachment");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("Message");
+
+                    b.Property<long?>("MessageId");
+
+                    b.Property<bool>("Status");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.Suggestion", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<long?>("MessageId");
+
+                    b.Property<string>("Response");
+
+                    b.Property<long?>("ResponseUser");
+
+                    b.Property<bool>("Status");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("Suggestions");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.Warn", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<long>("GuildId");
+
+                    b.Property<decimal>("Moderator")
+                        .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<TimeSpan?>("MuteTimer");
+
+                    b.Property<string>("Reason");
+
+                    b.Property<DateTime>("Time");
+
+                    b.Property<int>("Type");
+
+                    b.Property<long>("UserId");
+
+                    b.Property<bool>("Valid");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("Warns");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Profile.Background", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("BackgroundUrl");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Backgrounds");
+                });
+
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Profile.ProfileConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -588,675 +997,19 @@ namespace Hanekawa.Addons.Database.Migrations
                     b.ToTable("ProfileConfigs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.EventPayout", b =>
+            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stores.ServerStore", b =>
                 {
-                    b.Property<ulong>("GuildId");
+                    b.Property<long>("GuildId");
 
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("Amount");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("EventPayouts");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.GuildConfig", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<ulong?>("AnimeAirChannel");
-
-                    b.Property<bool>("AutomaticEventSchedule");
-
-                    b.Property<ulong?>("BoardChannel");
-
-                    b.Property<string>("BoardEmote");
-
-                    b.Property<ulong?>("ClubAdvertisementChannel");
-
-                    b.Property<bool>("ClubAutoPrune");
-
-                    b.Property<ulong?>("ClubChannelCategory");
-
-                    b.Property<uint>("ClubChannelRequiredAmount");
-
-                    b.Property<uint>("ClubChannelRequiredLevel");
-
-                    b.Property<bool>("ClubEnableVoiceChannel");
-
-                    b.Property<string>("CurrencyName");
-
-                    b.Property<string>("CurrencySign");
-
-                    b.Property<ulong?>("DesignChannel");
-
-                    b.Property<uint>("EmbedColor");
-
-                    b.Property<int?>("EmoteCountFilter");
-
-                    b.Property<bool>("EmoteCurrency")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
-
-                    b.Property<ulong?>("EventChannel");
-
-                    b.Property<ulong?>("EventSchedulerChannel");
-
-                    b.Property<uint>("ExpMultiplier");
-
-                    b.Property<bool>("FilterAllInv");
-
-                    b.Property<bool>("FilterInvites");
-
-                    b.Property<uint?>("FilterMsgLength");
-
-                    b.Property<bool>("FilterUrls");
-
-                    b.Property<bool>("IgnoreAllChannels");
-
-                    b.Property<ulong?>("LogAutoMod");
-
-                    b.Property<ulong?>("LogAvi");
-
-                    b.Property<ulong?>("LogBan");
-
-                    b.Property<ulong?>("LogJoin");
-
-                    b.Property<ulong?>("LogMsg");
-
-                    b.Property<ulong?>("LogWarn");
-
-                    b.Property<int?>("MentionCountFilter");
-
-                    b.Property<ulong?>("ModChannel");
-
-                    b.Property<ulong?>("MusicChannel");
-
-                    b.Property<ulong?>("MusicVcChannel");
-
-                    b.Property<ulong?>("MuteRole");
-
-                    b.Property<string>("Prefix");
-
-                    b.Property<bool>("Premium")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
-
-                    b.Property<ulong?>("QuestionAndAnswerChannel");
-
-                    b.Property<ulong?>("ReportChannel");
-
-                    b.Property<string>("SpecialCurrencyName");
-
-                    b.Property<string>("SpecialCurrencySign");
-
-                    b.Property<bool>("SpecialEmoteCurrency")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("StackLvlRoles");
-
-                    b.Property<ulong?>("SuggestionChannel");
-
-                    b.Property<string>("SuggestionEmoteNo");
-
-                    b.Property<string>("SuggestionEmoteYes");
-
-                    b.Property<bool>("WelcomeBanner");
-
-                    b.Property<ulong?>("WelcomeChannel");
-
-                    b.Property<TimeSpan?>("WelcomeDelete");
-
-                    b.Property<uint>("WelcomeLimit");
-
-                    b.Property<string>("WelcomeMessage");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("GuildConfigs");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.IgnoreChannel", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("IgnoreChannels");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.LevelExpEvent", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<ulong?>("ChannelId");
-
-                    b.Property<ulong?>("MessageId");
-
-                    b.Property<uint>("Multiplier");
-
-                    b.Property<DateTime>("Time");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("LevelExpEvents");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.LevelExpReduction", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.Property<bool>("Category");
-
-                    b.Property<bool>("Channel");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("LevelExpReductions");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.LevelReward", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<uint>("Level");
-
-                    b.Property<ulong>("Role");
-
-                    b.Property<bool>("Stackable");
-
-                    b.HasKey("GuildId", "Level");
-
-                    b.ToTable("LevelRewards");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.LootChannel", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("LootChannels");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.NudeServiceChannel", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.Property<bool>("InHouse");
-
-                    b.Property<uint>("Tolerance");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("NudeServiceChannels");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.SelfAssignAbleRole", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("RoleId");
-
-                    b.Property<bool>("Exclusive");
-
-                    b.HasKey("GuildId", "RoleId");
-
-                    b.ToTable("SelfAssignAbleRoles");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.SingleNudeServiceChannel", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.Property<bool>("InHouse");
-
-                    b.Property<int?>("Level");
-
-                    b.Property<int?>("Tolerance");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("SingleNudeServiceChannels");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.SpamIgnore", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("SpamIgnores");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.UrlFilter", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("ChannelId");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("UrlFilters");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.GuildConfig.WelcomeBanner", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<int>("Id");
-
-                    b.Property<DateTimeOffset>("UploadTimeOffset");
-
-                    b.Property<ulong>("Uploader");
-
-                    b.Property<string>("Url");
-
-                    b.HasKey("GuildId", "Id");
-
-                    b.ToTable("WelcomeBanners");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.HungerGameConfig", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<bool>("Live");
-
-                    b.Property<ulong>("MessageId");
-
-                    b.Property<uint>("Round");
-
-                    b.Property<bool>("SignupStage");
-
-                    b.Property<DateTime>("SignupTime");
-
-                    b.Property<int>("WinCredit");
-
-                    b.Property<int>("WinExp");
-
-                    b.Property<int>("WinSpecialCredit");
-
-                    b.Property<ulong?>("WinnerRoleId");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("HungerGameConfigs");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.HungerGameDefault", b =>
-                {
-                    b.Property<ulong>("UserId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("HungerGameDefaults");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.HungerGameLive", b =>
-                {
-                    b.Property<ulong>("UserId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("Axe");
-
-                    b.Property<bool>("Bleeding");
-
-                    b.Property<int>("Bow");
-
-                    b.Property<int>("Fatigue");
-
-                    b.Property<int>("Food");
-
-                    b.Property<int>("Health");
-
-                    b.Property<int>("Hunger");
-
-                    b.Property<string>("Name");
-
-                    b.Property<int>("Pistol");
-
-                    b.Property<int>("Sleep");
-
-                    b.Property<int>("Stamina");
-
-                    b.Property<bool>("Status");
-
-                    b.Property<int>("Thirst");
-
-                    b.Property<int>("TotalWeapons");
-
-                    b.Property<int>("Water");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("HungerGameLives");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.ModLog", b =>
-                {
-                    b.Property<uint>("Id");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<string>("Action");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<ulong>("MessageId");
-
-                    b.Property<ulong?>("ModId");
-
-                    b.Property<string>("Response");
-
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("Id", "GuildId");
-
-                    b.ToTable("ModLogs");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Moderation.QuestionAndAnswer", b =>
-                {
-                    b.Property<uint>("Id");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<ulong?>("MessageId");
-
-                    b.Property<string>("Response");
-
-                    b.Property<ulong?>("ResponseUser");
-
-                    b.Property<bool>("Status");
-
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("Id", "GuildId");
-
-                    b.ToTable("QuestionAndAnswers");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.MuteTimer", b =>
-                {
-                    b.Property<ulong>("UserId");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<DateTime>("Time");
-
-                    b.HasKey("UserId", "GuildId");
-
-                    b.ToTable("MuteTimers");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Profile.Background", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("BackgroundUrl");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Backgrounds");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Report", b =>
-                {
-                    b.Property<uint>("Id");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<string>("Attachment");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<string>("Message");
-
-                    b.Property<ulong?>("MessageId");
-
-                    b.Property<bool>("Status");
-
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("Id", "GuildId");
-
-                    b.ToTable("Reports");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stats.BanStat", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("Amount");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("BanStat");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stats.JoinStat", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("DayFive");
-
-                    b.Property<DateTime>("DayFiveDate");
-
-                    b.Property<int>("DayFour");
-
-                    b.Property<DateTime>("DayFourDate");
-
-                    b.Property<int>("DayOne");
-
-                    b.Property<DateTime>("DayOneDate");
-
-                    b.Property<int>("DaySeven");
-
-                    b.Property<DateTime>("DaySevenDate");
-
-                    b.Property<int>("DaySix");
-
-                    b.Property<DateTime>("DaySixDate");
-
-                    b.Property<int>("DayThree");
-
-                    b.Property<DateTime>("DayThreeDate");
-
-                    b.Property<int>("DayTwo");
-
-                    b.Property<DateTime>("DayTwoDate");
-
-                    b.Property<int>("Join");
-
-                    b.Property<DateTime>("LatestEntry");
-
-                    b.Property<int>("Leave");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("JoinStat");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stats.MessageStat", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("Friday");
-
-                    b.Property<int>("Monday");
-
-                    b.Property<int>("Saturday");
-
-                    b.Property<int>("Sunday");
-
-                    b.Property<int>("Thursday");
-
-                    b.Property<int>("Tuesday");
-
-                    b.Property<int>("Wednesday");
-
-                    b.Property<string>("WeekFour");
-
-                    b.Property<string>("WeekOne");
-
-                    b.Property<string>("WeekThree");
-
-                    b.Property<string>("WeekTwo");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("MessageStat");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stats.MuteStat", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("Amount");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("MuteStat");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stats.WarnStat", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("Amount");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("WarnStat");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stores.Shop", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<int>("ItemId");
+                    b.Property<long>("RoleId");
 
                     b.Property<int>("Price");
 
                     b.Property<bool>("SpecialCredit");
 
-                    b.HasKey("GuildId", "ItemId");
+                    b.HasKey("GuildId", "RoleId");
 
-                    b.ToTable("Shops");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Stores.StoreGlobal", b =>
-                {
-                    b.Property<int>("ItemId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("Price");
-
-                    b.HasKey("ItemId");
-
-                    b.ToTable("StoreGlobals");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Suggestion", b =>
-                {
-                    b.Property<uint>("Id");
-
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<DateTime>("Date");
-
-                    b.Property<ulong?>("MessageId");
-
-                    b.Property<string>("Response");
-
-                    b.Property<ulong?>("ResponseUser");
-
-                    b.Property<bool>("Status");
-
-                    b.Property<ulong>("UserId");
-
-                    b.HasKey("Id", "GuildId");
-
-                    b.ToTable("Suggestions");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Warn", b =>
-                {
-                    b.Property<ulong>("GuildId");
-
-                    b.Property<int>("Id");
-
-                    b.Property<ulong>("Moderator");
-
-                    b.Property<TimeSpan?>("MuteTimer");
-
-                    b.Property<string>("Reason");
-
-                    b.Property<DateTime>("Time");
-
-                    b.Property<int>("Type");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<bool>("Valid");
-
-                    b.HasKey("GuildId", "Id");
-
-                    b.ToTable("Warns");
-                });
-
-            modelBuilder.Entity("Hanekawa.Addons.Database.Tables.WarnMsgLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Author");
-
-                    b.Property<string>("Message");
-
-                    b.Property<ulong>("MsgId");
-
-                    b.Property<DateTime>("Time");
-
-                    b.Property<ulong>("UserId");
-
-                    b.Property<int>("WarnId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WarnMsgLogs");
+                    b.ToTable("ServerStores");
                 });
 
             modelBuilder.Entity("Hanekawa.Addons.Database.Tables.Achievement.AchievementMeta", b =>

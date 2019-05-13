@@ -14,43 +14,41 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Modules.Board
 {
-    [Group("board")]
+    [Name("board")]
     public class Board : InteractiveBase
     {
         private readonly BoardService _boardService;
 
-        public Board(BoardService boardService)
-        {
-            _boardService = boardService;
-        }
+        public Board(BoardService boardService) => _boardService = boardService;
+
         //TODO this need looks at for errors
-        [Command("stats", RunMode = RunMode.Async)]
-        [RequireContext(ContextType.Guild)]
+        [Name("Board stats")]
+        [Command("board stats", RunMode = RunMode.Async)]
         [Summary("Shows board stats for server")]
+        [Remarks("h.board stats")]
+        [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task BoardStatsAsync()
         {
             using (var db = new DbService())
             {
-
-
                 var emote = _boardService.GetGuildEmote(Context.Guild);
                 var amount = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var topStars = await db.Boards.Where(x => x.GuildId == Context.Guild.Id)
                     .OrderByDescending(x => x.StarAmount)
                     .Take(3).ToListAsync();
-                var topRecieve = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
+                var topReceive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
                     .OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
 
                 string topR = null;
                 string topM = null;
                 var topRr = 1;
                 var topMr = 1;
-                uint stars = 0;
+                var stars = 0;
 
                 foreach (var x in amount) stars = stars + x.StarAmount;
 
-                foreach (var x in topRecieve)
+                foreach (var x in topReceive)
                     try
                     {
                         topR +=
@@ -70,7 +68,8 @@ namespace Hanekawa.Modules.Board
                 }
 
                 var embed = new EmbedBuilder()
-                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given", Context.Guild.Id).WithAuthor(
+                    .CreateDefault($"{amount.Count} messages boarded with a total of {stars} {emote} given",
+                        Context.Guild.Id).WithAuthor(
                         new EmbedAuthorBuilder
                             {IconUrl = Context.Guild.IconUrl, Name = $"{Context.Guild.Name} board stats"});
                 embed.AddField($"Top {emote} Posts", $"{topM ?? "N/A"}");
@@ -79,9 +78,11 @@ namespace Hanekawa.Modules.Board
             }
         }
 
-        [Command("stats", RunMode = RunMode.Async)]
-        [RequireContext(ContextType.Guild)]
+        [Name("Board stats")]
+        [Command("board stats", RunMode = RunMode.Async)]
         [Summary("Shows board stats for specific user")]
+        [Remarks("h.board stats #bob#0000")]
+        [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task BoardStatsAsync(IGuildUser user)
         {
@@ -102,7 +103,7 @@ namespace Hanekawa.Modules.Board
                 else topStar += $"No {emote} messages";
 
                 var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
-                    { IconUrl = user.GetAvatar(), Name = user.GetName() });
+                    {IconUrl = user.GetAvatar(), Name = user.GetName()});
                 embed.AddField("Boarded Messages", $"{boardData.Count}", true);
                 embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
                 embed.AddField($"{emote} Given", $"{userData.StarGiven}", true);
@@ -111,49 +112,51 @@ namespace Hanekawa.Modules.Board
             }
         }
 
-        [Command("emote", RunMode = RunMode.Async)]
+        [Name("Board Emote")]
+        [Command("board emote", RunMode = RunMode.Async)]
+        [Summary("Sets a custom emote to be used toward the board")]
+        [Remarks("h.board emote :winkyface:")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Summary("Sets a custom emote to be used toward the board")]
         public async Task BoardEmoteAsync(Emote emote)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 var emoteString = ParseEmoteString(emote);
                 _boardService.SetBoardEmote(Context.Guild, emoteString);
-                cfg.BoardEmote = emoteString;
+                cfg.Emote = emoteString;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green.RawValue);
             }
         }
 
-        [Command("channel", RunMode = RunMode.Async)]
+        [Name("Board Channel")]
+        [Command("board channel", RunMode = RunMode.Async)]
+        [Summary("Sets channel for board to be used in")]
+        [Remarks("h.board channel #general")]
         [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        [Summary("Sets channel for board to be used in")]
         public async Task BoardChannelAsync(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 if (channel == null)
                 {
-                    cfg.BoardChannel = null;
+                    cfg.Channel = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Disabled the board", Color.Green.RawValue);
                     return;
                 }
 
-                cfg.BoardChannel = channel.Id;
+                cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green.RawValue);
             }
         }
 
-        private static string ParseEmoteString(Emote emote)
-        {
-            return emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
-        }
+        private static string ParseEmoteString(Emote emote) =>
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
     }
 }

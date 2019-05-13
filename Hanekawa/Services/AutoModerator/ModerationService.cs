@@ -9,13 +9,14 @@ using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Addons.Database.Tables.Account;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Data;
 using Hanekawa.Entities.Interfaces;
 using Hanekawa.Events;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using Config = Hanekawa.Data.Config;
 
 namespace Hanekawa.Services.AutoModerator
 {
@@ -126,7 +127,8 @@ namespace Hanekawa.Services.AutoModerator
             await db.SpamIgnores.AddAsync(data);
             await db.SaveChangesAsync();
             guild.Add(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Added {channel.Mention} to url spam ignore list.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Added {channel.Mention} to url spam ignore list.",
+                Color.Green.RawValue);
         }
 
         private async Task<EmbedBuilder> AddUrlFilterChannel(ITextChannel channel, DbService db)
@@ -148,11 +150,13 @@ namespace Hanekawa.Services.AutoModerator
         {
             if (!SpamIgnoreChannels.TryGetValue(channel.GuildId, out var guild)) return null;
             if (!guild.Contains(channel.Id)) return null;
-            var entry = await db.SpamIgnores.FirstOrDefaultAsync(x => x.GuildId == channel.GuildId && x.ChannelId ==  channel.Id);
+            var entry = await db.SpamIgnores.FirstOrDefaultAsync(x =>
+                x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
             db.SpamIgnores.Remove(entry);
             await db.SaveChangesAsync();
             guild.Remove(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from spam ignore list.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from spam ignore list.",
+                Color.Green.RawValue);
         }
 
         private async Task<EmbedBuilder> RemoveUrlFilter(ITextChannel channel, DbService db)
@@ -164,7 +168,8 @@ namespace Hanekawa.Services.AutoModerator
             db.UrlFilters.Remove(entry);
             await db.SaveChangesAsync();
             guild.Remove(channel.Id);
-            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from url filter.", Color.Green.RawValue);
+            return new EmbedBuilder().CreateDefault($"Removed {channel.Mention} from url filter.",
+                Color.Green.RawValue);
         }
 
         private Task GlobalBanChecker(SocketGuildUser user)
@@ -201,29 +206,29 @@ namespace Hanekawa.Services.AutoModerator
                 if (!(msg.Channel is ITextChannel channel)) return;
                 if (!(msg.Author is SocketGuildUser user)) return;
 
-                GuildConfig cfg;
+                AdminConfig cfg;
                 Account userdata;
                 using (var db = new DbService())
                 {
-                    cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                     userdata = await db.GetOrCreateUserData(user);
                 }
 
                 var invite = InviteFilter(msg, user, cfg);
                 var scam = ScamLinkFilter(msg, user, cfg);
-                // var spam = SpamFilter(msg, user, cfg);
-                var url = UrlFilter(msg, user, cfg, userdata);
-                //var world = WordFilter(msg, user, cfg, userdata);
+                // var spam = SpamFilter(msg, user, cfg); TODO: Add this - Spam filter
+                // var url = UrlFilter(msg, user, cfg, userdata); 
+                // var world = WordFilter(msg, user, cfg, userdata); TODO: ADD this - Word filter
                 var length = LengthFilter(msg, user, cfg, userdata);
                 var emote = EmoteFilter(msg, user, cfg, userdata);
                 var mention = MentionFilter(msg, user, cfg);
 
-                await Task.WhenAll(invite, scam, url, length, emote, mention);
+                await Task.WhenAll(invite, scam, length, emote, mention);
             });
             return Task.CompletedTask;
         }
 
-        private async Task InviteFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task InviteFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (!cfg.FilterInvites) return;
             if (user.GuildPermissions.ManageGuild) return;
@@ -245,7 +250,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task ScamLinkFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (user.GuildId != 339370914724446208) return;
             if (msg.Content.IsGoogleLink())
@@ -284,38 +289,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task SpamFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg)
-        {
-            // IGNORE TODO: ADD spam filter
-        }
-
-        private async Task UrlFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
-        {
-            using (var db = new DbService())
-            {
-                var channel = await db.UrlFilters.FindAsync(user.GuildId, msg.Channel.Id);
-                if (channel == null) return;
-                if (msg.Channel.Id != channel.ChannelId) return;
-                if (msg.Content.IsUrl())
-                    try
-                    {
-                        await msg.DeleteAsync();
-                    }
-                    catch
-                    {
-                        /* ignored */
-                    }
-
-                var _ = AutoModFilter(user as SocketGuildUser, AutoModActionType.Url, 0, msg.Content);
-            }
-        }
-
-        private async Task WordFilter(SocketUserMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
-        {
-            // IGNORE Todo: Add word filter
-        }
-
-        private async Task LengthFilter(SocketMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task LengthFilter(SocketMessage msg, IGuildUser user, AdminConfig cfg, Account userdata)
         {
             if (user.GuildId != 339370914724446208) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -335,7 +309,7 @@ namespace Hanekawa.Services.AutoModerator
             }
         }
 
-        private async Task MentionFilter(IMessage msg, IGuildUser user, GuildConfig cfg)
+        private async Task MentionFilter(IMessage msg, IGuildUser user, AdminConfig cfg)
         {
             if (!cfg.MentionCountFilter.HasValue || cfg.MentionCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;
@@ -354,7 +328,7 @@ namespace Hanekawa.Services.AutoModerator
             var _ = AutoModFilter?.Invoke(user as SocketGuildUser, AutoModActionType.Mention, amount, msg.Content);
         }
 
-        private async Task EmoteFilter(IMessage msg, IGuildUser user, GuildConfig cfg, Account userdata)
+        private async Task EmoteFilter(IMessage msg, IGuildUser user, AdminConfig cfg, Account userdata)
         {
             if (!cfg.EmoteCountFilter.HasValue || cfg.EmoteCountFilter.Value == 0) return;
             if (user.GuildPermissions.ManageMessages) return;

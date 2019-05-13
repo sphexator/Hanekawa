@@ -1,12 +1,12 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities.Interfaces;
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Services.CommandHandler
 {
@@ -28,6 +28,7 @@ namespace Hanekawa.Services.CommandHandler
             {
                 foreach (var x in db.GuildConfigs) Prefix.GetOrAdd(x.GuildId, x.Prefix);
             }
+
             Console.WriteLine("CommandHandler service loaded");
         }
 
@@ -44,6 +45,8 @@ namespace Hanekawa.Services.CommandHandler
                 await db.SaveChangesAsync();
             }
         }
+
+        public string GetPrefix(ulong guildId) => Prefix.GetOrAdd(guildId, "h.");
 
         private async Task MessageRecieved(SocketMessage rawMessage)
         {

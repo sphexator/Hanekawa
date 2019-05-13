@@ -12,34 +12,32 @@ namespace Hanekawa.Services.Games.ShipGame.Data
             using (var db = new DbService())
             {
                 var cfg = db.GameConfigs.Find(1);
-                DefaultHealth = cfg.DefaultHealth;
-                DefaultDamage = cfg.DefaultDamage;
+                if (cfg == null)
+                {
+                    DefaultHealth = 10;
+                    DefaultDamage = 1;
+                }
+                else
+                {
+                    DefaultHealth = cfg.DefaultHealth;
+                    DefaultDamage = cfg.DefaultDamage;
+                }
             }
         }
 
-        private int DefaultHealth { get; }
-        private int DefaultDamage { get; }
+        private int DefaultHealth { get; } = 10;
+        private int DefaultDamage { get; } = 1;
 
-        public int GetHealth(uint level, GameClass ass)
-        {
-            return Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
-        }
+        public int GetHealth(int level, GameClass ass) =>
+            Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
 
-        public int GetHealth(uint level, GameEnemy enemyData, GameClass enemyClass)
-        {
-            return Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
-                                              enemyClass.ModifierHealth));
-        }
+        public int GetHealth(int level, GameEnemy enemyData, GameClass enemyClass) =>
+            Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
+                                       enemyClass.ModifierHealth));
 
-        public int GetDamage(uint level)
-        {
-            return Convert.ToInt32(DefaultDamage * level);
-        }
+        public int GetDamage(int level) => DefaultDamage * level;
 
-        public int GetDamage(uint level, GameEnemy enemyData)
-        {
-            return Convert.ToInt32((DefaultDamage + enemyData.Damage) * level);
-        }
+        public int GetDamage(int level, GameEnemy enemyData) => (DefaultDamage + enemyData.Damage) * level;
 
         public int CalculateDamage(int damage, GameClass AttackerClass, GameClass EnemyClass, EnemyType type)
         {

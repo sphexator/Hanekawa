@@ -5,17 +5,18 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 
 namespace Hanekawa.Modules.Giveaway
 {
     public class Giveaway : InteractiveBase
     {
+        [Name("Draw")]
         [Command("draw", RunMode = RunMode.Async)]
+        [Summary("Draw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
+        [Remarks("h.draw 5 <emote> 5435346235434 #general")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireContext(ContextType.Guild)]
-        [Summary("Draw(s) winner(s) from a reaction on a message (EMOTE MUST BE ON THE SERVER)")]
         public async Task DrawWinnerAsync(int draw, Emote emote, ulong messageId, ITextChannel channel = null)
         {
             await Context.Message.DeleteAsync();
@@ -31,7 +32,8 @@ namespace Hanekawa.Modules.Giveaway
             var reactionAmount = GetReactionAmount(message, emote);
             var users = await message.GetReactionUsersAsync(emote, reactionAmount).FlattenAsync();
             if (users == null)
-                await Context.ReplyAsync("Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
+                await Context.ReplyAsync(
+                    "Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
                     Color.Red.RawValue);
             var rnd = new Random();
             var result = users.OrderBy(item => rnd.Next());

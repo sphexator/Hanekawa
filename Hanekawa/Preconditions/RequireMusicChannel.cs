@@ -18,9 +18,7 @@ namespace Hanekawa.Preconditions
             CommandInfo command, IServiceProvider services)
         {
             if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
-            {
                 return PreconditionResult.FromSuccess();
-            }
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);

@@ -1,16 +1,17 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Owner
 {
+    [Name("owner")]
     [RequireOwner]
     public class OwnerCommands : InteractiveBase
     {
@@ -24,7 +25,9 @@ namespace Hanekawa.Modules.Owner
         [Command("servers")]
         public async Task ServerOverview()
         {
-            var pages = Context.Client.Guilds.Select(x => $"Name: **{x.Name}** ({x.Id})\n" + $"Members: **{x.MemberCount}** (owner {x.Owner.Mention} ({x.OwnerId})\n").ToList();
+            var pages = Context.Client.Guilds.Select(x =>
+                $"Name: **{x.Name}** ({x.Id})\n" +
+                $"Members: **{x.MemberCount}** (owner {x.Owner.Mention} ({x.OwnerId})\n").ToList();
             await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, "Guilds I am in", 10));
         }
 
@@ -41,10 +44,8 @@ namespace Hanekawa.Modules.Owner
                     var list = await db.Blacklists.ToListAsync();
                     var pages = new List<string>();
                     foreach (var x in list)
-                    {
                         pages.Add($"Guild ID: {x.GuildId} - Reason: {x.Reason}\n" +
                                   $"Responsible: {Context.Client.GetUser(x.ResponsibleUser)}");
-                    }
 
                     await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, "Blacklisted servers"));
                 }

@@ -1,21 +1,20 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
-using Hanekawa.Extensions.Embed;
-using Hanekawa.Services.CommandHandler;
-using System.Threading.Tasks;
 using Hanekawa.Addons.Database.Extensions;
 using Hanekawa.Entities;
+using Hanekawa.Extensions.Embed;
+using Hanekawa.Services.CommandHandler;
 
 namespace Hanekawa.Modules.Permission
 {
     [RequireContext(ContextType.Guild)]
     public class Permission : InteractiveBase
     {
-        private readonly CommandHandlingService _command;
         private readonly DefaultColors _colors;
+        private readonly CommandHandlingService _command;
 
         public Permission(CommandHandlingService command, DefaultColors colors)
         {
@@ -23,19 +22,12 @@ namespace Hanekawa.Modules.Permission
             _colors = colors;
         }
 
-        [Command("permissions", RunMode = RunMode.Async)]
-        [Alias("perm")]
-        [Summary("Permission overview")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ViewPermissionsAsync()
-        {
-            await Context.ReplyAsync("Currently disabled");
-        }
-
+        [Name("Set prefix")]
         [Command("prefix", RunMode = RunMode.Async)]
         [Alias("set prefix")]
         [Summary("Sets custom prefix for this guild/server")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [Remarks("h.prefix !")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetPrefix(string prefix)
         {
             try
@@ -50,16 +42,17 @@ namespace Hanekawa.Modules.Permission
             }
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed 16669612")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(uint color)
         {
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-            {
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
@@ -68,16 +61,15 @@ namespace Hanekawa.Modules.Permission
                     await Context.ReplyAsync("Changed default embed color");
                     cfg.UpdateConfig(Context.Guild.Id);
                 }
-            }
             else
-            {
                 await Context.ReplyAsync("Canceled");
-            }
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed 99 00 00")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(int r, int g, int b)
         {
@@ -85,7 +77,6 @@ namespace Hanekawa.Modules.Permission
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-            {
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
@@ -94,16 +85,15 @@ namespace Hanekawa.Modules.Permission
                     await Context.ReplyAsync("Changed default embed color");
                     cfg.UpdateConfig(Context.Guild.Id);
                 }
-            }
             else
-            {
                 await Context.ReplyAsync("Canceled");
-            }
         }
 
+        [Name("Embed color")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed pink")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(Colors type)
         {
@@ -111,7 +101,6 @@ namespace Hanekawa.Modules.Permission
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-            {
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
@@ -120,16 +109,15 @@ namespace Hanekawa.Modules.Permission
                     await Context.ReplyAsync("Changed default embed color");
                     cfg.UpdateConfig(Context.Guild.Id);
                 }
-            }
             else
-            {
                 await Context.ReplyAsync("Canceled");
-            }
         }
 
+        [Name("Embed")]
         [Command("embed")]
         [Alias("set embed")]
         [Summary("Sets a custom colour for embeds")]
+        [Remarks("h.embed #ff0022")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEmbed(string hex)
         {
@@ -137,7 +125,6 @@ namespace Hanekawa.Modules.Permission
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-            {
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
@@ -146,11 +133,8 @@ namespace Hanekawa.Modules.Permission
                     await Context.ReplyAsync("Changed default embed color");
                     cfg.UpdateConfig(Context.Guild.Id);
                 }
-            }
             else
-            {
                 await Context.ReplyAsync("Canceled");
-            }
         }
     }
 }

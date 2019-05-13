@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -6,10 +10,6 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Humanizer;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Help
 {
@@ -25,7 +25,8 @@ namespace Hanekawa.Modules.Help
             var application = await Context.Client.GetApplicationInfoAsync();
             var currentProcess = Process.GetCurrentProcess();
             var embed = new EmbedBuilder().CreateDefault(Context.Guild.Id);
-            embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}", true);
+            embed.AddField("Instance owned by", $"{application.Owner.Username}#{application.Owner.Discriminator}",
+                true);
             embed.AddField("Creator", "[Sphexator](https://github.com/sphexator)", true);
             embed.AddField("About", application.Description, true);
             embed.AddField("Up time", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true);
@@ -52,7 +53,8 @@ namespace Hanekawa.Modules.Help
                 .AddField("Creator", "[Sphexator](https://github.com/sphexator)", true)
                 .AddField("About", application.Description, true)
                 .AddField("Up time", $"{(DateTime.Now - currentProcess.StartTime).Humanize()}", true)
-                .AddField("Memory", $"{currentProcess.WorkingSet64.SizeSuffix()} (Peak {currentProcess.PeakWorkingSet64.SizeSuffix()})")
+                .AddField("Memory",
+                    $"{currentProcess.WorkingSet64.SizeSuffix()} (Peak {currentProcess.PeakWorkingSet64.SizeSuffix()})")
                 .AddField("Support", "[link](https://discord.gg/gGu5TT6)", true)
                 .AddField("Invite link",
                     "[link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)",
@@ -68,7 +70,8 @@ namespace Hanekawa.Modules.Help
         {
             await ReplyAndDeleteAsync(null, false,
                 new EmbedBuilder()
-                    .CreateDefault($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}", Context.Guild.Id)
+                    .CreateDefault($"Bot uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}",
+                        Context.Guild.Id)
                     .Build(), TimeSpan.FromSeconds(20));
         }
 

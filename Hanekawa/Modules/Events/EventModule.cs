@@ -1,45 +1,42 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Preconditions;
 using Hanekawa.Services.Events;
-using Hanekawa.Services.Level;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Events
 {
-    [Group("Event")]
+    [Name("Event")]
     [RequireContext(ContextType.Guild)]
     [Summary("Event scheduler. Add, remove or manage scheduled events for your server.")]
     public class EventModule : InteractiveBase
     {
-        private readonly LevelingService _levelingService;
         private readonly EventService _service;
 
-        public EventModule(EventService service, LevelingService levelingService)
-        {
-            _service = service;
-            _levelingService = levelingService;
-        }
+        public EventModule(EventService service) => _service = service;
 
-        [Command("post", RunMode = RunMode.Async)]
+        [Name("Event post")]
+        [Command("event post", RunMode = RunMode.Async)]
+        [Summary("Force posts pending events into their designated channels")]
         [RequireOwner]
         public async Task PostEventsAsync()
         {
             await _service.Execute();
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Event list")]
+        [Command("event list", RunMode = RunMode.Async)]
         [Summary("Lists all upcoming events")]
+        [Remarks("h.event list")]
         [Priority(1)]
         [WhiteListedOverAll]
         public async Task ListDesignerEventsAsync()
@@ -53,6 +50,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("No events scheduled");
                     return;
                 }
+
                 var pages = new List<string>();
                 foreach (var x in events)
                 {
@@ -67,12 +65,16 @@ namespace Hanekawa.Modules.Events
                               $"Image: {image}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Events in {Context.Guild.Name}"));
             }
         }
 
-        [Command("list", RunMode = RunMode.Async)]
+        [Name("Event list")]
+        [Command("event list", RunMode = RunMode.Async)]
         [Summary("Lists all upcoming events")]
+        [Remarks("h.event list")]
         [RequiredChannel]
         public async Task ListEventsAsync()
         {
@@ -85,6 +87,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("No events scheduled");
                     return;
                 }
+
                 var pages = new List<string>();
                 foreach (var x in events)
                 {
@@ -93,18 +96,22 @@ namespace Hanekawa.Modules.Events
                               $"Date: {x.Time}\n" +
                               $"Host {host}\n\n");
                 }
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Events in {Context.Guild.Name}"));
+
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Events in {Context.Guild.Name}"));
             }
         }
 
-        [Command("schedule", RunMode = RunMode.Async)]
+        [Name("Event schedule")]
+        [Command("event schedule", RunMode = RunMode.Async)]
         [Summary("Sets event scheduling channel")]
+        [Remarks("h.event schedule #general")]
         [RequireOwner]
         public async Task SetSchedulingChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventSchedulerChannel = null;
@@ -121,14 +128,16 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("channel", RunMode = RunMode.Async)]
+        [Name("Event channel")]
+        [Command("event channel", RunMode = RunMode.Async)]
         [Summary("Sets event channel")]
+        [Remarks("h.event channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetEventChannel(ITextChannel channel = null)
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.EventChannel = null;
@@ -144,8 +153,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("exp")]
+        [Name("Event exp")]
+        [Command("event exp")]
         [Summary("Displays current on-going exp events if there is one.")]
+        [Remarks("h.event exp")]
         [RequiredChannel]
         public async Task ShowExpEvent()
         {
@@ -155,12 +166,15 @@ namespace Hanekawa.Modules.Events
                 if (expEvent == null)
                     await Context.ReplyAsync("There's currently no event active.");
                 else
-                    await Context.ReplyAsync($"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}");
+                    await Context.ReplyAsync(
+                        $"There's currently an exp event active for {(expEvent.Time - DateTime.UtcNow).Humanize()}");
             }
         }
 
-        [Command("Add", RunMode = RunMode.Async)]
+        [Name("Event add")]
+        [Command("event Add", RunMode = RunMode.Async)]
         [Summary("Adds a event given the datetime it'll appear (time is in UTC!)")]
+        [Remarks("h.event add")]
         [WhiteListedEventOrg]
         public async Task AddEventAsync()
         {
@@ -265,11 +279,11 @@ namespace Hanekawa.Modules.Events
                     if (response.Content.ToLower() == "y")
                     {
                         await _service.TryAddEventAsync(name, Context.User as IGuildUser, date, db);
-                        var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                        var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                         await Context.ReplyAsync(
                             $"Scheduled {name} for {time.Humanize()} \nUse `event desc {id} <description>` to add a description to your event\nUse `event image {id} <imageUrl>` to add a image to your event!");
                         if (cfg.DesignChannel.HasValue)
-                            await (Context.Guild.GetTextChannel(cfg.DesignChannel.Value)).ReplyAsync(embed,
+                            await Context.Guild.GetTextChannel(cfg.DesignChannel.Value).ReplyAsync(embed,
                                 $"New event added\nClaim to make a banner for this with `!event claim {id}`");
                         await ((ITextChannel) Context.Channel).DeleteMessagesAsync(messages);
                     }
@@ -281,8 +295,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("preview", RunMode = RunMode.Async)]
+        [Name("Event preview")]
+        [Command("event preview", RunMode = RunMode.Async)]
         [Summary("Previews a event given the ID")]
+        [Remarks("h.event preview 1")]
         [WhiteListedOverAll]
         public async Task PreviewEvent(int id)
         {
@@ -294,6 +310,7 @@ namespace Hanekawa.Modules.Events
                     await Context.ReplyAsync("Couldn't find a event with given ID.");
                     return;
                 }
+
                 var embed = new EmbedBuilder().CreateDefault(eventInfo.Description, Context.Guild.Id)
                     .WithImageUrl(eventInfo.ImageUrl)
                     .WithTitle(eventInfo.Name)
@@ -303,8 +320,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Remove", RunMode = RunMode.Async)]
+        [Name("Event remove")]
+        [Command("event Remove", RunMode = RunMode.Async)]
         [Summary("Removes a event from the list given the ID")]
+        [Remarks("h.event remove 1")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveEventAsync(int id)
         {
@@ -326,8 +345,10 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("claim", RunMode = RunMode.Async)]
+        [Name("Event claim")]
+        [Command("event claim", RunMode = RunMode.Async)]
         [Summary("Claims a event to make a image for it")]
+        [Remarks("h.event claim 1")]
         [WhiteListedDesigner]
         public async Task ClaimEventAsync(int id)
         {
@@ -352,9 +373,11 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Description", RunMode = RunMode.Async)]
+        [Name("Event description")]
+        [Command("event Description", RunMode = RunMode.Async)]
         [Alias("desc")]
         [Summary("Sets a description to the event")]
+        [Remarks("h.event description 1 description here")]
         [WhiteListedEventOrg]
         public async Task SetEventDescriptionAsync(int id, [Remainder] string content)
         {
@@ -370,9 +393,11 @@ namespace Hanekawa.Modules.Events
             }
         }
 
-        [Command("Image", RunMode = RunMode.Async)]
+        [Name("Event image")]
+        [Command("event Image", RunMode = RunMode.Async)]
         [Alias("img")]
         [Summary("Sets a image to the event")]
+        [Remarks("h.event image imageurl")]
         [WhiteListedOverAll]
         public async Task SetEventImageUrlAsync(int id, string url)
         {

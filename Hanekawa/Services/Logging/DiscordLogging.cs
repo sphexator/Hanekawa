@@ -1,4 +1,7 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Data;
@@ -10,9 +13,6 @@ using Hanekawa.Services.Administration;
 using Hanekawa.Services.AutoModerator;
 using Hanekawa.Services.Logging.LoadBalance;
 using Humanizer;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using ActionType = Hanekawa.Entities.ActionType;
 
 namespace Hanekawa.Services.Logging
@@ -67,14 +67,14 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                     if (!cfg.LogWarn.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     if (ch == null) return;
                     await ch.ReplyAsync(new EmbedBuilder().CreateDefault(user.Guild.Id)
-                        .WithAuthor(new EmbedAuthorBuilder { Name = "User Mute Warned" })
+                        .WithAuthor(new EmbedAuthorBuilder {Name = "User Mute Warned"})
                         .WithFooter(new EmbedFooterBuilder
-                            { Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})" })
+                            {Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"})
                         .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                         .WithFields(new List<EmbedFieldBuilder>
                         {
@@ -95,13 +95,13 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                     if (!cfg.LogWarn.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogWarn.Value);
                     if (ch == null) return;
 
                     await ch.ReplyAsync(new EmbedBuilder().CreateDefault(user.Guild.Id)
-                        .WithAuthor(new EmbedAuthorBuilder { Name = "User Warned" })
+                        .WithAuthor(new EmbedAuthorBuilder {Name = "User Warned"})
                         .WithFields(new List<EmbedFieldBuilder>
                         {
                             new EmbedFieldBuilder {IsInline = true, Name = "User", Value = user.Mention},
@@ -110,7 +110,7 @@ namespace Hanekawa.Services.Logging
                         })
                         .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                         .WithFooter(new EmbedFooterBuilder
-                            { Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})" }));
+                            {Text = $"Username: {user.Username}#{user.DiscriminatorValue} ({user.Id})"}));
                 }
             });
             return Task.CompletedTask;
@@ -123,7 +123,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                     ITextChannel channel;
                     if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
                     else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
@@ -143,7 +143,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                     ITextChannel channel;
                     if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
@@ -161,7 +161,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                     ITextChannel channel;
                     if (!cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     else if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
@@ -199,7 +199,7 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                     ITextChannel channel;
                     if (cfg.LogAutoMod.HasValue) channel = user.Guild.GetTextChannel(cfg.LogAutoMod.Value);
                     else if (cfg.LogBan.HasValue) channel = user.Guild.GetTextChannel(cfg.LogBan.Value);
@@ -219,7 +219,7 @@ namespace Hanekawa.Services.Logging
                             new EmbedFieldBuilder
                                 {IsInline = true, Name = "Score", Value = $"{score} (higher then {tolerance})"}
                         })
-                        .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {user.Id}" }));
+                        .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}));
                 }
             });
             return Task.CompletedTask;
@@ -231,15 +231,15 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
                     await ch.ReplyAsync(new EmbedBuilder().CreateDefault(user.Mention, Color.Green.RawValue)
                         .WithAuthor(new EmbedAuthorBuilder
-                            { Name = $"{user.Username}#{user.DiscriminatorValue} | {ActionType.Ungagged}" })
+                            {Name = $"{user.Username}#{user.DiscriminatorValue} | {ActionType.Ungagged}"})
                         .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
-                        .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {user.Id}" }));
+                        .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}));
                 }
             });
             return Task.CompletedTask;
@@ -251,22 +251,23 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
 
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow,
-                        (ModAction)Data.Constants.ModAction.Mute);
+                        (ModAction) Data.Constants.ModAction.Mute);
 
                     var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
                         .WithAuthor(new EmbedAuthorBuilder
                         {
-                            Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
+                            Name =
+                                $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
                         })
                         .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                         .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(user))
-                        .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {user.Id}" }));
+                        .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}));
 
                     caseId.MessageId = msg.Id;
                     caseId.ModId = staff.Id;
@@ -282,22 +283,23 @@ namespace Hanekawa.Services.Logging
             {
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                     if (!cfg.LogBan.HasValue) return;
                     var ch = user.Guild.GetTextChannel(cfg.LogBan.Value);
                     if (ch == null) return;
 
                     var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow,
-                        (ModAction)Data.Constants.ModAction.Mute);
+                        (ModAction) Data.Constants.ModAction.Mute);
 
                     var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
                         .WithAuthor(new EmbedAuthorBuilder
                         {
-                            Name = $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
+                            Name =
+                                $"Case ID: {caseId.Id} - {ActionType.Gagged} | {user.Username}#{user.DiscriminatorValue}"
                         })
                         .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                         .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(user))
-                        .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {user.Id}" }));
+                        .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {user.Id}"}));
 
                     caseId.MessageId = msg.Id;
                     caseId.ModId = staff.Id;

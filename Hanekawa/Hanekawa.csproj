@@ -43,22 +43,17 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Net" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="Discord.Net.Core" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="Discord.Net.Rpc" Version="2.0.0-beta-00860" />
-    <PackageReference Include="Discord.Net.Webhook" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.0-beta2-01039" />
-    <PackageReference Include="GiphyApiClient.NetCore" Version="3.0.0" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.35.2.1337" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.2.1226" />
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Webhook" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
     <PackageReference Include="Humanizer" Version="2.5.16" />
-    <PackageReference Include="InfluxData.Net" Version="8.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -67,27 +62,25 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-    <PackageReference Include="Miki.Anilist" Version="0.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="NLog" Version="4.5.11" />
     <PackageReference Include="NLog.Config" Version="4.5.11" />
     <PackageReference Include="NLog.Extensions.Configuration" Version="1.3.0" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.3.0" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.4" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.Design" Version="1.1.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.4.0" />
     <PackageReference Include="Quartz" Version="3.0.7" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0004" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0004" />
+    <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0008" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
+    <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0008" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0008" />
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
-    <PackageReference Include="TweetinviAPI" Version="4.0.0" />
-    <PackageReference Include="TweetinviAPI.WebhooksPlugin" Version="4.0.0" />
-    <PackageReference Include="Victoria" Version="3.1.2" />
+    <PackageReference Include="Victoria" Version="3.3.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Data\Profile\Template\" />
-    <Folder Include="Modules\Club\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,6 +96,33 @@
     </None>
     <None Update="config.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\ARIAL.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\ARIALBD.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\ARIALBI.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\ARIALI.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\ARIBLK.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\TIMES.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\TIMESBD.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\TIMESBI.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Fonts\TIMESI.TTF">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\Game\background.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

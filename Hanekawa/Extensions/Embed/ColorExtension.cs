@@ -1,15 +1,15 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Concurrent;
+using Discord;
 using Hanekawa.Addons.Database;
 using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
-using System;
-using System.Collections.Concurrent;
+using Hanekawa.Addons.Database.Tables.Config;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class ColorExtension
     {
-        private static readonly ConcurrentDictionary<ulong, Tuple<GuildConfig, DateTime>> GuildConfig 
+        private static readonly ConcurrentDictionary<ulong, Tuple<GuildConfig, DateTime>> GuildConfig
             = new ConcurrentDictionary<ulong, Tuple<GuildConfig, DateTime>>();
 
         public static Color GetDefaultColor(this Color color, ulong guild)

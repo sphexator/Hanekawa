@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -15,9 +16,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Text;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -54,14 +52,18 @@ namespace Hanekawa.Services.Welcome
             using (var img = banner)
             {
                 var avatar = await GetAvatarAsync(user);
-                var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
-                var text = user.Username.Truncate(15);
+
+                var fonts = new FontCollection();
+                var times = fonts.Install(@"Data/Fonts/TIMES.TTF");
+                var font = new Font(times, 33, FontStyle.Regular);
+                var text = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
+                //var font = SystemFonts.CreateFont("Times New Roman", 33, FontStyle.Regular);
                 var optionsCenter = new TextGraphicsOptions
                 {
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 img.Mutate(ctx => ctx
-                    .DrawImage(GraphicsOptions.Default, avatar, new Point(10, 10))
+                    .DrawImage(avatar, new Point(10, 10), GraphicsOptions.Default)
                     .DrawText(optionsCenter, text, font, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
@@ -91,7 +93,7 @@ namespace Hanekawa.Services.Welcome
 
         private static Image<Rgba32> GetDefaultImage()
         {
-            using (var img = Image.Load(@"Data\Welcome\Default.png"))
+            using (var img = Image.Load("Data/Welcome/Default.png"))
             {
                 img.Mutate(x => x.Resize(600, 78));
                 return img.Clone();
@@ -103,8 +105,8 @@ namespace Hanekawa.Services.Welcome
             var response = await _httpClient.GetStreamAsync(user.GetAvatar());
             using (var img = Image.Load(response))
             {
-                var avi = img.CloneAndConvertToAvatarWithoutApply(new Size(60, 60), 32);
-                return avi.Clone();
+                return img.CloneAndConvertToAvatarWithoutApply(
+                    new Size(60, 60), 30);
             }
         }
     }

@@ -33,34 +33,16 @@ namespace Hanekawa.Extensions
             new Regex(@"(?:youramonkey\.com|robtex\.com).*?(\s|$)",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public static bool IsUrl(this string str)
-        {
-            return !EmoteRegex.IsMatch(str) && UrlRegex.IsMatch(str);
-        }
+        public static bool IsUrl(this string str) => !EmoteRegex.IsMatch(str) && UrlRegex.IsMatch(str);
 
-        public static bool IsDiscordInvite(this string str)
-        {
-            return FilterRegex.IsMatch(str);
-        }
+        public static bool IsDiscordInvite(this string str) => FilterRegex.IsMatch(str);
 
-        public static bool IsScamLink(this string str)
-        {
-            return ScamFilter.IsMatch(str);
-        }
+        public static bool IsScamLink(this string str) => ScamFilter.IsMatch(str);
 
-        public static bool IsGoogleLink(this string str)
-        {
-            return GoogleLink.IsMatch(str);
-        }
+        public static bool IsGoogleLink(this string str) => GoogleLink.IsMatch(str);
 
-        public static bool IsPornLink(this string str)
-        {
-            return PornLink.IsMatch(str);
-        }
+        public static bool IsPornLink(this string str) => PornLink.IsMatch(str);
 
-        public static bool IsIpGrab(this string str)
-        {
-            return IpGrab.IsMatch(str);
-        }
+        public static bool IsIpGrab(this string str) => IpGrab.IsMatch(str);
     }
 }

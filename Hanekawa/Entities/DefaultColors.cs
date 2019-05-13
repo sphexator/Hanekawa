@@ -6,34 +6,34 @@ namespace Hanekawa.Entities
 {
     public class DefaultColors : IHanaService
     {
-        private static readonly Color Teal = new Color(1752220U);
-        private static readonly Color DarkTeal = new Color(1146986U);
-        private static readonly Color Green = new Color(3066993U);
-        private static readonly Color DarkGreen = new Color(2067276U);
-        private static readonly Color Blue = new Color(3447003U);
-        private static readonly Color DarkBlue = new Color(2123412U);
-        private static readonly Color Purple = new Color(10181046U);
-        private static readonly Color DarkPurple = new Color(7419530U);
-        private static readonly Color Magenta = new Color(15277667U);
-        private static readonly Color DarkMagenta = new Color(11342935U);
-        private static readonly Color Gold = new Color(15844367U);
-        private static readonly Color LightOrange = new Color(12745742U);
-        private static readonly Color Orange = new Color(15105570U);
-        private static readonly Color DarkOrange = new Color(11027200U);
-        private static readonly Color Red = new Color(15158332U);
-        private static readonly Color DarkRed = new Color(10038562U);
-        private static readonly Color LightGrey = new Color(9936031U);
-        private static readonly Color LighterGrey = new Color(9807270U);
-        private static readonly Color DarkGrey = new Color(6323595U);
-        private static readonly Color DarkerGrey = new Color(5533306U);
-        private static readonly Color Pink = new Color(16669612);
+        private readonly Color _teal = new Color(1752220U);
+        private readonly Color _darkTeal = new Color(1146986U);
+        private readonly Color _green = new Color(3066993U);
+        private readonly Color _darkGreen = new Color(2067276U);
+        private readonly Color _blue = new Color(3447003U);
+        private readonly Color _darkBlue = new Color(2123412U);
+        private readonly Color _purple = new Color(10181046U);
+        private readonly Color _darkPurple = new Color(7419530U);
+        private readonly Color _magenta = new Color(15277667U);
+        private readonly Color _darkMagenta = new Color(11342935U);
+        private readonly Color _gold = new Color(15844367U);
+        private readonly Color _lightOrange = new Color(12745742U);
+        private readonly Color _orange = new Color(15105570U);
+        private readonly Color _darkOrange = new Color(11027200U);
+        private readonly Color _red = new Color(15158332U);
+        private readonly Color _darkRed = new Color(10038562U);
+        private readonly Color _lightGrey = new Color(9936031U);
+        private readonly Color _lighterGrey = new Color(9807270U);
+        private readonly Color _darkGrey = new Color(6323595U);
+        private readonly Color _darkerGrey = new Color(5533306U);
+        private readonly Color _pink = new Color(16669612);
 
         public Color GetColor(string hex)
         {
-            if(hex.Contains("#")) hex = hex.Replace("#", "");
+            if (hex.Contains("#")) hex = hex.Replace("#", "");
             hex = hex.Insert(0, "0x");
             var hexToInt = Convert.ToInt32(hex, 16);
-            return new Color((uint)hexToInt);
+            return new Color((uint) hexToInt);
         }
 
         public Color GetColor(Colors type)
@@ -42,70 +42,70 @@ namespace Hanekawa.Entities
             switch (type)
             {
                 case Colors.Teal:
-                    color = Teal;
+                    color = _teal;
                     break;
                 case Colors.DarkTeal:
-                    color = DarkTeal;
+                    color = _darkTeal;
                     break;
                 case Colors.Green:
-                    color = Green;
+                    color = _green;
                     break;
                 case Colors.DarkGreen:
-                    color = DarkGreen;
+                    color = _darkGreen;
                     break;
                 case Colors.Blue:
-                    color = Blue;
+                    color = _blue;
                     break;
                 case Colors.DarkBlue:
-                    color = DarkBlue;
+                    color = _darkBlue;
                     break;
                 case Colors.Purple:
-                    color = Purple;
+                    color = _purple;
                     break;
                 case Colors.DarkPurple:
-                    color = DarkPurple;
+                    color = _darkPurple;
                     break;
                 case Colors.Magenta:
-                    color = Magenta;
+                    color = _magenta;
                     break;
                 case Colors.DarkMagenta:
-                    color = DarkMagenta;
+                    color = _darkMagenta;
                     break;
                 case Colors.Gold:
-                    color = Gold;
+                    color = _gold;
                     break;
                 case Colors.LightOrange:
-                    color = LightOrange;
+                    color = _lightOrange;
                     break;
                 case Colors.Orange:
-                    color = Orange;
+                    color = _orange;
                     break;
                 case Colors.DarkOrange:
-                    color = DarkOrange;
+                    color = _darkOrange;
                     break;
                 case Colors.Red:
-                    color = Red;
+                    color = _red;
                     break;
                 case Colors.DarkRed:
-                    color = DarkRed;
+                    color = _darkRed;
                     break;
                 case Colors.LightGrey:
-                    color = LightGrey;
+                    color = _lightGrey;
                     break;
                 case Colors.LighterGrey:
-                    color = LighterGrey;
+                    color = _lighterGrey;
                     break;
                 case Colors.DarkGrey:
-                    color = DarkGrey;
+                    color = _darkGrey;
                     break;
                 case Colors.DarkerGrey:
-                    color = DarkerGrey;
+                    color = _darkerGrey;
                     break;
                 case Colors.Pink:
-                    color = Pink;
+                    color = _pink;
                     break;
                 default:
-                    color = Purple;
+                    color = _purple;
                     break;
             }
 

@@ -1,5 +1,5 @@
-﻿using Discord;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Discord;
 using Victoria.Entities;
 
 namespace Hanekawa.Entities

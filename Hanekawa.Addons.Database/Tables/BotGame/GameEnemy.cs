@@ -2,20 +2,20 @@
 {
     public class GameEnemy
     {
-        public uint Id { get; set; }
-        public string Name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; } = "test";
 
-        public bool Elite { get; set; }
-        public bool Rare { get; set; }
+        public bool Elite { get; set; } = false;
+        public bool Rare { get; set; } = false;
 
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = null;
 
-        public uint Health { get; set; }
-        public uint Damage { get; set; }
+        public int Health { get; set; } = 100;
+        public int Damage { get; set; } = 10;
 
-        public int ClassId { get; set; }
+        public int ClassId { get; set; } = 1;
 
-        public uint ExpGain { get; set; }
-        public uint CreditGain { get; set; }
+        public int ExpGain { get; set; } = 10;
+        public int CreditGain { get; set; } = 10;
     }
 }

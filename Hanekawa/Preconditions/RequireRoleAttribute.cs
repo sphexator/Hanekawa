@@ -11,10 +11,7 @@ namespace Hanekawa.Preconditions
     {
         private readonly ulong _requiredRole;
 
-        public RequireRoleAttribute(ulong requiredRole) : base(ContextType.Guild)
-        {
-            _requiredRole = requiredRole;
-        }
+        public RequireRoleAttribute(ulong requiredRole) : base(ContextType.Guild) => _requiredRole = requiredRole;
 
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context,
             CommandInfo command, IServiceProvider services)

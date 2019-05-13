@@ -31,18 +31,25 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserBanned>> BanQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<UserBanned>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserUnbanned>> UnBanQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<UserUnbanned>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserJoined>> UserJoinedQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<UserJoined>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserLeft>> UserLeftQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<UserLeft>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<MessageDeleted>> MessageDeletedQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<MessageDeleted>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<MessageUpdated>> MessageUpdatedQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<MessageUpdated>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<GuildUserUpdated>> GuildMemberUpdatedQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<GuildUserUpdated>>();
+
         public ConcurrentDictionary<ulong, ConcurrentQueue<UserUpdated>> UserUpdatedQueue { get; } =
             new ConcurrentDictionary<ulong, ConcurrentQueue<UserUpdated>>();
 
@@ -69,13 +76,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-
-                    while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var userJoined))
+                {
+                    var user = userJoined.User;
+                    using (var db = new DbService())
                     {
-                        var user = userJoined.User;
-                        using (var db = new DbService())
-                        {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -83,8 +89,10 @@ namespace Hanekawa.Services.Logging.LoadBalance
                         await ch.ReplyAsync(new EmbedBuilder()
                             .CreateDefault($"📥 {user.Mention} has joined (*{user.Id}*)\n" +
                                            $"Account Created: {user.CreatedAt.Humanize()}", Color.Green.RawValue)
-                            .WithFooter(new EmbedFooterBuilder { Text = $"Username: {user.Username}#{user.Discriminator}" })
-                            .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))); ;
+                            .WithFooter(new EmbedFooterBuilder
+                                {Text = $"Username: {user.Username}#{user.Discriminator}"})
+                            .WithTimestamp(new DateTimeOffset(DateTime.UtcNow)));
+                        ;
                         lastRequest = DateTime.UtcNow;
                     }
                 }
@@ -101,13 +109,12 @@ namespace Hanekawa.Services.Logging.LoadBalance
             var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-
-                    while (queue.TryDequeue(out var userJoined))
+                while (queue.TryDequeue(out var userJoined))
+                {
+                    var user = userJoined.User;
+                    using (var db = new DbService())
                     {
-                        var user = userJoined.User;
-                        using (var db = new DbService())
-                        {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild).ConfigureAwait(false);
                         if (!cfg.LogJoin.HasValue) return;
                         var ch = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (ch == null) return;
@@ -133,46 +140,51 @@ namespace Hanekawa.Services.Logging.LoadBalance
             var lastRequest = DateTime.UtcNow;
             while (worker)
             {
-                    while (queue.TryDequeue(out var messageDeleted))
+                while (queue.TryDequeue(out var messageDeleted))
+                {
+                    if (messageDeleted.OptMsg.HasValue && messageDeleted.OptMsg.Value.Author.IsBot) return;
+
+                    if (!(messageDeleted.Channel is SocketGuildChannel chx)) return;
+                    using (var db = new DbService())
                     {
-                        if (messageDeleted.OptMsg.HasValue && messageDeleted.OptMsg.Value.Author.IsBot) return;
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild).ConfigureAwait(false);
+                        if (!cfg.LogMsg.HasValue) return;
+                        var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
+                        if (channel == null) return;
+                        if (!messageDeleted.OptMsg.HasValue) return;
+                        if (!(messageDeleted.OptMsg.Value is IUserMessage msg)) return;
 
-                        if (!(messageDeleted.Channel is SocketGuildChannel chx)) return;
-                        using (var db = new DbService())
+                        var embed = new EmbedBuilder()
+                            .CreateDefault(
+                                $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}", guildId)
+                            .WithAuthor(new EmbedAuthorBuilder {Name = "Message Deleted"})
+                            .WithFooter(new EmbedFooterBuilder
+                                {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"})
+                            .WithTimestamp(msg.Timestamp)
+                            .WithFields(new List<EmbedFieldBuilder>
+                            {
+                                new EmbedFieldBuilder
+                                    {IsInline = false, Name = "Message", Value = msg.Content.Truncate(900)}
+                            });
+
+                        if (msg.Attachments.Count > 0)
                         {
-                            var cfg = await db.GetOrCreateGuildConfigAsync(chx.Guild).ConfigureAwait(false);
-                            if (!cfg.LogMsg.HasValue) return;
-                            var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
-                            if (channel == null) return;
-                            if (!messageDeleted.OptMsg.HasValue) return;
-                            if (!(messageDeleted.OptMsg.Value is IUserMessage msg)) return;
-
-                            var embed = new EmbedBuilder()
-                                .CreateDefault(
-                                    $"{msg.Author.Mention} deleted a message in {(chx as ITextChannel)?.Mention}", guildId)
-                                .WithAuthor(new EmbedAuthorBuilder {Name = "Message Deleted"})
-                                .WithFooter(new EmbedFooterBuilder
-                                    {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"})
-                                .WithTimestamp(msg.Timestamp)
-                                .WithFields(new List<EmbedFieldBuilder>
-                                {
-                                    new EmbedFieldBuilder
-                                        {IsInline = false, Name = "Message", Value = msg.Content.Truncate(900)}
-                                });
-
-                            if (msg.Attachments.Count > 0)
+                            var file = msg.Attachments.FirstOrDefault();
+                            if (file != null)
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
-                                    x.Value = msg.Attachments.First().Url;
+                                    x.Value = msg.Attachments.FirstOrDefault()?.Url;
                                 });
-
-                            await channel.ReplyAsync(embed);
-
-                            lastRequest = DateTime.UtcNow;
                         }
+
+                        await channel.ReplyAsync(embed);
+
+                        lastRequest = DateTime.UtcNow;
                     }
+                }
+
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;
             }
@@ -192,7 +204,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(messageUpdated.Channel is ITextChannel chtx)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(chtx.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(chtx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
 
                         if (!messageUpdated.OldMessage.HasValue) return;
@@ -204,10 +216,14 @@ namespace Hanekawa.Services.Logging.LoadBalance
                             messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
                         if (messageUpdated.OldMessage.Value.Content == messageUpdated.NewMessage.Content) return;
 
-                        await channel.ReplyAsync(new EmbedBuilder().CreateDefault($"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}", guildId)
-                            .WithAuthor(new EmbedAuthorBuilder { Name = "Message Updated" })
-                            .WithFooter(new EmbedFooterBuilder { Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}" })
-                            .WithTimestamp(messageUpdated.NewMessage.EditedTimestamp ?? messageUpdated.NewMessage.Timestamp)
+                        await channel.ReplyAsync(new EmbedBuilder()
+                            .CreateDefault(
+                                $"{messageUpdated.NewMessage.Author.Mention} updated a message in {chtx.Mention}",
+                                guildId)
+                            .WithAuthor(new EmbedAuthorBuilder {Name = "Message Updated"})
+                            .WithFooter(new EmbedFooterBuilder {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"})
+                            .WithTimestamp(messageUpdated.NewMessage.EditedTimestamp ??
+                                           messageUpdated.NewMessage.Timestamp)
                             .WithFields(new List<EmbedFieldBuilder>
                             {
                                 new EmbedFieldBuilder
@@ -236,21 +252,24 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 while (queue.TryDequeue(out var userBanned))
-                {
                     using (var db = new DbService())
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfigAsync(userBanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateLoggingConfigAsync(userBanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userBanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
 
                             var caseId = await db.CreateCaseId(userBanned.User, userBanned.Guild, DateTime.UtcNow,
-                                (ModAction)Data.Constants.ModAction.Ban);
+                                (ModAction) Data.Constants.ModAction.Ban);
                             var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
-                                .WithAuthor(new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.Bent} | {userBanned.User.Username}#{userBanned.User.Discriminator}" })
-                                .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {userBanned.User.Id}" })
+                                .WithAuthor(new EmbedAuthorBuilder
+                                {
+                                    Name =
+                                        $"Case ID: {caseId.Id} - {ActionType.Bent} | {userBanned.User.Username}#{userBanned.User.Discriminator}"
+                                })
+                                .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {userBanned.User.Id}"})
                                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                                 .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(userBanned.User)));
 
@@ -265,7 +284,6 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         lastRequest = DateTime.UtcNow;
                     }
-                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(10) >= DateTime.UtcNow) worker = false;
@@ -280,22 +298,25 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 while (queue.TryDequeue(out var userUnbanned))
-                {
                     using (var db = new DbService())
                     {
                         try
                         {
-                            var cfg = await db.GetOrCreateGuildConfigAsync(userUnbanned.Guild).ConfigureAwait(false);
+                            var cfg = await db.GetOrCreateLoggingConfigAsync(userUnbanned.Guild).ConfigureAwait(false);
                             if (!cfg.LogBan.HasValue) return;
                             var ch = userUnbanned.Guild.GetTextChannel(cfg.LogBan.Value);
                             if (ch == null) return;
 
                             var caseId = await db.CreateCaseId(userUnbanned.User, userUnbanned.Guild, DateTime.UtcNow,
-                                (ModAction)Data.Constants.ModAction.Unban);
+                                (ModAction) Data.Constants.ModAction.Unban);
 
                             var msg = await ch.ReplyAsync(new EmbedBuilder().CreateDefault(null, Color.Red.RawValue)
-                                .WithAuthor(new EmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - {ActionType.UnBent} | {userUnbanned.User.Username}#{userUnbanned.User.Discriminator}" })
-                                .WithFooter(new EmbedFooterBuilder { Text = $"User ID: {userUnbanned.User.Id}" })
+                                .WithAuthor(new EmbedAuthorBuilder
+                                {
+                                    Name =
+                                        $"Case ID: {caseId.Id} - {ActionType.UnBent} | {userUnbanned.User.Username}#{userUnbanned.User.Discriminator}"
+                                })
+                                .WithFooter(new EmbedFooterBuilder {Text = $"User ID: {userUnbanned.User.Id}"})
                                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow))
                                 .WithFields(new List<EmbedFieldBuilder>().ModLogFieldBuilders(userUnbanned.User)));
                             caseId.MessageId = msg.Id;
@@ -309,7 +330,6 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         lastRequest = DateTime.UtcNow;
                     }
-                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(10) >= DateTime.UtcNow) worker = false;
@@ -328,7 +348,7 @@ namespace Hanekawa.Services.Logging.LoadBalance
                     if (!(userUpdated.NewUser is SocketGuildUser gusr)) return;
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(gusr.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(gusr.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = gusr.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;
@@ -351,12 +371,8 @@ namespace Hanekawa.Services.Logging.LoadBalance
                                 .WithDescription(
                                     $"{userUpdated.OldUser.Username}#{userUpdated.OldUser.Discriminator} | {userUpdated.OldUser.Id}");
 
-                            if (Uri.IsWellFormedUriString(userUpdated.OldUser.GetAvatarUrl(ImageFormat.Auto, 1024),
-                                UriKind.Absolute))
-                                embed.WithThumbnailUrl(userUpdated.OldUser.GetAvatarUrl(ImageFormat.Auto, 1024));
-                            if (Uri.IsWellFormedUriString(userUpdated.NewUser.GetAvatarUrl(ImageFormat.Auto, 1024),
-                                UriKind.Absolute))
-                                embed.WithImageUrl(userUpdated.NewUser.GetAvatarUrl(ImageFormat.Auto, 1024));
+                            embed.WithThumbnailUrl(userUpdated.OldUser.GetAvatar());
+                            embed.WithImageUrl(userUpdated.NewUser.GetAvatar());
                         }
                         else
                         {
@@ -382,17 +398,18 @@ namespace Hanekawa.Services.Logging.LoadBalance
             while (worker)
             {
                 while (queue.TryDequeue(out var guildUserUpdated))
-                {
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateGuildConfigAsync(guildUserUpdated.NewUser.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(guildUserUpdated.NewUser.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var ch = guildUserUpdated.NewUser.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (ch == null) return;
 
                         var embed = new EmbedBuilder().CreateDefault(guildId)
-                            .WithTitle($"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}")
-                            .WithFooter(new EmbedFooterBuilder { IconUrl = guildUserUpdated.NewUser.GetAvatar(), Text = "" });
+                            .WithTitle(
+                                $"{guildUserUpdated.OldUser.Username}#{guildUserUpdated.OldUser.Discriminator} | {guildUserUpdated.OldUser.Id}")
+                            .WithFooter(new EmbedFooterBuilder
+                                {IconUrl = guildUserUpdated.NewUser.GetAvatar(), Text = ""});
 
                         if (guildUserUpdated.OldUser.Nickname != guildUserUpdated.NewUser.Nickname)
                         {
@@ -430,7 +447,6 @@ namespace Hanekawa.Services.Logging.LoadBalance
 
                         lastRequest = DateTime.UtcNow;
                     }
-                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(500));
                 if (lastRequest.AddHours(1) >= DateTime.UtcNow) worker = false;

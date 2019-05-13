@@ -102,10 +102,7 @@ namespace Hanekawa.Preconditions
 
         private class CommandTimeout
         {
-            public CommandTimeout(DateTime timeStarted)
-            {
-                FirstInvoke = timeStarted;
-            }
+            public CommandTimeout(DateTime timeStarted) => FirstInvoke = timeStarted;
 
             public uint TimesInvoked { get; set; }
             public DateTime FirstInvoke { get; }

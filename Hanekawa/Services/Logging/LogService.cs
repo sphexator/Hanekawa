@@ -67,9 +67,6 @@ namespace Hanekawa.Services.Logging
             return Task.CompletedTask;
         }
 
-        private static LogLevel LogLevelFromSeverity(LogSeverity severity)
-        {
-            return (LogLevel) Math.Abs((int) severity - 5);
-        }
+        private static LogLevel LogLevelFromSeverity(LogSeverity severity) => (LogLevel) Math.Abs((int) severity - 5);
     }
 }

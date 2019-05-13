@@ -1,22 +1,24 @@
-﻿using Discord;
-using Discord.WebSocket;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.GuildConfig;
-using Hanekawa.Entities.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using Hanekawa.Addons.Database;
+using Hanekawa.Addons.Database.Extensions;
+using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Addons.Database.Tables.Config.Guild;
+using Hanekawa.Entities.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Services.Welcome
 {
     public class WelcomeService : IHanaService, IRequiredService
     {
         private readonly DiscordSocketClient _client;
-        private readonly WelcomeMessage _message;
         private readonly ImageGenerator _image;
+        private readonly WelcomeMessage _message;
 
         public WelcomeService(DiscordSocketClient discord, WelcomeMessage message, ImageGenerator image)
         {
@@ -30,9 +32,10 @@ namespace Hanekawa.Services.Welcome
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs)
-                    DisableBanner.AddOrUpdate(x.GuildId, x.WelcomeChannel.HasValue, (arg1, b) => false);
+                foreach (var x in db.WelcomeConfigs)
+                    DisableBanner.AddOrUpdate(x.GuildId, x.Channel.HasValue, (arg1, b) => false);
             }
+
             Console.WriteLine("Welcome service loaded");
         }
 
@@ -47,19 +50,19 @@ namespace Hanekawa.Services.Welcome
         private ConcurrentDictionary<ulong, bool> AntiRaidDisable { get; }
             = new ConcurrentDictionary<ulong, bool>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>> WelcomeCooldown { get; }
-            = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, DateTime>>();
+        private ConcurrentDictionary<ulong, MemoryCache> WelcomeCooldown { get; }
+            = new ConcurrentDictionary<ulong, MemoryCache>();
 
         private Task WelcomeToggle(SocketGuildUser user)
         {
             var _ = Task.Run(async () =>
             {
                 uint counter;
-                uint limit;
+                int limit;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GuildConfigs.FindAsync(user.Guild.Id);
-                    limit = cfg.WelcomeLimit;
+                    var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
+                    limit = cfg.Limit;
                     counter = JoinCount.GetOrAdd(user.Guild.Id, 0);
                 }
 
@@ -85,30 +88,35 @@ namespace Hanekawa.Services.Welcome
                 if (AntiRaidDisable.GetOrAdd(user.Guild.Id, false)) return;
                 using (var db = new DbService())
                 {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild).ConfigureAwait(false);
-                    if (!cfg.WelcomeChannel.HasValue) return;
+                    var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild).ConfigureAwait(false);
+                    if (!cfg.Channel.HasValue) return;
 
-                    var channel = user.Guild.GetTextChannel(cfg.WelcomeChannel.Value);
+                    var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
                     if (channel == null) return;
 
-                    if (cfg.WelcomeBanner) await WelcomeBanner(channel, user, cfg).ConfigureAwait(false);
-                    else await channel.SendMessageAsync(_message.Message(cfg.WelcomeMessage, user));
+                    if (cfg.Banner) await WelcomeBanner(channel, user, cfg).ConfigureAwait(false);
+                    else await channel.SendMessageAsync(_message.Message(cfg.Message, user));
                 }
             });
             return Task.CompletedTask;
         }
 
-        private async Task WelcomeBanner(ISocketMessageChannel channel, SocketGuildUser user, GuildConfig cfg)
+        private async Task WelcomeBanner(ISocketMessageChannel channel, SocketGuildUser user, WelcomeConfig cfg)
         {
-            var (stream, message) = await _image.Banner(user, cfg.WelcomeMessage).ConfigureAwait(false);
+            var (stream, message) = await _image.Banner(user, cfg.Message).ConfigureAwait(false);
             stream.Seek(0, SeekOrigin.Begin);
             var msg = await channel.SendFileAsync(stream, "Welcome.png", message)
                 .ConfigureAwait(false);
-            if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.WelcomeDelete.HasValue)
+            if (user.Guild.CurrentUser.GuildPermissions.ManageMessages && cfg.TimeToDelete.HasValue)
             {
-                await Task.Delay(cfg.WelcomeDelete.Value);
-                try { await msg.DeleteAsync(); }
-                catch { /* IGNORE */ }
+                await Task.Delay(cfg.TimeToDelete.Value);
+                try
+                {
+                    await msg.DeleteAsync();
+                }
+                catch
+                { /* IGNORE */
+                }
             }
         }
 
@@ -126,26 +134,11 @@ namespace Hanekawa.Services.Welcome
             return Task.CompletedTask;
         }
 
-        private bool CheckCooldown(IGuildUser usr)
+        private bool CheckCooldown(IGuildUser user)
         {
-            var check = WelcomeCooldown.TryGetValue(usr.GuildId, out var cds);
-            if (!check)
-            {
-                WelcomeCooldown.TryAdd(usr.GuildId, new ConcurrentDictionary<ulong, DateTime>());
-                WelcomeCooldown.TryGetValue(usr.GuildId, out cds);
-                cds.TryAdd(usr.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            var userCheck = cds.TryGetValue(usr.Id, out var cd);
-            if (!userCheck)
-            {
-                cds.TryAdd(usr.Id, DateTime.UtcNow);
-                return true;
-            }
-
-            if (!((DateTime.UtcNow - cd).TotalSeconds >= 600)) return false;
-            cds.AddOrUpdate(usr.Id, DateTime.UtcNow, (key, old) => old = DateTime.UtcNow);
+            var users = WelcomeCooldown.GetOrAdd(user.GuildId, new MemoryCache(new MemoryCacheOptions()));
+            if (users.TryGetValue(user.Id, out _)) return false;
+            users.Set(user.Id, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             return true;
         }
     }

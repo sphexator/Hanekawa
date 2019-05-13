@@ -21,8 +21,6 @@ using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Transforms;
 using SixLabors.Primitives;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -38,13 +36,13 @@ namespace Hanekawa.Services.Games.ShipGame
             Console.WriteLine("Game service loaded");
         }
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> ExistingBattles { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>> _existingBattles
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, GameEnemy>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveBattles { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveBattles
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ActiveDuels { get; }
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> _activeDuels
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
         public event AsyncEvent<ulong> NpcKill;
@@ -102,18 +100,18 @@ namespace Hanekawa.Services.Games.ShipGame
             }
         }
 
-        private async Task<int> Health(DbService db, uint level, SocketGuildUser user)
+        private async Task<int> Health(DbService db, int level, SocketGuildUser user)
         {
             var userdata = await db.GetOrCreateUserData(user);
             return _gameStats.GetHealth(level, await GetClass(db, userdata.Class));
         }
 
-        private async Task<int> Health(DbService db, uint level, GameEnemy enemy) =>
+        private async Task<int> Health(DbService db, int level, GameEnemy enemy) =>
             _gameStats.GetHealth(level, enemy, await GetClass(db, enemy.ClassId));
 
-        private int Damage(uint level) => _gameStats.GetDamage(level);
+        private int Damage(int level) => _gameStats.GetDamage(level);
 
-        private int Damage(uint level, GameEnemy enemy) => _gameStats.GetDamage(level, enemy);
+        private int Damage(int level, GameEnemy enemy) => _gameStats.GetDamage(level, enemy);
 
         public async Task AttackAsync(SocketCommandContext context)
         {
@@ -290,7 +288,7 @@ namespace Hanekawa.Services.Games.ShipGame
             Console.WriteLine("Completed game");
         }
 
-        public async Task AttackAsync(SocketCommandContext context, SocketGuildUser playerTwoUser, uint bet = 0)
+        public async Task AttackAsync(SocketCommandContext context, SocketGuildUser playerTwoUser, int bet = 0)
         {
             if (ActiveDuel(context))
             {
@@ -485,15 +483,12 @@ namespace Hanekawa.Services.Games.ShipGame
 
         private GameEnemy GetEnemyData(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryGetValue(context.User.Id, out var game);
             return game;
         }
 
-        private static Task<GameClass> GetClass(DbService db, int id)
-        {
-            return db.GameClasses.FindAsync(id);
-        }
+        private static Task<GameClass> GetClass(DbService db, int id) => db.GameClasses.FindAsync(id);
 
         private bool ActiveBattle(SocketCommandContext context)
         {
@@ -527,26 +522,26 @@ namespace Hanekawa.Services.Games.ShipGame
 
         private bool IsInBattle(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            var check = battles.TryGetValue(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var check = battles.TryGetValue(context.User.Id, out _);
             return check;
         }
 
         private void AddBattle(SocketCommandContext context, GameEnemy enemy)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryAdd(context.User.Id, enemy);
         }
 
         private void RemoveBattle(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id, out var game);
         }
 
         public void ClearUser(SocketCommandContext context)
         {
-            var battles = ExistingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id, out var game);
 
             var gChannels = ActiveBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
@@ -556,7 +551,7 @@ namespace Hanekawa.Services.Games.ShipGame
         private static async Task<Stream> CreateBanner(IUser userOne, GameEnemy npc)
         {
             var stream = new MemoryStream();
-            using (var img = Image.Load(@"Data\Game\background.png"))
+            using (var img = Image.Load("Data/Game/background.png"))
             {
                 var border = Image.Load(GetBorder());
                 var aviOne = await GetAvatarAsync(userOne);
@@ -566,9 +561,9 @@ namespace Hanekawa.Services.Games.ShipGame
                 var playerOne = Image.Load(aviOne);
                 var playerTwo = Image.Load(aviTwo);
                 img.Mutate(x => x
-                    .DrawImage(GraphicsOptions.Default, playerOne, new Point(3, 92))
-                    .DrawImage(GraphicsOptions.Default, playerTwo, new Point(223, 92))
-                    .DrawImage(GraphicsOptions.Default, border, new Point(0, 0)));
+                    .DrawImage(playerOne, new Point(3, 92), GraphicsOptions.Default)
+                    .DrawImage(playerTwo, new Point(223, 92), GraphicsOptions.Default)
+                    .DrawImage(border, new Point(0, 0), GraphicsOptions.Default));
                 img.Save(stream, new PngEncoder());
             }
 
@@ -578,7 +573,7 @@ namespace Hanekawa.Services.Games.ShipGame
         private static async Task<Stream> CreateBanner(IUser userOne, IUser userTwo)
         {
             var stream = new MemoryStream();
-            using (var img = Image.Load(@"Data\Game\background.png"))
+            using (var img = Image.Load("Data/Game/background.png"))
             {
                 var border = Image.Load(GetBorder());
                 var aviOne = await GetAvatarAsync(userOne);
@@ -588,19 +583,16 @@ namespace Hanekawa.Services.Games.ShipGame
                 var playerOne = Image.Load(aviOne);
                 var playerTwo = Image.Load(aviTwo);
                 img.Mutate(x => x
-                    .DrawImage(GraphicsOptions.Default, playerOne, new Point(3, 92))
-                    .DrawImage(GraphicsOptions.Default, playerTwo, new Point(223, 92))
-                    .DrawImage(GraphicsOptions.Default, border, new Point(0, 0)));
+                    .DrawImage(playerOne, new Point(3, 92), GraphicsOptions.Default)
+                    .DrawImage(playerTwo, new Point(223, 92), GraphicsOptions.Default)
+                    .DrawImage(border, new Point(0, 0), GraphicsOptions.Default));
                 img.Save(stream, new PngEncoder());
             }
 
             return stream;
         }
 
-        private static string GetBorder()
-        {
-            return @"Data\Game\Border\Red-border.png";
-        }
+        private static string GetBorder() => "Data/Game/Border/Red-border.png";
 
         private static async Task<Stream> GetAvatarAsync(IUser user)
         {
@@ -634,9 +626,6 @@ namespace Hanekawa.Services.Games.ShipGame
             return stream;
         }
 
-        private static string UpdateCombatLog(IEnumerable<string> log)
-        {
-            return string.Join("\n", log);
-        }
+        private static string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);
     }
 }

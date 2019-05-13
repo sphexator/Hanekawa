@@ -14,8 +14,8 @@ namespace Hanekawa.Data
             Console.WriteLine("Config loaded");
         }
 
-        public string GoogleApi { get; private set; }
-        public string BanApi { get; private set; }
-        public string ConnectionString { get; private set; }
+        public string GoogleApi { get; }
+        public string BanApi { get; }
+        public string ConnectionString { get; }
     }
 }

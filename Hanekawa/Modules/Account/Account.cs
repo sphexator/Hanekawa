@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -16,22 +11,29 @@ using Hanekawa.Preconditions;
 using Hanekawa.Services.Level.Util;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Hanekawa.Modules.Account
 {
     public class Account : InteractiveBase
     {
-        private readonly Calculate _calculate;
+        private readonly LevelGenerator _levelGenerator;
         private readonly ProfileGenerator _profileBuilder;
 
-        public Account(Calculate calculate, ProfileGenerator profileBuilder)
+        public Account(LevelGenerator levelGenerator, ProfileGenerator profileBuilder)
         {
-            _calculate = calculate;
+            _levelGenerator = levelGenerator;
             _profileBuilder = profileBuilder;
         }
 
+        [Name("Rank")]
         [Command("rank", RunMode = RunMode.Async)]
         [Summary("Displays your rank")]
+        [Remarks("h.rank")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -50,10 +52,10 @@ namespace Hanekawa.Modules.Account
                 var globalUserRank = db.AccountGlobals.CountAsync(x => x.TotalExp >= glUserData.TotalExp);
 
                 await Task.WhenAll(rank, total, globalRank, globalUserRank);
-                var nxtLevel = _calculate.GetServerLevelRequirement(userdata.Level);
+                var nxtLevel = _levelGenerator.GetServerLevelRequirement(userdata.Level);
                 await Context.ReplyAsync(new EmbedBuilder()
                     .CreateDefault(Context.Guild.Id)
-                    .WithAuthor(new EmbedAuthorBuilder { Name = user.GetName() })
+                    .WithAuthor(new EmbedAuthorBuilder {Name = user.GetName()})
                     .WithThumbnailUrl(user.GetAvatar())
                     .WithFields(new List<EmbedFieldBuilder>
                     {
@@ -69,8 +71,10 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Name("Top")]
         [Command("top", RunMode = RunMode.Async)]
         [Summary("Displays top 10 users on the level leaderboard")]
+        [Remarks("h.top")]
         [Ratelimit(1, 5, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -94,12 +98,16 @@ namespace Hanekawa.Modules.Account
                     rank++;
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild, $"Level leaderboard for {Context.Guild.Name}",
+                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild.Id, Context.Guild,
+                    $"Leaderboard for {Context.Guild.Name}",
                     10));
             }
         }
 
+        [Name("Rep")]
         [Command("rep", RunMode = RunMode.Async)]
+        [Summary("Rewards a reputation to a user. Usable once a day.")]
+        [Remarks("h.rep @bob#0000")]
         [Ratelimit(1, 2, Measure.Seconds)]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
@@ -143,19 +151,24 @@ namespace Hanekawa.Modules.Account
             }
         }
 
+        [Name("Profile")]
         [Command("profile", RunMode = RunMode.Async)]
+        [Summary("Displays your own profile")]
+        [Remarks("h.profile")]
         [RequireContext(ContextType.Guild)]
         [RequiredChannel]
         public async Task ProfileAsync(SocketGuildUser user = null)
         {
             if (user == null) user = Context.User as SocketGuildUser;
             await Context.Channel.TriggerTypingAsync();
-            using (var stream = await _profileBuilder.Create(user))
+            using(var stream = new MemoryStream())
+            using (var image = await _profileBuilder.Create(user, stream))
             {
-                stream.Seek(0, SeekOrigin.Begin);
-                await Context.Channel.SendFileAsync(stream, "profile.png");
+                image.Seek(0, SeekOrigin.Begin);
+                await Context.Channel.SendFileAsync(image, "profile.png");
             }
         }
+
         /*
          <-- MAY USE THIS FOR LATER -->
          TODO: PREVIEW, MAYBE USE

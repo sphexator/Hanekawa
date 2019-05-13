@@ -1,6 +1,4 @@
-﻿
-
-/*
+﻿/*
 namespace Hanekawa.Extensions
 {
     static class DbExtensionDepricated
@@ -169,14 +167,14 @@ namespace Hanekawa.Extensions
                 x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id);
         }
 
-        public static async Task<ClubInfo> CreateClub(this DbService context, IUser user, SocketGuild guild,
+        public static async Task<ClubInformation> CreateClub(this DbService context, IUser user, SocketGuild guild,
             string name, DateTimeOffset time)
         {
             var counter = await context.ClubInfos.CountAsync(x => x.GuildId == guild.Id);
             int nr;
             if (counter == 0) nr = 1;
             else nr = counter + 1;
-            var data = new ClubInfo
+            var data = new ClubInformation
             {
                 Id = nr,
                 GuildId = guild.Id,
@@ -196,13 +194,13 @@ namespace Hanekawa.Extensions
             return await context.ClubInfos.FindAsync(nr, guild.Id, user.Id);
         }
 
-        public static async Task<ClubInfo> GetClubAsync(this DbService context, int id, SocketGuild guild)
+        public static async Task<ClubInformation> GetClubAsync(this DbService context, int id, SocketGuild guild)
         {
             var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == guild.Id);
             return check ?? null;
         }
 
-        public static async Task<ClubInfo> IsClubLeader(this DbService context, ulong guild, ulong user)
+        public static async Task<ClubInformation> IsClubLeader(this DbService context, ulong guild, ulong user)
         {
             var leader = await context.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == guild && x.Leader == user);
@@ -324,3 +322,4 @@ namespace Hanekawa.Extensions
     }
 }
 */
+

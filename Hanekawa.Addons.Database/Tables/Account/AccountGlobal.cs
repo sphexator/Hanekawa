@@ -3,12 +3,12 @@
     public class AccountGlobal
     {
         public ulong UserId { get; set; }
-        public uint Level { get; set; }
-        public uint Exp { get; set; }
-        public uint TotalExp { get; set; }
-        public uint Rep { get; set; }
-        public uint Credit { get; set; }
-        public uint StarReceive { get; set; }
-        public uint StarGive { get; set; }
+        public int Level { get; set; } = 1;
+        public int Exp { get; set; } = 0;
+        public int TotalExp { get; set; } = 0;
+        public int Rep { get; set; } = 0;
+        public int Credit { get; set; } = 0;
+        public int StarReceive { get; set; } = 0;
+        public int StarGive { get; set; } = 0;
     }
 }
