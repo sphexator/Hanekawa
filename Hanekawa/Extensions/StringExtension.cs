@@ -1,36 +1,42 @@
-﻿using System.Text;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Hanekawa.Extensions
 {
     public static class StringExtension
     {
-        public static string SanitizeMentions(this string str) =>
+        public static string SanitizeEveryone(this string str) =>
             str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
+        
+        private static readonly Regex FilterRegex =
+            new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static bool IsPictureUrl(this string str)
         {
-            var isGif = str.EndsWith(".gif", true, null);
-            var isPng = str.EndsWith(".png", true, null);
-            var isJpeg = str.EndsWith(".jpeg", true, null);
-            var isJpg = str.EndsWith(".jpg", true, null);
+            var isGif = str.EndsWith(".gif");
+            var isPng = str.EndsWith(".png");
+            var isJpeg = str.EndsWith(".jpeg");
+            var isJpg = str.EndsWith(".jpg");
 
-            return isGif || isPng || isJpg || isJpeg;
+            if (isGif) return true;
+            if (isPng) return true;
+            if (isJpeg) return true;
+            if (isJpg) return true;
+            return false;
         }
 
-        public static string FormatNumber(this uint num)
+        public static bool IsDiscordInvite(this string str, out string invite)
         {
-            if (num >= 100000)
-                return FormatNumber(num / 1000) + "K";
-            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
-            return num.ToString("#,0");
-        }
+            if (FilterRegex.IsMatch(str))
+            {
+                var invites = FilterRegex.GetGroupNames().FirstOrDefault();
+                invite = invites;
+                return true;
+            }
 
-        public static string FormatNumber(this int num)
-        {
-            if (num >= 100000)
-                return FormatNumber(num / 1000) + "K";
-            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
-            return num.ToString("#,0");
+            invite = null;
+            return false;
         }
     }
 }

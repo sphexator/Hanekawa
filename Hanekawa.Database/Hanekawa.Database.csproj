@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20181012163231_DescriptionItem.cs" />
+    <Compile Remove="Migrations\20181013213522_AddAchievements.cs" />
+    <Compile Remove="Migrations\20181018142508_AchievSomethingAdded.cs" />
+    <Compile Remove="Migrations\20181018180402_UpdateAchieveSomethingDingu.cs" />
+    <Compile Remove="Migrations\20181018180615_UpdateAchieveSomethingDingu.cs" />
+    <Compile Remove="Migrations\20181018181000_UpdateAchieveSomethingDingu.cs" />
+    <Compile Remove="Migrations\20181018184609_UpdateAchieveSomethingDingus.cs" />
+    <Compile Remove="Migrations\20181018184959_UpdateAchieveSomethingDinguss.cs" />
+    <Compile Remove="Migrations\20181018185139_UpdateAchieveSomethingDingus.cs" />
+    <Compile Remove="Migrations\20181018185407_UpdateAchieveSomethingDingus.cs" />
+    <Compile Remove="Migrations\20181018185834_UpdateAchievement.cs" />
+    <Compile Remove="Migrations\20181018190037_UpdateAchievement.cs" />
+    <Compile Remove="Migrations\20181018210553_UpdateAchievementpTwo.cs" />
+    <Compile Remove="Migrations\20181018211418_UpdateAchievement.cs" />
+    <Compile Remove="Migrations\20181018212318_UpdateAchievementTwo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Core.csproj" />
+  </ItemGroup>
+
+</Project>

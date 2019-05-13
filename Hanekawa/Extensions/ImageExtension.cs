@@ -1,7 +1,3 @@
-﻿using System;
-using Discord.WebSocket;
-using Hanekawa.Addons.Database.Tables.Account;
-using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -62,14 +58,6 @@ namespace Hanekawa.Extensions
             var cornerBottomRight = cornerTopLeft.RotateDegree(180).Translate(rightPos, bottomPos);
 
             return new PathCollection(cornerTopLeft, cornerBottomLeft, cornerTopRight, cornerBottomRight);
-        }
-
-        private static Font GoodFont(Font font, string text, int width, int height)
-        {
-            var size = TextMeasurer.Measure(text, new RendererOptions(font));
-            var scalingFactor = Math.Min(width / size.Width, height / size.Height);
-            var scaledFont = new Font(font, scalingFactor * font.Size);
-            return scaledFont;
         }
     }
 }
