@@ -18,14 +18,10 @@ namespace Hanekawa.Core.Interactive
 
         // helpers to allow DI containers to resolve without a custom factory
         public InteractiveService(DiscordSocketClient discord, InteractiveServiceConfig config = null)
-        {
-            new InteractiveService((BaseSocketClient) discord, config);
-        }
+            : this((BaseSocketClient)discord, config) { }
 
         public InteractiveService(DiscordShardedClient discord, InteractiveServiceConfig config = null)
-        {
-            new InteractiveService((BaseSocketClient) discord, config);
-        }
+            : this((BaseSocketClient)discord, config) { }
 
         public InteractiveService(BaseSocketClient discord, InteractiveServiceConfig config = null)
         {
