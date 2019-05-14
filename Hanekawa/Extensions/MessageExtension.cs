@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -12,14 +13,15 @@ namespace Hanekawa.Extensions
             SocketGuildUser filterBy = null)
         {
             var messages = await channel.GetMessagesAsync(amount).FlattenAsync();
-            return messages.FilterMessages(filterBy);
+            return messages.ToList().FilterMessages(filterBy);
         }
         
-        public static List<IMessage> FilterMessages(this IEnumerable<IMessage> msgs, SocketGuildUser filterBy = null)
+        public static List<IMessage> FilterMessages(this List<IMessage> msgs, SocketGuildUser filterBy = null)
         {
             var result = new List<IMessage>();
-            foreach (var x in msgs)
+            for (int i = 0; i < msgs.Count; i++)
             {
+                var x = msgs[i];
                 // Checks if message can be deleted
                 // Messages that's older then 14 days or 2 weeks can't be bulk deleted
                 if (x.Timestamp.AddDays(13) < DateTimeOffset.UtcNow)

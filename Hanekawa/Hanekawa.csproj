@@ -8,6 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Bot\Modules\QA\**" />
+      <Content Remove="Bot\Modules\QA\**" />
+      <EmbeddedResource Remove="Bot\Modules\QA\**" />
+      <None Remove="Bot\Modules\QA\**" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Discord.Net" Version="2.0.1" />
         <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
         <PackageReference Include="Discord.Net.Rest" Version="2.0.1" />
@@ -55,7 +62,6 @@
       <Folder Include="Bot\Modules\Giveaway" />
       <Folder Include="Bot\Modules\Music" />
       <Folder Include="Bot\Modules\Permission" />
-      <Folder Include="Bot\Modules\QA" />
       <Folder Include="Bot\Modules\Report" />
       <Folder Include="Bot\Modules\Suggestion" />
       <Folder Include="Bot\Modules\Welcome" />
