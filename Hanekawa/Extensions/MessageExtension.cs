@@ -39,25 +39,19 @@ namespace Hanekawa.Extensions
             IEnumerable<IMessage> msgs)
         {
             var currentUser = channel.Guild.CurrentUser;
-            if (currentUser.GuildPermissions.ManageMessages)
-            {
-                await channel.DeleteMessagesAsync(msgs);
-                return true;
-            }
-            
-            return false;
+            if (!currentUser.GuildPermissions.ManageMessages) return false;
+            await channel.DeleteMessagesAsync(msgs);
+            return true;
+
         }
 
         public static async Task<bool> TryDeleteMessageAsync(this SocketTextChannel channel, IMessage msg)
         {
             var currentUser = channel.Guild.CurrentUser;
-            if (currentUser.GuildPermissions.ManageMessages)
-            {
-                await channel.DeleteMessageAsync(msg);
-                return true;
-            }
+            if (!currentUser.GuildPermissions.ManageMessages) return false;
+            await channel.DeleteMessageAsync(msg);
+            return true;
 
-            return false;
         }
 
         public static async Task<bool> TryDeleteMessagesAsync(this IMessage msg)
