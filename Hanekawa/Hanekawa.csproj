@@ -9,9 +9,13 @@
 
     <ItemGroup>
       <Compile Remove="Bot\Modules\QA\**" />
+      <Compile Remove="Entities\**" />
       <Content Remove="Bot\Modules\QA\**" />
+      <Content Remove="Entities\**" />
       <EmbeddedResource Remove="Bot\Modules\QA\**" />
+      <EmbeddedResource Remove="Entities\**" />
       <None Remove="Bot\Modules\QA\**" />
+      <None Remove="Entities\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -65,7 +69,6 @@
       <Folder Include="Bot\Modules\Report" />
       <Folder Include="Bot\Modules\Suggestion" />
       <Folder Include="Bot\Modules\Welcome" />
-      <Folder Include="Entities\" />
     </ItemGroup>
 
     <ItemGroup>

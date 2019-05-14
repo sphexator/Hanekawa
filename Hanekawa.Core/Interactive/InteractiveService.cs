@@ -28,7 +28,7 @@ namespace Hanekawa.Core.Interactive
             Discord = discord;
             Discord.ReactionAdded += HandleReactionAsync;
 
-            config = config ?? new InteractiveServiceConfig();
+            config ??= new InteractiveServiceConfig();
             _defaultTimeout = config.DefaultTimeout;
 
             _callbacks = new Dictionary<ulong, IReactionCallback>();
@@ -60,7 +60,7 @@ namespace Hanekawa.Core.Interactive
             TimeSpan? timeout = null,
             CancellationToken token = default)
         {
-            timeout = timeout ?? _defaultTimeout;
+            timeout ??= _defaultTimeout;
 
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             var cancelTrigger = new TaskCompletionSource<bool>();
@@ -78,7 +78,7 @@ namespace Hanekawa.Core.Interactive
 
             var trigger = eventTrigger.Task;
             var cancel = cancelTrigger.Task;
-            var delay = Task.Delay(timeout.Value);
+            var delay = Task.Delay(timeout.Value, token);
             var task = await Task.WhenAny(trigger, delay, cancel).ConfigureAwait(false);
 
             context.Client.MessageReceived -= Handler;
@@ -94,7 +94,7 @@ namespace Hanekawa.Core.Interactive
             TimeSpan? timeout = null,
             RequestOptions options = null)
         {
-            timeout = timeout ?? _defaultTimeout;
+            timeout ??= _defaultTimeout;
             var message = await context.Channel.SendMessageAsync(content, isTTS, embed, options).ConfigureAwait(false);
             _ = Task.Delay(timeout.Value)
                 .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))

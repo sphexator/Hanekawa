@@ -4,7 +4,6 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
-using Hanekawa.Core;
 using Hanekawa.Core.Interactive;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
@@ -14,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
@@ -33,7 +33,7 @@ namespace Hanekawa
         {
             var dbClient = new DatabaseClient(Configuration["connectionString"]);
             using (var db = new DbService()) db.Database.Migrate();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddSingleton(services);
             services.AddSingleton(Configuration);
             services.AddLogging();
@@ -58,14 +58,15 @@ namespace Hanekawa
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            foreach (var x in serviceList)
+            for (var i = 0; i < serviceList.Count; i++)
             {
+                var x = serviceList[i];
                 services.AddSingleton(x);
             }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
