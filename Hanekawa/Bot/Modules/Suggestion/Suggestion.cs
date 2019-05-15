@@ -11,11 +11,13 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Suggestion
 {
     [Name("Suggestion")]
+    [Description("Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
     public class Suggestion : InteractiveBase
     {
         [Name("Suggest")]
@@ -75,26 +77,52 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Description("Decline a suggestion by its ID with a optional reason")]
         [Remarks("decline 69 not now")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task DenySuggestionAsync(int id, [Remainder]string reason = null)
+        public async Task DeclineSuggestionAsync(int id, [Remainder]string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (!cfg.Channel.HasValue) return;
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                if (suggestion?.MessageId == null)
+                {
+                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
+                    return;
+                }
+
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
+                if (msg == null) return;
+                var sugstMessage = await CommentSuggestion(Context.User, msg, reason, Color.Red);
+                await RespondUser(suggestion, sugstMessage, reason);
             }
         }
 
         [Name("Comment Suggestion")]
-        [Command("comment")]
-        [Description("Adds a comment onto a suggestion, usable by user suggesting and server admins")]
-        [Remarks("")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [Command("Comment")]
+        [Description("Adds a comment onto a suggestion, usable by user suggesting and server admin")]
+        [Remarks("comment 69 go on")]
         public async Task CommentSuggestionAsync(int id, [Remainder]string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (!cfg.Channel.HasValue) return;
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                if (!Context.User.GuildPermissions.Has(GuildPermission.ManageGuild) &&
+                    Context.User.Id != suggestion.UserId) return;
+                
+                if (suggestion?.MessageId == null)
+                {
+                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
+                    return;
+                }
+
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
+                if (msg == null) return;
+                var sugstMessage = await CommentSuggestion(Context.User, msg, reason);
+                if(Context.User.Id != suggestion.UserId) await RespondUser(suggestion, sugstMessage, reason);
             }
         }
 
@@ -220,11 +248,11 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 if (suggestUser == null) return;
                 await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
                     new EmbedBuilder().CreateDefault(
-                        "Your suggestion got a response!\n" +
+                        $"Your suggestion got a response in {Context.Guild.Name}!\n" +
                         "Suggestion:\n" +
-                        $"{sugst}\n" +
+                        $"{sugst.Truncate(300)}\n" +
                         $"Answer from {Context.User}:\n" +
-                        $"{response}", Context.Guild.Id));
+                        $"{response.Truncate(1200)}", Context.Guild.Id));
             }
             catch
             {

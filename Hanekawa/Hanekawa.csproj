@@ -8,13 +8,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Bot\Modules\Permission\**" />
       <Compile Remove="Bot\Modules\QA\**" />
+      <Compile Remove="Bot\Modules\Welcome\**" />
       <Compile Remove="Entities\**" />
+      <Content Remove="Bot\Modules\Permission\**" />
       <Content Remove="Bot\Modules\QA\**" />
+      <Content Remove="Bot\Modules\Welcome\**" />
       <Content Remove="Entities\**" />
+      <EmbeddedResource Remove="Bot\Modules\Permission\**" />
       <EmbeddedResource Remove="Bot\Modules\QA\**" />
+      <EmbeddedResource Remove="Bot\Modules\Welcome\**" />
       <EmbeddedResource Remove="Entities\**" />
+      <None Remove="Bot\Modules\Permission\**" />
       <None Remove="Bot\Modules\QA\**" />
+      <None Remove="Bot\Modules\Welcome\**" />
       <None Remove="Entities\**" />
     </ItemGroup>
 
@@ -65,9 +73,7 @@
       <Folder Include="Bot\Modules\Game" />
       <Folder Include="Bot\Modules\Giveaway" />
       <Folder Include="Bot\Modules\Music" />
-      <Folder Include="Bot\Modules\Permission" />
       <Folder Include="Bot\Modules\Report" />
-      <Folder Include="Bot\Modules\Welcome" />
     </ItemGroup>
 
     <ItemGroup>
