@@ -12,6 +12,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using Quartz.Util;
@@ -130,6 +131,76 @@ namespace Hanekawa.Bot.Modules.Settings
                     await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}",
                         Context.Guild.Id);
                 }
+            }
+        }
+
+        [Name("Welcome Auto Delete")]
+        [Command("welcome autodelete")]
+        [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
+        [Remarks("welcome autodelete 5m")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task WelcomeTimeout(TimeSpan? timeout = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (!cfg.TimeToDelete.HasValue && timeout == null) return;
+                if (timeout == null)
+                {
+                    cfg.TimeToDelete = null;
+                    await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.TimeToDelete = timeout.Value;
+                    await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
+                                             $"I will now delete the message after {timeout.Value.Humanize()}!",
+                        Color.Green.RawValue);
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
+
+        [Name("Welcome Template")]
+        [Command("welcome template")]
+        [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
+        [Remarks("welcome template")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task WelcomeTemplate()
+        {
+            var embed = new EmbedBuilder()
+                .CreateDefault(
+                    "The PSD file contains everything that's needed to get started creating your own banners.\n" +
+                    "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
+                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
+                .WithTitle("Welcome template")
+                .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
+            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
+        }
+
+        [Name("Welcome banner toggle")]
+        [Command("welcome banner")]
+        [Description("Toggles whether welcome banners should be posted or just message")]
+        [Remarks("welcome banner")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task Welcomebanner()
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Banner)
+                {
+                    cfg.Banner = false;
+                    await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.Banner = true;
+                    await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
+                }
+
+                await db.SaveChangesAsync();
             }
         }
 
