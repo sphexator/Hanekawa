@@ -12,6 +12,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Cooldown = Hanekawa.Core.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Board
 {
@@ -32,6 +33,7 @@ namespace Hanekawa.Bot.Modules.Board
         [Description("Overview of board stats of this server")]
         [Remarks("boardstats")]
         [RequiredChannel]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task BoardStatsAsync()
         {
             using (var db = new DbService())
