@@ -16,7 +16,7 @@ namespace Hanekawa.Bot.Services.Command
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
-        private readonly ConcurrentDictionary<ulong, List<string>> _prefixes = new ConcurrentDictionary<ulong, List<string>>();
+        private readonly ConcurrentDictionary<ulong, HashSet<string>> _prefixes = new ConcurrentDictionary<ulong, HashSet<string>>();
 
         public CommandHandlingService(DiscordSocketClient client, CommandService command)
         {
@@ -27,7 +27,8 @@ namespace Hanekawa.Bot.Services.Command
             {
                 foreach (var x in db.GuildConfigs)
                 {
-                    _prefixes.TryAdd(x.GuildId, x.Prefix);
+                    var hashset = new HashSet<string>(x.Prefix);
+                    _prefixes.TryAdd(x.GuildId, hashset);
                 }
             }
 
@@ -48,13 +49,28 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new VoiceChannelParser());
         }
 
-        public List<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new List<string> {"h."});
-        public async Task UpdatePrefix(ulong id, string prefix, DbService db)
+        public HashSet<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new HashSet<string> {"h."});
+        public async Task<bool> AddPrefix(ulong id, string prefix, DbService db)
         {
             var cfg = await db.GetOrCreateGuildConfigAsync(id);
+            if (cfg.Prefix.Contains(prefix)) return false;
             cfg.Prefix.Add(prefix);
-            _prefixes.AddOrUpdate(id, new List<string> { "h." }, (key, old) => cfg.Prefix);
+            var hashset = new HashSet<string>(cfg.Prefix);
+            _prefixes.AddOrUpdate(id, new HashSet<string> { "h." }, (key, old) => hashset);
             await db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemovePrefix(ulong id, string prefix, DbService db)
+        {
+            var cfg = await db.GetOrCreateGuildConfigAsync(id);
+            if (!cfg.Prefix.Contains(prefix)) return false;
+            cfg.Prefix.Remove(prefix);
+            _prefixes.TryRemove(id, out var list);
+            list.Remove(prefix);
+            _prefixes.TryAdd(id, list);
+            await db.SaveChangesAsync();
+            return true;
         }
 
         private async Task OnMessageReceived(SocketMessage rawMsg)
@@ -74,7 +90,8 @@ namespace Hanekawa.Bot.Services.Command
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(guild);
-                    _prefixes.TryAdd(guild.Id, new List<string> { "h." });
+                    var hashSet = new HashSet<string>(cfg.Prefix);
+                    _prefixes.TryAdd(guild.Id, hashSet);
                 }
             });
             return Task.CompletedTask;
