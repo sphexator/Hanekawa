@@ -122,14 +122,13 @@ namespace Hanekawa.Bot.Modules.Settings
                 {
                     cfg.Channel = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled welcome messages!", Context.Guild.Id);
+                    await Context.ReplyAsync("Disabled welcome messages!");
                 }
                 else
                 {
                     cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}",
-                        Context.Guild.Id);
+                    await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}");
                 }
             }
         }

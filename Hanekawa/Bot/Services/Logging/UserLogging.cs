@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogAvi.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if(channel is null) return;
-                        var embed = new EmbedBuilder().CreateDefault("", user.Guild.Id, db);
+                        var embed = new EmbedBuilder().CreateDefault("", user.Guild.Id);
                         if (before.Username != after.Username)
                         {
                             embed.Title = "Username Change";

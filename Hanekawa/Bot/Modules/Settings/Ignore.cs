@@ -73,12 +73,12 @@ namespace Hanekawa.Bot.Modules.Settings
                 {
                     cfg.IgnoreAllChannels = false;
                     await Context.ReplyAsync(
-                        "Commands are now usable in all channels beside those in the ignore list.", Context.Guild.Id);
+                        "Commands are now usable in all channels beside those in the ignore list.");
                 }
                 else
                 {
                     cfg.IgnoreAllChannels = true;
-                    await Context.ReplyAsync("Commands are now only usable in channels on the list.", Context.Guild.Id);
+                    await Context.ReplyAsync("Commands are now only usable in channels on the list.");
                 }
 
                 await db.SaveChangesAsync();

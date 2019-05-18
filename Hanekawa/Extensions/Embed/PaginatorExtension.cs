@@ -17,7 +17,7 @@ namespace Hanekawa.Extensions.Embed
         private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages,
             ulong guildId, string authorIcon, string authorName, string title, int count, DbService db)
         {
-            paginated.Color = new Color().GetDefaultColor(guildId, db);
+            paginated.Color = new Color().GetDefaultColor(guildId);
             paginated.Pages = PageBuilder(pages, count);
             paginated.Author = new EmbedAuthorBuilder { IconUrl = authorIcon, Name = authorName };
             paginated.Title = title;

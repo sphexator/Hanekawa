@@ -14,16 +14,16 @@ namespace Hanekawa.Extensions.Embed
         // Reply from channel
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, uint color) =>
             channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, ulong guildId, DbService db = null) =>
-            channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId, db)));
+        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, ulong guildId) =>
+            channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId)));
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendEmbedAsync(embed);
 
         // Reply from command context
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, uint color) =>
             context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
-        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, ulong guildId, DbService db = null) =>
-            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId, db)));
+        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content) =>
+            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(context.Guild.Id)));
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
 
@@ -31,8 +31,8 @@ namespace Hanekawa.Extensions.Embed
         public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, uint color) =>
             context.Create(content, new Color(color));
 
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, ulong guild, DbService db = null) =>
-            context.Create(content, new Color().GetDefaultColor(guild, db));
+        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, ulong guild) =>
+            context.Create(content, new Color().GetDefaultColor(guild));
 
         // Creates default embed - used here
         private static EmbedBuilder Create(this EmbedBuilder embed, string content, Color color)

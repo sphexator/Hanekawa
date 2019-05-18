@@ -14,21 +14,23 @@ namespace Hanekawa.Extensions.Embed
         public static void UpdateConfig(ulong guildId, GuildConfig cfg) 
             => Config.Set(guildId, cfg, TimeSpan.FromHours(1));
 
-        public static Color GetDefaultColor(this Color color, ulong guildId, DbService db)
+        public static Color GetDefaultColor(this Color color, ulong guildId)
         {
-            if(db == null) db = new DbService();
             GuildConfig cfg;
             var check = Config.TryGetValue(guildId, out var result);
-            if (!check) cfg = GetAndUpdateConfig(guildId, db);
+            if (!check) cfg = GetAndUpdateConfig(guildId);
             else cfg = (GuildConfig)result;
             return new Color(cfg.EmbedColor);
         }
 
-        private static GuildConfig GetAndUpdateConfig(ulong guild, DbService db)
+        private static GuildConfig GetAndUpdateConfig(ulong guild)
         {
-            var cfg = db.GetOrCreateGuildConfig(guild);
-            Config.Set(guild, cfg, TimeSpan.FromMinutes(10));
-            return cfg;
+            using (var db = new DbService())
+            {
+                var cfg = db.GetOrCreateGuildConfig(guild);
+                Config.Set(guild, cfg, TimeSpan.FromMinutes(10));
+                return cfg;
+            }
         }
     }
 }
