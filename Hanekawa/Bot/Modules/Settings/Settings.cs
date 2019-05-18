@@ -13,13 +13,13 @@ namespace Hanekawa.Bot.Modules.Settings
     [Description("Server settings")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequireUserPermission(GuildPermission.ManageGuild)]
-    public partial class Settings : InteractiveBase
+    public class Settings : InteractiveBase
     {
         private readonly CommandHandlingService _command;
         public Settings(CommandHandlingService command) => _command = command;
 
         [Name("Add prefix")]
-        [Command("")]
+        [Command("add prefix", "aprefix")]
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder]string prefix)
         {
@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Remove prefix")]
-        [Command("")]
+        [Command("remove prefix", "rprefix")]
         [Description("Removes a prefix from the bot, if it exists")]
         public async Task RemovePrefixAsync([Remainder]string prefix)
         {
@@ -49,11 +49,11 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Set embed color")]
-        [Command("")]
+        [Command("embed", "set embed")]
         [Description("Changes the embed colour of the bot")]
         public async Task SetEmbedColorAsync(uint color)
         {
-
+            // TODO: Embed color commands
         }
     }
 }

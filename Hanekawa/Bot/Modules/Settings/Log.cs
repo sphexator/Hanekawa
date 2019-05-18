@@ -2,11 +2,8 @@
 
 namespace Hanekawa.Bot.Modules.Settings
 {
-    public partial class Settings
+    public class Log : InteractiveBase 
     {
-        public class Log : InteractiveBase
-        {
-
-        }
+            // TODO: Log settings, all of them
     }
 }

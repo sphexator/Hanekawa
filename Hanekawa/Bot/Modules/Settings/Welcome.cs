@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public Welcome(ImageGenerator image) => _image = image;
 
         [Name("Welcome Banner")]
-        [Command("welcome add")]
+        [Command("welcome add", "welc add")]
         [Description("Adds a welcome banner to the bot")]
         [Remarks("welcome add imgur.com")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Banner Remove")]
-        [Command("welcome remove")]
+        [Command("welcome remove", "welc remove")]
         [Description("Removes a welcome banner by given ID")]
         [Remarks("welcome remove 123")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -93,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Message")]
-        [Command("welcome message")]
+        [Command("welcome message", "welc msg")]
         [Description("Sets welcome message")]
         [Remarks("welcome message Welcome %USER% to %GUILD% !")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -109,7 +109,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Channel")]
-        [Command("welcome channel")]
+        [Command("welcome channel", "welc channel")]
         [Description("Sets welcome channel, leave empty to disable")]
         [Remarks("welcome channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -135,7 +135,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Auto Delete")]
-        [Command("welcome autodelete")]
+        [Command("welcome autodelete", "welc autodel")]
         [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
         [Remarks("welcome autodelete 5m")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -163,7 +163,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Template")]
-        [Command("welcome template")]
+        [Command("welcome template", "welc template")]
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
         [Remarks("welcome template")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -180,7 +180,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome banner toggle")]
-        [Command("welcome banner")]
+        [Command("welcome banner", "welc banner")]
         [Description("Toggles whether welcome banners should be posted or just message")]
         [Remarks("welcome banner")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
@@ -205,7 +205,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Welcome Banner List")]
-        [Command("welcome list")]
+        [Command("welcome list", "welc list")]
         [Description("Shows a paginated message of all saved banners")]
         [Remarks("welcome list")]
         [RequireUserPermission(GuildPermission.ManageMessages)]

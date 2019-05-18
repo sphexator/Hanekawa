@@ -125,7 +125,7 @@ namespace Hanekawa.Bot.Modules.Administration
         }
 
         [Name("Soft Ban")]
-        [Command("softban")]
+        [Command("softban", "sb")]
         [Description("In the last 50 messages, deletes the messages user has sent and mutes")]
         [Remarks("softban @bob#0000")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
@@ -222,7 +222,7 @@ namespace Hanekawa.Bot.Modules.Administration
         }
 
         [Name("Warn")]
-        [Command("warn")]
+        [Command("warn", "warning")]
         [Description("Warns a user, bot dms them the warning. Warning accessible through warnlog")]
         [Remarks("warn @bob#0000 this is a warning")]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.KickMembers, GuildPermission.ManageRoles,
