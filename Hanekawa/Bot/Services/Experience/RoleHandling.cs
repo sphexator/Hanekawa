@@ -61,9 +61,12 @@ namespace Hanekawa.Bot.Services.Experience
             
             var missingRoles = new List<SocketRole>();
             var currentUser = user.Guild.CurrentUser;
-            foreach (var x in roles)
+            for (var i = 0; i < roles.Count; i++)
+            {
+                var x = roles[i];
                 if (!user.Roles.Contains(x) && currentUser.HierarchyCheck(x))
                     missingRoles.Add(x);
+            }
 
             if (missingRoles.Count == 0) return;
             await user.TryAddRolesAsync(missingRoles);
@@ -74,8 +77,11 @@ namespace Hanekawa.Bot.Services.Experience
             var roles = new List<SocketRole>();
             ulong role = 0;
             var currentUser = user.Guild.CurrentUser;
-            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync())
+            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
+
+            for (var i = 0; i < roleList.Count; i++)
             {
+                var x = roleList[i];
                 if (userdata.Level >= x.Level && x.Stackable)
                 {
                     var getRole = user.Guild.GetRole(x.Role);
@@ -95,13 +101,17 @@ namespace Hanekawa.Bot.Services.Experience
         {
             var roles = new List<SocketRole>();
             var currentUser = user.Guild.CurrentUser;
-            foreach (var x in await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync())
+            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
+            for (var i = 0; i < roleList.Count; i++)
+            {
+                var x = roleList[i];
                 if (userdata.Level >= x.Level)
                 {
                     var getRole = user.Guild.GetRole(x.Role);
                     if (getRole == null) continue;
                     if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
                 }
+            }
 
             return roles;
         }
@@ -112,10 +122,11 @@ namespace Hanekawa.Bot.Services.Experience
             return roleId == null ? null : _client.GetGuild(user.Guild.Id).GetRole(roleId.Role);
         }
 
-        private async Task RemoveLevelRolesAsync(SocketGuildUser user, IEnumerable<LevelReward> rolesRewards)
+        private async Task RemoveLevelRolesAsync(SocketGuildUser user, List<LevelReward> rolesRewards)
         {
-            foreach (var x in rolesRewards)
+            for (var i = 0; i < rolesRewards.Count; i++)
             {
+                var x = rolesRewards[i];
                 if (x.Stackable) continue;
                 if (user.Roles.Contains(user.Guild.GetRole(x.Role))) await user.TryRemoveRoleAsync(user.Guild.GetRole(x.Role));
             }

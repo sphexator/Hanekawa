@@ -21,6 +21,7 @@ namespace Hanekawa.Bot.Services.Logging
 
             _client.MessageDeleted += MessageDeleted;
             _client.MessageUpdated += MessageUpdated;
+            _client.MessagesBulkDeleted += MessagesBulkDeleted;
 
             _client.GuildMemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;

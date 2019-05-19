@@ -9,6 +9,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.Extensions.Logging;
+using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -74,39 +75,76 @@ namespace Hanekawa.Bot.Services.Logging
 
                         if (!message.HasValue) await message.GetOrDownloadAsync();
                         if (message.Value.Author.IsBot) return;
-                        var embed = new EmbedBuilder
-                        {
-                            Color = Color.Purple,
-                            Author = new EmbedAuthorBuilder { Name = "Message Deleted" },
-                            Description = $"{message.Value.Author.Mention} deleted a message in {chx.Mention}",
-                            Timestamp = DateTimeOffset.UtcNow,
-                            Footer = new EmbedFooterBuilder
-                                { Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}" },
-                            Fields = new List<EmbedFieldBuilder>
-                            {
-                                new EmbedFieldBuilder
-                                    {Name = "Message", Value = message.Value.Content.Truncate(900), IsInline = false}
-                            }
-                        };
-
+                        var embed = new EmbedBuilder().CreateDefault(message.Value.Content.Truncate(1900), chx.GuildId);
+                        embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
+                        embed.Title = $"{message.Value.Author} deleted a message in {chx.Name}"; 
+                        embed.Timestamp = message.Value.Timestamp;
+                        embed.Footer = new EmbedFooterBuilder
+                            {Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}"};
+                        
                         if (message.Value.Attachments.Count > 0 && !chx.IsNsfw)
                         {
                             var file = message.Value.Attachments.FirstOrDefault();
-                            if (file != null)
+                            if (file != null) 
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
                                     x.Value = message.Value.Attachments.FirstOrDefault()?.Url;
                                 });
-                        }
-
+                        } 
                         await channel.SendMessageAsync(null, false, embed.Build());
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
+                }
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel)
+        {
+            // TODO: Add bulk delete - complete it - think I did it?
+            _ = Task.Run(async () =>
+            {
+                if (!(channel is ITextChannel ch)) return;
+                try
+                {
+                    using (var db = new DbService())
+                    {
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(ch.Guild);
+                        if (!cfg.LogMsg.HasValue) return;
+                        var logChannel = await ch.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+
+                        var messageContent = new List<string>();
+                        var content = "";
+                        foreach (var x in messages)
+                        {
+                            await x.GetOrDownloadAsync();
+                            var user = x.Value.Author;
+                            if (content.Length + x.Value.Content.Length >= 1950)
+                            {
+                                messageContent.Add(content);
+                                content = "";
+                            }
+                            content += $"{user}: {x.Value.Content}\n";
+                        }
+                        if (!content.IsNullOrWhiteSpace()) messageContent.Add(content);
+
+                        for (var i = 0; i < messageContent.Count; i++)
+                        {
+                            var embed = new EmbedBuilder().CreateDefault(messageContent[i], ch.GuildId);
+                            embed.Title = $"Bulk delete in {ch.Name}";
+                            await logChannel.ReplyAsync(embed);
+                            await Task.Delay(1000);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {ch.Guild.Id} for Bulk Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;

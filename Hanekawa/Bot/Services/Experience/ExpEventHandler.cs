@@ -16,10 +16,10 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly Random _random;
         private readonly InternalLogService _log;
 
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _serverCategoryReduction =
-            new ConcurrentDictionary<ulong, List<ulong>>();
-        private readonly ConcurrentDictionary<ulong, List<ulong>> _serverChannelReduction =
-            new ConcurrentDictionary<ulong, List<ulong>>();
+        public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
+            new ConcurrentDictionary<ulong, HashSet<ulong>>();
+        public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerChannelReduction =
+            new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
         public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
         {
@@ -33,17 +33,17 @@ namespace Hanekawa.Bot.Services.Experience
                 {
                     if (x.Category)
                     {
-                        var categories = _serverCategoryReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
                         categories.Add(x.ChannelId);
-                        _serverCategoryReduction.AddOrUpdate(x.GuildId, new List<ulong>(),
+                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
                             (arg1, list) => categories);
                     }
 
                     if (x.Channel)
                     {
-                        var channel = _serverChannelReduction.GetOrAdd(x.GuildId, new List<ulong>());
+                        var channel = ServerChannelReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
                         channel.Add(x.ChannelId);
-                        _serverCategoryReduction.AddOrUpdate(x.GuildId, new List<ulong>(),
+                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
                             (arg1, list) => channel);
                     }
                 }
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (!(usr is SocketGuildUser user)) return;
                 try
                 {
-
+                    // TODO: Voice exp
                 }
                 catch (Exception e)
                 {
@@ -131,13 +131,13 @@ namespace Hanekawa.Bot.Services.Experience
 
         private bool IsReducedExp(SocketTextChannel channel)
         {
-            var isChannel = _serverChannelReduction.TryGetValue(channel.Guild.Id, out var channels);
-            var isCategory = _serverCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
-            if (!isCategory) return isChannel && channels.Contains(channel.Id);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.Contains(channel.Id);
-            if (category.Contains(channel.CategoryId.Value))
+            var isChannel = ServerChannelReduction.TryGetValue(channel.Guild.Id, out var channels);
+            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
+            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id, out _);
+            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id, out _);
+            if (category.TryGetValue(channel.CategoryId.Value, out _))
                 return true;
-            return isChannel && channels.Contains(channel.Id);
+            return isChannel && channels.TryGetValue(channel.Id, out _);
         }
     }
 }

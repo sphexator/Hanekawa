@@ -231,7 +231,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Welcome banners for {Context.Guild.Name}",
-                    null, 5, db));
+                    null, 5));
             }
         }
     }
