@@ -3,7 +3,6 @@ using System.Text;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Core.Interactive.Paginator;
-using Hanekawa.Database;
 
 namespace Hanekawa.Extensions.Embed
 {

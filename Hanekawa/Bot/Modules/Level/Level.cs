@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task ResetAsync()
         {
-            await Context.ReplyAsync("You sure you want to completely reset server levels/exp on this server?(y/n) this change can't be reversed.");
+            await Context.ReplyAsync("You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
             if (response == null || response.Content.ToLower() != "yes" || response.Content.ToLower() != "y")
             {

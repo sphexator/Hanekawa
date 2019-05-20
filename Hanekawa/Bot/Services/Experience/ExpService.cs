@@ -14,7 +14,7 @@ namespace Hanekawa.Bot.Services.Experience
     // TODO Role service for exp service
     public partial class ExpService
     {
-        private readonly ConcurrentDictionary<ulong, int> _expMultiplier = new ConcurrentDictionary<ulong, int>();
+        private readonly ConcurrentDictionary<ulong, double> _expMultiplier = new ConcurrentDictionary<ulong, double>();
 
         public int ExpToNextLevel(Account userdata) => 3 * userdata.Level * userdata.Level + 150;
         public int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
@@ -53,8 +53,10 @@ namespace Hanekawa.Bot.Services.Experience
             await db.SaveChangesAsync();
         }
 
-        public void AdjustMultiplier(ulong guildId, int multiplier) 
+        public void AdjustMultiplier(ulong guildId, double multiplier) 
             => _expMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
+
+        public double GetMultiplier(ulong guildId) => _expMultiplier.GetOrAdd(guildId, 1);
 
         private async Task<List<SocketRole>> GetRoles(ulong guildId, DbService db)
         {

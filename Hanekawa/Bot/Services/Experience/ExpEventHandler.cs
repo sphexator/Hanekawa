@@ -47,6 +47,11 @@ namespace Hanekawa.Bot.Services.Experience
                             (arg1, list) => channel);
                     }
                 }
+
+                foreach (var x in db.LevelConfigs)
+                {
+                    _expMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
+                }
             }
 
             _client.MessageReceived += ServerMessageExpAsync;

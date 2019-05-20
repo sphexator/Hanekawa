@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Preconditions
 
         public override async ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
         {
-            if (context.User is SocketGuildUser user && user.GuildPermissions.ManageGuild)
+            if (context.User.GuildPermissions.ManageGuild)
                 return CheckResult.Successful;
 
             var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
