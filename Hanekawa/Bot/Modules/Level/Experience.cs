@@ -15,34 +15,6 @@ namespace Hanekawa.Bot.Modules.Level
 {
     public partial class Level
     {
-        [Name("Exp Multiplier")]
-        [Command("exp multiplier", "exp multi")]
-        [Description("Checks what the current exp multiplier is")]
-        [Remarks("exp multi")]
-        [RequiredChannel]
-        public async Task ExpMultiplier()
-        {
-            await Context.ReplyAsync($"Current multiplier is: {_exp.GetMultiplier(Context.Guild.Id)}");
-        }
-
-        [Name("Exp Multiplier")]
-        [Command("exp multiplier", "exp multi")]
-        [Description("Sets a new exp multiplier permanently")]
-        [Remarks("exp multi 2.1")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ExpMultiplier(double multiplier)
-        {
-            using (var db = new DbService())
-            {
-                var old = _exp.GetMultiplier(Context.Guild.Id);
-                var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
-                cfg.ExpMultiplier = multiplier;
-                await db.SaveChangesAsync();
-                _exp.AdjustMultiplier(Context.Guild.Id, multiplier);
-                await Context.ReplyAsync($"Changed exp multiplier from {old} to {multiplier}", Color.Green.RawValue);
-            }
-        }
-
         [Name("Add Experience")]
         [Command("add exp")]
         [Description("Give a certain amount of experience to a one or more users")]
