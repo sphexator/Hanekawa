@@ -15,7 +15,6 @@ namespace Hanekawa.Bot.Modules.Settings
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Log : InteractiveBase
     {
-        // TODO: Log settings, all of them
         [Name("Log Join/Leave")]
         [Command("log join")]
         [Description("Logs users joining and leaving server, leave empty to disable")]

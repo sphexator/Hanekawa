@@ -33,6 +33,7 @@ namespace Hanekawa
         {
             var dbClient = new DatabaseClient(Configuration["connectionString"]);
             using (var db = new DbService()) db.Database.Migrate();
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddSingleton(services);
             services.AddSingleton(Configuration);
