@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -65,9 +67,9 @@ namespace Hanekawa.Bot.Modules.Account
         }
 
         [Name("Level Leaderboard")]
-        [Command("top", "leaderboard")]
+        [Command("top", "leaderboard", "lb")]
         [Description("Displays highest ranked users")]
-        [Remarks("top")]
+        [Remarks("leaderboard")]
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
@@ -88,6 +90,50 @@ namespace Hanekawa.Bot.Modules.Account
 
                 await PagedReplyAsync(
                     result.PaginateBuilder(Context.Guild, $"Leaderboard for {Context.Guild.Name}", null, 10));
+            }
+        }
+
+        [Name("Reputation")]
+        [Command("rep")]
+        [Description("Rewards a reputation to a user. Usable once a day")]
+        [Remarks("rep @bob#0000")]
+        public async Task RepAsync(SocketGuildUser user = null)
+        {
+            if (user == Context.User) return;
+            using (var db = new DbService())
+            {
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                if (user == null)
+                {
+                    if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+                    {
+                        var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                        await Context.ReplyAsync(
+                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue);
+                    }
+                    else
+                    {
+                        await Context.ReplyAsync(
+                            $"{Context.User.Mention}, you got a reputation point available!",
+                            Color.Green.RawValue);
+                    }
+
+                    return;
+                }
+
+                if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+                {
+                    var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                    await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
+                        Color.Red.RawValue);
+                    return;
+                }
+
+                var userData = await db.GetOrCreateUserData(user);
+                cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
+                userData.Rep++;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green.RawValue);
             }
         }
     }
