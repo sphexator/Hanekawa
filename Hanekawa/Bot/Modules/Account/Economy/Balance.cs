@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Daily")]
         [Command("daily")]
         [Description("Daily credit command, usable once every 18hrs")]
-        [Remarks("h.daily")]
+        [Remarks("daily")]
         [RequiredChannel]
         public async Task DailyAsync(SocketGuildUser user = null)
         {
