@@ -59,11 +59,8 @@ namespace Hanekawa
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            for (var i = 0; i < serviceList.Count; i++)
-            {
-                var x = serviceList[i];
-                services.AddSingleton(x);
-            }
+            for (var i = 0; i < serviceList.Count; i++) 
+                services.AddSingleton(serviceList[i]);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
