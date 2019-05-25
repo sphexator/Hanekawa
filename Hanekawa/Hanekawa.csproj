@@ -70,7 +70,6 @@
       <Folder Include="Bot\Modules\Drop" />
       <Folder Include="Bot\Modules\Event" />
       <Folder Include="Bot\Modules\Game" />
-      <Folder Include="Bot\Modules\Giveaway" />
       <Folder Include="Bot\Modules\Music" />
       <Folder Include="Bot\Modules\Report" />
     </ItemGroup>
