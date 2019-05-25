@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
+using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -20,10 +21,15 @@ namespace Hanekawa.Bot.Modules.Account
 {
     [Name("Account")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Account : InteractiveBase
+    public partial class Account : InteractiveBase
     {
+        private readonly ImageGenerator _image;
         private readonly ExpService _exp;
-        public Account(ExpService exp) => _exp = exp;
+        public Account(ExpService exp, ImageGenerator image)
+        {
+            _exp = exp;
+            _image = image;
+        }
 
         [Name("Rank")]
         [Command("rank")]
