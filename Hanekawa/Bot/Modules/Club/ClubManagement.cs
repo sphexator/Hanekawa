@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -11,6 +13,7 @@ using Hanekawa.Database.Tables.Club;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using Quartz.Util;
 
 namespace Hanekawa.Bot.Modules.Club
 {
@@ -19,14 +22,50 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Create")]
         [Command("club create")]
         [Description("Creates a club")]
-        [Remarks("h.club create Fan service club")]
+        [Remarks("club create Fan service club")]
         [RequiredChannel]
-        public async Task CreateClub([Remainder] string name) => await _admin.CreateAsync(Context, name);
+        public async Task CreateClub([Remainder] string name)
+        {
+            if (name.IsNullOrWhiteSpace()) return;
+            using (var db = new DbService())
+            {
+                var userData = await db.GetOrCreateUserData(Context.User);
+                var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
+                if (userData.Level < cfg.ChannelRequiredLevel)
+                {
+                    await Context.ReplyAsync($"You do not meet the requirement to make a club (Level {cfg.ChannelRequiredLevel}).",
+                        Color.Red.RawValue);
+                    return;
+                }
+
+                var leaderCheck = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
+                if (leaderCheck != null)
+                {
+                    await Context.ReplyAsync("You're already a leader of a club, you can't create multiple clubs.",
+                        Color.Red.RawValue);
+                    return;
+                }
+
+                var club = await db.CreateClub(Context.User, Context.Guild, name, DateTimeOffset.UtcNow);
+                var data = new ClubUser
+                {
+                    ClubId = club.Id,
+                    GuildId = Context.Guild.Id,
+                    JoinDate = DateTimeOffset.UtcNow,
+                    Rank = 1,
+                    UserId = Context.User.Id,
+                    Id = await db.ClubPlayers.CountAsync() + 1
+                };
+                await db.ClubPlayers.AddAsync(data);
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Successfully created club {name} !", Color.Green.RawValue);
+            }
+        }
 
         [Name("Club add")]
         [Command("club add")]
         [Description("Adds a member to your club")]
-        [Remarks("h.club add @bob#0000")]
+        [Remarks("club add @bob#0000")]
         [RequiredChannel]
         public async Task AddClubMemberAsync(SocketGuildUser user)
         {
@@ -43,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Club
                     return;
                 }
                 var check = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                    x.UserId == user.Id && x.GuildId == user.GuildId && x.ClubId == clubUser.Id);
+                    x.UserId == user.Id && x.GuildId == user.Guild.Id && x.ClubId == clubUser.Id);
                 if (check != null)
                 {
                     await Context.ReplyAsync($"{user.Mention} is already a member of your club.");
@@ -76,18 +115,17 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club remove")]
         [Command("club remove", "club kick")]
         [Description("Removes a user from your club")]
-        [Remarks("h.club remove @bob#0000")]
+        [Remarks("club remove @bob#0000")]
         [RequiredChannel]
         public async Task RemoveClubMemberAsync(SocketGuildUser user)
         {
             if (user == Context.User) return;
             using (var db = new DbService())
             {
-                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
                 if (club == null) return;
                 await Context.Channel.TriggerTypingAsync();
-                var response = await _club.RemoveUserAsync(user, club.Id, db);
-                if (response == null)
+                if (!await _club.RemoveUserAsync(user, club.Id, db))
                 {
                     await Context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red.RawValue);
                     return;
@@ -100,70 +138,63 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club leave")]
         [Command("club leave")]
         [Description("Leaves a club you're part of")]
-        [Remarks("h.club leave")]
+        [Remarks("club leave")]
+        [RequiredChannel]
+        public async Task LeaveClubAsync(int id)
+        {
+            using (var db = new DbService())
+            {
+                var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ClubId == id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                    x.GuildId == Context.Guild.Id && x.Id == clubUser.ClubId);
+                await _club.RemoveUserAsync(Context.User, club.Id, db);
+                await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green.RawValue);
+            }
+        }
+
+        [Name("Club leave")]
+        [Command("club leave")]
+        [Description("Leaves a club you're part of")]
+        [Remarks("club leave")]
+        [RequiredChannel]
         public async Task LeaveClubAsync()
         {
             using (var db = new DbService())
             {
-                var clubs = await db.ClubPlayers
-                    .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
-                ClubUser club = null;
-                switch (clubs.Count)
+                var clubs = await db.ClubPlayers.Where(
+                    x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
+                if (clubs.Count == 0)
                 {
-                    case 0:
-                        await Context.ReplyAsync("You're currently not in a club.", Color.Red.RawValue);
-                        break;
-                    case 1:
-                        club = clubs.FirstOrDefault();
-                        var clubInfo = await _management.RemoveUserAsync(db, Context.User, Context.Guild, club);
-                        if (clubInfo != null)
-                        {
-                            await Context.ReplyAsync(
-                                $"Successfully left {clubInfo.Name}!");
-                        }
-                        break;
-                    default:
-                    {
-                        string content = null;
-                        if (clubs.Count != 0)
-                            foreach (var x in clubs)
-                            {
-                                content += $"{x.ClubId} - {(await db.GetClubAsync(x.ClubId, Context.Guild)).Name}\n";
-                            }
-                        await Context.ReplyAsync(new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
-                            .WithTitle("Reply with the ID of club you wish to leave")
-                            .WithFooter("Exit to cancel"));
-                        var status = true;
-                        var retries = 0;
-                        while (status)
-                            try
-                            {
-                                retries++;
-                                var response = await NextMessageAsync(true, true, TimeSpan.FromSeconds(30));
-                                if (response == null)
-                                {
-                                    if (retries >= 3) status = false;
-                                    continue;
-                                }
-
-                                if (response.Content.ToLower() == "exit") return;
-                                if (!int.TryParse(response.Content, out var result)) continue;
-                                club = clubs.FirstOrDefault(x => x.ClubId == result);
-                                if (club == null) continue;
-                                await _management.RemoveUserAsync(db, Context.User, Context.Guild, club);
-                                await Context.ReplyAsync(
-                                    $"Successfully left {(await db.GetClubAsync(club.ClubId, Context.Guild)).Name}",
-                                    Color.Green.RawValue);
-                                status = false;
-                            }
-                            catch (Exception e)
-                            {
-                                _log.LogAction(LogLevel.Error, e.ToString(), "Club user leave");
-                            }
-
-                        break;
-                    }
+                    await Context.ReplyAsync("You're currently not in any clubs within this guild");
+                    return;
                 }
+                var clubInfos = new List<ClubInformation>();
+                var str = new StringBuilder();
+                for (var i = 0; i < clubs.Count; i++)
+                {
+                    var clubInfo = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                        x.GuildId == Context.Guild.Id && x.Id == clubs[i].ClubId);
+                    clubInfos.Add(clubInfo);
+                    str.AppendLine($"ID: {clubInfo.Id}: {clubInfo.Name}");
+                }
+
+                await Context.ReplyAsync($"Which club would you like to leave? Provide ID\n{str}");
+                var response = await NextMessageAsync();
+                if (response == null || response.Content.IsNullOrWhiteSpace())
+                {
+                    await Context.ReplyAsync("Timed out", Color.Red.RawValue);
+                    return;
+                }
+
+                var check = int.TryParse(response.Content, out var result);
+                var club = clubInfos.FirstOrDefault(x => x.Id == result);
+                if(!check || club == null)
+                {
+                    await Context.ReplyAsync("Couldn't find a club with that Id", Color.Red.RawValue);
+                    return;
+                }
+
             }
         }
 
@@ -177,7 +208,7 @@ namespace Hanekawa.Bot.Modules.Club
             if (Context.User == user) return;
             using (var db = new DbService())
             {
-                var club = await db.IsClubLeader(Context.Guild.Id, Context.User.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.Guild.Id);
                 if (club == null)
                 {
                     await Context.ReplyAsync("You can't use this command as you're not a leader of any clubs",
@@ -186,14 +217,14 @@ namespace Hanekawa.Bot.Modules.Club
                 }
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                        x.GuildId == user.GuildId && x.UserId == user.Id && x.Rank <= 2);
+                        x.GuildId == user.Guild.Id && x.UserId == user.Id && x.Rank <= 2);
                 if (clubUser != null && clubUser.ClubId != club.Id)
                 {
                     await Context.ReplyAsync($"{user.Mention} is already an officer in a club");
                     return;
                 }
                 var toPromote = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                    x.ClubId == club.Id && x.GuildId == user.GuildId && x.UserId == user.Id);
+                    x.ClubId == club.Id && x.GuildId == user.Guild.Id && x.UserId == user.Id);
                 if (toPromote == null)
                 {
                     await Context.ReplyAsync($"{user.Mention} is not part of {club.Name}",
@@ -210,12 +241,12 @@ namespace Hanekawa.Bot.Modules.Club
                         await Context.ReplyAsync("Cancelling...");
                         return;
                     }
-                    await _management.PromoteUserAsync(db, user, toPromote, club);
+                    await _club.PromoteUserAsync(user, toPromote, club, db);
                     await Context.ReplyAsync($"Transferred ownership of {club.Name} to {user.Mention}");
                 }
                 else
                 {
-                    await _management.PromoteUserAsync(db, user, toPromote, club);
+                    await _club.PromoteUserAsync(user, toPromote, club, db);
                     await Context.ReplyAsync($"Promoted {user.Mention} to rank 2.");
                 }
 
@@ -229,7 +260,31 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task ClubDemoteAsync(SocketGuildUser user)
         {
-            await _club.DemoteAsync(user, );
+            if (Context.User == user) return;
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
+                if (club == null) return;
+                var toDemote = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.ClubId == club.Id && x.GuildId == user.Guild.Id && x.UserId == user.Id);
+                if (toDemote == null)
+                {
+                    await Context.ReplyAsync($"Can't demote {user.Mention} because he/she is not part of {club.Name}",
+                        Color.Red.RawValue);
+                    return;
+                }
+
+                if (toDemote.Rank == 3)
+                {
+                    await Context.ReplyAsync($"Cannot demote {user.Mention} any further. (Already lowest rank)");
+                    return;
+                }
+
+                if (toDemote.Rank == 1) return;
+                await _club.DemoteAsync(user, toDemote, club, db);
+                await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {club.Name}",
+                    Color.Green.RawValue);
+            }
         }
     }
 }

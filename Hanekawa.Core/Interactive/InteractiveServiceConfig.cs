@@ -4,6 +4,6 @@ namespace Hanekawa.Core.Interactive
 {
     public class InteractiveServiceConfig
     {
-        public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(15);
+        public TimeSpan DefaultTimeout { get; set; } = TimeSpan.FromSeconds(25);
     }
 }
