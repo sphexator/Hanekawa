@@ -13,6 +13,8 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Club
 {
+    [Name("Club")]
+    [RequireBotPermission(GuildPermission.EmbedLinks)]
     public partial class Club : InteractiveBase
     {
         private readonly ClubService _club;
@@ -20,7 +22,7 @@ namespace Hanekawa.Bot.Modules.Club
         public Club(ClubService club) => _club = club;
 
         [Name("Club List")]
-        [Command("club list", "club clubs")]
+        [Command("club list", "clubs")]
         [Description("Paginates all clubs")]
         [Remarks("club list")]
         [RequiredChannel]

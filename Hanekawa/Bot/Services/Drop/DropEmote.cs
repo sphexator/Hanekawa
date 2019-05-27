@@ -6,6 +6,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 
 namespace Hanekawa.Bot.Services.Drop
 {
@@ -13,8 +14,16 @@ namespace Hanekawa.Bot.Services.Drop
     {
         private readonly ConcurrentDictionary<ulong, Emote> _emotes = new ConcurrentDictionary<ulong, Emote>();
 
-        public void ChangeEmote(SocketGuild guild, Emote emote) 
-            => _emotes.AddOrUpdate(guild.Id, GetDefaultEmote(), (key, value) => emote);
+        public async Task ChangeEmote(SocketGuild guild, Emote emote)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateDropConfig(guild);
+                cfg.Emote = emote.ParseEmoteString();
+                _emotes.AddOrUpdate(guild.Id, GetDefaultEmote(), (key, value) => emote);
+                await db.SaveChangesAsync();
+            }
+        }
 
         private async Task<List<Emote>> ReturnEmotes(SocketGuild guild, DbService db)
         {

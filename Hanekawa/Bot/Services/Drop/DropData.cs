@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Database;
+using Hanekawa.Database.Tables.Config;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Drop
@@ -21,19 +25,33 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
             new ConcurrentDictionary<ulong, MemoryCache>();
 
-        public bool AddLootChannel(SocketTextChannel channel)
+        public async Task<bool> AddLootChannel(SocketTextChannel channel, DbService db)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             if (channels.ContainsKey(channel.Id)) return false;
             channels.TryAdd(channel.Id, true);
+            var data = new LootChannel
+            {
+                GuildId = channel.Guild.Id,
+                ChannelId = channel.Id
+            };
+            await db.LootChannels.AddAsync(data);
+            await db.SaveChangesAsync();
             return true;
         }
 
-        public bool RemoveLootChannel(SocketTextChannel channel)
+        public async Task<bool> RemoveLootChannel(SocketTextChannel channel, DbService db)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             if (!channels.ContainsKey(channel.Id)) return false;
             channels.TryRemove(channel.Id, out _);
+            var data = await db.LootChannels.FirstOrDefaultAsync(x =>
+                x.GuildId == channel.Guild.Id && x.ChannelId == channel.Id);
+            if (data != null)
+            {
+                db.LootChannels.Remove(data);
+                await db.SaveChangesAsync();
+            }
             return true;
         }
 

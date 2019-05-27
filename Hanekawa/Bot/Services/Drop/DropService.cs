@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Experience;
+using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -43,6 +46,30 @@ namespace Hanekawa.Bot.Services.Drop
                     var channels = _lootChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, bool>());
                     channels.TryAdd(x.ChannelId, true);
                 }
+            }
+        }
+
+        public async Task SpawnAsync(HanekawaContext context)
+        {
+            using (var db = new DbService())
+            {
+                var claim = await GetClaimEmote(context.Guild, db);
+                var triggerMsg = await context.Channel.ReplyAsync($"{context.User.GetName()} has spawned a crate! \nClick {claim} reaction on this message to claim it```", context.Guild.Id);
+                var emotes = await ReturnEmotes(context.Guild, db);
+                foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
+                    try
+                    {
+                        if (x.Id == claim.Id)
+                        {
+                            var messages = _normalLoot.GetOrAdd(context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+                            messages.Set(triggerMsg.Id, false, TimeSpan.FromHours(1));
+                        }
+                        await triggerMsg.AddReactionAsync(x);
+                    }
+                    catch
+                    {
+                        break;
+                    }
             }
         }
 
