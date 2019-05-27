@@ -11,6 +11,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using Quartz.Util;
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club add")]
+        [Name("Club Add")]
         [Command("club add")]
         [Description("Adds a member to your club")]
         [Remarks("club add @bob#0000")]
@@ -112,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club remove")]
+        [Name("Club Remove")]
         [Command("club remove", "club kick")]
         [Description("Removes a user from your club")]
         [Remarks("club remove @bob#0000")]
@@ -135,7 +136,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club leave")]
+        [Name("Club Leave")]
         [Command("club leave")]
         [Description("Leaves a club you're part of")]
         [Remarks("club leave")]
@@ -153,7 +154,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club leave")]
+        [Name("Club Leave")]
         [Command("club leave")]
         [Description("Leaves a club you're part of")]
         [Remarks("club leave")]
@@ -198,10 +199,10 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club promote")]
+        [Name("Club Promote")]
         [Command("club promote")]
         [Description("Promotes someone to a higher rank")]
-        [Remarks("h.club promote @bob#0000")]
+        [Remarks("club promote @bob#0000")]
         [RequiredChannel]
         public async Task ClubPromoteAsync(SocketGuildUser user)
         {
@@ -253,7 +254,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club demote")]
+        [Name("Club Demote")]
         [Command("club demote")]
         [Description("Demotes someone to a lower rank")]
         [Remarks("club demote @bob#0000")]
@@ -284,6 +285,75 @@ namespace Hanekawa.Bot.Modules.Club
                 await _club.DemoteAsync(user, toDemote, club, db);
                 await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {club.Name}",
                     Color.Green.RawValue);
+            }
+        }
+
+        [Name("Club Blacklist")]
+        [Command("club blacklist", "cb")]
+        [Description("Blacklist a user from their club")]
+        [Remarks("cb @bob#0000")]
+        [RequiredChannel]
+        public async Task BlackListUser(SocketGuildUser user, [Remainder] string reason = null)
+        {
+            if (Context.User == user) return;
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
+                if (club == null) return;
+                var toBlacklist = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                    x.ClubId == club.Id && x.UserId == user.Id && x.GuildId == Context.Guild.Id);
+                if (toBlacklist == null) return;
+                var blacklist = await _club.AddBlacklist(user, Context.User, club, db, reason);
+                if (!blacklist)
+                {
+                    await Context.ReplyAsync(
+                        "User is already blacklisted. Do you wish to remove it? (y/n)");
+                    var response = await NextMessageAsync();
+                    if (response == null || response.Content.IsNullOrWhiteSpace()) return;
+                    if (response.Content.ToLower() != "y")
+                    {
+                        await Context.ReplyAsync("User stays blacklisted");
+                    }
+                    await _club.RemoveBlacklist(user, club, db);
+                    await Context.ReplyAsync($"Removed blacklist for {user.Mention} in {club.Name}", Color.Green.RawValue);
+                }
+
+                await Context.ReplyAsync($"Blacklisted {user.Mention} from {club.Name}", Color.Green.RawValue);
+            }
+        }
+
+        [Name("Club Blacklist")]
+        [Command("club blacklist", "cb")]
+        [Description("Gets current blacklist for their club")]
+        [Remarks("cb")]
+        [RequiredChannel]
+        public async Task GetBlackList()
+        {
+            using (var db = new DbService())
+            {
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
+                if (club == null) return;
+                var blacklist = await db.ClubBlacklists.Where(x => x.ClubId == club.Id).ToListAsync();
+                if (blacklist == null || blacklist.Count == 0)
+                {
+                    await Context.ReplyAsync("No users currently blacklisted");
+                    return;
+                }
+
+                var result = new List<string>();
+                for (var i = 0; i < blacklist.Count; i++)
+                {
+                    var x = blacklist[i];
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine(
+                        $"{x.BlackListUser} blacklisted by {x.IssuedUser} on {x.Time.Humanize()} ({x.Time})");
+                    stringBuilder.AppendLine($"Reason: {x.Reason}");
+                    stringBuilder.AppendLine();
+                    result.Add(stringBuilder.ToString());
+                }
+
+                await PagedReplyAsync(result.PaginateBuilder(Context.Guild,
+                    $"Blacklisted users for {club.Name}", null));
             }
         }
     }

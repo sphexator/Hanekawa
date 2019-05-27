@@ -43,8 +43,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                    // TODO: Advertise update
-                    //await _club.UpdatePostNameAsync(msg, name);
+                    await _club.UpdatePostNameAsync(msg, name);
                 }
                 if (club.Role.HasValue)
                 {
@@ -82,8 +81,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                    // TODO: Advertise update
-                    // await _advertise.UpdatePostIconAsync(msg, icon);
+                    await _club.UpdatePostIconAsync(msg, icon);
                 }
             }
         }
@@ -110,8 +108,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                    // TODO: Advertise update
-                    // await _advertise.UpdatePostImageAsync(msg, image);
+                    await _club.UpdatePostImageAsync(msg, image);
                 }
             }
         }
@@ -140,8 +137,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                    // TODO: Advertise update
-                    // await _advertise.UpdatePostDescriptionAsync(msg, desc);
+                    await _club.UpdatePostDescriptionAsync(msg, desc);
                 }
             }
         }

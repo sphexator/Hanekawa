@@ -11,10 +11,10 @@ namespace Hanekawa.Bot.Modules.Club
 {
     public partial class Club
     {
-        [Name("Club setting advertisement")]
+        [Name("Club Setting Advertisement")]
         [Command("Club set advertisement", "csa")]
         [Description("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
-        [Remarks("h.csa #general")]
+        [Remarks("csa #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetAdvertisementChannel(SocketTextChannel channel = null)
         {
@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club setting category")]
+        [Name("Club Setting Category")]
         [Command("Club set category", "clubscategory", "cscat")]
         [Description("Sets location in where club channels will be created. \nLeave empty to disable")]
         [Remarks("cscat general")]
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club setting level")]
+        [Name("Club Setting Level")]
         [Command("Club set level", "csl")]
         [Description("Sets level requirement for people to create a club")]
         [Remarks("csl 10")]
@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club setting channel amount")]
+        [Name("Club Setting Channel Amount")]
         [Command("club set channel amount", "csca")]
         [Description("Sets amount required that's above the level requirement to create a channel")]
         [Remarks("csca 2")]
