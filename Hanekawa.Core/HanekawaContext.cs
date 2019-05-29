@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Qmmands;
 
@@ -15,11 +16,20 @@ namespace Hanekawa.Core
             Channel = msg.Channel as SocketTextChannel;
         }
 
-        public IUserMessage Message { get; }
-
+        public SocketUserMessage Message { get; }
         public DiscordSocketClient Client { get; }
         public SocketGuildUser User { get; }
         public SocketGuild Guild { get; }
         public SocketTextChannel Channel { get; }
+
+        public async Task ReplyAsyncTest(string content)
+        {
+
+        }
+
+        public async Task ErrorAsync(string content)
+        {
+
+        }
     }
 }
