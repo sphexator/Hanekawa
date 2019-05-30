@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Discord;
 using Discord.WebSocket;
 using Qmmands;
 
@@ -24,12 +23,12 @@ namespace Hanekawa.Core
 
         public async Task ReplyAsyncTest(string content)
         {
-
+            // TODO: Implement replyasync directly into command context with guild specific guild colour
         }
 
         public async Task ErrorAsync(string content)
         {
-
+            // TODO: Implement various ways to do error messages, maybe ok?
         }
     }
 }
