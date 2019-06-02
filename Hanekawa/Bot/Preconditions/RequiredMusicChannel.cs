@@ -5,8 +5,6 @@ using Discord.WebSocket;
 using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
-using Hanekawa.Database.Tables.Config;
-using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
