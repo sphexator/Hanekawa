@@ -51,12 +51,12 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.8" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-        <PackageReference Include="NLog" Version="4.6.3" />
-        <PackageReference Include="NLog.Config" Version="4.6.3" />
+        <PackageReference Include="NLog" Version="4.6.4" />
+        <PackageReference Include="NLog.Config" Version="4.6.4" />
         <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.2" />
-        <PackageReference Include="Npgsql" Version="4.0.6" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
+        <PackageReference Include="Npgsql" Version="4.0.7" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
         <PackageReference Include="Qmmands" Version="3.0.0-nightly-00188" />
         <PackageReference Include="Quartz" Version="3.0.7" />
         <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0007" />
@@ -72,7 +72,6 @@
     <ItemGroup>
       <Folder Include="Bot\Modules\Event" />
       <Folder Include="Bot\Modules\Game" />
-      <Folder Include="Bot\Modules\Music" />
     </ItemGroup>
 
     <ItemGroup>

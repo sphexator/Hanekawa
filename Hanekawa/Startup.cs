@@ -50,7 +50,13 @@ namespace Hanekawa
             services.AddSingleton<InteractiveService>();
             services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new LavaSocketClient());
-            services.AddSingleton(new LavaRestClient(new Configuration()));
+            services.AddSingleton(new LavaRestClient(new Configuration
+            {
+                AutoDisconnect = true,
+                SelfDeaf = false,
+                LogSeverity = LogSeverity.Info,
+                PreservePlayers = true
+            }));
             services.AddSingleton<Random>();
             services.AddHttpClient();
 

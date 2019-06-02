@@ -8,6 +8,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
+using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
 using Microsoft.EntityFrameworkCore;
@@ -95,6 +96,10 @@ namespace Hanekawa.Database
         public virtual DbSet<Background> Backgrounds { get; set; }
         public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
 
+        // Music 
+        public virtual DbSet<MusicConfig> MusicConfigs { get; set; }
+        public virtual DbSet<Playlist> Playlists { get; set; }
+
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -121,6 +126,7 @@ namespace Hanekawa.Database
             GameBuilder(modelBuilder);
             AdministrationBuilder(modelBuilder);
             ProfileBuilder(modelBuilder);
+            MusicBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
         }
 
@@ -517,6 +523,22 @@ namespace Hanekawa.Database
             });
         }
 
+        private void MusicBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MusicConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.TextChId).HasConversion<long>();
+                x.Property(e => e.VoiceChId).HasConversion<long>();
+            });
+            modelBuilder.Entity<Playlist>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.Name});
+                x.Property(e => e.GuildId).HasConversion<long>();
+            });
+        }
+        
         private void InternalBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Log>(x =>

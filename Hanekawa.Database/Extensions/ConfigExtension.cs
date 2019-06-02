@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Music;
 
 namespace Hanekawa.Database.Extensions
 {
@@ -249,6 +251,26 @@ namespace Hanekawa.Database.Extensions
                 await context.DropConfigs.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.DropConfigs.FindAsync(guildId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return data;
+            }
+        }
+
+        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, SocketGuild guild) =>
+            await GetOrCreateMusicConfig(context, guild.Id).ConfigureAwait(false);
+
+        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, ulong guildId)
+        {
+            var response = await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
+            if (response != null) return response;
+            var data = new MusicConfig { GuildId = guildId };
+            try
+            {
+                await context.MusicConfigs.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
             }
             catch
             {
