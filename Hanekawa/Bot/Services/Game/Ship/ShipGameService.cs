@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using Hanekawa.Core;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -50,29 +50,28 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var battles = _existingBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             if (battles.TryGetValue(user.Id, out _)) return new EmbedBuilder();
             var enemy = GetEnemy();
-            if (enemy == null)
-            {
-                return new EmbedBuilder().CreateDefault($"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red.RawValue);
-            }
+            if (enemy == null) return new EmbedBuilder().CreateDefault(
+                    $"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red.RawValue);
+            
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
-            var embed = new EmbedBuilder().CreateDefault($"You've encountered an enemy!\n" +
+            var embed = new EmbedBuilder().CreateDefault("You've encountered an enemy!\n" +
                                                     $"**{enemy.Name}**", Color.Green.RawValue);
             var userdata = await db.GetOrCreateUserData(user);
             embed.Fields = new List<EmbedFieldBuilder>
             {
-                new EmbedFieldBuilder { Name = "Type", Value = "", IsInline = true },
-                new EmbedFieldBuilder { Name = "Health", Value = "", IsInline = true },
+                new EmbedFieldBuilder { Name = "Type", Value = $"", IsInline = true },
+                new EmbedFieldBuilder { Name = "Health", Value = $"", IsInline = true },
                 new EmbedFieldBuilder { Name = "Level", Value = $"{userdata.Level}", IsInline = true }
             };
             return embed;
         }
 
-        public async Task PvPBattle(SocketCommandContext context)
+        public async Task PvPBattle(HanekawaContext context)
         {
 
         }
 
-        public async Task PvEBattle(SocketCommandContext context)
+        public async Task PvEBattle(HanekawaContext context)
         {
 
         }

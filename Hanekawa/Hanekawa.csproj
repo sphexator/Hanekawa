@@ -71,7 +71,6 @@
 
     <ItemGroup>
       <Folder Include="Bot\Modules\Event" />
-      <Folder Include="Bot\Modules\Game" />
     </ItemGroup>
 
     <ItemGroup>
