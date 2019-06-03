@@ -12,17 +12,17 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private int DefaultDamage { get; set; } = 1;
         private async Task<GameClass> GetClassName(int classId, DbService db) => await db.GameClasses.FindAsync(classId);
 
-        public int GetPlayerHealth(int level, GameClass gameClass) =>
+        private int GetHealth(int level, GameClass gameClass) =>
             Convert.ToInt32(Math.Round(DefaultHealth * level * gameClass.ModifierHealth));
 
-        public int GetNpcHealth(int level, GameEnemy enemyData, GameClass enemyClass) =>
+        private int GetHealth(int level, GameEnemy enemyData, GameClass enemyClass) =>
             Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
                                        enemyClass.ModifierHealth));
 
         public int GetDefaultDamage(int level) => DefaultDamage * level;
-        public int GetDamage(int level, GameEnemy enemyData) => (DefaultDamage + enemyData.Damage) * level;
+        private int GetDamage(int level, GameEnemy enemyData) => (DefaultDamage + enemyData.Damage) * level;
 
-        public int CalculateDamage(int damage, GameClass attackerClass, GameClass enemyClass, EnemyType type)
+        private int CalculateDamage(int damage, GameClass attackerClass, GameClass enemyClass, EnemyType type)
         {
             var avoid = _random.Next(100);
             var crit = _random.Next(100);

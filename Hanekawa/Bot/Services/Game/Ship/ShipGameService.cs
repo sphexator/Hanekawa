@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -12,6 +14,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Models;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship
@@ -56,18 +59,49 @@ namespace Hanekawa.Bot.Services.Game.Ship
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
             var embed = new EmbedBuilder().CreateDefault("You've encountered an enemy!\n" +
                                                     $"**{enemy.Name}**", Color.Green.RawValue);
-            var userdata = await db.GetOrCreateUserData(user);
+            var userData = await db.GetOrCreateUserData(user);
             embed.Fields = new List<EmbedFieldBuilder>
             {
-                new EmbedFieldBuilder { Name = "Type", Value = $"", IsInline = true },
-                new EmbedFieldBuilder { Name = "Health", Value = $"", IsInline = true },
-                new EmbedFieldBuilder { Name = "Level", Value = $"{userdata.Level}", IsInline = true }
+                new EmbedFieldBuilder { Name = "Type", Value = GetClassName(enemy.Id, db), IsInline = true },
+                new EmbedFieldBuilder { Name = "Health", Value = GetHealth(userData.Level, enemy, await GetClassName(enemy.ClassId, db)), IsInline = true },
+                new EmbedFieldBuilder { Name = "Level", Value = $"{userData.Level}", IsInline = true }
             };
             return embed;
         }
 
-        public async Task PvPBattle(HanekawaContext context)
+        public async Task PvPBattle(HanekawaContext context, SocketGuildUser user, int? bet = null)
         {
+            using var db = new DbService();
+            ShipGameUser playerOne;
+            ShipGameUser playerTwo;
+            var userDataOne = await db.GetOrCreateUserData(context.User);
+            var userDataTwo = await db.GetOrCreateUserData(user);
+            var coinFlip = _random.Next(2);
+            if (coinFlip == 1)
+            {
+                playerOne = new ShipGameUser(context.User, await GetClassName(userDataOne.Class, db), bet);
+                playerTwo = new ShipGameUser(user, await GetClassName(userDataTwo.Class, db), bet);
+            }
+            else
+            {
+                playerOne = new ShipGameUser(user, await GetClassName(userDataTwo.Class, db), bet);
+                playerTwo = new ShipGameUser(context.User, await GetClassName(userDataOne.Class, db), bet);
+            }
+            var game = new ShipGame(playerOne, playerTwo);
+            var msgLog = new LinkedList<string>();
+            msgLog.AddFirst($"{context.User.GetName()} VS {user.GetName()}");
+
+            var msg = await context.ReplyAsync(new EmbedBuilder
+            {
+                Description = msgLog.ListToString()
+            });
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var battle = BattleAsync(msg, game, msgLog);
+            var timeout = Task.Delay(TimeSpan.FromSeconds(20), token);
+            await Task.WhenAny(battle, timeout);
+            source.Dispose();
+            if(!battle.IsCompleted) battle.Dispose();
 
         }
 
@@ -76,9 +110,20 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         }
 
-        private async Task BattleAsync()
+        private async Task BattleAsync(IUserMessage msg, ShipGame game, LinkedList<string> combatLog)
         {
+            var inProgress = true;
+            while (inProgress)
+            {
 
+                inProgress = false;
+            }
+        }
+
+        private void UpdateBattleLog(LinkedList<string> log, string message)
+        {
+            if (log.Count == 6) log.RemoveLast();
+            log.AddFirst(message);
         }
 
         private GameEnemy GetEnemy()
