@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Modules.Level
                 {
                     var user = users[i];
                     var userData = await db.GetOrCreateUserData(users[i]);
-                    await _exp.AddExp(user, userData, exp, 0, db);
+                    await _exp.AddExpAsync(user, userData, exp, 0, db);
                     userString += $"{user.Mention}\n";
                 }
 
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Level
                 {
                     var user = users[i];
                     var userData = await db.GetOrCreateUserData(users[i]);
-                    await _exp.AddExp(user, userData, (exp * (-1)), 0, db);
+                    await _exp.AddExpAsync(user, userData, (exp * (-1)), 0, db);
                     userString += $"{user.Mention}\n";
                 }
 

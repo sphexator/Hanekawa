@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Experience
         public int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
         public int ExpToNextLevel(int level) => 3 * level * level + 150;
 
-        public async Task AddExp(SocketGuildUser user, Account userdata, int exp, int credit, DbService db)
+        public async Task AddExpAsync(SocketGuildUser user, Account userdata, int exp, int credit, DbService db)
         {
             if (userdata.Exp + exp >= ExpToNextLevel(userdata))
             {
@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Services.Experience
                 userdata.Level += 1;
                 userdata.Exp = (userdata.Exp + exp - ExpToNextLevel(userdata));
             }
-            else if (userdata.Exp + exp < 0)
+            else if (userdata.Exp + exp <= 0)
             {
                 userdata.Level -= 1;
                 userdata.Exp = userdata.Exp + ExpToNextLevel(userdata.Level - 1) + exp;
@@ -40,7 +40,7 @@ namespace Hanekawa.Bot.Services.Experience
             await db.SaveChangesAsync();
         }
         
-        public async Task AddExp(AccountGlobal userdata, int exp, int credit, DbService db)
+        public async Task AddExpAsync(AccountGlobal userdata, int exp, int credit, DbService db)
         {
             if (userdata.Exp + exp >= ExpToNextLevel(userdata))
             {

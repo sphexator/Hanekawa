@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Core;
 using Hanekawa.Core.Game;
 using Hanekawa.Core.Interfaces;
@@ -26,12 +28,15 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly HttpClient _client;
         private readonly Random _random;
         private readonly ImageGenerator _img;
+        private readonly ExpService _exp;
 
-        public ShipGameService(HttpClient client, Random random, ImageGenerator img)
+        public ShipGameService(HttpClient client, Random random, ImageGenerator img, ExpService exp)
         {
             _client = client;
             _random = random;
             _img = img;
+            _exp = exp;
+
             using (var db = new DbService())
             {
                 foreach (var x in db.GameEnemies)
@@ -104,18 +109,60 @@ namespace Hanekawa.Bot.Services.Game.Ship
             source.Dispose();
             if(!battle.IsCompleted) battle.Dispose();
 
-            
+            embed = msg.Embeds.First().ToEmbedBuilder();
+            embed.Color = Color.Green;
+            embed.Description = msgLog.ListToString();
+            await msg.ModifyAsync(x => x.Embed = embed.Build());
         }
 
         public async Task PvEBattle(HanekawaContext context)
         {
+            using var db = new DbService();
+            if(!_activeBattles.TryGetValue(context.Guild.Id, out var battles))
+            {
+                await context.ReplyAsync("You're currently not in combat", Color.Red.RawValue);
+                return;
+            }
 
+            if (!battles.TryGetValue(context.User.Id, out var battleObject))
+            {
+                await context.ReplyAsync("You're currently not in combat", Color.Red.RawValue);
+                return;
+            }
+            if (!(battleObject is GameEnemy enemy)) return;
+
+            var userData = await db.GetOrCreateUserData(context.User);
+            var playerOne = new ShipGameUser(context.User, userData.Level, await GetClassName(userData.Class, db));
+            var playerTwo = new ShipGameUser(enemy, userData.Level, await GetClassName(enemy.ClassId, db));
+            var game = new ShipGame(playerOne, playerTwo, null);
+            var msgLog = new LinkedList<string>();
+            
+            msgLog.AddFirst($"{context.User.GetName()} VS {enemy.Name}");
+            var embed = new EmbedBuilder().CreateDefault(msgLog.ListToString(), context.Guild.Id);
+            embed.ImageUrl = "attachment://banner.png";
+            var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
+                embed.Build());
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var battle = BattleAsync(msg, game, msgLog);
+            var timeout = Task.Delay(TimeSpan.FromSeconds(20), token);
+            await Task.WhenAny(battle, timeout);
+            source.Dispose();
+            if (!battle.IsCompleted) battle.Dispose();
+            if (!battle.Result.IsNpc && battle.IsCompleted)
+                await _exp.AddExpAsync(context.User, userData, enemy.ExpGain, enemy.CreditGain, db);
+
+            embed = msg.Embeds.First().ToEmbedBuilder();
+            embed.Color = battle.Result.IsNpc ? Color.Red : Color.Green;
+            embed.Description = msgLog.ListToString();
+            await msg.ModifyAsync(x => x.Embed = embed.Build());
         }
 
         private async Task<ShipGameUser> BattleAsync(IUserMessage msg, ShipGame game, LinkedList<string> combatLog)
         {
             var inProgress = true;
-            ShipGameUser winner;
+            ShipGameUser winner = null;
+            EmbedBuilder embed;
             while (inProgress)
             {
                 int dmgOne;
@@ -146,11 +193,14 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 {
                     UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit for {dmgTwo} damage and defeated {game.PlayerOne.Name}");
                     inProgress = false;
-                    winner = game.PlayerTwo;
+                    winner = game.PlayerTwo;                    continue;
                 }
-                else UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit {game.PlayerOne.Name} for {dmgTwo} damage");
+                UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit {game.PlayerOne.Name} for {dmgTwo} damage");
 
-
+                embed = msg.Embeds.First().ToEmbedBuilder();
+                embed.Description = combatLog.ListToString();
+                await msg.ModifyAsync(x => x.Embed = embed.Build());
+                await Task.Delay(2000);
             }
 
             return winner;

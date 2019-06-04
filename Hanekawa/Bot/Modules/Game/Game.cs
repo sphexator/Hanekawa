@@ -32,13 +32,14 @@ namespace Hanekawa.Bot.Modules.Game
         [Command("attack")]
         [Description("Starts a fight with a monster you've found")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
-        public async Task AttackAsync() { }
+        public async Task AttackAsync() => await _shipGame.PvEBattle(Context);
 
         [Name("Duel")]
         [Command("duel")]
         [Description("Duels a user. Add an amount to duel for credit")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
-        public async Task DuelAsync(SocketGuildUser user, int? bet = null) { }
+        public async Task DuelAsync(SocketGuildUser user, int? bet = null) =>
+            await _shipGame.PvPBattle(Context, user, bet);
 
         [Name("Class Info")]
         [Command("class info")]

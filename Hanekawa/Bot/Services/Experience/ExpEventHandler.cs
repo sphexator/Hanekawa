@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Services.Experience
                     using (var db = new DbService())
                     {
                         var userdata = await db.GetOrCreateGlobalUserData(user);
-                        await AddExp(userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                        await AddExpAsync(userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
                     }
                 }
                 catch (Exception e)
@@ -100,7 +100,7 @@ namespace Hanekawa.Bot.Services.Experience
                         userdata.LastMessage = DateTime.UtcNow;
                         if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
 
-                        await AddExp(user, userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                        await AddExpAsync(user, userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
                     }
                 }
                 catch (Exception e)

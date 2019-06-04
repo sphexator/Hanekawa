@@ -151,7 +151,7 @@ namespace Hanekawa.Bot.Services.Drop
             loots.Remove(msg.Id);
             var rand = _random.Next(150, 250);
             var userdata = await db.GetOrCreateUserData(user);
-            await _expService.AddExp(user, userdata, rand, rand, db);
+            await _expService.AddExpAsync(user, userdata, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
@@ -166,7 +166,7 @@ namespace Hanekawa.Bot.Services.Drop
             loots.Remove(msg.Id);
             var rand = _random.Next(15, 150);
             var userdata = await db.GetOrCreateUserData(user);
-            await _expService.AddExp(user, userdata, rand, rand, db);
+            await _expService.AddExpAsync(user, userdata, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
