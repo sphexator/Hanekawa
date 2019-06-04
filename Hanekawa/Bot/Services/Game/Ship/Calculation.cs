@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
                                        enemyClass.ModifierHealth));
 
-        public int GetDefaultDamage(int level) => DefaultDamage * level;
+        public int GetDamage(int level) => DefaultDamage * level;
         private int GetDamage(int level, GameEnemy enemyData) => (DefaultDamage + enemyData.Damage) * level;
 
         private int CalculateDamage(int damage, GameClass attackerClass, GameClass enemyClass, EnemyType type)

@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Bot.Services.ImageGen;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Core;
+using Hanekawa.Core.Game;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -79,22 +81,21 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var coinFlip = _random.Next(2);
             if (coinFlip == 1)
             {
-                playerOne = new ShipGameUser(context.User, await GetClassName(userDataOne.Class, db), bet);
-                playerTwo = new ShipGameUser(user, await GetClassName(userDataTwo.Class, db), bet);
+                playerOne = new ShipGameUser(context.User, userDataOne.Level, await GetClassName(userDataOne.Class, db));
+                playerTwo = new ShipGameUser(user, userDataTwo.Level, await GetClassName(userDataTwo.Class, db));
             }
             else
             {
-                playerOne = new ShipGameUser(user, await GetClassName(userDataTwo.Class, db), bet);
-                playerTwo = new ShipGameUser(context.User, await GetClassName(userDataOne.Class, db), bet);
+                playerOne = new ShipGameUser(user, userDataTwo.Level, await GetClassName(userDataTwo.Class, db));
+                playerTwo = new ShipGameUser(context.User, userDataOne.Level, await GetClassName(userDataOne.Class, db));
             }
-            var game = new ShipGame(playerOne, playerTwo);
+            var game = new ShipGame(playerOne, playerTwo, bet);
             var msgLog = new LinkedList<string>();
             msgLog.AddFirst($"{context.User.GetName()} VS {user.GetName()}");
-
-            var msg = await context.ReplyAsync(new EmbedBuilder
-            {
-                Description = msgLog.ListToString()
-            });
+            var embed = new EmbedBuilder().CreateDefault(msgLog.ListToString(), context.Guild.Id);
+            embed.ImageUrl = "attachment://banner.png";
+            var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
+                embed.Build());
             var source = new CancellationTokenSource();
             var token = source.Token;
             var battle = BattleAsync(msg, game, msgLog);
@@ -103,6 +104,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             source.Dispose();
             if(!battle.IsCompleted) battle.Dispose();
 
+            
         }
 
         public async Task PvEBattle(HanekawaContext context)
@@ -110,14 +112,48 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         }
 
-        private async Task BattleAsync(IUserMessage msg, ShipGame game, LinkedList<string> combatLog)
+        private async Task<ShipGameUser> BattleAsync(IUserMessage msg, ShipGame game, LinkedList<string> combatLog)
         {
             var inProgress = true;
+            ShipGameUser winner;
             while (inProgress)
             {
+                int dmgOne;
+                int dmgTwo;
+                if (game.PlayerOne.IsNpc)
+                    dmgOne = CalculateDamage(GetDamage(game.PlayerOne.Level, game.PlayerOne.Enemy),
+                        game.PlayerOne.Class, game.PlayerTwo.Class, EnemyType.Npc);
+                else dmgOne = CalculateDamage(GetDamage(game.PlayerOne.Level),
+                    game.PlayerOne.Class, game.PlayerTwo.Class, EnemyType.Player);
+                if(game.PlayerTwo.IsNpc)
+                    dmgTwo = CalculateDamage(GetDamage(game.PlayerTwo.Level, game.PlayerTwo.Enemy),
+                        game.PlayerTwo.Class, game.PlayerOne.Class, EnemyType.Npc);
+                else dmgTwo = CalculateDamage(GetDamage(game.PlayerTwo.Level),
+                    game.PlayerTwo.Class, game.PlayerOne.Class, EnemyType.Player);
 
-                inProgress = false;
+                game.PlayerTwo.DamageTaken += dmgOne;
+                if (game.PlayerTwo.Health - game.PlayerOne.DamageTaken <= 0)
+                {
+                    UpdateBattleLog(combatLog, $"{game.PlayerOne.Name} hit for {dmgOne} damage and defeated {game.PlayerTwo.Name}");
+                    inProgress = false;
+                    winner = game.PlayerOne;
+                    continue;
+                }
+                UpdateBattleLog(combatLog, $"{game.PlayerOne.Name} hit {game.PlayerTwo.Name} for {dmgOne} damage");
+
+                game.PlayerOne.DamageTaken += dmgTwo;
+                if (game.PlayerOne.Health - game.PlayerTwo.DamageTaken <= 0)
+                {
+                    UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit for {dmgTwo} damage and defeated {game.PlayerOne.Name}");
+                    inProgress = false;
+                    winner = game.PlayerTwo;
+                }
+                else UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit {game.PlayerOne.Name} for {dmgTwo} damage");
+
+
             }
+
+            return winner;
         }
 
         private void UpdateBattleLog(LinkedList<string> log, string message)
