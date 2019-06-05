@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Core", "Hanekawa.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Web", "Hanekawa.Web\Hanekawa.Web.csproj", "{6E7C521C-6763-4C0A-AA82-8DA00D9B793A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.NekoLife", "Hanekawa.NekoLife\Hanekawa.NekoLife.csproj", "{6E495B69-7DC0-4035-8887-5AF8489585DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{6E7C521C-6763-4C0A-AA82-8DA00D9B793A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E7C521C-6763-4C0A-AA82-8DA00D9B793A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E7C521C-6763-4C0A-AA82-8DA00D9B793A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E495B69-7DC0-4035-8887-5AF8489585DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E495B69-7DC0-4035-8887-5AF8489585DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E495B69-7DC0-4035-8887-5AF8489585DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E495B69-7DC0-4035-8887-5AF8489585DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
