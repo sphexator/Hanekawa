@@ -1,10 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Game.Ship;
 using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using Cooldown = Hanekawa.Core.Cooldown;
 
@@ -43,29 +47,61 @@ namespace Hanekawa.Bot.Modules.Game
 
         [Name("Class Info")]
         [Command("class info")]
-        [Description("")]
+        [Description("Display all classes in a paginated message")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync()
         {
+            using var db = new DbService();
+            var result = new List<string>();
+            var classes = await db.GameClasses.ToListAsync();
+            for (var i = 0; i < classes.Count; i++)
+            {
+                var x = classes[i];
+                result.Add($"{x.Id} - {x.Name} (level: {x.LevelRequirement})\n");
+            }
 
+            await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Game Classes", null, 10));
         }
 
         [Name("Class Info")]
         [Command("class info")]
-        [Description("")]
+        [Description("Display information on a specific class providing ID")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync(int classId)
         {
+            using var db = new DbService();
+            var classInfo = await db.GameClasses.FindAsync(classId);
+            if (classInfo == null)
+            {
+                await Context.ReplyAsync("Couldn't find a class with that ID", Color.Red.RawValue);
+                return;
+            }
 
+            await Context.ReplyAsync($"Information for {classInfo.Name}\n" +
+                                     $"Health: {100 * classInfo.ModifierHealth}\n" +
+                                     $"Damage: {100 * classInfo.ModifierDamage}\n" +
+                                     $"Critical Chance: {classInfo.ChanceCrit}\n" +
+                                     $"Avoidance: {classInfo.ChanceAvoid}");
         }
 
         [Name("Choose Class")]
         [Command("class")]
         [Description("Choose or change into a class with its ID")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
-        public async Task ChooseClassAsync()
+        public async Task ChooseClassAsync(int id)
         {
+            using var db = new DbService();
+            var classInfo = await db.GameClasses.FindAsync(id);
+            var userData = await db.GetOrCreateUserData(Context.User);
+            if (userData.Level < (int) classInfo.LevelRequirement)
+            {
+                await Context.ReplyAsync("Not high enough level for this class yet");
+                return;
+            }
 
+            userData.Class = classInfo.Id;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Switched class to {classInfo.Name}", Color.Green.RawValue);
         }
     }
 }
