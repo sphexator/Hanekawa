@@ -77,8 +77,6 @@
       <ProjectReference Include="..\Hanekawa.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj" />
       <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Core.csproj" />
       <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
-      <ProjectReference Include="..\Hanekawa.Patreon\Hanekawa.Patreon.csproj" />
-      <ProjectReference Include="..\Hanekawa.Perspective\Hanekawa.Perspective.csproj" />
     </ItemGroup>
 
     <ItemGroup>

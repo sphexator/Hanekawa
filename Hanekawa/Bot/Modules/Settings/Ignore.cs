@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Settings
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
-                string content = null;
+                string content;
                 if (list.Count != 0)
                 {
                     var channels = new List<string>();
