@@ -19,10 +19,7 @@ namespace Hanekawa.AnimeSimulCast
         public event AsyncEvent<AnimeData> AnimeAired;
         public event AsyncEvent<Exception> Log; 
 
-        public void Start()
-        {
-            _ = Main(new CancellationToken());
-        }
+        public async Task Start() => await Main(new CancellationToken());
 
         private void Initialize()
         {
