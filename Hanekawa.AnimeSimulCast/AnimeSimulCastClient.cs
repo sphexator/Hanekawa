@@ -14,18 +14,14 @@ namespace Hanekawa.AnimeSimulCast
         private SyndicationItem _lastItem;
         private Timer _timer;
 
-        public AnimeSimulCastClient()
-        {
-            Initialize();
-        }
+        public AnimeSimulCastClient() => Initialize();
 
         public event AsyncEvent<AnimeData> AnimeAired;
         public event AsyncEvent<Exception> Log; 
 
-        public Task StartAsync()
+        public void Start()
         {
             _ = Main(new CancellationToken());
-            return Task.CompletedTask;
         }
 
         private void Initialize()
@@ -49,10 +45,10 @@ namespace Hanekawa.AnimeSimulCast
                 try
                 {
                     var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-                    if (_lastItem == null) UpdatePoll(feed);
+                    if (_lastItem == null) _lastItem = feed;
                     if (_lastItem != null && feed?.Id != _lastItem.Id)
                     {
-                        UpdatePoll(feed);
+                        _lastItem = feed;
                         _ = AnimeAired(ToReturnType(feed));
                     }
                 }
@@ -64,7 +60,7 @@ namespace Hanekawa.AnimeSimulCast
             return Task.CompletedTask;
         }
 
-        private static AnimeData ToReturnType(SyndicationItem collection)
+        private AnimeData ToReturnType(SyndicationItem collection)
         {
             var data = new AnimeData
             {
@@ -75,7 +71,5 @@ namespace Hanekawa.AnimeSimulCast
             if (url != null) data.Url = url.Uri.AbsoluteUri;
             return data;
         }
-
-        private void UpdatePoll(SyndicationItem item) => _lastItem = item;
     }
 }

@@ -26,17 +26,17 @@ namespace Hanekawa.Bot.Services.Anime
             _client = client;
             _log = log;
 
-            _anime.AnimeAired += _anime_AnimeAired;
+            _anime.AnimeAired += AnimeAired;
             _client.Ready += SetupSimulCast;
         }
 
         private Task SetupSimulCast()
         {
-            _anime.StartAsync();
+            _anime.Start();
             return Task.CompletedTask;
         }
 
-        private Task _anime_AnimeAired(AnimeData data)
+        private Task AnimeAired(AnimeData data)
         {
             _ = Task.Run(async () =>
             {
