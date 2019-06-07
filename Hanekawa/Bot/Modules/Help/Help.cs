@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Help
         [RequiredChannel]
         public async Task HelpAsync()
         {
-            string result = null;
+            var result = new StringBuilder();
             var modules = _command.GetAllModules();
             for (var i = 0; i < modules.Count;)
             {
@@ -47,13 +47,13 @@ namespace Hanekawa.Bot.Modules.Help
                     i++;
                 }
 
-                result += $"{strBuilder}\n";
+                result.AppendLine($"{strBuilder}");
             }
 
-            var embed = new EmbedBuilder().CreateDefault(result, Context.Guild.Id);
+            var embed = new EmbedBuilder().CreateDefault(result.ToString(), Context.Guild.Id);
             embed.Author = new EmbedAuthorBuilder { Name = "Module list" };
             embed.Footer = new EmbedFooterBuilder { Text = $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"};
-            await Context.ReplyAsync(result);
+            await Context.ReplyAsync(embed);
         }
 
         [Name("Help")]
@@ -67,7 +67,27 @@ namespace Hanekawa.Bot.Modules.Help
             var moduleInfo = _command.GetAllModules().FirstOrDefault(x => x.Name == module);
             if (moduleInfo == null)
             {
-                await Context.ReplyAsync("Couldn't find a module with that name", Color.Red.RawValue);
+                var response = new StringBuilder();
+                var modules = _command.GetAllModules();
+                for (var i = 0; i < modules.Count;)
+                {
+                    var strBuilder = new StringBuilder();
+                    for (var j = 0; j < 5; j++)
+                    {
+                        if (i >= modules.Count) continue;
+                        var x = modules[i];
+                        strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
+                        i++;
+                    }
+
+                    response.AppendLine($"{strBuilder}");
+                }
+
+                var embed = new EmbedBuilder().CreateDefault(response.ToString(), Context.Guild.Id);
+                embed.Author = new EmbedAuthorBuilder { Name = "Module list" };
+                embed.Title = "Couldn't find a module with that name";
+                embed.Footer = new EmbedFooterBuilder { Text = $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module" };
+                await Context.ReplyAsync(embed);
                 return;
             } 
             for (var i = 0; i < moduleInfo.Commands.Count; i++)
