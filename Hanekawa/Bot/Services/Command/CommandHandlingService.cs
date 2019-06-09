@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
@@ -16,12 +17,14 @@ namespace Hanekawa.Bot.Services.Command
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
+        private readonly IServiceProvider _provider;
         private readonly ConcurrentDictionary<ulong, HashSet<string>> _prefixes = new ConcurrentDictionary<ulong, HashSet<string>>();
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService command)
+        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider)
         {
             _client = client;
             _command = command;
+            _provider = provider;
 
             using (var db = new DbService())
             {
@@ -80,7 +83,7 @@ namespace Hanekawa.Bot.Services.Command
             if (user.IsBot) return;
 
             if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix, out var output)) return;
-            await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user));
+            await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user), _provider);
         }
 
         private Task ClientJoined(SocketGuild guild)

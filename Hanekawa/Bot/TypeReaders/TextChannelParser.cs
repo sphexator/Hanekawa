@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.TypeReaders
                     : TypeParserResult<SocketTextChannel>.Unsuccessful("Couldn't parse text channel");
 
             if (ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out id))
-                return context.Guild.GetChannel(id) is SocketTextChannel txCh
+                return context.Guild.GetTextChannel(id) is SocketTextChannel txCh
                     ? TypeParserResult<SocketTextChannel>.Successful(txCh)
                     : TypeParserResult<SocketTextChannel>.Unsuccessful("Couldn't parse text channel");
 
