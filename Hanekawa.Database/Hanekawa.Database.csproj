@@ -21,6 +21,8 @@
     <Compile Remove="Migrations\20181018210553_UpdateAchievementpTwo.cs" />
     <Compile Remove="Migrations\20181018211418_UpdateAchievement.cs" />
     <Compile Remove="Migrations\20181018212318_UpdateAchievementTwo.cs" />
+    <Compile Remove="Migrations\20190609153534_UpdateBotRewriteTwo.cs" />
+    <Compile Remove="Migrations\20190609153534_UpdateBotRewriteTwo.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

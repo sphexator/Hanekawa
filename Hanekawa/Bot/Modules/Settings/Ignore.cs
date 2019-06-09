@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Ignore toggle")]
+        [Name("Toggle")]
         [Command("ignore toggle")]
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         [Remarks("ignore toggle")]
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Ignore list")]
+        [Name("List")]
         [Command("ignore list")]
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         [Remarks("ignore list")]

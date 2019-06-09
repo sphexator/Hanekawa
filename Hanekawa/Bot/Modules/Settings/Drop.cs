@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Modules.Settings
             await _drop.SpawnAsync(Context);
         }
 
-        [Name("Drop Emote")]
+        [Name("Emote")]
         [Command("drop emote")]
         [Description("Changes claim emote")]
         [Remarks("drop emote :giggle:")]
@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Modules.Settings
             await Context.ReplyAsync($"Changed claim emote to {emote}");
         }
 
-        [Name("Drop add")]
+        [Name("Add")]
         [Command("drop Add")]
         [Description("Adds a channel to be eligible for drops")]
         [Remarks("drop add #general")]
@@ -66,7 +66,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Drop remove")]
+        [Name("Remove")]
         [Command("drop remove")]
         [Description("Removes a channel from being eligible for drops")]
         [Remarks("drop remove #general")]
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Drop list")]
+        [Name("List")]
         [Command("drop list")]
         [Description("Lists channels that are available for drops")]
         [Remarks("drop list")]

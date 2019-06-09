@@ -11,7 +11,7 @@ namespace Hanekawa.Database.Extensions
         internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, ulong guild)
         {
             cfg.GuildId = guild;
-            cfg.Prefix = new List<string> { "h." };
+            cfg.PrefixList = new List<string> { "h." };
             cfg.MusicVcChannel = null;
             cfg.MusicChannel = null;
             cfg.Premium = false;
@@ -118,6 +118,7 @@ namespace Hanekawa.Database.Extensions
             cfg.Message = null;
             cfg.TimeToDelete = null;
             cfg.AutoDelOnLeave = false;
+            cfg.IgnoreNew = null;
             return cfg;
         }
 

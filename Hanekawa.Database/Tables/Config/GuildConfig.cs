@@ -5,7 +5,7 @@ namespace Hanekawa.Database.Tables.Config
     public class GuildConfig
     {
         public ulong GuildId { get; set; }
-        public List<string> Prefix { get; set; } = new List<string> { "h." };
+        public List<string> PrefixList { get; set; } = new List<string> { "h." };
         public bool Premium { get; set; } = false;
         public uint EmbedColor { get; set; }
 

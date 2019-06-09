@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Command;
 using Hanekawa.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,11 +25,12 @@ namespace Hanekawa.Bot
             _config = config;
         }
 
-        private void Initialize()
+        private async Task Initialize()
         {
             var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
+                _provider.GetService<CommandHandlingService>().InitializeAsync(assembly);
                 var servicelist = assembly.GetTypes()
                     .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
@@ -50,7 +52,7 @@ namespace Hanekawa.Bot
         
         public async Task StartAsync()
         {
-            if(!_startUp) Initialize();
+            if(!_startUp) await Initialize();
             Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             Console.WriteLine("Logged in");

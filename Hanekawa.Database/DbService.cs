@@ -1,4 +1,5 @@
-﻿using Hanekawa.Database.Tables.Account;
+﻿using System;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Database.Tables.BoardConfig;
@@ -106,11 +107,10 @@ namespace Hanekawa.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if DEBUG
-            if(Config.ConnectionString == null) Config.ConnectionString = "Server=localhost;database=hanekawa-dev1;Uid=postgres;Pwd=12345";
+            if(Config.ConnectionString == null) Config.ConnectionString = "Server=192.168.10.181;database=hanekawa-dev1;Uid=postgres;Pwd=12345";
 #endif
             if (!optionsBuilder.IsConfigured)
-                optionsBuilder
-                    .UseNpgsql(Config.ConnectionString);
+                optionsBuilder.UseNpgsql(Config.ConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Settings
         private readonly ImageGenerator _image;
         public Welcome(ImageGenerator image) => _image = image;
 
-        [Name("Welcome Banner")]
+        [Name("Banner Add")]
         [Command("welcome add", "welc add")]
         [Description("Adds a welcome banner to the bot")]
         [Remarks("welcome add imgur.com")]
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Welcome Banner Remove")]
+        [Name("Banner Remove")]
         [Command("welcome remove", "welc remove")]
         [Description("Removes a welcome banner by given ID")]
         [Remarks("welcome remove 123")]
@@ -92,118 +92,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Welcome Message")]
-        [Command("welcome message", "welc msg")]
-        [Description("Sets welcome message")]
-        [Remarks("welcome message Welcome %USER% to %GUILD% !")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task WelcomeMessageAsync([Remainder] string message)
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
-            }
-        }
-
-        [Name("Welcome Channel")]
-        [Command("welcome channel", "welc channel")]
-        [Description("Sets welcome channel, leave empty to disable")]
-        [Remarks("welcome channel #general")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task WelcomeChannelAsync(SocketTextChannel channel = null)
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.Channel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled welcome messages!");
-                }
-                else
-                {
-                    cfg.Channel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}");
-                }
-            }
-        }
-
-        [Name("Welcome Auto Delete")]
-        [Command("welcome autodelete", "welc autodel")]
-        [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
-        [Remarks("welcome autodelete 5m")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task WelcomeTimeout(TimeSpan? timeout = null)
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (!cfg.TimeToDelete.HasValue && timeout == null) return;
-                if (timeout == null)
-                {
-                    cfg.TimeToDelete = null;
-                    await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
-                }
-                else
-                {
-                    cfg.TimeToDelete = timeout.Value;
-                    await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
-                                             $"I will now delete the message after {timeout.Value.Humanize()}!",
-                        Color.Green.RawValue);
-                }
-
-                await db.SaveChangesAsync();
-            }
-        }
-
-        [Name("Welcome Template")]
-        [Command("welcome template", "welc template")]
-        [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
-        [Remarks("welcome template")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task WelcomeTemplate()
-        {
-            var embed = new EmbedBuilder()
-                .CreateDefault(
-                    "The PSD file contains everything that's needed to get started creating your own banners.\n" +
-                    "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
-                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
-                .WithTitle("Welcome template")
-                .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
-            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
-        }
-
-        [Name("Welcome banner toggle")]
-        [Command("welcome banner", "welc banner")]
-        [Description("Toggles whether welcome banners should be posted or just message")]
-        [Remarks("welcome banner")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task Welcomebanner()
-        {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (cfg.Banner)
-                {
-                    cfg.Banner = false;
-                    await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
-                }
-                else
-                {
-                    cfg.Banner = true;
-                    await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
-                }
-
-                await db.SaveChangesAsync();
-            }
-        }
-
-        [Name("Welcome Banner List")]
+        [Name("Banner List")]
         [Command("welcome list", "welc list")]
         [Description("Shows a paginated message of all saved banners")]
         [Remarks("welcome list")]
@@ -233,6 +122,139 @@ namespace Hanekawa.Bot.Modules.Settings
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Welcome banners for {Context.Guild.Name}",
                     null, 5));
             }
+        }
+
+        [Name("Message")]
+        [Command("welcome message", "welc msg")]
+        [Description("Sets welcome message")]
+        [Remarks("welcome message Welcome %USER% to %GUILD% !")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task WelcomeMessageAsync([Remainder] string message)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Updated welcome message!", Color.Green.RawValue);
+            }
+        }
+
+        [Name("Channel")]
+        [Command("welcome channel", "welc channel")]
+        [Description("Sets welcome channel, leave empty to disable")]
+        [Remarks("welcome channel #general")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task WelcomeChannelAsync(SocketTextChannel channel = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (channel == null)
+                {
+                    cfg.Channel = null;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled welcome messages!");
+                }
+                else
+                {
+                    cfg.Channel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}");
+                }
+            }
+        }
+
+        [Name("Auto Delete")]
+        [Command("welcome autodelete", "welc autodel")]
+        [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
+        [Remarks("welcome autodelete 5m")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task WelcomeTimeout(TimeSpan? timeout = null)
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (!cfg.TimeToDelete.HasValue && timeout == null) return;
+                if (timeout == null)
+                {
+                    cfg.TimeToDelete = null;
+                    await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.TimeToDelete = timeout.Value;
+                    await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
+                                             $"I will now delete the message after {timeout.Value.Humanize()}!",
+                        Color.Green.RawValue);
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
+
+        [Name("Template")]
+        [Command("welcome template", "welc template")]
+        [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
+        [Remarks("welcome template")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task WelcomeTemplate()
+        {
+            var embed = new EmbedBuilder()
+                .CreateDefault(
+                    "The PSD file contains everything that's needed to get started creating your own banners.\n" +
+                    "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
+                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Guild.Id)
+                .WithTitle("Welcome template")
+                .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
+            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
+        }
+
+        [Name("banner toggle")]
+        [Command("welcome banner", "welc banner")]
+        [Description("Toggles whether welcome banners should be posted or just message")]
+        [Remarks("welcome banner")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task Welcomebanner()
+        {
+            using (var db = new DbService())
+            {
+                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+                if (cfg.Banner)
+                {
+                    cfg.Banner = false;
+                    await Context.ReplyAsync("Disabled welcome banners!", Color.Green.RawValue);
+                }
+                else
+                {
+                    cfg.Banner = true;
+                    await Context.ReplyAsync("Enabled welcome banners!", Color.Green.RawValue);
+                }
+
+                await db.SaveChangesAsync();
+            }
+        }
+
+        [Name("Ignore New Account")]
+        [Command("welcome ignore account", "wia")]
+        [Description("Sets if welcomes should ignore new accounts by a defined time. Disabled by default")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)
+        {
+            using var db = new DbService();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            if (time == null)
+            {
+                cfg.IgnoreNew = null;
+                await Context.ReplyAsync("No longer ignoring new accounts on welcome", Color.Green.RawValue);
+            }
+            else
+            {
+                cfg.IgnoreNew = time.Value;
+                await Context.ReplyAsync($"Now ignoring accounts that's younger than {time.Value.Humanize()}", Color.Green.RawValue);
+            }
+
+            await db.SaveChangesAsync();
         }
     }
 }

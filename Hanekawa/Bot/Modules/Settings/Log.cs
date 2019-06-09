@@ -15,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Log : InteractiveBase
     {
-        [Name("Log Join/Leave")]
+        [Name("Join/Leave")]
         [Command("log join")]
         [Description("Logs users joining and leaving server, leave empty to disable")]
         [Remarks("log join #log")]
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log Warnings")]
+        [Name("Warnings")]
         [Command("log warn")]
         [Description("Logs warnings given out from the bot, leave empty to disable")]
         [Remarks("log warn #log")]
@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log Messages")]
+        [Name("Messages")]
         [Command("log messages", "log msgs")]
         [Description("Logs deleted and updated messages, leave empty to disable")]
         [Remarks("log msgs #log")]
@@ -84,7 +84,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log Ban")]
+        [Name("Ban")]
         [Command("log ban")]
         [Description("Logs users getting banned and muted, leave empty to disable")]
         [Remarks("log ban #log")]
@@ -107,7 +107,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log User")]
+        [Name("User")]
         [Command("log user")]
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
         [Remarks("log user #log")]
@@ -130,7 +130,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log Auto-Moderator")]
+        [Name("Auto-Moderator")]
         [Command("log autmod")]
         [Description(
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
         }
 
-        [Name("Log Voice")]
+        [Name("Voice")]
         [Command("log voice")]
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
         [Remarks("log voice #log")]

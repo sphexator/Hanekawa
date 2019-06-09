@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Services.Command
             {
                 foreach (var x in db.GuildConfigs)
                 {
-                    var hashset = new HashSet<string>(x.Prefix);
+                    var hashset = new HashSet<string>(x.PrefixList);
                     _prefixes.TryAdd(x.GuildId, hashset);
                 }
             }
@@ -40,9 +40,8 @@ namespace Hanekawa.Bot.Services.Command
             _client.JoinedGuild += ClientJoined;
         }
 
-        public void InitializeAsync()
+        public void InitializeAsync(Assembly assembly)
         {
-            var assembly = Assembly.GetEntryAssembly();
             _command.AddModules(assembly);
             _command.AddTypeParser(new EmoteTypeReader());
             _command.AddTypeParser(new GuildUserParser());
@@ -50,15 +49,16 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new TextChannelParser());
             _command.AddTypeParser(new TimeSpanTypeParser());
             _command.AddTypeParser(new VoiceChannelParser());
+            _command.AddTypeParser(new CategoryParser());
         }
 
         public HashSet<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new HashSet<string> {"h."});
         public async Task<bool> AddPrefix(ulong id, string prefix, DbService db)
         {
             var cfg = await db.GetOrCreateGuildConfigAsync(id);
-            if (cfg.Prefix.Contains(prefix)) return false;
-            cfg.Prefix.Add(prefix);
-            var hashset = new HashSet<string>(cfg.Prefix);
+            if (cfg.PrefixList.Contains(prefix)) return false;
+            cfg.PrefixList.Add(prefix);
+            var hashset = new HashSet<string>(cfg.PrefixList);
             _prefixes.AddOrUpdate(id, new HashSet<string> { "h." }, (key, old) => hashset);
             await db.SaveChangesAsync();
             return true;
@@ -67,8 +67,8 @@ namespace Hanekawa.Bot.Services.Command
         public async Task<bool> RemovePrefix(ulong id, string prefix, DbService db)
         {
             var cfg = await db.GetOrCreateGuildConfigAsync(id);
-            if (!cfg.Prefix.Contains(prefix)) return false;
-            cfg.Prefix.Remove(prefix);
+            if (!cfg.PrefixList.Contains(prefix)) return false;
+            cfg.PrefixList.Remove(prefix);
             _prefixes.TryRemove(id, out var list);
             list.Remove(prefix);
             _prefixes.TryAdd(id, list);
@@ -93,7 +93,7 @@ namespace Hanekawa.Bot.Services.Command
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(guild);
-                    var hashSet = new HashSet<string>(cfg.Prefix);
+                    var hashSet = new HashSet<string>(cfg.PrefixList);
                     _prefixes.TryAdd(guild.Id, hashSet);
                 }
             });
