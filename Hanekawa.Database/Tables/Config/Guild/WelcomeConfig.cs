@@ -11,5 +11,6 @@ namespace Hanekawa.Database.Tables.Config.Guild
         public string Message { get; set; }
         public TimeSpan? TimeToDelete { get; set; }
         public bool AutoDelOnLeave { get; set; }
+        public bool IgnoreNew { get; set; } = false;
     }
 }
