@@ -99,7 +99,7 @@ namespace Hanekawa.Bot.Modules.Help
                 if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine(cmd.Name);
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
                 content.AppendLine($"{prefix}{command} {ParamBuilder(cmd)}");
-                content.AppendLine($"Example: {prefix}{command} {ParamBuilder(cmd, true)}");
+                content.AppendLine($"Example: {prefix}{command} {ExampleParamBuilder(cmd)}");
                 result.Add(content.ToString());
             }
 
@@ -108,14 +108,14 @@ namespace Hanekawa.Bot.Modules.Help
             else await Context.ReplyAsync("Couldn't find any commands in that module");
         }
 
-        private string ParamBuilder(Command command, bool example = false)
+        private string ParamBuilder(Command command)
         {
             var output = new StringBuilder();
             if (!command.Parameters.Any()) return output.ToString();
             for (var i = 0; i < command.Parameters.Count; i++)
             {
                 var x = command.Parameters[i];
-                var name = example ? PermTypeBuilder(x) : x.Name;
+                var name = x.Name;
                 if (x.IsOptional)
                     output.Append($"[{name} = {x.DefaultValue}] ");
                 else if (x.IsRemainder)
@@ -129,14 +129,37 @@ namespace Hanekawa.Bot.Modules.Help
             return output.ToString();
         }
 
+        private string ExampleParamBuilder(Command command)
+        {
+            var output = new StringBuilder();
+            if (!command.Parameters.Any()) return output.ToString();
+            for (var i = 0; i < command.Parameters.Count; i++)
+            {
+                var x = command.Parameters[i];
+                var name = PermTypeBuilder(x);
+                if (x.IsOptional)
+                {
+                    if(x.DefaultValue == null) output.Append($"{name} (optional) ");
+                    else output.Append($"{name} = {x.DefaultValue} (optional) ");
+                } 
+                else if (x.IsRemainder)
+                    output.Append($"...{name} ");
+                else if (x.IsMultiple)
+                    output.Append($"{name} etc...");
+                else
+                    output.Append($"{name} ");
+            }
+
+            return output.ToString();
+        }
+
         private string PermTypeBuilder(Parameter parameter)
         {
-            if (parameter.Attributes is SocketGuildUser) return "@bob#0000";
-            else if (parameter.Type is SocketRole) return "role";
-            else if (parameter.Type is SocketTextChannel) return "#General";
-            else if (parameter.Type is SocketCategoryChannel) return "General";
-            else if (parameter.Type is int) return "5";
-            else return parameter.Name;
+            if (parameter is SocketGuildUser) return "@bob#0000";
+            if (parameter is SocketRole) return "role";
+            if (parameter is SocketTextChannel) return "#General";
+            if (parameter is SocketCategoryChannel) return "General";
+            return parameter.Name;
         }
     }
 }
