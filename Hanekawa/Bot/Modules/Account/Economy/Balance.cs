@@ -25,7 +25,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Wallet")]
         [Command("wallet", "balance", "money")]
         [Description("Display how much credit you or someone else got")]
-        [Remarks("wallet")]
         [RequiredChannel]
         public async Task WalletAsync(SocketGuildUser user = null)
         {
@@ -46,7 +45,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Give")]
         [Command("give", "transfer")]
         [Description("Transfer credit between users")]
-        [Remarks("give 100 @bob#0000")]
         [RequiredChannel]
         public async Task GiveCreditAsync(int amount, params SocketGuildUser[] users)
         {
@@ -83,7 +81,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Daily")]
         [Command("daily")]
         [Description("Daily credit command, usable once every 18hrs")]
-        [Remarks("daily")]
         [RequiredChannel]
         public async Task DailyAsync(SocketGuildUser user = null)
         {
@@ -130,7 +127,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Richest")]
         [Command("richest")]
         [Description("Displays top 10 users on the money leaderboard")]
-        [Remarks("richest")]
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
@@ -159,7 +155,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Reward")]
         [Command("reward", "award")]
         [Description("Rewards special credit to users (does not remove from yourself)")]
-        [Remarks("reward 100 @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RewardCreditAsync(int amount, params SocketGuildUser[] users)
         {

@@ -16,9 +16,8 @@ namespace Hanekawa.Bot.Modules.Level
     public partial class Level
     {
         [Name("Add Experience")]
-        [Command("add exp")]
+        [Command("addexp")]
         [Description("Give a certain amount of experience to a one or more users")]
-        [Remarks("exp give 100 @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExp(int exp, params SocketGuildUser[] users)
         {
@@ -46,9 +45,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Remove Experience")]
-        [Command("add remove")]
+        [Command("remexp")]
         [Description("Removes a certain amount of experience to a one or more users")]
-        [Remarks("exp remove 100 @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveExp(int exp, params SocketGuildUser[] users)
         {
@@ -71,9 +69,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Add Exp Ignore Channel")]
-        [Command("exp ignore add", "eia")]
+        [Command("eia")]
         [Description("Adds one or more channels to ignore exp")]
-        [Remarks("exp ignore add #general #bot etc")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params SocketTextChannel[] channels)
         {
@@ -110,9 +107,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Add Exp Ignore Category")]
-        [Command("exp ignore add", "eia")]
+        [Command("eia")]
         [Description("Adds one or more categories to ignore giving exp")]
-        [Remarks("exp ignore add general information etc")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params SocketCategoryChannel[] category)
         {
@@ -149,9 +145,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Remove Exp Ignore Channel")]
-        [Command("exp ignore remove", "eir")]
+        [Command("eir")]
         [Description("Removes one or more channels from ignore exp table")]
-        [Remarks("exp ignore remove #general #bot etc")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params SocketTextChannel[] channels)
         {
@@ -183,9 +178,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Remove Exp Ignore Category")]
-        [Command("exp ignore remove", "eir")]
+        [Command("eir")]
         [Description("Removes one or more category from ignore exp table")]
-        [Remarks("exp ignore remove general information etc")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params SocketCategoryChannel[] category)
         {
@@ -217,9 +211,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Remove Exp Ignore Category")]
-        [Command("exp ignore remove", "eir")]
+        [Command("eir")]
         [Description("Removes one or more category from ignore exp table")]
-        [Remarks("exp ignore remove general information etc")]
         [RequiredChannel]
         public async Task ExpIgnoreList()
         {

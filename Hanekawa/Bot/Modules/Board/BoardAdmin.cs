@@ -15,7 +15,6 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Emote")]
         [Command("boardemote")]
         [Description("Sets a emote to be used for the board")]
-        [Remarks("boardemote :meowpuffygottem:")]
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardEmoteAsync(Emote emote)
         {
@@ -31,7 +30,6 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Channel")]
         [Command("boardchannel")]
         [Description("Sets which channel starred messages go")]
-        [Remarks("boardchannel #general")]
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardChannelAsync(SocketTextChannel channel = null)
         {

@@ -22,9 +22,8 @@ namespace Hanekawa.Bot.Modules.Club
         public Club(ClubService club) => _club = club;
 
         [Name("Club List")]
-        [Command("club list", "clubs")]
+        [Command("clublist", "clubs")]
         [Description("Paginates all clubs")]
-        [Remarks("club list")]
         [RequiredChannel]
         public async Task ClubListAsync()
         {
@@ -58,9 +57,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Check")]
-        [Command("club check")]
+        [Command("club", "clubcheck", "cc")]
         [Description("Checks specific club information")]
-        [Remarks("club check 15")]
         [RequiredChannel]
         public async Task ClubCheckAsync(int id)
         {

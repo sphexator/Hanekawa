@@ -16,9 +16,8 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Log : InteractiveBase
     {
         [Name("Join/Leave")]
-        [Command("log join")]
+        [Command("logjoin")]
         [Description("Logs users joining and leaving server, leave empty to disable")]
-        [Remarks("log join #log")]
         public async Task JoinLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -39,9 +38,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Warnings")]
-        [Command("log warn")]
+        [Command("logwarn")]
         [Description("Logs warnings given out from the bot, leave empty to disable")]
-        [Remarks("log warn #log")]
         public async Task WarnLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -62,9 +60,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Messages")]
-        [Command("log messages", "log msgs")]
+        [Command("logmsgs")]
         [Description("Logs deleted and updated messages, leave empty to disable")]
-        [Remarks("log msgs #log")]
         public async Task MessageLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -85,9 +82,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Ban")]
-        [Command("log ban")]
+        [Command("logban")]
         [Description("Logs users getting banned and muted, leave empty to disable")]
-        [Remarks("log ban #log")]
         public async Task BanLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -108,9 +104,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("User")]
-        [Command("log user")]
+        [Command("loguser")]
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
-        [Remarks("log user #log")]
         public async Task UserLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -131,10 +126,9 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Auto-Moderator")]
-        [Command("log autmod")]
+        [Command("logautomod")]
         [Description(
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
-        [Remarks("log automod #log")]
         public async Task AutoModeratorLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -156,9 +150,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Voice")]
-        [Command("log voice")]
+        [Command("logvoice")]
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
-        [Remarks("log voice #log")]
         public async Task VoiceLogAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())

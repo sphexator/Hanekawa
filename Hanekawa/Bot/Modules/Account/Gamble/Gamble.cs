@@ -18,7 +18,6 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         [Name("Bet")]
         [Command("bet")]
         [Description("Gamble a certain amount and win 5x. Bet with the bot in an attempt to get same number.")]
-        [Remarks("bet 50")]
         [RequiredChannel]
         public async Task BetAsync(int bet)
         {
@@ -40,7 +39,6 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         [Name("Roll")]
         [Command("roll")]
         [Description("Gamble a certain amount and win up to 3x. Roll 1-100, above 50 and win")]
-        [Remarks("roll 50")]
         [RequiredChannel]
         public async Task RollAsync(int bet)
         {

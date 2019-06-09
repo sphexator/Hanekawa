@@ -26,7 +26,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Inventory")]
         [Command("inventory", "inv")]
         [Description("Inventory of user")]
-        [Remarks("inv")]
         [RequiredChannel]
         public async Task InventoryAsync()
         {
@@ -64,7 +63,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Equip")]
         [Command("equip", "use")]
         [Description("Equips a role you have in your inventory")]
-        [Remarks("use red")]
         [RequiredChannel]
         public async Task EquipRoleAsync([Remainder] SocketRole role)
         {
@@ -92,7 +90,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Unequip")]
         [Command("unequip", "unuse")]
         [Description("Equips a role you have in your inventory")]
-        [Remarks("unuse red")]
         [RequiredChannel]
         public async Task UnequipRoleAsync([Remainder] SocketRole role)
         {
@@ -120,7 +117,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Store")]
         [Command("store", "shop")]
         [Description("Displays the server store")]
-        [Remarks("shop")]
         [RequiredChannel]
         public async Task ServerShopAsync()
         {
@@ -147,7 +143,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Buy")]
         [Command("buy")]
         [Description("Purchase an item from the store")]
-        [Remarks("buy red")]
         [Priority(1)]
         [RequiredChannel]
         public async Task BuyAsync([Remainder] SocketRole role)

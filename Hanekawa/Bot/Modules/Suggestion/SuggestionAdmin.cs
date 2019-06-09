@@ -13,9 +13,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
     public partial class Suggestion
     {
         [Name("Suggestion Channel")]
-        [Command("suggest channel", "ssc", "sschannel", "ss channel")]
+        [Command("ssc", "sschannel")]
         [Description("Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [Remarks("suggest channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
         {
@@ -38,9 +37,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         }
 
         [Name("Suggest Yes Emote")]
-        [Command("suggest set yes", "ssy", "ssyes", "ss yes")]
+        [Command("ssy", "ssyes")]
         [Description("Set custom yes emote for suggestions")]
-        [Remarks("suggestion set yes :yes:")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteYesAsync(Emote emote = null)
         {
@@ -62,9 +60,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         }
 
         [Name("Suggest No Emote")]
-        [Command("suggest set no", "ssn", "ssno", "ss no")]
+        [Command("ssn", "ssno")]
         [Description("Set custom no emote for suggestions")]
-        [Remarks("suggestion set yes :no:")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteNoAsync(Emote emote = null)
         {

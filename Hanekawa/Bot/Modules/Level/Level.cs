@@ -26,9 +26,8 @@ namespace Hanekawa.Bot.Modules.Level
         public Level(ExpService exp) => _exp = exp;
 
         [Name("Level Reset")]
-        [Command("level reset", "lvl reset")]
+        [Command("lr", "lvlreset")]
         [Description("Reset the server level/exp back to 0")]
-        [Remarks("level reset")]
         [RequireServerOwner]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task ResetAsync()
@@ -63,9 +62,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Set Level")]
-        [Command("set level", "set lvl")]
+        [Command("sl", "setlvl")]
         [Description("Sets a user to a desired level")]
-        [Remarks("set level @bob#0000 40")]
         [RequireServerOwner]
         public async Task SetLevelAsync(SocketGuildUser user, int level)
         {
@@ -85,9 +83,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Level Role Stack")]
-        [Command("level role stack", "lvl stack")]
+        [Command("lrs", "lvlstack")]
         [Description("Toggles between level roles stacking or keep the highest earned one")]
-        [Remarks("level role stack")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task StackToggleAsync()
         {
@@ -112,25 +109,22 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Level Stack Role Add")]
-        [Command("level stack add", "lvl sadd")]
+        [Command("lsa", "lvlsadd")]
         [Description("Adds a role reward which will stack regardless of setting (useful for permission role)")]
-        [Remarks("level stack add 40 roleS")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task StackAddAsync(int level, [Remainder]SocketRole role) =>
             await AddLevelRole(Context, level, role, true);
 
         [Name("Level Role Add")]
-        [Command("level add", "lvl add")]
+        [Command("la", "lvladd")]
         [Description("Adds a role reward")]
-        [Remarks("level add 40 role")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddAsync(int level, [Remainder] SocketRole role) =>
             await AddLevelRole(Context, level, role, false);
 
         [Name("Level Role Remove")]
-        [Command("level remove", "lvl remove")]
+        [Command("lr", "lvlremove")]
         [Description("Adds a role reward")]
-        [Remarks("level add role 40")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveAsync(int level)
         {
@@ -153,9 +147,8 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Level List")]
-        [Command("Level list", "lvl list")]
+        [Command("ll", "lvllist")]
         [Description("Lists all role rewards")]
-        [Remarks("lvl list")]
         [RequiredChannel]
         public async Task LevelListAsync()
         {

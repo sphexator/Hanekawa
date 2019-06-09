@@ -23,7 +23,6 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest")]
         [Command("suggest")]
         [Description("Sends a suggestion to the server, if they have it enabled")]
-        [Remarks("suggest this is a suggestion")]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.TryDeleteMessageAsync();
@@ -49,7 +48,6 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Approve Suggestion")]
         [Command("approve", "ar")]
         [Description("Approves a suggestion by its Id with a optional reason")]
-        [Remarks("approve 69 this is a good suggestion")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ApproveSuggestionAsync(int id, [Remainder]string reason = null)
         {
@@ -75,7 +73,6 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Decline Suggestion")]
         [Command("decline", "dr")]
         [Description("Decline a suggestion by its ID with a optional reason")]
-        [Remarks("decline 69 not now")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task DeclineSuggestionAsync(int id, [Remainder]string reason = null)
         {
@@ -101,7 +98,6 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Comment Suggestion")]
         [Command("Comment", "rr")]
         [Description("Adds a comment onto a suggestion, usable by user suggesting and server admin")]
-        [Remarks("comment 69 go on")]
         public async Task CommentSuggestionAsync(int id, [Remainder]string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();

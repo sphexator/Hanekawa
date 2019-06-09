@@ -124,7 +124,7 @@ namespace Hanekawa.Bot.Modules.Music
         }
 
         [Name("Play")]
-        [Command("play", "p")]
+        [Command("play")]
         [Description("Queues up a song, joins channel if not currently connected")]
         public async Task PlayAsync([Remainder] string query)
         {
@@ -155,7 +155,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Queue")]
         [Command("queue", "que", "q")]
         [Description("Displays the current queue")]
-        [Remarks("queue")]
         public async Task QueueAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
@@ -179,7 +178,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Pause")]
         [Command("pause")]
         [Description("Pauses the player if its currently playing")]
-        [Remarks("")]
         public async Task PauseAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
@@ -192,7 +190,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Resume")]
         [Command("resume")]
         [Description("Resumes the player if its paused")]
-        [Remarks("")]
         public async Task ResumeAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
@@ -205,7 +202,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Volume")]
         [Command("volume")]
         [Description("Sets volume")]
-        [Remarks("")]
         public async Task VolumeAsync(int volume)
         {
             if (volume < 0) return;
@@ -219,7 +215,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Skip")]
         [Command("skip")]
         [Description("Skips current song")]
-        [Remarks("")]
         public async Task SkipAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
@@ -232,7 +227,6 @@ namespace Hanekawa.Bot.Modules.Music
         [Name("Clear")]
         [Command("clear")]
         [Description("Clears current playlist")]
-        [Remarks("")]
         public async Task ClearAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
@@ -244,7 +238,7 @@ namespace Hanekawa.Bot.Modules.Music
         }
 
         [Name("Music Channel")]
-        [Command("music channel")]
+        [Command("mc", "musicchannel")]
         [Description(
             "Sets a channel to be used to queue and play music, if none set, defaults to regular ignore channel")]
         [RequireUserPermission(GuildPermission.ManageGuild)]

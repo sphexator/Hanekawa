@@ -16,9 +16,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
     public partial class Economy : InteractiveBase
     {
         [Name("Regular Currency Name")]
-        [Command("regular currency name", "rcn")]
+        [Command("rcn")]
         [Description("Change the name of regular currency (default: credit)")]
-        [Remarks("rcn credit")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularNameAsync([Remainder] string name = null)
         {
@@ -40,9 +39,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         }
 
         [Name("Special Currency Name")]
-        [Command("special currency name", "scn")]
+        [Command("scn")]
         [Description("Change the name of special currency (default: special credit)")]
-        [Remarks("scn special credit")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialNameAsync([Remainder] string name = null)
         {
@@ -65,9 +63,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         }
 
         [Name("Regular Currency Symbol")]
-        [Command("Regular currency symbol", "rcs")]
+        [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
-        [Remarks("rcs $")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularSymbolAsync(Emote emote)
         {
@@ -82,9 +79,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         }
 
         [Name("Regular Currency Symbol")]
-        [Command("Regular currency symbol", "rcs")]
+        [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
-        [Remarks("rcs $")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularSymbolAsync([Remainder]string symbol)
         {
@@ -101,9 +97,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         }
 
         [Name("Special Currency Symbol")]
-        [Command("special currency symbol", "scs")]
+        [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
-        [Remarks("scs $")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialSymbolAsync(Emote emote)
         {
@@ -118,9 +113,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         }
 
         [Name("Special Currency Symbol")]
-        [Command("special currency symbol", "scs")]
+        [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
-        [Remarks("scs $")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialSymbolAsync([Remainder] string symbol)
         {

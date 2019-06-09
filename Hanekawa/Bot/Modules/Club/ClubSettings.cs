@@ -12,9 +12,8 @@ namespace Hanekawa.Bot.Modules.Club
     public partial class Club
     {
         [Name("Club Setting Advertisement")]
-        [Command("Club set advertisement", "csa")]
+        [Command("ca")]
         [Description("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
-        [Remarks("csa #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetAdvertisementChannel(SocketTextChannel channel = null)
         {
@@ -46,9 +45,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Setting Category")]
-        [Command("Club set category", "clubscategory", "cscat")]
+        [Command("Clubcategory", "ccat")]
         [Description("Sets location in where club channels will be created. \nLeave empty to disable")]
-        [Remarks("cscat general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetCategory(SocketCategoryChannel category = null)
         {
@@ -80,9 +78,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Setting Level")]
-        [Command("Club set level", "csl")]
+        [Command("Clublevel", "cl")]
         [Description("Sets level requirement for people to create a club")]
-        [Remarks("csl 10")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetLevelRequirement(int level)
         {
@@ -99,9 +96,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Setting Channel Amount")]
-        [Command("club set channel amount", "csca")]
+        [Command("cca")]
         [Description("Sets amount required that's above the level requirement to create a channel")]
-        [Remarks("csca 2")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetAmountRequirement(int amount)
         {

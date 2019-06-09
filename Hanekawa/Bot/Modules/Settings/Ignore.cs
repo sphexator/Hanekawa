@@ -26,7 +26,6 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Ignore")]
         [Command("ignore")]
         [Description("Adds or removes a channel from ignore list")]
-        [Remarks("ignore #general")]
         public async Task IgnoreChannelAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -61,9 +60,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Toggle")]
-        [Command("ignore toggle")]
+        [Command("it", "ignoretoggle")]
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
-        [Remarks("ignore toggle")]
         public async Task ToggleIgnoreChannelAsync()
         {
             using (var db = new DbService())
@@ -86,9 +84,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("List")]
-        [Command("ignore list")]
+        [Command("il", "ignorelist")]
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
-        [Remarks("ignore list")]
         public async Task ListIgnoreChannelsAsync()
         {
             using (var db = new DbService())

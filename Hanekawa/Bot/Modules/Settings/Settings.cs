@@ -19,9 +19,8 @@ namespace Hanekawa.Bot.Modules.Settings
         public Settings(CommandHandlingService command) => _command = command;
 
         [Name("Add prefix")]
-        [Command("add prefix", "aprefix")]
+        [Command("addprefix", "aprefix")]
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
-        [Remarks("add prefix !")]
         public async Task AddPrefixAsync([Remainder]string prefix)
         {
             using (var db = new DbService())
@@ -35,9 +34,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Remove prefix")]
-        [Command("remove prefix", "rprefix")]
+        [Command("remprefix", "rprefix")]
         [Description("Removes a prefix from the bot, if it exists")]
-        [Remarks("remove prefix !")]
         public async Task RemovePrefixAsync([Remainder]string prefix)
         {
             using (var db = new DbService())
@@ -51,9 +49,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Set embed color")]
-        [Command("embed", "set embed")]
+        [Command("embed")]
         [Description("Changes the embed colour of the bot")]
-        [Remarks("embed 346423")]
         public async Task SetEmbedColorAsync(uint color)
         {
             // TODO: Embed color commands

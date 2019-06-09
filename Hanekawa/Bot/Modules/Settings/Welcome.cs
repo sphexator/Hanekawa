@@ -27,9 +27,8 @@ namespace Hanekawa.Bot.Modules.Settings
         public Welcome(ImageGenerator image) => _image = image;
 
         [Name("Banner Add")]
-        [Command("welcome add", "welc add")]
+        [Command("wa", "welcadd")]
         [Description("Adds a welcome banner to the bot")]
-        [Remarks("welcome add imgur.com")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddWelcomeBannerAsync(string url)
         {
@@ -69,9 +68,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Banner Remove")]
-        [Command("welcome remove", "welc remove")]
+        [Command("wr", "welcremove")]
         [Description("Removes a welcome banner by given ID")]
-        [Remarks("welcome remove 123")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveWelcomeBannerAsync(int id)
         {
@@ -93,9 +91,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Banner List")]
-        [Command("welcome list", "welc list")]
+        [Command("wl", "welclist")]
         [Description("Shows a paginated message of all saved banners")]
-        [Remarks("welcome list")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WelcomeBannerListAsync()
         {
@@ -125,9 +122,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Message")]
-        [Command("welcome message", "welc msg")]
+        [Command("wm", "welcmsg")]
         [Description("Sets welcome message")]
-        [Remarks("welcome message Welcome %USER% to %GUILD% !")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeMessageAsync([Remainder] string message)
         {
@@ -141,9 +137,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Channel")]
-        [Command("welcome channel", "welc channel")]
+        [Command("wc", "welchannel")]
         [Description("Sets welcome channel, leave empty to disable")]
-        [Remarks("welcome channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeChannelAsync(SocketTextChannel channel = null)
         {
@@ -166,9 +161,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Auto Delete")]
-        [Command("welcome autodelete", "welc autodel")]
+        [Command("wad", "welcautodel")]
         [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
-        [Remarks("welcome autodelete 5m")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeTimeout(TimeSpan? timeout = null)
         {
@@ -194,9 +188,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Template")]
-        [Command("welcome template", "welc template")]
+        [Command("wt", "welctemplate")]
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
-        [Remarks("welcome template")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WelcomeTemplate()
         {
@@ -211,9 +204,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("banner toggle")]
-        [Command("welcome banner", "welc banner")]
+        [Command("wbt", "welcbantog")]
         [Description("Toggles whether welcome banners should be posted or just message")]
-        [Remarks("welcome banner")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Welcomebanner()
         {
@@ -236,7 +228,7 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Ignore New Account")]
-        [Command("welcome ignore account", "wia")]
+        [Command("wia")]
         [Description("Sets if welcomes should ignore new accounts by a defined time. Disabled by default")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)

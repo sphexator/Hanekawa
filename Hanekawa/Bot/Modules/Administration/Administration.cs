@@ -32,7 +32,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user")]
-        [Remarks("ban @bob#0000")]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
@@ -69,7 +68,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Kick")]
         [Command("kick")]
         [Description("Kicks a user")]
-        [Remarks("kick @bob#0000")]
         [RequireBotPermission(GuildPermission.KickMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task KickAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
@@ -105,7 +103,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Prune")]
         [Command("prune")]
         [Description("Prunes X messages, user specific is optional")]
-        [Remarks("prune 500")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task PruneAsync(int amount = 5, SocketGuildUser user = null)
@@ -127,7 +124,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Soft Ban")]
         [Command("softban", "sb")]
         [Description("In the last 50 messages, deletes the messages user has sent and mutes")]
-        [Remarks("softban @bob#0000")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task SoftBanAsync(SocketGuildUser user)
@@ -152,7 +148,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Mute")]
         [Command("mute")]
         [Description("Mutes a user for a duration, specified 1h13m4s or 2342 in minutes with a optional reason")]
-        [Remarks("mute @bob#0000 12h32m you're muted")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteAsync(SocketGuildUser user, TimeSpan? duration = null, [Remainder]string reason = "No reason")
@@ -179,7 +174,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Mute")]
         [Command("mute")]
         [Description("Mutes a user")]
-        [Remarks("mute @bob#0000 you're muted")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task MuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason")
@@ -202,7 +196,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("UnMute")]
         [Command("unmute")]
         [Description("UnMutes a user")]
-        [Remarks("unmute @bob#0000")]
         [RequireBotPermission(GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task UnMuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
@@ -224,7 +217,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Warn")]
         [Command("warn", "warning")]
         [Description("Warns a user, bot dms them the warning. Warning accessible through warnlog")]
-        [Remarks("warn @bob#0000 this is a warning")]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.KickMembers, GuildPermission.ManageRoles,
             GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
@@ -244,7 +236,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Warn Log")]
         [Command("warnlog")]
         [Description("Pulls up warnlog and admin profile of a user.")]
-        [Remarks("warnlog @bob#0000")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WarnLogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
@@ -266,7 +257,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Reason")]
         [Command("reason")]
         [Description("Inputs reason for moderation log entry")]
-        [Remarks("reason 1337 reason is this")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task ReasonAsync(int id, [Remainder]string reason = "No reason applied")

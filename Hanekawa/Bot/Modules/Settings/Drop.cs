@@ -25,7 +25,6 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Drop")]
         [Command("drop")]
         [Description("Spawns a crate for people to claim. Higher reward then regular crates")]
-        [Remarks("drop")]
         public async Task SpawnDrop()
         {
             await Context.Message.TryDeleteMessageAsync();
@@ -33,9 +32,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Emote")]
-        [Command("drop emote")]
+        [Command("de", "dropemote")]
         [Description("Changes claim emote")]
-        [Remarks("drop emote :giggle:")]
         public async Task DropEmote(Emote emote)
         {
             await _drop.ChangeEmote(Context.Guild, emote);
@@ -43,9 +41,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Add")]
-        [Command("drop Add")]
+        [Command("da", "dropadd")]
         [Description("Adds a channel to be eligible for drops")]
-        [Remarks("drop add #general")]
         public async Task AddDropChannel(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -67,9 +64,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("Remove")]
-        [Command("drop remove")]
+        [Command("dr", "dropremove")]
         [Description("Removes a channel from being eligible for drops")]
-        [Remarks("drop remove #general")]
         public async Task RemoveDropChannel(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -91,9 +87,8 @@ namespace Hanekawa.Bot.Modules.Settings
         }
 
         [Name("List")]
-        [Command("drop list")]
+        [Command("dl", "droplist")]
         [Description("Lists channels that are available for drops")]
-        [Remarks("drop list")]
         public async Task ListDropChannelsAsync()
         {
             using (var db = new DbService())

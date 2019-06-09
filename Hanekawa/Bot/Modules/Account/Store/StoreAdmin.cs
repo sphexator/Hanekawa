@@ -16,10 +16,9 @@ namespace Hanekawa.Bot.Modules.Account.Store
     public partial class Store
     {
         [Name("Store add")]
-        [Command("store add", "sa")]
+        [Command("sa")]
         [Priority(1)]
         [Description("Adds an item to the store with regular credit")]
-        [Remarks("sa 500 red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] SocketRole role)
         {
@@ -50,10 +49,9 @@ namespace Hanekawa.Bot.Modules.Account.Store
         }
 
         [Name("Store add special")]
-        [Command("store add special", "sas")]
+        [Command("sas")]
         [Priority(1)]
         [Description("Adds an item to the store with special credit")]
-        [Remarks("sas 500 red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] SocketRole role)
         {
@@ -84,9 +82,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         }
 
         [Name("Store remove")]
-        [Command("store remove", "sr")]
+        [Command("sr")]
         [Description("Removes a role from the store")]
-        [Remarks("sr red")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveStoreItemAsync([Remainder] SocketRole role)
         {

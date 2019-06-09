@@ -11,7 +11,6 @@ namespace Hanekawa.Bot.Modules.Account
         [Name("Profile")]
         [Command("profile")]
         [Description("Showcase yours or another persons profile")]
-        [Remarks("profile")]
         [RequiredChannel]
         public async Task ProfileAsync(SocketGuildUser user = null)
         {

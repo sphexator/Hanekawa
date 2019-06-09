@@ -31,7 +31,6 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Stats")]
         [Command("boardstats")]
         [Description("Overview of board stats of this server")]
-        [Remarks("boardstats")]
         [RequiredChannel]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task BoardStatsAsync()
@@ -72,7 +71,6 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Stats")]
         [Command("boardstats")]
         [Description("Shows board stats for a user")]
-        [Remarks("boardstats @bob#0000")]
         [RequiredChannel]
         public async Task BoardStatsAsync(SocketGuildUser user)
         {

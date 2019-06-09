@@ -21,9 +21,8 @@ namespace Hanekawa.Bot.Modules.Club
     public partial class Club
     {
         [Name("Create")]
-        [Command("club create")]
+        [Command("clubcreate", "ccreate")]
         [Description("Creates a club")]
-        [Remarks("club create Fan service club")]
         [RequiredChannel]
         public async Task CreateClub([Remainder] string name)
         {
@@ -64,9 +63,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Add")]
-        [Command("club add")]
+        [Command("clubadd", "cadd")]
         [Description("Adds a member to your club")]
-        [Remarks("club add @bob#0000")]
         [RequiredChannel]
         public async Task AddClubMemberAsync(SocketGuildUser user)
         {
@@ -114,9 +112,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Remove")]
-        [Command("club remove", "club kick")]
+        [Command("clubremove", "clubkick", "ckick")]
         [Description("Removes a user from your club")]
-        [Remarks("club remove @bob#0000")]
         [RequiredChannel]
         public async Task RemoveClubMemberAsync(SocketGuildUser user)
         {
@@ -137,9 +134,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Leave")]
-        [Command("club leave")]
+        [Command("clubleave")]
         [Description("Leaves a club you're part of")]
-        [Remarks("club leave")]
         [RequiredChannel]
         public async Task LeaveClubAsync(int id)
         {
@@ -155,9 +151,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Leave")]
-        [Command("club leave")]
+        [Command("clubleave")]
         [Description("Leaves a club you're part of")]
-        [Remarks("club leave")]
         [RequiredChannel]
         public async Task LeaveClubAsync()
         {
@@ -200,9 +195,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Promote")]
-        [Command("club promote")]
+        [Command("clubpromote", "cprom")]
         [Description("Promotes someone to a higher rank")]
-        [Remarks("club promote @bob#0000")]
         [RequiredChannel]
         public async Task ClubPromoteAsync(SocketGuildUser user)
         {
@@ -255,9 +249,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Demote")]
-        [Command("club demote")]
+        [Command("clubdemote", "cdem")]
         [Description("Demotes someone to a lower rank")]
-        [Remarks("club demote @bob#0000")]
         [RequiredChannel]
         public async Task ClubDemoteAsync(SocketGuildUser user)
         {
@@ -289,9 +282,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Blacklist")]
-        [Command("club blacklist", "cb")]
+        [Command("clubblacklist", "cblacklist", "cb")]
         [Description("Blacklist a user from their club")]
-        [Remarks("cb @bob#0000")]
         [RequiredChannel]
         public async Task BlackListUser(SocketGuildUser user, [Remainder] string reason = null)
         {
@@ -323,9 +315,8 @@ namespace Hanekawa.Bot.Modules.Club
         }
 
         [Name("Club Blacklist")]
-        [Command("club blacklist", "cb")]
+        [Command("clubblacklist", "cblacklist", "cb")]
         [Description("Gets current blacklist for their club")]
-        [Remarks("cb")]
         [RequiredChannel]
         public async Task GetBlackList()
         {

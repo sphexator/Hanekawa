@@ -15,10 +15,9 @@ namespace Hanekawa.Bot.Modules.Club
 {
     public partial class Club
     {
-        [Name("Rename club")]
-        [Command("club set name", "csn")]
+        [Name("Rename Club")]
+        [Command("csn")]
         [Description("Force changes a name of a club")]
-        [Remarks("csn 15 Change name")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubForceRename(int clubId, [Remainder] string name)
         {
@@ -59,10 +58,9 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Change club icon")]
-        [Command("club set icon", "csicon")]
+        [Name("Change Club Icon")]
+        [Command("csicon")]
         [Description("Force changes icon of a club")]
-        [Remarks("csn 15 https://i.imgur.com/p3Xxvij.png")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubForceReIcon(int clubId, [Remainder] string icon)
         {
@@ -86,10 +84,9 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Change club image")]
-        [Command("club set image", "csimage")]
+        [Name("Change Club Image")]
+        [Command("csi", "csimage")]
         [Description("Force changes image of a club")]
-        [Remarks("csn 15 https://i.imgur.com/p3Xxvij.png")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubForceReImage(int clubId, [Remainder] string image)
         {
@@ -113,10 +110,9 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Change club description")]
-        [Command("club set description", "csd")]
+        [Name("Change Club Description")]
+        [Command("csd")]
         [Description("Force changes a name of a club")]
-        [Remarks("csn 15 Change description")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubForceReDescription(int clubId, [Remainder] string desc)
         {
@@ -142,10 +138,9 @@ namespace Hanekawa.Bot.Modules.Club
             }
         }
 
-        [Name("Club role toggle")]
-        [Command("club toggle role", "ctr")]
+        [Name("Club Role Toggle")]
+        [Command("crt")]
         [Description("Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
-        [Remarks("ctr")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ToggleClubRole()
         {

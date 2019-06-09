@@ -64,7 +64,7 @@ namespace Hanekawa.Bot.Modules.Help
         public async Task HelpAsync([Remainder] string module)
         {
             var result = new List<string>();
-            var moduleInfo = _command.GetAllModules().FirstOrDefault(x => x.Name == module);
+            var moduleInfo = _command.GetAllModules().FirstOrDefault(x => string.Equals(x.Name, module, StringComparison.CurrentCultureIgnoreCase));
             if (moduleInfo == null)
             {
                 var response = new StringBuilder();
@@ -96,10 +96,11 @@ namespace Hanekawa.Bot.Modules.Help
                 var command = cmd.Aliases.FirstOrDefault();
                 var prefix = _commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault();
                 var content = new StringBuilder();
-                if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine($"");
-                if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine($"");
+                if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine(cmd.Name);
+                if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
                 content.AppendLine($"{prefix}{command} {ParamBuilder(cmd)}");
                 content.AppendLine($"Example: {prefix}{command} {ParamBuilder(cmd, true)}");
+                result.Add(content.ToString());
             }
 
             if (result.Count > 0)

@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Game
             await _shipGame.PvPBattle(Context, user, bet);
 
         [Name("Class Info")]
-        [Command("class info")]
+        [Command("classinfo")]
         [Description("Display all classes in a paginated message")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync()
@@ -64,7 +64,7 @@ namespace Hanekawa.Bot.Modules.Game
         }
 
         [Name("Class Info")]
-        [Command("class info")]
+        [Command("classinfo")]
         [Description("Display information on a specific class providing ID")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync(int classId)

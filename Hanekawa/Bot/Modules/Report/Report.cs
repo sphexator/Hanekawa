@@ -22,7 +22,6 @@ namespace Hanekawa.Bot.Modules.Report
         [Name("Report")]
         [Command("report")]
         [Description("Send a report to the moderator team")]
-        [Remarks("h.report This is a report")]
         public async Task ReportGuildAsync([Remainder] string text)
         {
             await Context.Message.DeleteAsync();
@@ -53,7 +52,6 @@ namespace Hanekawa.Bot.Modules.Report
         [Name("Respond")]
         [Command("respond")]
         [Description("Respond to a report that's been sent")]
-        [Remarks("h.respond 1 this is my response :pog:")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RespondAsync(int id, [Remainder] string text)
         {
@@ -89,9 +87,8 @@ namespace Hanekawa.Bot.Modules.Report
         }
 
         [Name("Channel")]
-        [Command("report channel")]
+        [Command("rc")]
         [Description("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
-        [Remarks("h.report channel #general")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetReportChannelAsync(SocketTextChannel channel = null)
         {

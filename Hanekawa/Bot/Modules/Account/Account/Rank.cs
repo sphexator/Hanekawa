@@ -34,7 +34,6 @@ namespace Hanekawa.Bot.Modules.Account
         [Name("Rank")]
         [Command("rank")]
         [Description("Display your rank, level and exp within the server, also global rank")]
-        [Remarks("rank")]
         [RequiredChannel]
         public async Task RankAsync(SocketGuildUser user = null)
         {
@@ -75,7 +74,6 @@ namespace Hanekawa.Bot.Modules.Account
         [Name("Level Leaderboard")]
         [Command("top", "leaderboard", "lb")]
         [Description("Displays highest ranked users")]
-        [Remarks("leaderboard")]
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {

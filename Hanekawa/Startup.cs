@@ -4,6 +4,7 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
+using Hanekawa.Core;
 using Hanekawa.Core.Interactive;
 using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
@@ -45,7 +46,12 @@ namespace Hanekawa
             }));
             services.AddSingleton(new CommandService(new CommandServiceConfiguration
             {
-                DefaultRunMode = RunMode.Parallel
+                DefaultRunMode = RunMode.Parallel,
+                CooldownBucketKeyGenerator = (obj, cxt, provider) =>
+                {
+                    var context = (HanekawaContext) cxt;
+                    return context.User.Id;
+                }
             }));
             services.AddSingleton<InteractiveService>();
             services.AddSingleton(new AnimeSimulCastClient());
