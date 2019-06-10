@@ -96,8 +96,11 @@ namespace Hanekawa.Bot.Modules.Help
                 var command = cmd.Aliases.FirstOrDefault();
                 var prefix = _commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault();
                 var content = new StringBuilder();
-                if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine(cmd.Name);
+                if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine($"**{cmd.Name}**");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
+                if (!cmd.Remarks.IsNullOrWhiteSpace()) content.AppendLine(cmd.Remarks);
+                content.AppendLine(
+                    $"Alias: {cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}");
                 content.AppendLine($"{prefix}{command} {ParamBuilder(cmd)}");
                 content.AppendLine($"Example: {prefix}{command} {ExampleParamBuilder(cmd)}");
                 result.Add(content.ToString());
@@ -105,7 +108,7 @@ namespace Hanekawa.Bot.Modules.Help
 
             if (result.Count > 0)
                 await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Command List", null, 10));
-            else await Context.ReplyAsync("Couldn't find any commands in that module");
+            else await Context.ReplyAsync("Couldn't find any commands in that module", Color.Red.RawValue);
         }
 
         private string ParamBuilder(Command command)

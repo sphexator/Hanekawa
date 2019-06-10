@@ -35,14 +35,17 @@ namespace Hanekawa.Bot.Services.Command
                 }
             }
 
-            _client.MessageReceived += OnMessageReceived;
+            _client.MessageReceived += message =>
+            {
+                _ = OnMessageReceived(message);
+                return Task.CompletedTask;
+            };
             _client.LeftGuild += ClientLeft;
             _client.JoinedGuild += ClientJoined;
         }
 
-        public void InitializeAsync(Assembly assembly)
+        public void InitializeAsync()
         {
-            _command.AddModules(assembly);
             _command.AddTypeParser(new EmoteTypeReader());
             _command.AddTypeParser(new GuildUserParser());
             _command.AddTypeParser(new RoleParser());
@@ -50,6 +53,7 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new TimeSpanTypeParser());
             _command.AddTypeParser(new VoiceChannelParser());
             _command.AddTypeParser(new CategoryParser());
+            _command.AddModules(Assembly.GetEntryAssembly());
         }
 
         public HashSet<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new HashSet<string> {"h."});
@@ -83,7 +87,8 @@ namespace Hanekawa.Bot.Services.Command
             if (user.IsBot) return;
 
             if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix, out var output)) return;
-            await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user), _provider);
+            var result = await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user), _provider);
+            if(!result.IsSuccessful) Console.WriteLine("DId not succeed??");
         }
 
         private Task ClientJoined(SocketGuild guild)

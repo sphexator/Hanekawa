@@ -12,16 +12,15 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("profile")]
         [Description("Showcase yours or another persons profile")]
         [RequiredChannel]
-        public async Task ProfileAsync(SocketGuildUser user = null)
+        public async Task ProfileAsync()
         {
-            if (user == null) user = Context.User;
+            var user = Context.User;
+            //if (user == null) user = Context.User;
             await Context.Channel.TriggerTypingAsync();
-            using (var db = new DbService())
-            using (var image = await _image.ProfileBuilder(user, db))
-            {
-                image.Position = 0;
-                await Context.Channel.SendFileAsync(image, "profile.png", null);
-            }
+            using var db = new DbService();
+            using var image = await _image.ProfileBuilder(user, db);
+            image.Position = 0;
+            await Context.Channel.SendFileAsync(image, "profile.png", null);
         }
     }
 }

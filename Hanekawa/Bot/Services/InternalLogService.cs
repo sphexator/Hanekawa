@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Core.Interfaces;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Entities;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using Qmmands;
 
 namespace Hanekawa.Bot.Services
 {
@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Services
             _castClient = castClient;
 
             _client.Log += Logdiscord;
-            _command.Log += CommandLog;
+            _command.CommandErrored += CommandLog;
 
             _castClient.Log += SimulCastClientLog;
 
@@ -47,9 +47,9 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private Task CommandLog(LogMessage log)
+        private Task CommandLog(CommandErroredEventArgs e)
         {
-            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
+            _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             return Task.CompletedTask;
         }
 

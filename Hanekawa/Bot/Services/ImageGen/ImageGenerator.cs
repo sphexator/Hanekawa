@@ -19,7 +19,6 @@ namespace Hanekawa.Bot.Services.ImageGen
     {
         private readonly HttpClient _client;
         private readonly Random _random;
-        private readonly ImageGenerator _image;
         private readonly ExpService _expService;
 
         private readonly GraphicsOptions _options = new GraphicsOptions(true);
@@ -54,11 +53,10 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly Font _profileText;
         private readonly Image<Rgba32> _profileTemplate;
 
-        public ImageGenerator(HttpClient client, Random random, ImageGenerator image, ExpService expService)
+        public ImageGenerator(HttpClient client, Random random, ExpService expService)
         {
             _client = client;
             _random = random;
-            _image = image;
             _expService = expService;
 
             _fonts = new FontCollection();
@@ -76,21 +74,17 @@ namespace Hanekawa.Bot.Services.ImageGen
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size, int radius)
         {
             var response = await _client.GetStreamAsync(user.GetAvatarUrl());
-            using (var img = Image.Load(response))
-            {
-                var avi = img.CloneAndConvertToAvatarWithoutApply(size, radius);
-                return avi.Clone();
-            }
+            using var img = Image.Load(response);
+            var avi = img.CloneAndConvertToAvatarWithoutApply(size, radius);
+            return avi.Clone();
         }
 
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size)
         {
             var response = await _client.GetStreamAsync(user.GetAvatarUrl());
-            using (var img = Image.Load(response))
-            {
-                img.Mutate(x => x.Resize(size));
-                return img.Clone();
-            }
+            using var img = Image.Load(response);
+            img.Mutate(x => x.Resize(size));
+            return img.Clone();
         }
     }
 }

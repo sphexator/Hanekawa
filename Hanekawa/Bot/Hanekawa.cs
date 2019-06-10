@@ -30,7 +30,7 @@ namespace Hanekawa.Bot
             var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
-                _provider.GetService<CommandHandlingService>().InitializeAsync(assembly);
+                _provider.GetService<CommandHandlingService>().InitializeAsync();
                 var servicelist = assembly.GetTypes()
                     .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();

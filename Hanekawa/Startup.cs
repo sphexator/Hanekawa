@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using Discord;
 using Discord.WebSocket;
@@ -64,18 +65,9 @@ namespace Hanekawa
                 PreservePlayers = true
             }));
             services.AddSingleton<Random>();
-            services.AddHttpClient();
+            services.AddSingleton<HttpClient>();
 
             var assembly = Assembly.GetAssembly(typeof(Program));
-            services.AddSingleton(new CommandService(new CommandServiceConfiguration
-            {
-                DefaultRunMode = RunMode.Parallel,
-                CooldownBucketKeyGenerator = (obj, cxt, provider) =>
-                {
-                    var context = (HanekawaContext)cxt;
-                    return context.User.Id;
-                }
-            }));
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();

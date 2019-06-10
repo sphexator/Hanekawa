@@ -43,10 +43,9 @@ namespace Hanekawa.Bot.Modules.Level
         {
             if (multiplier <= 0) return;
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
-            using (var db = new DbService())
-            {
-                // TODO Create exp event
-            }
+            using var db = new DbService();
+            // TODO Create exp event
+            
         }
     }
 }

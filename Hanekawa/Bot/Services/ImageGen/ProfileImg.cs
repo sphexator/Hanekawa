@@ -52,41 +52,35 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
 
                     //Text
-                    x.DrawText(_centerText, "Server", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_centerText, "Global", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_centerText, "Server", _profileText, Rgba32.White, new PointF(72, 160));
+                    x.DrawText(_centerText, "Global", _profileText, Rgba32.White, new PointF(270, 160));
 
-                    x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{serverRank}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF(8, 256));
+                    x.DrawText(_rightText, $"{serverRank}", _profileText, Rgba32.White, new PointF(194, 256));
 
-                    x.DrawText(_leftText, "Level", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{userData.Level}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Level", _profileText, Rgba32.White, new PointF(8, 184));
+                    x.DrawText(_rightText, $"{userData.Level}", _profileText, Rgba32.White, new PointF(194, 184));
 
-                    x.DrawText(_leftText, "Exp", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{userData.Exp}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Exp", _profileText, Rgba32.White, new PointF(8, 208));
+                    x.DrawText(_rightText, $"{userData.Exp}", _profileText, Rgba32.White, new PointF(194, 208));
 
-                    x.DrawText(_leftText, "Credit", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{userData.Credit}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Credit", _profileText, Rgba32.White, new PointF(8, 232));
+                    x.DrawText(_rightText, $"{userData.Credit}", _profileText, Rgba32.White, new PointF(194, 232));
 
-                    x.DrawText(_leftText, "Special Credit", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{userData.CreditSpecial}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Achievement Points", _profileText, Rgba32.White, new PointF(22, 286));
+                    x.DrawText(_rightText, $"{achievePoints}", _profileText, Rgba32.White, new PointF(377, 286));
 
-                    x.DrawText(_leftText, "Achievement Points", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{achievePoints}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Global Rank", _profileText, Rgba32.White, new PointF(206, 256));
+                    x.DrawText(_rightText, $"{globalRank}", _profileText, Rgba32.White, new PointF(391, 256));
 
-                    x.DrawText(_leftText, "Global Rank", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{globalRank}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Global Credit", _profileText, Rgba32.White, new PointF(206, 232));
+                    x.DrawText(_rightText, $"{globalData.Credit}", _profileText, Rgba32.White, new PointF(391, 232));
 
-                    x.DrawText(_leftText, "Global Credit", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{globalData.Credit}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Global Exp", _profileText, Rgba32.White, new PointF(206, 208));
+                    x.DrawText(_rightText, $"{globalData.Exp}", _profileText, Rgba32.White, new PointF(391, 208));
 
-                    x.DrawText(_leftText, "Global Exp", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{globalData.Exp}", _profileText, Rgba32.White, new PointF());
-
-                    x.DrawText(_leftText, "Global TotalExp", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{globalData.TotalExp}", _profileText, Rgba32.White, new PointF());
-
-                    x.DrawText(_leftText, "Global Level", _profileText, Rgba32.White, new PointF());
-                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Rgba32.White, new PointF());
+                    x.DrawText(_leftText, "Global Level", _profileText, Rgba32.White, new PointF(206, 184));
+                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Rgba32.White, new PointF(391, 208));
                 });
 
                 img.Save(stream, new PngEncoder());

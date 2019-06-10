@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var stream = new MemoryStream();
             using (var img = await GetBanner(user.Guild.Id, db))
             {
-                var avatar = await _image.GetAvatarAsync(user, new Size(60, 60), 32);
+                var avatar = await GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
@@ -37,7 +37,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var stream = new MemoryStream();
             using (var img = await GetBanner(url))
             {
-                var avatar = await _image.GetAvatarAsync(user, new Size(60, 60), 32);
+                var avatar = await GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
