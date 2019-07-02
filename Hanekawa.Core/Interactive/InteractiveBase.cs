@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Criteria;
-using Hanekawa.Core.Interactive.Paginator;
-using Hanekawa.Core.Interactive.Results;
+using Hanekawa.Shared.Interactive.Criteria;
+using Hanekawa.Shared.Interactive.Paginator;
+using Hanekawa.Shared.Interactive.Results;
 using Qmmands;
 
-namespace Hanekawa.Core.Interactive
+namespace Hanekawa.Shared.Interactive
 {
     public abstract class InteractiveBase : InteractiveBase<HanekawaContext>
     {

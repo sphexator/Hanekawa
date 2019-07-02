@@ -1,6 +1,6 @@
 ﻿using Qmmands;
 
-namespace Hanekawa.Core.Interactive.Results
+namespace Hanekawa.Shared.Interactive.Results
 {
     public class OkResult : CommandResult
     {

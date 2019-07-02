@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
 using Victoria.Entities;
 
 namespace Hanekawa.Bot.Services.Music

@@ -5,10 +5,10 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.AnimeSimulCast.Entity;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

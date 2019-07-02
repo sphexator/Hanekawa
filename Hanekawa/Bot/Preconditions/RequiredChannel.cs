@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 

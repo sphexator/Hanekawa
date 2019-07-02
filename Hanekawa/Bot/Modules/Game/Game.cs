@@ -4,13 +4,13 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Game.Ship;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
-using Cooldown = Hanekawa.Core.Cooldown;
+using Cooldown = Hanekawa.Shared.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Game
 {

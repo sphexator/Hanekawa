@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration

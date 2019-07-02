@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Hanekawa.Core.Interactive.Criteria
+namespace Hanekawa.Shared.Interactive.Criteria
 {
     public interface ICriterion<in T>
     {

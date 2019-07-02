@@ -6,15 +6,15 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Core;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
-using Cooldown = Hanekawa.Core.Cooldown;
+using Cooldown = Hanekawa.Shared.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Level
 {

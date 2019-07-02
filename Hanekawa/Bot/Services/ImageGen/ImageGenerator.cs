@@ -3,9 +3,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Core.Interfaces;
-using Hanekawa.Database;
 using Hanekawa.Extensions;
+using Hanekawa.Shared.Interfaces;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -36,7 +35,6 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             HorizontalAlignment = HorizontalAlignment.Left,
             Antialias = true
-
         };
 
         // Fonts

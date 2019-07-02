@@ -2,11 +2,11 @@
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Bot.Preconditions;
-using Hanekawa.Core;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interactive;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Gamble

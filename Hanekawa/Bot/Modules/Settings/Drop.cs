@@ -5,10 +5,10 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Drop;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Hanekawa.Core;
+using Hanekawa.Shared;
 
 namespace Hanekawa.Database.Tables.Administration
 {

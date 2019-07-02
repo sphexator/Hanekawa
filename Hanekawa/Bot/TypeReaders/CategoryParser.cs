@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core;
+using Hanekawa.Shared;
 using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders

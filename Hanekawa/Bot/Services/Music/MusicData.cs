@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Hanekawa.Core;
+using Hanekawa.Shared;
 
 namespace Hanekawa.Bot.Services.Music
 {

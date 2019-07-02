@@ -2,7 +2,7 @@
 using System.Text;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Paginator;
+using Hanekawa.Shared.Interactive.Paginator;
 
 namespace Hanekawa.Extensions.Embed
 {

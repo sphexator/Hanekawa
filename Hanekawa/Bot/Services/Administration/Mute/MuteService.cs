@@ -5,11 +5,11 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
+using Hanekawa.Shared.Interfaces;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {

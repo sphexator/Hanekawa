@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience

@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Core;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 

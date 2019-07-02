@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Callbacks;
-using Hanekawa.Core.Interactive.Criteria;
-using Hanekawa.Core.Interactive.Paginator;
+using Hanekawa.Shared.Interactive.Callbacks;
+using Hanekawa.Shared.Interactive.Criteria;
+using Hanekawa.Shared.Interactive.Paginator;
 using Qmmands;
 
-namespace Hanekawa.Core.Interactive
+namespace Hanekawa.Shared.Interactive
 {
     public class InteractiveService : IDisposable
     {

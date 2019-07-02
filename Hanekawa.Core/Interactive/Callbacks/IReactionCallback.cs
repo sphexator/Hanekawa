@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Criteria;
+using Hanekawa.Shared.Interactive.Criteria;
 using Qmmands;
 
-namespace Hanekawa.Core.Interactive.Callbacks
+namespace Hanekawa.Shared.Interactive.Callbacks
 {
     public interface IReactionCallback
     {

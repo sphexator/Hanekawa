@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Club;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 

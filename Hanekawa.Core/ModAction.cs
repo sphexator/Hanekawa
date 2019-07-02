@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Core
+﻿namespace Hanekawa.Shared
 {
     public enum ModAction
     {

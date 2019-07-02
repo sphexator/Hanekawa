@@ -7,11 +7,11 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Qmmands;
 using Quartz.Util;
-using Cooldown = Hanekawa.Core.Cooldown;
+using Cooldown = Hanekawa.Shared.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Help
 {

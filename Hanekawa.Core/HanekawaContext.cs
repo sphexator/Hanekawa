@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using Qmmands;
 
-namespace Hanekawa.Core
+namespace Hanekawa.Shared
 {
     public class HanekawaContext : CommandContext
     {

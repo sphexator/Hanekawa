@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Criteria;
+using Hanekawa.Shared.Interactive.Criteria;
 
-namespace Hanekawa.Core.Interactive.Paginator
+namespace Hanekawa.Shared.Interactive.Paginator
 {
     internal class EnsureReactionFromSourceUserCriterion : ICriterion<SocketReaction>
     {

@@ -6,12 +6,12 @@ using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
-using Hanekawa.Core;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Qmmands;
 

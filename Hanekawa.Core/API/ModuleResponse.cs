@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Hanekawa.Core.API
+namespace Hanekawa.Shared.API
 {
     public class ModuleResponse
     {

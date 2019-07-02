@@ -5,12 +5,12 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Economy;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 

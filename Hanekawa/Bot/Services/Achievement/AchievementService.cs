@@ -5,7 +5,7 @@ using Hanekawa.Database.Tables.Achievement;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-using Hanekawa.Core.Interfaces;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Achievement

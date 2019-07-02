@@ -3,11 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core.Interactive.Callbacks;
-using Hanekawa.Core.Interactive.Criteria;
+using Hanekawa.Shared.Interactive.Callbacks;
+using Hanekawa.Shared.Interactive.Criteria;
 using Qmmands;
 
-namespace Hanekawa.Core.Interactive.Paginator
+namespace Hanekawa.Shared.Interactive.Paginator
 {
     public class PaginatedMessageCallback : IReactionCallback
     {

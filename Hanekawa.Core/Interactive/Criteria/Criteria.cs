@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hanekawa.Core.Interactive.Criteria
+namespace Hanekawa.Shared.Interactive.Criteria
 {
     public class Criteria<T> : ICriterion<T>
     {

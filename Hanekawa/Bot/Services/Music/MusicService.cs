@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interfaces;
 using Victoria;
 using Victoria.Entities;
 

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core;
 using Hanekawa.Database.Tables.Moderation;
+using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database.Extensions

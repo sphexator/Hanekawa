@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord;
 
-namespace Hanekawa.Core.Interactive.Criteria
+namespace Hanekawa.Shared.Interactive.Criteria
 {
     public class EnsureFromChannelCriterion : ICriterion<IMessage>
     {

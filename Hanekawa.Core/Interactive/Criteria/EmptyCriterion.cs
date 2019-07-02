@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Hanekawa.Core.Interactive.Criteria
+namespace Hanekawa.Shared.Interactive.Criteria
 {
     public class EmptyCriterion<T> : ICriterion<T>
     {

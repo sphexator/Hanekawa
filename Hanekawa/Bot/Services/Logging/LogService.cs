@@ -1,5 +1,5 @@
 ﻿using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
+using Hanekawa.Shared.Interfaces;
 
 namespace Hanekawa.Bot.Services.Logging
 {

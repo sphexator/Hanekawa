@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Giveaway

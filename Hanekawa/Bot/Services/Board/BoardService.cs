@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Board

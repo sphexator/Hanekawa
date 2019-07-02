@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Core.csproj" />
+    <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Shared.csproj" />
   </ItemGroup>
 
 </Project>

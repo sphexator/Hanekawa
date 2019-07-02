@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Core;
-using Hanekawa.Core.Game;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Models;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Game;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Game.Ship

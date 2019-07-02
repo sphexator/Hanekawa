@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
-using Hanekawa.Core.Interfaces;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using Victoria;
 using Victoria.Entities;

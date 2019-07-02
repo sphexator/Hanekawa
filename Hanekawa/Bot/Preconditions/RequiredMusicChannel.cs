@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Core;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interfaces;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions

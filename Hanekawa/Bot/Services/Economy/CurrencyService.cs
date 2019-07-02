@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Shared.Interfaces;
 
 namespace Hanekawa.Bot.Services.Economy
 {

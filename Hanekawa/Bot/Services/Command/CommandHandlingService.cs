@@ -5,10 +5,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Bot.TypeReaders;
-using Hanekawa.Core;
-using Hanekawa.Core.Interfaces;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared;
+using Hanekawa.Shared.Interfaces;
 using Qmmands;
 
 namespace Hanekawa.Bot.Services.Command

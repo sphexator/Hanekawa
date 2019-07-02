@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Core.Game
+﻿namespace Hanekawa.Shared.Game
 {
     public enum EnemyType
     {

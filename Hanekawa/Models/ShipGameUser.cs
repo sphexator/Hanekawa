@@ -1,5 +1,4 @@
 ﻿using Discord.WebSocket;
-using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 

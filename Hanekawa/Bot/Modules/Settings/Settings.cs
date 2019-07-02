@@ -2,9 +2,9 @@
 using Discord;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
-using Hanekawa.Core.Interactive;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Interactive;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings

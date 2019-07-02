@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Qmmands;
 
-namespace Hanekawa.Core
+namespace Hanekawa.Shared
 {
     public abstract class HanekawaTypeParser<T> : TypeParser<T>
     {

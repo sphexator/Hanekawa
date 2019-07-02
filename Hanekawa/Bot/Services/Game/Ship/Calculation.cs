@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Hanekawa.Core.Game;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.BotGame;
+using Hanekawa.Shared.Game;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {

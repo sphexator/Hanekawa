@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Core;
+using Hanekawa.Shared;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Services.Command;
-using Hanekawa.Core.Interfaces;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

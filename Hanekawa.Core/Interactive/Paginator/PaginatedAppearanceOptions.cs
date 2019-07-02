@@ -1,7 +1,7 @@
 ﻿using System;
 using Discord;
 
-namespace Hanekawa.Core.Interactive.Paginator
+namespace Hanekawa.Shared.Interactive.Paginator
 {
     public class PaginatedAppearanceOptions
     {

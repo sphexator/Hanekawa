@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Core;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 
