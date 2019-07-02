@@ -83,7 +83,9 @@ namespace Hanekawa.Database.Extensions
         internal static LevelConfig DefaultLevelConfig(this LevelConfig cfg, ulong guild)
         {
             cfg.GuildId = guild;
-            cfg.ExpMultiplier = 1;
+            cfg.TextExpMultiplier = 1;
+            cfg.VoiceExpMultiplier = 1;
+            cfg.VoiceExpEnabled = true;
             cfg.StackLvlRoles = true;
             return cfg;
         }

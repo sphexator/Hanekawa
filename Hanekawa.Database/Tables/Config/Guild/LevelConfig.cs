@@ -3,7 +3,8 @@
     public class LevelConfig
     {
         public ulong GuildId { get; set; }
-        public double ExpMultiplier { get; set; } = 1;
+        public double TextExpMultiplier { get; set; } = 1;
+        public double VoiceExpMultiplier { get; set; } = 1;
         public bool VoiceExpEnabled { get; set; } = true;
         public bool StackLvlRoles { get; set; } = true;
     }
