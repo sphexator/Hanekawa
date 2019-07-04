@@ -8,6 +8,7 @@ using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 
@@ -39,6 +40,7 @@ namespace Hanekawa.Bot.Modules.Club
                 var pages = new List<string>();
                 for (var i = 0; i < clubs.Count; i++)
                 {
+
                     var x = clubs[i];
                     if (x.LeaderId == 1) continue;
                     var memberCount =
@@ -51,7 +53,8 @@ namespace Hanekawa.Bot.Modules.Club
                               $"Leader {leader}\n");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                if (pages.Count == 0) await Context.ReplyAsync("There seems to be a problem with all clubs on this server. Either disbanded or internal problem.");
+                else await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
                     $"Clubs in {Context.Guild.Name}", null));
             }
         }
@@ -90,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Club
                     Fields = new List<EmbedFieldBuilder>
                     {
                         new EmbedFieldBuilder { IsInline = false, Name = "Leader", Value = $"{Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}"},
-                        new EmbedFieldBuilder { IsInline = false, Name = "Officers", Value = officers}
+                        new EmbedFieldBuilder { IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}
                     }
                 }.CreateDefault(club.Description, Context.Guild.Id);
                 await Context.ReplyAsync(embed);

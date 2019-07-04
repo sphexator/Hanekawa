@@ -53,8 +53,7 @@ namespace Hanekawa.Bot.Modules.Club
                     GuildId = Context.Guild.Id,
                     JoinDate = DateTimeOffset.UtcNow,
                     Rank = 1,
-                    UserId = Context.User.Id,
-                    Id = await db.ClubPlayers.CountAsync() + 1
+                    UserId = Context.User.Id
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
