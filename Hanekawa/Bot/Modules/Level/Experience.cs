@@ -27,6 +27,7 @@ namespace Hanekawa.Bot.Modules.Level
                 await RemoveExp(exp, users);
                 return;
             }
+
             using (var db = new DbService())
             {
                 string userString = null;
@@ -58,7 +59,7 @@ namespace Hanekawa.Bot.Modules.Level
                 {
                     var user = users[i];
                     var userData = await db.GetOrCreateUserData(users[i]);
-                    await _exp.AddExpAsync(user, userData, (exp * (-1)), 0, db);
+                    await _exp.AddExpAsync(user, userData, exp * -1, 0, db);
                     userString += $"{user.Mention}\n";
                 }
 
@@ -90,7 +91,8 @@ namespace Hanekawa.Bot.Modules.Level
                             GuildId = Context.Guild.Id,
                             ChannelId = x.Id,
                             Channel = true,
-                            Category = false
+                            Category = false,
+                            Voice = false
                         };
                         await db.LevelExpReductions.AddAsync(data);
                         content.AppendLine($"Added {x.Mention}");
@@ -98,6 +100,45 @@ namespace Hanekawa.Bot.Modules.Level
                     else
                     {
                         content.AppendLine($"{x.Mention} is already added");
+                    }
+                }
+
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync(content.ToString());
+            }
+        }
+
+        [Name("Add Exp Ignore Channel")]
+        [Command("eia")]
+        [Description("Adds one or more channels to ignore exp")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
+        public async Task AddExpIgnoreChannel(params SocketVoiceChannel[] channels)
+        {
+            using (var db = new DbService())
+            {
+                var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var content = new StringBuilder();
+                content.AppendLine("Channels added to exp ignore list:");
+                for (var i = 0; i < channels.Length; i++)
+                {
+                    var x = channels[i];
+                    if (!channeList.TryGetValue(x.Id, out _))
+                    {
+                        channeList.Add(x.Id);
+                        var data = new LevelExpReduction
+                        {
+                            GuildId = Context.Guild.Id,
+                            ChannelId = x.Id,
+                            Channel = true,
+                            Category = false,
+                            Voice = true
+                        };
+                        await db.LevelExpReductions.AddAsync(data);
+                        content.AppendLine($"Added {x.Name}");
+                    }
+                    else
+                    {
+                        content.AppendLine($"{x.Name} is already added");
                     }
                 }
 
@@ -128,7 +169,8 @@ namespace Hanekawa.Bot.Modules.Level
                             GuildId = Context.Guild.Id,
                             ChannelId = x.Id,
                             Channel = false,
-                            Category = true
+                            Category = true,
+                            Voice = false
                         };
                         await db.LevelExpReductions.AddAsync(data);
                         content.AppendLine($"Added {x.Name}");
@@ -219,30 +261,23 @@ namespace Hanekawa.Bot.Modules.Level
             var channels = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
             var categories = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
             var result = new List<string>();
-            if (channels.Count == 0 && categories.Count == 0)
-            {
-                result.Add("No channels");
-            }
+            if (channels.Count == 0 && categories.Count == 0) result.Add("No channels");
 
             if (channels.Count > 0)
-            {
                 foreach (var x in channels)
                 {
                     var channel = Context.Guild.GetTextChannel(x);
                     if (channel == null) continue;
                     result.Add($"Channel: {channel.Mention}");
                 }
-            }
 
             if (categories.Count > 0)
-            {
                 foreach (var x in categories)
                 {
                     var category = Context.Guild.GetCategoryChannel(x);
                     if (category == null) continue;
                     result.Add($"Category: {category.Name}");
                 }
-            }
 
             await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Experience Channel Ignore", null));
         }
