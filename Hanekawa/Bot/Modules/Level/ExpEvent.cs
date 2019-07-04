@@ -5,6 +5,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Humanizer;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Level
@@ -30,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Level
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 cfg.TextExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
-                _exp.AdjustMultiplier(Context.Guild.Id, multiplier);
+                _exp.AdjustTextMultiplier(Context.Guild.Id, multiplier);
                 await Context.ReplyAsync($"Changed text exp multiplier from {old} to {multiplier}", Color.Green.RawValue);
             }
         }
@@ -47,7 +48,7 @@ namespace Hanekawa.Bot.Modules.Level
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 cfg.VoiceExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
-                _exp.AdjustMultiplier(Context.Guild.Id, multiplier);
+                _exp.AdjustVoiceMultiplier(Context.Guild.Id, multiplier);
                 await Context.ReplyAsync($"Changed voice exp multiplier from {old} to {multiplier}", Color.Green.RawValue);
             }
         }
@@ -60,7 +61,6 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var old = _exp.GetMultiplier(Context.Guild.Id);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 if (cfg.VoiceExpEnabled)
                 {
@@ -85,8 +85,8 @@ namespace Hanekawa.Bot.Modules.Level
             if (multiplier <= 0) return;
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
             using var db = new DbService();
-            // TODO Create exp event
-            
+            await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
+            await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!", Color.Green.RawValue);
         }
     }
 }

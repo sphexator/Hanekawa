@@ -1,148 +1,88 @@
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.Logging;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Services.Experience
 {
-    public partial class ExpService : INService, IRequired
+    public partial class ExpService
     {
-        private readonly DiscordSocketClient _client;
-        private readonly Random _random;
-        private readonly InternalLogService _log;
+        private Tuple<ulong, Timer> _expEventTimer;
 
-        public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
-            new ConcurrentDictionary<ulong, HashSet<ulong>>();
-        public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerChannelReduction =
-            new ConcurrentDictionary<ulong, HashSet<ulong>>();
-
-        public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
+        public async Task StartEventAsync(DbService db, HanekawaContext context, double multiplier, TimeSpan duration, bool announce = false)
         {
-            _client = client;
-            _random = random;
-            _log = log;
-
-            using (var db = new DbService())
+            var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id);
+            if (checkExisting != null && _expEventTimer != null)
             {
-                foreach (var x in db.LevelExpReductions)
-                {
-                    if (x.Category)
-                    {
-                        var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                        categories.Add(x.ChannelId);
-                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                            (arg1, list) => categories);
-                    }
-
-                    if (x.Channel)
-                    {
-                        var channel = ServerChannelReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                        channel.Add(x.ChannelId);
-                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                            (arg1, list) => channel);
-                    }
-                }
-
-                foreach (var x in db.LevelConfigs)
-                {
-                    _expMultiplier.TryAdd(x.GuildId, x.ExpMultiplier);
-                }
+                checkExisting.Time = DateTime.UtcNow + duration;
+                checkExisting.Multiplier = multiplier;
+                if (_expEventTimer.Item1 == context.Guild.Id) _expEventTimer.Item2.Dispose();
             }
-
-            _client.MessageReceived += ServerMessageExpAsync;
-            _client.MessageReceived += GlobalMessageExpAsync;
-            _client.UserVoiceStateUpdated += VoiceExpAsync;
-            _client.UserJoined += GiveRolesBackAsync;
+            else
+            {
+                await db.LevelExpEvents.AddAsync(new LevelExpEvent
+                {
+                    GuildId = context.Guild.Id,
+                    Multiplier = multiplier,
+                    Time = DateTime.UtcNow + duration,
+                    ChannelId = null,
+                    MessageId = null
+                });
+            }
+            await db.SaveChangesAsync();
+            _voiceExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (k, v) => multiplier);
+            _textExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (key, v) => multiplier);
         }
 
-        private Task GlobalMessageExpAsync(SocketMessage msg)
+        private async Task EventHandler(CancellationToken stopToken)
         {
-            _ = Task.Run(async () =>
+            while (stopToken.IsCancellationRequested)
             {
-                if (!(msg.Author is SocketGuildUser user)) return;
-                if (!(msg.Channel is SocketTextChannel channel)) return;
-                if (user.IsBot) return;
-                if (OnGlobalCooldown(user)) return;
-                try
+                using (var db = new DbService())
                 {
-                    using (var db = new DbService())
+                    var nextEvent = await db.LevelExpEvents.OrderBy(x => x.Time).FirstOrDefaultAsync(stopToken);
+
+                    if (_expEventTimer != null && nextEvent != null)
                     {
-                        var userdata = await db.GetOrCreateGlobalUserData(user);
-                        await AddExpAsync(userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
+                        if (nextEvent.Time <= DateTime.UtcNow)
+                        {
+                            var cfg = await db.GetOrCreateLevelConfigAsync(nextEvent.GuildId);
+
+                            _voiceExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.VoiceExpMultiplier,
+                                (k, v) => cfg.VoiceExpMultiplier);
+                            _textExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.TextExpMultiplier,
+                                (k, v) => cfg.TextExpMultiplier);
+
+                            db.LevelExpEvents.Remove(nextEvent);
+                            await db.SaveChangesAsync(stopToken);
+                        }
+                        else
+                        {
+                            var timer = new Timer(async _ =>
+                            {
+                                using var dbService = new DbService();
+                                var cfg = await dbService.GetOrCreateLevelConfigAsync(nextEvent.GuildId);
+
+                                _voiceExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.VoiceExpMultiplier,
+                                    (k, v) => cfg.VoiceExpMultiplier);
+                                _textExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.TextExpMultiplier,
+                                    (k, v) => cfg.TextExpMultiplier);
+
+                                dbService.LevelExpEvents.Remove(nextEvent);
+                                await dbService.SaveChangesAsync(stopToken);
+                            }, null, nextEvent.Time - DateTime.UtcNow, Timeout.InfiniteTimeSpan);
+                            _expEventTimer = new Tuple<ulong, Timer>(nextEvent.GuildId, timer);
+                        }
                     }
                 }
-                catch (Exception e)
-                {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Global Exp - {e.Message}");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private Task ServerMessageExpAsync(SocketMessage msg)
-        {
-            _ = Task.Run(async () =>
-            {
-                if (!(msg.Author is SocketGuildUser user)) return;
-                if (!(msg.Channel is SocketTextChannel channel)) return;
-                if (user.IsBot) return;
-                if (OnServerCooldown(user)) return;
-                try
-                {
-                    using (var db = new DbService())
-                    {
-                        var userdata = await db.GetOrCreateUserData(user);
-                        userdata.LastMessage = DateTime.UtcNow;
-                        if (!userdata.FirstMessage.HasValue) userdata.FirstMessage = DateTime.UtcNow;
-
-                        await AddExpAsync(user, userdata, GetMessageExp(IsReducedExp(channel)), _random.Next(1, 3), db);
-                    }
-                }
-                catch (Exception e)
-                {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Server Exp - {e.Message}");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private Task VoiceExpAsync(SocketUser usr, SocketVoiceState before, SocketVoiceState after)
-        {
-            _ = Task.Run(async () =>
-            {
-                if (!(usr is SocketGuildUser user)) return;
-                try
-                {
-                    // TODO: Voice exp
-                }
-                catch (Exception e)
-                {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Voice - {e.Message}");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private int GetMessageExp(bool reduced = false)
-        {
-            var xp = _random.Next(10, 20);
-            return reduced ? Convert.ToInt32(xp / 10) : xp;
-        }
-
-        private bool IsReducedExp(SocketTextChannel channel)
-        {
-            var isChannel = ServerChannelReduction.TryGetValue(channel.Guild.Id, out var channels);
-            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
-            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id, out _);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id, out _);
-            if (category.TryGetValue(channel.CategoryId.Value, out _))
-                return true;
-            return isChannel && channels.TryGetValue(channel.Id, out _);
+                await Task.Delay(TimeSpan.FromMinutes(10), stopToken);
+            }
         }
     }
 }

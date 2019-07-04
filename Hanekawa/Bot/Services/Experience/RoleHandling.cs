@@ -18,34 +18,27 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    var userdata = await db.GetOrCreateUserData(user);
-                    if (userdata == null || userdata.Level < 2) return;
-                    var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
-                    if (cfg.StackLvlRoles)
-                    {
-                        var roleCollection = await GetRoleCollectionAsync(user, userdata, db);
-                        await user.TryAddRolesAsync(roleCollection);
-                        return;
-                    }
+                using var db = new DbService();
 
-                    var singleRole = await GetRoleSingleAsync(user, userdata, db);
-                    await user.TryAddRolesAsync(singleRole);
-                }
+                var userData = await db.GetOrCreateUserData(user);
+                if (userData == null || userData.Level < 2) return;
+
+                var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
+                var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
+                await user.TryAddRolesAsync(roles);
             });
             return Task.CompletedTask;
         }
         
-        private async Task NewLevelManagerAsync(Account userdata, SocketGuildUser user, DbService db)
+        private async Task NewLevelManagerAsync(Account userData, SocketGuildUser user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
-            var role = GetLevelUpRole(userdata.Level, user, roles);
+            var role = GetLevelUpRole(userData.Level, user, roles);
             var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
 
             if (role == null)
             {
-                await RoleCheckAsync(user, cfg, userdata, db);
+                await RoleCheckAsync(user, cfg, userData, db);
                 return;
             }
 
@@ -53,12 +46,10 @@ namespace Hanekawa.Bot.Services.Experience
             await user.TryAddRoleAsync(role);
         }
 
-        private async Task RoleCheckAsync(SocketGuildUser user, LevelConfig cfg, Account userdata, DbService db)
+        private async Task RoleCheckAsync(SocketGuildUser user, LevelConfig cfg, Account userData, DbService db)
         {
-            List<SocketRole> roles;
-            if (cfg.StackLvlRoles) roles = await GetRoleCollectionAsync(user, userdata, db);
-            else roles = await GetRoleSingleAsync(user, userdata, db);
-            
+            var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles).ConfigureAwait(false);
+
             var missingRoles = new List<SocketRole>();
             var currentUser = user.Guild.CurrentUser;
             for (var i = 0; i < roles.Count; i++)
@@ -72,7 +63,7 @@ namespace Hanekawa.Bot.Services.Experience
             await user.TryAddRolesAsync(missingRoles);
         }
 
-        private async Task<List<SocketRole>> GetRoleSingleAsync(SocketGuildUser user, Account userdata, DbService db)
+        private async ValueTask<List<SocketRole>> GetRolesAsync(SocketGuildUser user, Account userData, DbService db, bool stack)
         {
             var roles = new List<SocketRole>();
             ulong role = 0;
@@ -82,37 +73,29 @@ namespace Hanekawa.Bot.Services.Experience
             for (var i = 0; i < roleList.Count; i++)
             {
                 var x = roleList[i];
-                if (userdata.Level >= x.Level && x.Stackable)
+                if (stack)
                 {
-                    var getRole = user.Guild.GetRole(x.Role);
-                    if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
-                }
-
-                if (userdata.Level >= x.Level) role = x.Role;
-            }
-
-            if (role == 0) return roles;
-            var getSingleRole = user.Guild.GetRole(role);
-            if (currentUser.HierarchyCheck(getSingleRole)) roles.Add(getSingleRole);
-            return roles;
-        }
-
-        private async Task<List<SocketRole>> GetRoleCollectionAsync(SocketGuildUser user, Account userdata, DbService db)
-        {
-            var roles = new List<SocketRole>();
-            var currentUser = user.Guild.CurrentUser;
-            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
-            for (var i = 0; i < roleList.Count; i++)
-            {
-                var x = roleList[i];
-                if (userdata.Level >= x.Level)
-                {
+                    if (userData.Level < x.Level) continue;
                     var getRole = user.Guild.GetRole(x.Role);
                     if (getRole == null) continue;
                     if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
                 }
+                else
+                {
+                    if (userData.Level >= x.Level && x.Stackable)
+                    {
+                        var getRole = user.Guild.GetRole(x.Role);
+                        if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
+                    }
+
+                    if (userData.Level >= x.Level) role = x.Role;
+                }
             }
 
+            if (stack) return roles;
+            if (role == 0) return roles;
+            var getSingleRole = user.Guild.GetRole(role);
+            if (currentUser.HierarchyCheck(getSingleRole)) roles.Add(getSingleRole);
             return roles;
         }
 

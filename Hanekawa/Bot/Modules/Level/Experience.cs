@@ -76,7 +76,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerChannelReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Channels added to exp ignore list:");
                 for (var i = 0; i < channels.Length; i++)
@@ -152,7 +152,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerChannelReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Channels removed from exp ignore list:");
                 for (var i = 0; i < channels.Length; i++)
@@ -216,7 +216,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequiredChannel]
         public async Task ExpIgnoreList()
         {
-            var channels = _exp.ServerChannelReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+            var channels = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
             var categories = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
             var result = new List<string>();
             if (channels.Count == 0 && categories.Count == 0)

@@ -7,7 +7,7 @@ namespace Hanekawa.Database.Tables.Config
         public ulong GuildId { get; set; }
         public ulong? ChannelId { get; set; }
         public ulong? MessageId { get; set; }
-        public int Multiplier { get; set; }
+        public double Multiplier { get; set; }
         public DateTime Time { get; set; }
     }
 }
