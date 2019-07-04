@@ -118,18 +118,18 @@ namespace Hanekawa.Bot.Services.ImageGen
             return points;
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, Account userdata, DbService db)
+        private async Task<string> GetRankAsync(SocketGuildUser user, Account userData, DbService db)
         {
             var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userdata.TotalExp && x.GuildId == user.Guild.Id);
+                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, AccountGlobal userdata, DbService db)
+        private async Task<string> GetRankAsync(SocketGuildUser user, AccountGlobal userData, DbService db)
         {
             var total = await db.AccountGlobals.CountAsync();
-            var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userdata.TotalExp);
+            var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userData.TotalExp);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 

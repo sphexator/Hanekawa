@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
+using ChannelType = Hanekawa.Shared.ChannelType;
 
 namespace Hanekawa.Bot.Modules.Level
 {
@@ -90,9 +91,7 @@ namespace Hanekawa.Bot.Modules.Level
                         {
                             GuildId = Context.Guild.Id,
                             ChannelId = x.Id,
-                            Channel = true,
-                            Category = false,
-                            Voice = false
+                            ChannelType = ChannelType.Text
                         };
                         await db.LevelExpReductions.AddAsync(data);
                         content.AppendLine($"Added {x.Mention}");
@@ -129,9 +128,7 @@ namespace Hanekawa.Bot.Modules.Level
                         {
                             GuildId = Context.Guild.Id,
                             ChannelId = x.Id,
-                            Channel = true,
-                            Category = false,
-                            Voice = true
+                            ChannelType = ChannelType.Voice
                         };
                         await db.LevelExpReductions.AddAsync(data);
                         content.AppendLine($"Added {x.Name}");
@@ -168,9 +165,7 @@ namespace Hanekawa.Bot.Modules.Level
                         {
                             GuildId = Context.Guild.Id,
                             ChannelId = x.Id,
-                            Channel = false,
-                            Category = true,
-                            Voice = false
+                            ChannelType = ChannelType.Category
                         };
                         await db.LevelExpReductions.AddAsync(data);
                         content.AppendLine($"Added {x.Name}");

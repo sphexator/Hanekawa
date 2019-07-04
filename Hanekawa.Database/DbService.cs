@@ -12,6 +12,7 @@ using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
+using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database
@@ -500,6 +501,9 @@ namespace Hanekawa.Database
                 x.HasKey(e => new {e.GuildId, e.ChannelId});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
+                x.Property(e => e.ChannelType).HasConversion(
+                    v => v.ToString(),
+                    v => (ChannelType)Enum.Parse(typeof(ChannelType), v));
             });
             modelBuilder.Entity<SelfAssignAbleRole>(x =>
             {

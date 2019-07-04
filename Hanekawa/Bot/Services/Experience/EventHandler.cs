@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -38,20 +35,32 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 foreach (var x in db.LevelExpReductions)
                 {
-                    if (x.Category)
+                    switch (x.ChannelType)
                     {
-                        var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                        categories.Add(x.ChannelId);
-                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                            (arg1, list) => categories);
-                    }
-
-                    if (x.Channel)
-                    {
-                        var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                        channel.Add(x.ChannelId);
-                        ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                            (arg1, list) => channel);
+                        case ChannelType.Category:
+                        {
+                            var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            categories.Add(x.ChannelId);
+                            ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => categories);
+                            break;
+                        }
+                        case ChannelType.Text:
+                        {
+                            var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            channel.Add(x.ChannelId);
+                            ServerTextChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => channel);
+                            break;
+                        }
+                        case ChannelType.Voice:
+                        {
+                            var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            channel.Add(x.ChannelId);
+                            ServerVoiceChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => channel);
+                            break;
+                        }
                     }
                 }
 

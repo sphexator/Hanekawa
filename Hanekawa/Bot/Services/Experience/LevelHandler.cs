@@ -6,7 +6,6 @@ using Hanekawa.Database.Tables.Account;
 
 namespace Hanekawa.Bot.Services.Experience
 {
-    // TODO Role service for exp service
     public partial class ExpService
     {
         private readonly ConcurrentDictionary<ulong, double> _textExpMultiplier = new ConcurrentDictionary<ulong, double>();
