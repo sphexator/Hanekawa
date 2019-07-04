@@ -10,8 +10,8 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly MemoryCache _globalCooldown = new MemoryCache(new MemoryCacheOptions());
         private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown 
             = new ConcurrentDictionary<ulong, MemoryCache>();
-        
-        public bool OnServerCooldown(SocketGuildUser user)
+
+        private bool OnServerCooldown(SocketGuildUser user)
         {
             var users = _serverExpCooldown.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id, out _)) return true;
@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Experience
             return false;
         }
 
-        public bool OnGlobalCooldown(SocketGuildUser user)
+        private bool OnGlobalCooldown(SocketGuildUser user)
         {
             if (_globalCooldown.TryGetValue(user.Id, out _)) return true;
             _globalCooldown.Set(user.Id, user, TimeSpan.FromMinutes(1));
