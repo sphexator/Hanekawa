@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Services.Drop
 
         private async Task ClaimSpecial(IMessage msg, SocketTextChannel channel, SocketGuildUser user, DbService db)
         {
-            await msg.DeleteAsync();
+            await msg.TryDeleteMessageAsync();
             var loots = _spawnedLoot.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             loots.Remove(msg.Id);
             var rand = _random.Next(150, 250);
@@ -156,12 +156,12 @@ namespace Hanekawa.Bot.Services.Drop
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
             await Task.Delay(5000);
-            await trgMsg.DeleteAsync();
+            await trgMsg.TryDeleteMessageAsync();
         }
 
         private async Task ClaimNormal(IMessage msg, SocketTextChannel channel, SocketGuildUser user, DbService db)
         {
-            await msg.DeleteAsync();
+            await msg.TryDeleteMessageAsync();
             var loots = _normalLoot.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             loots.Remove(msg.Id);
             var rand = _random.Next(15, 150);
@@ -171,7 +171,7 @@ namespace Hanekawa.Bot.Services.Drop
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {rand} exp & credit!");
             await Task.Delay(5000);
-            await trgMsg.DeleteAsync();
+            await trgMsg.TryDeleteMessageAsync();
         }
     }
 }

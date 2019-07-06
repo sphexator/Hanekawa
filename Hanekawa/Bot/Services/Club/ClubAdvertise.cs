@@ -6,6 +6,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ namespace Hanekawa.Bot.Services.Club
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
                 if (club == null) return;
-                await context.Message.DeleteAsync();
+                await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 club.Name = name;
                 await db.SaveChangesAsync();
@@ -56,7 +57,7 @@ namespace Hanekawa.Bot.Services.Club
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
                 if (leader == null) return;
-                await context.Message.DeleteAsync();
+                await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.Description = desc;
                 await db.SaveChangesAsync();
@@ -77,7 +78,7 @@ namespace Hanekawa.Bot.Services.Club
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
                 if (leader == null) return;
-                await context.Message.DeleteAsync();
+                await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.ImageUrl = image;
                 await db.SaveChangesAsync();
@@ -98,7 +99,7 @@ namespace Hanekawa.Bot.Services.Club
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
                 if (leader == null) return;
-                await context.Message.DeleteAsync();
+                await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.IconUrl = icon;
                 await db.SaveChangesAsync();
@@ -168,7 +169,7 @@ namespace Hanekawa.Bot.Services.Club
                     }
                     else
                     {
-                        await msg.DeleteAsync();
+                        await msg.TryDeleteMessageAsync();
                         await SendPostAsync(db, cfg, context.Guild, leader);
                         await context.ReplyAsync("Re-posted ad!", Color.Green.RawValue);
                     }

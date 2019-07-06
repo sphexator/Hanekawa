@@ -60,7 +60,8 @@ namespace Hanekawa.Bot.Modules.Game
                 result.Add($"{x.Id} - {x.Name} (level: {x.LevelRequirement})\n");
             }
 
-            await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Game Classes", null, 10));
+            if (result.Count == 0) await Context.ReplyAsync("Something went wrong...\nCouldn't get a list of classes.");
+            else await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Game Classes", null, 10));
         }
 
         [Name("Class Info")]

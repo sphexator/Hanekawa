@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
@@ -21,7 +22,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task DrawWinnerAsync(int winners, Emote emote, ulong messageId, SocketTextChannel channel = null)
         {
-            await Context.Message.DeleteAsync();
+            await Context.Message.TryDeleteMessageAsync();
             var stream = new MemoryStream();
             if (channel == null) channel = Context.Channel;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))

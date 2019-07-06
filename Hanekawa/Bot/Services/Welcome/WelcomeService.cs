@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Welcome
@@ -55,7 +56,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         if (cfg.TimeToDelete.HasValue)
                         {
                             await Task.Delay(cfg.TimeToDelete.Value);
-                            await message.DeleteAsync();
+                            await message.TryDeleteMessageAsync();
                         }
                     }
                 }

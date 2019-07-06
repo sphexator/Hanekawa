@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Modules.Report
         [Description("Send a report to the moderator team")]
         public async Task ReportGuildAsync([Remainder] string text)
         {
-            await Context.Message.DeleteAsync();
+            await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
             using var db = new DbService();
            
