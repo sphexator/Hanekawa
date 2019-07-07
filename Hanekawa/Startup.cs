@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Database;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.AspNetCore.Builder;

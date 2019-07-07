@@ -6,6 +6,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
 

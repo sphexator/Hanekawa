@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders

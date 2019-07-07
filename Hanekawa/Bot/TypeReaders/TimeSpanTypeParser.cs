@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders

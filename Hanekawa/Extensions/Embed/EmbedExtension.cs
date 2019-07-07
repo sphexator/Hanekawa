@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 
 namespace Hanekawa.Extensions.Embed
 {

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Shared
+﻿namespace Hanekawa.Shared.Command
 {
     public enum Cooldown
     {

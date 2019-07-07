@@ -9,6 +9,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
 

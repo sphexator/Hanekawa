@@ -10,7 +10,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
-using Cooldown = Hanekawa.Shared.Cooldown;
+using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Game
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive.Criteria;
 using Qmmands;
 

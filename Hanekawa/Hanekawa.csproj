@@ -71,6 +71,7 @@
 
     <ItemGroup>
       <Folder Include="Bot\Modules\Event" />
+      <Folder Include="Controllers\" />
       <Folder Include="Utility\" />
     </ItemGroup>
 

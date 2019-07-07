@@ -11,7 +11,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
 using Quartz.Util;
-using Cooldown = Hanekawa.Shared.Cooldown;
+using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Help
 {

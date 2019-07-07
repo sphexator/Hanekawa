@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Qmmands;
 
-namespace Hanekawa.Shared
+namespace Hanekawa.Shared.Command
 {
     public abstract class HanekawaAttribute : CheckAttribute
     {

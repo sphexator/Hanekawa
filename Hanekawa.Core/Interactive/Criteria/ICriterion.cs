@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Hanekawa.Shared.Command;
 
 namespace Hanekawa.Shared.Interactive.Criteria
 {

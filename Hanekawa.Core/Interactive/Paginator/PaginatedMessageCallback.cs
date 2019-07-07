@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive.Callbacks;
 using Hanekawa.Shared.Interactive.Criteria;
 using Qmmands;

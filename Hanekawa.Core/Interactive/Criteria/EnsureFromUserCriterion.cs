@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Discord;
+using Hanekawa.Shared.Command;
 
 namespace Hanekawa.Shared.Interactive.Criteria
 {

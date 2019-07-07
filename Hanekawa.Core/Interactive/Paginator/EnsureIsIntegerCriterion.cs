@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Discord.WebSocket;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive.Criteria;
 
 namespace Hanekawa.Shared.Interactive.Paginator

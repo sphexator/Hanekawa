@@ -7,6 +7,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Services.Experience

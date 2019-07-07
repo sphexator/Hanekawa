@@ -8,6 +8,7 @@ using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Qmmands;
 
