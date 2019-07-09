@@ -7,8 +7,8 @@ using Discord.WebSocket;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Qmmands;
 
@@ -18,14 +18,18 @@ namespace Hanekawa.Bot.Services.Command
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
+        private readonly InteractiveService _interactive;
+        private readonly ColourService _colourService;
         private readonly IServiceProvider _provider;
         private readonly ConcurrentDictionary<ulong, HashSet<string>> _prefixes = new ConcurrentDictionary<ulong, HashSet<string>>();
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider)
+        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider, InteractiveService interactive, ColourService colourService)
         {
             _client = client;
             _command = command;
             _provider = provider;
+            _interactive = interactive;
+            _colourService = colourService;
 
             using (var db = new DbService())
             {
@@ -88,20 +92,18 @@ namespace Hanekawa.Bot.Services.Command
             if (user.IsBot) return;
 
             if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix, out var output)) return;
-            var result = await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user), _provider);
-            if(!result.IsSuccessful) Console.WriteLine("DId not succeed??");
+            var result = await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
+            if(!result.IsSuccessful) Console.WriteLine("Did not succeed??");
         }
 
         private Task ClientJoined(SocketGuild guild)
         {
             _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
-                {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(guild);
-                    var hashSet = new HashSet<string>(cfg.PrefixList);
-                    _prefixes.TryAdd(guild.Id, hashSet);
-                }
+                using var db = new DbService();
+                var cfg = await db.GetOrCreateGuildConfigAsync(guild);
+                var hashSet = new HashSet<string>(cfg.PrefixList);
+                _prefixes.TryAdd(guild.Id, hashSet);
             });
             return Task.CompletedTask;
         }
