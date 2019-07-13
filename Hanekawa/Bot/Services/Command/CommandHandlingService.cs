@@ -1,16 +1,20 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Qmmands;
+using Module = Qmmands.Module;
 
 namespace Hanekawa.Bot.Services.Command
 {
@@ -40,13 +44,19 @@ namespace Hanekawa.Bot.Services.Command
                 }
             }
 
+            _client.LeftGuild += ClientLeft;
+            _client.JoinedGuild += ClientJoined;
             _client.MessageReceived += message =>
             {
                 _ = OnMessageReceived(message);
                 return Task.CompletedTask;
             };
-            _client.LeftGuild += ClientLeft;
-            _client.JoinedGuild += ClientJoined;
+
+            _command.CommandErrored += log =>
+            {
+                _ = OnCommandErrored(log);
+                return Task.CompletedTask;
+            };
         }
 
         public void InitializeAsync()
@@ -62,6 +72,7 @@ namespace Hanekawa.Bot.Services.Command
         }
 
         public HashSet<string> GetPrefix(ulong id) => _prefixes.GetOrAdd(id, new HashSet<string> {"h."});
+
         public async Task<bool> AddPrefix(ulong id, string prefix, DbService db)
         {
             var cfg = await db.GetOrCreateGuildConfigAsync(id);
@@ -96,6 +107,75 @@ namespace Hanekawa.Bot.Services.Command
             if(!result.IsSuccessful) Console.WriteLine("Did not succeed??");
         }
 
+        private async Task OnCommandErrored(CommandErroredEventArgs e)
+        {
+            if (!(e.Context is HanekawaContext context)) return;
+            Qmmands.Command command = null;
+            Module module = null;
+            var response = new StringBuilder();
+            switch (e.Result as IResult)
+            {
+                case ChecksFailedResult err:
+                    command = err.Command;
+                    module = err.Module;
+                    response.AppendLine("The following check(s) failed:");
+                    foreach (var x in err.FailedChecks)
+                    {
+                        response.AppendLine($"[{x.Check}]: `{x.Result.Reason}`");
+                    }
+                    break;
+                case TypeParseFailedResult err:
+                    command = err.Parameter.Command;
+                    response.AppendLine(err.Reason);
+                    break;
+                case ArgumentParseFailedResult err:
+                    command = err.Command;
+                    response.AppendLine($"The syntax of the command `{command.FullAliases[0]}` was wrong.");
+                    break;
+                case OverloadsFailedResult err:
+                    command = err.FailedOverloads.First().Key;
+                    response.AppendLine($"I can't find any valid overload for the command `{command.Name}`.");
+                    foreach (var overload in err.FailedOverloads)
+                    {
+                        response.AppendLine($" -> `{overload.Value.Reason}`");
+                    }
+                    break;
+                case ParameterChecksFailedResult err:
+                    command = err.Parameter.Command;
+                    module = err.Parameter.Command.Module;
+                    response.AppendLine("The following parameter check(s) failed:");
+                    foreach (var (check, error) in err.FailedChecks)
+                    {
+                        response.AppendLine($"[`{check.Parameter.Name}`]: `{error}`");
+                    }
+                    break;
+                case ExecutionFailedResult err:
+                    response.AppendLine($"");
+                    break;
+                case CommandNotFoundResult err:
+                    var list = new List<Tuple<Qmmands.Command, int>>();
+                    var commands = _command.GetAllCommands();
+                    var prefixLength = _prefixes.TryGetValue(context.Guild.Id, out var hashSet);
+                    foreach (var x in commands)
+                    {
+                        for (var i = 0; i < x.Aliases.Count; i++)
+                        {
+                            var alias = x.Aliases.ElementAt(i);
+                            alias.FuzzyMatch(e.Context.Alias, out var score);
+                            list.Add(new Tuple<Qmmands.Command, int>(x, score));
+                        }
+                    }
+
+                    var reCmd = list.OrderByDescending(x => x.Item2).FirstOrDefault();
+                    if (reCmd == null) return;
+                    response.AppendLine($"Did you mean **{reCmd.Item1.Name}** ? (command: {reCmd.Item1.FullAliases.FirstOrDefault()})");
+                    break;
+            }
+
+            if (response.Length == 0) return;
+
+        }
+
         private Task ClientJoined(SocketGuild guild)
         {
             _ = Task.Run(async () =>
@@ -108,9 +188,9 @@ namespace Hanekawa.Bot.Services.Command
             return Task.CompletedTask;
         }
 
-        private Task ClientLeft(SocketGuild socketGuild)
+        private Task ClientLeft(SocketGuild guild)
         {
-            _ = Task.Run(() => _prefixes.TryRemove(socketGuild.Id, out _));
+            _ = Task.Run(() => _prefixes.TryRemove(guild.Id, out _));
             return Task.CompletedTask;
         }
     }

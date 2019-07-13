@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new EmbedBuilder
                         {
                             Color = Color.Green,
-                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId} | {user}" },
+                            Author = new EmbedAuthorBuilder { Name = $"User Unbanned | Case ID: {caseId} | {user}" },
                             Footer = new EmbedFooterBuilder { Text = $"User ID: {user.Id}" },
                             Timestamp = DateTimeOffset.UtcNow,
                             Fields = new List<EmbedFieldBuilder>
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new EmbedBuilder
                         {
                             Color = Color.Red,
-                            Author = new EmbedAuthorBuilder { Name = $"Case ID: {caseId} | {user}" },
+                            Author = new EmbedAuthorBuilder { Name = $"User Banned | Case ID: {caseId} | {user}" },
                             Fields = new List<EmbedFieldBuilder>
                             {
                                 new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},

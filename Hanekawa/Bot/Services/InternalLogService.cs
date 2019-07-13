@@ -28,8 +28,9 @@ namespace Hanekawa.Bot.Services
             _lavaClient = lavaClient;
             _castClient = castClient;
 
-            _client.Log += Logdiscord;
+            _client.Log += LogDiscord;
             _command.CommandErrored += CommandLog;
+            _command.CommandExecuted += CommandExecuted;
 
             _castClient.Log += SimulCastClientLog;
 
@@ -47,13 +48,19 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
+        private Task CommandExecuted(CommandExecutedEventArgs e)
+        {
+            _logger.Log(LogLevel.Information, $"Executed Command {e.Result.Command.Name}");
+            return Task.CompletedTask;
+        }
+
         private Task CommandLog(CommandErroredEventArgs e)
         {
             _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             return Task.CompletedTask;
         }
 
-        private Task Logdiscord(LogMessage log)
+        private Task LogDiscord(LogMessage log)
         {
             _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
             return Task.CompletedTask;
