@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
@@ -41,7 +42,7 @@ namespace Hanekawa.Bot.Modules.Help
                 var strBuilder = new StringBuilder();
                 for (var j = 0; j < 5; j++)
                 {
-                    if(i >= modules.Count) continue;
+                    if (i >= modules.Count) continue;
                     var x = modules[i];
                     strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
@@ -51,8 +52,12 @@ namespace Hanekawa.Bot.Modules.Help
             }
 
             var embed = new EmbedBuilder().CreateDefault(result.ToString(), Context.Guild.Id);
-            embed.Author = new EmbedAuthorBuilder { Name = "Module list" };
-            embed.Footer = new EmbedFooterBuilder { Text = $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"};
+            embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
+            embed.Footer = new EmbedFooterBuilder
+            {
+                Text =
+                    $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"
+            };
             await Context.ReplyAsync(embed);
         }
 
@@ -63,33 +68,42 @@ namespace Hanekawa.Bot.Modules.Help
         [Cooldown(1, 2, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task HelpAsync([Remainder] string module)
         {
-            var result = new List<string>();
-            var moduleInfo = _command.GetAllModules().FirstOrDefault(x => string.Equals(x.Name, module, StringComparison.CurrentCultureIgnoreCase));
+            var moduleInfo = _command.GetAllModules().FirstOrDefault(x =>
+                string.Equals(x.Name, module, StringComparison.CurrentCultureIgnoreCase));
             if (moduleInfo == null)
             {
                 var response = new StringBuilder();
+                var moduleList = new List<Tuple<Module, int>>();
                 var modules = _command.GetAllModules();
-                for (var i = 0; i < modules.Count;)
+                for (var i = 0; i < modules.Count; i++)
                 {
-                    var strBuilder = new StringBuilder();
-                    for (var j = 0; j < 5; j++)
-                    {
-                        if (i >= modules.Count) continue;
-                        var x = modules[i];
-                        strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
-                        i++;
-                    }
+                    if (i >= modules.Count) continue;
+                    var x = modules[i];
+                    if (x.Name.FuzzyMatch(module, out var score)) moduleList.Add(new Tuple<Module, int>(x, score));
+                }
 
-                    response.AppendLine($"{strBuilder}");
+                var orderedList = moduleList.OrderByDescending(x => x.Item2).ToList();
+                response.AppendLine("Did you mean:");
+                var amount = moduleList.Count > 5 ? 5 : moduleList.Count;
+                for (var i = 0; i < amount; i++)
+                {
+                    var x = orderedList[i];
+                    response.AppendLine(x.Item1.Name);
                 }
 
                 var embed = new EmbedBuilder().CreateDefault(response.ToString(), Context.Guild.Id);
-                embed.Author = new EmbedAuthorBuilder { Name = "Module list" };
+                embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
                 embed.Title = "Couldn't find a module with that name";
-                embed.Footer = new EmbedFooterBuilder { Text = $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module" };
+                embed.Footer = new EmbedFooterBuilder
+                {
+                    Text =
+                        $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"
+                };
                 await Context.ReplyAsync(embed);
                 return;
-            } 
+            }
+
+            var result = new List<string>();
             for (var i = 0; i < moduleInfo.Commands.Count; i++)
             {
                 var cmd = moduleInfo.Commands[i];
@@ -141,10 +155,9 @@ namespace Hanekawa.Bot.Modules.Help
                 var x = command.Parameters[i];
                 var name = PermTypeBuilder(x);
                 if (x.IsOptional)
-                {
-                    if(x.DefaultValue == null) output.Append($"{name} (optional) ");
-                    else output.Append($"{name} = {x.DefaultValue} (optional) ");
-                } 
+                    output.Append(x.DefaultValue == null
+                        ? $"{name} (optional) "
+                        : $"{name} = {x.DefaultValue} (optional) ");
                 else if (x.IsRemainder)
                     output.Append($"...{name} ");
                 else if (x.IsMultiple)
@@ -158,10 +171,10 @@ namespace Hanekawa.Bot.Modules.Help
 
         private string PermTypeBuilder(Parameter parameter)
         {
-            if (parameter is SocketGuildUser) return "@bob#0000";
-            if (parameter is SocketRole) return "role";
-            if (parameter is SocketTextChannel) return "#General";
-            if (parameter is SocketCategoryChannel) return "General";
+            if (parameter.Type is SocketGuildUser) return "@bob#0000";
+            if (parameter.Type is SocketRole) return "role";
+            if (parameter.Type is SocketTextChannel) return "#General";
+            if (parameter.Type is SocketCategoryChannel) return "General";
             return parameter.Name;
         }
     }
