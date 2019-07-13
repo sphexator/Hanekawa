@@ -83,14 +83,17 @@ namespace Hanekawa.Bot.Modules.Help
                 }
 
                 var orderedList = moduleList.OrderByDescending(x => x.Item2).ToList();
-                response.AppendLine("Did you mean:");
-                var amount = moduleList.Count > 5 ? 5 : moduleList.Count;
-                for (var i = 0; i < amount; i++)
+                if (orderedList.Count > 0)
                 {
-                    var x = orderedList[i];
-                    response.AppendLine(x.Item1.Name);
+                    response.AppendLine("Did you mean:");
+                    var amount = moduleList.Count > 5 ? 5 : moduleList.Count;
+                    for (var i = 0; i < amount; i++)
+                    {
+                        var x = orderedList[i];
+                        response.AppendLine(x.Item1.Name);
+                    }
                 }
-
+                else response.AppendLine("No module matches that search");
                 var embed = new EmbedBuilder().CreateDefault(response.ToString(), Context.Guild.Id);
                 embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
                 embed.Title = "Couldn't find a module with that name";
