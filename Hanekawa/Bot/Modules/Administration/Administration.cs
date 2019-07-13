@@ -65,6 +65,35 @@ namespace Hanekawa.Bot.Modules.Administration
                 Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
         }
 
+        [Name("Ban")]
+        [Command("ban")]
+        [Description("Bans a user by their ID, doesn't require to be in the server")]
+        [Priority(1)]
+        [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task BanAsync(ulong userId, [Remainder] string reason = "No reason applied")
+        {
+            await Context.Message.TryDeleteMessageAsync();
+            var user = Context.Guild.GetUser(userId);
+            if (user != null) await BanAsync(user, reason);
+            else
+            {
+                try
+                {
+                    await Context.Guild.AddBanAsync(userId, reason: reason);
+                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault(
+                        $"Banned {Format.Bold($"{userId}")} from {Context.Guild.Name}.",
+                        Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
+                }
+                catch
+                {
+                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().CreateDefault(
+                        "Couldn't fetch a user by that ID.",
+                        Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
+                }
+            }
+        }
+
         [Name("Kick")]
         [Command("kick")]
         [Description("Kicks a user")]
