@@ -33,19 +33,6 @@ namespace Hanekawa.Bot.Modules.Settings
             else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red.RawValue);
         }
 
-        [Name("Remove prefix")]
-        [Command("remprefix", "rprefix")]
-        [Description("Removes a prefix from the bot, if it exists")]
-        public async Task RemovePrefixAsync([Remainder]string prefix)
-        {
-            using var db = new DbService();
-            if (await _command.RemovePrefix(Context.Guild.Id, prefix, db))
-            {
-                await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green.RawValue);
-            }
-            else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red.RawValue);
-        }
-
         [Name("Set embed color")]
         [Command("embed")]
         [Description("Changes the embed colour of the bot")]
