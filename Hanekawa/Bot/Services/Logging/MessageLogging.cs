@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -106,7 +107,6 @@ namespace Hanekawa.Bot.Services.Logging
 
         private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel)
         {
-            // TODO: Add bulk delete - complete it - think I did it?
             _ = Task.Run(async () =>
             {
                 if (!(channel is ITextChannel ch)) return;
@@ -119,19 +119,19 @@ namespace Hanekawa.Bot.Services.Logging
                         var logChannel = await ch.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
 
                         var messageContent = new List<string>();
-                        var content = "";
+                        var content = new StringBuilder();
                         foreach (var x in messages)
                         {
                             await x.GetOrDownloadAsync();
                             var user = x.Value.Author;
                             if (content.Length + x.Value.Content.Length >= 1950)
                             {
-                                messageContent.Add(content);
-                                content = "";
+                                messageContent.Add(content.ToString());
+                                content.Clear();
                             }
-                            content += $"{user}: {x.Value.Content}\n";
+                            content.AppendLine($"{user}: {x.Value.Content}");
                         }
-                        if (!content.IsNullOrWhiteSpace()) messageContent.Add(content);
+                        if (!content.ToString().IsNullOrWhiteSpace()) messageContent.Add(content.ToString());
 
                         for (var i = 0; i < messageContent.Count; i++)
                         {

@@ -6,6 +6,7 @@ using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
 
@@ -18,7 +19,12 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Settings : InteractiveBase
     {
         private readonly CommandHandlingService _command;
-        public Settings(CommandHandlingService command) => _command = command;
+        private readonly ColourService _colourService;
+        public Settings(CommandHandlingService command, ColourService colourService)
+        {
+            _command = command;
+            _colourService = colourService;
+        }
 
         [Name("Add prefix")]
         [Command("addprefix", "aprefix")]
@@ -44,10 +50,10 @@ namespace Hanekawa.Bot.Modules.Settings
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    _colourService.AddOrUpdate(Context.Guild.Id, new Color(color));
                     cfg.EmbedColor = color;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
-                    // cfg.UpdateConfig(Context.Guild.Id); TODO: Attach this to colour service
                 }
             else
                 await Context.ReplyAsync("Canceled");
@@ -58,17 +64,17 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Changes the embed colour of the bot")]
         public async Task SetEmbedColorAsync(int r, int g, int b)
         {
-            var color = new Color(r, g, b).RawValue;
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            var color = new Color(r, g, b);
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color.RawValue);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    cfg.EmbedColor = color;
+                    _colourService.AddOrUpdate(Context.Guild.Id, color);
+                    cfg.EmbedColor = color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
-                    // cfg.UpdateConfig(Context.Guild.Id); TODO: Attach this to colour service
                 }
             else
                 await Context.ReplyAsync("Canceled");
@@ -88,10 +94,10 @@ namespace Hanekawa.Bot.Modules.Settings
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                    _colourService.AddOrUpdate(Context.Guild.Id, color);
                     cfg.EmbedColor = color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
-                    // cfg.UpdateConfig(Context.Guild.Id); TODO: Attach this to colour service
                 }
             else
                 await Context.ReplyAsync("Canceled");

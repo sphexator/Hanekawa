@@ -175,8 +175,7 @@ namespace Hanekawa.Bot.Modules.Level
                         else
                             pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
                                       $"Level: {x.Level}\n" +
-                                      $"Stack: {x.Stackable}\n" +
-                                      "\n");
+                                      $"Stack: {x.Stackable}\n");
                     }
                     catch
                     {
