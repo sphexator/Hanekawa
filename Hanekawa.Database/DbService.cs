@@ -37,6 +37,7 @@ namespace Hanekawa.Database
 
         // Items
         public virtual DbSet<Item> Items { get; set; }
+        public virtual DbSet<Background> Backgrounds { get; set; }
 
         // Achievements
         public virtual DbSet<AchievementMeta> Achievements { get; set; }
@@ -84,11 +85,7 @@ namespace Hanekawa.Database
         public virtual DbSet<MuteTimer> MuteTimers { get; set; }
         public virtual DbSet<Report> Reports { get; set; }
         public virtual DbSet<Suggestion> Suggestions { get; set; }
-        public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
-
-        //Profiles
-        public virtual DbSet<Background> Backgrounds { get; set; }
 
         // Music 
         public virtual DbSet<MusicConfig> MusicConfigs { get; set; }
@@ -130,25 +127,6 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.ResponsibleUser).HasConversion<long>();
-            });
-            modelBuilder.Entity<EventSchedule>(x =>
-            {
-                x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.Host).HasConversion<long>();
-                x.Property(e => e.DesignerClaim).HasConversion<long>();
-            });
-            modelBuilder.Entity<WhitelistDesign>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.UserId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
-            });
-            modelBuilder.Entity<WhitelistEvent>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.UserId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
             });
         }
 
@@ -300,14 +278,6 @@ namespace Hanekawa.Database
                 x.Property(e => e.MessageId).HasConversion<long>();
                 x.Property(e => e.ResponseUser).HasConversion<long>();
             });
-            modelBuilder.Entity<QuestionAndAnswer>(x =>
-            {
-                x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
-                x.Property(e => e.MessageId).HasConversion<long>();
-                x.Property(e => e.ResponseUser).HasConversion<long>();
-            });
             modelBuilder.Entity<Report>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
@@ -321,30 +291,6 @@ namespace Hanekawa.Database
 
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
-            });
-            modelBuilder.Entity<NudeServiceChannel>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ChannelId).HasConversion<long>();
-            });
-            modelBuilder.Entity<SingleNudeServiceChannel>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ChannelId).HasConversion<long>();
-            });
-            modelBuilder.Entity<UrlFilter>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ChannelId).HasConversion<long>();
-            });
-            modelBuilder.Entity<SpamIgnore>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ChannelId).HasConversion<long>();
             });
         }
 
@@ -507,11 +453,6 @@ namespace Hanekawa.Database
 
         private void ProfileBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ProfileConfig>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
             modelBuilder.Entity<Background>(x =>
             {
                 x.HasKey(e => e.Id);

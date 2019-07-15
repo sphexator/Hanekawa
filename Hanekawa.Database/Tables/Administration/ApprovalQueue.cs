@@ -5,6 +5,7 @@ namespace Hanekawa.Database.Tables.Administration
 {
     public class ApprovalQueue
     {
+        // TODO: Add approval queue
         public int Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong Uploader { get; set; }

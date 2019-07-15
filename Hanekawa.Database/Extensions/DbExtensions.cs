@@ -88,35 +88,5 @@ namespace Hanekawa.Database.Extensions
                 return data;
             }
         }
-
-        public static async Task<QuestionAndAnswer> CreateQnA(this DbService context, IUser user, SocketGuild guild,
-            DateTime time)
-        {
-            var counter = await context.QuestionAndAnswers.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
-            int nr;
-            if (counter == 0)
-                nr = 1;
-            else
-                nr = counter + 1;
-
-            var data = new QuestionAndAnswer
-            {
-                Id = nr,
-                GuildId = guild.Id,
-                Date = time,
-                UserId = user.Id,
-                Status = true
-            };
-            try
-            {
-                await context.QuestionAndAnswers.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.QuestionAndAnswers.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
-            }
-            catch
-            {
-                return data;
-            }
-        }
     }
 }
