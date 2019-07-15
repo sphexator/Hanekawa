@@ -40,8 +40,6 @@ namespace Hanekawa.Bot.Preconditions
                     return CheckResult.Successful;
                 case false:
                     return CheckResult.Unsuccessful("Not a eligible channel");
-                default:
-                    return CheckResult.Unsuccessful("Not a eligible channel");
             }
         }
 

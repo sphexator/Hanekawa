@@ -94,7 +94,7 @@ namespace Hanekawa.Shared.Interactive
         }
 
         public async Task<SocketMessage> NextMessageAsync(DiscordSocketClient client, ulong? userId, ulong? channelId,
-            string? contains,
+            string contains,
             TimeSpan? timeout = null,
             CancellationToken token = default)
         {

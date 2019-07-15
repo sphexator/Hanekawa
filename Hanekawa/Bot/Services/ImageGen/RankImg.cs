@@ -6,11 +6,12 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> RankBuilder(SocketGuildUser user)
+        public Task<Stream> RankBuilder(SocketGuildUser user)
         {
+            // TODO: Create rank picture
             var stream = new MemoryStream();
 
-            return stream;
+            return Task.FromResult<Stream>(stream);
         }
     }
 }

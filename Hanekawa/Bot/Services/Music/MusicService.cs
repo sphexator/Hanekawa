@@ -50,13 +50,13 @@ namespace Hanekawa.Bot.Services.Music
 
         private Task OnTrackException(LavaPlayer player, LavaTrack track, string reason)
         {
-            _ = Task.Run(async () => { });
+            _ = Task.Run(() => { });
             return Task.CompletedTask;
         }
 
         private Task OnTrackStuck(LavaPlayer player, LavaTrack track, long position)
         {
-            _ = Task.Run(async () => { });
+            _ = Task.Run(() => { });
             return Task.CompletedTask;
         }
     }

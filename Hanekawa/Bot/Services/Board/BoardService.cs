@@ -18,9 +18,10 @@ namespace Hanekawa.Bot.Services.Board
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
 
-        public BoardService(DiscordSocketClient client)
+        public BoardService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
+            _log = log;
             using (var db = new DbService())
             {
                 foreach (var x in db.BoardConfigs)
