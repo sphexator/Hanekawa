@@ -19,10 +19,14 @@ namespace Hanekawa.Shared.Interactive
 
         // helpers to allow DI containers to resolve without a custom factory
         public InteractiveService(DiscordSocketClient discord, InteractiveServiceConfig config = null)
-            : this((BaseSocketClient)discord, config) { }
+            : this((BaseSocketClient) discord, config)
+        {
+        }
 
         public InteractiveService(DiscordShardedClient discord, InteractiveServiceConfig config = null)
-            : this((BaseSocketClient)discord, config) { }
+            : this((BaseSocketClient) discord, config)
+        {
+        }
 
         public InteractiveService(BaseSocketClient discord, InteractiveServiceConfig config = null)
         {
@@ -90,21 +94,45 @@ namespace Hanekawa.Shared.Interactive
         }
 
         public async Task<SocketMessage> NextMessageAsync(DiscordSocketClient client, ulong? userId, ulong? channelId,
+            string? contains,
             TimeSpan? timeout = null,
             CancellationToken token = default)
         {
+            if (!userId.HasValue && !channelId.HasValue) return null;
             timeout ??= _defaultTimeout;
-            var criterion = new Criteria<SocketMessage>();
 
             var eventTrigger = new TaskCompletionSource<SocketMessage>();
             var cancelTrigger = new TaskCompletionSource<bool>();
 
             token.Register(() => cancelTrigger.SetResult(true));
+
             async Task Handler(SocketMessage message)
             {
-                var result = await criterion.JudgeAsync(userId, channelId, message).ConfigureAwait(false);
-                if (result)
-                    eventTrigger.SetResult(message);
+                if (userId.HasValue && channelId.HasValue && message.Author.Id == userId.Value &&
+                    message.Channel.Id == channelId.Value)
+                {
+                    if (contains != null && message.Content.ToLower().Contains(contains.ToLower()))
+                        eventTrigger.SetResult(message);
+                    else eventTrigger.SetResult(message);
+                }
+
+                else if (userId.HasValue && message.Author.Id == userId.Value)
+                {
+                    if (contains != null && message.Content.ToLower().Contains(contains.ToLower()))
+                        eventTrigger.SetResult(message);
+                    else eventTrigger.SetResult(message);
+                }
+                else if (channelId.HasValue && message.Channel.Id == channelId.Value)
+                {
+                    if (contains != null && message.Content.ToLower().Contains(contains.ToLower()))
+                        eventTrigger.SetResult(message);
+                    else eventTrigger.SetResult(message);
+                }
+                else
+                {
+                    if (contains != null && message.Content.ToLower().Contains(contains.ToLower()))
+                        eventTrigger.SetResult(message);
+                }
             }
 
             client.MessageReceived += Handler;

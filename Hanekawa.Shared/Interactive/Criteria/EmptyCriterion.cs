@@ -7,8 +7,5 @@ namespace Hanekawa.Shared.Interactive.Criteria
     {
         public Task<bool> JudgeAsync(HanekawaContext sourceContext, T parameter) 
             => Task.FromResult(true);
-
-        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, T parameter) 
-            => Task.FromResult(true);
     }
 }

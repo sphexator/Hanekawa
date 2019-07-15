@@ -16,9 +16,5 @@ namespace Hanekawa.Shared.Interactive.Criteria
 
         public Task<bool> JudgeAsync(HanekawaContext sourceContext, IMessage parameter) =>
             Task.FromResult(_id == parameter.Author.Id);
-
-        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, IMessage parameter) => !userId.HasValue
-            ? Task.FromResult(false)
-            : Task.FromResult(userId.Value == parameter.Author.Id);
     }
 }
