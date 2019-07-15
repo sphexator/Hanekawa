@@ -118,7 +118,7 @@ namespace Hanekawa.Database.Extensions
             cfg.Banner = false;
             cfg.Limit = 5;
             cfg.Message = null;
-            cfg.Reward = 100;
+            cfg.Reward = null;
             cfg.TimeToDelete = null;
             cfg.AutoDelOnLeave = false;
             cfg.IgnoreNew = null;
