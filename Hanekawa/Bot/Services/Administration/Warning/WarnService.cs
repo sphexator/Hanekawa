@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             }
             catch
             {
-                /* IGNORE */
+                /* IGNORE, maybe I shouldn't ignore this ? handle what kind of exception is thrown, if user has dms closed, ignore else log it*/
             }
         }
     }

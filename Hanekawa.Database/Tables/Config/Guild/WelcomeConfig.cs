@@ -9,6 +9,7 @@ namespace Hanekawa.Database.Tables.Config.Guild
         public int Limit { get; set; } = 4;
         public bool Banner { get; set; }
         public string Message { get; set; }
+        public int? Reward { get; set; }
         public TimeSpan? TimeToDelete { get; set; }
         public bool AutoDelOnLeave { get; set; }
         public DateTimeOffset? IgnoreNew { get; set; } = null;
