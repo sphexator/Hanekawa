@@ -4,10 +4,13 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Command;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace Hanekawa.Bot
 {
@@ -25,16 +28,16 @@ namespace Hanekawa.Bot
             _config = config;
         }
 
-        private async Task Initialize()
+        private void Initialize()
         {
             var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
                 _provider.GetService<CommandHandlingService>().InitializeAsync();
-                var servicelist = assembly.GetTypes()
+                var serviceList = assembly.GetTypes()
                     .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-                foreach (var x in servicelist)
+                foreach (var x in serviceList)
                 {
                     try
                     {
@@ -45,6 +48,9 @@ namespace Hanekawa.Bot
                         Console.WriteLine(e);
                     }
                 }
+
+                var scheduler = _provider.GetRequiredService<IScheduler>();
+                QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             }
 
             _startUp = true;
@@ -52,7 +58,7 @@ namespace Hanekawa.Bot
         
         public async Task StartAsync()
         {
-            if(!_startUp) await Initialize();
+            if(!_startUp) Initialize();
             Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             Console.WriteLine("Logged in");

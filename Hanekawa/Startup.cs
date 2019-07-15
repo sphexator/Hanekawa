@@ -5,7 +5,9 @@ using System.Reflection;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
+using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Database;
+using Hanekawa.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
@@ -67,6 +69,7 @@ namespace Hanekawa
             }));
             services.AddSingleton<Random>();
             services.AddSingleton<HttpClient>();
+            services.UseQuartz(typeof(WarnService));
 
             var assembly = Assembly.GetAssembly(typeof(Program));
             var serviceList = assembly.GetTypes()
