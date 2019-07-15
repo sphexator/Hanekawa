@@ -10,7 +10,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interactive;
-using Hanekawa.Shared.Interactive.Criteria;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Welcome
@@ -80,7 +79,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(SocketTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            var response = await _interactive.NextMessageAsync(_client, null, channel.Id, "welcome");
+            var response = await _interactive.NextMessageAsync(_client, null, channel.Id, "welcome", cfg.TimeToDelete);
             if (response == null) return;
             if (!(response.Author is SocketGuildUser user)) return;
             var userData = await db.GetOrCreateUserData(user);

@@ -5,9 +5,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
 WORKDIR /src
 COPY ["Hanekawa/Hanekawa.csproj", "Hanekawa/"]
-COPY ["Hanekawa.Patreon/Hanekawa.Patreon.csproj", "Hanekawa.Patreon/"]
-COPY ["Hanekawa.Perspective/Hanekawa.Perspective.csproj", "Hanekawa.Perspective/"]
-COPY ["Hanekawa.Core/Hanekawa.Core.csproj", "Hanekawa.Core/"]
+COPY ["Hanekawa.Shared/Hanekawa.Shared.csproj", "Hanekawa.Shared/"]
 COPY ["Hanekawa.Database/Hanekawa.Database.csproj", "Hanekawa.Database/"]
 COPY ["Hanekawa.AnimeSimulCast/Hanekawa.AnimeSimulCast.csproj", "Hanekawa.AnimeSimulCast/"]
 RUN dotnet restore "Hanekawa/Hanekawa.csproj"
