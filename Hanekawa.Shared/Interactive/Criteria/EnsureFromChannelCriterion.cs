@@ -8,15 +8,14 @@ namespace Hanekawa.Shared.Interactive.Criteria
     {
         private readonly ulong _channelId;
 
-        public EnsureFromChannelCriterion(IMessageChannel channel)
-        {
-            _channelId = channel.Id;
-        }
+        public EnsureFromChannelCriterion(IMessageChannel channel) => _channelId = channel.Id;
 
         public Task<bool> JudgeAsync(HanekawaContext sourceContext, IMessage parameter)
-        {
-            var ok = _channelId == parameter.Channel.Id;
-            return Task.FromResult(ok);
-        }
+            => Task.FromResult(_channelId == parameter.Channel.Id);
+
+        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, IMessage parameter)
+            => !channelId.HasValue
+                ? Task.FromResult(false)
+                : Task.FromResult(channelId.Value == parameter.Channel.Id);
     }
 }

@@ -5,9 +5,10 @@ namespace Hanekawa.Shared.Interactive.Criteria
 {
     public class EmptyCriterion<T> : ICriterion<T>
     {
-        public Task<bool> JudgeAsync(HanekawaContext sourceContext, T parameter)
-        {
-            return Task.FromResult(true);
-        }
+        public Task<bool> JudgeAsync(HanekawaContext sourceContext, T parameter) 
+            => Task.FromResult(true);
+
+        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, T parameter) 
+            => Task.FromResult(true);
     }
 }

@@ -89,6 +89,38 @@ namespace Hanekawa.Shared.Interactive
             return null;
         }
 
+        public async Task<SocketMessage> NextMessageAsync(DiscordSocketClient client, ulong? userId, ulong? channelId,
+            TimeSpan? timeout = null,
+            CancellationToken token = default)
+        {
+            timeout ??= _defaultTimeout;
+            var criterion = new Criteria<SocketMessage>();
+
+            var eventTrigger = new TaskCompletionSource<SocketMessage>();
+            var cancelTrigger = new TaskCompletionSource<bool>();
+
+            token.Register(() => cancelTrigger.SetResult(true));
+            async Task Handler(SocketMessage message)
+            {
+                var result = await criterion.JudgeAsync(userId, channelId, message).ConfigureAwait(false);
+                if (result)
+                    eventTrigger.SetResult(message);
+            }
+
+            client.MessageReceived += Handler;
+
+            var trigger = eventTrigger.Task;
+            var cancel = cancelTrigger.Task;
+            var delay = Task.Delay(timeout.Value, token);
+            var task = await Task.WhenAny(trigger, delay, cancel).ConfigureAwait(false);
+
+            client.MessageReceived -= Handler;
+
+            if (task == trigger)
+                return await trigger.ConfigureAwait(false);
+            return null;
+        }
+
         public async Task<IUserMessage> ReplyAndDeleteAsync(HanekawaContext context,
             string content, bool isTTS = false,
             Embed embed = null,

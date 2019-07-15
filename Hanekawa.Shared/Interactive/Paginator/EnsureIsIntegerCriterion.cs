@@ -12,5 +12,11 @@ namespace Hanekawa.Shared.Interactive.Paginator
             var ok = int.TryParse(parameter.Content, out _);
             return Task.FromResult(ok);
         }
+
+        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, SocketMessage parameter)
+        {
+            var ok = int.TryParse(parameter.Content, out _);
+            return Task.FromResult(ok);
+        }
     }
 }

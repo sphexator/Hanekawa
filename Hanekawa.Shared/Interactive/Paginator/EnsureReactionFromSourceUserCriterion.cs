@@ -7,10 +7,12 @@ namespace Hanekawa.Shared.Interactive.Paginator
 {
     internal class EnsureReactionFromSourceUserCriterion : ICriterion<SocketReaction>
     {
-        public Task<bool> JudgeAsync(HanekawaContext sourceContext, SocketReaction parameter)
-        {
-            var ok = parameter.UserId == sourceContext.User.Id;
-            return Task.FromResult(ok);
-        }
+        public Task<bool> JudgeAsync(HanekawaContext sourceContext, SocketReaction parameter) 
+            => Task.FromResult(parameter.UserId == sourceContext.User.Id);
+
+        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, SocketReaction parameter) 
+            => !userId.HasValue 
+                ? Task.FromResult(false) 
+                : Task.FromResult(parameter.UserId == userId.Value);
     }
 }

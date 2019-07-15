@@ -19,6 +19,17 @@ namespace Hanekawa.Shared.Interactive.Criteria
             return true;
         }
 
+        public async Task<bool> JudgeAsync(ulong? channelId, ulong? userId, T parameter)
+        {
+            foreach (var criterion in _critiera)
+            {
+                var result = await criterion.JudgeAsync(channelId, userId, parameter).ConfigureAwait(false);
+                if (!result) return false;
+            }
+
+            return true;
+        }
+
         public Criteria<T> AddCriterion(ICriterion<T> criterion)
         {
             _critiera.Add(criterion);

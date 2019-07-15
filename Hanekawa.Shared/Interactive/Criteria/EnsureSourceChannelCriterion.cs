@@ -6,10 +6,11 @@ namespace Hanekawa.Shared.Interactive.Criteria
 {
     public class EnsureSourceChannelCriterion : ICriterion<IMessage>
     {
-        public Task<bool> JudgeAsync(HanekawaContext sourceContext, IMessage parameter)
-        {
-            var ok = sourceContext.Channel.Id == parameter.Channel.Id;
-            return Task.FromResult(ok);
-        }
+        public Task<bool> JudgeAsync(HanekawaContext sourceContext, IMessage parameter) =>
+            Task.FromResult(sourceContext.Channel.Id == parameter.Channel.Id);
+
+        public Task<bool> JudgeAsync(ulong? channelId, ulong? userId, IMessage parameter) => !channelId.HasValue
+            ? Task.FromResult(false)
+            : Task.FromResult(channelId.Value == parameter.Channel.Id);
     }
 }
