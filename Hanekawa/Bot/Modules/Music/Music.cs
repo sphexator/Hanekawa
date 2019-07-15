@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -8,6 +9,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
+using Humanizer;
 using Qmmands;
 using Quartz.Util;
 using Victoria;
@@ -94,7 +96,7 @@ namespace Hanekawa.Bot.Modules.Music
         }
 
         [Name("Disconnect")]
-        [Command("disconnect", "disc")]
+        [Command("disconnect", "disc", "leave")]
         [Description("Disconnects the bot from voice channel.")]
         public async Task DisconnectAsync()
         {
@@ -124,7 +126,7 @@ namespace Hanekawa.Bot.Modules.Music
         }
 
         [Name("Play")]
-        [Command("play")]
+        [Command("play", "p")]
         [Description("Queues up a song, joins channel if not currently connected")]
         public async Task PlayAsync([Remainder] string query)
         {
@@ -136,6 +138,11 @@ namespace Hanekawa.Bot.Modules.Music
 
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id) ??
                          await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
+            if (player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in the same channel as me to queue up songs", Color.Red.RawValue);
+                return;
+            }
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
             var songResult = await _lavaRestClient.SearchYouTubeAsync(query);
             if (songResult.LoadType == LoadType.NoMatches || songResult.LoadType == LoadType.LoadFailed)
@@ -182,7 +189,11 @@ namespace Hanekawa.Bot.Modules.Music
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
             if (player == null || player.IsPaused) return;
-            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
             await player.PauseAsync();
             await Context.ReplyAsync("Paused the song!");
         }
@@ -194,7 +205,11 @@ namespace Hanekawa.Bot.Modules.Music
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
             if (player == null || !player.IsPaused) return;
-            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
             await player.ResumeAsync();
             await Context.ReplyAsync("Resumed the song!");
         }
@@ -206,8 +221,21 @@ namespace Hanekawa.Bot.Modules.Music
         {
             if (volume < 0) return;
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
-            if (player == null) return;
-            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
+            if (player == null)
+            {
+                await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
+                return;
+            }
+            if (!player.IsPlaying)
+            {
+                await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
+                return;
+            }
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
             await player.SetVolumeAsync(volume);
             await Context.ReplyAsync($"Set volume to {volume}%");
         }
@@ -218,8 +246,21 @@ namespace Hanekawa.Bot.Modules.Music
         public async Task SkipAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
-            if (player == null) return;
-            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
+            if (player == null)
+            {
+                await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
+                return;
+            }
+            if (!player.IsPlaying)
+            {
+                await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
+                return;
+            }
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
             var track = await player.SkipAsync();
             await Context.ReplyAsync($"Skipped {track.Title}");
         }
@@ -230,11 +271,53 @@ namespace Hanekawa.Bot.Modules.Music
         public async Task ClearAsync()
         {
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
-            if (player == null) return;
-            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
+            if (player == null)
+            {
+                await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
+                return;
+            }
+            if (!player.IsPlaying)
+            {
+                await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
+                return;
+            }
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
             player.Queue.Clear();
             await player.StopAsync();
             await Context.ReplyAsync("Cleared queue");
+        }
+
+        [Name("Rewind")]
+        [Command("rewind")]
+        [Description(
+            "Goes back, or rewinds back to a part of the song, if past the limit of the song, starts from teh beginning")]
+        public async Task RewindsAsync(TimeSpan rewind)
+        {
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            if (player == null)
+            {
+                await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
+                return;
+            }
+            if (!player.IsPlaying)
+            {
+                await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
+                return;
+            }
+            if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
+            {
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                return;
+            }
+
+            var pos = player.CurrentTrack.Position - rewind;
+            if(pos < new TimeSpan(0, 0, 0, 0)) pos = new TimeSpan(0,0,0,0);
+            await player.SeekAsync(pos);
+            await Context.ReplyAsync($"Rewinded {rewind.Humanize()} on **{player.CurrentTrack.Title}**");
         }
 
         [Name("Music Channel")]

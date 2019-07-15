@@ -48,9 +48,6 @@ namespace Hanekawa.Database
 
         // Administration
         public virtual DbSet<Blacklist> Blacklists { get; set; }
-        public virtual DbSet<EventSchedule> EventSchedules { get; set; }
-        public virtual DbSet<WhitelistDesign> WhitelistDesigns { get; set; }
-        public virtual DbSet<WhitelistEvent> WhitelistEvents { get; set; }
 
         //Clubs
         public virtual DbSet<ClubInformation> ClubInfos { get; set; }
@@ -89,14 +86,9 @@ namespace Hanekawa.Database
         public virtual DbSet<Suggestion> Suggestions { get; set; }
         public virtual DbSet<QuestionAndAnswer> QuestionAndAnswers { get; set; }
         public virtual DbSet<Warn> Warns { get; set; }
-        public virtual DbSet<SpamIgnore> SpamIgnores { get; set; }
-        public virtual DbSet<NudeServiceChannel> NudeServiceChannels { get; set; }
-        public virtual DbSet<UrlFilter> UrlFilters { get; set; }
-        public virtual DbSet<SingleNudeServiceChannel> SingleNudeServiceChannels { get; set; }
 
         //Profiles
         public virtual DbSet<Background> Backgrounds { get; set; }
-        public virtual DbSet<ProfileConfig> ProfileConfigs { get; set; }
 
         // Music 
         public virtual DbSet<MusicConfig> MusicConfigs { get; set; }
