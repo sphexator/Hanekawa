@@ -1,15 +1,21 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
@@ -53,7 +59,7 @@ namespace Hanekawa.Bot.Services.Command
 
             _command.CommandErrored += log =>
             {
-                _ = OnCommandErrored(log);
+                _ = OnCommandError(log);
                 return Task.CompletedTask;
             };
         }
@@ -92,7 +98,7 @@ namespace Hanekawa.Bot.Services.Command
             if(!result.IsSuccessful) Console.WriteLine("Did not succeed??");
         }
 
-        private async Task OnCommandErrored(CommandErroredEventArgs e)
+        private async Task OnCommandError(CommandErroredEventArgs e)
         {
             if (!(e.Context is HanekawaContext context)) return;
             Qmmands.Command command = null;
@@ -135,12 +141,22 @@ namespace Hanekawa.Bot.Services.Command
                     }
                     break;
                 case ExecutionFailedResult err:
-                    response.AppendLine($"");
+                    switch (err.Exception)
+                    {
+                        case HttpException _:
+                            response.AppendLine("Something went wrong...");
+                            break;
+                        case HttpRequestException _:
+                            response.AppendLine("I am missing the required permissions to perform this action");
+                            break;
+                        default:
+                            response.AppendLine("Something went wrong...");
+                            break;
+                    }
                     break;
-                case CommandNotFoundResult err:
+                case CommandNotFoundResult _:
                     var list = new List<Tuple<Qmmands.Command, int>>();
                     var commands = _command.GetAllCommands();
-                    var prefixLength = _prefixes.TryGetValue(context.Guild.Id, out var hashSet);
                     foreach (var x in commands)
                     {
                         for (var i = 0; i < x.Aliases.Count; i++)
@@ -153,12 +169,16 @@ namespace Hanekawa.Bot.Services.Command
 
                     var reCmd = list.OrderByDescending(x => x.Item2).FirstOrDefault();
                     if (reCmd == null) return;
-                    response.AppendLine($"Did you mean **{reCmd.Item1.Name}** ? (command: {reCmd.Item1.FullAliases.FirstOrDefault()})");
+                    _prefixes.TryGetValue(context.Guild.Id, out var prefix);
+                    response.AppendLine($"Did you mean **{reCmd.Item1.Name}** ? (command: {prefix}{reCmd.Item1.FullAliases.FirstOrDefault()})");
+                    break;
+                default:
+                    response.AppendLine("Something went wrong...");
                     break;
             }
 
             if (response.Length == 0) return;
-
+            await context.Channel.ReplyAsync(response.ToString(), Color.Red.RawValue);
         }
 
         private Task ClientJoined(SocketGuild guild)

@@ -42,7 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.Core\Hanekawa.Shared.csproj" />
     <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
   </ItemGroup>
 

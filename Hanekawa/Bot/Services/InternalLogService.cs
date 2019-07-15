@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Services
             _castClient = castClient;
 
             _client.Log += LogDiscord;
-            _command.CommandErrored += CommandLog;
+            _command.CommandErrored += CommandErrorLog;
             _command.CommandExecuted += CommandExecuted;
 
             _castClient.Log += SimulCastClientLog;
@@ -54,7 +54,7 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private Task CommandLog(CommandErroredEventArgs e)
+        private Task CommandErrorLog(CommandErroredEventArgs e)
         {
             _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             return Task.CompletedTask;
