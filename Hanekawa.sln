@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.AnimeSimulCast", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Shared", "Hanekawa.Core\Hanekawa.Shared.csproj", "{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Shared", "Hanekawa.Shared\Hanekawa.Shared.csproj", "{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Web", "Hanekawa.Web\Hanekawa.Web.csproj", "{6E7C521C-6763-4C0A-AA82-8DA00D9B793A}"
 EndProject

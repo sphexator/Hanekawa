@@ -10,4 +10,8 @@
     <PackageReference Include="System.ServiceModel.Syndication" Version="4.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
