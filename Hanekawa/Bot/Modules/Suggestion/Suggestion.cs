@@ -17,7 +17,8 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Suggestion
 {
     [Name("Suggestion")]
-    [Description("Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
+    [Description(
+        "Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
     public partial class Suggestion : InteractiveBase
     {
         [Name("Suggest")]
@@ -32,8 +33,9 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 if (!cfg.Channel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
                 var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Guild.Id);
-                embed.Author = new EmbedAuthorBuilder { IconUrl = Context.User.GetAvatar(), Name = Context.User.GetName() };
-                embed.Footer = new EmbedFooterBuilder { Text = $"Suggestion ID: {caseId.Id}" };
+                embed.Author = new EmbedAuthorBuilder
+                    {IconUrl = Context.User.GetAvatar(), Name = Context.User.GetName()};
+                embed.Footer = new EmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"};
                 embed.Timestamp = DateTimeOffset.UtcNow;
                 if (Context.Message.Attachments.Count > 0) embed.WithImageUrl(Context.Message.Attachments.First().Url);
                 var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).ReplyAsync(embed);
@@ -49,7 +51,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("approve", "ar")]
         [Description("Approves a suggestion by its Id with a optional reason")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ApproveSuggestionAsync(int id, [Remainder]string reason = null)
+        public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
@@ -63,7 +65,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     return;
                 }
 
-                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
                 if (msg == null) return;
                 var sugstMessage = await CommentSuggestion(Context.User, msg, reason, Color.Green);
                 await RespondUser(suggestion, sugstMessage, reason);
@@ -74,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("decline", "dr")]
         [Description("Decline a suggestion by its ID with a optional reason")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task DeclineSuggestionAsync(int id, [Remainder]string reason = null)
+        public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
@@ -88,7 +91,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     return;
                 }
 
-                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
                 if (msg == null) return;
                 var sugstMessage = await CommentSuggestion(Context.User, msg, reason, Color.Red);
                 await RespondUser(suggestion, sugstMessage, reason);
@@ -98,7 +102,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Comment Suggestion")]
         [Command("Comment", "rr")]
         [Description("Adds a comment onto a suggestion, usable by user suggesting and server admin")]
-        public async Task CommentSuggestionAsync(int id, [Remainder]string reason = null)
+        public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
@@ -108,17 +112,18 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (!Context.User.GuildPermissions.Has(GuildPermission.ManageGuild) &&
                     Context.User.Id != suggestion.UserId) return;
-                
+
                 if (suggestion?.MessageId == null)
                 {
                     await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
                     return;
                 }
 
-                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
+                var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value)
+                    .GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
                 if (msg == null) return;
                 var sugstMessage = await CommentSuggestion(Context.User, msg, reason);
-                if(Context.User.Id != suggestion.UserId) await RespondUser(suggestion, sugstMessage, reason);
+                if (Context.User.Id != suggestion.UserId) await RespondUser(suggestion, sugstMessage, reason);
             }
         }
 
@@ -146,7 +151,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 iNo = defaultNo;
             }
 
-            var result = new List<IEmote> { iYes, iNo };
+            var result = new List<IEmote> {iYes, iNo};
             for (var i = 0; i < result.Count; i++)
             {
                 var x = result[i];
@@ -154,10 +159,11 @@ namespace Hanekawa.Bot.Modules.Suggestion
             }
         }
 
-        private async Task<string> CommentSuggestion(SocketGuildUser user, IUserMessage msg, string message, Color? color = null)
+        private async Task<string> CommentSuggestion(SocketGuildUser user, IUserMessage msg, string message,
+            Color? color = null)
         {
             var embed = msg.Embeds.First().ToEmbedBuilder();
-            if(color.HasValue) embed.Color = color;
+            if (color.HasValue) embed.Color = color;
             embed.AddField(user.GetName(), message);
             await msg.ModifyAsync(x => x.Embed = embed.Build());
             return embed.Description;

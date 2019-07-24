@@ -17,11 +17,12 @@ namespace Hanekawa.Bot.Services.Club
             new OverwritePermissions(addReactions: PermValue.Allow, sendMessages: PermValue.Allow,
                 attachFiles: PermValue.Allow, embedLinks: PermValue.Allow, viewChannel: PermValue.Allow);
 
+        private readonly DiscordSocketClient _client;
+
         private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(
             addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny,
             embedLinks: PermValue.Deny, viewChannel: PermValue.Deny);
 
-        private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
 
@@ -53,7 +54,8 @@ namespace Hanekawa.Bot.Services.Club
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Club Service) Error in {user.Guild.Id} for User Left- {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Club Service) Error in {user.Guild.Id} for User Left- {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -96,7 +98,8 @@ namespace Hanekawa.Bot.Services.Club
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Club Service) Error in {user.Guild.Id} for Reaction added or removed - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Club Service) Error in {user.Guild.Id} for Reaction added or removed - {e.Message}");
                 }
             });
             return Task.CompletedTask;

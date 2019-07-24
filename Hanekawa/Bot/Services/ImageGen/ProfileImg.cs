@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private List<PointF> CreateProfileProgressBar(Account userData)
         {
-            var perc = userData.Exp / (float)_expService.ExpToNextLevel(userData);
+            var perc = userData.Exp / (float) _expService.ExpToNextLevel(userData);
             var numb = perc * 100 / 100 * 360 * 2;
             var points = new List<PointF>();
             const double radius = 55;
@@ -112,7 +112,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var x = 200 + radius * Math.Cos(radians - Math.PI / 2);
                 var y = 59 + radius * Math.Sin(radians - Math.PI / 2);
-                points.Add(new PointF((float)x, (float)y));
+                points.Add(new PointF((float) x, (float) y));
             }
 
             return points;

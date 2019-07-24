@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Qmmands;
 
@@ -12,10 +11,7 @@ namespace Hanekawa.Bot.Preconditions
     {
         private readonly GuildPermission[] _perms;
 
-        public RequireBotPermission(params GuildPermission[] perms)
-        {
-            _perms = perms;
-        }
+        public RequireBotPermission(params GuildPermission[] perms) => _perms = perms;
 
         public override ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
         {

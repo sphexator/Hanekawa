@@ -20,8 +20,9 @@ namespace Hanekawa.Bot.Modules.Board
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     public partial class Board : InteractiveBase
     {
-        private readonly BoardService _service;
         private readonly InternalLogService _log;
+        private readonly BoardService _service;
+
         public Board(BoardService service, InternalLogService log)
         {
             _service = service;
@@ -45,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Board
                     .OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
                 var totalStars = 0;
                 for (var i = 0; i < boards.Count; i++) totalStars += boards[i].StarAmount;
-                
+
                 string topReceived = null;
                 for (var i = 0; i < topReceive.Count; i++)
                 {
@@ -60,6 +61,7 @@ namespace Hanekawa.Bot.Modules.Board
                     var index = topStars[i];
                     topStarMessages += $"{i}: {index.MessageId} ({index.StarAmount} {emote})\n";
                 }
+
                 var embed = new EmbedBuilder().CreateDefault(null, Context.Guild.Id);
                 embed.Description = $"{boards.Count} messages boarded with a total of {totalStars} {emote} given";
                 embed.AddField($"Top {emote} Posts", $"{topStarMessages ?? "N/A"}");
@@ -91,10 +93,13 @@ namespace Hanekawa.Bot.Modules.Board
                         topStar += $"{i} > {index.MessageId} ({emote} received {index.StarAmount})\n";
                     }
                 }
-                else topStar += $"No {emote} messages";
+                else
+                {
+                    topStar += $"No {emote} messages";
+                }
 
                 var embed = new EmbedBuilder().CreateDefault(null, Context.Guild.Id);
-                embed.Author = new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = user.GetName() };
+                embed.Author = new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()};
                 embed.AddField("Boarded Messages", $"{boardData.Count}", true);
                 embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
                 embed.AddField($"{emote} Given", $"{userData.StarGiven}", true);

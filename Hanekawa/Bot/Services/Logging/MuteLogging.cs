@@ -36,8 +36,9 @@ namespace Hanekawa.Bot.Services.Logging
             caseId.MessageId = msg.Id;
             await db.SaveChangesAsync();
         }
-        
-        public async Task Mute(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration, DbService db)
+
+        public async Task Mute(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration,
+            DbService db)
         {
             var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
             if (!cfg.LogBan.HasValue) return;

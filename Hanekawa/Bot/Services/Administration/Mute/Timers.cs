@@ -2,9 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Hanekawa.Database;
-using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +10,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 {
     public partial class MuteService
     {
-        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> _unMuteTimers 
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>> _unMuteTimers
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, Timer>>();
 
         private void StartUnMuteTimer(ulong guildId, ulong userId, TimeSpan duration)
@@ -28,10 +26,11 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                         var user = guild.GetUser(userId);
                         await UnMuteUser(user, db);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         await RemoveTimerFromDbAsync(guildId, userId, db);
-                        _log.LogAction(LogLevel.Error, e, $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
+                        _log.LogAction(LogLevel.Error, e,
+                            $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
                 }
             }, null, duration, Timeout.InfiniteTimeSpan);

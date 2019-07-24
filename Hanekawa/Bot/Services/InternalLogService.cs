@@ -5,22 +5,22 @@ using Discord.WebSocket;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
+using Qmmands;
 using Victoria;
 using Victoria.Entities;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
-using Qmmands;
 
 namespace Hanekawa.Bot.Services
 {
     public class InternalLogService : INService, IRequired
     {
+        private readonly AnimeSimulCastClient _castClient;
         private readonly DiscordSocketClient _client;
         private readonly CommandService _command;
-        private readonly ILogger<InternalLogService> _logger;
         private readonly LavaSocketClient _lavaClient;
-        private readonly AnimeSimulCastClient _castClient;
+        private readonly ILogger<InternalLogService> _logger;
 
-        public InternalLogService(DiscordSocketClient client, CommandService command, ILogger<InternalLogService> logger, LavaSocketClient lavaClient, AnimeSimulCastClient castClient)
+        public InternalLogService(DiscordSocketClient client, CommandService command,
+            ILogger<InternalLogService> logger, LavaSocketClient lavaClient, AnimeSimulCastClient castClient)
         {
             _client = client;
             _command = command;

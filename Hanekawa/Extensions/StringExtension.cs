@@ -7,12 +7,12 @@ namespace Hanekawa.Extensions
 {
     public static class StringExtension
     {
-        public static string SanitizeEveryone(this string str) =>
-            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
-        
         private static readonly Regex FilterRegex =
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static string SanitizeEveryone(this string str) =>
+            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
 
         public static bool IsPictureUrl(this string str)
         {
@@ -46,13 +46,14 @@ namespace Hanekawa.Extensions
         public static bool FuzzyMatch(this string stringToSearch, string pattern, out int outScore)
         {
             // Score consts
-            const int adjacencyBonus = 5;               // bonus for adjacent matches
-            const int separatorBonus = 10;              // bonus if match occurs after a separator
-            const int camelBonus = 10;                  // bonus if match is uppercase and prev is lower
+            const int adjacencyBonus = 5; // bonus for adjacent matches
+            const int separatorBonus = 10; // bonus if match occurs after a separator
+            const int camelBonus = 10; // bonus if match is uppercase and prev is lower
 
-            const int leadingLetterPenalty = -3;        // penalty applied for every letter in stringToSearch before the first match
-            const int maxLeadingLetterPenalty = -9;     // maximum penalty for leading letters
-            const int unmatchedLetterPenalty = -1;      // penalty for every letter that doesn't matter
+            const int
+                leadingLetterPenalty = -3; // penalty applied for every letter in stringToSearch before the first match
+            const int maxLeadingLetterPenalty = -9; // maximum penalty for leading letters
+            const int unmatchedLetterPenalty = -1; // penalty for every letter that doesn't matter
 
 
             // Loop variables
@@ -63,7 +64,7 @@ namespace Hanekawa.Extensions
             var strLength = stringToSearch.Length;
             var prevMatched = false;
             var prevLower = false;
-            var prevSeparator = true;                   // true if first letter match gets separator bonus
+            var prevSeparator = true; // true if first letter match gets separator bonus
 
             // Use "best" matched letter if multiple string letters match the pattern
             char? bestLetter = null;
@@ -79,7 +80,7 @@ namespace Hanekawa.Extensions
                 var patternChar = patternIdx != patternLength ? pattern[patternIdx] as char? : null;
                 var strChar = stringToSearch[strIdx];
 
-                var patternLower = patternChar != null ? char.ToLower((char)patternChar) as char? : null;
+                var patternLower = patternChar != null ? char.ToLower((char) patternChar) as char? : null;
                 var strLower = char.ToLower(strChar);
                 var strUpper = char.ToUpper(strChar);
 
@@ -91,7 +92,7 @@ namespace Hanekawa.Extensions
                 if (advanced || patternRepeat)
                 {
                     score += bestLetterScore;
-                    matchedIndices.Add((int)bestLetterIdx);
+                    matchedIndices.Add((int) bestLetterIdx);
                     bestLetter = null;
                     bestLower = null;
                     bestLetterIdx = null;
@@ -134,7 +135,7 @@ namespace Hanekawa.Extensions
                             score += unmatchedLetterPenalty;
 
                         bestLetter = strChar;
-                        bestLower = char.ToLower((char)bestLetter);
+                        bestLower = char.ToLower((char) bestLetter);
                         bestLetterIdx = strIdx;
                         bestLetterScore = newScore;
                     }
@@ -158,7 +159,7 @@ namespace Hanekawa.Extensions
             if (bestLetter != null)
             {
                 score += bestLetterScore;
-                matchedIndices.Add((int)bestLetterIdx);
+                matchedIndices.Add((int) bestLetterIdx);
             }
 
             outScore = score;

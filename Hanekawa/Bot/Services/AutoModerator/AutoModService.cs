@@ -14,11 +14,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
     public class AutoModService
     {
         private readonly DiscordSocketClient _client;
-        private readonly LogService _logService;
         private readonly InternalLogService _log;
+        private readonly LogService _logService;
         private readonly MuteService _muteService;
 
-        public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService, InternalLogService log)
+        public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService,
+            InternalLogService log)
         {
             _client = client;
             _logService = logService;
@@ -37,7 +38,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (!(message.Author is SocketGuildUser user)) return;
                 if (user.IsBot) return;
                 if (user.GuildPermissions.ManageGuild) return;
-                if(!message.Content.IsDiscordInvite(out var invite)) return;
+                if (!message.Content.IsDiscordInvite(out var invite)) return;
                 try
                 {
                     using (var db = new DbService())
@@ -46,12 +47,14 @@ namespace Hanekawa.Bot.Services.AutoModerator
                         if (!cfg.FilterInvites) return;
                         await message.TryDeleteMessagesAsync();
                         await _muteService.Mute(user, db);
-                        await _logService.Mute(user, user.Guild.CurrentUser, $"Invite link - {invite.Truncate(80)}", db);
+                        await _logService.Mute(user, user.Guild.CurrentUser, $"Invite link - {invite.Truncate(80)}",
+                            db);
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Automod) Error in {channel.Guild.Id} for Invite link - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Automod) Error in {channel.Guild.Id} for Invite link - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -77,7 +80,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Automod) Error in {channel.Guild.Id} for Message Length - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Automod) Error in {channel.Guild.Id} for Message Length - {e.Message}");
                 }
             });
             return Task.CompletedTask;

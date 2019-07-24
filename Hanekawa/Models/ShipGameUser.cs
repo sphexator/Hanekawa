@@ -10,7 +10,7 @@ namespace Hanekawa.Models
         {
             Name = enemy.Name;
             Enemy = enemy;
-            Id = (ulong)enemy.Id;
+            Id = (ulong) enemy.Id;
             IsNpc = true;
             Class = Class;
             Level = level;
@@ -30,7 +30,7 @@ namespace Hanekawa.Models
         public ulong Id { get; set; }
         public int Level { get; set; }
         public int Health { get; set; }
-        public int DamageTaken { get;set; }
+        public int DamageTaken { get; set; }
         public GameClass Class { get; set; }
         public GameEnemy Enemy { get; set; }
         public bool IsNpc { get; set; }

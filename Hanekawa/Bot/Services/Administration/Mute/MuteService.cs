@@ -16,13 +16,14 @@ namespace Hanekawa.Bot.Services.Administration.Mute
     public partial class MuteService : INService
     {
         private readonly DiscordSocketClient _client;
-        private readonly LogService _logService;
-        private readonly InternalLogService _log;
-        private readonly WarnService _warn;
 
         private readonly OverwritePermissions _denyOverwrite =
             new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
                 attachFiles: PermValue.Deny);
+
+        private readonly InternalLogService _log;
+        private readonly LogService _logService;
+        private readonly WarnService _warn;
 
         public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn)
         {
@@ -43,7 +44,8 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             }
         }
 
-        public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after, DbService db, string reason)
+        public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after, DbService db,
+            string reason)
         {
             await Mute(user, db).ConfigureAwait(false);
             var unMuteAt = DateTime.UtcNow + after;
@@ -87,7 +89,10 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 cfg.MuteRole = role.Id;
                 await db.SaveChangesAsync();
             }
-            else role = guild.GetRole(cfg.MuteRole.Value);
+            else
+            {
+                role = guild.GetRole(cfg.MuteRole.Value);
+            }
 
             return role;
         }

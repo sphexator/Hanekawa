@@ -13,7 +13,8 @@ namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService
     {
-        public async Task PromoteUserAsync(SocketGuildUser user, ClubUser clubUser, ClubInformation clubInfo, DbService db)
+        public async Task PromoteUserAsync(SocketGuildUser user, ClubUser clubUser, ClubInformation clubInfo,
+            DbService db)
         {
             if (clubUser.Rank == 2)
             {
@@ -28,6 +29,7 @@ namespace Hanekawa.Bot.Services.Club
             {
                 clubUser.Rank--;
             }
+
             await db.SaveChangesAsync();
         }
 
@@ -61,17 +63,21 @@ namespace Hanekawa.Bot.Services.Club
                 await db.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == user.Guild.Id && x.Id == clubUser.ClubId);
             if (clubUser.Rank == 1)
             {
-                var clubMembers = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.ClubId == clubUser.ClubId)
+                var clubMembers = await db.ClubPlayers
+                    .Where(x => x.GuildId == user.Guild.Id && x.ClubId == clubUser.ClubId)
                     .ToListAsync();
                 if (clubMembers.Count > 1)
                 {
                     var officers = clubMembers.Where(x => x.Rank == 2).ToList();
-                    var newLeader = officers.Count >= 1 ? officers[_random.Next(officers.Count)] : clubMembers[_random.Next(clubMembers.Count)];
+                    var newLeader = officers.Count >= 1
+                        ? officers[_random.Next(officers.Count)]
+                        : clubMembers[_random.Next(clubMembers.Count)];
 
                     newLeader.Rank = 1;
                     clubInfo.LeaderId = newLeader.UserId;
                 }
             }
+
             db.ClubPlayers.Remove(clubUser);
             await RemoveRoleOrChannelPermissions(user, clubInfo, cfg);
             await Disband(user, clubInfo, db);
@@ -79,7 +85,8 @@ namespace Hanekawa.Bot.Services.Club
             return true;
         }
 
-        public async Task<bool> AddBlacklist(SocketGuildUser user, SocketGuildUser leader, ClubInformation clubInfo, DbService db, string reason = "N/A")
+        public async Task<bool> AddBlacklist(SocketGuildUser user, SocketGuildUser leader, ClubInformation clubInfo,
+            DbService db, string reason = "N/A")
         {
             var check = await db.ClubBlacklists.FindAsync(clubInfo.Id, user.Guild.Id, user.Id);
             if (check != null) return false;
@@ -108,7 +115,8 @@ namespace Hanekawa.Bot.Services.Club
             return true;
         }
 
-        private async Task AddRoleOrChannelPermissions(SocketGuildUser user, ClubInformation club, DbService db, ClubConfig cfg = null)
+        private async Task AddRoleOrChannelPermissions(SocketGuildUser user, ClubInformation club, DbService db,
+            ClubConfig cfg = null)
         {
             if (cfg == null) cfg = await db.GetOrCreateClubConfigAsync(user.Guild);
             if (cfg.RoleEnabled && club.Role.HasValue)
@@ -117,7 +125,8 @@ namespace Hanekawa.Bot.Services.Club
                 await user.Guild.GetTextChannel(club.Channel.Value).AddPermissionOverwriteAsync(user, _allowOverwrite);
         }
 
-        private async Task RemoveRoleOrChannelPermissions(SocketGuildUser user, ClubInformation club, ClubConfig cfg = null)
+        private async Task RemoveRoleOrChannelPermissions(SocketGuildUser user, ClubInformation club,
+            ClubConfig cfg = null)
         {
             try
             {

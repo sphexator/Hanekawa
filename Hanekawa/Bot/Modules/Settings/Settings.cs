@@ -18,8 +18,9 @@ namespace Hanekawa.Bot.Modules.Settings
     [RequireUserPermission(GuildPermission.ManageGuild)]
     public class Settings : InteractiveBase
     {
-        private readonly CommandHandlingService _command;
         private readonly ColourService _colourService;
+        private readonly CommandHandlingService _command;
+
         public Settings(CommandHandlingService command, ColourService colourService)
         {
             _command = command;
@@ -29,13 +30,11 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Add prefix")]
         [Command("addprefix", "aprefix")]
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
-        public async Task AddPrefixAsync([Remainder]string prefix)
+        public async Task AddPrefixAsync([Remainder] string prefix)
         {
             using var db = new DbService();
             if (await _command.AddPrefix(Context.Guild.Id, prefix, db))
-            {
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green.RawValue);
-            }
             else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red.RawValue);
         }
 
@@ -85,7 +84,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Changes the embed colour of the bot")]
         public async Task SetEmbedColorAsync(string colorHex)
         {
-            if(colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
+            if (colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
             colorHex = colorHex.Insert(0, "0x");
             var color = new Color(Convert.ToUInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color.RawValue);

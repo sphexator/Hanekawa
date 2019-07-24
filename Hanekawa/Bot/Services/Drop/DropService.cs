@@ -9,7 +9,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,8 +20,8 @@ namespace Hanekawa.Bot.Services.Drop
     {
         private readonly DiscordSocketClient _client;
         private readonly ExpService _expService;
-        private readonly Random _random;
         private readonly InternalLogService _log;
+        private readonly Random _random;
 
         public DropService(DiscordSocketClient client, Random random, ExpService expService, InternalLogService log)
         {
@@ -55,16 +54,20 @@ namespace Hanekawa.Bot.Services.Drop
             using (var db = new DbService())
             {
                 var claim = await GetClaimEmote(context.Guild, db);
-                var triggerMsg = await context.Channel.ReplyAsync($"{context.User.GetName()} has spawned a crate! \nClick {claim} reaction on this message to claim it```", context.Guild.Id);
+                var triggerMsg = await context.Channel.ReplyAsync(
+                    $"{context.User.GetName()} has spawned a crate! \nClick {claim} reaction on this message to claim it```",
+                    context.Guild.Id);
                 var emotes = await ReturnEmotes(context.Guild, db);
                 foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
                     try
                     {
                         if (x.Id == claim.Id)
                         {
-                            var messages = _normalLoot.GetOrAdd(context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+                            var messages = _normalLoot.GetOrAdd(context.Guild.Id,
+                                new MemoryCache(new MemoryCacheOptions()));
                             messages.Set(triggerMsg.Id, false, TimeSpan.FromHours(1));
                         }
+
                         await triggerMsg.AddReactionAsync(x);
                     }
                     catch
@@ -86,7 +89,6 @@ namespace Hanekawa.Bot.Services.Drop
                 if (OnUserCooldown(user)) return;
                 var rand = _random.Next(0, 10000);
                 if (rand < 200)
-                {
                     try
                     {
                         using (var db = new DbService())
@@ -99,19 +101,22 @@ namespace Hanekawa.Bot.Services.Drop
                             {
                                 if (x.Id == claim.Id)
                                 {
-                                    var messages = _normalLoot.GetOrAdd(ch.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+                                    var messages = _normalLoot.GetOrAdd(ch.Guild.Id,
+                                        new MemoryCache(new MemoryCacheOptions()));
                                     messages.Set(triggerMsg.Id, false, TimeSpan.FromHours(1));
                                 }
+
                                 await triggerMsg.AddReactionAsync(x);
                             }
                         }
+
                         _log.LogAction(LogLevel.Information, null, $"Drop event created in {user.Guild.Id}");
                     }
                     catch (Exception e)
                     {
-                        _log.LogAction(LogLevel.Error, e, $"(Drop Service) Error in {user.Guild.Id} for drop create - {e.Message}");
+                        _log.LogAction(LogLevel.Error, e,
+                            $"(Drop Service) Error in {user.Guild.Id} for drop create - {e.Message}");
                     }
-                }
             });
             return Task.CompletedTask;
         }
@@ -135,11 +140,13 @@ namespace Hanekawa.Bot.Services.Drop
                         if (special) await ClaimSpecial(message, channel, user, db);
                         else await ClaimNormal(message, channel, user, db);
                     }
+
                     _log.LogAction(LogLevel.Information, null, $"Drop event claimed by {user.Id} in {user.Guild.Id}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Drop Service) Error in {user.Guild.Id} for drop claim - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Drop Service) Error in {user.Guild.Id} for drop claim - {e.Message}");
                 }
             });
             return Task.CompletedTask;

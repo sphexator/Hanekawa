@@ -15,13 +15,15 @@ namespace Hanekawa.Bot.Services.Experience
     public partial class ExpService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
-        private readonly Random _random;
         private readonly InternalLogService _log;
+        private readonly Random _random;
 
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
+
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerTextChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
+
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
@@ -34,7 +36,6 @@ namespace Hanekawa.Bot.Services.Experience
             using (var db = new DbService())
             {
                 foreach (var x in db.LevelExpReductions)
-                {
                     switch (x.ChannelType)
                     {
                         case ChannelType.Category:
@@ -45,6 +46,7 @@ namespace Hanekawa.Bot.Services.Experience
                                 (arg1, list) => categories);
                             break;
                         }
+
                         case ChannelType.Text:
                         {
                             var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
@@ -53,6 +55,7 @@ namespace Hanekawa.Bot.Services.Experience
                                 (arg1, list) => channel);
                             break;
                         }
+
                         case ChannelType.Voice:
                         {
                             var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
@@ -62,7 +65,6 @@ namespace Hanekawa.Bot.Services.Experience
                             break;
                         }
                     }
-                }
 
                 foreach (var x in db.LevelConfigs)
                 {
@@ -70,6 +72,7 @@ namespace Hanekawa.Bot.Services.Experience
                     _voiceExpMultiplier.TryAdd(x.GuildId, x.VoiceExpMultiplier);
                 }
             }
+
             _ = EventHandler(new CancellationToken());
 
             _client.MessageReceived += ServerMessageExpAsync;
@@ -94,7 +97,8 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Global Exp - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Exp Service) Error in {user.Guild.Id} for Global Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -119,7 +123,8 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Server Exp - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Exp Service) Error in {user.Guild.Id} for Server Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -142,6 +147,7 @@ namespace Hanekawa.Bot.Services.Experience
                         await db.SaveChangesAsync();
                         return;
                     }
+
                     if (IsReducedExp(before.VoiceChannel))
                     {
                         var userData = await db.GetOrCreateUserData(user);
@@ -149,6 +155,7 @@ namespace Hanekawa.Bot.Services.Experience
                         await AddExpAsync(user, userData, exp, exp / 2, db);
                         return;
                     }
+
                     if (before.VoiceChannel != null && after.VoiceChannel == null)
                     {
                         var userData = await db.GetOrCreateUserData(user);
@@ -158,7 +165,8 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Exp Service) Error in {user.Guild.Id} for Voice - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Exp Service) Error in {user.Guild.Id} for Voice - {e.Message}");
                 }
             });
             return Task.CompletedTask;

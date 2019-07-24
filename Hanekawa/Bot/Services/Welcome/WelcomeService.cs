@@ -17,12 +17,13 @@ namespace Hanekawa.Bot.Services.Welcome
     public partial class WelcomeService
     {
         private readonly DiscordSocketClient _client;
-        private readonly ImageGenerator _img;
-        private readonly InternalLogService _log;
-        private readonly InteractiveService _interactive;
         private readonly ExpService _exp;
-        
-        public WelcomeService(DiscordSocketClient client, ImageGenerator img, InternalLogService log, InteractiveService interactive, ExpService exp)
+        private readonly ImageGenerator _img;
+        private readonly InteractiveService _interactive;
+        private readonly InternalLogService _log;
+
+        public WelcomeService(DiscordSocketClient client, ImageGenerator img, InternalLogService log,
+            InteractiveService interactive, ExpService exp)
         {
             _client = client;
             _img = img;
@@ -70,7 +71,8 @@ namespace Hanekawa.Bot.Services.Welcome
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Welcome Service) Error in {user.Guild.Id} for User Joined - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Welcome Service) Error in {user.Guild.Id} for User Joined - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -108,7 +110,8 @@ namespace Hanekawa.Bot.Services.Welcome
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Welcome Service) Error in {guild.Id} for Bot Left Guild - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Welcome Service) Error in {guild.Id} for Bot Left Guild - {e.Message}");
                 }
             });
             return Task.CompletedTask;

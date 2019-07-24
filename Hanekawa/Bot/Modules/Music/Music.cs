@@ -20,12 +20,13 @@ namespace Hanekawa.Bot.Modules.Music
     [Name("Music")]
     [Description("Music module")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    [RequiredMusicChannel, RequiredChannel]
+    [RequiredMusicChannel]
+    [RequiredChannel]
     public class Music : InteractiveBase
     {
+        private readonly RequiredMusicChannel _channel;
         private readonly LavaRestClient _lavaRestClient;
         private readonly LavaSocketClient _lavaSocketClient;
-        private readonly RequiredMusicChannel _channel;
 
         public Music(LavaSocketClient lavaSocketClient, LavaRestClient lavaRestClient, RequiredMusicChannel channel)
         {
@@ -69,10 +70,11 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync($"Connected to {Context.User.VoiceChannel.Name}");
                 return;
             }
+
             if (player.IsPlaying || Context.User.VoiceChannel == player.VoiceChannel) return;
-            
-            var old = player.VoiceChannel; 
-            await _lavaSocketClient.MoveChannelsAsync(Context.User.VoiceChannel); 
+
+            var old = player.VoiceChannel;
+            await _lavaSocketClient.MoveChannelsAsync(Context.User.VoiceChannel);
             await Context.ReplyAsync($"Moved from {old.Name} to {Context.User.VoiceChannel}");
         }
 
@@ -83,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Music
         {
             if (Context.User.VoiceChannel == null) return;
             var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
-            if(player == null) return;
+            if (player == null) return;
             if (Context.User.VoiceChannel != player.VoiceChannel) return;
             var song = player.CurrentTrack;
             await player.StopAsync();
@@ -92,6 +94,7 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync("Stopped current player", Color.Green.RawValue);
                 return;
             }
+
             await Context.ReplyAsync($"Stopped {song.Title} from playing.", Color.Green.RawValue);
         }
 
@@ -107,7 +110,6 @@ namespace Hanekawa.Bot.Modules.Music
             var song = player.CurrentTrack;
             await _lavaSocketClient.DisconnectAsync(player.VoiceChannel);
             await Context.ReplyAsync("Disconnected", Color.Green.RawValue);
-
         }
 
         [Name("Currently Playing")]
@@ -140,9 +142,11 @@ namespace Hanekawa.Bot.Modules.Music
                          await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
             if (player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in the same channel as me to queue up songs", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in the same channel as me to queue up songs",
+                    Color.Red.RawValue);
                 return;
             }
+
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel) return;
             var songResult = await _lavaRestClient.SearchYouTubeAsync(query);
             if (songResult.LoadType == LoadType.NoMatches || songResult.LoadType == LoadType.LoadFailed)
@@ -191,9 +195,11 @@ namespace Hanekawa.Bot.Modules.Music
             if (player == null || player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
+
             await player.PauseAsync();
             await Context.ReplyAsync("Paused the song!");
         }
@@ -207,9 +213,11 @@ namespace Hanekawa.Bot.Modules.Music
             if (player == null || !player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
+
             await player.ResumeAsync();
             await Context.ReplyAsync("Resumed the song!");
         }
@@ -226,16 +234,20 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
                 return;
             }
+
             if (!player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
                 return;
             }
+
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
+
             await player.SetVolumeAsync(volume);
             await Context.ReplyAsync($"Set volume to {volume}%");
         }
@@ -251,16 +263,20 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
                 return;
             }
+
             if (!player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
                 return;
             }
+
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
+
             var track = await player.SkipAsync();
             await Context.ReplyAsync($"Skipped {track.Title}");
         }
@@ -276,16 +292,20 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
                 return;
             }
+
             if (!player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
                 return;
             }
+
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
+
             player.Queue.Clear();
             await player.StopAsync();
             await Context.ReplyAsync("Cleared queue");
@@ -303,19 +323,22 @@ namespace Hanekawa.Bot.Modules.Music
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red.RawValue);
                 return;
             }
+
             if (!player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing", Color.Red.RawValue);
                 return;
             }
+
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
-                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command", Color.Red.RawValue);
+                await Context.ReplyAsync("You need to be in a voice channel or same channel as bot to use this command",
+                    Color.Red.RawValue);
                 return;
             }
 
             var pos = player.CurrentTrack.Position - rewind;
-            if(pos < new TimeSpan(0, 0, 0, 0)) pos = new TimeSpan(0,0,0,0);
+            if (pos < new TimeSpan(0, 0, 0, 0)) pos = new TimeSpan(0, 0, 0, 0);
             await player.SeekAsync(pos);
             await Context.ReplyAsync($"Rewinded {rewind.Humanize()} on **{player.CurrentTrack.Title}**");
         }
@@ -339,7 +362,7 @@ namespace Hanekawa.Bot.Modules.Music
                 }
                 else
                 {
-                    cfg.TextChId = channel.Id; 
+                    cfg.TextChId = channel.Id;
                     _channel.AddOrRemoveChannel(Context.Guild, channel);
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Set music channel to {channel.Mention}");

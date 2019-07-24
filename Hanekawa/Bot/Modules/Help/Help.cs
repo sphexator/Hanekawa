@@ -93,7 +93,11 @@ namespace Hanekawa.Bot.Modules.Help
                         response.AppendLine(x.Item1.Name);
                     }
                 }
-                else response.AppendLine("No module matches that search");
+                else
+                {
+                    response.AppendLine("No module matches that search");
+                }
+
                 var embed = new EmbedBuilder().CreateDefault(response.ToString(), Context.Guild.Id);
                 embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
                 embed.Title = "Couldn't find a module with that name";

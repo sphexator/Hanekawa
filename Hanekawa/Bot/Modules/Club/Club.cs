@@ -40,7 +40,6 @@ namespace Hanekawa.Bot.Modules.Club
                 var pages = new List<string>();
                 for (var i = 0; i < clubs.Count; i++)
                 {
-
                     var x = clubs[i];
                     if (x.LeaderId == 1) continue;
                     var memberCount =
@@ -53,9 +52,12 @@ namespace Hanekawa.Bot.Modules.Club
                               $"Leader {leader}\n");
                 }
 
-                if (pages.Count == 0) await Context.ReplyAsync("There seems to be a problem with all clubs on this server. Either disbanded or internal problem.");
-                else await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
-                    $"Clubs in {Context.Guild.Name}", null));
+                if (pages.Count == 0)
+                    await Context.ReplyAsync(
+                        "There seems to be a problem with all clubs on this server. Either disbanded or internal problem.");
+                else
+                    await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
+                        $"Clubs in {Context.Guild.Name}", null));
             }
         }
 
@@ -78,9 +80,7 @@ namespace Hanekawa.Bot.Modules.Club
                     await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id).ToListAsync();
                 var officers = new StringBuilder();
                 foreach (var x in clubUsers.Where(x => x.Rank == 2))
-                {
                     officers.AppendLine($"{Context.Guild.GetUser(x.UserId).Mention}\n");
-                }
 
                 if (officers.Length == 0) officers.AppendLine("No officers");
 
@@ -88,12 +88,18 @@ namespace Hanekawa.Bot.Modules.Club
                 {
                     ThumbnailUrl = club.ImageUrl,
                     Timestamp = club.CreationDate,
-                    Author = new EmbedAuthorBuilder { IconUrl = club.IconUrl, Name = $"{club.Name} (ID:{club.Id})" },
-                    Footer = new EmbedFooterBuilder { Text = "Created:" },
+                    Author = new EmbedAuthorBuilder {IconUrl = club.IconUrl, Name = $"{club.Name} (ID:{club.Id})"},
+                    Footer = new EmbedFooterBuilder {Text = "Created:"},
                     Fields = new List<EmbedFieldBuilder>
                     {
-                        new EmbedFieldBuilder { IsInline = false, Name = "Leader", Value = $"{Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}"},
-                        new EmbedFieldBuilder { IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}
+                        new EmbedFieldBuilder
+                        {
+                            IsInline = false, Name = "Leader",
+                            Value =
+                                $"{Context.Guild.GetUser(club.LeaderId).Mention ?? "Couldn't find user or left server."}"
+                        },
+                        new EmbedFieldBuilder
+                            {IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}
                     }
                 }.CreateDefault(club.Description, Context.Guild.Id);
                 await Context.ReplyAsync(embed);

@@ -15,7 +15,8 @@ using Cooldown = Hanekawa.Shared.Command.Cooldown;
 namespace Hanekawa.Bot.Modules.Game
 {
     [Name("Ship Game")]
-    [Description("Ship game is a game mode where you search for opponements based on your level and fight them. Change between classes to get a feel of different fight styles.")]
+    [Description(
+        "Ship game is a game mode where you search for opponements based on your level and fight them. Change between classes to get a feel of different fight styles.")]
     [RequiredChannel]
     public class Game : InteractiveBase
     {

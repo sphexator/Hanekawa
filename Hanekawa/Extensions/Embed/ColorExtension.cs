@@ -11,7 +11,7 @@ namespace Hanekawa.Extensions.Embed
     {
         private static readonly MemoryCache Config = new MemoryCache(new MemoryCacheOptions());
 
-        public static void UpdateConfig(ulong guildId, GuildConfig cfg) 
+        public static void UpdateConfig(ulong guildId, GuildConfig cfg)
             => Config.Set(guildId, cfg, TimeSpan.FromHours(1));
 
         public static Color GetDefaultColor(this Color color, ulong guildId)
@@ -19,7 +19,7 @@ namespace Hanekawa.Extensions.Embed
             GuildConfig cfg;
             var check = Config.TryGetValue(guildId, out var result);
             if (!check) cfg = GetAndUpdateConfig(guildId);
-            else cfg = (GuildConfig)result;
+            else cfg = (GuildConfig) result;
             return new Color(cfg.EmbedColor);
         }
 

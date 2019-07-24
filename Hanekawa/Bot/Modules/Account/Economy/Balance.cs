@@ -71,6 +71,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     receiverData.Credit += amount;
                     strBuilder.AppendLine($"{user.Mention}");
                 }
+
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"{Context.User.Mention} transferred {_currency.ToCurrency(currencyCfg, amount)} to:\n{strBuilder}",
@@ -147,6 +148,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     pages.Add($"**Rank: {i + 1}** - {name}\n" +
                               $"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
                 }
+
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
                     $"Money leaderboard for {Context.Guild.Name}", null, 10));
             }
@@ -170,6 +172,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     userData.CreditSpecial += amount;
                     strBuilder.AppendLine($"{user.Mention}");
                 }
+
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Rewarded {_currency.ToCurrency(cfg, amount, true)} to:\n {strBuilder}",

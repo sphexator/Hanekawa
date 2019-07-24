@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Board
         {
             using (var db = new DbService())
             {
-                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild); 
+                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 cfg.Emote = emote.ParseEmoteString();
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green.RawValue);

@@ -41,6 +41,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
                     Color.Red.RawValue);
                 return;
             }
+
             var rnd = new Random();
             var result = users.OrderBy(item => rnd.Next());
             var winnerString = new StringBuilder();

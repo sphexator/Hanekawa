@@ -37,7 +37,8 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                           $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
             var embed = new EmbedBuilder()
                 .CreateDefault(content, user.Guild.Id);
-            embed.Author = new EmbedAuthorBuilder { IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})" };
+            embed.Author = new EmbedAuthorBuilder
+                {IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"};
             embed.Fields = await GetWarnings(user, db);
             return embed;
         }
@@ -60,9 +61,10 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 result.Add("**⮞ Activity**\n" +
                            $"Last Message: {userdata.LastMessage.Humanize()}\n" +
                            $"First Message: {userdata.FirstMessage.Value.Humanize()}\n");
-            else result.Add("**⮞ Activity**\n" +
-                            $"Last Message: {userdata.LastMessage.Humanize()}\n" +
-                            $"First Message: {user.JoinedAt.Humanize()}\n");
+            else
+                result.Add("**⮞ Activity**\n" +
+                           $"Last Message: {userdata.LastMessage.Humanize()}\n" +
+                           $"First Message: {user.JoinedAt.Humanize()}\n");
             result.Add("**⮞ Voice Session**\n" +
                        $"Amount: {userdata.Sessions}\n" +
                        $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})\n");
@@ -70,7 +72,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                        $"Active Warnings: {warns.Count(x => x.Valid)}\n" +
                        $"Inactive Warnings: {warns.Count(x => !x.Valid)}\n" +
                        $"Total: {warns.Count}\n" +
-                       $"Next pages contain specific warnings");
+                       "Next pages contain specific warnings");
             foreach (var x in warns)
             {
                 var input = $"{x.Id} - {x.Type}\n" +
@@ -81,13 +83,15 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 input += $"Date: {x.Time.Humanize()} ({x.Time})";
                 result.Add(input);
             }
+
             return result;
         }
 
         private async Task<List<EmbedFieldBuilder>> GetWarnings(SocketGuildUser user, DbService db)
         {
             var result = new List<EmbedFieldBuilder>();
-            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id && x.Valid).ToListAsync();
+            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id && x.Valid)
+                .ToListAsync();
             var count = list.Count;
             if (count > 10) count = 10;
             for (var i = 0; i < count; i++)
@@ -97,9 +101,10 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize()} ({x.MuteTimer.Value})\n";
-                input += $"Date: {x.Time.Humanize()} ({x.Time})"; ;
+                input += $"Date: {x.Time.Humanize()} ({x.Time})";
+                ;
                 result.Add(new EmbedFieldBuilder
-                    { Name = $"Warn ID: {x.Id} - {x.Type}", IsInline = true, Value = input.Truncate(999) });
+                    {Name = $"Warn ID: {x.Id} - {x.Type}", IsInline = true, Value = input.Truncate(999)});
             }
 
             return result;

@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
                             Color = Color.Green,
-                            Footer = new EmbedFooterBuilder { Text = $"Username: {user}" },
+                            Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
 
@@ -37,7 +37,8 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -61,7 +62,7 @@ namespace Hanekawa.Bot.Services.Logging
                             Description = $"📥 {user.Mention} has joined ( *{user.Id}* )\n" +
                                           $"Account created: {user.CreatedAt.Humanize()}",
                             Color = Color.Green,
-                            Footer = new EmbedFooterBuilder { Text = $"Username: {user}" },
+                            Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
 
@@ -70,7 +71,8 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

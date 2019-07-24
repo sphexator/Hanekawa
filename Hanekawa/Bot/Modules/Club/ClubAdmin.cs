@@ -38,9 +38,11 @@ namespace Hanekawa.Bot.Modules.Club
                 await db.SaveChangesAsync();
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                        .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await _club.UpdatePostNameAsync(msg, name);
                 }
+
                 if (club.Role.HasValue)
                 {
                     var role = Context.Guild.GetRole(club.Role.Value);
@@ -75,7 +77,8 @@ namespace Hanekawa.Bot.Modules.Club
                 await db.SaveChangesAsync();
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                        .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await _club.UpdatePostIconAsync(msg, icon);
                 }
             }
@@ -101,7 +104,8 @@ namespace Hanekawa.Bot.Modules.Club
                 await db.SaveChangesAsync();
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                        .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await _club.UpdatePostImageAsync(msg, image);
                 }
             }
@@ -129,7 +133,8 @@ namespace Hanekawa.Bot.Modules.Club
                 await db.SaveChangesAsync();
                 if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
-                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value).GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                    var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                        .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
                     await _club.UpdatePostDescriptionAsync(msg, desc);
                 }
             }
@@ -137,7 +142,8 @@ namespace Hanekawa.Bot.Modules.Club
 
         [Name("Club Role Toggle")]
         [Command("crt")]
-        [Description("Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
+        [Description(
+            "Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ToggleClubRole()
         {

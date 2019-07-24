@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +14,6 @@ namespace Hanekawa.Bot.Preconditions
 {
     public class RequiredChannel : HanekawaAttribute, INService
     {
-        public RequiredChannel() {  }
-
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
 

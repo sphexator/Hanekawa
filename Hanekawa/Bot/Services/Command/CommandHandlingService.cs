@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -27,13 +25,14 @@ namespace Hanekawa.Bot.Services.Command
     public class CommandHandlingService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
+        private readonly ColourService _colourService;
         private readonly CommandService _command;
         private readonly InteractiveService _interactive;
-        private readonly ColourService _colourService;
-        private readonly IServiceProvider _provider;
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
+        private readonly IServiceProvider _provider;
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider, InteractiveService interactive, ColourService colourService)
+        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider,
+            InteractiveService interactive, ColourService colourService)
         {
             _client = client;
             _command = command;
@@ -43,10 +42,7 @@ namespace Hanekawa.Bot.Services.Command
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs)
-                {
-                    _prefixes.TryAdd(x.GuildId, x.Prefix);
-                }
+                foreach (var x in db.GuildConfigs) _prefixes.TryAdd(x.GuildId, x.Prefix);
             }
 
             _client.LeftGuild += ClientLeft;
@@ -93,9 +89,11 @@ namespace Hanekawa.Bot.Services.Command
             if (!(message.Author is SocketGuildUser user)) return;
             if (user.IsBot) return;
 
-            if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix, out var output)) return;
-            var result = await _command.ExecuteAsync(output, new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
-            if(!result.IsSuccessful) Console.WriteLine("Did not succeed??");
+            if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix,
+                out var output)) return;
+            var result = await _command.ExecuteAsync(output,
+                new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
+            if (!result.IsSuccessful) Console.WriteLine("Did not succeed??");
         }
 
         private async Task OnCommandError(CommandErroredEventArgs e)
@@ -110,10 +108,7 @@ namespace Hanekawa.Bot.Services.Command
                     command = err.Command;
                     module = err.Module;
                     response.AppendLine("The following check(s) failed:");
-                    foreach (var x in err.FailedChecks)
-                    {
-                        response.AppendLine($"[{x.Check}]: `{x.Result.Reason}`");
-                    }
+                    foreach (var x in err.FailedChecks) response.AppendLine($"[{x.Check}]: `{x.Result.Reason}`");
                     break;
                 case TypeParseFailedResult err:
                     command = err.Parameter.Command;
@@ -126,19 +121,14 @@ namespace Hanekawa.Bot.Services.Command
                 case OverloadsFailedResult err:
                     command = err.FailedOverloads.First().Key;
                     response.AppendLine($"I can't find any valid overload for the command `{command.Name}`.");
-                    foreach (var overload in err.FailedOverloads)
-                    {
-                        response.AppendLine($" -> `{overload.Value.Reason}`");
-                    }
+                    foreach (var overload in err.FailedOverloads) response.AppendLine($" -> `{overload.Value.Reason}`");
                     break;
                 case ParameterChecksFailedResult err:
                     command = err.Parameter.Command;
                     module = err.Parameter.Command.Module;
                     response.AppendLine("The following parameter check(s) failed:");
                     foreach (var (check, error) in err.FailedChecks)
-                    {
                         response.AppendLine($"[`{check.Parameter.Name}`]: `{error}`");
-                    }
                     break;
                 case ExecutionFailedResult err:
                     switch (err.Exception)
@@ -153,24 +143,24 @@ namespace Hanekawa.Bot.Services.Command
                             response.AppendLine("Something went wrong...");
                             break;
                     }
+
                     break;
                 case CommandNotFoundResult _:
                     var list = new List<Tuple<Qmmands.Command, int>>();
                     var commands = _command.GetAllCommands();
                     foreach (var x in commands)
-                    {
                         for (var i = 0; i < x.Aliases.Count; i++)
                         {
                             var alias = x.Aliases.ElementAt(i);
                             alias.FuzzyMatch(e.Context.Alias, out var score);
                             list.Add(new Tuple<Qmmands.Command, int>(x, score));
                         }
-                    }
 
                     var reCmd = list.OrderByDescending(x => x.Item2).FirstOrDefault();
                     if (reCmd == null) return;
                     _prefixes.TryGetValue(context.Guild.Id, out var prefix);
-                    response.AppendLine($"Did you mean **{reCmd.Item1.Name}** ? (command: {prefix}{reCmd.Item1.FullAliases.FirstOrDefault()})");
+                    response.AppendLine(
+                        $"Did you mean **{reCmd.Item1.Name}** ? (command: {prefix}{reCmd.Item1.FullAliases.FirstOrDefault()})");
                     break;
                 default:
                     response.AppendLine("Something went wrong...");

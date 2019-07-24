@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Report
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
             using var db = new DbService();
-           
+
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
@@ -37,7 +37,7 @@ namespace Hanekawa.Bot.Modules.Report
                     IconUrl = Context.User.GetAvatar(),
                     Name = Context.User.GetName()
                 })
-                .WithFooter(new EmbedFooterBuilder { Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}" })
+                .WithFooter(new EmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow));
 
             if (Context.Message.Attachments.FirstOrDefault() != null)
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Modules.Report
                 /*IGNORE*/
             }
 
-            await ((IUserMessage)msg).ModifyAsync(x => x.Embed = embed.Build());
+            await ((IUserMessage) msg).ModifyAsync(x => x.Embed = embed.Build());
         }
 
         [Name("Channel")]

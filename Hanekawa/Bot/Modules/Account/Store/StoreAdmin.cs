@@ -96,6 +96,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     await Context.ReplyAsync($"{role.Name} is not a part of the store");
                     return;
                 }
+
                 var serverItem = await db.ServerStores.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
 

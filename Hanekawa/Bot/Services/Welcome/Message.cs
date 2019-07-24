@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private Regex UserRegex => new Regex("%USER%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private Regex ServerRegex => new Regex("%SERVER%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private Regex MembersRegex => new Regex("%MEMBERS%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        
+
         private string CreateMessage(string msg, IMentionable user, SocketGuild guild)
         {
             if (msg.IsNullOrWhiteSpace()) return null;

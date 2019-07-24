@@ -8,8 +8,11 @@ namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService
     {
-        private readonly ConcurrentDictionary<ulong, double> _textExpMultiplier = new ConcurrentDictionary<ulong, double>();
-        private readonly ConcurrentDictionary<ulong, double> _voiceExpMultiplier = new ConcurrentDictionary<ulong, double>();
+        private readonly ConcurrentDictionary<ulong, double> _textExpMultiplier =
+            new ConcurrentDictionary<ulong, double>();
+
+        private readonly ConcurrentDictionary<ulong, double> _voiceExpMultiplier =
+            new ConcurrentDictionary<ulong, double>();
 
         public int ExpToNextLevel(Account userdata) => 3 * userdata.Level * userdata.Level + 150;
         private int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
@@ -28,7 +31,11 @@ namespace Hanekawa.Bot.Services.Experience
                 userData.Level -= 1;
                 userData.Exp = userData.Exp + ExpToNextLevel(userData.Level - 1) + exp;
             }
-            else userData.Exp += exp;
+            else
+            {
+                userData.Exp += exp;
+            }
+
             userData.TotalExp += exp;
             userData.Credit += credit;
             await db.SaveChangesAsync();
@@ -39,16 +46,21 @@ namespace Hanekawa.Bot.Services.Experience
             if (userData.Exp + exp >= ExpToNextLevel(userData))
             {
                 userData.Level += 1;
-                userData.Exp = (userData.Exp + exp - ExpToNextLevel(userData));
+                userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
             }
-            else userData.Exp += exp;
+            else
+            {
+                userData.Exp += exp;
+            }
+
             userData.TotalExp += exp;
             userData.Credit += credit;
             await db.SaveChangesAsync();
         }
 
-        public void AdjustTextMultiplier(ulong guildId, double multiplier) 
+        public void AdjustTextMultiplier(ulong guildId, double multiplier)
             => _textExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
+
         public void AdjustVoiceMultiplier(ulong guildId, double multiplier)
             => _voiceExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
 

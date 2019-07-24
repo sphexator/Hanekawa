@@ -10,7 +10,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubname", "cn")]
         [Description("Changes club name")]
         [RequiredChannel]
-        public async Task ClubNameChangeAsync([Remainder] string content) => 
+        public async Task ClubNameChangeAsync([Remainder] string content) =>
             await _club.AdNameAsync(Context, content);
 
         [Name("Club Description")]

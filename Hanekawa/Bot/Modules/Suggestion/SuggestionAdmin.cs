@@ -14,7 +14,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
     {
         [Name("Suggestion Channel")]
         [Command("ssc", "sschannel")]
-        [Description("Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
+        [Description(
+            "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
         {
@@ -28,6 +29,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     await Context.ReplyAsync("Disabled suggestion channel", Color.Green.RawValue);
                     return;
                 }
+
                 if (channel == null) channel = Context.Channel;
                 cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();

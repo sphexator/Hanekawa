@@ -13,7 +13,6 @@ namespace Hanekawa.Bot.Services.ImageGen
             var stream = new MemoryStream();
             using (var img = Image.Load("Data/Game/Background.png"))
             {
-
             }
 
             return Task.FromResult<Stream>(stream);

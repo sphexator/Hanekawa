@@ -10,7 +10,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +32,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task ResetAsync()
         {
-            await Context.ReplyAsync("You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
+            await Context.ReplyAsync(
+                "You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
             if (response == null || response.Content.ToLower() != "yes" || response.Content.ToLower() != "y")
             {
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Command("lsa", "lvlsadd")]
         [Description("Adds a role reward which will stack regardless of setting (useful for permission role)")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task StackAddAsync(int level, [Remainder]SocketRole role) =>
+        public async Task StackAddAsync(int level, [Remainder] SocketRole role) =>
             await AddLevelRole(Context, level, role, true);
 
         [Name("Level Role Add")]

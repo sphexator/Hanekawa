@@ -10,6 +10,7 @@ namespace Hanekawa.Bot.Services.Welcome
     {
         private readonly ConcurrentDictionary<ulong, MemoryCache> _cooldown
             = new ConcurrentDictionary<ulong, MemoryCache>();
+
         private readonly ConcurrentDictionary<ulong, MemoryCache> _ratelimit
             = new ConcurrentDictionary<ulong, MemoryCache>();
 

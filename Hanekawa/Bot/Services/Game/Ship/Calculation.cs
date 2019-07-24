@@ -8,9 +8,11 @@ namespace Hanekawa.Bot.Services.Game.Ship
 {
     public partial class ShipGameService
     {
-        private int DefaultHealth { get; set; } = 10;
-        private int DefaultDamage { get; set; } = 1;
-        private async Task<GameClass> GetClassName(int classId, DbService db) => await db.GameClasses.FindAsync(classId);
+        private int DefaultHealth { get; } = 10;
+        private int DefaultDamage { get; } = 1;
+
+        private async Task<GameClass> GetClassName(int classId, DbService db) =>
+            await db.GameClasses.FindAsync(classId);
 
         private int GetHealth(int level, GameClass gameClass) =>
             Convert.ToInt32(Math.Round(DefaultHealth * level * gameClass.ModifierHealth));

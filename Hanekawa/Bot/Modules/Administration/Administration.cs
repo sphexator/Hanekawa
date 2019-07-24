@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Bans a user")]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task BanAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
+        public async Task BanAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -42,10 +42,10 @@ namespace Hanekawa.Bot.Modules.Administration
             if (Context.Guild.CurrentUser.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
-                    null, 
-                    false, 
+                    null,
+                    false,
                     new EmbedBuilder()
-                        .CreateDefault("Cannot ban someone that's higher than me in hierarchy.", 
+                        .CreateDefault("Cannot ban someone that's higher than me in hierarchy.",
                             Color.Red.RawValue).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
@@ -77,7 +77,6 @@ namespace Hanekawa.Bot.Modules.Administration
             var user = Context.Guild.GetUser(userId);
             if (user != null) await BanAsync(user, reason);
             else
-            {
                 try
                 {
                     await Context.Guild.AddBanAsync(userId, reason: reason);
@@ -91,7 +90,6 @@ namespace Hanekawa.Bot.Modules.Administration
                         "Couldn't fetch a user by that ID.",
                         Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
                 }
-            }
         }
 
         [Name("Kick")]
@@ -99,7 +97,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Kicks a user")]
         [RequireBotPermission(GuildPermission.KickMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task KickAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
+        public async Task KickAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -159,15 +157,13 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (Context.User == user) return;
             await Context.Message.TryDeleteMessageAsync();
-            
+
             using (var db = new DbService())
             {
-                if(!await _mute.Mute(user, db))
-                {
+                if (!await _mute.Mute(user, db))
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder().CreateDefault("Couldn't mute user. ", Color.Red.RawValue).Build(),
                         TimeSpan.FromSeconds(20));
-                }
 
                 var messages = await Context.Channel.FilterMessagesAsync(50, user);
                 await Context.Channel.TryDeleteMessagesAsync(messages);
@@ -179,7 +175,8 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Mutes a user for a duration, specified 1h13m4s or 2342 in minutes with a optional reason")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task MuteAsync(SocketGuildUser user, TimeSpan? duration = null, [Remainder]string reason = "No reason")
+        public async Task MuteAsync(SocketGuildUser user, TimeSpan? duration = null,
+            [Remainder] string reason = "No reason")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -205,7 +202,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Mutes a user")]
         [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task MuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason")
+        public async Task MuteAsync(SocketGuildUser user, [Remainder] string reason = "No reason")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -216,9 +213,12 @@ namespace Hanekawa.Bot.Modules.Administration
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder().CreateDefault($"Muted {user.Mention}",
                             Color.Green.RawValue).Build(), TimeSpan.FromSeconds(20));
-                else await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().CreateDefault($"Couldn't mute {user.Mention}, missing permission or role not accessible ?", Color.Red.RawValue).Build(),
-                    TimeSpan.FromSeconds(20));
+                else
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder()
+                            .CreateDefault($"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
+                                Color.Red.RawValue).Build(),
+                        TimeSpan.FromSeconds(20));
             }
         }
 
@@ -227,7 +227,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("UnMutes a user")]
         [RequireBotPermission(GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task UnMuteAsync(SocketGuildUser user, [Remainder]string reason = "No reason applied")
+        public async Task UnMuteAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -237,9 +237,13 @@ namespace Hanekawa.Bot.Modules.Administration
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder().CreateDefault($"Unmuted {user.Mention}", Color.Green.RawValue).Build(),
                         TimeSpan.FromSeconds(20));
-                else await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().CreateDefault($"Couldn't unmute {user.Mention}, missing permissions or role not accessible ?", Color.Red.RawValue).Build(),
-                    TimeSpan.FromSeconds(20));
+                else
+                    await ReplyAndDeleteAsync(null, false,
+                        new EmbedBuilder()
+                            .CreateDefault(
+                                $"Couldn't unmute {user.Mention}, missing permissions or role not accessible ?",
+                                Color.Red.RawValue).Build(),
+                        TimeSpan.FromSeconds(20));
             }
         }
 
@@ -249,7 +253,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.KickMembers, GuildPermission.ManageRoles,
             GuildPermission.MuteMembers)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task WarnAsync(SocketGuildUser user, [Remainder]string reason = "No reason")
+        public async Task WarnAsync(SocketGuildUser user, [Remainder] string reason = "No reason")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
@@ -288,7 +292,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Inputs reason for moderation log entry")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task ReasonAsync(int id, [Remainder]string reason = "No reason applied")
+        public async Task ReasonAsync(int id, [Remainder] string reason = "No reason applied")
         {
             if (id <= 0) return;
             await Context.Message.TryDeleteMessageAsync();

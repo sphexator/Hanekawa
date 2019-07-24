@@ -19,8 +19,9 @@ namespace Hanekawa.Bot.Services.Administration.Warning
 {
     public partial class WarnService : INService, IJob
     {
-        private readonly LogService _logService;
         private readonly InternalLogService _log;
+        private readonly LogService _logService;
+
         public WarnService(LogService logService, InternalLogService log)
         {
             _logService = logService;
@@ -28,6 +29,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
+
         private async Task VoidWarning()
         {
             using (var db = new DbService())
@@ -38,7 +40,8 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             }
         }
 
-        public async Task AddWarn(DbService db, SocketGuildUser user, SocketGuildUser staff, string reason, WarnReason warnType,
+        public async Task AddWarn(DbService db, SocketGuildUser user, SocketGuildUser staff, string reason,
+            WarnReason warnType,
             bool notify = false, TimeSpan? muteTime = null)
         {
             var number = await db.Warns.CountAsync(x => x.GuildId == user.Guild.Id);
@@ -70,7 +73,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 content.AppendLine($"You've been {type} in {user.Guild.Name} by {staff.Mention}");
                 content.AppendLine($"Reason: {reason.ToLower()}");
                 var embed = new EmbedBuilder().CreateDefault(content.ToString(), user.Guild.Id);
-                if(duration != null) embed.AddField("Duration", $"{duration.Value.Humanize()} ({duration.Value})");
+                if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize()} ({duration.Value})");
                 await dm.SendMessageAsync(null, false, embed.Build());
             }
             catch

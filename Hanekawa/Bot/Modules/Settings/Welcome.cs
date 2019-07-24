@@ -52,6 +52,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     TimeSpan.FromSeconds(20));
                 return;
             }
+
             using (var db = new DbService())
             {
                 var data = new WelcomeBanner
@@ -59,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     GuildId = Context.Guild.Id,
                     UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
                     Uploader = Context.User.Id,
-                    Url = url,
+                    Url = url
                 };
                 await db.WelcomeBanners.AddAsync(data);
                 await db.SaveChangesAsync();
@@ -117,7 +118,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 }
 
                 await PagedReplyAsync(pages.PaginateBuilder(Context.Guild, $"Welcome banners for {Context.Guild.Name}",
-                    null, 5));
+                    null));
             }
         }
 
@@ -243,7 +244,8 @@ namespace Hanekawa.Bot.Modules.Settings
             else
             {
                 cfg.IgnoreNew = time.Value;
-                await Context.ReplyAsync($"Now ignoring accounts that's younger than {time.Value.Humanize()}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Now ignoring accounts that's younger than {time.Value.Humanize()}",
+                    Color.Green.RawValue);
             }
 
             await db.SaveChangesAsync();

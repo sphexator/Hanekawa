@@ -24,18 +24,16 @@ namespace Hanekawa.Bot.Services.Board
             _log = log;
             using (var db = new DbService())
             {
-                foreach (var x in db.BoardConfigs)
-                {
-                    _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
-                }
+                foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
             }
 
             _client.ReactionAdded += ReactionAddedAsync;
             _client.ReactionRemoved += ReactionRemovedAsync;
             _client.ReactionsCleared += ReactionsClearedAsync;
         }
-        
-        private Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
+
+        private Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
+            SocketReaction rct)
         {
             _ = Task.Run(async () =>
             {
@@ -71,13 +69,15 @@ namespace Hanekawa.Bot.Services.Board
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Board Service) Error in {ch.Guild.Id} for Reaction Added - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Board Service) Error in {ch.Guild.Id} for Reaction Added - {e.Message}");
                 }
             });
             return Task.CompletedTask;
         }
 
-        private Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction rct)
+        private Task ReactionRemovedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,
+            SocketReaction rct)
         {
             _ = Task.Run(async () =>
             {
@@ -104,12 +104,13 @@ namespace Hanekawa.Bot.Services.Board
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Board Service) Error in {ch.Guild.Id} for Reaction Removed - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Board Service) Error in {ch.Guild.Id} for Reaction Removed - {e.Message}");
                 }
             });
             return Task.CompletedTask;
         }
-        
+
         private Task ReactionsClearedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel)
         {
             _ = Task.Run(() =>
@@ -117,14 +118,11 @@ namespace Hanekawa.Bot.Services.Board
                 if (!(channel is SocketTextChannel ch)) return;
                 var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
                 if (!msgCheck) return;
-                if (messages.TryGetValue(message.Id, out _))
-                {
-                    messages.Remove(message.Id);
-                }
+                if (messages.TryGetValue(message.Id, out _)) messages.Remove(message.Id);
             });
             return Task.CompletedTask;
         }
-        
+
         private async Task<RestUserMessage> SendMessageAsync(SocketGuildUser user, IUserMessage msg, BoardConfig cfg)
         {
             var embed = new EmbedBuilder
@@ -138,8 +136,8 @@ namespace Hanekawa.Bot.Services.Board
                 Color = user.Roles.OrderByDescending(x => x.Position)
                     .FirstOrDefault(x => x.Color.RawValue != 0)?.Color,
                 Description = msg.Content,
-                Footer = new EmbedFooterBuilder { Text = msg.Channel.Name },
-                Timestamp = msg.Timestamp,
+                Footer = new EmbedFooterBuilder {Text = msg.Channel.Name},
+                Timestamp = msg.Timestamp
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
             if (!cfg.Channel.HasValue) return null;

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Discord.WebSocket;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
@@ -12,7 +12,8 @@ namespace Hanekawa.Bot.Services.Achievement
     {
         public async Task ServerLevel(SocketGuildUser user, Account userData, DbService db)
         {
-            var achievements = await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global).ToListAsync();
+            var achievements =
+                await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global).ToListAsync();
             if (achievements == null || achievements.Count == 0) return;
             var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
             if (achievements.Any(x => x.Requirement == userData.Level))
@@ -49,6 +50,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         };
                         await db.AchievementUnlocks.AddAsync(data);
                     }
+
                     await db.SaveChangesAsync();
                 }
             }

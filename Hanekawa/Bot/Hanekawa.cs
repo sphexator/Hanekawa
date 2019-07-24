@@ -1,31 +1,37 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Quartz;
 
 namespace Hanekawa.Bot
 {
-    public class Hanekawa : INService
+    public class Hanekawa : BackgroundService
     {
         private readonly DiscordSocketClient _client;
-        private readonly IServiceProvider _provider;
         private readonly IConfiguration _config;
+        private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
         private bool _startUp;
-        
-        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config)
+
+        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config,
+            InternalLogService log)
         {
             _client = client;
             _provider = provider;
             _config = config;
+            _log = log;
         }
 
         private void Initialize()
@@ -37,17 +43,7 @@ namespace Hanekawa.Bot
                 var serviceList = assembly.GetTypes()
                     .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-                foreach (var x in serviceList)
-                {
-                    try
-                    {
-                        _provider.GetRequiredService(x);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-                }
+                for (var i = 0; i < serviceList.Count; i++) _provider.GetRequiredService(serviceList[i]);
 
                 var scheduler = _provider.GetRequiredService<IScheduler>();
                 QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
@@ -55,22 +51,17 @@ namespace Hanekawa.Bot
 
             _startUp = true;
         }
-        
-        public async Task StartAsync()
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if(!_startUp) Initialize();
+            if (!_startUp) Initialize();
             Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             Console.WriteLine("Logged in");
             Console.WriteLine("Starting...");
             await _client.StartAsync();
             Console.WriteLine("Started");
-        }
-
-        public async Task StopAsync()
-        {
-            await _client.LogoutAsync();
-            await _client.StopAsync();
+            await Task.Delay(-1, stoppingToken);
         }
     }
 }

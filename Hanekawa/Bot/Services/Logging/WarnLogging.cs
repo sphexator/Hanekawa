@@ -11,7 +11,8 @@ namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        public async Task MuteWarn(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration, DbService db)
+        public async Task MuteWarn(SocketGuildUser user, SocketGuildUser staff, string reason, TimeSpan duration,
+            DbService db)
         {
             var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
             if (!cfg.LogWarn.HasValue) return;

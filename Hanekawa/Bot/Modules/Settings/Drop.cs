@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Modules.Settings
             using (var db = new DbService())
             {
                 var embed = new EmbedBuilder().CreateDefault("", Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
-                { Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl });
+                    {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)
                 {

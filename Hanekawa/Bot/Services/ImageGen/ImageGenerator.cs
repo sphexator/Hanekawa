@@ -16,40 +16,45 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator : INService
     {
-        private readonly HttpClient _client;
-        private readonly Random _random;
-        private readonly ExpService _expService;
+        private readonly FontFamily _arial;
 
-        private readonly GraphicsOptions _options = new GraphicsOptions(true);
         private readonly TextGraphicsOptions _centerText = new TextGraphicsOptions
         {
             Antialias = true,
             HorizontalAlignment = HorizontalAlignment.Center
         };
-        private readonly TextGraphicsOptions _rightText = new TextGraphicsOptions
-        {
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Antialias = true
-        };
+
+        private readonly HttpClient _client;
+        private readonly ExpService _expService;
+
+        // Fonts
+        private readonly FontCollection _fonts;
+
         private readonly TextGraphicsOptions _leftText = new TextGraphicsOptions
         {
             HorizontalAlignment = HorizontalAlignment.Left,
             Antialias = true
         };
 
-        // Fonts
-        private readonly FontCollection _fonts;
+        private readonly GraphicsOptions _options = new GraphicsOptions(true);
+
+        // Profile
+        private readonly Font _profileName;
+        private readonly Image<Rgba32> _profileTemplate;
+        private readonly Font _profileText;
+        private readonly Random _random;
+
+        private readonly TextGraphicsOptions _rightText = new TextGraphicsOptions
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Antialias = true
+        };
+
         private readonly FontFamily _times;
-        private readonly FontFamily _arial;
 
         // Welcome
         private readonly Font _welcomeFontRegular;
         private readonly Image<Rgba32> _welcomeTemplate;
-
-        // Profile
-        private readonly Font _profileName;
-        private readonly Font _profileText;
-        private readonly Image<Rgba32> _profileTemplate;
 
         public ImageGenerator(HttpClient client, Random random, ExpService expService)
         {

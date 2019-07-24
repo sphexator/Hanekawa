@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Achievement
@@ -39,7 +39,8 @@ namespace Hanekawa.Bot.Services.Achievement
 
                         if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
                         {
-                            var achieve = achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
+                            var achieve =
+                                achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
                             if (achieve != null)
                             {
                                 var data = new AchievementUnlock
@@ -57,7 +58,8 @@ namespace Hanekawa.Bot.Services.Achievement
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Achievement Service) Error for {user.Id} in {user.Guild.Id} for Message Count - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Achievement Service) Error for {user.Id} in {user.Guild.Id} for Message Count - {e.Message}");
                 }
             });
             return Task.CompletedTask;

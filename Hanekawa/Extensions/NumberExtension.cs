@@ -27,7 +27,7 @@ namespace Hanekawa.Extensions
                 adjustedSize,
                 SizeSuffixes[mag]);
         }
-        
+
         public static string FormatNumber(this uint num)
         {
             if (num >= 100000)

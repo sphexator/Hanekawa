@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Logging
         private Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel ch)
         {
             _ = Task.Run(async () =>
-            {                        
+            {
                 if (!(after.Author is SocketGuildUser user)) return;
                 if (user.IsBot) return;
                 if (!(ch is ITextChannel chx)) return;
@@ -38,22 +38,26 @@ namespace Hanekawa.Bot.Services.Logging
                         if (beforeMsg == null) return;
                         if (beforeMsg.Content == after.Content) return;
 
-                        var embed = new EmbedBuilder().CreateDefault($"{user.Mention} updated a message in {chx.Mention}", user.Guild.Id);
-                        embed.Author = new EmbedAuthorBuilder { Name = "Message Updated" };
+                        var embed = new EmbedBuilder().CreateDefault(
+                            $"{user.Mention} updated a message in {chx.Mention}", user.Guild.Id);
+                        embed.Author = new EmbedAuthorBuilder {Name = "Message Updated"};
                         embed.Timestamp = after.EditedTimestamp ?? after.Timestamp;
                         embed.Fields = new List<EmbedFieldBuilder>
                         {
-                            new EmbedFieldBuilder { Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true },
-                            new EmbedFieldBuilder { Name = "Old Message", Value = beforeMsg.Content.Truncate(980), IsInline = true }
+                            new EmbedFieldBuilder
+                                {Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true},
+                            new EmbedFieldBuilder
+                                {Name = "Old Message", Value = beforeMsg.Content.Truncate(980), IsInline = true}
                         };
-                        embed.Footer = new EmbedFooterBuilder { Text = $"User: {user.Id} | {after.Id}" };
+                        embed.Footer = new EmbedFooterBuilder {Text = $"User: {user.Id} | {after.Id}"};
 
                         await channel.ReplyAsync(embed);
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for Message Updated - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {user.Guild.Id} for Message Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -62,13 +66,12 @@ namespace Hanekawa.Bot.Services.Logging
         private Task MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel ch)
         {
             _ = Task.Run(async () =>
-            {                    
+            {
                 if (!(ch is ITextChannel chx)) return;
                 try
                 {
                     using (var db = new DbService())
                     {
-
                         var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
                         var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
@@ -78,34 +81,37 @@ namespace Hanekawa.Bot.Services.Logging
                         if (message.Value.Author.IsBot) return;
                         var embed = new EmbedBuilder().CreateDefault(message.Value.Content.Truncate(1900), chx.GuildId);
                         embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
-                        embed.Title = $"{message.Value.Author} deleted a message in {chx.Name}"; 
+                        embed.Title = $"{message.Value.Author} deleted a message in {chx.Name}";
                         embed.Timestamp = message.Value.Timestamp;
                         embed.Footer = new EmbedFooterBuilder
                             {Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}"};
-                        
+
                         if (message.Value.Attachments.Count > 0 && !chx.IsNsfw)
                         {
                             var file = message.Value.Attachments.FirstOrDefault();
-                            if (file != null) 
+                            if (file != null)
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
                                     x.Value = message.Value.Attachments.FirstOrDefault()?.Url;
                                 });
-                        } 
+                        }
+
                         await channel.SendMessageAsync(null, false, embed.Build());
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;
         }
 
-        private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages, ISocketMessageChannel channel)
+        private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages,
+            ISocketMessageChannel channel)
         {
             _ = Task.Run(async () =>
             {
@@ -129,8 +135,10 @@ namespace Hanekawa.Bot.Services.Logging
                                 messageContent.Add(content.ToString());
                                 content.Clear();
                             }
+
                             content.AppendLine($"{user}: {x.Value.Content}");
                         }
+
                         if (!content.ToString().IsNullOrWhiteSpace()) messageContent.Add(content.ToString());
 
                         for (var i = 0; i < messageContent.Count; i++)
@@ -144,7 +152,8 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {ch.Guild.Id} for Bulk Message Deleted - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {ch.Guild.Id} for Bulk Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;

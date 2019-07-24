@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 
 namespace Hanekawa.Extensions.Embed
@@ -10,16 +9,21 @@ namespace Hanekawa.Extensions.Embed
         // Reply from channel
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, uint color) =>
             channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
+
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, ulong guildId) =>
             channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId)));
+
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendEmbedAsync(embed);
 
         // Reply from command context
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, uint color) =>
             context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
+
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content) =>
-            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(context.Guild.Id)));
+            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content,
+                new Color().GetDefaultColor(context.Guild.Id)));
+
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
 

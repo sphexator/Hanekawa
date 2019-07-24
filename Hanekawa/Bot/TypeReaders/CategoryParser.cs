@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Qmmands;
 
@@ -11,7 +10,8 @@ namespace Hanekawa.Bot.TypeReaders
 {
     public class CategoryParser : HanekawaTypeParser<SocketCategoryChannel>
     {
-        public override ValueTask<TypeParserResult<SocketCategoryChannel>> ParseAsync(Parameter parameter, string value, HanekawaContext context, IServiceProvider provider)
+        public override ValueTask<TypeParserResult<SocketCategoryChannel>> ParseAsync(Parameter parameter, string value,
+            HanekawaContext context, IServiceProvider provider)
         {
             if (ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var id))
             {
@@ -22,8 +22,8 @@ namespace Hanekawa.Bot.TypeReaders
             }
 
             var channel = context.Guild.CategoryChannels.FirstOrDefault(x => x.Name == value);
-            return channel == null 
-                ? TypeParserResult<SocketCategoryChannel>.Unsuccessful("No category found") 
+            return channel == null
+                ? TypeParserResult<SocketCategoryChannel>.Unsuccessful("No category found")
                 : TypeParserResult<SocketCategoryChannel>.Successful(channel);
         }
     }

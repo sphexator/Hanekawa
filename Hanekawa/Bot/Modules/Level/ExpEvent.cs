@@ -16,7 +16,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Command("expmulti")]
         [Description("Checks what the current exp multiplier is")]
         [RequiredChannel]
-        public async Task ExpMultiplierAsync() 
+        public async Task ExpMultiplierAsync()
             => await Context.ReplyAsync($"Current multiplier is: {_exp.GetMultiplier(Context.Guild.Id)}");
 
         [Name("Text Exp Multiplier")]
@@ -32,7 +32,8 @@ namespace Hanekawa.Bot.Modules.Level
                 cfg.TextExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
                 _exp.AdjustTextMultiplier(Context.Guild.Id, multiplier);
-                await Context.ReplyAsync($"Changed text exp multiplier from {old} to {multiplier}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Changed text exp multiplier from {old} to {multiplier}",
+                    Color.Green.RawValue);
             }
         }
 
@@ -49,7 +50,8 @@ namespace Hanekawa.Bot.Modules.Level
                 cfg.VoiceExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
                 _exp.AdjustVoiceMultiplier(Context.Guild.Id, multiplier);
-                await Context.ReplyAsync($"Changed voice exp multiplier from {old} to {multiplier}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Changed voice exp multiplier from {old} to {multiplier}",
+                    Color.Green.RawValue);
             }
         }
 
@@ -65,13 +67,16 @@ namespace Hanekawa.Bot.Modules.Level
                 if (cfg.VoiceExpEnabled)
                 {
                     cfg.VoiceExpEnabled = false;
-                    await Context.ReplyAsync("Disabled experience gained from being in voice channels!", Color.Green.RawValue);
+                    await Context.ReplyAsync("Disabled experience gained from being in voice channels!",
+                        Color.Green.RawValue);
                 }
                 else
                 {
                     cfg.VoiceExpEnabled = true;
-                    await Context.ReplyAsync("Enabled experience gained from being in voice channels!", Color.Green.RawValue);
+                    await Context.ReplyAsync("Enabled experience gained from being in voice channels!",
+                        Color.Green.RawValue);
                 }
+
                 await db.SaveChangesAsync();
             }
         }
@@ -86,7 +91,8 @@ namespace Hanekawa.Bot.Modules.Level
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
             using var db = new DbService();
             await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
-            await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!", Color.Green.RawValue);
+            await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!",
+                Color.Green.RawValue);
         }
     }
 }

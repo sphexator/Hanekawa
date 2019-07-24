@@ -27,10 +27,10 @@ namespace Hanekawa.Bot.Services.Drop
 
         private async Task<List<Emote>> ReturnEmotes(SocketGuild guild, DbService db)
         {
-            var emotes = guild.Roles.Count >= 4 
-                ? guild.Emotes.ToList() 
+            var emotes = guild.Roles.Count >= 4
+                ? guild.Emotes.ToList()
                 : _client.GetGuild(431617676859932704).Emotes.ToList();
-            
+
             var result = new List<Emote>();
             for (var x = 0; x < 4; x++)
             {
@@ -40,6 +40,7 @@ namespace Hanekawa.Bot.Services.Drop
                     x--;
                     continue;
                 }
+
                 result.Add(emote);
             }
 

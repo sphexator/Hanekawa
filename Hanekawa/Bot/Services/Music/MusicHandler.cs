@@ -27,6 +27,7 @@ namespace Hanekawa.Bot.Services.Music
                 await channel.ReplyAsync("Couldn't find any songs with that name or url", Color.Red.RawValue);
                 return;
             }
+
             var track = search.Tracks.FirstOrDefault();
 
             if (player.IsPlaying)

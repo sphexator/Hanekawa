@@ -15,11 +15,11 @@ namespace Hanekawa.Extensions
             var messages = await channel.GetMessagesAsync(amount).FlattenAsync();
             return messages.ToList().FilterMessages(filterBy);
         }
-        
+
         public static List<IMessage> FilterMessages(this List<IMessage> msgs, SocketGuildUser filterBy = null)
         {
             var result = new List<IMessage>();
-            for (int i = 0; i < msgs.Count; i++)
+            for (var i = 0; i < msgs.Count; i++)
             {
                 var x = msgs[i];
                 // Checks if message can be deleted
@@ -35,14 +35,13 @@ namespace Hanekawa.Extensions
             return result;
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this SocketTextChannel channel, 
+        public static async Task<bool> TryDeleteMessagesAsync(this SocketTextChannel channel,
             IEnumerable<IMessage> msgs)
         {
             var currentUser = channel.Guild.CurrentUser;
             if (!currentUser.GuildPermissions.ManageMessages) return false;
             await channel.DeleteMessagesAsync(msgs);
             return true;
-
         }
 
         public static async Task<bool> TryDeleteMessageAsync(this SocketTextChannel channel, IMessage msg)
@@ -51,7 +50,6 @@ namespace Hanekawa.Extensions
             if (!currentUser.GuildPermissions.ManageMessages) return false;
             await channel.DeleteMessageAsync(msg);
             return true;
-
         }
 
         public static async Task<bool> TryDeleteMessagesAsync(this IMessage msg)

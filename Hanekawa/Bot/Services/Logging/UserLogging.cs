@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogAvi.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
-                        if(channel is null) return;
+                        if (channel is null) return;
                         var embed = new EmbedBuilder().CreateDefault("", user.Guild.Id);
                         if (before.Username != after.Username)
                         {
@@ -52,14 +52,18 @@ namespace Hanekawa.Bot.Services.Logging
                             embed.ThumbnailUrl = before.GetAvatar();
                             embed.ImageUrl = after.GetAvatar();
                         }
-                        else return;
+                        else
+                        {
+                            return;
+                        }
 
                         await channel.ReplyAsync(embed);
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {user.Guild.Id} for User Updated - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {user.Guild.Id} for User Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -80,14 +84,14 @@ namespace Hanekawa.Bot.Services.Logging
 
                         var embed = new EmbedBuilder().CreateDefault("", before.Guild.Id);
                         embed.Title = $"{after} | {after.Id}";
-                        embed.Footer = new EmbedFooterBuilder{ IconUrl = after.GetAvatar(), Text = "" };
+                        embed.Footer = new EmbedFooterBuilder {IconUrl = after.GetAvatar(), Text = ""};
                         if (before.Nickname != after.Nickname)
                         {
-                            embed.Author = new EmbedAuthorBuilder { Name = "Nickname Change" };
+                            embed.Author = new EmbedAuthorBuilder {Name = "Nickname Change"};
                             embed.Fields = new List<EmbedFieldBuilder>
                             {
-                                new EmbedFieldBuilder{ Name = "New Nick", Value = after.Nickname ?? after.Username },
-                                new EmbedFieldBuilder { Name = "Old Nick", Value = before.Nickname ?? before.Username }
+                                new EmbedFieldBuilder {Name = "New Nick", Value = after.Nickname ?? after.Username},
+                                new EmbedFieldBuilder {Name = "Old Nick", Value = before.Nickname ?? before.Username}
                             };
                         }
                         else if (before.Roles.SequenceEqual(after.Roles))
@@ -106,16 +110,23 @@ namespace Hanekawa.Bot.Services.Logging
                                 embed.WithAuthor(x => x.WithName("User Role Removed"))
                                     .WithDescription(string.Join(", ", roleDiffer));
                             }
-                            else return;
+                            else
+                            {
+                                return;
+                            }
                         }
-                        else return;
+                        else
+                        {
+                            return;
+                        }
 
                         await channel.ReplyAsync(embed);
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {before.Guild.Id} for Guild Member Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {before.Guild.Id} for Guild Member Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

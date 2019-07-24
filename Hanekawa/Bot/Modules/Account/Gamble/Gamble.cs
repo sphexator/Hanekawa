@@ -5,7 +5,6 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
@@ -113,7 +112,8 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
                 Color.Red.RawValue);
         }
 
-        private static int BetAdjust(Database.Tables.Account.Account userData) => userData.Credit >= 25000 ? 25000 : userData.Credit;
+        private static int BetAdjust(Database.Tables.Account.Account userData) =>
+            userData.Credit >= 25000 ? 25000 : userData.Credit;
 
         private static int BetAdjust() => 5000;
     }

@@ -23,8 +23,9 @@ namespace Hanekawa.Bot.Modules.Account
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     public partial class Account : InteractiveBase
     {
-        private readonly ImageGenerator _image;
         private readonly ExpService _exp;
+        private readonly ImageGenerator _image;
+
         public Account(ExpService exp, ImageGenerator image)
         {
             _exp = exp;
@@ -87,7 +88,8 @@ namespace Hanekawa.Bot.Modules.Account
                     var strBuilder = new StringBuilder();
                     var user = users[i];
                     var username = Context.Guild.GetUser(user.UserId);
-                    strBuilder.AppendLine($"**Rank: {i + 1}** - {username.Mention ?? $"User left server({user.UserId})"}");
+                    strBuilder.AppendLine(
+                        $"**Rank: {i + 1}** - {username.Mention ?? $"User left server({user.UserId})"}");
                     strBuilder.AppendLine($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
                     result.Add(strBuilder.ToString());
                 }
@@ -106,7 +108,7 @@ namespace Hanekawa.Bot.Modules.Account
             if (user == Context.User) return;
             using (var db = new DbService())
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User as SocketGuildUser);
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
                 if (user == null)
                 {
                     if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)

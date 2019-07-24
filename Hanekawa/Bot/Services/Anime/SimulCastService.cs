@@ -74,7 +74,7 @@ namespace Hanekawa.Bot.Services.Anime
         {
             var embed = new EmbedBuilder()
                 .CreateDefault(null, guild)
-                .WithAuthor(new EmbedAuthorBuilder { Name = "New Episode Available!" })
+                .WithAuthor(new EmbedAuthorBuilder {Name = "New Episode Available!"})
                 .WithTitle($"{data.Title}")
                 .WithUrl(data.Url)
                 .WithTimestamp(data.Time);

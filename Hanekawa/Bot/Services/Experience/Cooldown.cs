@@ -8,7 +8,8 @@ namespace Hanekawa.Bot.Services.Experience
     public partial class ExpService
     {
         private readonly MemoryCache _globalCooldown = new MemoryCache(new MemoryCacheOptions());
-        private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown 
+
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown
             = new ConcurrentDictionary<ulong, MemoryCache>();
 
         private bool OnServerCooldown(SocketGuildUser user)

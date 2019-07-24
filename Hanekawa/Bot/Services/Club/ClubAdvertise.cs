@@ -8,7 +8,6 @@ using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Quartz.Util;
@@ -211,7 +210,7 @@ namespace Hanekawa.Bot.Services.Club
             if (!cfg.AdvertisementChannel.HasValue) return;
             var embed = new EmbedBuilder()
                 .CreateDefault(club.Description ?? "No description added", guild.Id)
-                .WithAuthor(new EmbedAuthorBuilder { Name = club.Name })
+                .WithAuthor(new EmbedAuthorBuilder {Name = club.Name})
                 .WithImageUrl(club.ImageUrl);
             var msg = await guild.GetTextChannel(cfg.AdvertisementChannel.Value).ReplyAsync(embed);
             club.AdMessage = msg.Id;
@@ -219,7 +218,8 @@ namespace Hanekawa.Bot.Services.Club
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
         }
 
-        private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, SocketGuild guild, bool enabled)
+        private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, SocketGuild guild,
+            bool enabled)
         {
             var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
             if (cfg.AdvertisementChannel.HasValue)
@@ -240,7 +240,10 @@ namespace Hanekawa.Bot.Services.Club
                         club.AdMessage = null;
                         await db.SaveChangesAsync();
                     }
-                    else await msg.RemoveAllReactionsAsync();
+                    else
+                    {
+                        await msg.RemoveAllReactionsAsync();
+                    }
                 }
             }
         }

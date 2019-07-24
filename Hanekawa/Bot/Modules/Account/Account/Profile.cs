@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Discord.WebSocket;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Qmmands;

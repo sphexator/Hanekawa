@@ -44,8 +44,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 {
                     var x = inventory[i];
                     var item = await db.Items.FirstOrDefaultAsync(z => z.Id == x.ItemId);
-                    if (item == null) continue;
-                    var role = Context.Guild.GetRole(item.Role);
+                    if (item == null || !item.Role.HasValue) continue;
+                    var role = Context.Guild.GetRole(item.Role.Value);
                     if (role == null) continue;
                     result.Add($"{role.Name} - Amount: {x.Amount}");
                 }
@@ -82,6 +82,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     await Context.ReplyAsync("You already have this role added");
                     return;
                 }
+
                 await Context.User.TryAddRoleAsync(role);
                 await Context.ReplyAsync($"{Context.User.Mention} equipped {role.Name}");
             }
@@ -103,6 +104,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     await Context.ReplyAsync("You can't remove a role you do not own or have.");
                     return;
                 }
+
                 if (!Context.User.Roles.Contains(role))
                 {
                     await Context.ReplyAsync("You don't have this role added");
@@ -110,7 +112,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 }
 
                 await Context.User.TryRemoveRoleAsync(role);
-                await Context.ReplyAsync($"{Context.User.Mention} unequipped {role.Name}"); ;
+                await Context.ReplyAsync($"{Context.User.Mention} unequipped {role.Name}");
+                ;
             }
         }
 
@@ -134,8 +137,10 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 for (var i = 0; i < store.Count; i++)
                 {
                     var x = store[i];
-                    result.Add($"{Context.Guild.GetRole(x.RoleId).Name ?? "No role found"} - {_currency.ToCurrency(cfg, x.Price, x.SpecialCredit)}");
+                    result.Add(
+                        $"{Context.Guild.GetRole(x.RoleId).Name ?? "No role found"} - {_currency.ToCurrency(cfg, x.Price, x.SpecialCredit)}");
                 }
+
                 await PagedReplyAsync(result.PaginateBuilder(Context.Guild, $"Store for {Context.Guild.Name}", null));
             }
         }
@@ -183,12 +188,14 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 }
 
                 var invItem = await db.Inventories.FirstOrDefaultAsync(x =>
-                     x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ItemId == item.Id);
+                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ItemId == item.Id);
                 if (invItem != null)
                 {
-                    await Context.ReplyAsync($"You've already purchased {Context.Guild.GetRole(item.Role).Name}.", Color.Red.RawValue);
+                    await Context.ReplyAsync($"You've already purchased {Context.Guild.GetRole(item.Role.Value).Name}.",
+                        Color.Red.RawValue);
                     return;
                 }
+
                 if (serverData.SpecialCredit) userData.CreditSpecial -= serverData.Price;
                 else userData.Credit -= serverData.Price;
 
@@ -201,7 +208,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 });
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Purchased {Context.Guild.GetRole(item.Role)} for {_currency.ToCurrency(creditCfg, serverData.Price, serverData.SpecialCredit)}",
+                    $"Purchased {Context.Guild.GetRole(item.Role.Value)} for {_currency.ToCurrency(creditCfg, serverData.Price, serverData.SpecialCredit)}",
                     Color.Green.RawValue);
                 await Context.User.TryAddRoleAsync(role);
             }

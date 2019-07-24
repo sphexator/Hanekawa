@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetRegularSymbolAsync([Remainder]string symbol)
+        public async Task SetRegularSymbolAsync([Remainder] string symbol)
         {
             using (var db = new DbService())
             {

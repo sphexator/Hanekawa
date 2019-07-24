@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Discord.WebSocket;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;

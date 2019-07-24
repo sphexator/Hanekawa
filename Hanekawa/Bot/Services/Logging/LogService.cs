@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Services.Logging
 
             _client.GuildMemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;
-            
+
             _client.UserVoiceStateUpdated += VoiceLog;
         }
     }

@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Database;
-using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -26,9 +25,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
-                img.Mutate(x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
+                img.Mutate(
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
+
             return stream;
         }
 
@@ -41,9 +42,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
-                img.Mutate(x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
+                img.Mutate(
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
             }
+
             return stream;
         }
 

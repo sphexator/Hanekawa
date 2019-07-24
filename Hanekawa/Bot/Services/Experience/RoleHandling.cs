@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Services.Experience
             });
             return Task.CompletedTask;
         }
-        
+
         private async Task NewLevelManagerAsync(Account userData, SocketGuildUser user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
@@ -63,7 +63,8 @@ namespace Hanekawa.Bot.Services.Experience
             await user.TryAddRolesAsync(missingRoles);
         }
 
-        private async ValueTask<List<SocketRole>> GetRolesAsync(SocketGuildUser user, Account userData, DbService db, bool stack)
+        private async ValueTask<List<SocketRole>> GetRolesAsync(SocketGuildUser user, Account userData, DbService db,
+            bool stack)
         {
             var roles = new List<SocketRole>();
             ulong role = 0;
@@ -111,7 +112,8 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 var x = rolesRewards[i];
                 if (x.Stackable) continue;
-                if (user.Roles.Contains(user.Guild.GetRole(x.Role))) await user.TryRemoveRoleAsync(user.Guild.GetRole(x.Role));
+                if (user.Roles.Contains(user.Guild.GetRole(x.Role)))
+                    await user.TryRemoveRoleAsync(user.Guild.GetRole(x.Role));
             }
         }
     }
