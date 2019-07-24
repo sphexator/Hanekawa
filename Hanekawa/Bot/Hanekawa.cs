@@ -21,17 +21,14 @@ namespace Hanekawa.Bot
     {
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
-        private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
         private bool _startUp;
 
-        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config,
-            InternalLogService log)
+        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config)
         {
             _client = client;
             _provider = provider;
             _config = config;
-            _log = log;
         }
 
         private void Initialize()
