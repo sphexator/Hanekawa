@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -11,6 +12,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
@@ -36,7 +38,7 @@ namespace Hanekawa.Bot.Modules.Board
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task BoardStatsAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 var emote = cfg.Emote.ParseStringEmote();
@@ -62,10 +64,15 @@ namespace Hanekawa.Bot.Modules.Board
                     topStarMessages += $"{i}: {index.MessageId} ({index.StarAmount} {emote})\n";
                 }
 
-                var embed = new EmbedBuilder().CreateDefault(null, Context.Guild.Id);
-                embed.Description = $"{boards.Count} messages boarded with a total of {totalStars} {emote} given";
-                embed.AddField($"Top {emote} Posts", $"{topStarMessages ?? "N/A"}");
-                embed.AddField($"Top {emote} Receivers", $"{topReceived ?? "N/A"}");
+                var embed = new EmbedBuilder
+                {
+                    Description = $"{boards.Count} messages boarded with a total of {totalStars} {emote} given",
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder { Name = $"Top {emote} Posts", Value = $"{topStarMessages ?? "N/A"}" },
+                        new EmbedFieldBuilder { Name = $"Top {emote} Receivers", Value = $"{topReceived ?? "N/A"}" }
+                    }
+                };
                 await Context.ReplyAsync(embed);
             }
         }
@@ -76,7 +83,7 @@ namespace Hanekawa.Bot.Modules.Board
         [RequiredChannel]
         public async Task BoardStatsAsync(SocketGuildUser user)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 var emote = cfg.Emote.ParseStringEmote();
@@ -98,12 +105,17 @@ namespace Hanekawa.Bot.Modules.Board
                     topStar += $"No {emote} messages";
                 }
 
-                var embed = new EmbedBuilder().CreateDefault(null, Context.Guild.Id);
-                embed.Author = new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()};
-                embed.AddField("Boarded Messages", $"{boardData.Count}", true);
-                embed.AddField($"{emote} Received", $"{userData.StarReceived}", true);
-                embed.AddField($"{emote} Given", $"{userData.StarGiven}", true);
-                embed.AddField($"Top {emote} Posts", $"{topStar ?? "N/A"}");
+                var embed = new EmbedBuilder
+                {
+                    Author = new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()},
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new EmbedFieldBuilder{ Name = "Boarded Messages", Value = $"{boardData.Count}", IsInline = true },
+                        new EmbedFieldBuilder{ Name = $"{emote} Received", Value = $"{userData.StarReceived}", IsInline = true },
+                        new EmbedFieldBuilder{ Name = $"{emote} Given", Value = $"{userData.StarGiven}", IsInline = true },
+                        new EmbedFieldBuilder{ Name = $"Top {emote} Posts", Value = $"{topStar ?? "N/A"}" }
+                    }
+                };
                 await Context.ReplyAsync(embed);
             }
         }

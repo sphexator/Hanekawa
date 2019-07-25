@@ -10,6 +10,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
@@ -24,15 +25,17 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly WarnService _warn;
+        private readonly IServiceProvider _provider;
 
-        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn)
+        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn, IServiceProvider provider)
         {
             _client = client;
             _logService = logService;
             _log = log;
             _warn = warn;
+            _provider = provider;
 
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.MuteTimers)
                 {

@@ -17,6 +17,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Module = Qmmands.Module;
 
@@ -40,7 +41,7 @@ namespace Hanekawa.Bot.Services.Command
             _interactive = interactive;
             _colourService = colourService;
 
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.GuildConfigs)
                 {
@@ -96,7 +97,7 @@ namespace Hanekawa.Bot.Services.Command
             if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix,
                 out var output)) return;
             var result = await _command.ExecuteAsync(output,
-                new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
+                new HanekawaContext(_client, message, user, _colourService, _interactive, _provider), _provider);
             if (!result.IsSuccessful) Console.WriteLine("Did not succeed??");
         }
 
@@ -179,7 +180,7 @@ namespace Hanekawa.Bot.Services.Command
         {
             _ = Task.Run(async () =>
             {
-                using var db = new DbService();
+                using var db = _provider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateGuildConfigAsync(guild);
                 _prefixes.TryAdd(guild.Id, cfg.Prefix);
                 _colourService.AddOrUpdate(guild.Id, new Color(cfg.EmbedColor));

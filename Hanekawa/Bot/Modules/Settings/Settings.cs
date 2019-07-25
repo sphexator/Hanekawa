@@ -8,6 +8,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -32,10 +33,10 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             if (await _command.AddPrefix(Context.Guild.Id, prefix, db))
-                await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green.RawValue);
-            else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red.RawValue);
+                await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
+            else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
         }
 
         [Name("Set embed color")]
@@ -43,10 +44,10 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Changes the embed colour of the bot")]
         public async Task SetEmbedColorAsync(uint color)
         {
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color(color));
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, new Color(color));
@@ -64,10 +65,10 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task SetEmbedColorAsync(int r, int g, int b)
         {
             var color = new Color(r, g, b);
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color.RawValue);
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);
@@ -87,10 +88,10 @@ namespace Hanekawa.Bot.Modules.Settings
             if (colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
             colorHex = colorHex.Insert(0, "0x");
             var color = new Color(Convert.ToUInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color.RawValue);
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);

@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Modules.Help
                 result.AppendLine($"{strBuilder}");
             }
 
-            var embed = new EmbedBuilder().CreateDefault(result.ToString(), Context.Guild.Id);
+            var embed = new EmbedBuilder().CreateDefault(result.ToString());
             embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
             embed.Footer = new EmbedFooterBuilder
             {
@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Modules.Help
                     response.AppendLine("No module matches that search");
                 }
 
-                var embed = new EmbedBuilder().CreateDefault(response.ToString(), Context.Guild.Id);
+                var embed = new EmbedBuilder().CreateDefault(response.ToString());
                 embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
                 embed.Title = "Couldn't find a module with that name";
                 embed.Footer = new EmbedFooterBuilder
@@ -128,8 +128,8 @@ namespace Hanekawa.Bot.Modules.Help
             }
 
             if (result.Count > 0)
-                await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Command List", null, 10));
-            else await Context.ReplyAsync("Couldn't find any commands in that module", Color.Red.RawValue);
+                await Context.ReplyPaginated(result, Context.Guild, "Command List", null, 10);
+            else await Context.ReplyAsync("Couldn't find any commands in that module", Color.Red);
         }
 
         private string ParamBuilder(Command command)

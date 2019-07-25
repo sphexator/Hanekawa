@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 await Context.ReplyAsync($"Couldn't find a message with that ID in {channel.Mention}",
-                    Color.Red.RawValue);
+                    Color.Red);
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
             {
                 await Context.ReplyAsync(
                     "Couldn't find any users reacting with that emote. You sure this is a emote on this server?",
-                    Color.Red.RawValue);
+                    Color.Red);
                 return;
             }
 

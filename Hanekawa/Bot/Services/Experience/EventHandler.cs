@@ -8,6 +8,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -17,6 +18,7 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
+        private readonly IServiceProvider _provider;
 
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
@@ -27,13 +29,14 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
+        public ExpService(DiscordSocketClient client, Random random, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _random = random;
             _log = log;
+            _provider = provider;
 
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.LevelExpReductions)
                     switch (x.ChannelType)
@@ -91,7 +94,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnGlobalCooldown(user)) return;
                 try
                 {
-                    using var db = new DbService();
+                    using var db = _provider.GetRequiredService<DbService>();
                     var userdata = await db.GetOrCreateGlobalUserData(user);
                     await AddExpAsync(userdata, GetExp(channel), _random.Next(1, 3), db);
                 }
@@ -114,7 +117,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnServerCooldown(user)) return;
                 try
                 {
-                    using var db = new DbService();
+                    using var db = _provider.GetRequiredService<DbService>();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
                     if (!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
@@ -137,7 +140,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (!(usr is SocketGuildUser user)) return;
                 try
                 {
-                    using var db = new DbService();
+                    using var db = _provider.GetRequiredService<DbService>();
                     var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                     if (!cfg.VoiceExpEnabled) return;
                     if (before.VoiceChannel == null && after.VoiceChannel != null)

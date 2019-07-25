@@ -5,6 +5,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Club
@@ -17,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetAdvertisementChannel(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 if (channel == null)
@@ -25,21 +26,21 @@ namespace Hanekawa.Bot.Modules.Club
                     cfg.AdvertisementChannel = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Disabled Advertisement creation of clubs.",
-                        Color.Green.RawValue);
+                        Color.Green);
                     return;
                 }
 
                 if (cfg.AdvertisementChannel.HasValue && cfg.AdvertisementChannel.Value == channel.Id)
                 {
                     await Context.ReplyAsync($"Advertisement channel has already been set to {channel.Mention}",
-                        Color.Red.RawValue);
+                        Color.Red);
                 }
                 else
                 {
                     cfg.AdvertisementChannel = channel.Id;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Advertisement channel set has been been set to {channel.Mention}",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
             }
         }
@@ -50,13 +51,13 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetCategory(SocketCategoryChannel category = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 if (cfg.ChannelCategory.HasValue && cfg.ChannelCategory.Value == category.Id)
                 {
                     await Context.ReplyAsync($"Club category channel has already been set to {category.Name}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -65,14 +66,14 @@ namespace Hanekawa.Bot.Modules.Club
                     cfg.ChannelCategory = null;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Disabled club channel creation",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
                 else
                 {
                     cfg.ChannelCategory = category.Id;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Club category channel set has been been set to {category.Name}",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
             }
         }
@@ -84,14 +85,14 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetLevelRequirement(int level)
         {
             if (level <= 0) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 cfg.ChannelRequiredLevel = level;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Set required level limit to create a club to {level}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -102,14 +103,14 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetAmountRequirement(int amount)
         {
             if (amount <= 0) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 cfg.ChannelRequiredAmount = amount;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Set required amount of club members above the level limit to create a channel to {amount}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
     }

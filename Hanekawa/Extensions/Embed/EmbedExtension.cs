@@ -8,14 +8,14 @@ namespace Hanekawa.Extensions.Embed
     {
         // Reply from channel
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, uint color) =>
-            channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
+            channel.SendEmbedAsync(new EmbedBuilder().Create(content, color));
 
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, ulong guildId) =>
-            channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color().GetDefaultColor(guildId)));
+        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content) =>
+            channel.SendEmbedAsync(new EmbedBuilder().Create(content));
 
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendEmbedAsync(embed);
-
+            /*
         // Reply from command context
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, uint color) =>
             context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
@@ -26,22 +26,22 @@ namespace Hanekawa.Extensions.Embed
 
         public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, EmbedBuilder embed) =>
             context.Channel.SendEmbedAsync(embed);
-
+*/
         // Create default embed - used outside of this class
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, uint color) =>
-            context.Create(content, new Color(color));
+        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, uint colour) =>
+            context.Create(content, colour);
 
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, ulong guild) =>
-            context.Create(content, new Color().GetDefaultColor(guild));
+        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content) =>
+            context.Create(content);
 
         // Creates default embed - used here
-        private static EmbedBuilder Create(this EmbedBuilder embed, string content, Color color)
+        private static EmbedBuilder Create(this EmbedBuilder embed, string content, uint? colour = null)
         {
-            embed.Color = color;
+            if (colour != null) embed.Color = new Color(colour.Value);
             embed.Description = content;
             return embed;
         }
-
+        
         private static Task<IUserMessage> SendEmbedAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendMessageAsync(null, false, embed.Build());
 

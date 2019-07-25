@@ -34,16 +34,19 @@ namespace Hanekawa
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            using (var db = new DbService())
-            {
+            using (var db = new DbService()) 
                 db.Database.Migrate();
-            }
 
             services.AddControllers();
             services.AddHostedService<Bot.Hanekawa>();
             services.AddSingleton(services);
             services.AddSingleton(Configuration);
             services.AddLogging();
+            services.AddDbContextPool<DbService>(x =>
+            {
+                x.UseNpgsql(Environment.GetEnvironmentVariable("HanekawaDbCon") ??
+                            throw new NullReferenceException("No database connection env var set"));
+            }, 200);
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,

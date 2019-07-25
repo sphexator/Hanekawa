@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -17,7 +18,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogJoin.HasValue) return;
@@ -50,7 +51,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogJoin.HasValue) return;

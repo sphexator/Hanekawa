@@ -12,6 +12,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Drop
@@ -22,18 +23,20 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly ExpService _expService;
         private readonly InternalLogService _log;
         private readonly Random _random;
+        private readonly IServiceProvider _provider;
 
-        public DropService(DiscordSocketClient client, Random random, ExpService expService, InternalLogService log)
+        public DropService(DiscordSocketClient client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _random = random;
             _expService = expService;
             _log = log;
+            _provider = provider;
 
             _client.MessageReceived += DropChance;
             _client.ReactionAdded += OnReactionAdded;
 
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.DropConfigs)
                 {
@@ -51,7 +54,7 @@ namespace Hanekawa.Bot.Services.Drop
 
         public async Task SpawnAsync(HanekawaContext context)
         {
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 var claim = await GetClaimEmote(context.Guild, db);
                 var triggerMsg = await context.Channel.ReplyAsync(
@@ -91,7 +94,7 @@ namespace Hanekawa.Bot.Services.Drop
                 if (rand < 200)
                     try
                     {
-                        using (var db = new DbService())
+                        using (var db = _provider.GetRequiredService<DbService>())
                         {
                             var claim = await GetClaimEmote(ch.Guild, db);
                             var triggerMsg = await ch.SendMessageAsync(
@@ -131,7 +134,7 @@ namespace Hanekawa.Bot.Services.Drop
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var claim = await GetClaimEmote(user.Guild, db);
                         if (rct.Emote.Name != claim.Name) return;

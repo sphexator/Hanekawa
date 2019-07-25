@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -11,13 +12,14 @@ namespace Hanekawa.Shared.Command
 {
     public class HanekawaContext : CommandContext
     {
-        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive)
+        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive, IServiceProvider provider)
         {
             Client = client;
             Message = msg;
             User = user;
             Colour = colour;
             Interactive = interactive;
+            Provider = provider;
             Guild = user.Guild;
             Channel = msg.Channel as SocketTextChannel;
         }
@@ -27,33 +29,45 @@ namespace Hanekawa.Shared.Command
         public SocketGuildUser User { get; }
         public SocketGuild Guild { get; }
         public SocketTextChannel Channel { get; }
+        public IServiceProvider Provider { get; }
         private ColourService Colour { get; }
         private InteractiveService Interactive { get; }
 
-        public async Task ReplyAsyncTest(string content) =>
+        public async Task<IUserMessage> ReplyAsync(string content) =>
             await Channel.SendMessageAsync(null, false, new EmbedBuilder
             {
                 Color = Colour.Get(Guild.Id),
                 Description = content
             }.Build());
 
-        public async Task ReplyAsyncTest(EmbedBuilder embed) 
-            => await Channel.SendMessageAsync(null, false, embed.Build());
+        public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
+            await Channel.SendMessageAsync(null, false, new EmbedBuilder
+            {
+                Color = color,
+                Description = content
+            }.Build());
 
-        public async Task ErrorAsync(string content)
+        public async Task<IUserMessage> ReplyAsync(EmbedBuilder embed)
         {
-            // TODO: Implement various ways to do error messages, maybe ok?
+            if (embed.Color == null ||embed.Color == Color.Default) embed.Color = Colour.Get(Guild.Id);
+            return await Channel.SendMessageAsync(null, false, embed.Build());
         }
 
-        public async Task ReplyPaginated(IReadOnlyList<string> pages, SocketUser userIcon, string authorName, string title = null, int count = 5)
+        public async Task<IUserMessage> ErrorAsync(string content)
+        {
+            // TODO: Implement various ways to do error messages, maybe ok?
+            return null;
+        }
+
+        public async Task<IUserMessage> ReplyPaginated(IReadOnlyList<string> pages, SocketUser userIcon, string authorName, string title = null, int count = 5)
             => await SendPaginator(pages, userIcon.GetAvatarUrl() ?? userIcon.GetDefaultAvatarUrl(), authorName, title, count).ConfigureAwait(false);
 
-        public async Task ReplyPaginated(IReadOnlyList<string> pages, SocketGuild guildIcon, string authorName, string title = null, int count = 5)
+        public async Task<IUserMessage> ReplyPaginated(IReadOnlyList<string> pages, SocketGuild guildIcon, string authorName, string title = null, int count = 5)
             => await SendPaginator(pages, guildIcon.IconUrl, authorName, title, count).ConfigureAwait(false);
 
-        private async Task SendPaginator(IReadOnlyList<string> pages, string icon, string authorName, string title, int count = 5)
+        private async Task<IUserMessage> SendPaginator(IReadOnlyList<string> pages, string icon, string authorName, string title, int count = 5)
         {
-            await Interactive.SendPaginatedMessageAsync(this, new PaginatedMessage
+            return await Interactive.SendPaginatedMessageAsync(this, new PaginatedMessage
             {
                 Color = Colour.Get(Guild.Id),
                 Author = new EmbedAuthorBuilder { IconUrl = icon, Name = authorName },

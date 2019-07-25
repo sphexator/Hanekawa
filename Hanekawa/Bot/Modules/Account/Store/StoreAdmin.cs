@@ -9,6 +9,7 @@ using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Stores;
 using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Store
@@ -22,7 +23,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var date = DateTime.UtcNow;
                 var item = new Item
@@ -44,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Added {role.Name} to the shop for {_currency.ToCurrency(creditCfg, price)}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -55,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var date = DateTime.UtcNow;
                 var item = new Item
@@ -77,7 +78,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Added {role.Name} to the shop for {_currency.ToCurrency(creditCfg, price, true)}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -87,7 +88,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveStoreItemAsync([Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var itemCheck =
                     await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);

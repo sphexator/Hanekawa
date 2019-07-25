@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hanekawa.Database;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());
             var toAdd = new Timer(async _ =>
             {
-                using (var db = new DbService())
+                using (var db = _provider.GetRequiredService<DbService>())
                 {
                     try
                     {

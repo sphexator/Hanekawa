@@ -10,8 +10,10 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Suggestion
@@ -27,12 +29,12 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
-                var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Guild.Id);
+                var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Provider.GetRequiredService<ColourService>().Get(Context.Guild.Id).RawValue);
                 embed.Author = new EmbedAuthorBuilder
                     {IconUrl = Context.User.GetAvatar(), Name = Context.User.GetName()};
                 embed.Footer = new EmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"};
@@ -54,14 +56,14 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion?.MessageId == null)
                 {
-                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
+                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red);
                     return;
                 }
 
@@ -80,14 +82,14 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
                 var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
                 if (suggestion?.MessageId == null)
                 {
-                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
+                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red);
                     return;
                 }
 
@@ -105,7 +107,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
@@ -115,7 +117,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
 
                 if (suggestion?.MessageId == null)
                 {
-                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red.RawValue);
+                    await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red);
                     return;
                 }
 

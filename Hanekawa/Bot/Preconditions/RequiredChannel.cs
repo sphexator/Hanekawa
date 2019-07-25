@@ -8,6 +8,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
@@ -41,7 +42,7 @@ namespace Hanekawa.Bot.Preconditions
 
         private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
         {
-            using (var db = new DbService())
+            using (var db = context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
                 return cfg.IgnoreAllChannels;
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Preconditions
 
         private bool DoubleCheckChannel(HanekawaContext context)
         {
-            using (var db = new DbService())
+            using (var db = context.Provider.GetRequiredService<DbService>())
             {
                 var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
                 if (check == null) return false;

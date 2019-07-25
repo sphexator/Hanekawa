@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using System;
+using Discord.WebSocket;
 using Hanekawa.Shared.Interfaces;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -7,11 +8,13 @@ namespace Hanekawa.Bot.Services.Logging
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public LogService(DiscordSocketClient client, InternalLogService log)
+        public LogService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.UserBanned += UserBanned;
             _client.UserUnbanned += UserUnbanned;

@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Anime
@@ -19,12 +20,14 @@ namespace Hanekawa.Bot.Services.Anime
         private readonly AnimeSimulCastClient _anime;
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, InternalLogService log)
+        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
         {
             _anime = anime;
             _client = client;
             _log = log;
+            _provider = provider;
 
             _anime.AnimeAired += AnimeAired;
             _client.Ready += SetupSimulCast;
@@ -41,7 +44,7 @@ namespace Hanekawa.Bot.Services.Anime
             _ = Task.Run(async () =>
             {
                 Console.WriteLine("Anime air announced");
-                using (var db = new DbService())
+                using (var db = _provider.GetRequiredService<DbService>())
                 {
                     var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
                     foreach (var x in premiumList)

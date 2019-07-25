@@ -6,6 +6,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Board
@@ -18,12 +19,12 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardEmoteAsync(Emote emote)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 cfg.Emote = emote.ParseEmoteString();
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green);
             }
         }
 
@@ -33,20 +34,20 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 if (channel == null)
                 {
                     cfg.Channel = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled starboard", Color.Green.RawValue);
+                    await Context.ReplyAsync("Disabled starboard", Color.Green);
                 }
                 else
                 {
                     cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green.RawValue);
+                    await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green);
                 }
             }
         }

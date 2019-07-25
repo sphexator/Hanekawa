@@ -8,6 +8,7 @@ namespace Hanekawa.Extensions.Embed
 {
     public static class PaginatorExtension
     {
+        /*
         public static PaginatedMessage PaginateBuilder(this List<string> pages, SocketGuild guild, string authorName,
             string title, int count = 5)
             => new PaginatedMessage().Builder(pages, guild.Id, guild.IconUrl, authorName, title, count);
@@ -55,5 +56,6 @@ namespace Hanekawa.Extensions.Embed
 
             return pages;
         }
+        */
     }
 }

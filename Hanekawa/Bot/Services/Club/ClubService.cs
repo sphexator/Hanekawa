@@ -7,6 +7,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Club
@@ -25,12 +26,14 @@ namespace Hanekawa.Bot.Services.Club
 
         private readonly InternalLogService _log;
         private readonly Random _random;
+        private readonly IServiceProvider _provider;
 
-        public ClubService(DiscordSocketClient client, Random random, InternalLogService log)
+        public ClubService(DiscordSocketClient client, Random random, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _random = random;
             _log = log;
+            _provider = provider;
 
             _client.ReactionAdded += ClubReactionAdded;
             _client.ReactionRemoved += ClubReactionRemoved;
@@ -43,7 +46,7 @@ namespace Hanekawa.Bot.Services.Club
             {
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
                             .ToListAsync();
@@ -80,7 +83,7 @@ namespace Hanekawa.Bot.Services.Club
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
                         if (!cfg.AdvertisementChannel.HasValue) return;

@@ -7,6 +7,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.AutoModerator
@@ -17,14 +18,16 @@ namespace Hanekawa.Bot.Services.AutoModerator
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
+        private readonly IServiceProvider _provider;
 
         public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService,
-            InternalLogService log)
+            InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _logService = logService;
             _muteService = muteService;
             _log = log;
+            _provider = provider;
 
             _client.MessageReceived += MessageLength;
             _client.MessageReceived += InviteFilter;
@@ -41,7 +44,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (!message.Content.IsDiscordInvite(out var invite)) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                         if (!cfg.FilterInvites) return;
@@ -70,7 +73,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (user.GuildPermissions.ManageMessages) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                         if (!cfg.FilterMsgLength.HasValue) return;

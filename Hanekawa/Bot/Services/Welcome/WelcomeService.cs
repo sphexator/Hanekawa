@@ -10,6 +10,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interactive;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Welcome
@@ -21,15 +22,17 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ImageGenerator _img;
         private readonly InteractiveService _interactive;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
         public WelcomeService(DiscordSocketClient client, ImageGenerator img, InternalLogService log,
-            InteractiveService interactive, ExpService exp)
+            InteractiveService interactive, ExpService exp, IServiceProvider provider)
         {
             _client = client;
             _img = img;
             _log = log;
             _interactive = interactive;
             _exp = exp;
+            _provider = provider;
 
             _client.UserJoined += WelcomeUser;
             _client.LeftGuild += LeftGuild;
@@ -43,7 +46,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 if (OnCooldown(user)) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
                         if (!cfg.Channel.HasValue) return;
@@ -101,7 +104,7 @@ namespace Hanekawa.Bot.Services.Welcome
             {
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
                         db.WelcomeBanners.RemoveRange(banners);

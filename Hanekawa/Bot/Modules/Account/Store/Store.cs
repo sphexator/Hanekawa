@@ -12,6 +12,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Store
@@ -29,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task InventoryAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -56,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     return;
                 }
 
-                await PagedReplyAsync(result.PaginateBuilder(Context.Guild, $"Inventory for {Context.User}", null));
+                await Context.ReplyPaginated(result, Context.User, $"Inventory for {Context.User}");
             }
         }
 
@@ -66,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task EquipRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -94,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task UnequipRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -113,7 +114,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
 
                 await Context.User.TryRemoveRoleAsync(role);
                 await Context.ReplyAsync($"{Context.User.Mention} unequipped {role.Name}");
-                ;
             }
         }
 
@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task ServerShopAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 var store = await db.ServerStores.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
@@ -141,7 +141,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                         $"{Context.Guild.GetRole(x.RoleId).Name ?? "No role found"} - {_currency.ToCurrency(cfg, x.Price, x.SpecialCredit)}");
                 }
 
-                await PagedReplyAsync(result.PaginateBuilder(Context.Guild, $"Store for {Context.Guild.Name}", null));
+                await Context.ReplyPaginated(result, Context.Guild, $"Store for {Context.Guild.Name}");
             }
         }
 
@@ -152,7 +152,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task BuyAsync([Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var serverData =
                     await db.ServerStores.FirstOrDefaultAsync(x =>
@@ -172,7 +172,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     {
                         await Context.ReplyAsync(
                             $"You do not have enough {_currency.ToCurrency(creditCfg, serverData.Price, true)} to purchase {role.Name}",
-                            Color.Red.RawValue);
+                            Color.Red);
                         return;
                     }
                 }
@@ -182,7 +182,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     {
                         await Context.ReplyAsync(
                             $"You do not have enough {_currency.ToCurrency(creditCfg, serverData.Price)} to purchase {role.Name}",
-                            Color.Red.RawValue);
+                            Color.Red);
                         return;
                     }
                 }
@@ -192,7 +192,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 if (invItem != null)
                 {
                     await Context.ReplyAsync($"You've already purchased {Context.Guild.GetRole(item.Role.Value).Name}.",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -209,7 +209,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"Purchased {Context.Guild.GetRole(item.Role.Value)} for {_currency.ToCurrency(creditCfg, serverData.Price, serverData.SpecialCredit)}",
-                    Color.Green.RawValue);
+                    Color.Green);
                 await Context.User.TryAddRoleAsync(role);
             }
         }

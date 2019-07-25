@@ -35,8 +35,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 var embed = new EmbedBuilder()
                     .CreateDefault($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
-                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}",
-                        Context.Guild.Id)
+                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}")
                     .WithAuthor(new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()});
                 await Context.ReplyAsync(embed);
             }
@@ -57,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 if (userData.Credit < amount * users.Length)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have enough {currencyCfg.CurrencyName}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -75,7 +74,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
                     $"{Context.User.Mention} transferred {_currency.ToCurrency(currencyCfg, amount)} to:\n{strBuilder}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -94,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
                     await Context.ReplyAsync(
                         $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize()}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -109,7 +108,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync(
                         $"Rewarded {user.Mention} with {_currency.ToCurrency(currencyCfg, reward)}",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
                 else
                 {
@@ -149,8 +148,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                               $"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
                 }
 
-                await PagedReplyAsync(pages.PaginateBuilder(Context.Guild,
-                    $"Money leaderboard for {Context.Guild.Name}", null, 10));
+                await Context.ReplyPaginated(pages, Context.Guild,
+                    $"Money leaderboard for {Context.Guild.Name}", null, 10);
             }
         }
 
@@ -175,8 +174,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
 
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Rewarded {_currency.ToCurrency(cfg, amount, true)} to:\n {strBuilder}",
-                    Color.Green.RawValue);
+                    $"Rewarded {_currency.ToCurrency(cfg, amount, true)} to:\n {strBuilder}", Color.Green);
             }
         }
     }

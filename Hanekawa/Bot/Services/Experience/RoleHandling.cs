@@ -9,6 +9,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _ = Task.Run(async () =>
             {
-                using var db = new DbService();
+                using var db = _provider.GetRequiredService<DbService>();
 
                 var userData = await db.GetOrCreateUserData(user);
                 if (userData == null || userData.Level < 2) return;

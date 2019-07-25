@@ -10,6 +10,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -45,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds a channel to be eligible for drops")]
         public async Task AddDropChannel(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 if (channel == null) channel = Context.Channel;
                 try
@@ -53,12 +54,12 @@ namespace Hanekawa.Bot.Modules.Settings
                     await Context.Message.TryDeleteMessageAsync();
                     await _drop.AddLootChannel(channel, db);
                     await Context.ReplyAsync($"Added {channel.Mention} to loot eligible channels.",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
                 catch
                 {
                     await Context.ReplyAsync($"Couldn't add {channel.Mention} to loot eligible channels.",
-                        Color.Red.RawValue);
+                        Color.Red);
                 }
             }
         }
@@ -68,7 +69,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Removes a channel from being eligible for drops")]
         public async Task RemoveDropChannel(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 if (channel == null) channel = Context.Channel;
                 try
@@ -76,12 +77,12 @@ namespace Hanekawa.Bot.Modules.Settings
                     await Context.Message.TryDeleteMessageAsync();
                     await _drop.RemoveLootChannel(channel, db);
                     await Context.ReplyAsync($"Removed {channel.Mention} from loot eligible channels.",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
                 catch
                 {
                     await Context.ReplyAsync($"Couldn't remove {channel.Mention} from loot eligible channels.",
-                        Color.Red.RawValue);
+                        Color.Red);
                 }
             }
         }
@@ -91,9 +92,9 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Lists channels that are available for drops")]
         public async Task ListDropChannelsAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
-                var embed = new EmbedBuilder().CreateDefault("", Context.Guild.Id).WithAuthor(new EmbedAuthorBuilder
+                var embed = new EmbedBuilder().WithAuthor(new EmbedAuthorBuilder
                     {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)

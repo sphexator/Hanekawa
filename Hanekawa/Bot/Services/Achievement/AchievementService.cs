@@ -6,6 +6,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Achievement
@@ -14,11 +15,13 @@ namespace Hanekawa.Bot.Services.Achievement
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public AchievementService(DiscordSocketClient client, InternalLogService log)
+        public AchievementService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.MessageReceived += MessageCount;
         }
@@ -32,7 +35,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 if (msg.Content.Length != 1499) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
                         if (achievements == null) return;

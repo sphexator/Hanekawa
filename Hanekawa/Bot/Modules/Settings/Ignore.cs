@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -28,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds or removes a channel from ignore list")]
         public async Task IgnoreChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (channel == null) channel = Context.Channel;
@@ -38,11 +39,11 @@ namespace Hanekawa.Bot.Modules.Settings
                     if (cfg.IgnoreAllChannels)
                         await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
                                                  $"Commands are now enabled in {channel?.Mention}",
-                            Color.Green.RawValue);
+                            Color.Green);
                     else
                         await Context.ReplyAsync($"Added {channel?.Mention} to the ignore list.\n" +
                                                  $"Commands are now disabled in {channel?.Mention}",
-                            Color.Green.RawValue);
+                            Color.Green);
                 }
 
                 if (!result)
@@ -50,11 +51,11 @@ namespace Hanekawa.Bot.Modules.Settings
                     if (cfg.IgnoreAllChannels)
                         await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
                                                  $"Commands are now disabled in {channel?.Mention}",
-                            Color.Green.RawValue);
+                            Color.Green);
                     else
                         await Context.ReplyAsync($"Removed {channel?.Mention} from the ignore list.\n" +
                                                  $"Commands are now enabled in {channel?.Mention}",
-                            Color.Green.RawValue);
+                            Color.Green);
                 }
             }
         }
@@ -64,7 +65,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ToggleIgnoreChannelAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (cfg.IgnoreAllChannels)
@@ -88,7 +89,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ListIgnoreChannelsAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
@@ -124,7 +125,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
-                var embed = new EmbedBuilder().CreateDefault(content, Context.Guild.Id)
+                var embed = new EmbedBuilder().CreateDefault(content)
                     .WithAuthor(new EmbedAuthorBuilder {IconUrl = Context.Guild.IconUrl, Name = title});
                 await Context.ReplyAsync(embed);
             }

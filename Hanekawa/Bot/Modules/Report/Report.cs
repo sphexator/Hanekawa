@@ -10,6 +10,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -26,12 +27,12 @@ namespace Hanekawa.Bot.Modules.Report
         {
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
 
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
-            var embed = new EmbedBuilder().CreateDefault(text, Context.Guild.Id)
+            var embed = new EmbedBuilder().CreateDefault(text)
                 .WithAuthor(new EmbedAuthorBuilder
                 {
                     IconUrl = Context.User.GetAvatar(),
@@ -56,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Report
         public async Task RespondAsync(int id, [Remainder] string text)
         {
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
 
             var report = await db.Reports.FindAsync(id, Context.Guild.Id);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -92,14 +93,14 @@ namespace Hanekawa.Bot.Modules.Report
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetReportChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (cfg.ReportChannel.HasValue && channel == null)
                 {
                     cfg.ReportChannel = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled report channel", Color.Green.RawValue);
+                    await Context.ReplyAsync("Disabled report channel", Color.Green);
                     return;
                 }
 
@@ -107,7 +108,7 @@ namespace Hanekawa.Bot.Modules.Report
                 cfg.ReportChannel = channel.Id;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
     }

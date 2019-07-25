@@ -43,29 +43,35 @@ namespace Hanekawa.Bot.Modules.Account
                 if (user == null) user = Context.User;
                 var serverData = await db.GetOrCreateUserData(user);
                 var globalData = await db.GetOrCreateGlobalUserData(user);
-                var embed = new EmbedBuilder().CreateDefault("", Context.Guild.Id);
-                embed.Author = new EmbedAuthorBuilder {Name = user.GetName()};
-                embed.ThumbnailUrl = user.GetAvatar();
-                embed.Fields = new List<EmbedFieldBuilder>
+                var embed = new EmbedBuilder
                 {
-                    new EmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
-                    new EmbedFieldBuilder
-                        {Name = "Exp", Value = $"{serverData.Exp}/{_exp.ExpToNextLevel(serverData)}", IsInline = true},
-                    new EmbedFieldBuilder
+                    Author = new EmbedAuthorBuilder {Name = user.GetName()},
+                    ThumbnailUrl = user.GetAvatar(),
+                    Fields = new List<EmbedFieldBuilder>
                     {
-                        Name = "Rank",
-                        Value =
-                            $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= serverData.TotalExp)}" +
-                            $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
-                        IsInline = true
-                    },
-                    new EmbedFieldBuilder
-                    {
-                        Name = "Global Rank",
-                        Value =
-                            $"{await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp)}" +
-                            $"/{await db.AccountGlobals.CountAsync()}",
-                        IsInline = true
+                        new EmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
+                        new EmbedFieldBuilder
+                        {
+                            Name = "Exp",
+                            Value = $"{serverData.Exp}/{_exp.ExpToNextLevel(serverData)}",
+                            IsInline = true
+                        },
+                        new EmbedFieldBuilder
+                        {
+                            Name = "Rank",
+                            Value =
+                                $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= serverData.TotalExp)}" +
+                                $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
+                            IsInline = true
+                        },
+                        new EmbedFieldBuilder
+                        {
+                            Name = "Global Rank",
+                            Value =
+                                $"{await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp)}" +
+                                $"/{await db.AccountGlobals.CountAsync()}",
+                            IsInline = true
+                        }
                     }
                 };
                 await Context.ReplyAsync(embed);
@@ -94,8 +100,7 @@ namespace Hanekawa.Bot.Modules.Account
                     result.Add(strBuilder.ToString());
                 }
 
-                await PagedReplyAsync(
-                    result.PaginateBuilder(Context.Guild, $"Leaderboard for {Context.Guild.Name}", null, 10));
+                await Context.ReplyPaginated(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}", null, 10);
             }
         }
 
@@ -115,13 +120,13 @@ namespace Hanekawa.Bot.Modules.Account
                     {
                         var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
                         await Context.ReplyAsync(
-                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize()}", Color.Red.RawValue);
+                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize()}");
                     }
                     else
                     {
                         await Context.ReplyAsync(
                             $"{Context.User.Mention}, you got a reputation point available!",
-                            Color.Green.RawValue);
+                            Color.Green);
                     }
 
                     return;
@@ -131,7 +136,7 @@ namespace Hanekawa.Bot.Modules.Account
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
                     await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -139,7 +144,7 @@ namespace Hanekawa.Bot.Modules.Account
                 cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
                 userData.Rep++;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green.RawValue);
+                await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green);
             }
         }
     }

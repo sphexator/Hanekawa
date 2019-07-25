@@ -9,6 +9,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Board
@@ -17,12 +18,13 @@ namespace Hanekawa.Bot.Services.Board
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
         public BoardService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
             _log = log;
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
             }
@@ -43,7 +45,7 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var emote = await GetEmote(user.Guild, db);
                         if (!rct.Emote.Equals(emote)) return;
@@ -87,7 +89,7 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var emote = await GetEmote(user.Guild, db);
                         if (!rct.Emote.Equals(emote)) return;

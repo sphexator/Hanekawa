@@ -9,6 +9,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
@@ -29,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 2, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task SearchAsync()
         {
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             await Context.ReplyAsync(await _shipGame.SearchAsync(Context.User, db));
         }
 
@@ -52,7 +53,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync()
         {
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             var result = new List<string>();
             var classes = await db.GameClasses.ToListAsync();
             for (var i = 0; i < classes.Count; i++)
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Game
             }
 
             if (result.Count == 0) await Context.ReplyAsync("Something went wrong...\nCouldn't get a list of classes.");
-            else await PagedReplyAsync(result.PaginateBuilder(Context.Guild, "Game Classes", null, 10));
+            else await Context.ReplyPaginated(result, Context.Guild, "Game Classes", null, 10);
         }
 
         [Name("Class Info")]
@@ -71,11 +72,11 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync(int classId)
         {
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             var classInfo = await db.GameClasses.FindAsync(classId);
             if (classInfo == null)
             {
-                await Context.ReplyAsync("Couldn't find a class with that ID", Color.Red.RawValue);
+                await Context.ReplyAsync("Couldn't find a class with that ID", Color.Red);
                 return;
             }
 
@@ -92,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ChooseClassAsync(int id)
         {
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             var classInfo = await db.GameClasses.FindAsync(id);
             var userData = await db.GetOrCreateUserData(Context.User);
             if (userData.Level < (int) classInfo.LevelRequirement)
@@ -103,7 +104,7 @@ namespace Hanekawa.Bot.Modules.Game
 
             userData.Class = classInfo.Id;
             await db.SaveChangesAsync();
-            await Context.ReplyAsync($"Switched class to {classInfo.Name}", Color.Green.RawValue);
+            await Context.ReplyAsync($"Switched class to {classInfo.Name}", Color.Green);
         }
     }
 }

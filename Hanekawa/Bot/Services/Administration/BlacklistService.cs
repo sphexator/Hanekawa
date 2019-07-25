@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration
@@ -11,11 +12,13 @@ namespace Hanekawa.Bot.Services.Administration
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public BlacklistService(DiscordSocketClient client, InternalLogService log)
+        public BlacklistService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.JoinedGuild += _client_JoinedGuild;
         }
@@ -26,7 +29,7 @@ namespace Hanekawa.Bot.Services.Administration
             {
                 try
                 {
-                    using (var db = new DbService())
+                    using (var db = _provider.GetRequiredService<DbService>())
                     {
                         var check = await db.Blacklists.FindAsync(guild.Id);
                         if (check == null) return;

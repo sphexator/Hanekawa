@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Drop
 {
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Services.Drop
 
         public async Task ChangeEmote(SocketGuild guild, Emote emote)
         {
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateDropConfig(guild);
                 cfg.Emote = emote.ParseEmoteString();

@@ -12,6 +12,7 @@ using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Util;
 
@@ -21,18 +22,20 @@ namespace Hanekawa.Bot.Services.Administration.Warning
     {
         private readonly InternalLogService _log;
         private readonly LogService _logService;
+        private readonly IServiceProvider _provider;
 
-        public WarnService(LogService logService, InternalLogService log)
+        public WarnService(LogService logService, InternalLogService log, IServiceProvider provider)
         {
             _logService = logService;
             _log = log;
+            _provider = provider;
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
 
         private async Task VoidWarning()
         {
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 await db.Warns.Where(x => x.Time.AddDays(7).Date <= DateTime.UtcNow.Date)
                     .ForEachAsync(x => x.Valid = false);

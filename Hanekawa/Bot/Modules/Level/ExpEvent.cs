@@ -6,6 +6,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Level
@@ -25,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task TextExpMultiplierAsync(double multiplier)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var old = _exp.GetMultiplier(Context.Guild.Id);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
@@ -33,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Level
                 await db.SaveChangesAsync();
                 _exp.AdjustTextMultiplier(Context.Guild.Id, multiplier);
                 await Context.ReplyAsync($"Changed text exp multiplier from {old} to {multiplier}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -43,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task VoiceExpMultiplierAsync(double multiplier)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var old = _exp.GetMultiplier(Context.Guild.Id);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
@@ -51,7 +52,7 @@ namespace Hanekawa.Bot.Modules.Level
                 await db.SaveChangesAsync();
                 _exp.AdjustVoiceMultiplier(Context.Guild.Id, multiplier);
                 await Context.ReplyAsync($"Changed voice exp multiplier from {old} to {multiplier}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -61,20 +62,20 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ToggleVoiceExp()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 if (cfg.VoiceExpEnabled)
                 {
                     cfg.VoiceExpEnabled = false;
                     await Context.ReplyAsync("Disabled experience gained from being in voice channels!",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
                 else
                 {
                     cfg.VoiceExpEnabled = true;
                     await Context.ReplyAsync("Enabled experience gained from being in voice channels!",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
 
                 await db.SaveChangesAsync();
@@ -89,10 +90,10 @@ namespace Hanekawa.Bot.Modules.Level
         {
             if (multiplier <= 0) return;
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
             await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!",
-                Color.Green.RawValue);
+                Color.Green);
         }
     }
 }

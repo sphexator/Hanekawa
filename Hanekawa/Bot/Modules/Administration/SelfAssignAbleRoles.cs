@@ -12,6 +12,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Administration
@@ -26,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 await Context.Message.TryDeleteMessageAsync();
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
@@ -80,7 +81,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (!(Context.User is SocketGuildUser user)) return;
             if (user.Roles.FirstOrDefault(x => x.Id == role.Id) == null) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 await Context.Message.TryDeleteMessageAsync();
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
@@ -112,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task ListSelfAssignAbleRolesAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list == null || list.Count == 0)
@@ -129,8 +130,8 @@ namespace Hanekawa.Bot.Modules.Administration
                     if (role != null) result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
-                await PagedReplyAsync(result.PaginateBuilder(Context.Guild,
-                    $"Self-assignable roles for {Context.Guild.Name}", null, 10));
+                await Context.ReplyPaginated(result, Context.Guild,
+                    $"Self-assignable roles for {Context.Guild.Name}", null, 10);
             }
         }
 
@@ -157,11 +158,11 @@ namespace Hanekawa.Bot.Modules.Administration
             if (Context.User.HierarchyCheck(role))
             {
                 await Context.ReplyAsync("Can't remove a role that's higher then your highest role.",
-                    Color.Red.RawValue);
+                    Color.Red);
                 return;
             }
 
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var roleCheck =
                     await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
@@ -169,13 +170,13 @@ namespace Hanekawa.Bot.Modules.Administration
                 if (roleCheck == null)
                 {
                     await Context.ReplyAsync($"There is no self-assignable role by the name {role.Name}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
                 db.SelfAssignAbleRoles.Remove(roleCheck);
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green.RawValue);
+                await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green);
             }
         }
 
@@ -183,11 +184,11 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (context.User.HierarchyCheck(role))
             {
-                await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red.RawValue);
+                await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
                 return;
             }
 
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);
                 if (roleCheck != null)
@@ -197,19 +198,19 @@ namespace Hanekawa.Bot.Modules.Administration
                         roleCheck.Exclusive = true;
                         await db.SaveChangesAsync();
                         await context.ReplyAsync($"Changed {role.Name} to a exclusive self-assignable role!",
-                            Color.Green.RawValue);
+                            Color.Green);
                     }
                     else if (!exclusive && roleCheck.Exclusive)
                     {
                         roleCheck.Exclusive = false;
                         await db.SaveChangesAsync();
                         await context.ReplyAsync($"Changed {role.Name} to a non-exclusive self-assignable role!",
-                            Color.Green.RawValue);
+                            Color.Green);
                     }
                     else
                     {
                         await context.ReplyAsync($"{role.Name} is already added as self-assignable",
-                            Color.Red.RawValue);
+                            Color.Red);
                     }
 
                     return;
@@ -223,7 +224,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 };
                 await db.SelfAssignAbleRoles.AddAsync(data);
                 await db.SaveChangesAsync();
-                await context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green.RawValue);
+                await context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green);
             }
         }
     }

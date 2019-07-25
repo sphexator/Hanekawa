@@ -13,6 +13,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive.Criteria;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -27,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task CreateClub([Remainder] string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
@@ -35,7 +36,7 @@ namespace Hanekawa.Bot.Modules.Club
                 {
                     await Context.ReplyAsync(
                         $"You do not meet the requirement to make a club (Level {cfg.ChannelRequiredLevel}).",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -44,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (leaderCheck != null)
                 {
                     await Context.ReplyAsync("You're already a leader of a club, you can't create multiple clubs.",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -59,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Club
                 };
                 await db.ClubPlayers.AddAsync(data);
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Successfully created club {name} !", Color.Green.RawValue);
+                await Context.ReplyAsync($"Successfully created club {name} !", Color.Green);
             }
         }
 
@@ -70,7 +71,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task AddClubMemberAsync(SocketGuildUser user)
         {
             if (user == Context.User) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
@@ -78,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (clubUser == null) return;
                 if (clubUser.Rank > 2)
                 {
-                    await Context.ReplyAsync("You're not high enough rank to use that command!", Color.Red.RawValue);
+                    await Context.ReplyAsync("You're not high enough rank to use that command!", Color.Red);
                     return;
                 }
 
@@ -105,13 +106,13 @@ namespace Hanekawa.Bot.Modules.Club
                     }
                     catch
                     {
-                        await Context.ReplyAsync("Invite expired.", Color.Red.RawValue);
+                        await Context.ReplyAsync("Invite expired.", Color.Red);
                         return;
                     }
 
                 await Context.Channel.TriggerTypingAsync();
                 await _club.AddUserAsync(user, clubData.Id, db);
-                await Context.ReplyAsync($"Added {user.Mention} to {clubData.Name}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Added {user.Mention} to {clubData.Name}", Color.Green);
             }
         }
 
@@ -122,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task RemoveClubMemberAsync(SocketGuildUser user)
         {
             if (user == Context.User) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -130,11 +131,11 @@ namespace Hanekawa.Bot.Modules.Club
                 await Context.Channel.TriggerTypingAsync();
                 if (!await _club.RemoveUserAsync(user, club.Id, db))
                 {
-                    await Context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red.RawValue);
+                    await Context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red);
                     return;
                 }
 
-                await Context.ReplyAsync($"Removed {user.Mention} from {club.Name}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Removed {user.Mention} from {club.Name}", Color.Green);
             }
         }
 
@@ -144,14 +145,14 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync(int id)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ClubId == id);
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.Id == clubUser.ClubId);
                 await _club.RemoveUserAsync(Context.User, club.Id, db);
-                await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green);
             }
         }
 
@@ -161,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var clubs = await db.ClubPlayers.Where(
                     x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -185,7 +186,7 @@ namespace Hanekawa.Bot.Modules.Club
                 var response = await NextMessageAsync();
                 if (response == null || response.Content.IsNullOrWhiteSpace())
                 {
-                    await Context.ReplyAsync("Timed out", Color.Red.RawValue);
+                    await Context.ReplyAsync("Timed out", Color.Red);
                     return;
                 }
 
@@ -193,7 +194,7 @@ namespace Hanekawa.Bot.Modules.Club
                 var club = clubInfos.FirstOrDefault(x => x.Id == result);
                 if (!check || club == null)
                 {
-                    await Context.ReplyAsync("Couldn't find a club with that Id", Color.Red.RawValue);
+                    await Context.ReplyAsync("Couldn't find a club with that Id", Color.Red);
                 }
             }
         }
@@ -205,14 +206,14 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubPromoteAsync(SocketGuildUser user)
         {
             if (Context.User == user) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.Guild.Id);
                 if (club == null)
                 {
                     await Context.ReplyAsync("You can't use this command as you're not a leader of any clubs",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -230,7 +231,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (toPromote == null)
                 {
                     await Context.ReplyAsync($"{user.Mention} is not part of {club.Name}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -263,7 +264,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubDemoteAsync(SocketGuildUser user)
         {
             if (Context.User == user) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -273,7 +274,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (toDemote == null)
                 {
                     await Context.ReplyAsync($"Can't demote {user.Mention} because he/she is not part of {club.Name}",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -286,7 +287,7 @@ namespace Hanekawa.Bot.Modules.Club
                 if (toDemote.Rank == 1) return;
                 await _club.DemoteAsync(user, toDemote, club, db);
                 await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {club.Name}",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -297,7 +298,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task BlackListUser(SocketGuildUser user, [Remainder] string reason = null)
         {
             if (Context.User == user) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -315,10 +316,10 @@ namespace Hanekawa.Bot.Modules.Club
                     if (response.Content.ToLower() != "y") await Context.ReplyAsync("User stays blacklisted");
                     await _club.RemoveBlacklist(user, club, db);
                     await Context.ReplyAsync($"Removed blacklist for {user.Mention} in {club.Name}",
-                        Color.Green.RawValue);
+                        Color.Green);
                 }
 
-                await Context.ReplyAsync($"Blacklisted {user.Mention} from {club.Name}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Blacklisted {user.Mention} from {club.Name}", Color.Green);
             }
         }
 
@@ -328,7 +329,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task GetBlackList()
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -352,8 +353,7 @@ namespace Hanekawa.Bot.Modules.Club
                     result.Add(stringBuilder.ToString());
                 }
 
-                await PagedReplyAsync(result.PaginateBuilder(Context.Guild,
-                    $"Blacklisted users for {club.Name}", null));
+                await Context.ReplyPaginated(result, Context.Guild, $"Blacklisted users for {club.Name}");
             }
         }
     }

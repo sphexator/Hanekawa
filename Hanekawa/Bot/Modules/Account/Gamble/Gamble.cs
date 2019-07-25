@@ -7,6 +7,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Gamble
@@ -22,13 +23,13 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task BetAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 if (userData.Credit == 0)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
@@ -43,13 +44,13 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task RollAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 if (userData.Credit == 0)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 

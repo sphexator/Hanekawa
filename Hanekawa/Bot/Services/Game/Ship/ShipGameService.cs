@@ -19,6 +19,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -28,15 +29,17 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly ExpService _exp;
         private readonly ImageGenerator _img;
         private readonly Random _random;
+        private readonly IServiceProvider _provider;
 
-        public ShipGameService(HttpClient client, Random random, ImageGenerator img, ExpService exp)
+        public ShipGameService(HttpClient client, Random random, ImageGenerator img, ExpService exp, IServiceProvider provider)
         {
             _client = client;
             _random = random;
             _img = img;
             _exp = exp;
+            _provider = provider;
 
-            using (var db = new DbService())
+            using (var db = _provider.GetRequiredService<DbService>())
             {
                 foreach (var x in db.GameEnemies)
                     if (x.Elite) _eliteEnemies.TryAdd(x.Id, x);
@@ -80,7 +83,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         public async Task PvPBattle(HanekawaContext context, SocketGuildUser user, int? bet = null)
         {
-            using var db = new DbService();
+            using var db = _provider.GetRequiredService<DbService>();
             ShipGameUser playerOne;
             ShipGameUser playerTwo;
             var userDataOne = await db.GetOrCreateUserData(context.User);
@@ -122,7 +125,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         public async Task PvEBattle(HanekawaContext context)
         {
-            using var db = new DbService();
+            using var db = _provider.GetRequiredService<DbService>();
             if (!_activeBattles.TryGetValue(context.Guild.Id, out var battles))
             {
                 await context.ReplyAsync("You're currently not in combat", Color.Red.RawValue);
