@@ -42,7 +42,11 @@ namespace Hanekawa.Bot.Services.Command
 
             using (var db = new DbService())
             {
-                foreach (var x in db.GuildConfigs) _prefixes.TryAdd(x.GuildId, x.Prefix);
+                foreach (var x in db.GuildConfigs)
+                {
+                    _prefixes.TryAdd(x.GuildId, x.Prefix);
+                    _colourService.AddOrUpdate(x.GuildId, new Color(x.EmbedColor));
+                }
             }
 
             _client.LeftGuild += ClientLeft;
@@ -178,13 +182,18 @@ namespace Hanekawa.Bot.Services.Command
                 using var db = new DbService();
                 var cfg = await db.GetOrCreateGuildConfigAsync(guild);
                 _prefixes.TryAdd(guild.Id, cfg.Prefix);
+                _colourService.AddOrUpdate(guild.Id, new Color(cfg.EmbedColor));
             });
             return Task.CompletedTask;
         }
 
         private Task ClientLeft(SocketGuild guild)
         {
-            _ = Task.Run(() => _prefixes.TryRemove(guild.Id, out _));
+            _ = Task.Run(() =>
+            {
+                _prefixes.TryRemove(guild.Id, out _);
+                _colourService.TryRemove(guild.Id);
+            });
             return Task.CompletedTask;
         }
     }
