@@ -236,6 +236,7 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.UserId);
                 x.Property(e => e.UserId).HasConversion<long>();
+                x.Property(e => e.UserColor).HasConversion<int>();
             });
             modelBuilder.Entity<LevelReward>(x =>
             {

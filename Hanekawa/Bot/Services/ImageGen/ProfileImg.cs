@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -17,6 +18,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -37,7 +39,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var serverRank = await GetRankAsync(user, userData, db);
                 var globalRank = await GetRankAsync(user, globalData, db);
                 var achievePoints = await GetAchievementPoints(user, db);
-
+                var color = new Color(globalData.UserColor);
                 await Task.WhenAll(background, avi);
 
                 img.Mutate(x =>
@@ -46,8 +48,8 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.DrawImage(_profileTemplate, new Point(0, 0), _options);
                     x.DrawImage(avi.Result, new Point(145, 4), _options);
                     x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
-                    if (progressBar.Count >= 2) // TODO: Make the color scheme of the profile customizable
-                        x.DrawLines(_options, Rgba32.BlueViolet, 4, progressBar.ToArray());
+                    if (progressBar.Count >= 2)
+                        x.DrawLines(_options, new Rgba32(color.R, color.G, color.B), 4, progressBar.ToArray());
                     var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(25)));
                     x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
 
@@ -92,11 +94,9 @@ namespace Hanekawa.Bot.Services.ImageGen
         private async Task<Image<Rgba32>> GetProfileBackground(DbService db)
         {
             var background = await db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstAsync();
-            using (var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl)))
-            {
-                img.Mutate(x => x.Resize(400, 400));
-                return img.Clone();
-            }
+            using var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl));
+            img.Mutate(x => x.Resize(400, 400));
+            return img.Clone();
         }
 
         private List<PointF> CreateProfileProgressBar(Account userData)

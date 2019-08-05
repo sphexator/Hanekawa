@@ -13,6 +13,6 @@ namespace Hanekawa.Database.Tables.Account
         public int Credit { get; set; } = 0;
         public int StarReceive { get; set; } = 0;
         public int StarGive { get; set; } = 0;
-        public int UserColor { get; set; } = Convert.ToInt32(Color.Purple.RawValue);
+        public uint UserColor { get; set; } = Color.Purple.RawValue;
     }
 }
