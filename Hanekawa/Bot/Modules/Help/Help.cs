@@ -9,7 +9,6 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
 using Quartz.Util;
@@ -179,10 +178,11 @@ namespace Hanekawa.Bot.Modules.Help
 
         private string PermTypeBuilder(Parameter parameter)
         {
-            if (parameter.Type is SocketGuildUser) return "@bob#0000";
-            if (parameter.Type is SocketRole) return "role";
-            if (parameter.Type is SocketTextChannel) return "#General";
-            if (parameter.Type is SocketCategoryChannel) return "General";
+            if (parameter.CustomTypeParserType == typeof(SocketGuildUser)) return "user/@bob#0000";
+            if (parameter.CustomTypeParserType == typeof(SocketRole)) return "role";
+            if (parameter.CustomTypeParserType == typeof(SocketTextChannel)) return "channel/#General";
+            if (parameter.CustomTypeParserType == typeof(SocketVoiceChannel)) return "vc/VoiceChannel";
+            if (parameter.CustomTypeParserType == typeof(SocketCategoryChannel)) return "category/General";
             return parameter.Name;
         }
     }
