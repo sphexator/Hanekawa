@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Account
             var user = Context.User;
             //if (user == null) user = Context.User;
             await Context.Channel.TriggerTypingAsync();
-            using var db = new DbService();
+            using var db = Context.Provider.GetRequiredService<DbService>();
             using var image = await _image.ProfileBuilder(user, db);
             image.Position = 0;
             await Context.Channel.SendFileAsync(image, "profile.png", null);

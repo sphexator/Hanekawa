@@ -15,12 +15,10 @@ namespace Hanekawa.Bot.Preconditions
 
         public RequiredMusicChannel()
         {
-            using (var db = new DbService())
-            {
-                foreach (var x in db.MusicConfigs)
-                    if (x.TextChId.HasValue)
-                        _musicChannels.TryAdd(x.GuildId, x.TextChId.Value);
-            }
+            using var db = new DbService();
+            foreach (var x in db.MusicConfigs)
+                if (x.TextChId.HasValue)
+                    _musicChannels.TryAdd(x.GuildId, x.TextChId.Value);
         }
 
         public override ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)

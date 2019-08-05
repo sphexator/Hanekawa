@@ -15,6 +15,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account
@@ -38,7 +39,7 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task RankAsync(SocketGuildUser user = null)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 if (user == null) user = Context.User;
                 var serverData = await db.GetOrCreateUserData(user);
@@ -84,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
                 var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).Take(toGet).ToArrayAsync();
@@ -111,7 +112,7 @@ namespace Hanekawa.Bot.Modules.Account
         public async Task RepAsync(SocketGuildUser user = null)
         {
             if (user == Context.User) return;
-            using (var db = new DbService())
+            using (var db = Context.Provider.GetRequiredService<DbService>())
             {
                 var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
                 if (user == null)
