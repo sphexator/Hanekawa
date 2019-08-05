@@ -59,15 +59,15 @@ namespace Hanekawa.Bot.Modules.Administration
 
                 if (addedRole)
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().CreateDefault($"Added {role.Name} to {Context.User.Mention}",
-                                Color.Green.RawValue)
+                        new EmbedBuilder().Create($"Added {role.Name} to {Context.User.Mention}",
+                                Color.Green)
                             .Build(),
                         TimeSpan.FromSeconds(10));
                 else
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().CreateDefault(
+                        new EmbedBuilder().Create(
                                 $"Couldn't add {role.Name} to {Context.User.Mention}, missing permission or role position?",
-                                Color.Red.RawValue)
+                                Color.Red)
                             .Build(),
                         TimeSpan.FromSeconds(10));
             }
@@ -95,14 +95,14 @@ namespace Hanekawa.Bot.Modules.Administration
                 if (await user.TryRemoveRoleAsync(role))
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder()
-                            .CreateDefault($"Removed {role.Name} from {Context.User.Mention}", Color.Green.RawValue)
+                            .Create($"Removed {role.Name} from {Context.User.Mention}", Color.Green)
                             .Build(), TimeSpan.FromSeconds(10));
                 else
                     await ReplyAndDeleteAsync(null, false,
                         new EmbedBuilder()
-                            .CreateDefault(
+                            .Create(
                                 $"Couldn't remove {role.Name} from {Context.User.Mention}, missing permission or role position?",
-                                Color.Red.RawValue)
+                                Color.Red)
                             .Build(), TimeSpan.FromSeconds(10));
             }
         }

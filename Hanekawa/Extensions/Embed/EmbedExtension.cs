@@ -1,43 +1,21 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Shared.Command;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class EmbedExtension
     {
         // Reply from channel
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, uint color) =>
-            channel.SendEmbedAsync(new EmbedBuilder().Create(content, color));
-
-        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content) =>
-            channel.SendEmbedAsync(new EmbedBuilder().Create(content));
+        public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, string content, Color colour) =>
+            channel.SendEmbedAsync(new EmbedBuilder().Create(content, colour));
 
         public static Task<IUserMessage> ReplyAsync(this IMessageChannel channel, EmbedBuilder embed) =>
             channel.SendEmbedAsync(embed);
-            /*
-        // Reply from command context
-        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content, uint color) =>
-            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content, new Color(color)));
-
-        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, string content) =>
-            context.Channel.SendEmbedAsync(new EmbedBuilder().Create(content,
-                new Color().GetDefaultColor(context.Guild.Id)));
-
-        public static Task<IUserMessage> ReplyAsync(this HanekawaContext context, EmbedBuilder embed) =>
-            context.Channel.SendEmbedAsync(embed);
-*/
-        // Create default embed - used outside of this class
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content, uint colour) =>
-            context.Create(content, colour);
-
-        public static EmbedBuilder CreateDefault(this EmbedBuilder context, string content) =>
-            context.Create(content);
 
         // Creates default embed - used here
-        private static EmbedBuilder Create(this EmbedBuilder embed, string content, uint? colour = null)
+        public static EmbedBuilder Create(this EmbedBuilder embed, string content, Color colour)
         {
-            if (colour != null) embed.Color = new Color(colour.Value);
+            embed.Color = colour;
             embed.Description = content;
             return embed;
         }

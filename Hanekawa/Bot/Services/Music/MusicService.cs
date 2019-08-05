@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Victoria;
 using Victoria.Entities;
@@ -14,14 +15,16 @@ namespace Hanekawa.Bot.Services.Music
         private readonly LavaSocketClient _lavaClient;
         private readonly LavaRestClient _lavaRest;
         private readonly Random _random;
+        private readonly ColourService _colourService;
 
         public MusicService(DiscordSocketClient client, Random random, LavaSocketClient lavaClient,
-            LavaRestClient lavaRest)
+            LavaRestClient lavaRest, ColourService colourService)
         {
             _client = client;
             _random = random;
             _lavaClient = lavaClient;
             _lavaRest = lavaRest;
+            _colourService = colourService;
 
             _lavaClient.OnTrackFinished += OnTrackFinished;
             _lavaClient.OnTrackException += OnTrackException;
@@ -37,13 +40,13 @@ namespace Hanekawa.Bot.Services.Music
                 if (!player.Queue.TryDequeue(out var item) || !(item is LavaTrack nextTrack))
                 {
                     await player.TextChannel.ReplyAsync("There are no more items left in queue.",
-                        player.TextChannel.GuildId);
+                        _colourService.Get(player.TextChannel.GuildId));
                     return;
                 }
 
                 await player.PlayAsync(nextTrack);
                 await player.TextChannel.ReplyAsync($"Finished playing: {track.Title}\nNow playing: {nextTrack.Title}",
-                    player.TextChannel.GuildId);
+                    _colourService.Get(player.TextChannel.GuildId));
             });
             return Task.CompletedTask;
         }

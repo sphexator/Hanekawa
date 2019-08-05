@@ -8,6 +8,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Report
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
-            var embed = new EmbedBuilder().CreateDefault(text)
+            var embed = new EmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id))
                 .WithAuthor(new EmbedAuthorBuilder
                 {
                     IconUrl = Context.User.GetAvatar(),
@@ -47,7 +48,7 @@ namespace Hanekawa.Bot.Modules.Report
             report.MessageId = msg.Id;
             await db.SaveChangesAsync();
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().CreateDefault("Report sent!", Color.Green.RawValue).Build());
+                new EmbedBuilder().Create("Report sent!", Color.Green).Build());
         }
 
         [Name("Respond")]
@@ -77,7 +78,7 @@ namespace Hanekawa.Bot.Modules.Report
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
-                    $"{text}", Context.Guild.Id);
+                    $"{text}", Context.Provider.GetRequiredService<ColourService>().Get(Context.Guild.Id));
             }
             catch
             {

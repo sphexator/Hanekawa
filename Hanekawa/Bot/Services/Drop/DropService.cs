@@ -24,14 +24,16 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
+        private readonly ColourService _colourService;
 
-        public DropService(DiscordSocketClient client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider)
+        public DropService(DiscordSocketClient client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
             _expService = expService;
             _log = log;
             _provider = provider;
+            _colourService = colourService;
 
             _client.MessageReceived += DropChance;
             _client.ReactionAdded += OnReactionAdded;
@@ -59,7 +61,7 @@ namespace Hanekawa.Bot.Services.Drop
                 var claim = await GetClaimEmote(context.Guild, db);
                 var triggerMsg = await context.Channel.ReplyAsync(
                     $"{context.User.GetName()} has spawned a crate! \nClick {claim} reaction on this message to claim it```",
-                    context.Guild.Id);
+                    _colourService.Get(context.Guild.Id));
                 var emotes = await ReturnEmotes(context.Guild, db);
                 foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
                     try

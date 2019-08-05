@@ -5,6 +5,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,13 +28,15 @@ namespace Hanekawa.Bot.Services.Club
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
+        private readonly ColourService _colourService;
 
-        public ClubService(DiscordSocketClient client, Random random, InternalLogService log, IServiceProvider provider)
+        public ClubService(DiscordSocketClient client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
             _log = log;
             _provider = provider;
+            _colourService = colourService;
 
             _client.ReactionAdded += ClubReactionAdded;
             _client.ReactionRemoved += ClubReactionRemoved;

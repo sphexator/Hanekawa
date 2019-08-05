@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Settings
             {
                 await msg.TryDeleteMessageAsync();
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().CreateDefault("Aborting...", Color.Red.RawValue).Build(),
+                    new EmbedBuilder().Create("Aborting...", Color.Red).Build(),
                     TimeSpan.FromSeconds(20));
                 return;
             }
@@ -195,13 +195,11 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WelcomeTemplate()
         {
-            var colour = Context.Provider.GetRequiredService<ColourService>().Get(Context.Guild.Id);
             var embed = new EmbedBuilder()
-                .CreateDefault(
+                .Create(
                     "The PSD file contains everything that's needed to get started creating your own banners.\n" +
                     "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
-                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)")
-                .WithColor(colour)
+                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Colour.Get(Context.Guild.Id))
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
             await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());

@@ -39,8 +39,8 @@ namespace Hanekawa.Bot.Services.Logging
                         if (beforeMsg == null) return;
                         if (beforeMsg.Content == after.Content) return;
 
-                        var embed = new EmbedBuilder().CreateDefault(
-                            $"{user.Mention} updated a message in {chx.Mention}", user.Guild.Id);
+                        var embed = new EmbedBuilder().Create(
+                            $"{user.Mention} updated a message in {chx.Mention}", _colourService.Get(user.Guild.Id));
                         embed.Author = new EmbedAuthorBuilder {Name = "Message Updated"};
                         embed.Timestamp = after.EditedTimestamp ?? after.Timestamp;
                         embed.Fields = new List<EmbedFieldBuilder>
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Services.Logging
 
                         if (!message.HasValue) await message.GetOrDownloadAsync();
                         if (message.Value.Author.IsBot) return;
-                        var embed = new EmbedBuilder().CreateDefault(message.Value.Content.Truncate(1900), chx.GuildId);
+                        var embed = new EmbedBuilder().Create(message.Value.Content.Truncate(1900), _colourService.Get(chx.GuildId));
                         embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
                         embed.Title = $"{message.Value.Author} deleted a message in {chx.Name}";
                         embed.Timestamp = message.Value.Timestamp;
@@ -144,7 +144,7 @@ namespace Hanekawa.Bot.Services.Logging
 
                         for (var i = 0; i < messageContent.Count; i++)
                         {
-                            var embed = new EmbedBuilder().CreateDefault(messageContent[i], ch.GuildId);
+                            var embed = new EmbedBuilder().Create(messageContent[i], _colourService.Get(ch.GuildId));
                             embed.Title = $"Bulk delete in {ch.Name}";
                             await logChannel.ReplyAsync(embed);
                             await Task.Delay(1000);

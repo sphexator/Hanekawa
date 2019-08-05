@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Club
                         new EmbedFieldBuilder
                             {IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}
                     }
-                }.CreateDefault(club.Description);
+                }.Create(club.Description, Context.Colour.Get(Context.Guild.Id));
                 await Context.ReplyAsync(embed);
             }
         }

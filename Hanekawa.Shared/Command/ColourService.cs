@@ -16,6 +16,5 @@ namespace Hanekawa.Shared.Command
             => _colours.AddOrUpdate(guildId, color, (k, v) => color);
 
         public bool TryRemove(ulong guildId) => _colours.TryRemove(guildId, out _);
-        
     }
 }

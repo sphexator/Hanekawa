@@ -36,7 +36,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                           $"Amount: {userdata.Sessions}\n" +
                           $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
             var embed = new EmbedBuilder()
-                .CreateDefault(content, user.Guild.Id);
+                .Create(content, _colourService.Get(user.Guild.Id));
             embed.Author = new EmbedAuthorBuilder
                 {IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"};
             embed.Fields = await GetWarnings(user, db);

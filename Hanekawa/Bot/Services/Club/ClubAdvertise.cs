@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Services.Club
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.Description = desc;
                 await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
+                await context.ReplyAsync("Updated description of club!", Color.Green);
                 if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Services.Club
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.ImageUrl = image;
                 await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
+                await context.ReplyAsync("Updated description of club!", Color.Green);
                 if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Services.Club
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 leader.IconUrl = icon;
                 await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green.RawValue);
+                await context.ReplyAsync("Updated description of club!", Color.Green);
                 if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
                 {
                     var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
@@ -126,14 +126,14 @@ namespace Hanekawa.Bot.Services.Club
                     club.Public = false;
                     await db.SaveChangesAsync();
                     await context.ReplyAsync("Club is no longer public. People need invite to enter the club.",
-                        Color.Green.RawValue);
+                        Color.Green);
                     if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, false);
                 }
                 else
                 {
                     club.Public = true;
                     await db.SaveChangesAsync();
-                    await context.ReplyAsync("Set club as public. Anyone can join!", Color.Green.RawValue);
+                    await context.ReplyAsync("Set club as public. Anyone can join!", Color.Green);
                     if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, true);
                 }
             }
@@ -150,14 +150,14 @@ namespace Hanekawa.Bot.Services.Club
                 if (!cfg.AdvertisementChannel.HasValue)
                 {
                     await context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
-                        Color.Red.RawValue);
+                        Color.Red);
                     return;
                 }
 
                 if (!leader.AdMessage.HasValue)
                 {
                     await SendPostAsync(db, cfg, context.Guild, leader);
-                    await context.ReplyAsync("Posted ad!", Color.Green.RawValue);
+                    await context.ReplyAsync("Posted ad!", Color.Green);
                 }
                 else
                 {
@@ -166,13 +166,13 @@ namespace Hanekawa.Bot.Services.Club
                     if (msg == null)
                     {
                         await SendPostAsync(db, cfg, context.Guild, leader);
-                        await context.ReplyAsync("Posted ad!", Color.Green.RawValue);
+                        await context.ReplyAsync("Posted ad!", Color.Green);
                     }
                     else
                     {
                         await msg.TryDeleteMessageAsync();
                         await SendPostAsync(db, cfg, context.Guild, leader);
-                        await context.ReplyAsync("Re-posted ad!", Color.Green.RawValue);
+                        await context.ReplyAsync("Re-posted ad!", Color.Green);
                     }
                 }
             }
@@ -210,7 +210,7 @@ namespace Hanekawa.Bot.Services.Club
         {
             if (!cfg.AdvertisementChannel.HasValue) return;
             var embed = new EmbedBuilder()
-                .CreateDefault(club.Description ?? "No description added", guild.Id)
+                .Create(club.Description ?? "No description added", _colourService.Get(guild.Id))
                 .WithAuthor(new EmbedAuthorBuilder {Name = club.Name})
                 .WithImageUrl(club.ImageUrl);
             var msg = await guild.GetTextChannel(cfg.AdvertisementChannel.Value).ReplyAsync(embed);

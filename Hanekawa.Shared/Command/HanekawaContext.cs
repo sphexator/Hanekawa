@@ -30,7 +30,7 @@ namespace Hanekawa.Shared.Command
         public SocketGuild Guild { get; }
         public SocketTextChannel Channel { get; }
         public IServiceProvider Provider { get; }
-        private ColourService Colour { get; }
+        public ColourService Colour { get; }
         private InteractiveService Interactive { get; }
 
         public async Task<IUserMessage> ReplyAsync(string content) =>

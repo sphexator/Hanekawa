@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogAvi.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel is null) return;
-                        var embed = new EmbedBuilder().CreateDefault("", user.Guild.Id);
+                        var embed = new EmbedBuilder().Create("", _colourService.Get(user.Guild.Id));
                         if (before.Username != after.Username)
                         {
                             embed.Title = "Username Change";
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = before.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel == null) return;
 
-                        var embed = new EmbedBuilder().CreateDefault("", before.Guild.Id);
+                        var embed = new EmbedBuilder().Create("", _colourService.Get(before.Guild.Id));
                         embed.Title = $"{after} | {after.Id}";
                         embed.Footer = new EmbedFooterBuilder {IconUrl = after.GetAvatar(), Text = ""};
                         if (before.Nickname != after.Nickname)

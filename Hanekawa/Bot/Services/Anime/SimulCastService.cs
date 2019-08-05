@@ -8,6 +8,7 @@ using Hanekawa.AnimeSimulCast.Entity;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,13 +22,15 @@ namespace Hanekawa.Bot.Services.Anime
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
+        private readonly ColourService _colourService;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
+        public SimulCastService(AnimeSimulCastClient anime, DiscordSocketClient client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _anime = anime;
             _client = client;
             _log = log;
             _provider = provider;
+            _colourService = colourService;
 
             _anime.AnimeAired += AnimeAired;
             _client.Ready += SetupSimulCast;
@@ -35,7 +38,7 @@ namespace Hanekawa.Bot.Services.Anime
 
         private Task SetupSimulCast()
         {
-            _anime.Start();
+            _ = _anime.Start();
             return Task.CompletedTask;
         }
 
@@ -73,10 +76,10 @@ namespace Hanekawa.Bot.Services.Anime
             }
         }
 
-        private static EmbedBuilder BuildEmbed(AnimeData data, ulong guild)
+        private EmbedBuilder BuildEmbed(AnimeData data, ulong guild)
         {
             var embed = new EmbedBuilder()
-                .CreateDefault(null, guild)
+                .Create(null, _colourService.Get(guild))
                 .WithAuthor(new EmbedAuthorBuilder {Name = "New Episode Available!"})
                 .WithTitle($"{data.Title}")
                 .WithUrl(data.Url)

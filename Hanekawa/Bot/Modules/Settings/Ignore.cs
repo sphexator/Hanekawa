@@ -125,7 +125,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
-                var embed = new EmbedBuilder().CreateDefault(content)
+                var embed = new EmbedBuilder().Create(content, Context.Colour.Get(Context.Guild.Id))
                     .WithAuthor(new EmbedAuthorBuilder {IconUrl = Context.Guild.IconUrl, Name = title});
                 await Context.ReplyAsync(embed);
             }

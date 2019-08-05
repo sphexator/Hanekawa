@@ -173,7 +173,7 @@ namespace Hanekawa.Bot.Services.Command
             }
 
             if (response.Length == 0) return;
-            await context.Channel.ReplyAsync(response.ToString(), Color.Red.RawValue);
+            await context.Channel.ReplyAsync(response.ToString(), Color.Red);
         }
 
         private Task ClientJoined(SocketGuild guild)

@@ -9,6 +9,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Qmmands;
 using Quartz.Util;
@@ -51,7 +52,7 @@ namespace Hanekawa.Bot.Modules.Help
                 result.AppendLine($"{strBuilder}");
             }
 
-            var embed = new EmbedBuilder().CreateDefault(result.ToString());
+            var embed = new EmbedBuilder().Create(result.ToString(), Context.Colour.Get(Context.Guild.Id));
             embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
             embed.Footer = new EmbedFooterBuilder
             {
@@ -98,7 +99,7 @@ namespace Hanekawa.Bot.Modules.Help
                     response.AppendLine("No module matches that search");
                 }
 
-                var embed = new EmbedBuilder().CreateDefault(response.ToString());
+                var embed = new EmbedBuilder().Create(response.ToString(), Context.Colour.Get(Context.Guild.Id));
                 embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
                 embed.Title = "Couldn't find a module with that name";
                 embed.Footer = new EmbedFooterBuilder

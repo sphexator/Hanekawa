@@ -30,14 +30,16 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly ImageGenerator _img;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
+        private readonly ColourService _colourService;
 
-        public ShipGameService(HttpClient client, Random random, ImageGenerator img, ExpService exp, IServiceProvider provider)
+        public ShipGameService(HttpClient client, Random random, ImageGenerator img, ExpService exp, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
             _img = img;
             _exp = exp;
             _provider = provider;
+            _colourService = colourService;
 
             using (var db = _provider.GetRequiredService<DbService>())
             {
@@ -61,12 +63,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
             if (battles.TryGetValue(user.Id, out _)) return new EmbedBuilder();
             var enemy = GetEnemy();
             if (enemy == null)
-                return new EmbedBuilder().CreateDefault(
-                    $"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red.RawValue);
+                return new EmbedBuilder().Create(
+                    $"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red);
 
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
-            var embed = new EmbedBuilder().CreateDefault("You've encountered an enemy!\n" +
-                                                         $"**{enemy.Name}**", Color.Green.RawValue);
+            var embed = new EmbedBuilder().Create("You've encountered an enemy!\n" +
+                                                         $"**{enemy.Name}**", Color.Green);
             var userData = await db.GetOrCreateUserData(user);
             embed.Fields = new List<EmbedFieldBuilder>
             {
@@ -105,7 +107,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var game = new ShipGame(playerOne, playerTwo, bet);
             var msgLog = new LinkedList<string>();
             msgLog.AddFirst($"{context.User.GetName()} VS {user.GetName()}");
-            var embed = new EmbedBuilder().CreateDefault(msgLog.ListToString(), context.Guild.Id);
+            var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
             embed.ImageUrl = "attachment://banner.png";
             var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
                 embed.Build());
@@ -128,13 +130,13 @@ namespace Hanekawa.Bot.Services.Game.Ship
             using var db = _provider.GetRequiredService<DbService>();
             if (!_activeBattles.TryGetValue(context.Guild.Id, out var battles))
             {
-                await context.ReplyAsync("You're currently not in combat", Color.Red.RawValue);
+                await context.ReplyAsync("You're currently not in combat", Color.Red);
                 return;
             }
 
             if (!battles.TryGetValue(context.User.Id, out var battleObject))
             {
-                await context.ReplyAsync("You're currently not in combat", Color.Red.RawValue);
+                await context.ReplyAsync("You're currently not in combat", Color.Red);
                 return;
             }
 
@@ -147,7 +149,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var msgLog = new LinkedList<string>();
 
             msgLog.AddFirst($"{context.User.GetName()} VS {enemy.Name}");
-            var embed = new EmbedBuilder().CreateDefault(msgLog.ListToString(), context.Guild.Id);
+            var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
             embed.ImageUrl = "attachment://banner.png";
             var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
                 embed.Build());

@@ -34,8 +34,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 var userData = await db.GetOrCreateUserData(user);
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 var embed = new EmbedBuilder()
-                    .CreateDefault($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
-                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}")
+                    .Create($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
+                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}", Context.Colour.Get(Context.Guild.Id))
                     .WithAuthor(new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()});
                 await Context.ReplyAsync(embed);
             }

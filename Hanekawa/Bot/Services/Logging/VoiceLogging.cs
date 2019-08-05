@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogVoice.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogVoice.Value);
                         if (channel == null) return;
-                        var embed = new EmbedBuilder().CreateDefault(null, user.Guild.Id);
+                        var embed = new EmbedBuilder().Create(null, _colourService.Get(user.Guild.Id));
                         embed.Footer = new EmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"};
                         if ((before.IsDeafened || before.IsSelfDeafened) != (after.IsDeafened || after.IsSelfDeafened))
                         {

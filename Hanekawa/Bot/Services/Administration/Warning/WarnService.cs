@@ -9,6 +9,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +24,13 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly IServiceProvider _provider;
+        private readonly ColourService _colourService;
 
-        public WarnService(LogService logService, InternalLogService log, IServiceProvider provider)
+        public WarnService(LogService logService, InternalLogService log, ColourService colourService)
         {
             _logService = logService;
             _log = log;
-            _provider = provider;
+            _colourService = colourService;
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
@@ -75,7 +77,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 var content = new StringBuilder();
                 content.AppendLine($"You've been {type} in {user.Guild.Name} by {staff.Mention}");
                 content.AppendLine($"Reason: {reason.ToLower()}");
-                var embed = new EmbedBuilder().CreateDefault(content.ToString(), user.Guild.Id);
+                var embed = new EmbedBuilder().Create(content.ToString(), _colourService.Get(user.Guild.Id));
                 if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize()} ({duration.Value})");
                 await dm.SendMessageAsync(null, false, embed.Build());
             }

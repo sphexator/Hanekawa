@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
-                var embed = new EmbedBuilder().CreateDefault(suggestion, Context.Provider.GetRequiredService<ColourService>().Get(Context.Guild.Id).RawValue);
+                var embed = new EmbedBuilder().Create(suggestion, Context.Colour.Get(Context.Guild.Id));
                 embed.Author = new EmbedAuthorBuilder
                     {IconUrl = Context.User.GetAvatar(), Name = Context.User.GetName()};
                 embed.Footer = new EmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"};
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().CreateDefault("Suggestion sent!", Color.Green.RawValue).Build());
+                    new EmbedBuilder().Create("Suggestion sent!", Color.Green).Build());
                 await ApplyEmotesAsync(msg, cfg);
             }
         }
@@ -178,12 +178,12 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 var suggestUser = Context.Guild.GetUser(suggestion.UserId);
                 if (suggestUser == null) return;
                 await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
-                    new EmbedBuilder().CreateDefault(
+                    new EmbedBuilder().Create(
                         $"Your suggestion got a response in {Context.Guild.Name}!\n" +
                         "Suggestion:\n" +
                         $"{sugst.Truncate(300)}\n" +
                         $"Answer from {Context.User}:\n" +
-                        $"{response.Truncate(1200)}", Context.Guild.Id));
+                        $"{response.Truncate(1200)}", Context.Colour.Get(Context.Guild.Id)));
             }
             catch
             {

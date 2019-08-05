@@ -11,6 +11,8 @@ namespace Hanekawa.Bot.Services.Music
 {
     public partial class MusicService
     {
+        /*
+         TODO: Unsure if this is needed for the music service, it can be handled in command instead
         public async Task PlayAsync(SocketGuildUser user, SocketTextChannel channel, SocketVoiceChannel vc, string url)
         {
             var options = _audioOptions.GetOrAdd(user.Guild.Id, new AudioOption());
@@ -24,7 +26,7 @@ namespace Hanekawa.Bot.Services.Music
             var search = await _lavaRest.SearchYouTubeAsync(url);
             if (search.LoadType == LoadType.LoadFailed || search.LoadType == LoadType.NoMatches)
             {
-                await channel.ReplyAsync("Couldn't find any songs with that name or url", Color.Red.RawValue);
+                await channel.ReplyAsync("Couldn't find any songs with that name or url", Color.Red);
                 return;
             }
 
@@ -66,5 +68,6 @@ namespace Hanekawa.Bot.Services.Music
             if (player == null) await _lavaClient.ConnectAsync(voice, text);
             else await _lavaClient.MoveChannelsAsync(voice);
         }
+        */
     }
 }

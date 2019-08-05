@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 {
                     cfg.Channel = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled suggestion channel", Color.Green.RawValue);
+                    await Context.ReplyAsync("Disabled suggestion channel", Color.Green);
                     return;
                 }
 
@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
-                    Color.Green.RawValue);
+                    Color.Green);
             }
         }
 
@@ -52,13 +52,13 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 {
                     cfg.EmoteYes = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
+                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
                     return;
                 }
 
                 cfg.EmoteYes = emote.ParseEmoteString();
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
             }
         }
 
@@ -75,13 +75,13 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 {
                     cfg.EmoteNo = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green.RawValue);
+                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
                     return;
                 }
 
                 cfg.EmoteNo = emote.ParseEmoteString();
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green.RawValue);
+                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
             }
         }
     }
