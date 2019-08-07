@@ -141,12 +141,13 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 var pages = new List<string>();
                 for (var i = 0; i < users.Count; i++)
                 {
+                    var strBuilder = new StringBuilder();
                     var x = users[i];
                     var user = Context.Guild.GetUser(x.UserId);
                     var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
-
-                    pages.Add($"**Rank: {i + 1}** - {name}\n" +
-                              $"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
+                    strBuilder.AppendLine($"**Rank: {i + 1}** - {name}");
+                    strBuilder.AppendLine($"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
+                    pages.Add(strBuilder.ToString());
                 }
 
                 await Context.ReplyPaginated(pages, Context.Guild,

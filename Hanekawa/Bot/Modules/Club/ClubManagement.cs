@@ -196,6 +196,7 @@ namespace Hanekawa.Bot.Modules.Club
                 {
                     await Context.ReplyAsync("Couldn't find a club with that Id", Color.Red);
                 }
+                // TODO: I didn't finish this? (club leave)
             }
         }
 
@@ -313,7 +314,11 @@ namespace Hanekawa.Bot.Modules.Club
                         "User is already blacklisted. Do you wish to remove it? (y/n)");
                     var response = await NextMessageAsync();
                     if (response == null || response.Content.IsNullOrWhiteSpace()) return;
-                    if (response.Content.ToLower() != "y") await Context.ReplyAsync("User stays blacklisted");
+                    if (response.Content.ToLower() != "y")
+                    {
+                        await Context.ReplyAsync("User stays blacklisted");
+                        return;
+                    }
                     await _club.RemoveBlacklist(user, club, db);
                     await Context.ReplyAsync($"Removed blacklist for {user.Mention} in {club.Name}",
                         Color.Green);
@@ -349,7 +354,6 @@ namespace Hanekawa.Bot.Modules.Club
                     stringBuilder.AppendLine(
                         $"{x.BlackListUser} blacklisted by {x.IssuedUser} on {x.Time.Humanize()} ({x.Time})");
                     stringBuilder.AppendLine($"Reason: {x.Reason}");
-                    stringBuilder.AppendLine();
                     result.Add(stringBuilder.ToString());
                 }
 

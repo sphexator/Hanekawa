@@ -9,7 +9,6 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +35,7 @@ namespace Hanekawa.Bot.Modules.Level
             await Context.ReplyAsync(
                 "You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
-            if (response == null || response.Content.ToLower() != "yes" || response.Content.ToLower() != "y")
+            if (response == null || response.Content.ToLower() != "y")
             {
                 await Context.ReplyAsync("Aborting...");
                 return;
@@ -149,7 +148,7 @@ namespace Hanekawa.Bot.Modules.Level
         }
 
         [Name("Level List")]
-        [Command("ll", "lvllist")]
+        [Command("lvlist")]
         [Description("Lists all role rewards")]
         [RequiredChannel]
         public async Task LevelListAsync()
@@ -176,11 +175,11 @@ namespace Hanekawa.Bot.Modules.Level
                         else
                             pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
                                       $"Level: {x.Level}\n" +
-                                      $"Stack: {x.Stackable}\n");
+                                      $"Stack: {x.Stackable}");
                     }
                     catch
                     {
-                        pages.Add("Role not found\n");
+                        pages.Add("Role not found");
                         //todo: Handle this better in the future
                     }
                 }
@@ -202,7 +201,13 @@ namespace Hanekawa.Bot.Modules.Level
                     {
                         await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
                         var response = await NextMessageAsync();
-                        if (response.Content.ToLower() != "y" || response.Content.ToLower() != "yes")
+                        if (response == null || response.Content.ToLower() != "y")
+                        {
+                            await context.ReplyAsync("Cancelling.");
+                            return;
+                        }
+
+                        if (response.Content.ToLower() != "yes")
                         {
                             await context.ReplyAsync("Cancelling.");
                             return;

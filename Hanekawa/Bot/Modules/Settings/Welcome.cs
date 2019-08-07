@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -46,7 +47,7 @@ namespace Hanekawa.Bot.Modules.Settings
             var msg = await Context.Channel.SendFileAsync(example, "WelcomeExample.png",
                 "Do you want to add this banner? (y/N)");
             var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-            if (response == null || response.Content.ToLower() != "n")
+            if (response == null || response.Content.ToLower() != "y")
             {
                 await msg.TryDeleteMessageAsync();
                 await ReplyAndDeleteAsync(null, false,
@@ -112,11 +113,13 @@ namespace Hanekawa.Bot.Modules.Settings
                 for (var i = 0; i < list.Count; i++)
                 {
                     var index = list[i];
-                    pages.Add($"ID: {index.Id}\n" +
-                              $"URL: {index.Url}\n" +
-                              $"Uploader: {Context.Guild.GetUser(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}\n" +
-                              $"Added: {index.UploadTimeOffset.DateTime}\n" +
-                              "\n");
+                    var strBuilder = new StringBuilder();
+                    strBuilder.AppendLine($"ID: {index.Id}");
+                    strBuilder.AppendLine($"URL: {index.Url}");
+                    strBuilder.AppendLine(
+                        $"Uploader: {Context.Guild.GetUser(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
+                    strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
+                    pages.Add(strBuilder.ToString());
                 }
 
                 await Context.ReplyPaginated(pages, Context.Guild, $"Welcome banners for {Context.Guild.Name}");

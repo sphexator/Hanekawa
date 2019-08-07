@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Club
                                  "Couldn't find user or left server.";
                     pages.Add($"**{x.Name} (id: {x.Id})**\n" +
                               $"Members: {memberCount}\n" +
-                              $"Leader {leader}\n");
+                              $"Leader {leader}");
                 }
 
                 if (pages.Count == 0)

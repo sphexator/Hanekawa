@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Modules.Game
             for (var i = 0; i < classes.Count; i++)
             {
                 var x = classes[i];
-                result.Add($"{x.Id} - {x.Name} (level: {x.LevelRequirement})\n");
+                result.Add($"{x.Id} - {x.Name} (level: {x.LevelRequirement})");
             }
 
             if (result.Count == 0) await Context.ReplyAsync("Something went wrong...\nCouldn't get a list of classes.");

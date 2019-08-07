@@ -46,6 +46,11 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color(color));
             var response = await NextMessageAsync();
+            if (response == null)
+            {
+                await Context.ReplyAsync("Timed out...", Color.Red);
+                return;
+            }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
                 using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
@@ -67,6 +72,11 @@ namespace Hanekawa.Bot.Modules.Settings
             var color = new Color(r, g, b);
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
+            if (response == null)
+            {
+                await Context.ReplyAsync("Timed out...", Color.Red);
+                return;
+            }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
                 using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
@@ -90,6 +100,11 @@ namespace Hanekawa.Bot.Modules.Settings
             var color = new Color(Convert.ToUInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
+            if (response == null)
+            {
+                await Context.ReplyAsync("Timed out...", Color.Red);
+                return;
+            }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
                 using (var db = Context.Provider.GetRequiredService<DbService>())
                 {
