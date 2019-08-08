@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Bot.Services.Experience;
+using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using SixLabors.Fonts;
@@ -85,6 +86,14 @@ namespace Hanekawa.Bot.Services.ImageGen
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size)
         {
             var response = await _client.GetStreamAsync(user.GetAvatarUrl());
+            using var img = Image.Load(response);
+            img.Mutate(x => x.Resize(size));
+            return img.Clone();
+        }
+
+        private async Task<Image<Rgba32>> GetAvatarAsync(string imgUrl, Size size)
+        {
+            var response = await _client.GetStreamAsync(imgUrl);
             using var img = Image.Load(response);
             img.Mutate(x => x.Resize(size));
             return img.Clone();

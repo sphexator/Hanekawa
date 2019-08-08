@@ -18,6 +18,7 @@ using Hanekawa.Models;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -108,8 +109,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var msgLog = new LinkedList<string>();
             msgLog.AddFirst($"{context.User.GetName()} VS {user.GetName()}");
             var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
+            var stream = await _img.ShipGameBuilder(context.User.GetAvatar(), user.GetAvatar());
+            stream.Position = 0;
             embed.ImageUrl = "attachment://banner.png";
-            var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
+            var msg = await context.Channel.SendFileAsync(stream, "banner.png", null, false,
                 embed.Build());
             var source = new CancellationTokenSource();
             var token = source.Token;
@@ -150,6 +153,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
             msgLog.AddFirst($"{context.User.GetName()} VS {enemy.Name}");
             var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
+            var stream = await _img.ShipGameBuilder(context.User.GetAvatar(), enemy.ImageUrl);
+            stream.Position = 0;
             embed.ImageUrl = "attachment://banner.png";
             var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
                 embed.Build());
