@@ -12,14 +12,13 @@ namespace Hanekawa.Shared.Command
 {
     public class HanekawaContext : CommandContext
     {
-        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive, IServiceProvider provider)
+        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive)
         {
             Client = client;
             Message = msg;
             User = user;
             Colour = colour;
             Interactive = interactive;
-            Provider = provider;
             Guild = user.Guild;
             Channel = msg.Channel as SocketTextChannel;
         }
@@ -29,7 +28,6 @@ namespace Hanekawa.Shared.Command
         public SocketGuildUser User { get; }
         public SocketGuild Guild { get; }
         public SocketTextChannel Channel { get; }
-        public IServiceProvider Provider { get; }
         public ColourService Colour { get; }
         private InteractiveService Interactive { get; }
 

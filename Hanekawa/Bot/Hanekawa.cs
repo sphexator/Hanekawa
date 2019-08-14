@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
@@ -22,7 +21,6 @@ namespace Hanekawa.Bot
         private readonly DiscordSocketClient _client;
         private readonly IConfiguration _config;
         private readonly IServiceProvider _provider;
-        private bool _startUp;
 
         public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config)
         {
@@ -36,22 +34,20 @@ namespace Hanekawa.Bot
             var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
-                _provider.GetService<CommandHandlingService>().InitializeAsync();
                 var serviceList = assembly.GetTypes()
                     .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
                 for (var i = 0; i < serviceList.Count; i++) _provider.GetRequiredService(serviceList[i]);
 
+                _provider.GetRequiredService<CommandHandlingService>().InitializeAsync();
                 var scheduler = _provider.GetRequiredService<IScheduler>();
                 QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             }
-
-            _startUp = true;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_startUp) Initialize();
+            Initialize();
             Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
             Console.WriteLine("Logged in");

@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetAdvertisementChannel(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 if (channel == null)
@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ClubSetCategory(SocketCategoryChannel category = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 if (cfg.ChannelCategory.HasValue && cfg.ChannelCategory.Value == category.Id)
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetLevelRequirement(int level)
         {
             if (level <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 cfg.ChannelRequiredLevel = level;
@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetAmountRequirement(int amount)
         {
             if (amount <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 cfg.ChannelRequiredAmount = amount;

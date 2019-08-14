@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _ = Task.Run(async () =>
             {
-                using var db = _provider.GetRequiredService<DbService>();
+                using var db = new DbService();
 
                 var userData = await db.GetOrCreateUserData(user);
                 if (userData == null || userData.Level < 2) return;

@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             if (await _command.AddPrefix(Context.Guild.Id, prefix, db))
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
             else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
@@ -52,7 +52,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = Context.Provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, new Color(color));
@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = Context.Provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);
@@ -106,7 +106,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
-                using (var db = Context.Provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);

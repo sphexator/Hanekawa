@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task BetAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 if (userData.Credit == 0)
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task RollAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 if (userData.Credit == 0)

@@ -159,7 +159,7 @@ namespace Hanekawa.Bot.Modules.Administration
             if (Context.User == user) return;
             await Context.Message.TryDeleteMessageAsync();
 
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (!await _mute.Mute(user, db))
                     await ReplyAndDeleteAsync(null, false,
@@ -182,7 +182,7 @@ namespace Hanekawa.Bot.Modules.Administration
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
             if (!duration.HasValue) duration = TimeSpan.FromHours(12);
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var muteRes = await _mute.TimedMute(user, Context.User, duration.Value, db, reason);
                 if (muteRes)
@@ -207,7 +207,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var muteRes = await _mute.Mute(user, db);
                 if (muteRes)
@@ -232,7 +232,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (await _mute.UnMuteUser(user, db))
                     await ReplyAndDeleteAsync(null, false,
@@ -258,7 +258,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 await _warn.AddWarn(db, user, Context.User, reason, WarnReason.Warned, true);
                 await ReplyAndDeleteAsync(null, false,
@@ -274,7 +274,7 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task WarnLogAsync(SocketGuildUser user, WarnLogType type = WarnLogType.Simple)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (type == WarnLogType.Simple)
                 {
@@ -297,7 +297,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (id <= 0) return;
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
                 if (modCase == null)

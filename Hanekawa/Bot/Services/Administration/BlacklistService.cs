@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Services.Administration
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var check = await db.Blacklists.FindAsync(guild.Id);
                         if (check == null) return;

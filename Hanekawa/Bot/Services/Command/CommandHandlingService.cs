@@ -18,6 +18,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Qmmands;
 using Module = Qmmands.Module;
 
@@ -26,6 +27,7 @@ namespace Hanekawa.Bot.Services.Command
     public class CommandHandlingService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
+        private readonly InternalLogService _log;
         private readonly ColourService _colourService;
         private readonly CommandService _command;
         private readonly InteractiveService _interactive;
@@ -33,15 +35,16 @@ namespace Hanekawa.Bot.Services.Command
         private readonly IServiceProvider _provider;
 
         public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider,
-            InteractiveService interactive, ColourService colourService)
+            InteractiveService interactive, ColourService colourService, InternalLogService log)
         {
             _client = client;
             _command = command;
             _provider = provider;
             _interactive = interactive;
             _colourService = colourService;
+            _log = log;
 
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 foreach (var x in db.GuildConfigs)
                 {
@@ -74,7 +77,8 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new TimeSpanTypeParser());
             _command.AddTypeParser(new VoiceChannelParser());
             _command.AddTypeParser(new CategoryParser());
-            _command.AddModules(Assembly.GetEntryAssembly());
+            var modules = _command.AddModules(Assembly.GetEntryAssembly());
+            _log.LogAction(LogLevel.Information, null, $"Added {modules.Count} modules");
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
@@ -93,16 +97,17 @@ namespace Hanekawa.Bot.Services.Command
             if (!(rawMsg is SocketUserMessage message)) return;
             if (!(message.Author is SocketGuildUser user)) return;
             if (user.IsBot) return;
-
-            if (!CommandUtilities.HasAnyPrefix(message.Content, GetPrefix(user.Guild.Id), out var prefix,
-                out var output)) return;
+            string output;
+            if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id),
+                out output) && !message.HasMentionPrefix(user.Guild.CurrentUser, out var prefix, out output)) return;
             var result = await _command.ExecuteAsync(output,
-                new HanekawaContext(_client, message, user, _colourService, _interactive, _provider), _provider);
-            if (!result.IsSuccessful) Console.WriteLine("Did not succeed??");
+                new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
+            if (!result.IsSuccessful) _log.LogAction(LogLevel.Error, null, $"Command: {result}");
         }
 
         private async Task OnCommandError(CommandErroredEventArgs e)
         {
+            _log.LogAction(LogLevel.Error, e.Result.Exception, "Command Error");
             if (!(e.Context is HanekawaContext context)) return;
             Qmmands.Command command = null;
             Module module = null;
@@ -180,7 +185,7 @@ namespace Hanekawa.Bot.Services.Command
         {
             _ = Task.Run(async () =>
             {
-                using var db = _provider.GetRequiredService<DbService>();
+                using var db = new DbService();
                 var cfg = await db.GetOrCreateGuildConfigAsync(guild);
                 _prefixes.TryAdd(guild.Id, cfg.Prefix);
                 _colourService.AddOrUpdate(guild.Id, new Color(cfg.EmbedColor));

@@ -28,6 +28,7 @@ namespace Hanekawa.Database
         public virtual DbSet<LevelReward> LevelRewards { get; set; }
         public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public virtual DbSet<EventPayout> EventPayouts { get; set; }
+        public virtual DbSet<Highlight> Highlights { get; set; }
 
         // Stores
         public virtual DbSet<ServerStore> ServerStores { get; set; }
@@ -97,11 +98,8 @@ namespace Hanekawa.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-#if DEBUG
-            if(Config.ConnectionString == null) Config.ConnectionString = Environment.GetEnvironmentVariable("hanekawadbcon");
-#endif
             if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseNpgsql(Config.ConnectionString 
+                optionsBuilder.UseNpgsql(Config.ConnectionString
                                          ?? throw new NullReferenceException("No database connection string set"));
         }
 
@@ -153,63 +151,6 @@ namespace Hanekawa.Database
                 x.Property(e => e.Type).HasConversion(
                     v => v.ToString(),
                     v => (ItemType)Enum.Parse(typeof(ItemType), v));
-                x.HasData(
-                    new Item
-                    {
-                        Id = 1,
-                        Name = "Starter Weapon",
-                        Type = ItemType.Weapon,
-                        DamageIncrease = 10,
-                        Sell = 10
-                    }, 
-                    new Item
-                    {
-                        Id = 2,
-                        Name = "Starter Armor",
-                        Type = ItemType.Armor,
-                        HealthIncrease = 100
-                    }, 
-                    new Item
-                    {
-                        Id = 3,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 4,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 5,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 6,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 7,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 8,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 9,
-                        Name = ""
-                    }, 
-                    new Item
-                    {
-                        Id = 10,
-                        Name = ""
-                    });
-                    
             });
         }
 
@@ -252,6 +193,12 @@ namespace Hanekawa.Database
                 x.Property(e => e.MessageId).HasConversion<long>();
             });
             modelBuilder.Entity<EventPayout>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.UserId});
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
+            });
+            modelBuilder.Entity<Highlight>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.GuildId).HasConversion<long>();

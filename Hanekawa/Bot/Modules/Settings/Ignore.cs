@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds or removes a channel from ignore list")]
         public async Task IgnoreChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (channel == null) channel = Context.Channel;
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ToggleIgnoreChannelAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 if (cfg.IgnoreAllChannels)
@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ListIgnoreChannelsAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
                 var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();

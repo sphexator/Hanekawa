@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogJoin.HasValue) return;
@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogJoin.HasValue) return;

@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (cfg.Channel.HasValue && channel == null)
@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteYesAsync(Emote emote = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (emote == null)
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteNoAsync(Emote emote = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (emote == null)

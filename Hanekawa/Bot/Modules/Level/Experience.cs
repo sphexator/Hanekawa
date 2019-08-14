@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Level
                 return;
             }
 
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 string userString = null;
                 for (var i = 0; i < users.Length; i++)
@@ -54,7 +54,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task RemoveExp(int exp, params SocketGuildUser[] users)
         {
             if (exp <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 string userString = null;
                 for (var i = 0; i < users.Length; i++)
@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params SocketTextChannel[] channels)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
@@ -114,7 +114,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params SocketVoiceChannel[] channels)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
@@ -151,7 +151,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params SocketCategoryChannel[] category)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
@@ -188,7 +188,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params SocketTextChannel[] channels)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();
@@ -221,7 +221,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params SocketCategoryChannel[] category)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
                 var content = new StringBuilder();

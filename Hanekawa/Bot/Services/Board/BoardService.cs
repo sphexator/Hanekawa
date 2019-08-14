@@ -20,11 +20,12 @@ namespace Hanekawa.Bot.Services.Board
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
 
-        public BoardService(DiscordSocketClient client, InternalLogService log)
+        public BoardService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
-            using (var db = _provider.GetRequiredService<DbService>())
+            _provider = provider;
+            using (var db = new DbService())
             {
                 foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
             }
@@ -45,7 +46,7 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var emote = await GetEmote(user.Guild, db);
                         if (!rct.Emote.Equals(emote)) return;
@@ -89,7 +90,7 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var emote = await GetEmote(user.Guild, db);
                         if (!rct.Emote.Equals(emote)) return;

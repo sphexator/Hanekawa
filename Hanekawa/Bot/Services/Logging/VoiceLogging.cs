@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(usr is SocketGuildUser user)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogVoice.HasValue) return;

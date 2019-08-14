@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var date = DateTime.UtcNow;
                 var item = new Item
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var date = DateTime.UtcNow;
                 var item = new Item
@@ -88,7 +88,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveStoreItemAsync([Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var itemCheck =
                     await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);

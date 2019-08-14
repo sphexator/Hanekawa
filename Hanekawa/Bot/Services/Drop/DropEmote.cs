@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Services.Drop
 
         public async Task ChangeEmote(SocketGuild guild, Emote emote)
         {
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateDropConfig(guild);
                 cfg.Emote = emote.ParseEmoteString();

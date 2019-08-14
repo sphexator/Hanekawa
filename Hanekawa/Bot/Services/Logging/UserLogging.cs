@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(before is SocketGuildUser user)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogAvi.HasValue) return;
@@ -76,7 +76,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(before.Guild);
                         if (!cfg.LogAvi.HasValue) return;

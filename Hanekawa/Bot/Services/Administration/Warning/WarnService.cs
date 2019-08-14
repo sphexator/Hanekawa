@@ -26,18 +26,19 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public WarnService(LogService logService, InternalLogService log, ColourService colourService)
+        public WarnService(LogService logService, InternalLogService log, ColourService colourService, IServiceProvider provider)
         {
             _logService = logService;
             _log = log;
             _colourService = colourService;
+            _provider = provider;
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
 
         private async Task VoidWarning()
         {
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 await db.Warns.Where(x => x.Time.AddDays(7).Date <= DateTime.UtcNow.Date)
                     .ForEachAsync(x => x.Valid = false);

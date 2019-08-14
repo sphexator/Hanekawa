@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Services.Experience
         {
             while (stopToken.IsCancellationRequested)
             {
-                using (var db = _provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     var nextEvent = await db.LevelExpEvents.OrderBy(x => x.Time).FirstOrDefaultAsync(stopToken);
 
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Services.Experience
                         {
                             var timer = new Timer(async _ =>
                                 {
-                                    using var dbService = _provider.GetRequiredService<DbService>();
+                                    using var dbService = new DbService();
                                     var cfg = await dbService.GetOrCreateLevelConfigAsync(nextEvent.GuildId);
 
                                     _voiceExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.VoiceExpMultiplier,

@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task TextExpMultiplierAsync(double multiplier)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var old = _exp.GetMultiplier(Context.Guild.Id);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task VoiceExpMultiplierAsync(double multiplier)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var old = _exp.GetMultiplier(Context.Guild.Id);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task ToggleVoiceExp()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 if (cfg.VoiceExpEnabled)
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             if (multiplier <= 0) return;
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
             await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!",
                 Color.Green);

@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardEmoteAsync(Emote emote)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 cfg.Emote = emote.ParseEmoteString();
@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotPermission(GuildPermission.ManageGuild)]
         public async Task BoardChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 if (channel == null)

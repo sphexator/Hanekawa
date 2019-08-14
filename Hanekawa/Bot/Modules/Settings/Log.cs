@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs users joining and leaving server, leave empty to disable")]
         public async Task JoinLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs warnings given out from the bot, leave empty to disable")]
         public async Task WarnLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs deleted and updated messages, leave empty to disable")]
         public async Task MessageLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -87,7 +87,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs users getting banned and muted, leave empty to disable")]
         public async Task BanLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -109,7 +109,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
         public async Task UserLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -132,7 +132,7 @@ namespace Hanekawa.Bot.Modules.Settings
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
         public async Task AutoModeratorLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)
@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
         public async Task VoiceLogAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
                 if (channel == null)

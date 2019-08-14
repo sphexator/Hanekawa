@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (!message.Content.IsDiscordInvite(out var invite)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                         if (!cfg.FilterInvites) return;
@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                 if (user.GuildPermissions.ManageMessages) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                         if (!cfg.FilterMsgLength.HasValue) return;

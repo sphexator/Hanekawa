@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 if (msg.Content.Length != 1499) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
                         if (achievements == null) return;

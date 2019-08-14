@@ -36,7 +36,7 @@ namespace Hanekawa.Bot.Services.Experience
             _log = log;
             _provider = provider;
 
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 foreach (var x in db.LevelExpReductions)
                     switch (x.ChannelType)
@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnGlobalCooldown(user)) return;
                 try
                 {
-                    using var db = _provider.GetRequiredService<DbService>();
+                    using var db = new DbService();
                     var userdata = await db.GetOrCreateGlobalUserData(user);
                     await AddExpAsync(userdata, GetExp(channel), _random.Next(1, 3), db);
                 }
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnServerCooldown(user)) return;
                 try
                 {
-                    using var db = _provider.GetRequiredService<DbService>();
+                    using var db = new DbService();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
                     if (!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if (!(usr is SocketGuildUser user)) return;
                 try
                 {
-                    using var db = _provider.GetRequiredService<DbService>();
+                    using var db = new DbService();
                     var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                     if (!cfg.VoiceExpEnabled) return;
                     if (before.VoiceChannel == null && after.VoiceChannel != null)

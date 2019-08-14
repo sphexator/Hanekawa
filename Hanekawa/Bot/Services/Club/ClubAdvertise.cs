@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Club
         public async Task AdNameAsync(HanekawaContext context, string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Services.Club
 
         public async Task AdDescAsync(HanekawaContext context, string desc)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
@@ -74,7 +74,7 @@ namespace Hanekawa.Bot.Services.Club
 
         public async Task AdImageAsync(HanekawaContext context, string image)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Services.Club
 
         public async Task AdIconAsync(HanekawaContext context, string icon)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Services.Club
 
         public async Task AdPublicAsync(HanekawaContext context)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
@@ -141,7 +141,7 @@ namespace Hanekawa.Bot.Services.Club
 
         public async Task AdAdvertiseAsync(HanekawaContext context)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);

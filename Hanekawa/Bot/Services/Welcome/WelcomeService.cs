@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 if (OnCooldown(user)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
                         if (!cfg.Channel.HasValue) return;
@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Services.Welcome
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
                         db.WelcomeBanners.RemoveRange(banners);

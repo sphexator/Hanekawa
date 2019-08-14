@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Services.Drop
             _client.MessageReceived += DropChance;
             _client.ReactionAdded += OnReactionAdded;
 
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 foreach (var x in db.DropConfigs)
                 {
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Services.Drop
 
         public async Task SpawnAsync(HanekawaContext context)
         {
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var claim = await GetClaimEmote(context.Guild, db);
                 var triggerMsg = await context.Channel.ReplyAsync(
@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Services.Drop
                 if (rand < 200)
                     try
                     {
-                        using (var db = _provider.GetRequiredService<DbService>())
+                        using (var db = new DbService())
                         {
                             var claim = await GetClaimEmote(ch.Guild, db);
                             var triggerMsg = await ch.SendMessageAsync(
@@ -136,7 +136,7 @@ namespace Hanekawa.Bot.Services.Drop
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var claim = await GetClaimEmote(user.Guild, db);
                         if (rct.Emote.Name != claim.Name) return;

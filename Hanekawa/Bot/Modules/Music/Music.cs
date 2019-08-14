@@ -351,7 +351,7 @@ namespace Hanekawa.Bot.Modules.Music
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateMusicConfig(Context.Guild);
                 if (channel == null)

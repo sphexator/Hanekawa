@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                         if (!cfg.LogBan.HasValue) return;
@@ -58,7 +58,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                         if (!cfg.LogBan.HasValue) return;

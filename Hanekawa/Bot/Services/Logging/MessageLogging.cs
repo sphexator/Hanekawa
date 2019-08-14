@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(ch is ITextChannel chx)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
                         if (!cfg.LogMsg.HasValue) return;
@@ -71,7 +71,7 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(ch is ITextChannel chx)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
@@ -119,7 +119,7 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(channel is ITextChannel ch)) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(ch.Guild);
                         if (!cfg.LogMsg.HasValue) return;

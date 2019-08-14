@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
 
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var data = new WelcomeBanner
                 {
@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveWelcomeBannerAsync(int id)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var banner =
                     await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
@@ -100,7 +100,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task WelcomeBannerListAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)
@@ -130,9 +130,9 @@ namespace Hanekawa.Bot.Modules.Settings
         [Command("wm", "welcmsg")]
         [Description("Sets welcome message")]
         [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task WelcomeMessageAsync([Remainder] string message)
+        public async Task WelcomeMessageAsync([Remainder] string message = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
                 cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
@@ -147,7 +147,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
                 if (channel == null)
@@ -171,7 +171,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeTimeout(TimeSpan? timeout = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
                 if (!cfg.TimeToDelete.HasValue && timeout == null) return;
@@ -214,7 +214,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task Welcomebanner()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
                 if (cfg.Banner)
@@ -238,7 +238,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (time == null)
             {

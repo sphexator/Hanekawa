@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
@@ -107,7 +107,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;

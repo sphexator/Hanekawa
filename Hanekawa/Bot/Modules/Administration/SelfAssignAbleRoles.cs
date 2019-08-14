@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 await Context.Message.TryDeleteMessageAsync();
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
@@ -81,7 +81,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (!(Context.User is SocketGuildUser user)) return;
             if (user.Roles.FirstOrDefault(x => x.Id == role.Id) == null) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 await Context.Message.TryDeleteMessageAsync();
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task ListSelfAssignAbleRolesAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list == null || list.Count == 0)
@@ -162,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var roleCheck =
                     await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
@@ -188,7 +188,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);
                 if (roleCheck != null)

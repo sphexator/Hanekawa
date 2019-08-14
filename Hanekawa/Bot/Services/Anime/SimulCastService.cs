@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Services.Anime
             _ = Task.Run(async () =>
             {
                 Console.WriteLine("Anime air announced");
-                using (var db = _provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
                     foreach (var x in premiumList)

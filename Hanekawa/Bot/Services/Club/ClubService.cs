@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Services.Club
             {
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var clubs = await db.ClubPlayers.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id)
                             .ToListAsync();
@@ -86,7 +86,7 @@ namespace Hanekawa.Bot.Services.Club
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = _provider.GetRequiredService<DbService>())
+                    using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
                         if (!cfg.AdvertisementChannel.HasValue) return;

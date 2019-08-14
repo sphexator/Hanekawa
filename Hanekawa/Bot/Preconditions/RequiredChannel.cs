@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Preconditions
 
         private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
                 return cfg.IgnoreAllChannels;
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Preconditions
 
         private bool DoubleCheckChannel(HanekawaContext context)
         {
-            using (var db = context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
                 if (check == null) return false;

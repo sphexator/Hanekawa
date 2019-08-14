@@ -21,6 +21,10 @@ namespace Hanekawa.Bot.Modules.Report
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     public class Report : InteractiveBase
     {
+        private readonly ColourService _colour;
+
+        public Report(ColourService colour) => _colour = colour;
+
         [Name("Report")]
         [Command("report")]
         [Description("Send a report to the moderator team")]
@@ -28,7 +32,7 @@ namespace Hanekawa.Bot.Modules.Report
         {
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
 
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -58,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Report
         public async Task RespondAsync(int id, [Remainder] string text)
         {
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
 
             var report = await db.Reports.FindAsync(id, Context.Guild.Id);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -78,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Report
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
-                    $"{text}", Context.Provider.GetRequiredService<ColourService>().Get(Context.Guild.Id));
+                    $"{text}", _colour.Get(Context.Guild.Id));
             }
             catch
             {
@@ -94,7 +98,7 @@ namespace Hanekawa.Bot.Modules.Report
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetReportChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (cfg.ReportChannel.HasValue && channel == null)

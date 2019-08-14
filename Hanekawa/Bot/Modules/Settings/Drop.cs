@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds a channel to be eligible for drops")]
         public async Task AddDropChannel(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (channel == null) channel = Context.Channel;
                 try
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Removes a channel from being eligible for drops")]
         public async Task RemoveDropChannel(SocketTextChannel channel = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (channel == null) channel = Context.Channel;
                 try
@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Lists channels that are available for drops")]
         public async Task ListDropChannelsAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var embed = new EmbedBuilder().WithAuthor(new EmbedAuthorBuilder
                     {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});

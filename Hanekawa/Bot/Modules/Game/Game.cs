@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 2, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task SearchAsync()
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             await Context.ReplyAsync(await _shipGame.SearchAsync(Context.User, db));
         }
 
@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync()
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             var result = new List<string>();
             var classes = await db.GameClasses.ToListAsync();
             for (var i = 0; i < classes.Count; i++)
@@ -72,7 +72,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ClassInfoAsync(int classId)
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             var classInfo = await db.GameClasses.FindAsync(classId);
             if (classInfo == null)
             {
@@ -93,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task ChooseClassAsync(int id)
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             var classInfo = await db.GameClasses.FindAsync(id);
             var userData = await db.GetOrCreateUserData(Context.User);
             if (userData.Level < (int) classInfo.LevelRequirement)

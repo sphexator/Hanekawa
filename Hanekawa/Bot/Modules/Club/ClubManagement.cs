@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task CreateClub([Remainder] string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
@@ -71,7 +71,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task AddClubMemberAsync(SocketGuildUser user)
         {
             if (user == Context.User) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var clubUser =
                     await db.ClubPlayers.FirstOrDefaultAsync(x =>
@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task RemoveClubMemberAsync(SocketGuildUser user)
         {
             if (user == Context.User) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -145,7 +145,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync(int id)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ClubId == id);
@@ -162,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var clubs = await db.ClubPlayers.Where(
                     x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -191,12 +191,17 @@ namespace Hanekawa.Bot.Modules.Club
                 }
 
                 var check = int.TryParse(response.Content, out var result);
+                if (!check) return;
                 var club = clubInfos.FirstOrDefault(x => x.Id == result);
-                if (!check || club == null)
+                if (club == null)
                 {
-                    await Context.ReplyAsync("Couldn't find a club with that Id", Color.Red);
+                    await Context.ReplyAsync("Couldn't find a club with that ID", Color.Red);
+                    return;
                 }
-                // TODO: I didn't finish this? (club leave)
+
+                var leave = await _club.RemoveUserAsync(Context.User, club.Id, db);
+                if (leave) await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green);
+                else await Context.ReplyAsync($"Something went wrong, couldn't leave {club.Name}", Color.Red);
             }
         }
 
@@ -207,7 +212,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubPromoteAsync(SocketGuildUser user)
         {
             if (Context.User == user) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.Guild.Id);
@@ -265,7 +270,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubDemoteAsync(SocketGuildUser user)
         {
             if (Context.User == user) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -299,7 +304,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task BlackListUser(SocketGuildUser user, [Remainder] string reason = null)
         {
             if (Context.User == user) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
@@ -334,7 +339,7 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task GetBlackList()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);

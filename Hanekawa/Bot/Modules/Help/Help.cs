@@ -32,7 +32,9 @@ namespace Hanekawa.Bot.Modules.Help
         [Name("Help")]
         [Command("help")]
         [Description("List all modules")]
+        [Priority(1)]
         [RequiredChannel]
+        [Cooldown(1, 2, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task HelpAsync()
         {
             var result = new StringBuilder();
@@ -56,7 +58,7 @@ namespace Hanekawa.Bot.Modules.Help
             embed.Footer = new EmbedFooterBuilder
             {
                 Text =
-                    $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"
+                    $"Use `{_commandHandling.GetPrefix(Context.Guild.Id)}help <module>` to get help with a module"
             };
             await Context.ReplyAsync(embed);
         }
@@ -83,31 +85,33 @@ namespace Hanekawa.Bot.Modules.Help
                 }
 
                 var orderedList = moduleList.OrderByDescending(x => x.Item2).ToList();
-                if (orderedList.Count > 0)
+                if (orderedList.Count == 0) response.AppendLine("No module matches that search");
+                if (orderedList.Count == 1) moduleInfo = orderedList.First().Item1;
+                
+                else
                 {
-                    response.AppendLine("Did you mean:");
+                    response.AppendLine("Found multiple matches, did you mean:");
                     var amount = moduleList.Count > 5 ? 5 : moduleList.Count;
                     for (var i = 0; i < amount; i++)
                     {
                         var x = orderedList[i];
-                        response.AppendLine(x.Item1.Name);
+                        response.AppendLine($"{i + 1}: {Format.Bold(x.Item1.Name)}");
                     }
                 }
-                else
-                {
-                    response.AppendLine("No module matches that search");
-                }
 
-                var embed = new EmbedBuilder().Create(response.ToString(), Context.Colour.Get(Context.Guild.Id));
-                embed.Author = new EmbedAuthorBuilder {Name = "Module list"};
-                embed.Title = "Couldn't find a module with that name";
-                embed.Footer = new EmbedFooterBuilder
+                if (moduleInfo == null)
                 {
-                    Text =
-                        $"Use `{_commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault()}help <module>` to get help with a module"
-                };
-                await Context.ReplyAsync(embed);
-                return;
+                    var embed = new EmbedBuilder().Create(response.ToString(), Context.Colour.Get(Context.Guild.Id));
+                    embed.Author = new EmbedAuthorBuilder { Name = "Module list" };
+                    embed.Title = "Couldn't find a module with that name";
+                    embed.Footer = new EmbedFooterBuilder
+                    {
+                        Text =
+                            $"Use `{_commandHandling.GetPrefix(Context.Guild.Id)}help <module>` to get help with a module"
+                    };
+                    await Context.ReplyAsync(embed);
+                    return;
+                }
             }
 
             var result = new List<string>();
@@ -115,20 +119,24 @@ namespace Hanekawa.Bot.Modules.Help
             {
                 var cmd = moduleInfo.Commands[i];
                 var command = cmd.Aliases.FirstOrDefault();
-                var prefix = _commandHandling.GetPrefix(Context.Guild.Id).FirstOrDefault();
+                var prefix = _commandHandling.GetPrefix(Context.Guild.Id);
                 var content = new StringBuilder();
-                if (!cmd.Name.IsNullOrWhiteSpace()) content.AppendLine($"**{cmd.Name}**");
+                var perms = PermBuilder(cmd);
+                content.AppendLine(!cmd.Name.IsNullOrWhiteSpace()
+                    ? Format.Bold(cmd.Name)
+                    : Format.Bold(cmd.Aliases.FirstOrDefault()));
+                if (!perms.IsNullOrWhiteSpace()) content.AppendLine(Format.Bold($"Require {perms}"));
+                content.AppendLine(
+                    $"Alias: {Format.Bold(cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, "))}");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
                 if (!cmd.Remarks.IsNullOrWhiteSpace()) content.AppendLine(cmd.Remarks);
-                content.AppendLine(
-                    $"Alias: {cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}");
-                content.AppendLine($"{prefix}{command} {ParamBuilder(cmd)}");
-                content.AppendLine($"Example: {prefix}{command} {ExampleParamBuilder(cmd)}");
+                content.AppendLine($"Usage: {Format.Bold($"{prefix}{command} {ParamBuilder(cmd)}")}");
+                content.AppendLine($"Example: {Format.Bold($"{prefix}{command} {ExampleParamBuilder(cmd)}")}");
                 result.Add(content.ToString());
             }
 
             if (result.Count > 0)
-                await Context.ReplyPaginated(result, Context.Guild, "Command List", null, 10);
+                await Context.ReplyPaginated(result, Context.Guild, "Command List");
             else await Context.ReplyAsync("Couldn't find any commands in that module", Color.Red);
         }
 
@@ -162,13 +170,11 @@ namespace Hanekawa.Bot.Modules.Help
                 var x = command.Parameters[i];
                 var name = PermTypeBuilder(x);
                 if (x.IsOptional)
-                    output.Append(x.DefaultValue == null
-                        ? $"{name} (optional) "
-                        : $"{name} = {x.DefaultValue} (optional) ");
+                    output.Append($"{name} ");
                 else if (x.IsRemainder)
-                    output.Append($"...{name} ");
+                    output.Append($"{name} ");
                 else if (x.IsMultiple)
-                    output.Append($"{name} etc...");
+                    output.Append($"{name} ");
                 else
                     output.Append($"{name} ");
             }
@@ -178,12 +184,30 @@ namespace Hanekawa.Bot.Modules.Help
 
         private string PermTypeBuilder(Parameter parameter)
         {
-            if (parameter.CustomTypeParserType == typeof(SocketGuildUser)) return "user/@bob#0000";
-            if (parameter.CustomTypeParserType == typeof(SocketRole)) return "role";
-            if (parameter.CustomTypeParserType == typeof(SocketTextChannel)) return "channel/#General";
-            if (parameter.CustomTypeParserType == typeof(SocketVoiceChannel)) return "vc/VoiceChannel";
-            if (parameter.CustomTypeParserType == typeof(SocketCategoryChannel)) return "category/General";
+            if (parameter.Type == typeof(SocketGuildUser)) return "@bob#0000";
+            if (parameter.Type == typeof(SocketRole)) return "role";
+            if (parameter.Type == typeof(SocketTextChannel)) return "#General";
+            if (parameter.Type == typeof(SocketVoiceChannel)) return "VoiceChannel";
+            if (parameter.Type == typeof(SocketCategoryChannel)) return "Category";
+            if (parameter.Type == typeof(int)) return "5";
+            if (parameter.Type == typeof(string)) return "Example text";
+            if (parameter.Type == typeof(ulong)) return "431610594290827267";
             return parameter.Name;
+        }
+
+        private string PermBuilder(Command cmd)
+        {
+            var str = new StringBuilder();
+            foreach (var x in cmd.Checks)
+            {
+                if (x is RequireUserPermission perm)
+                {
+                    if (perm.Perms.Length == 1) str.AppendLine(perm.Perms.FirstOrDefault().ToString());
+                    else foreach (var e in perm.Perms) str.Append($"{e.ToString()}, ");
+                }
+            }
+
+            return str.ToString();
         }
     }
 }

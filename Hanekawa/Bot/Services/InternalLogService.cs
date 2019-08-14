@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Services
 
         private Task CommandExecuted(CommandExecutedEventArgs e)
         {
-            _logger.Log(LogLevel.Information, $"Executed Command {e.Result.Command.Name}");
+            _logger.Log(LogLevel.Information, $"Executed Command {e.Context.Command.Name}");
             return Task.CompletedTask;
         }
 

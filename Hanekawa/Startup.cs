@@ -34,19 +34,15 @@ namespace Hanekawa
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            using (var db = new DbService()) 
+            new DatabaseClient(Configuration["connectionString"]);
+            
+            using (var db = new DbService())
                 db.Database.Migrate();
 
             services.AddControllers();
             services.AddHostedService<Bot.Hanekawa>();
-            services.AddSingleton(services);
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddDbContextPool<DbService>(x =>
-            {
-                x.UseNpgsql(Environment.GetEnvironmentVariable("HanekawaDbCon") ??
-                            throw new NullReferenceException("No database connection env var set"));
-            }, 200);
             services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
             {
                 MessageCacheSize = 35,
@@ -63,6 +59,7 @@ namespace Hanekawa
                 }
             }));
             services.AddSingleton<InteractiveService>();
+            services.AddSingleton<ColourService>();
             services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new LavaSocketClient());
             services.AddSingleton(new LavaRestClient(new Configuration
@@ -83,9 +80,10 @@ namespace Hanekawa
             for (var i = 0; i < serviceList.Count; i++)
             {
                 var x = serviceList[i];
-                if (x.GetInterfaces().Contains(typeof(INService))) services.AddSingleton(x);
-                else if (x.GetInterfaces().Contains(typeof(INService))) services.AddTransient(x);
-                else if (x.GetInterfaces().Contains(typeof(INService))) services.AddScoped(x);
+                services.AddSingleton(x);
+                //if (x.GetInterfaces().Contains(typeof(INService))) services.AddSingleton(x);
+                //else if (x.GetInterfaces().Contains(typeof(INService))) services.AddTransient(x);
+                //else if (x.GetInterfaces().Contains(typeof(INService))) services.AddScoped(x);
             }
         }
 
@@ -97,9 +95,7 @@ namespace Hanekawa
             else
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-
             app.UseHttpsRedirection();
-            app.UseMvc();
 
             var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             loggerFactory.AddNLog(new NLogProviderOptions

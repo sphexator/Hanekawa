@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             _warn = warn;
             _provider = provider;
 
-            using (var db = _provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 foreach (var x in db.MuteTimers)
                 {

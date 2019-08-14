@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());
             var toAdd = new Timer(async _ =>
             {
-                using (var db = _provider.GetRequiredService<DbService>())
+                using (var db = new DbService())
                 {
                     try
                     {

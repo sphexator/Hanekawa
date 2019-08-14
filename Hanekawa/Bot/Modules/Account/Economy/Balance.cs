@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task WalletAsync(SocketGuildUser user = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 if (user == null) user = Context.User;
                 var userData = await db.GetOrCreateUserData(user);
@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         {
             if (amount <= 0) return;
             if (users.Contains(Context.User)) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var userData = await db.GetOrCreateUserData(Context.User);
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task DailyAsync(SocketGuildUser user = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
@@ -131,7 +131,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
 
@@ -162,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         public async Task RewardCreditAsync(int amount, params SocketGuildUser[] users)
         {
             if (amount <= 0) return;
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var strBuilder = new StringBuilder();
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);

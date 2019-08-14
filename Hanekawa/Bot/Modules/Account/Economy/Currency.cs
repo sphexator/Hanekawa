@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularNameAsync([Remainder] string name = null)
         {
-            using var db = Context.Provider.GetRequiredService<DbService>();
+            using var db = new DbService();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             if (name.IsNullOrWhiteSpace())
             {
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialNameAsync([Remainder] string name = null)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (name.IsNullOrWhiteSpace())
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularSymbolAsync(Emote emote)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 cfg.EmoteCurrency = true;
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetRegularSymbolAsync([Remainder] string symbol)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (symbol.IsNullOrWhiteSpace()) symbol = "$";
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialSymbolAsync(Emote emote)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 cfg.SpecialEmoteCurrency = true;
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SetSpecialSymbolAsync([Remainder] string symbol)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (symbol.IsNullOrWhiteSpace()) symbol = "$";

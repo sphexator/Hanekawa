@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task InventoryAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task EquipRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task UnequipRoleAsync([Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var inventory = await db.Inventories
                     .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task ServerShopAsync()
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 var store = await db.ServerStores.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
@@ -152,7 +152,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequiredChannel]
         public async Task BuyAsync([Remainder] SocketRole role)
         {
-            using (var db = Context.Provider.GetRequiredService<DbService>())
+            using (var db = new DbService())
             {
                 var serverData =
                     await db.ServerStores.FirstOrDefaultAsync(x =>
