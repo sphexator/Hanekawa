@@ -18,7 +18,6 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
-        private readonly IServiceProvider _provider;
 
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
@@ -29,12 +28,11 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordSocketClient client, Random random, InternalLogService log, IServiceProvider provider)
+        public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
         {
             _client = client;
             _random = random;
             _log = log;
-            _provider = provider;
 
             using (var db = new DbService())
             {
@@ -148,14 +146,6 @@ namespace Hanekawa.Bot.Services.Experience
                         var userData = await db.GetOrCreateUserData(user);
                         userData.VoiceExpTime = DateTime.UtcNow;
                         await db.SaveChangesAsync();
-                        return;
-                    }
-
-                    if (IsReducedExp(before.VoiceChannel))
-                    {
-                        var userData = await db.GetOrCreateUserData(user);
-                        var exp = GetExp(before.VoiceChannel, DateTime.UtcNow - userData.VoiceExpTime);
-                        await AddExpAsync(user, userData, exp, exp / 2, db);
                         return;
                     }
 

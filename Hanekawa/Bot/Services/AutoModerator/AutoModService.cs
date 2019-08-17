@@ -7,7 +7,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.AutoModerator
@@ -18,16 +17,14 @@ namespace Hanekawa.Bot.Services.AutoModerator
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
-        private readonly IServiceProvider _provider;
 
         public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService,
-            InternalLogService log, IServiceProvider provider)
+            InternalLogService log)
         {
             _client = client;
             _logService = logService;
             _muteService = muteService;
             _log = log;
-            _provider = provider;
 
             _client.MessageReceived += MessageLength;
             _client.MessageReceived += InviteFilter;
@@ -53,6 +50,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
                         await _logService.Mute(user, user.Guild.CurrentUser, $"Invite link - {invite.Truncate(80)}",
                             db);
                     }
+
+                    _log.LogAction(LogLevel.Information, null, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Invite link ({invite})");
                 }
                 catch (Exception e)
                 {
@@ -80,6 +79,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
                         if (message.Content.Length < cfg.FilterMsgLength.Value) return;
                         await message.TryDeleteMessagesAsync();
                     }
+
+                    _log.LogAction(LogLevel.Information, null, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Message length ({message.Content.Length})");
                 }
                 catch (Exception e)
                 {

@@ -9,7 +9,6 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -87,7 +86,7 @@ namespace Hanekawa.Bot.Services.Experience
                     if (userData.Level >= x.Level && x.Stackable)
                     {
                         var getRole = user.Guild.GetRole(x.Role);
-                        if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
+                        if (getRole != null && currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
                     }
 
                     if (userData.Level >= x.Level) role = x.Role;

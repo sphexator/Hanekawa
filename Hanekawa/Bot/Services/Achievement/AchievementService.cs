@@ -15,13 +15,11 @@ namespace Hanekawa.Bot.Services.Achievement
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
-        private readonly IServiceProvider _provider;
 
-        public AchievementService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
+        public AchievementService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
             _log = log;
-            _provider = provider;
 
             _client.MessageReceived += MessageCount;
         }
@@ -55,6 +53,7 @@ namespace Hanekawa.Bot.Services.Achievement
                                 };
                                 await db.AchievementUnlocks.AddAsync(data);
                                 await db.SaveChangesAsync();
+                                _log.LogAction(LogLevel.Information, null, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
                             }
                         }
                     }

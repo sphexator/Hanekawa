@@ -14,6 +14,7 @@ using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Util;
 
@@ -23,15 +24,13 @@ namespace Hanekawa.Bot.Services.Administration.Warning
     {
         private readonly InternalLogService _log;
         private readonly LogService _logService;
-        private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public WarnService(LogService logService, InternalLogService log, ColourService colourService, IServiceProvider provider)
+        public WarnService(LogService logService, InternalLogService log, ColourService colourService)
         {
             _logService = logService;
             _log = log;
             _colourService = colourService;
-            _provider = provider;
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
@@ -66,6 +65,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             await db.SaveChangesAsync();
             await NotifyUser(user, staff, warnType, reason, muteTime);
             await _logService.Warn(user, staff, reason, db);
+            _log.LogAction(LogLevel.Information, null, $"(Warn Service) Warned {user.Id} in {user.Guild.Id}");
         }
 
         private async Task NotifyUser(SocketGuildUser user, IMentionable staff, WarnReason type, string reason,
@@ -82,8 +82,9 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize()} ({duration.Value})");
                 await dm.SendMessageAsync(null, false, embed.Build());
             }
-            catch
+            catch(Exception e)
             {
+                _log.LogAction(LogLevel.Warning, e, $"(Warn Service) Couldn't direct message {user.Id}, privacy settings?");
                 /* IGNORE, maybe I shouldn't ignore this ? handle what kind of exception is thrown, if user has dms closed, ignore else log it*/
             }
         }

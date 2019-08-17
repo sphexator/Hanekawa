@@ -56,7 +56,9 @@ namespace Hanekawa.Bot.Services.Club
                         if (clubs.Count == 0) return;
                         var cfg = await db.GetOrCreateClubConfigAsync(user.Guild);
                         foreach (var x in clubs) await RemoveUserAsync(user, x.Id, db, cfg);
+                        _log.LogAction(LogLevel.Information, null, $"(Club Service) {user.Id} left {user.Guild.Id} and left {clubs.Count} clubs");
                     }
+                    
                 }
                 catch (Exception e)
                 {

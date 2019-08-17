@@ -10,7 +10,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interactive;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Welcome
@@ -22,17 +21,15 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ImageGenerator _img;
         private readonly InteractiveService _interactive;
         private readonly InternalLogService _log;
-        private readonly IServiceProvider _provider;
 
         public WelcomeService(DiscordSocketClient client, ImageGenerator img, InternalLogService log,
-            InteractiveService interactive, ExpService exp, IServiceProvider provider)
+            InteractiveService interactive, ExpService exp)
         {
             _client = client;
             _img = img;
             _log = log;
             _interactive = interactive;
             _exp = exp;
-            _provider = provider;
 
             _client.UserJoined += WelcomeUser;
             _client.LeftGuild += LeftGuild;
@@ -70,6 +67,8 @@ namespace Hanekawa.Bot.Services.Welcome
                         var del = DeleteWelcomeAsync(message, cfg);
                         var exp = WelcomeRewardAsync(channel, cfg, db);
                         await Task.WhenAll(del, exp);
+                        _log.LogAction(LogLevel.Information, null,
+                            $"(Welcome Service) User joined {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)
@@ -110,6 +109,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         db.WelcomeBanners.RemoveRange(banners);
                         await db.SaveChangesAsync();
                     }
+                    _log.LogAction(LogLevel.Information, null, $"(Welcome Service) Cleaned up banners in {guild.Id} as bot left server");
                 }
                 catch (Exception e)
                 {

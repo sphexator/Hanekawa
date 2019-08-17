@@ -12,13 +12,11 @@ namespace Hanekawa.Bot.Services.Administration
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
-        private readonly IServiceProvider _provider;
 
-        public BlacklistService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
+        public BlacklistService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
             _log = log;
-            _provider = provider;
 
             _client.JoinedGuild += _client_JoinedGuild;
         }
@@ -34,6 +32,7 @@ namespace Hanekawa.Bot.Services.Administration
                         var check = await db.Blacklists.FindAsync(guild.Id);
                         if (check == null) return;
                         await guild.LeaveAsync();
+                        _log.LogAction(LogLevel.Information, null, $"Left {guild.Id} as the server is blacklisted");
                     }
                 }
                 catch (Exception e)

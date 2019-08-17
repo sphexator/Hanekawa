@@ -46,7 +46,6 @@ namespace Hanekawa.Bot.Services.Anime
         {
             _ = Task.Run(async () =>
             {
-                Console.WriteLine("Anime air announced");
                 using (var db = new DbService())
                 {
                     var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
@@ -55,6 +54,7 @@ namespace Hanekawa.Bot.Services.Anime
                         await PostAsync(x, data).ConfigureAwait(false);
                         await Task.Delay(5000).ConfigureAwait(false);
                     }
+                    _log.LogAction(LogLevel.Information, null, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
                 }
             });
             return Task.CompletedTask;

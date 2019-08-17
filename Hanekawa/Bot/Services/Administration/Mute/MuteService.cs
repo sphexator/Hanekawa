@@ -10,7 +10,8 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using Humanizer;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
@@ -25,15 +26,13 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly WarnService _warn;
-        private readonly IServiceProvider _provider;
 
-        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn, IServiceProvider provider)
+        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn)
         {
             _client = client;
             _logService = logService;
             _log = log;
             _warn = warn;
-            _provider = provider;
 
             using (var db = new DbService())
             {
@@ -45,6 +44,24 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     StartUnMuteTimer(x.GuildId, x.UserId, after);
                 }
             }
+        }
+        public async Task<bool> Mute(SocketGuildUser user, DbService db)
+        {
+            var role = await GetMuteRoleAsync(user.Guild, db);
+            var check = await user.TryAddRoleAsync(role as SocketRole);
+            if (!check) return false;
+            _ = ApplyPermissions(user.Guild, role);
+            await user.TryMute();
+            _log.LogAction(LogLevel.Information, null, $"(Mute service) Muted {user.Id} in {user.Guild.Id}");
+            return true;
+        }
+
+        public async Task<bool> UnMuteUser(SocketGuildUser user, DbService db)
+        {
+            await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
+            await user.TryUnMute();
+            _log.LogAction(LogLevel.Information, null, $"(Mute service) Unmuted {user.Id} in {user.Guild.Id}");
+            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
         }
 
         public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after, DbService db,
@@ -61,25 +78,9 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
             await _logService.Mute(user, staff, reason, after, db);
+
+            _log.LogAction(LogLevel.Information, null, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize()}");
             return true;
-        }
-
-        public async Task<bool> Mute(SocketGuildUser user, DbService db)
-        {
-            var role = await GetMuteRoleAsync(user.Guild, db);
-            var check = await user.TryAddRoleAsync(role as SocketRole);
-            if (!check) return false;
-            _ = ApplyPermissions(user.Guild, role);
-            await user.TryMute();
-            return true;
-        }
-
-        public async Task<bool> UnMuteUser(SocketGuildUser user, DbService db)
-        {
-            await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
-            await user.TryUnMute();
-
-            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
         }
 
         private async Task<IRole> GetMuteRoleAsync(SocketGuild guild, DbService db)
@@ -112,8 +113,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             foreach (var x in guild.TextChannels)
             {
                 if (x.PermissionOverwrites.Select(z => z.Permissions).Contains(_denyOverwrite)) continue;
-                await x.AddPermissionOverwriteAsync(role, _denyOverwrite)
-                    .ConfigureAwait(false);
+                try
+                {
+                    await x.TryApplyPermissionOverwriteAsync(role, _denyOverwrite)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Guild.Id} in channel {x.Id}");
+                }
 
                 await Task.Delay(200).ConfigureAwait(false);
             }
