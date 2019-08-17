@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using SixLabors.Fonts;
