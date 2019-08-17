@@ -37,10 +37,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Discord.Net" Version="2.1.1" />
-        <PackageReference Include="Discord.Net.Core" Version="2.1.1" />
-        <PackageReference Include="Discord.Net.Rest" Version="2.1.1" />
-        <PackageReference Include="Discord.Net.Webhook" Version="2.1.1" />
         <PackageReference Include="Discord.Net.WebSocket" Version="2.1.1" />
         <PackageReference Include="Humanizer" Version="2.6.2" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -55,14 +51,14 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
-        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.12" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.2" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0-preview7-19378-04" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
         <PackageReference Include="NLog" Version="4.6.6" />
         <PackageReference Include="NLog.Config" Version="4.6.6" />
         <PackageReference Include="NLog.Extensions.Logging" Version="1.5.2" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.4" />
-        <PackageReference Include="Npgsql" Version="4.0.8" />
+        <PackageReference Include="Npgsql" Version="4.0.9" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.4" />
         <PackageReference Include="Qmmands" Version="3.0.0-nightly-00196" />
         <PackageReference Include="Quartz" Version="3.0.7" />
