@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Game
         public async Task SearchAsync()
         {
             using var db = new DbService();
-            var embed = await _shipGame.SearchAsync(Context, Context.User, db);
+            var embed = await _shipGame.SearchAsync(Context);
             if (embed == null) return;
             await Context.ReplyAsync(embed);
         }
@@ -40,14 +40,14 @@ namespace Hanekawa.Bot.Modules.Game
         [Command("attack")]
         [Description("Starts a fight with a monster you've found")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
-        public async Task AttackAsync() => await _shipGame.PvEBattle(Context);
+        public async Task AttackAsync() => await _shipGame.AttackAsync(Context);
 
         [Name("Duel")]
         [Command("duel")]
         [Description("Duels a user. Add an amount to duel for credit")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.Whatever)]
         public async Task DuelAsync(SocketGuildUser user, int? bet = null) =>
-            await _shipGame.PvPBattle(Context, user, bet);
+            await _shipGame.AttackAsync(Context, user, bet);
 
         [Name("Class Info")]
         [Command("classinfo")]

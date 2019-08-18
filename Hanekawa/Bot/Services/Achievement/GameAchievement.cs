@@ -11,10 +11,11 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task PvpKill(SocketGuildUser user, DbService db)
+        public async Task PvpKill(SocketGuildUser user, DbService db) => await PvpKill(user.Id, user.Guild.Id, db).ConfigureAwait(false);
+        public async Task PvpKill(ulong userId, ulong guildId, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
-            var progress = await db.GetOrCreateAchievementProgress(user.Id, PvP);
+            var progress = await db.GetOrCreateAchievementProgress(userId, PvP);
             if (progress == null) return;
 
             if (achievements == null) return;
@@ -26,20 +27,20 @@ namespace Hanekawa.Bot.Services.Achievement
                 {
                     AchievementId = achieve.AchievementId,
                     TypeId = PvP,
-                    UserId = user.Id,
+                    UserId = userId,
                     Achievement = achieve
                 };
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, null, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, null, $"(Achievement Service) {userId} scored {achieve.Name} in {guildId}");
             }
             else
             {
                 var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
                 if (below.Count != 0)
                 {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == userId).ToListAsync();
                     foreach (var x in below)
                     {
                         if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
@@ -48,7 +49,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         {
                             AchievementId = x.AchievementId,
                             TypeId = PvP,
-                            UserId = user.Id,
+                            UserId = userId,
                             Achievement = x
                         };
                         await db.AchievementUnlocks.AddAsync(data);
