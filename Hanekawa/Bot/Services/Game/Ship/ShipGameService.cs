@@ -20,6 +20,7 @@ using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -57,25 +58,31 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        public async Task<EmbedBuilder> SearchAsync(SocketGuildUser user, DbService db)
+        public async Task<EmbedBuilder> SearchAsync(HanekawaContext context, SocketGuildUser user, DbService db)
         {
-            var battles = _existingBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            if (battles.TryGetValue(user.Id, out _)) return new EmbedBuilder();
+            var battles = _activeBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+            if (battles.TryGetValue(user.Id, out _))
+            {
+                await PvEBattle(context);
+                return null;
+            }
             var enemy = GetEnemy();
             if (enemy == null)
                 return new EmbedBuilder().Create(
                     $"{user.GetName()} searched throughout the sea and didn't find anything", Color.Red);
-
+            var existingBattles = _existingBattles.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+            existingBattles.Set(user.Id, true, TimeSpan.FromHours(1));
             battles.Set(user.Id, enemy, TimeSpan.FromHours(1));
             var embed = new EmbedBuilder().Create("You've encountered an enemy!\n" +
                                                          $"**{enemy.Name}**", Color.Green);
             var userData = await db.GetOrCreateUserData(user);
+            var enemyClass = await GetClassName(enemy.ClassId, db);
             embed.Fields = new List<EmbedFieldBuilder>
             {
-                new EmbedFieldBuilder {Name = "Type", Value = GetClassName(enemy.Id, db), IsInline = true},
+                new EmbedFieldBuilder {Name = "Type", Value = enemyClass.Name, IsInline = true},
                 new EmbedFieldBuilder
                 {
-                    Name = "Health", Value = GetHealth(userData.Level, enemy, await GetClassName(enemy.ClassId, db)),
+                    Name = "Health", Value = GetHealth(userData.Level, enemy, enemyClass),
                     IsInline = true
                 },
                 new EmbedFieldBuilder {Name = "Level", Value = $"{userData.Level}", IsInline = true}
@@ -91,17 +98,17 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var userDataOne = await db.GetOrCreateUserData(context.User);
             var userDataTwo = await db.GetOrCreateUserData(user);
             var coinFlip = _random.Next(2);
+            var UserOneClass = await GetClassName(userDataOne.Class, db);
+            var userTwoClass = await GetClassName(userDataTwo.Class, db);
             if (coinFlip == 1)
             {
-                playerOne = new ShipGameUser(context.User, userDataOne.Level,
-                    await GetClassName(userDataOne.Class, db));
-                playerTwo = new ShipGameUser(user, userDataTwo.Level, await GetClassName(userDataTwo.Class, db));
+                playerOne = new ShipGameUser(context.User, userDataOne.Level, UserOneClass, GetDamage(userDataOne.Level), GetHealth(userDataOne.Level, UserOneClass));
+                playerTwo = new ShipGameUser(user, userDataTwo.Level, userTwoClass, GetDamage(userDataTwo.Level), GetHealth(userDataTwo.Level, userTwoClass));
             }
             else
             {
-                playerOne = new ShipGameUser(user, userDataTwo.Level, await GetClassName(userDataTwo.Class, db));
-                playerTwo = new ShipGameUser(context.User, userDataOne.Level,
-                    await GetClassName(userDataOne.Class, db));
+                playerOne = new ShipGameUser(user, userDataTwo.Level, userTwoClass, GetDamage(userDataTwo.Level), GetHealth(userDataTwo.Level, userTwoClass));
+                playerTwo = new ShipGameUser(context.User, userDataOne.Level, UserOneClass, GetDamage(userDataOne.Level), GetHealth(userDataOne.Level, UserOneClass));
             }
 
             var game = new ShipGame(playerOne, playerTwo, bet);
@@ -110,9 +117,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
             var stream = await _img.ShipGameBuilder(context.User.GetAvatar(), user.GetAvatar());
             stream.Position = 0;
-            embed.ImageUrl = "attachment://banner.png";
-            var msg = await context.Channel.SendFileAsync(stream, "banner.png", null, false,
-                embed.Build());
+            embed.Fields = new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder { Name = playerOne.Name, Value = $"Health: {GetHealth(userDataOne.Level, UserOneClass)}" },
+                new EmbedFieldBuilder { Name = playerTwo.Name, Value = $"Health: {GetHealth(userDataTwo.Level, userTwoClass)}" }
+            };
+            var msg = await context.Channel.SendFileAsync(stream, "banner.png", null, false, embed.Build());
             var source = new CancellationTokenSource();
             var token = source.Token;
             var battle = BattleAsync(msg, game, msgLog);
@@ -122,11 +132,24 @@ namespace Hanekawa.Bot.Services.Game.Ship
             if (!battle.IsCompleted) battle.Dispose();
 
             embed = msg.Embeds.First().ToEmbedBuilder();
-            embed.Color = Color.Green;
+            var fieldOne = embed.Fields.First(x => x.Name == game.PlayerOne.Name);
+            var fieldTwo = embed.Fields.First(x => x.Name == game.PlayerTwo.Name);
+            embed.Color = battle.Result.IsNpc ? Color.Red : Color.Green;
             embed.Description = msgLog.ListToString();
+            fieldOne.Value =
+                $"Health: {game.PlayerOne.Health - game.PlayerOne.DamageTaken}/{game.PlayerOne.Health}";
+            fieldTwo.Value =
+                $"Health: {game.PlayerTwo.Health - game.PlayerTwo.DamageTaken}/{game.PlayerTwo.Health}";
+            embed.Fields = new List<EmbedFieldBuilder>
+            {
+                fieldOne,
+                fieldTwo
+            };
             await msg.ModifyAsync(x => x.Embed = embed.Build());
-        }
 
+            if (_existingBattles.TryGetValue(context.Guild.Id, out var existingBattles)) existingBattles.Remove(context.User.Id);
+        }
+        
         public async Task PvEBattle(HanekawaContext context)
         {
             using var db = new DbService();
@@ -145,8 +168,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
             if (!(battleObject is GameEnemy enemy)) return;
 
             var userData = await db.GetOrCreateUserData(context.User);
-            var playerOne = new ShipGameUser(context.User, userData.Level, await GetClassName(userData.Class, db));
-            var playerTwo = new ShipGameUser(enemy, userData.Level, await GetClassName(enemy.ClassId, db));
+            var UserOneClass = await GetClassName(userData.Class, db);
+            var userTwoClass = await GetClassName(enemy.ClassId, db);
+            var playerOne = new ShipGameUser(context.User, userData.Level, UserOneClass, GetDamage(userData.Level), GetHealth(userData.Level, UserOneClass));
+            var playerTwo = new ShipGameUser(enemy, userData.Level, userTwoClass, GetDamage(userData.Level, enemy), GetHealth(userData.Level, enemy, userTwoClass));
             var game = new ShipGame(playerOne, playerTwo, null);
             var msgLog = new LinkedList<string>();
 
@@ -154,8 +179,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var embed = new EmbedBuilder().Create(msgLog.ListToString(), _colourService.Get(context.Guild.Id));
             var stream = await _img.ShipGameBuilder(context.User.GetAvatar(), enemy.ImageUrl);
             stream.Position = 0;
-            embed.ImageUrl = "attachment://banner.png";
-            var msg = await context.Channel.SendFileAsync(new MemoryStream(), "banner.png", null, false,
+            embed.Fields = new List<EmbedFieldBuilder>
+            {
+                new EmbedFieldBuilder { Name = playerOne.Name, Value = $"Health: {GetHealth(userData.Level, UserOneClass)}" },
+                new EmbedFieldBuilder { Name = playerTwo.Name, Value = $"Health: {GetHealth(userData.Level, enemy, userTwoClass)}" }
+            };
+            var msg = await context.Channel.SendFileAsync(stream, "banner.png", null, false,
                 embed.Build());
             var source = new CancellationTokenSource();
             var token = source.Token;
@@ -168,9 +197,23 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 await _exp.AddExpAsync(context.User, userData, enemy.ExpGain, enemy.CreditGain, db);
 
             embed = msg.Embeds.First().ToEmbedBuilder();
+            var fieldOne = embed.Fields.First(x => x.Name == game.PlayerOne.Name);
+            var fieldTwo = embed.Fields.First(x => x.Name == game.PlayerTwo.Name);
             embed.Color = battle.Result.IsNpc ? Color.Red : Color.Green;
             embed.Description = msgLog.ListToString();
+            fieldOne.Value =
+                $"Health: {game.PlayerOne.Health - game.PlayerOne.DamageTaken}/{game.PlayerOne.Health}";
+            fieldTwo.Value =
+                $"Health: {game.PlayerTwo.Health - game.PlayerTwo.DamageTaken}/{game.PlayerTwo.Health}";
+            embed.Fields = new List<EmbedFieldBuilder>
+            {
+                fieldOne,
+                fieldTwo
+            };
             await msg.ModifyAsync(x => x.Embed = embed.Build());
+
+            battles.Remove(context.User.Id);
+            if(_existingBattles.TryGetValue(context.Guild.Id, out var existingBattles)) existingBattles.Remove(context.User.Id);
         }
 
         private async Task<ShipGameUser> BattleAsync(IUserMessage msg, ShipGame game, LinkedList<string> combatLog)
@@ -196,31 +239,44 @@ namespace Hanekawa.Bot.Services.Game.Ship
                         game.PlayerTwo.Class, game.PlayerOne.Class, EnemyType.Player);
 
                 game.PlayerTwo.DamageTaken += dmgOne;
-                if (game.PlayerTwo.Health - game.PlayerOne.DamageTaken <= 0)
+                if (game.PlayerTwo.Health - game.PlayerTwo.DamageTaken <= 0)
                 {
                     UpdateBattleLog(combatLog,
                         $"{game.PlayerOne.Name} hit for {dmgOne} damage and defeated {game.PlayerTwo.Name}");
                     inProgress = false;
                     winner = game.PlayerOne;
+                    game.PlayerTwo.DamageTaken = game.PlayerTwo.Health;
                     continue;
                 }
 
                 UpdateBattleLog(combatLog, $"{game.PlayerOne.Name} hit {game.PlayerTwo.Name} for {dmgOne} damage");
 
                 game.PlayerOne.DamageTaken += dmgTwo;
-                if (game.PlayerOne.Health - game.PlayerTwo.DamageTaken <= 0)
+                if (game.PlayerOne.Health - game.PlayerOne.DamageTaken <= 0)
                 {
                     UpdateBattleLog(combatLog,
                         $"{game.PlayerTwo.Name} hit for {dmgTwo} damage and defeated {game.PlayerOne.Name}");
                     inProgress = false;
                     winner = game.PlayerTwo;
+                    game.PlayerOne.DamageTaken = game.PlayerOne.Health;
                     continue;
                 }
 
                 UpdateBattleLog(combatLog, $"{game.PlayerTwo.Name} hit {game.PlayerOne.Name} for {dmgTwo} damage");
 
                 embed = msg.Embeds.First().ToEmbedBuilder();
+                var fieldOne = embed.Fields.First(x => x.Name == game.PlayerOne.Name);
+                var fieldTwo = embed.Fields.First(x => x.Name == game.PlayerTwo.Name);
                 embed.Description = combatLog.ListToString();
+                fieldOne.Value =
+                    $"Health: {game.PlayerOne.Health - game.PlayerOne.DamageTaken}/{game.PlayerOne.Health}";
+                fieldTwo.Value =
+                    $"Health: {game.PlayerTwo.Health - game.PlayerTwo.DamageTaken}/{game.PlayerTwo.Health}";
+                embed.Fields = new List<EmbedFieldBuilder>
+                {
+                    fieldOne,
+                    fieldTwo
+                };
                 await msg.ModifyAsync(x => x.Embed = embed.Build());
                 await Task.Delay(2000);
             }
@@ -237,9 +293,9 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private GameEnemy GetEnemy()
         {
             var chance = _random.Next(1000);
-            if (chance <= 50) return _eliteEnemies[_random.Next(_eliteEnemies.Count)];
-            if (chance <= 150) return _rareEnemies[_random.Next(_rareEnemies.Count)];
-            if (chance > 150 && chance < 600) return _regularEnemies[_random.Next(_regularEnemies.Count)];
+            if (chance <= 50) return _eliteEnemies[_random.Next(1, _eliteEnemies.Count)];
+            if (chance <= 150) return _rareEnemies[_random.Next(1, _rareEnemies.Count)];
+            if (chance > 150 && chance < 600) return _regularEnemies[_random.Next(1, _regularEnemies.Count)];
             return null;
         }
     }

@@ -31,7 +31,9 @@ namespace Hanekawa.Bot.Modules.Game
         public async Task SearchAsync()
         {
             using var db = new DbService();
-            await Context.ReplyAsync(await _shipGame.SearchAsync(Context.User, db));
+            var embed = await _shipGame.SearchAsync(Context, Context.User, db);
+            if (embed == null) return;
+            await Context.ReplyAsync(embed);
         }
 
         [Name("Attack")]

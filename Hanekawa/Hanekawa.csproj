@@ -78,7 +78,6 @@
       <Folder Include="Data\Game\Border\" />
       <Folder Include="Data\Game\Enemy\" />
       <Folder Include="Data\Profile\Default\" />
-      <Folder Include="Data\Profile\Template\" />
       <Folder Include="Data\Welcome\" />
     </ItemGroup>
 
@@ -108,6 +107,18 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Data\Fonts\ARIALI.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Fonts\ARIALN.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Fonts\ARIALNB.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Fonts\ARIALNBI.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Fonts\ARIALNI.TTF">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Data\Fonts\ARIBLK.TTF">
@@ -233,10 +244,10 @@
       <None Update="Data\Profile\Template\AchievementCircle.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Data\Profile\Template\ProfileCircle.png">
+      <None Update="Data\Profile\Template\Circle.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Data\Profile\Template\ProfileTemplate.png">
+      <None Update="Data\Profile\Template\Template.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Data\Welcome\Default.png">
