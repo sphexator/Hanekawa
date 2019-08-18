@@ -54,9 +54,10 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
 
                     //Text
-                    x.DrawText(_centerText, "Server", _profileText, Rgba32.White, new PointF(72, 160));
-                    x.DrawText(_centerText, "Global", _profileText, Rgba32.White, new PointF(270, 160));
+                    x.DrawText(_leftText, "Server", _profileText, Rgba32.White, new PointF(72, 160));
+                    x.DrawText(_leftText, "Global", _profileText, Rgba32.White, new PointF(270, 160));
 
+                    // Server
                     x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF(8, 256));
                     x.DrawText(_rightText, $"{serverRank}", _profileText, Rgba32.White, new PointF(194, 256));
 
@@ -72,17 +73,18 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.DrawText(_leftText, "Achievement Points", _profileText, Rgba32.White, new PointF(22, 286));
                     x.DrawText(_rightText, $"{achievePoints}", _profileText, Rgba32.White, new PointF(377, 286));
 
-                    x.DrawText(_leftText, "Global Rank", _profileText, Rgba32.White, new PointF(206, 256));
+                    // Global
+                    x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF(206, 256));
                     x.DrawText(_rightText, $"{globalRank}", _profileText, Rgba32.White, new PointF(391, 256));
 
-                    x.DrawText(_leftText, "Global Credit", _profileText, Rgba32.White, new PointF(206, 232));
+                    x.DrawText(_leftText, "Credit", _profileText, Rgba32.White, new PointF(206, 232));
                     x.DrawText(_rightText, $"{globalData.Credit}", _profileText, Rgba32.White, new PointF(391, 232));
 
-                    x.DrawText(_leftText, "Global Exp", _profileText, Rgba32.White, new PointF(206, 208));
+                    x.DrawText(_leftText, "Exp", _profileText, Rgba32.White, new PointF(206, 208));
                     x.DrawText(_rightText, $"{globalData.Exp}", _profileText, Rgba32.White, new PointF(391, 208));
 
-                    x.DrawText(_leftText, "Global Level", _profileText, Rgba32.White, new PointF(206, 184));
-                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Rgba32.White, new PointF(391, 208));
+                    x.DrawText(_leftText, "Level", _profileText, Rgba32.White, new PointF(206, 184));
+                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Rgba32.White, new PointF(391, 184));
                 });
 
                 img.Save(stream, new PngEncoder());
@@ -93,10 +95,21 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<Image<Rgba32>> GetProfileBackground(DbService db)
         {
-            var background = await db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstAsync();
-            using var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl));
-            img.Mutate(x => x.Resize(400, 400));
-            return img.Clone();
+            var background = await db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstOrDefaultAsync();
+            if (background == null)
+            {
+                var files = Directory.GetFiles("Data/Profile/default/", "*.jpg");
+                var file = files[_random.Next(files.Length)];
+                using var img = Image.Load(file);
+                img.Mutate(x => x.Resize(400, 400));
+                return img.Clone();
+            }
+            else
+            {
+                using var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl));
+                img.Mutate(x => x.Resize(400, 400));
+                return img.Clone();
+            }
         }
 
         private List<PointF> CreateProfileProgressBar(Account userData)

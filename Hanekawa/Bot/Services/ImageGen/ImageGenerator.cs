@@ -64,14 +64,14 @@ namespace Hanekawa.Bot.Services.ImageGen
 
             _fonts = new FontCollection();
             _times = _fonts.Install("Data/Fonts/TIMES.TTF");
-            _arial = _fonts.Install("Data/Fonts/ARIAL.TFF");
+            _arial = _fonts.Install("Data/Fonts/ARIAL.TTF");
 
             _welcomeFontRegular = new Font(_times, 33, FontStyle.Regular);
             _welcomeTemplate = Image.Load("Data/Welcome/Default.png");
 
             _profileText = new Font(_arial, 20, FontStyle.Regular);
             _profileName = new Font(_arial, 32, FontStyle.Regular);
-            _profileTemplate = Image.Load("Data/Profile/Template.png");
+            _profileTemplate = Image.Load("Data/Profile/Template/Template.png");
         }
 
         private async Task<Image<Rgba32>> GetAvatarAsync(IUser user, Size size, int radius)
