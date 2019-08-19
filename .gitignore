@@ -262,3 +262,7 @@ __pycache__/
 /Hanekawa.Web/Properties/launchSettings.json
 /Hanekawa/Properties/launchSettings.json
 /Hanekawa/appsettings.json
+/Hanekawa.Web/appsettings.json
+/Hanekawa.Web/appsettings.Development.json
+/Hanekawa.Web
+/Hanekawa/appsettings.Development.json
