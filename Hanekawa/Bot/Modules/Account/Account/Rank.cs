@@ -11,11 +11,9 @@ using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account
@@ -39,44 +37,42 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task RankAsync(SocketGuildUser user = null)
         {
-            using (var db = new DbService())
+            using var db = new DbService();
+            if (user == null) user = Context.User;
+            var serverData = await db.GetOrCreateUserData(user);
+            var globalData = await db.GetOrCreateGlobalUserData(user);
+            var embed = new EmbedBuilder
             {
-                if (user == null) user = Context.User;
-                var serverData = await db.GetOrCreateUserData(user);
-                var globalData = await db.GetOrCreateGlobalUserData(user);
-                var embed = new EmbedBuilder
+                Author = new EmbedAuthorBuilder {Name = user.GetName()},
+                ThumbnailUrl = user.GetAvatar(),
+                Fields = new List<EmbedFieldBuilder>
                 {
-                    Author = new EmbedAuthorBuilder {Name = user.GetName()},
-                    ThumbnailUrl = user.GetAvatar(),
-                    Fields = new List<EmbedFieldBuilder>
+                    new EmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
+                    new EmbedFieldBuilder
                     {
-                        new EmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Exp",
-                            Value = $"{serverData.Exp}/{_exp.ExpToNextLevel(serverData)}",
-                            IsInline = true
-                        },
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Rank",
-                            Value =
-                                $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= serverData.TotalExp)}" +
-                                $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
-                            IsInline = true
-                        },
-                        new EmbedFieldBuilder
-                        {
-                            Name = "Global Rank",
-                            Value =
-                                $"{await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp)}" +
-                                $"/{await db.AccountGlobals.CountAsync()}",
-                            IsInline = true
-                        }
+                        Name = "Exp",
+                        Value = $"{serverData.Exp}/{_exp.ExpToNextLevel(serverData)}",
+                        IsInline = true
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        Name = "Rank",
+                        Value =
+                            $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= serverData.TotalExp)}" +
+                            $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
+                        IsInline = true
+                    },
+                    new EmbedFieldBuilder
+                    {
+                        Name = "Global Rank",
+                        Value =
+                            $"{await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp)}" +
+                            $"/{await db.AccountGlobals.CountAsync()}",
+                        IsInline = true
                     }
-                };
-                await Context.ReplyAsync(embed);
-            }
+                }
+            };
+            await Context.ReplyAsync(embed);
         }
 
         [Name("Level Leaderboard")]
