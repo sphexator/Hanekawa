@@ -17,7 +17,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Qmmands;
 using Module = Qmmands.Module;
@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Services.Command
                 out output) && !message.HasMentionPrefix(user.Guild.CurrentUser, out var prefix, out output)) return;
             var result = await _command.ExecuteAsync(output,
                 new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
-            if (!result.IsSuccessful) _log.LogAction(LogLevel.Error, null, $"Command: {result}");
+            if (!result.IsSuccessful) _log.LogAction(LogLevel.Warning, null, $"Command: {result}");
         }
 
         private async Task OnCommandError(CommandErroredEventArgs e)
@@ -179,6 +179,9 @@ namespace Hanekawa.Bot.Services.Command
 
             if (response.Length == 0) return;
             await context.Channel.ReplyAsync(response.ToString(), Color.Red);
+            await _client.GetGuild(431617676859932704).GetTextChannel(523165903219720232).SendMessageAsync(
+                $"Error: {e.Result.Exception.Message}\n" +
+                $"{e.Result.Exception.ToString().Truncate(1500)}");
         }
 
         private Task ClientJoined(SocketGuild guild)
