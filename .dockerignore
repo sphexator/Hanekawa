@@ -19,5 +19,3 @@
 **/values.dev.yaml
 **/.toolstarget
 /Hanekawa/Properties/launchSettings.json
-/Hanekawa/appsettings.Development.json
-/Hanekawa/appsettings.json
