@@ -259,10 +259,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/Hanekawa.Web/Properties/launchSettings.json
 /Hanekawa/Properties/launchSettings.json
 /Hanekawa/appsettings.json
-/Hanekawa.Web/appsettings.json
-/Hanekawa.Web/appsettings.Development.json
-/Hanekawa.Web
 /Hanekawa/appsettings.Development.json

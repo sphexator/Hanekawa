@@ -4,6 +4,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0-buster AS build
 WORKDIR /src
+COPY ["nuget.config", ""]
 COPY ["Hanekawa/Hanekawa.csproj", "Hanekawa/"]
 COPY ["Hanekawa.Database/Hanekawa.Database.csproj", "Hanekawa.Database/"]
 COPY ["Hanekawa.Shared/Hanekawa.Shared.csproj", "Hanekawa.Shared/"]
