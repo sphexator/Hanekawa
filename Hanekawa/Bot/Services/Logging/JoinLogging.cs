@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new EmbedBuilder
                         {
                             Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
-                            Color = Color.Green,
+                            Color = Color.Red,
                             Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };

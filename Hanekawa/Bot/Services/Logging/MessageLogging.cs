@@ -9,7 +9,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
@@ -125,6 +124,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogMsg.HasValue) return;
                         var logChannel = await ch.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
                         if (logChannel == null) return;
+
                         var messageContent = new List<string>();
                         var content = new StringBuilder();
                         foreach (var x in messages)

@@ -28,6 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogAvi.HasValue) return;
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel is null) return;
+
                         var embed = new EmbedBuilder().Create("", _colourService.Get(user.Guild.Id));
                         if (before.Username != after.Username)
                         {

@@ -29,14 +29,14 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new EmbedBuilder
                         {
                             Color = Color.Green,
-                            Author = new EmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId} | {user}"},
+                            Author = new EmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
                             Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                             Timestamp = DateTimeOffset.UtcNow,
                             Fields = new List<EmbedFieldBuilder>
                             {
-                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
-                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
-                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = true},
+                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
+                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
                             }
                         };
                         var msg = await channel.SendMessageAsync(null, false, embed.Build());
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new EmbedBuilder
                         {
                             Color = Color.Red,
-                            Author = new EmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId} | {user}"},
+                            Author = new EmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId.Id} | {user}"},
                             Fields = new List<EmbedFieldBuilder>
                             {
                                 new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},

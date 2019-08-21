@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
-                Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId} - User Muted | {user}"},
+                Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
                 Footer = new EmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"},
                 Fields = new List<EmbedFieldBuilder>
                 {
@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Services.Logging
             {
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
-                Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId} - User Muted | {user}"},
+                Author = new EmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
                 Footer = new EmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"},
                 Fields = new List<EmbedFieldBuilder>
                 {
