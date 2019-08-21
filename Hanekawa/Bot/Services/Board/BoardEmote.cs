@@ -3,6 +3,7 @@ using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 
 namespace Hanekawa.Bot.Services.Board
 {
@@ -19,7 +20,7 @@ namespace Hanekawa.Bot.Services.Board
                 var cfg = await db.GetOrCreateBoardConfigAsync(guild);
                 if (Emote.TryParse(cfg.Emote, out var dbEmote))
                 {
-                    _reactionEmote.TryAdd(guild.Id, cfg.Emote);
+                    _reactionEmote.TryAdd(guild.Id, dbEmote.ParseEmoteString());
                     return dbEmote;
                 }
 
