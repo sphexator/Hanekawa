@@ -44,15 +44,6 @@ namespace Hanekawa.Bot.Services.Command
             _colourService = colourService;
             _log = log;
 
-            using (var db = new DbService())
-            {
-                foreach (var x in db.GuildConfigs)
-                {
-                    _prefixes.TryAdd(x.GuildId, x.Prefix);
-                    _colourService.AddOrUpdate(x.GuildId, new Color(x.EmbedColor));
-                }
-            }
-
             _client.LeftGuild += ClientLeft;
             _client.JoinedGuild += ClientJoined;
             _client.MessageReceived += message =>
@@ -66,6 +57,15 @@ namespace Hanekawa.Bot.Services.Command
                 _ = OnCommandError(log);
                 return Task.CompletedTask;
             };
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.GuildConfigs)
+                {
+                    _prefixes.TryAdd(x.GuildId, x.Prefix);
+                    _colourService.AddOrUpdate(x.GuildId, new Color(x.EmbedColor));
+                }
+            }
         }
 
         public void InitializeAsync()

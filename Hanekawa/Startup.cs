@@ -151,13 +151,10 @@ namespace Hanekawa
             config.AddTarget(fileTarget);
             config.AddTarget(dbTarget);
 
-            config.AddRuleForAllLevels(consoleTarget);
             var minFileLog = LogLevel.Info;
             var minDbLog = LogLevel.Warn;
-#if DEBUG
-            minFileLog = LogLevel.Debug;
-            minDbLog = LogLevel.Debug;
-#endif
+
+            config.AddRule(minFileLog, LogLevel.Fatal, consoleTarget);
             config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
             config.AddRule(minDbLog, LogLevel.Fatal, dbTarget);
 
