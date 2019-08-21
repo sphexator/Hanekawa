@@ -51,7 +51,8 @@ namespace Hanekawa
             {
                 MessageCacheSize = 35,
                 AlwaysDownloadUsers = true,
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Info,
+                ExclusiveBulkDelete = true
             }));
             services.AddSingleton(new CommandService(new CommandServiceConfiguration
             {
