@@ -37,36 +37,43 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 foreach (var x in db.LevelExpReductions)
                 {
-                    switch (x.ChannelType)
+                    try
                     {
-                        case ChannelType.Category:
+                        switch (x.ChannelType)
                         {
-                            var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                            categories.Add(x.ChannelId);
-                            ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                (arg1, list) => categories);
-                            break;
-                        }
+                            case ChannelType.Category:
+                            {
+                                var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                                categories.Add(x.ChannelId);
+                                ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                    (arg1, list) => categories);
+                                break;
+                            }
 
-                        case ChannelType.Text:
-                        {
-                            var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                            channel.Add(x.ChannelId);
-                            ServerTextChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                (arg1, list) => channel);
-                            break;
-                        }
+                            case ChannelType.Text:
+                            {
+                                var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                                channel.Add(x.ChannelId);
+                                ServerTextChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                    (arg1, list) => channel);
+                                break;
+                            }
 
-                        case ChannelType.Voice:
-                        {
-                            var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                            channel.Add(x.ChannelId);
-                            ServerVoiceChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                (arg1, list) => channel);
-                            break;
+                            case ChannelType.Voice:
+                            {
+                                var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                                channel.Add(x.ChannelId);
+                                ServerVoiceChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                    (arg1, list) => channel);
+                                break;
+                            }
+                            default:
+                                continue;
                         }
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                    }
+                    catch (Exception e)
+                    {
+                        _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
                     }
                 }
 
