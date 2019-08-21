@@ -10,7 +10,7 @@ namespace Hanekawa.Extensions
         public static IEmote ParseStringEmote(this string emote)
         {
             if (Emote.TryParse(emote, out var result)) return result;
-            return new Emoji("⭐");
+            return new Emoji("U+2B50");
         }
     }
 }

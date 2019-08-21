@@ -26,11 +26,11 @@ namespace Hanekawa.Bot.Services.Board
 
                 cfg.Emote = null;
                 await db.SaveChangesAsync();
-                return new Emoji("⭐");
+                return new Emoji("U+2B50");
             }
 
             if (Emote.TryParse(emoteString, out var emote)) return emote;
-            return new Emoji("⭐");
+            return new Emoji("U+2B50");
         }
     }
 }
