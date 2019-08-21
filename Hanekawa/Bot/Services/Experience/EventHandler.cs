@@ -8,7 +8,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -37,6 +36,7 @@ namespace Hanekawa.Bot.Services.Experience
             using (var db = new DbService())
             {
                 foreach (var x in db.LevelExpReductions)
+                {
                     switch (x.ChannelType)
                     {
                         case ChannelType.Category:
@@ -65,7 +65,10 @@ namespace Hanekawa.Bot.Services.Experience
                                 (arg1, list) => channel);
                             break;
                         }
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
+                }
 
                 foreach (var x in db.LevelConfigs)
                 {
