@@ -56,11 +56,13 @@ namespace Hanekawa.Bot.Services.Welcome
                             var banner = await _img.WelcomeBuilder(user, db);
                             banner.Position = 0;
                             channel = user.Guild.GetTextChannel(cfg.Channel.Value);
+                            if (channel == null) return;
                             message = await channel.SendFileAsync(banner, "Welcome.png", msg);
                         }
                         else
                         {
                             channel = user.Guild.GetTextChannel(cfg.Channel.Value);
+                            if (channel == null) return;
                             message = await channel.SendMessageAsync(msg);
                         }
 
