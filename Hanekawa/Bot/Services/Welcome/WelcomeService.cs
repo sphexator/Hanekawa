@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Services.Welcome
                     {
                         var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
                         if (!cfg.Channel.HasValue) return;
-                        if (IsRatelimited(user, cfg)) return;
+                        // if (IsRatelimited(user, cfg)) return;
                         var msg = CreateMessage(cfg.Message, user, user.Guild);
                         IMessage message;
                         SocketTextChannel channel;
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(SocketTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            var response = await _interactive.NextMessageAsync(_client, null, channel.Id, "welcome", cfg.TimeToDelete);
+            var response = await _interactive.NextMessageAsync(_client, null, channel.Id, "welcome", TimeSpan.FromMinutes(2));
             if (response == null) return;
             if (!(response.Author is SocketGuildUser user)) return;
             var userData = await db.GetOrCreateUserData(user);
