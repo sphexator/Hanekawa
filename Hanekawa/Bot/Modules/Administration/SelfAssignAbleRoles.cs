@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task RemoveSelfAssignAbleRoleAsync([Remainder] SocketRole role)
         {
-            if (Context.User.HierarchyCheck(role))
+            if (!Context.User.HierarchyCheck(role))
             {
                 await Context.ReplyAsync("Can't remove a role that's higher then your highest role.",
                     Color.Red);
@@ -182,7 +182,7 @@ namespace Hanekawa.Bot.Modules.Administration
 
         private async Task AddSelfAssignAbleRoleAsync(HanekawaContext context, SocketRole role, bool exclusive)
         {
-            if (context.User.HierarchyCheck(role))
+            if (!context.User.HierarchyCheck(role))
             {
                 await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
                 return;

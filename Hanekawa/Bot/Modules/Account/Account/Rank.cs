@@ -92,7 +92,9 @@ namespace Hanekawa.Bot.Modules.Account
                     var user = users[i];
                     var username = Context.Guild.GetUser(user.UserId);
                     strBuilder.AppendLine(
-                        $"**Rank: {i + 1}** - {username.Mention ?? $"User left server({user.UserId})"}");
+                        username != null
+                            ? $"**Rank: {i + 1}** - {username.Mention}"
+                            : $"**Rank: {i + 1}** - User left server({user.UserId})");
                     strBuilder.AppendLine($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
                     result.Add(strBuilder.ToString());
                 }

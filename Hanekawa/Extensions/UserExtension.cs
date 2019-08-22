@@ -6,17 +6,11 @@ namespace Hanekawa.Extensions
 {
     public static class UserExtension
     {
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketGuildUser comparer)
-        {
-            if (mainUser.Hierarchy > comparer.Hierarchy) return true;
-            return false;
-        }
+        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketGuildUser comparer) 
+            => mainUser.Hierarchy > comparer.Hierarchy;
 
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketRole role)
-        {
-            if (mainUser.Hierarchy > role.Position) return true;
-            return false;
-        }
+        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketRole role) 
+            => mainUser.Hierarchy > role.Position;
 
         public static async Task<bool> TryMute(this SocketGuildUser user)
         {
