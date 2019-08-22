@@ -15,7 +15,8 @@ namespace Hanekawa.Bot.Services.Welcome
         private string CreateMessage(string msg, IMentionable user, SocketGuild guild)
         {
             if (msg.IsNullOrWhiteSpace()) return null;
-            if (PlayerRegex.IsMatch(msg) || UserRegex.IsMatch(msg)) msg = PlayerRegex.Replace(msg, user.Mention);
+            if (PlayerRegex.IsMatch(msg)) msg = PlayerRegex.Replace(msg, user.Mention);
+            if (UserRegex.IsMatch(msg)) msg = UserRegex.Replace(msg, user.Mention);
             if (ServerRegex.IsMatch(msg)) msg = ServerRegex.Replace(msg, guild.Name);
             if (MembersRegex.IsMatch(msg)) msg = MembersRegex.Replace(msg, $"{guild.MemberCount + 1}");
 
