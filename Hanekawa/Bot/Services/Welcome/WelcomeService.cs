@@ -62,6 +62,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         }
                         else
                         {
+                            if (msg == null) return;
                             message = await channel.SendMessageAsync(msg);
                         }
 
