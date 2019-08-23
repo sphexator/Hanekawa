@@ -11,11 +11,12 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Welcome
 {
-    public partial class WelcomeService
+    public partial class WelcomeService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
         private readonly ExpService _exp;
@@ -51,19 +52,16 @@ namespace Hanekawa.Bot.Services.Welcome
                         // if (IsRatelimited(user, cfg)) return;
                         var msg = CreateMessage(cfg.Message, user, user.Guild);
                         IMessage message;
-                        SocketTextChannel channel;
+                        var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
+                        if (channel == null) return;
                         if (cfg.Banner)
                         {
                             var banner = await _img.WelcomeBuilder(user, db);
                             banner.Seek(0, SeekOrigin.Begin);
-                            channel = user.Guild.GetTextChannel(cfg.Channel.Value);
-                            if (channel == null) return;
                             message = await channel.SendFileAsync(banner, "Welcome.png", msg);
                         }
                         else
                         {
-                            channel = user.Guild.GetTextChannel(cfg.Channel.Value);
-                            if (channel == null) return;
                             message = await channel.SendMessageAsync(msg);
                         }
 
