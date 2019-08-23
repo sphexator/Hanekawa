@@ -142,7 +142,7 @@ namespace Hanekawa
                     new DatabaseParameterInfo("@logger", "${logger}"),
                     new DatabaseParameterInfo("@callsite", "${callsite}"),
                     //new DatabaseParameterInfo("@exception", "${exception:format=shortType,message :separator= - }${newline}${exception:format=method}${newline}${exception:format=stackTrace:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}")
-                    new DatabaseParameterInfo("@exception", "${exception::format=tostring}")
+                    new DatabaseParameterInfo("@exception", "${exception:format=toString,Data}")
                 },
                 OptimizeBufferReuse = true
             };
