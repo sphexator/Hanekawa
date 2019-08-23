@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Discord;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -84,9 +85,11 @@ namespace Hanekawa.Database.Extensions
         {
             cfg.GuildId = guild;
             cfg.TextExpMultiplier = 1;
+            cfg.TextExpEnabled = true;
             cfg.VoiceExpMultiplier = 1;
             cfg.VoiceExpEnabled = true;
             cfg.StackLvlRoles = true;
+            cfg.ExpDisabled = false;
             return cfg;
         }
 
@@ -99,6 +102,7 @@ namespace Hanekawa.Database.Extensions
             cfg.LogAvi = null;
             cfg.LogAutoMod = null;
             cfg.LogWarn = null;
+            cfg.LogVoice = null;
             return cfg;
         }
 
@@ -161,6 +165,7 @@ namespace Hanekawa.Database.Extensions
             account.StarGive = 0;
             account.StarReceive = 0;
             account.Credit = 0;
+            account.UserColor = Color.Purple.RawValue;
             return account;
         }
 
