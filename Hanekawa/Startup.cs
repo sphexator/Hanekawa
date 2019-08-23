@@ -102,16 +102,10 @@ namespace Hanekawa
                 app.UseHsts();
             app.UseHttpsRedirection();
 
-            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            ConfigureNLog();
-            loggerFactory.AddNLog(new NLogProviderOptions
-            {
-                CaptureMessageProperties = true,
-                CaptureMessageTemplates = true
-            });
+            NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
         }
 
-        public void ConfigureNLog()
+        private LoggingConfiguration ConfigureNLog()
         {
             var consoleTarget = new ConsoleTarget
             {
@@ -201,6 +195,8 @@ namespace Hanekawa
 
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
+            
+            return config;
         }
     }
 }
