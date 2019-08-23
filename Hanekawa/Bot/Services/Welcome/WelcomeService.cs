@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -54,7 +55,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         if (cfg.Banner)
                         {
                             var banner = await _img.WelcomeBuilder(user, db);
-                            banner.Position = 0;
+                            banner.Seek(0, SeekOrigin.Begin);
                             channel = user.Guild.GetTextChannel(cfg.Channel.Value);
                             if (channel == null) return;
                             message = await channel.SendFileAsync(banner, "Welcome.png", msg);

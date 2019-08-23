@@ -33,6 +33,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user")]
+        [Priority(1)]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
@@ -69,7 +70,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user by their ID, doesn't require to be in the server")]
-        [Priority(1)]
         [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(ulong userId, [Remainder] string reason = "No reason applied")

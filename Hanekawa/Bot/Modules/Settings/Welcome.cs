@@ -150,17 +150,24 @@ namespace Hanekawa.Bot.Modules.Settings
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (channel == null)
+                if (channel == null && !cfg.Channel.HasValue)
                 {
                     cfg.Channel = null;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled welcome messages!");
+                    await Context.ReplyAsync("Disabled welcome messages!", Color.Green);
+                }
+                else if (channel == null)
+                {
+                    channel = Context.Channel;
+                    cfg.Channel = channel.Id;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
                 }
                 else
                 {
                     cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Enabled or changed welcome messages to {channel.Mention}");
+                    await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
                 }
             }
         }

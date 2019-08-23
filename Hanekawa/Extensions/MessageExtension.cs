@@ -64,7 +64,11 @@ namespace Hanekawa.Extensions
         {
             if (!(msg.Channel is SocketTextChannel chn)) return false;
             if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;
-            await msg.DeleteAsync();
+            try
+            {
+                await msg.DeleteAsync();
+            }
+            catch { /* Ignore ? */ }
             return true;
         }
     }
