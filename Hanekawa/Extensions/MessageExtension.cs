@@ -24,7 +24,7 @@ namespace Hanekawa.Extensions
                 var x = msgs[i];
                 // Checks if message can be deleted
                 // Messages that's older then 14 days or 2 weeks can't be bulk deleted
-                if (x.Timestamp.AddDays(13) < DateTimeOffset.UtcNow)
+                if (x.Timestamp.AddDays(14) >= DateTimeOffset.UtcNow)
                 {
                     // If we're filtering, don't add if its not from the filtered user.
                     if (filterBy != null && x.Author == filterBy) result.Add(x);
@@ -48,6 +48,7 @@ namespace Hanekawa.Extensions
         {
             var currentUser = channel.Guild.CurrentUser;
             if (!currentUser.GuildPermissions.ManageMessages) return false;
+            if (msg.Timestamp.AddDays(14) <= DateTimeOffset.UtcNow) return false;
             await channel.DeleteMessageAsync(msg);
             return true;
         }
@@ -56,6 +57,7 @@ namespace Hanekawa.Extensions
         {
             if (!(msg.Channel is SocketTextChannel chn)) return false;
             if (!chn.Guild.CurrentUser.GuildPermissions.ManageMessages) return false;
+            if (msg.Timestamp.AddDays(14) <= DateTimeOffset.UtcNow) return false;
             await msg.DeleteAsync();
             return true;
         }

@@ -5,10 +5,8 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings

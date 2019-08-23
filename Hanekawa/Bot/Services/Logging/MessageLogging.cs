@@ -129,18 +129,19 @@ namespace Hanekawa.Bot.Services.Logging
                         var content = new StringBuilder();
                         foreach (var x in messages)
                         {
-                            await x.GetOrDownloadAsync();
-                            var user = x.Value.Author;
+                            var msg = await x.GetOrDownloadAsync();
+                            if(msg == null) continue;
+                            var user = msg.Author;
                             if (content.Length + x.Value.Content.Length >= 1950)
                             {
                                 messageContent.Add(content.ToString());
                                 content.Clear();
                             }
 
-                            content.AppendLine($"{user}: {x.Value.Content}");
+                            content.AppendLine($"{user.Mention}: {msg.Content}");
                         }
 
-                        if (!content.ToString().IsNullOrWhiteSpace()) messageContent.Add(content.ToString());
+                        if (content.Length > 0) messageContent.Add(content.ToString());
 
                         for (var i = 0; i < messageContent.Count; i++)
                         {
