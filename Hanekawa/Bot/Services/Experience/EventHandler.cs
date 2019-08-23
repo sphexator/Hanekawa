@@ -33,8 +33,21 @@ namespace Hanekawa.Bot.Services.Experience
             _random = random;
             _log = log;
 
+            _ = EventHandler(new CancellationToken());
+
+            _client.MessageReceived += ServerMessageExpAsync;
+            _client.MessageReceived += GlobalMessageExpAsync;
+            _client.UserVoiceStateUpdated += VoiceExpAsync;
+            _client.UserJoined += GiveRolesBackAsync;
+
             using (var db = new DbService())
             {
+                foreach (var x in db.LevelConfigs)
+                {
+                    _textExpMultiplier.TryAdd(x.GuildId, x.TextExpMultiplier);
+                    _voiceExpMultiplier.TryAdd(x.GuildId, x.VoiceExpMultiplier);
+                }
+
                 foreach (var x in db.LevelExpReductions)
                 {
                     try
@@ -76,20 +89,7 @@ namespace Hanekawa.Bot.Services.Experience
                         _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
                     }
                 }
-
-                foreach (var x in db.LevelConfigs)
-                {
-                    _textExpMultiplier.TryAdd(x.GuildId, x.TextExpMultiplier);
-                    _voiceExpMultiplier.TryAdd(x.GuildId, x.VoiceExpMultiplier);
-                }
             }
-
-            _ = EventHandler(new CancellationToken());
-
-            _client.MessageReceived += ServerMessageExpAsync;
-            _client.MessageReceived += GlobalMessageExpAsync;
-            _client.UserVoiceStateUpdated += VoiceExpAsync;
-            _client.UserJoined += GiveRolesBackAsync;
         }
 
         private Task GlobalMessageExpAsync(SocketMessage msg)
