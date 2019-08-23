@@ -115,8 +115,7 @@ namespace Hanekawa
             var consoleTarget = new ColoredConsoleTarget
             {
                 Name = "Console",
-                Layout = @"${date:format=HH\:mm\:ss} ${level} ${message} ${exception}",
-                DetectConsoleAvailable = true
+                Layout = @"${longdate} | ${level} | ${message} | ${exception}"
             };
             var fileTarget = new FileTarget
             {
@@ -155,7 +154,7 @@ namespace Hanekawa
             var minFileLog = LogLevel.Info;
             var minDbLog = LogLevel.Warn;
 
-            config.AddRule(minFileLog, LogLevel.Fatal, consoleTarget);
+            config.AddRuleForAllLevels(consoleTarget);
             config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
             config.AddRule(minDbLog, LogLevel.Fatal, dbTarget);
 
