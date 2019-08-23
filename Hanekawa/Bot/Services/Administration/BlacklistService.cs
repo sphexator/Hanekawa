@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Services.Administration
                         var check = await db.Blacklists.FindAsync(guild.Id);
                         if (check == null) return;
                         await guild.LeaveAsync();
-                        _log.LogAction(LogLevel.Information, null, $"Left {guild.Id} as the server is blacklisted");
+                        _log.LogAction(LogLevel.Information, $"Left {guild.Id} as the server is blacklisted");
                     }
                 }
                 catch (Exception e)

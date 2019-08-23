@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Services.Drop
                             }
                         }
 
-                        _log.LogAction(LogLevel.Information, null, $"(Drop Service) Drop event created in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event created in {user.Guild.Id}");
                     }
                     catch (Exception e)
                     {
@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Services.Drop
                         else await ClaimNormal(message, channel, user, db);
                     }
 
-                    _log.LogAction(LogLevel.Information, null, $"(Drop Service) Drop event claimed by {user.Id} in {user.Guild.Id}");
+                    _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event claimed by {user.Id} in {user.Guild.Id}");
                 }
                 catch (Exception e)
                 {

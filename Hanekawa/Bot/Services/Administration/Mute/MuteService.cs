@@ -52,7 +52,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
             await user.TryMute();
-            _log.LogAction(LogLevel.Information, null, $"(Mute service) Muted {user.Id} in {user.Guild.Id}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) Muted {user.Id} in {user.Guild.Id}");
             return true;
         }
 
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         {
             await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
             await user.TryUnMute();
-            _log.LogAction(LogLevel.Information, null, $"(Mute service) Unmuted {user.Id} in {user.Guild.Id}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) Unmuted {user.Id} in {user.Guild.Id}");
             return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
         }
 
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
             await _logService.Mute(user, staff, reason, after, db);
 
-            _log.LogAction(LogLevel.Information, null, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize()}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize()}");
             return true;
         }
 

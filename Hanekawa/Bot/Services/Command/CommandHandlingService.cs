@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Services.Command
             _command.AddTypeParser(new VoiceChannelParser());
             _command.AddTypeParser(new CategoryParser());
             var modules = _command.AddModules(Assembly.GetEntryAssembly());
-            _log.LogAction(LogLevel.Information, null, $"Added {modules.Count} modules");
+            _log.LogAction(LogLevel.Information, $"Added {modules.Count} modules");
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Services.Command
                 out output) && !message.HasMentionPrefix(user.Guild.CurrentUser, out var prefix, out output)) return;
             var result = await _command.ExecuteAsync(output,
                 new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
-            if (!result.IsSuccessful) _log.LogAction(LogLevel.Warning, null, $"Command: {result}");
+            if (!result.IsSuccessful) _log.LogAction(LogLevel.Warning, $"Command: {result}");
         }
 
         private async Task OnCommandError(CommandErroredEventArgs e)

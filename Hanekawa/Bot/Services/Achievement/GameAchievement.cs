@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, null, $"(Achievement Service) {userId} scored {achieve.Name} in {guildId}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {userId} scored {achieve.Name} in {guildId}");
             }
             else
             {
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, null, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
             }
             else
             {

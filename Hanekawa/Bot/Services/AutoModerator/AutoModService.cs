@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                             db);
                     }
 
-                    _log.LogAction(LogLevel.Information, null, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Invite link ({invite})");
+                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Invite link ({invite})");
                 }
                 catch (Exception e)
                 {
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Services.AutoModerator
                         await message.TryDeleteMessagesAsync();
                     }
 
-                    _log.LogAction(LogLevel.Information, null, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Message length ({message.Content.Length})");
+                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Message length ({message.Content.Length})");
                 }
                 catch (Exception e)
                 {

@@ -54,7 +54,7 @@ namespace Hanekawa.Bot.Services.Anime
                         await PostAsync(x, data).ConfigureAwait(false);
                         await Task.Delay(5000).ConfigureAwait(false);
                     }
-                    _log.LogAction(LogLevel.Information, null, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
+                    _log.LogAction(LogLevel.Information, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
                 }
             });
             return Task.CompletedTask;

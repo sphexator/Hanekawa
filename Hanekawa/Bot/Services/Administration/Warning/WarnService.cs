@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             await db.SaveChangesAsync();
             await NotifyUser(user, staff, warnType, reason, muteTime);
             await _logService.Warn(user, staff, reason, db);
-            _log.LogAction(LogLevel.Information, null, $"(Warn Service) Warned {user.Id} in {user.Guild.Id}");
+            _log.LogAction(LogLevel.Information, $"(Warn Service) Warned {user.Id} in {user.Guild.Id}");
         }
 
         private async Task NotifyUser(SocketGuildUser user, IMentionable staff, WarnReason type, string reason,

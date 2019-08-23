@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Services.Board
                             await db.SaveChangesAsync();
                             await SendMessageAsync(user, message, cfg);
                         }
-                        _log.LogAction(LogLevel.Information, null, $"(Board Service) {user.Id} added a reaction in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} added a reaction in {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)
@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Services.Board
                         stat.StarAmount--;
                         await db.SaveChangesAsync();
                         DecreaseReactionAmount(user.Guild, message);
-                        _log.LogAction(LogLevel.Information, null, $"(Board Service) {user.Id} removed a reaction in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} removed a reaction in {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)

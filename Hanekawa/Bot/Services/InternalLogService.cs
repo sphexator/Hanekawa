@@ -42,6 +42,8 @@ namespace Hanekawa.Bot.Services
 
         public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
 
+        public void LogAction(LogLevel l, string m) => _logger.Log(l, m);
+
         private Task SimulCastClientLog(Exception e)
         {
             _logger.Log(LogLevel.Error, e, e.Message);

@@ -68,8 +68,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         var del = DeleteWelcomeAsync(message, cfg);
                         var exp = WelcomeRewardAsync(channel, cfg, db);
                         await Task.WhenAll(del, exp);
-                        _log.LogAction(LogLevel.Information, null,
-                            $"(Welcome Service) User joined {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)
@@ -110,7 +109,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         db.WelcomeBanners.RemoveRange(banners);
                         await db.SaveChangesAsync();
                     }
-                    _log.LogAction(LogLevel.Information, null, $"(Welcome Service) Cleaned up banners in {guild.Id} as bot left server");
+                    _log.LogAction(LogLevel.Information, $"(Welcome Service) Cleaned up banners in {guild.Id} as bot left server");
                 }
                 catch (Exception e)
                 {
