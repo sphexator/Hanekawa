@@ -148,16 +148,16 @@ namespace Hanekawa
 
             var config = new LoggingConfiguration();
             config.AddTarget(consoleTarget);
-            config.AddTarget(fileTarget);
+            // config.AddTarget(fileTarget);
             config.AddTarget(dbTarget);
 
-            var minFileLog = LogLevel.Info;
+            // var minFileLog = LogLevel.Info;
             var minDbLog = LogLevel.Warn;
 
             config.AddRuleForAllLevels(consoleTarget);
-            config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
-            config.AddRule(minDbLog, LogLevel.Fatal, dbTarget);
-
+            // config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, dbTarget);
+            
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
         }
