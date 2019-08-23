@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.AutoModerator
 {
-    public class AutoModService : INService, IRequired
+    public class AutoModService
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
