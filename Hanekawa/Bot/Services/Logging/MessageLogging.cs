@@ -76,25 +76,25 @@ namespace Hanekawa.Bot.Services.Logging
                         if (!cfg.LogMsg.HasValue) return;
                         var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
                         if (channel == null) return;
-
-                        if (!message.HasValue) await message.GetOrDownloadAsync();
-                        if (message.Value.Author.IsBot) return;
-                        var embed = new EmbedBuilder().Create(message.Value.Content.Truncate(1900), _colourService.Get(chx.GuildId));
+                        var msg = await message.GetOrDownloadAsync();
+                        if (msg == null) return;
+                        if (msg.Author.IsBot) return;
+                        var embed = new EmbedBuilder().Create(msg.Content.Truncate(1900), _colourService.Get(chx.GuildId));
                         embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
-                        embed.Title = $"{message.Value.Author} deleted a message in {chx.Name}";
-                        embed.Timestamp = message.Value.Timestamp;
+                        embed.Title = $"{msg.Author} deleted a message in {chx.Name}";
+                        embed.Timestamp = msg.Timestamp;
                         embed.Footer = new EmbedFooterBuilder
-                            {Text = $"User: {message.Value.Author.Id} | Message ID: {message.Value.Id}"};
+                            {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"};
 
-                        if (message.Value.Attachments.Count > 0 && !chx.IsNsfw)
+                        if (msg.Attachments.Count > 0 && !chx.IsNsfw)
                         {
-                            var file = message.Value.Attachments.FirstOrDefault();
+                            var file = msg.Attachments.FirstOrDefault();
                             if (file != null)
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
-                                    x.Value = message.Value.Attachments.FirstOrDefault()?.Url;
+                                    x.Value = msg.Attachments.FirstOrDefault()?.Url;
                                 });
                         }
 

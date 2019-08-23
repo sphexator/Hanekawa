@@ -19,6 +19,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -29,14 +30,16 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly ImageGenerator _img;
         private readonly Random _random;
         private readonly AchievementService _achievement;
+        private readonly InternalLogService _log;
 
-        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement)
+        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log)
         {
             _random = random;
             _img = img;
             _exp = exp;
             _colourService = colourService;
             _achievement = achievement;
+            _log = log;
 
             using var db = new DbService();
             var cfg = db.GameConfigs.Find(1);
@@ -268,7 +271,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
 
             UpdateBattle(context, false);
-            Console.WriteLine("Completed game");
+            _log.LogAction(LogLevel.Information, "(Ship Game) Completed game");
         }
 
         public async Task AttackAsync(HanekawaContext context, SocketGuildUser playerTwoUser, int? bet = 0)
@@ -454,14 +457,14 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     }
 
                 UpdateDuel(context, false);
-                Console.WriteLine("Completed duel");
+                _log.LogAction(LogLevel.Information, "(Ship Game) Completed duel");
                 // TODO: Invoke PvP achievement here
                 //PvpKill?.Invoke(winner.UserId);
             }
-            catch
+            catch(Exception e)
             {
                 UpdateDuel(context, false);
-                Console.WriteLine("Duel failed");
+                _log.LogAction(LogLevel.Error, e, "(Ship Game) Duel failed");
             }
         }
 

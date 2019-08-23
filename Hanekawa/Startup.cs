@@ -75,8 +75,8 @@ namespace Hanekawa
                 LogSeverity = LogSeverity.Info,
                 PreservePlayers = true
             }));
-            services.AddSingleton<Random>();
-            services.AddSingleton<HttpClient>();
+            services.AddSingleton(new Random());
+            services.AddSingleton(new HttpClient());
             services.UseQuartz(typeof(WarnService));
 
             var assembly = Assembly.GetAssembly(typeof(Program));
@@ -103,12 +103,12 @@ namespace Hanekawa
             app.UseHttpsRedirection();
 
             var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            ConfigureNLog();
             loggerFactory.AddNLog(new NLogProviderOptions
             {
                 CaptureMessageProperties = true,
                 CaptureMessageTemplates = true
             });
-            ConfigureNLog();
         }
 
         public void ConfigureNLog()
@@ -162,7 +162,9 @@ namespace Hanekawa
                 Name = "Async Console Target",
                 OptimizeBufferReuse = true,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = consoleTarget
+                WrappedTarget = consoleTarget,
+                TimeToSleepBetweenBatches = 1,
+                QueueLimit = 25
             };
 
             var asyncFileTarget = new AsyncTargetWrapper
@@ -170,7 +172,9 @@ namespace Hanekawa
                 Name = "Async File Target",
                 OptimizeBufferReuse = true,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = fileTarget
+                WrappedTarget = fileTarget,
+                TimeToSleepBetweenBatches = 1,
+                QueueLimit = 25
             };
 
             var asyncDatabaseTarget = new AsyncTargetWrapper
@@ -178,7 +182,9 @@ namespace Hanekawa
                 Name = "Async Database Target",
                 OptimizeBufferReuse = true,
                 OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = dbTarget
+                WrappedTarget = dbTarget,
+                TimeToSleepBetweenBatches = 1,
+                QueueLimit = 25
             };
 
             var config = new LoggingConfiguration();
@@ -192,7 +198,7 @@ namespace Hanekawa
             config.AddRuleForAllLevels(asyncConsoleTarget);
             // config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
             config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncDatabaseTarget);
-            
+
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
         }

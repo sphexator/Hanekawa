@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
@@ -48,12 +49,8 @@ namespace Hanekawa.Bot
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Initialize();
-            Console.WriteLine("Logging in...");
             await _client.LoginAsync(TokenType.Bot, _config["token"]);
-            Console.WriteLine("Logged in");
-            Console.WriteLine("Starting...");
             await _client.StartAsync();
-            Console.WriteLine("Started");
             await Task.Delay(-1, stoppingToken);
         }
     }

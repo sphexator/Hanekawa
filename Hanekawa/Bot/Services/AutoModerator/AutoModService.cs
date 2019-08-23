@@ -6,12 +6,13 @@ using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.AutoModerator
 {
-    public class AutoModService
+    public class AutoModService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
