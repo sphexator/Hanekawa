@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
-    public partial class MuteService : INService
+    public partial class MuteService : INService, IRequired
     {
         private readonly DiscordSocketClient _client;
 

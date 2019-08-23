@@ -23,6 +23,7 @@ using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets;
+using NLog.Targets.Wrappers;
 using Qmmands;
 using Victoria;
 using LogLevel = NLog.LogLevel;
@@ -115,13 +116,23 @@ namespace Hanekawa
             var consoleTarget = new ColoredConsoleTarget
             {
                 Name = "Console",
-                Layout = @"${longdate} | ${level} | ${message} | ${exception}"
+                Layout = @"${longdate} | ${level} | ${message} | ${exception}",
+                DetectConsoleAvailable = true,
+                OptimizeBufferReuse = true,
+                AutoFlush = true
             };
             var fileTarget = new FileTarget
             {
                 Name = "File",
                 FileName = "${basedir}/logs/${shortdate}-log.txt",
-                Layout = "${longdate} | ${level} | ${message} | ${exception}"
+                Layout = "${longdate} | ${level} | ${message} | ${exception}",
+                OptimizeBufferReuse = true,
+                AutoFlush = true,
+                ConcurrentWriteAttempts = -1,
+                ArchiveEvery = FileArchivePeriod.Day,
+                ArchiveOldFileOnStartup = true,
+                ConcurrentWrites = true,
+                CreateDirs = true
             };
             var dbTarget = new DatabaseTarget
             {
@@ -146,17 +157,41 @@ namespace Hanekawa
                 OptimizeBufferReuse = true
             };
 
+            var asyncConsoleTarget = new AsyncTargetWrapper
+            {
+                Name = "Async Console Target",
+                OptimizeBufferReuse = true,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
+                WrappedTarget = consoleTarget
+            };
+
+            var asyncFileTarget = new AsyncTargetWrapper
+            {
+                Name = "Async File Target",
+                OptimizeBufferReuse = true,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
+                WrappedTarget = fileTarget
+            };
+
+            var asyncDatabaseTarget = new AsyncTargetWrapper
+            {
+                Name = "Async Database Target",
+                OptimizeBufferReuse = true,
+                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
+                WrappedTarget = dbTarget
+            };
+
             var config = new LoggingConfiguration();
-            config.AddTarget(consoleTarget);
-            // config.AddTarget(fileTarget);
-            config.AddTarget(dbTarget);
+            config.AddTarget(asyncConsoleTarget);
+            config.AddTarget(asyncFileTarget);
+            config.AddTarget(asyncDatabaseTarget);
 
             // var minFileLog = LogLevel.Info;
             var minDbLog = LogLevel.Warn;
 
-            config.AddRuleForAllLevels(consoleTarget);
+            config.AddRuleForAllLevels(asyncConsoleTarget);
             // config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, dbTarget);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncDatabaseTarget);
             
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
