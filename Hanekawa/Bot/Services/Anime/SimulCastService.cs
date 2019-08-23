@@ -66,6 +66,7 @@ namespace Hanekawa.Bot.Services.Anime
             {
                 if (!cfg.AnimeAirChannel.HasValue) return;
                 var guild = _client.GetGuild(cfg.GuildId);
+                if (guild == null) return;
                 _log.LogAction(LogLevel.Information, $"Posting anime event to {guild.Name}");
                 await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
                     .ReplyAsync(BuildEmbed(data, cfg.GuildId));

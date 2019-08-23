@@ -113,7 +113,7 @@ namespace Hanekawa
 
         public void ConfigureNLog()
         {
-            var consoleTarget = new ColoredConsoleTarget
+            var consoleTarget = new ConsoleTarget
             {
                 Name = "Console",
                 Layout = @"${longdate} | ${level} | ${message} | ${exception}",
