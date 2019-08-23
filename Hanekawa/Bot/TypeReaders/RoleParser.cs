@@ -30,7 +30,8 @@ namespace Hanekawa.Bot.TypeReaders
                     : TypeParserResult<SocketRole>.Unsuccessful("Couldn't parse role");
             }
 
-            var roleCheck = context.Guild.Roles.FirstOrDefault(x => x.Name == value);
+            var roleCheck = context.Guild.Roles.FirstOrDefault(x =>
+                string.Equals(x.Name, value, StringComparison.CurrentCultureIgnoreCase));
             return roleCheck != null
                 ? TypeParserResult<SocketRole>.Successful(roleCheck)
                 : TypeParserResult<SocketRole>.Unsuccessful("Couldn't parse role");

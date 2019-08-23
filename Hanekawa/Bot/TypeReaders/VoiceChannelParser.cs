@@ -18,7 +18,8 @@ namespace Hanekawa.Bot.TypeReaders
                     ? TypeParserResult<SocketVoiceChannel>.Successful(vcCh)
                     : TypeParserResult<SocketVoiceChannel>.Unsuccessful("Couldn't parse voice channel");
 
-            return context.Guild.VoiceChannels.FirstOrDefault(x => x.Name == value) is SocketVoiceChannel vcCheck
+            return context.Guild.VoiceChannels.FirstOrDefault(x =>
+                string.Equals(x.Name, value, StringComparison.CurrentCultureIgnoreCase)) is SocketVoiceChannel vcCheck
                 ? TypeParserResult<SocketVoiceChannel>.Successful(vcCheck)
                 : TypeParserResult<SocketVoiceChannel>.Unsuccessful("Couldn't parse voice channel");
         }

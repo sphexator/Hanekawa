@@ -24,7 +24,8 @@ namespace Hanekawa.Bot.TypeReaders
                     ? TypeParserResult<SocketTextChannel>.Successful(txCh)
                     : TypeParserResult<SocketTextChannel>.Unsuccessful("Couldn't parse text channel");
 
-            return context.Guild.TextChannels.FirstOrDefault(x => x.Name == value) is SocketTextChannel txChCheck
+            return context.Guild.TextChannels.FirstOrDefault(x =>
+                string.Equals(x.Name, value, StringComparison.CurrentCultureIgnoreCase)) is SocketTextChannel txChCheck
                 ? TypeParserResult<SocketTextChannel>.Successful(txChCheck)
                 : TypeParserResult<SocketTextChannel>.Unsuccessful("Couldn't parse text channel");
         }

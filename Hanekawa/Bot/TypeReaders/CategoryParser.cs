@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.TypeReaders
                     : TypeParserResult<SocketCategoryChannel>.Successful(channelId);
             }
 
-            var channel = context.Guild.CategoryChannels.FirstOrDefault(x => x.Name == value);
+            var channel = context.Guild.CategoryChannels.FirstOrDefault(x => string.Equals(x.Name, value, StringComparison.CurrentCultureIgnoreCase));
             return channel == null
                 ? TypeParserResult<SocketCategoryChannel>.Unsuccessful("No category found")
                 : TypeParserResult<SocketCategoryChannel>.Successful(channel);

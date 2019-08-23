@@ -45,7 +45,8 @@ namespace Hanekawa.Bot.TypeReaders
                 }
             }
 
-            var userNick = context.Guild.Users.FirstOrDefault(x => x.Nickname == value);
+            var userNick = context.Guild.Users.FirstOrDefault(x =>
+                string.Equals(x.Nickname, value, StringComparison.CurrentCultureIgnoreCase));
             if (userNick != null) return TypeParserResult<SocketGuildUser>.Successful(userNick);
 
             var usernameParse = context.Guild.Users.FirstOrDefault(x => x.Username == value);
