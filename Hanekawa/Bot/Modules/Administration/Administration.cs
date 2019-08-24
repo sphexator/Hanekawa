@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            if (Context.Guild.CurrentUser.HierarchyCheck(user))
+            if (!Context.Guild.CurrentUser.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
                     null,
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            if (Context.User.HierarchyCheck(user))
+            if (!Context.User.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
                     new EmbedBuilder().Create(
