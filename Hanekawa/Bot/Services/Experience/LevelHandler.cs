@@ -23,9 +23,9 @@ namespace Hanekawa.Bot.Services.Experience
         {
             if (userData.Exp + exp >= ExpToNextLevel(userData))
             {
-                await NewLevelManagerAsync(userData, user, db);
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
                 userData.Level += 1;
+                await NewLevelManagerAsync(userData, user, db);
                 _log.LogAction(LogLevel.Information, $"(Exp Service | Server) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
             }
             else if (userData.Exp + exp < 0)

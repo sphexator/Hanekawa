@@ -33,15 +33,23 @@ namespace Hanekawa.Bot.Services.Experience
         private async Task NewLevelManagerAsync(Account userData, SocketGuildUser user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
-            var role = GetLevelUpRole(userData.Level, user, roles);
+            if (roles == null || roles.Count == 0) return;
+
+            var lvRole = roles.FirstOrDefault(x => x.Level == userData.Level);
             var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
 
-            if (role == null)
+            if (lvRole == null)
             {
                 await RoleCheckAsync(user, cfg, userData, db);
                 return;
             }
-
+            var role = user.Guild.GetRole(lvRole.Role);
+            if (role == null)
+            {
+                db.LevelRewards.Remove(lvRole);
+                await db.SaveChangesAsync();
+                return;
+            }
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.TryAddRoleAsync(role);
         }
@@ -98,12 +106,6 @@ namespace Hanekawa.Bot.Services.Experience
             var getSingleRole = user.Guild.GetRole(role);
             if (currentUser.HierarchyCheck(getSingleRole)) roles.Add(getSingleRole);
             return roles;
-        }
-
-        private SocketRole GetLevelUpRole(int level, SocketGuildUser user, IEnumerable<LevelReward> rolesRewards)
-        {
-            var roleId = rolesRewards.FirstOrDefault(x => x.Level == level);
-            return roleId == null ? null : _client.GetGuild(user.Guild.Id).GetRole(roleId.Role);
         }
 
         private async Task RemoveLevelRolesAsync(SocketGuildUser user, List<LevelReward> rolesRewards)
