@@ -9,7 +9,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Board
@@ -18,21 +17,20 @@ namespace Hanekawa.Bot.Services.Board
     {
         private readonly DiscordSocketClient _client;
         private readonly InternalLogService _log;
-        private readonly IServiceProvider _provider;
 
-        public BoardService(DiscordSocketClient client, InternalLogService log, IServiceProvider provider)
+        public BoardService(DiscordSocketClient client, InternalLogService log)
         {
             _client = client;
             _log = log;
-            _provider = provider;
-            using (var db = new DbService())
-            {
-                foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
-            }
 
             _client.ReactionAdded += ReactionAddedAsync;
             _client.ReactionRemoved += ReactionRemovedAsync;
             _client.ReactionsCleared += ReactionsClearedAsync;
+
+            using (var db = new DbService())
+            {
+                foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
+            }
         }
 
         private Task ReactionAddedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel,

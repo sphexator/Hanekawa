@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Experience
 
         private async Task RoleCheckAsync(SocketGuildUser user, LevelConfig cfg, Account userData, DbService db)
         {
-            var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles).ConfigureAwait(false);
+            var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
 
             var missingRoles = new List<SocketRole>();
             var currentUser = user.Guild.CurrentUser;
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Services.Experience
             await user.TryAddRolesAsync(missingRoles);
         }
 
-        private async ValueTask<List<SocketRole>> GetRolesAsync(SocketGuildUser user, Account userData, DbService db,
+        private async Task<List<SocketRole>> GetRolesAsync(SocketGuildUser user, Account userData, DbService db,
             bool stack)
         {
             var roles = new List<SocketRole>();

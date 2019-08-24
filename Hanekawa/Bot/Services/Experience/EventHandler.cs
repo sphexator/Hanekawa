@@ -152,9 +152,9 @@ namespace Hanekawa.Bot.Services.Experience
                     var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                     if (!cfg.VoiceExpEnabled) return;
                     if (before.VoiceChannel != null && after.VoiceChannel != null) return;
+                    var userData = await db.GetOrCreateUserData(user);
                     if (before.VoiceChannel == null && after.VoiceChannel != null)
                     {
-                        var userData = await db.GetOrCreateUserData(user);
                         userData.VoiceExpTime = DateTime.UtcNow;
                         await db.SaveChangesAsync();
                         return;
@@ -162,7 +162,6 @@ namespace Hanekawa.Bot.Services.Experience
 
                     if (before.VoiceChannel != null && after.VoiceChannel == null)
                     {
-                        var userData = await db.GetOrCreateUserData(user);
                         var exp = GetExp(before.VoiceChannel, DateTime.UtcNow - userData.VoiceExpTime);
                         await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db);
                     }
