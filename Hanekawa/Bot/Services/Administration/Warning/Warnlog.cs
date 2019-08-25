@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                           "\n" +
                           "**⮞ Session**\n" +
                           $"Amount: {userdata.Sessions}\n" +
-                          $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})";
+                          $"Time: {userdata.StatVoiceTime.Humanize(2)} ({userdata.StatVoiceTime})";
             var embed = new EmbedBuilder()
                 .Create(content, _colourService.Get(user.Guild.Id));
             embed.Author = new EmbedAuthorBuilder
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                            $"First Message: {user.JoinedAt.Humanize()}\n");
             result.Add("**⮞ Voice Session**\n" +
                        $"Amount: {userdata.Sessions}\n" +
-                       $"Time: {userdata.StatVoiceTime.Humanize()} ({userdata.StatVoiceTime})\n");
+                       $"Time: {userdata.StatVoiceTime.Humanize(2)} ({userdata.StatVoiceTime})\n");
             result.Add("**⮞ Warnings**\n" +
                        $"Active Warnings: {warns.Count(x => x.Valid)}\n" +
                        $"Inactive Warnings: {warns.Count(x => !x.Valid)}\n" +
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                             $"Moderator: {user.Guild.GetUser(x.UserId).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
-                    input += $"Mute duration: {x.MuteTimer.Value.Humanize()} ({x.MuteTimer.Value})\n";
+                    input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";
                 input += $"Date: {x.Time.Humanize()} ({x.Time})";
                 result.Add(input);
             }
@@ -100,7 +100,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 var input = $"Moderator: {user.Guild.GetUser(x.UserId).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
-                    input += $"Mute duration: {x.MuteTimer.Value.Humanize()} ({x.MuteTimer.Value})\n";
+                    input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";
                 input += $"Date: {x.Time.Humanize()} ({x.Time})";
                 ;
                 result.Add(new EmbedFieldBuilder

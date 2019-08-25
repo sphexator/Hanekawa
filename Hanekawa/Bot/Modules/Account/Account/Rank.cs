@@ -119,7 +119,7 @@ namespace Hanekawa.Bot.Modules.Account
                     {
                         var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
                         await Context.ReplyAsync(
-                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize()}");
+                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}");
                     }
                     else
                     {
@@ -134,7 +134,7 @@ namespace Hanekawa.Bot.Modules.Account
                 if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                    await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize()}",
+                    await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}",
                         Color.Red);
                     return;
                 }

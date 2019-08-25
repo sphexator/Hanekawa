@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Services.Logging
                     new EmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
                     new EmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
                     new EmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false},
-                    new EmbedFieldBuilder {Name = "Duration", Value = $"{duration.Humanize()}", IsInline = false}
+                    new EmbedFieldBuilder {Name = "Duration", Value = $"{duration.Humanize(2)}", IsInline = false}
                 }
             };
             var msg = await channel.SendMessageAsync(null, false, embed.Build());

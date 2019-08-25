@@ -187,7 +187,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 var muteRes = await _mute.TimedMute(user, Context.User, duration.Value, db, reason);
                 if (muteRes)
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().Create($"Muted {user.Mention} for {duration.Value.Humanize()}",
+                        new EmbedBuilder().Create($"Muted {user.Mention} for {duration.Value.Humanize(2)}",
                             Color.Green).Build(), TimeSpan.FromSeconds(20));
                 else
                     await ReplyAndDeleteAsync(null, false,

@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                 content.AppendLine($"You've been {type} in {user.Guild.Name} by {staff.Mention}");
                 content.AppendLine($"Reason: {reason.ToLower()}");
                 var embed = new EmbedBuilder().Create(content.ToString(), _colourService.Get(user.Guild.Id));
-                if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize()} ({duration.Value})");
+                if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize(2)} ({duration.Value})");
                 await dm.SendMessageAsync(null, false, embed.Build());
             }
             catch(Exception e)

@@ -341,7 +341,7 @@ namespace Hanekawa.Bot.Modules.Music
             var pos = player.CurrentTrack.Position - rewind;
             if (pos < new TimeSpan(0, 0, 0, 0)) pos = new TimeSpan(0, 0, 0, 0);
             await player.SeekAsync(pos);
-            await Context.ReplyAsync($"Rewinded {rewind.Humanize()} on **{player.CurrentTrack.Title}**");
+            await Context.ReplyAsync($"Rewinded {rewind.Humanize(2)} on **{player.CurrentTrack.Title}**");
         }
 
         [Name("Music Channel")]

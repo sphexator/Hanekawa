@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
             await _logService.Mute(user, staff, reason, after, db);
 
-            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize()}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize(2)}");
             return true;
         }
 

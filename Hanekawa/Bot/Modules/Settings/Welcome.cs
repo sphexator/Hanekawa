@@ -191,7 +191,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 {
                     cfg.TimeToDelete = timeout.Value;
                     await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
-                                             $"I will now delete the message after {timeout.Value.Humanize()}!",
+                                             $"I will now delete the message after {timeout.Value.Humanize(2)}!",
                         Color.Green);
                 }
 

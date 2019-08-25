@@ -93,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 {
                     var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
                     await Context.ReplyAsync(
-                        $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize()}",
+                        $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize(2)}",
                         Color.Red);
                     return;
                 }

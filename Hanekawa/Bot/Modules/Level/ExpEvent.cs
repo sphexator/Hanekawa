@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Level
             if (!duration.HasValue) duration = TimeSpan.FromDays(1);
             using var db = new DbService();
             await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
-            await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize()}!",
+            await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize(2)}!",
                 Color.Green);
         }
     }
