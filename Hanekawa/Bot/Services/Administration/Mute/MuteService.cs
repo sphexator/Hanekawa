@@ -7,6 +7,7 @@ using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
@@ -87,31 +88,25 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         {
             var cfg = await db.GetOrCreateAdminConfigAsync(guild);
             IRole role;
-            if (!cfg.MuteRole.HasValue)
-            {
-                role = await CreateRole(guild);
-                cfg.MuteRole = role.Id;
-                await db.SaveChangesAsync();
-            }
-            else
-            {
-                role = guild.GetRole(cfg.MuteRole.Value);
-            }
-
+            if (!cfg.MuteRole.HasValue) role = await CreateRole(guild, cfg, db);
+            else role = guild.GetRole(cfg.MuteRole.Value) ?? await CreateRole(guild, cfg, db);
             return role;
         }
 
-        private async Task<IRole> CreateRole(SocketGuild guild)
+        private async Task<IRole> CreateRole(SocketGuild guild, AdminConfig cfg, DbService db)
         {
-            var role = guild.Roles.FirstOrDefault(x => x.Name.ToLower() == "mute");
-            if (role == null) return await guild.CreateRoleAsync("Mute", GuildPermissions.None);
+            var role = guild.Roles.FirstOrDefault(x => x.Name.ToLower() == "mute") as IRole 
+                       ?? await guild.CreateRoleAsync("Mute", GuildPermissions.None);
+            cfg.MuteRole = role.Id;
+            await db.SaveChangesAsync();
             return role;
         }
 
         private async Task ApplyPermissions(SocketGuild guild, IRole role)
         {
-            foreach (var x in guild.TextChannels)
+            for (var i = 0; i < guild.TextChannels.Count; i++)
             {
+                var x = guild.TextChannels.ElementAt(i);
                 if (x.PermissionOverwrites.Select(z => z.Permissions).Contains(_denyOverwrite)) continue;
                 try
                 {

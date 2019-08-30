@@ -215,7 +215,7 @@ namespace Hanekawa.Bot.Modules.Settings
             await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
         }
 
-        [Name("banner toggle")]
+        [Name("Banner Toggle")]
         [Command("wbt", "welcbantog")]
         [Description("Toggles whether welcome banners should be posted or just message")]
         [RequireUserPermission(GuildPermission.ManageGuild)]

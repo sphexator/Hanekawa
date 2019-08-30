@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Services.ImageGen
         public async Task<Stream> ShipGameBuilder(string pOneAviUrl, string pTwoAviUrl)
         {
             var stream = new MemoryStream();
-            using (var img = Image.Load("Data/Game/Background.png"))
+            using (var img = Image.Load("Data/Game/background.png"))
             {
                 //var border = Image.Load(GetBorder());
                 var aviOne = await GetAvatarAsync(pOneAviUrl, new Size(126, 126));
