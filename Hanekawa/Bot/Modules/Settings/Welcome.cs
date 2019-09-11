@@ -150,7 +150,7 @@ namespace Hanekawa.Bot.Modules.Settings
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (channel == null && !cfg.Channel.HasValue)
+                if (channel == null && cfg.Channel.HasValue)
                 {
                     cfg.Channel = null;
                     await db.SaveChangesAsync();
