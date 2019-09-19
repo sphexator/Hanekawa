@@ -7,9 +7,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using ChannelType = Hanekawa.Shared.ChannelType;
 
@@ -251,6 +249,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Remove Exp Ignore Category")]
         [Command("eir")]
         [Description("Removes one or more category from ignore exp table")]
+        [RequireUserPermission(GuildPermission.ManageGuild)]
         [RequiredChannel]
         public async Task ExpIgnoreList()
         {
