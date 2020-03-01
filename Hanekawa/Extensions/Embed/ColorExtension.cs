@@ -1,57 +1,39 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using Discord;
-using Hanekawa.Addons.Database;
-using Hanekawa.Addons.Database.Extensions;
-using Hanekawa.Addons.Database.Tables.Config;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class ColorExtension
     {
-        private static readonly ConcurrentDictionary<ulong, Tuple<GuildConfig, DateTime>> GuildConfig
-            = new ConcurrentDictionary<ulong, Tuple<GuildConfig, DateTime>>();
+        /*
+        private static readonly MemoryCache Config = new MemoryCache(new MemoryCacheOptions());
 
-        public static Color GetDefaultColor(this Color color, ulong guild)
+        public static void UpdateConfig(ulong guildId, GuildConfig cfg)
+            => Config.Set(guildId, cfg, TimeSpan.FromHours(1));
+
+        public static Color GetDefaultColor(this Color color, ulong guildId)
         {
             GuildConfig cfg;
-            var check = GuildConfig.TryGetValue(guild, out var result);
-            if (!check) cfg = GetConfig(guild);
-            else if (result.Item2.AddMinutes(10) <= DateTime.UtcNow) cfg = UpdateConfig(guild);
-            else cfg = result.Item1;
-            return cfg == null ? Color.Purple : new Color(cfg.EmbedColor);
+            var check = Config.TryGetValue(guildId, out var result);
+            if (!check) cfg = GetAndUpdateConfig(guildId);
+            else cfg = (GuildConfig) result;
+            return new Color(cfg.EmbedColor);
         }
 
-        public static void UpdateConfig(this GuildConfig cfg, ulong guild)
+        private static GuildConfig GetAndUpdateConfig(ulong guild, IServiceProvider provider)
         {
-            var toAdd = new Tuple<GuildConfig, DateTime>(cfg, DateTime.UtcNow);
-            GuildConfig.AddOrUpdate(guild, toAdd, (key, old) => toAdd);
-        }
-
-        private static GuildConfig GetConfig(ulong guild)
-        {
-            GuildConfig cfg;
-            using (var db = new DbService())
+            using (var db = provider.GetRequiredService<DbService>())
             {
-                cfg = db.GetOrCreateGuildConfig(guild);
-                var toAdd = new Tuple<GuildConfig, DateTime>(cfg, DateTime.UtcNow);
-                GuildConfig.TryAdd(guild, toAdd);
+                var cfg = db.GetOrCreateGuildConfig(guild);
+                Config.Set(guild, cfg, TimeSpan.FromMinutes(10));
+                return cfg;
             }
-
-            return cfg;
         }
-
-        private static GuildConfig UpdateConfig(ulong guild)
-        {
-            GuildConfig cfg;
-            using (var db = new DbService())
-            {
-                cfg = db.GetOrCreateGuildConfig(guild);
-                var toAdd = new Tuple<GuildConfig, DateTime>(cfg, DateTime.UtcNow);
-                GuildConfig.AddOrUpdate(guild, toAdd, (key, old) => toAdd);
-            }
-
-            return cfg;
-        }
+        */
     }
 }

@@ -259,5 +259,5 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-*.json
-/Jibril/Services/INC/Cache/Avatar/111123736660324352.png
+/Hanekawa/Properties/launchSettings.json
+/Hanekawa.Web/Properties/launchSettings.json

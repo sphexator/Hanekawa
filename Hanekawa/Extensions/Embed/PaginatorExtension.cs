@@ -1,34 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using Discord;
-using Discord.Addons.Interactive;
+using Discord.WebSocket;
+using Hanekawa.Shared.Interactive.Paginator;
 
 namespace Hanekawa.Extensions.Embed
 {
     public static class PaginatorExtension
     {
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuild guild,
-            string name, int count = 5) =>
-            PaginatedMessageBuilder(pages, guildId, guild.IconUrl, name, count);
+        /*
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, SocketGuild guild, string authorName,
+            string title, int count = 5)
+            => new PaginatedMessage().Builder(pages, guild.Id, guild.IconUrl, authorName, title, count);
 
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, IGuildUser user,
-            string name, int count = 5) =>
-            PaginatedMessageBuilder(pages, guildId, user.GetAvatar(), name, count);
-
-        public static PaginatedMessage PaginateBuilder(this List<string> pages, ulong guildId, string name, int count = 5) =>
-            PaginatedMessageBuilder(pages, guildId, null, name, count);
-
-        private static PaginatedMessage PaginatedMessageBuilder(this IReadOnlyList<string> pages, ulong guildId,
-            string icon,
-            string name, int count = 5) =>
-            new PaginatedMessage().Builder(pages, guildId, icon, name, count);
+        public static PaginatedMessage PaginateBuilder(this List<string> pages, SocketGuildUser user, string authorName,
+            string title, int count = 5)
+            => new PaginatedMessage().Builder(pages, user.Guild.Id, user.GetAvatar(), authorName, title, count);
 
         private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages,
-            ulong guildId, string icon, string name, int count)
+            ulong guildId, string authorIcon, string authorName, string title, int count)
         {
             paginated.Color = new Color().GetDefaultColor(guildId);
             paginated.Pages = PageBuilder(pages, count);
-            paginated.Author = new EmbedAuthorBuilder {IconUrl = icon, Name = name};
+            paginated.Author = new EmbedAuthorBuilder {IconUrl = authorIcon, Name = authorName};
+            paginated.Title = title;
             paginated.Options = new PaginatedAppearanceOptions
             {
                 First = new Emoji("⏮"),
@@ -52,7 +47,7 @@ namespace Hanekawa.Extensions.Embed
                 {
                     if (i >= list.Count) continue;
                     var index = list[i];
-                    page.AppendLine($"{index}");
+                    page.AppendLine(index);
                     i++;
                 }
 
@@ -61,5 +56,6 @@ namespace Hanekawa.Extensions.Embed
 
             return pages;
         }
+        */
     }
 }
