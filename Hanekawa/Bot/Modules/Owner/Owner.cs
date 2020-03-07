@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Owner
                 sb.AppendLine($"Owner: {x.OwnerId}");
                 servers.Add(sb.ToString());
             }
-            await PagedReplyAsync(servers.PaginateBuilder(Context.Guild, Context.User.GetName(), "Servers"));
+            await PagedReplyAsync(servers.PaginateBuilder(Context.Guild, Context.User.GetName(), $"Total Servers: {Context.Client.Guilds.Count}"));
         }
 
         [Name("Blacklist")]
