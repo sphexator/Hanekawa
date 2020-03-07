@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
-using Discord;
+using Disqord;
 using Hanekawa.Database.Tables.Achievement;
 
 namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, IGuildUser user,
+        public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, CachedMember user,
             int type)
         {
             var check = await context.AchievementTrackers.FindAsync(type, user.Id).ConfigureAwait(false);

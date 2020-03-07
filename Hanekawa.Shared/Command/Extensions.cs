@@ -1,9 +1,10 @@
-﻿using Discord;
+﻿using Disqord;
 
 namespace Hanekawa.Shared.Command
 {
     public static class Extensions
     {
+        /*
         public static bool HasMentionPrefix(this IMessage message, IUser user, out string prefix, out string parsed)
         {
             var content = message.Content;
@@ -27,5 +28,6 @@ namespace Hanekawa.Shared.Command
             prefix = user.Mention;
             return true;
         }
+        */
     }
 }

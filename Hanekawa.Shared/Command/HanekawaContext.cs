@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Shared.Interactive;
-using Hanekawa.Shared.Interactive.Paginator;
+using Disqord.Bot;
 using Qmmands;
 
 namespace Hanekawa.Shared.Command
 {
+    /*
     public class HanekawaContext : CommandContext
     {
-        public HanekawaContext(DiscordSocketClient client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive)
+        
+        public HanekawaContext(DiscordBot client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive)
         {
             Client = client;
             Message = msg;
@@ -106,4 +105,5 @@ namespace Hanekawa.Shared.Command
             return pages;
         }
     }
+    */
 }

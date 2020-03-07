@@ -49,6 +49,7 @@ namespace Hanekawa
             services.AddSingleton(
                 new DiscordBot(TokenType.Bot, Configuration["token"], new DefaultPrefixProvider(),
                     DiscordBotConfiguration.Default));
+            services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
             /*
              NOTE: This might not be needed anymore with Disqord due to Qmmands already being implemented
             services.AddSingleton(new CommandService(new CommandServiceConfiguration

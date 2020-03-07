@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database.Tables.BoardConfig;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Moderation;
@@ -11,7 +10,7 @@ namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, SocketGuildUser user)
+        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, CachedMember user)
         {
             var userdata = await context.EventPayouts.FindAsync(user.Guild.Id, user.Id).ConfigureAwait(false);
             if (userdata != null) return userdata;
@@ -34,7 +33,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<Board> GetOrCreateBoard(this DbService context, IGuild guild, IUserMessage msg)
+        public static async Task<Board> GetOrCreateBoard(this DbService context, CachedGuild guild, IUserMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id).ConfigureAwait(false);
             if (check != null) return check;
@@ -59,7 +58,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, SocketGuild guild,
+        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, CachedGuild guild,
             DateTime time)
         {
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);

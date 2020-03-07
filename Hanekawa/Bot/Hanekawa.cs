@@ -3,8 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services;

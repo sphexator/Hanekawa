@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,7 @@ namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, SocketGuild guild,
+        public static async Task<ModLog> CreateCaseId(this DbService context, CachedUser user, CachedGuild guild,
             DateTime time, ModAction action)
         {
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
@@ -28,7 +27,7 @@ namespace Hanekawa.Database.Extensions
                 x.Date == time && x.UserId == user.Id && x.GuildId == guild.Id).ConfigureAwait(false);
         }
 
-        public static async Task<Report> CreateReport(this DbService context, IUser user, SocketGuild guild,
+        public static async Task<Report> CreateReport(this DbService context, CachedUser user, CachedGuild guild,
             DateTime time)
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);

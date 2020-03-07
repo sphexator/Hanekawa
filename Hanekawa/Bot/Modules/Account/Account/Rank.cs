@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +17,7 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Account
 {
     [Name("Account")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
+    [RequireBotPermission(Disqord.Permission.EmbedLinks)]
     public partial class Account : InteractiveBase
     {
         private readonly ExpService _exp;

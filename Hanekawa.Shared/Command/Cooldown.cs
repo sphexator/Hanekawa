@@ -1,5 +1,6 @@
 ﻿namespace Hanekawa.Shared.Command
 {
+    /*
     public enum Cooldown
     {
         // I honestly don't understand the need for an enum on Qmmands cooldown bucket
@@ -8,4 +9,5 @@
         Whatever,
         WhateverWithMoreSalt
     }
+    */
 }

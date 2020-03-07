@@ -4,6 +4,7 @@ using Qmmands;
 
 namespace Hanekawa.Shared.Command
 {
+    /*
     public abstract class HanekawaAttribute : CheckAttribute
     {
         public override ValueTask<CheckResult> CheckAsync(CommandContext context, IServiceProvider provider)
@@ -11,4 +12,5 @@ namespace Hanekawa.Shared.Command
 
         public abstract ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider);
     }
+    */
 }

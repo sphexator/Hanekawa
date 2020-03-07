@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Music;
@@ -9,7 +8,7 @@ namespace Hanekawa.Database.Extensions
 {
     public static class ConfigExtension
     {
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, CachedGuild guild) =>
             await GetOrCreateGuildConfigAsync(context, guild.Id).ConfigureAwait(false);
 
         public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, ulong guild)
@@ -30,7 +29,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, CachedGuild guild) =>
             GetOrCreateGuildConfig(context, guild.Id);
 
         public static GuildConfig GetOrCreateGuildConfig(this DbService context, ulong guild)
@@ -258,7 +257,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, SocketGuild guild) =>
+        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, CachedGuild guild) =>
             await GetOrCreateMusicConfig(context, guild.Id).ConfigureAwait(false);
 
         public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, ulong guildId)

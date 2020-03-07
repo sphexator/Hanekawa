@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
@@ -13,7 +12,7 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
 {
-    public class RequiredChannel : HanekawaAttribute, INService
+    public class RequiredChannel : INService
     {
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
