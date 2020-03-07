@@ -126,8 +126,9 @@ namespace Hanekawa.Bot.Services.Board
             return Task.CompletedTask;
         }
 
-        private async Task<RestUserMessage> SendMessageAsync(SocketGuildUser user, IUserMessage msg, BoardConfig cfg)
+        private async Task<RestUserMessage> SendMessageAsync(SocketGuildUser rctUser, IUserMessage msg, BoardConfig cfg)
         {
+            var user = msg.Author as SocketGuildUser;
             var embed = new EmbedBuilder
             {
                 Author = new EmbedAuthorBuilder
@@ -144,7 +145,7 @@ namespace Hanekawa.Bot.Services.Board
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
             if (!cfg.Channel.HasValue) return null;
-            var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
+            var channel = rctUser.Guild.GetTextChannel(cfg.Channel.Value);
             return await channel.SendMessageAsync(null, false, embed.Build());
         }
     }
