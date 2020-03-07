@@ -46,6 +46,7 @@ namespace Hanekawa.Bot.Modules.Help
                 {
                     if (i >= modules.Count) continue;
                     var x = modules[i];
+                    if(x.Name == "Owner") continue;
                     strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }
@@ -113,7 +114,7 @@ namespace Hanekawa.Bot.Modules.Help
                     return;
                 }
             }
-
+            if (moduleInfo.Name == "Owner") return;
             var result = new List<string>();
             for (var i = 0; i < moduleInfo.Commands.Count; i++)
             {
