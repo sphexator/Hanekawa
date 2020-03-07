@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Command;
@@ -19,11 +21,11 @@ namespace Hanekawa.Bot
 {
     public class Hanekawa : BackgroundService
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly IConfiguration _config;
         private readonly IServiceProvider _provider;
 
-        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config)
+        public Hanekawa(DiscordBot client, IServiceProvider provider, IConfiguration config)
         {
             _client = client;
             _provider = provider;
@@ -49,8 +51,8 @@ namespace Hanekawa.Bot
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Initialize();
-            await _client.LoginAsync(TokenType.Bot, _config["token"]);
-            await _client.StartAsync();
+            await _client.AddExtensionAsync(new InteractivityExtension());
+            await _client.RunAsync(stoppingToken);
             await Task.Delay(-1, stoppingToken);
         }
     }

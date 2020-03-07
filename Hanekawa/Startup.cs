@@ -3,8 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Bot.Prefixes;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Database;
@@ -18,14 +19,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
-using NLog.Extensions.Logging;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
-using Victoria;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
@@ -48,13 +46,11 @@ namespace Hanekawa
             services.AddHostedService<Bot.Hanekawa>();
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
-            {
-                MessageCacheSize = 35,
-                AlwaysDownloadUsers = true,
-                LogLevel = LogSeverity.Info,
-                ExclusiveBulkDelete = true
-            }));
+            services.AddSingleton(
+                new DiscordBot(TokenType.Bot, Configuration["token"], new DefaultPrefixProvider(),
+                    DiscordBotConfiguration.Default));
+            /*
+             NOTE: This might not be needed anymore with Disqord due to Qmmands already being implemented
             services.AddSingleton(new CommandService(new CommandServiceConfiguration
             {
                 DefaultRunMode = RunMode.Parallel,
@@ -64,9 +60,12 @@ namespace Hanekawa
                     return context.User.Id;
                 }
             }));
+            */
             services.AddSingleton<InteractiveService>();
             services.AddSingleton<ColourService>();
             services.AddSingleton(new AnimeSimulCastClient());
+            /*
+             TODO: Add Lavalink client here later
             services.AddSingleton(new LavaSocketClient());
             services.AddSingleton(new LavaRestClient(new Configuration
             {
@@ -75,6 +74,7 @@ namespace Hanekawa
                 LogSeverity = LogSeverity.Info,
                 PreservePlayers = true
             }));
+            */
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
             services.UseQuartz(typeof(WarnService));
