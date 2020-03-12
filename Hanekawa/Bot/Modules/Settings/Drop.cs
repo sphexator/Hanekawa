@@ -104,7 +104,12 @@ namespace Hanekawa.Bot.Modules.Settings
                 else
                 {
                     var result = new List<string>();
-                    foreach (var x in list) result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                    foreach (var x in list)
+                    {
+                        var channel = Context.Guild.GetTextChannel(x.ChannelId);
+                        if(channel == null) continue;
+                        result.Add(channel.Mention);
+                    }
                     embed.Description = string.Join("\n", result);
                 }
 
