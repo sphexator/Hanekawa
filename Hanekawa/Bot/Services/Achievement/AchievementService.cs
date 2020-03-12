@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
 
-        public AchievementService(DiscordSocketClient client, InternalLogService log)
+        public AchievementService(DiscordBot client, InternalLogService log)
         {
             _client = client;
             _log = log;
@@ -24,11 +25,12 @@ namespace Hanekawa.Bot.Services.Achievement
             _client.MessageReceived += MessageCount;
         }
 
-        private Task MessageCount(SocketMessage msg)
+        private Task MessageCount(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(msg.Author is SocketGuildUser user)) return;
+                var msg = e.Message;
+                if (!(msg.Author is CachedMember user)) return;
                 if (user.IsBot) return;
                 if (msg.Content.Length != 1499) return;
                 try

@@ -1,5 +1,4 @@
 ﻿using System;
-using Discord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;

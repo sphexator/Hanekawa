@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hanekawa.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
@@ -24,7 +23,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     try
                     {
                         var guild = _client.GetGuild(guildId);
-                        var user = guild.GetUser(userId);
+                        var user = guild.GetMember(userId);
                         await UnMuteUser(user, db);
                     }
                     catch (Exception e)

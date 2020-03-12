@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -9,10 +10,10 @@ namespace Hanekawa.Bot.Services.Administration
 {
     public class BlacklistService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
 
-        public BlacklistService(DiscordSocketClient client, InternalLogService log)
+        public BlacklistService(DiscordBot client, InternalLogService log)
         {
             _client = client;
             _log = log;
@@ -20,10 +21,11 @@ namespace Hanekawa.Bot.Services.Administration
             _client.JoinedGuild += _client_JoinedGuild;
         }
 
-        private Task _client_JoinedGuild(SocketGuild guild)
+        private Task _client_JoinedGuild(JoinedGuildEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var guild = e.Guild;
                 try
                 {
                     using (var db = new DbService())

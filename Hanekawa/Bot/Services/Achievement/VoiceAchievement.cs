@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;
@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task TotalTime(SocketGuildUser user, TimeSpan time, DbService db)
+        public async Task TotalTime(CachedMember user, TimeSpan time, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15)
                 .ToListAsync();
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Services.Achievement
             await db.SaveChangesAsync();
         }
 
-        public async Task TimeAtOnce(SocketGuildUser user, TimeSpan time, DbService db)
+        public async Task TimeAtOnce(CachedMember user, TimeSpan time, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == Voice).ToListAsync();
             if (achievements == null || achievements.Count == 0) return;

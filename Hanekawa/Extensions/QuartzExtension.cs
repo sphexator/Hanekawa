@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Hanekawa.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Quartz;

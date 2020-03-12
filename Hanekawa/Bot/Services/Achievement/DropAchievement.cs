@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;
@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task DropClaim(SocketGuildUser user, DbService db)
+        public async Task DropClaim(CachedMember user, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == Drop).ToListAsync();
             var progress = await db.GetOrCreateAchievementProgress(user, Drop);

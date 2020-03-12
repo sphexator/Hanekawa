@@ -1,60 +1,46 @@
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 
 namespace Hanekawa.Extensions
 {
     public static class UserExtension
     {
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketGuildUser comparer) 
+        public static bool HierarchyCheck(this CachedMember mainUser, CachedMember comparer) 
             => mainUser.Hierarchy > comparer.Hierarchy;
 
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketRole role) 
+        public static bool HierarchyCheck(this CachedMember mainUser, CachedRole role) 
             => mainUser.Hierarchy > role.Position;
 
-        public static async Task<bool> TryMute(this SocketGuildUser user)
+        public static async Task<bool> TryMute(this CachedMember user)
         {
-            if (!user.VoiceState.HasValue) return false;
+            if (user.VoiceState == null) return false;
             await user.ModifyAsync(x => x.Mute = true);
             return true;
         }
 
-        public static async Task<bool> TryUnMute(this SocketGuildUser user)
+        public static async Task<bool> TryUnMute(this CachedMember user)
         {
-            if (!user.VoiceState.HasValue) return false;
+            if (user.VoiceState == null) return false;
             await user.ModifyAsync(x => x.Mute = false);
             return true;
         }
 
-        public static string GetName(this SocketGuildUser user)
-        {
-            if (user.Nickname != null) return user.Nickname;
-            return user.Username;
-        }
-
-        public static string GetAvatar(this SocketUser user)
-        {
-            var avi = user.GetAvatarUrl(ImageFormat.Auto, 2048);
-            if (avi != null) return avi;
-            return user.GetDefaultAvatarUrl();
-        }
-
-        public static string GetGame(this SocketUser user)
+        public static string GetGame(this CachedUser user)
         {
             string result;
-            switch (user.Activity.Type)
+            switch (user.Presence.Activity.Type)
             {
                 case ActivityType.Listening:
-                    result = $"Listening: {user.Activity.Name}";
+                    result = $"Listening: {user.Presence.Activity.Name}";
                     break;
                 case ActivityType.Playing:
-                    result = $"Playing: {user.Activity.Name}";
+                    result = $"Playing: {user.Presence.Activity.Name}";
                     break;
                 case ActivityType.Streaming:
-                    result = $"Streaming: {user.Activity.Name}";
+                    result = $"Streaming: {user.Presence.Activity.Name}";
                     break;
                 case ActivityType.Watching:
-                    result = $"Watching: {user.Activity.Name}";
+                    result = $"Watching: {user.Presence.Activity.Name}";
                     break;
                 default:
                     result = "Currently not playing";
@@ -64,19 +50,16 @@ namespace Hanekawa.Extensions
             return result;
         }
 
-        public static string GetStatus(this SocketUser user)
+        public static string GetStatus(this CachedUser user)
         {
             string result;
-            switch (user.Status)
+            switch (user.Presence.Status)
             {
                 case UserStatus.Online:
                     result = "Online";
                     break;
                 case UserStatus.Idle:
                     result = "Idle";
-                    break;
-                case UserStatus.AFK:
-                    result = "AFK";
                     break;
                 case UserStatus.DoNotDisturb:
                     result = "DND";

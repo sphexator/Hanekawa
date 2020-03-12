@@ -1,6 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Disqord;
 using Hanekawa.Database.Tables.BotGame;
-using Hanekawa.Extensions;
 
 namespace Hanekawa.Models
 {
@@ -31,10 +30,10 @@ namespace Hanekawa.Models
             Enemy = enemy;
         }
 
-        public ShipGameUser(SocketGuildUser userOne, int level, GameClass gameClass, int damage, int health)
+        public ShipGameUser(CachedMember userOne, int level, GameClass gameClass, int damage, int health)
         {
             Id = userOne.Id;
-            Name = userOne.GetName();
+            Name = userOne.DisplayName;
             Level = level;
 
             Health = damage;

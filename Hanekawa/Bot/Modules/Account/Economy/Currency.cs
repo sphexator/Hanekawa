@@ -1,25 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Discord;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Modules.Account.Economy
 {
     [Name("Economy")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Economy : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public partial class Economy : DiscordBotBase
     {
         [Name("Regular Currency Name")]
         [Command("rcn")]
         [Description("Change the name of regular currency (default: credit)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularNameAsync([Remainder] string name = null)
         {
             using var db = new DbService();
@@ -40,7 +37,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Special Currency Name")]
         [Command("scn")]
         [Description("Change the name of special currency (default: special credit)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSpecialNameAsync([Remainder] string name = null)
         {
             using (var db = new DbService())
@@ -64,7 +61,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Regular Currency Symbol")]
         [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularSymbolAsync(Emote emote)
         {
             using (var db = new DbService())
@@ -80,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Regular Currency Symbol")]
         [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularSymbolAsync([Remainder] string symbol)
         {
             using (var db = new DbService())
@@ -98,8 +95,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Special Currency Symbol")]
         [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetSpecialSymbolAsync(Emote emote)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSpecialSymbolAsync(emote emote)
         {
             using (var db = new DbService())
             {
@@ -114,7 +111,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Special Currency Symbol")]
         [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSpecialSymbolAsync([Remainder] string symbol)
         {
             using (var db = new DbService())

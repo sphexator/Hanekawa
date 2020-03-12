@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
-using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
 {
-    public class RequiredChannel : INService
+    public class RequiredChannel : GuildOnlyAttribute, INService
     {
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
@@ -20,9 +19,11 @@ namespace Hanekawa.Bot.Preconditions
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ChannelEnable { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        public override async ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext commandContext)
         {
-            if (context.User.GuildPermissions.ManageGuild)
+            var context = commandContext as DiscordCommandContext;
+            if(context == null) return CheckResult.Unsuccessful("woopsie command context wrong :)");
+            if (context.Member.Permissions.ManageGuild)
                 return CheckResult.Successful;
 
             var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
@@ -39,7 +40,7 @@ namespace Hanekawa.Bot.Preconditions
             }
         }
 
-        private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
+        private async Task<bool> UpdateIgnoreAllStatus(DiscordCommandContext context)
         {
             using (var db = new DbService())
             {
@@ -48,7 +49,7 @@ namespace Hanekawa.Bot.Preconditions
             }
         }
 
-        private bool EligibleChannel(HanekawaContext context, bool ignoreAll = false)
+        private bool EligibleChannel(DiscordCommandContext context, bool ignoreAll = false)
         {
             // True = command passes
             // False = command fails
@@ -60,7 +61,7 @@ namespace Hanekawa.Bot.Preconditions
             return ignore;
         }
 
-        private bool DoubleCheckChannel(HanekawaContext context)
+        private bool DoubleCheckChannel(DiscordCommandContext context)
         {
             using (var db = new DbService())
             {
@@ -72,7 +73,7 @@ namespace Hanekawa.Bot.Preconditions
             }
         }
 
-        public async Task<bool> AddOrRemoveChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)
         {
             var check = await db.IgnoreChannels.FindAsync(channel.Guild.Id, channel.Id);
             if (check != null)

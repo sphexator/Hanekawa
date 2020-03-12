@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
@@ -18,17 +18,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 {
     public partial class MuteService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
 
-        private readonly OverwritePermissions _denyOverwrite =
-            new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny,
-                attachFiles: PermValue.Deny);
-
+        private readonly OverwritePermissions _denyOverwrite 
+            = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly WarnService _warn;
 
-        public MuteService(DiscordSocketClient client, LogService logService, InternalLogService log, WarnService warn)
+        public MuteService(DiscordBot client, LogService logService, InternalLogService log, WarnService warn)
         {
             _client = client;
             _logService = logService;
@@ -46,10 +44,10 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 }
             }
         }
-        public async Task<bool> Mute(SocketGuildUser user, DbService db)
+        public async Task<bool> Mute(CachedMember user, DbService db)
         {
             var role = await GetMuteRoleAsync(user.Guild, db);
-            var check = await user.TryAddRoleAsync(role as SocketRole);
+            var check = await user.TryAddRoleAsync(role as CachedRole);
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
             await user.TryMute();
@@ -57,15 +55,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return true;
         }
 
-        public async Task<bool> UnMuteUser(SocketGuildUser user, DbService db)
+        public async Task<bool> UnMuteUser(CachedMember user, DbService db)
         {
             await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
             await user.TryUnMute();
             _log.LogAction(LogLevel.Information, $"(Mute service) Unmuted {user.Id} in {user.Guild.Id}");
-            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as SocketRole);
+            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as CachedRole);
         }
 
-        public async Task<bool> TimedMute(SocketGuildUser user, SocketGuildUser staff, TimeSpan after, DbService db,
+        public async Task<bool> TimedMute(CachedMember user, CachedMember staff, TimeSpan after, DbService db,
             string reason)
         {
             await Mute(user, db).ConfigureAwait(false);
@@ -84,7 +82,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return true;
         }
 
-        private async Task<IRole> GetMuteRoleAsync(SocketGuild guild, DbService db)
+        private async Task<IRole> GetMuteRoleAsync(CachedGuild guild, DbService db)
         {
             var cfg = await db.GetOrCreateAdminConfigAsync(guild);
             IRole role;
@@ -93,29 +91,37 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return role;
         }
 
-        private async Task<IRole> CreateRole(SocketGuild guild, AdminConfig cfg, DbService db)
+        private async Task<IRole> CreateRole(CachedGuild guild, AdminConfig cfg, DbService db)
         {
-            var role = guild.Roles.FirstOrDefault(x => x.Name.ToLower() == "mute") as IRole 
-                       ?? await guild.CreateRoleAsync("Mute", GuildPermissions.None);
+            var role = guild.Roles.FirstOrDefault(x => x.Value.Name.ToLower() == "mute").Value as IRole;
+            if (role == null)
+            {
+                var cRole = await guild.CreateRoleAsync(x =>
+                {
+                    x.Name = "mute";
+                    x.Permissions = Optional<GuildPermissions>.Empty;
+                });
+                role = cRole;
+            }
             cfg.MuteRole = role.Id;
             await db.SaveChangesAsync();
             return role;
         }
 
-        private async Task ApplyPermissions(SocketGuild guild, IRole role)
+        private async Task ApplyPermissions(CachedGuild guild, IRole role)
         {
             for (var i = 0; i < guild.TextChannels.Count; i++)
             {
                 var x = guild.TextChannels.ElementAt(i);
-                if (x.PermissionOverwrites.Select(z => z.Permissions).Contains(_denyOverwrite)) continue;
+                if (x.Value.Overwrites.Select(z => z.Permissions).Contains(_denyOverwrite)) continue;
                 try
                 {
-                    await x.TryApplyPermissionOverwriteAsync(role, _denyOverwrite)
+                    await x.Value.TryApplyPermissionOverwriteAsync(new LocalOverwrite(role, _denyOverwrite))
                         .ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Guild.Id} in channel {x.Id}");
+                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Value.Guild.Id} in channel {x.Key}");
                 }
 
                 await Task.Delay(200).ConfigureAwait(false);

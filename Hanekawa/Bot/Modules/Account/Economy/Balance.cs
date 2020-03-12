@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Database;
@@ -27,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("wallet", "balance", "money")]
         [Description("Display how much credit you or someone else got")]
         [RequiredChannel]
-        public async Task WalletAsync(SocketGuildUser user = null)
+        public async Task WalletAsync(CachedMember user = null)
         {
             using (var db = new DbService())
             {
@@ -46,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("give", "transfer")]
         [Description("Transfer credit between users")]
         [RequiredChannel]
-        public async Task GiveCreditAsync(int amount, params SocketGuildUser[] users)
+        public async Task GiveCreditAsync(int amount, params CachedMember[] users)
         {
             if (amount <= 0) return;
             if (users.Contains(Context.User)) return;

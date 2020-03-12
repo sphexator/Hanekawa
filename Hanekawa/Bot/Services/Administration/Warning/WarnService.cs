@@ -2,8 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Moderation;
@@ -45,7 +44,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             }
         }
 
-        public async Task AddWarn(DbService db, SocketGuildUser user, SocketGuildUser staff, string reason,
+        public async Task AddWarn(DbService db, CachedMember user, CachedMember staff, string reason,
             WarnReason warnType,
             bool notify = false, TimeSpan? muteTime = null)
         {
@@ -68,17 +67,17 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             _log.LogAction(LogLevel.Information, $"(Warn Service) Warned {user.Id} in {user.Guild.Id}");
         }
 
-        private async Task NotifyUser(SocketGuildUser user, IMentionable staff, WarnReason type, string reason,
+        private async Task NotifyUser(CachedMember user, IMentionable staff, WarnReason type, string reason,
             TimeSpan? duration = null)
         {
             try
             {
                 if (reason.IsNullOrWhiteSpace()) reason = "No reason provided";
-                var dm = await user.GetOrCreateDMChannelAsync();
+                if (!(user.DmChannel is IDmChannel dm)) dm = await user.CreateDmChannelAsync();
                 var content = new StringBuilder();
                 content.AppendLine($"You've been {type} in {user.Guild.Name} by {staff.Mention}");
                 content.AppendLine($"Reason: {reason.ToLower()}");
-                var embed = new EmbedBuilder().Create(content.ToString(), _colourService.Get(user.Guild.Id));
+                var embed = new LocalEmbedBuilder().Create(content.ToString(), _colourService.Get(user.Guild.Id));
                 if (duration != null) embed.AddField("Duration", $"{duration.Value.Humanize(2)} ({duration.Value})");
                 await dm.SendMessageAsync(null, false, embed.Build());
             }

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;
@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task PvpKill(SocketGuildUser user, DbService db) => await PvpKill(user.Id, user.Guild.Id, db).ConfigureAwait(false);
+        public async Task PvpKill(CachedMember user, DbService db) => await PvpKill(user.Id, user.Guild.Id, db).ConfigureAwait(false);
         public async Task PvpKill(ulong userId, ulong guildId, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Services.Achievement
             await db.SaveChangesAsync();
         }
 
-        public async Task PveKill(SocketGuildUser user, DbService db)
+        public async Task PveKill(CachedMember user, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == PvE && !x.Once).ToListAsync();
             var progress = await db.GetOrCreateAchievementProgress(user.Id, PvE);
