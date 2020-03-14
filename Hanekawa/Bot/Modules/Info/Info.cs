@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Discord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Qmmands;
 using Cooldown = Hanekawa.Shared.Command.Cooldown;
@@ -15,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Info
 {
     [Name("Info")]
     [Description("Commands for delivering information about the bot")]
-    public class Info : InteractiveBase
+    public class Info : DiscordModuleBase<HanekawaContext>
     {
         [Name("About")]
         [Command("about", "info", "bot", "botinfo")]

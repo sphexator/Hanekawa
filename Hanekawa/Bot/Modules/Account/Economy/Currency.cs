@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Discord;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Command;
 using Qmmands;
 using Quartz.Util;
 
@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
 {
     [Name("Economy")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Economy : DiscordBotBase
+    public partial class Economy : DiscordModuleBase<HanekawaContext>
     {
         [Name("Regular Currency Name")]
         [Command("rcn")]
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetRegularSymbolAsync(Emote emote)
+        public async Task SetRegularSymbolAsync(Emoji emote)
         {
             using (var db = new DbService())
             {
@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetSpecialSymbolAsync(emote emote)
+        public async Task SetSpecialSymbolAsync(Emoji emote)
         {
             using (var db = new DbService())
             {

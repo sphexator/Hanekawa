@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -14,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Log")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequireUserPermission(GuildPermission.ManageGuild)]
-    public class Log : InteractiveBase
+    public class Log : DiscordModuleBase<HanekawaContext>
     {
         [Name("Join/Leave")]
         [Command("logjoin")]

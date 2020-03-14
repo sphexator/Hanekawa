@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -19,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Report
 {
     [Name("Report")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Report : InteractiveBase
+    public class Report : DiscordModuleBase<HanekawaContext>
     {
         private readonly ColourService _colour;
 

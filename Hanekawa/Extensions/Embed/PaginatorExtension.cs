@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Shared.Interactive.Paginator;
 
 namespace Hanekawa.Extensions.Embed
 {

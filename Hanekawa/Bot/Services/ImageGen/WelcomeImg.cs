@@ -2,7 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> WelcomeBuilder(SocketGuildUser user, DbService db)
+        public async Task<Stream> WelcomeBuilder(CachedMember user, DbService db)
         {
             var stream = new MemoryStream();
             using (var img = await GetBanner(user.Guild.Id, db))
@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var avatar = await GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
-                var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
+                var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
                     x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());
@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             return stream;
         }
 
-        public async Task<Stream> WelcomeBuilder(SocketGuildUser user, string url)
+        public async Task<Stream> WelcomeBuilder(CachedMember user, string url)
         {
             var stream = new MemoryStream();
             using (var img = await GetBanner(url))
@@ -41,7 +41,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var avatar = await GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));
 
-                var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(15)));
+                var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
                     x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
                 img.Save(stream, new PngEncoder());

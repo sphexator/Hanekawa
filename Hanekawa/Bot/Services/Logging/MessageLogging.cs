@@ -3,24 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.Extensions.Logging;
-using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        private Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel ch)
+        private Task MessageUpdated(MessageUpdatedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(after.Author is SocketGuildUser user)) return;
+                var ch = e.Channel;
+                var before = e.OldMessage;
+                var after = e.NewMessage;
+                if (!(after.Author is CachedMember user)) return;
                 if (user.IsBot) return;
                 if (!(ch is ITextChannel chx)) return;
                 try
@@ -32,24 +34,24 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
                         if (channel == null) return;
 
-                        IUserMessage beforeMsg;
-                        if (!before.HasValue) beforeMsg = await before.GetOrDownloadAsync() as IUserMessage;
-                        else beforeMsg = before.Value as IUserMessage;
-                        if (beforeMsg == null) return;
-                        if (beforeMsg.Content == after.Content) return;
+                        if (before.Value.Content == null) return;
+                        if (before.Value.Content == after.Content) return;
 
-                        var embed = new EmbedBuilder().Create(
-                            $"{user.Mention} updated a message in {chx.Mention}", _colourService.Get(user.Guild.Id));
-                        embed.Author = new EmbedAuthorBuilder {Name = "Message Updated"};
-                        embed.Timestamp = after.EditedTimestamp ?? after.Timestamp;
-                        embed.Fields = new List<EmbedFieldBuilder>
+                        var embed = new LocalEmbedBuilder
                         {
-                            new EmbedFieldBuilder
-                                {Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true},
-                            new EmbedFieldBuilder
-                                {Name = "Old Message", Value = beforeMsg.Content.Truncate(980), IsInline = true}
+                            Description = $"{user.Mention} updated a message in {chx.Mention}",
+                            Color = _colourService.Get(user.Guild.Id),
+                            Author = new LocalEmbedAuthorBuilder { Name = "Message Updated" },
+                            Fields =
+                            {
+                                new LocalEmbedFieldBuilder
+                                    {Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true},
+                                new LocalEmbedFieldBuilder
+                                    {Name = "Old Message", Value = before.Value.Content.Truncate(980), IsInline = true}
+                            },
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User: {user.Id} | {after.Id}"},
+                            Timestamp = after.EditedAt ?? after.CreatedAt
                         };
-                        embed.Footer = new EmbedFooterBuilder {Text = $"User: {user.Id} | {after.Id}"};
 
                         await channel.ReplyAsync(embed);
                     }
@@ -63,38 +65,43 @@ namespace Hanekawa.Bot.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel ch)
+        private Task MessageDeleted(MessageDeletedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(ch is ITextChannel chx)) return;
+                var ch = e.Channel;
+                var msg = e.Message;
+                if (!(ch is CachedTextChannel chx)) return;
                 try
                 {
                     using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
                         if (!cfg.LogMsg.HasValue) return;
-                        var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+                        var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
                         if (channel == null) return;
-                        var msg = await message.GetOrDownloadAsync();
-                        if (msg == null) return;
-                        if (msg.Author.IsBot) return;
-                        var embed = new EmbedBuilder().Create(msg.Content.Truncate(1900), _colourService.Get(chx.GuildId));
-                        embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
-                        embed.Title = $"{msg.Author} deleted a message in {chx.Name}";
-                        embed.Timestamp = msg.Timestamp;
-                        embed.Footer = new EmbedFooterBuilder
-                            {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"};
-
-                        if (msg.Attachments.Count > 0 && !chx.IsNsfw)
+                        if (!msg.HasValue) return;
+                        if (msg.Value.Author.IsBot) return;
+                        var embed = new LocalEmbedBuilder
                         {
-                            var file = msg.Attachments.FirstOrDefault();
+                            Description = msg.Value.Content.Truncate(1900),
+                            Color = _colourService.Get(chx.Guild.Id),
+                            Author = new LocalEmbedAuthorBuilder {Name = "Message Deleted"},
+                            Title = $"{msg.Value.Author} deleted a message in {chx.Name}",
+                            Timestamp = msg.Value.CreatedAt,
+                            Footer = new LocalEmbedFooterBuilder
+                                {Text = $"User: {msg.Value.Author.Id} | Message ID: {msg.Id}"}
+                        };
+
+                        if (msg.Value.Attachments.Count > 0 && !chx.IsNsfw)
+                        {
+                            var file = msg.Value.Attachments.FirstOrDefault();
                             if (file != null)
                                 embed.AddField(x =>
                                 {
                                     x.Name = "File";
                                     x.IsInline = false;
-                                    x.Value = msg.Attachments.FirstOrDefault()?.Url;
+                                    x.Value = msg.Value.Attachments.FirstOrDefault()?.Url;
                                 });
                         }
 
@@ -110,43 +117,46 @@ namespace Hanekawa.Bot.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages,
-            ISocketMessageChannel channel)
+        private Task MessagesBulkDeleted(MessagesBulkDeletedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(channel is ITextChannel ch)) return;
+                var ch = e.Channel;
+                var messages = e.Messages;
                 try
                 {
                     using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateLoggingConfigAsync(ch.Guild);
                         if (!cfg.LogMsg.HasValue) return;
-                        var logChannel = await ch.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
+                        var logChannel = ch.Guild.GetTextChannel(cfg.LogMsg.Value);
                         if (logChannel == null) return;
 
                         var messageContent = new List<string>();
                         var content = new StringBuilder();
                         foreach (var x in messages)
                         {
-                            var msg = await x.GetOrDownloadAsync();
-                            if(msg == null) continue;
-                            var user = msg.Author;
+                            if(!x.HasValue) continue;
+                            var user = x.Value.Author;
                             if (content.Length + x.Value.Content.Length >= 1950)
                             {
                                 messageContent.Add(content.ToString());
                                 content.Clear();
                             }
 
-                            content.AppendLine($"{user.Mention}: {msg.Content}");
+                            content.AppendLine($"{user.Mention}: {x.Value.Content}");
                         }
 
                         if (content.Length > 0) messageContent.Add(content.ToString());
 
                         for (var i = 0; i < messageContent.Count; i++)
                         {
-                            var embed = new EmbedBuilder().Create(messageContent[i], _colourService.Get(ch.GuildId));
-                            embed.Title = $"Bulk delete in {ch.Name}";
+                            var embed = new LocalEmbedBuilder
+                            {
+                                Description = messageContent[i],
+                                Color = _colourService.Get(ch.Guild.Id),
+                                Title = $"Bulk delete in {ch.Name}"
+                            };
                             await logChannel.ReplyAsync(embed);
                             await Task.Delay(1000);
                         }

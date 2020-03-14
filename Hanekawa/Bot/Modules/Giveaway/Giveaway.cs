@@ -3,17 +3,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Giveaway
 {
-    public class Giveaway : InteractiveBase
+    public class Giveaway : DiscordModuleBase<HanekawaContext>
     {
         [Name("Draw")]
         [Command("draw")]

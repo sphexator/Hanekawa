@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
@@ -15,11 +15,13 @@ namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        private Task UserUpdated(SocketUser before, SocketUser after)
+        private Task UserUpdated(UserUpdatedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(before is SocketGuildUser user)) return;
+                var before = e.OldUser;
+                var after = e.NewUser;
+                if (!(before is CachedMember user)) return;
                 try
                 {
                     using (var db = new DbService())
@@ -29,30 +31,30 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel is null) return;
 
-                        var embed = new EmbedBuilder().Create("", _colourService.Get(user.Guild.Id));
-                        if (before.Username != after.Username)
+                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id), Description = ""};
+                        if (before.Name != after.Name)
                         {
                             embed.Title = "Username Change";
                             embed.Description = $"{before} || {before.Id}";
                             embed.AddField(x =>
                             {
                                 x.Name = "Old Name";
-                                x.Value = $"{before.Username}";
+                                x.Value = $"{before.Name}";
                                 x.IsInline = true;
                             });
                             embed.AddField(x =>
                             {
                                 x.Name = "New Name";
-                                x.Value = $"{after.Username}";
+                                x.Value = $"{after.Name}";
                                 x.IsInline = true;
                             });
                         }
-                        else if (before.AvatarId != after.AvatarId)
+                        else if (before.AvatarHash != after.AvatarHash)
                         {
                             embed.Title = "Avatar Change";
                             embed.Description = $"{before} | {before.Id}";
-                            embed.ThumbnailUrl = before.GetAvatar();
-                            embed.ImageUrl = after.GetAvatar();
+                            embed.ThumbnailUrl = before.GetAvatarUrl();
+                            embed.ImageUrl = after.GetAvatarUrl();
                         }
                         else
                         {
@@ -71,10 +73,12 @@ namespace Hanekawa.Bot.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task GuildMemberUpdated(SocketGuildUser before, SocketGuildUser after)
+        private Task GuildMemberUpdated(MemberUpdatedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var before = e.OldMember;
+                var after = e.NewMember;
                 try
                 {
                     using (var db = new DbService())
@@ -84,31 +88,32 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = before.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel == null) return;
 
-                        var embed = new EmbedBuilder().Create("", _colourService.Get(before.Guild.Id));
-                        embed.Title = $"{after} | {after.Id}";
-                        embed.Footer = new EmbedFooterBuilder {IconUrl = after.GetAvatar(), Text = ""};
-                        if (before.Nickname != after.Nickname)
+                        var embed = new LocalEmbedBuilder
                         {
-                            embed.Author = new EmbedAuthorBuilder {Name = "Nickname Change"};
-                            embed.Fields = new List<EmbedFieldBuilder>
-                            {
-                                new EmbedFieldBuilder {Name = "New Nick", Value = after.Nickname ?? after.Username},
-                                new EmbedFieldBuilder {Name = "Old Nick", Value = before.Nickname ?? before.Username}
-                            };
+                            Color = _colourService.Get(before.Guild.Id),
+                            Description = "",
+                            Title = $"{after} | {after.Id}",
+                            Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = ""}
+                        };
+                        if (before.Nick != after.Nick)
+                        {
+                            embed.Author = new LocalEmbedAuthorBuilder {Name = "Nickname Change"};
+                            embed.AddField("New Nick", after.Nick ?? after.Name);
+                            embed.AddField("Old Nick", before.Nick ?? before.Name);
                         }
                         else if (before.Roles.SequenceEqual(after.Roles))
                         {
                             if (before.Roles.Count < after.Roles.Count)
                             {
                                 var roleDiffer = after.Roles
-                                    .Where(x => !before.Roles.Contains(x)).Select(x => x.Name);
+                                    .Where(x => !before.Roles.Contains(x)).Select(x => x.Value.Name);
                                 embed.WithAuthor(x => x.WithName("User Role Added"))
                                     .WithDescription(string.Join(", ", roleDiffer));
                             }
                             else if (before.Roles.Count > after.Roles.Count)
                             {
                                 var roleDiffer = before.Roles
-                                    .Where(x => !after.Roles.Contains(x)).Select(x => x.Name);
+                                    .Where(x => !after.Roles.Contains(x)).Select(x => x.Value.Name);
                                 embed.WithAuthor(x => x.WithName("User Role Removed"))
                                     .WithDescription(string.Join(", ", roleDiffer));
                             }

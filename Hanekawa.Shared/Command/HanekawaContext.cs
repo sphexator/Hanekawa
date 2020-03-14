@@ -1,109 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Bot;
-using Qmmands;
+using Disqord.Bot.Prefixes;
 
 namespace Hanekawa.Shared.Command
 {
-    /*
-    public class HanekawaContext : CommandContext
+    public class HanekawaContext : DiscordCommandContext
     {
+        public virtual DiscordBotBase Bot { get; }
+
+        public virtual IPrefix Prefix { get; }
+
+        public virtual CachedUserMessage Message { get; }
+
+        public virtual CachedTextChannel Channel => Message.Channel as CachedTextChannel;
+
+        public virtual CachedUser User => Message.Author;
+
+        public virtual CachedMember Member => User as CachedMember;
+
+        public virtual CachedGuild Guild => Member?.Guild;
         
-        public HanekawaContext(DiscordBot client, SocketUserMessage msg, SocketGuildUser user, ColourService colour, InteractiveService interactive)
+        public virtual ColourService Colour { get; }
+
+        public HanekawaContext(DiscordBot bot, CachedUserMessage message, IPrefix prefix, ColourService colour, IServiceProvider provider) : base(bot, prefix, message)
         {
-            Client = client;
-            Message = msg;
-            User = user;
+            Bot = bot;
+            Prefix = prefix;
+            Message = message;
             Colour = colour;
-            Interactive = interactive;
-            Guild = user.Guild;
-            Channel = msg.Channel as SocketTextChannel;
         }
 
-        public SocketUserMessage Message { get; }
-        public DiscordSocketClient Client { get; }
-        public SocketGuildUser User { get; }
-        public SocketGuild Guild { get; }
-        public SocketTextChannel Channel { get; }
-        public ColourService Colour { get; }
-        private InteractiveService Interactive { get; }
-
         public async Task<IUserMessage> ReplyAsync(string content) =>
-            await Channel.SendMessageAsync(null, false, new EmbedBuilder
+            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
             {
                 Color = Colour.Get(Guild.Id),
                 Description = content
             }.Build());
 
         public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
-            await Channel.SendMessageAsync(null, false, new EmbedBuilder
+            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
             {
                 Color = color,
                 Description = content
             }.Build());
 
-        public async Task<IUserMessage> ReplyAsync(EmbedBuilder embed)
+        public async Task<IUserMessage> ReplyAsync(LocalEmbedBuilder embed)
         {
-            if (embed.Color == null ||embed.Color == Color.Default) embed.Color = Colour.Get(Guild.Id);
+            if (embed.Color == null || embed.Color == Color.Purple) embed.Color = Colour.Get(Guild.Id);
             return await Channel.SendMessageAsync(null, false, embed.Build());
         }
-
-        public async Task<IUserMessage> ErrorAsync(string content)
-        {
-            // TODO: Implement various ways to do error messages, maybe ok?
-            return null;
-        }
-
-        public async Task<IUserMessage> ReplyPaginated(IReadOnlyList<string> pages, SocketUser userIcon, string authorName, string title = null, int count = 5)
-            => await SendPaginator(pages, userIcon.GetAvatarUrl() ?? userIcon.GetDefaultAvatarUrl(), authorName, title, count).ConfigureAwait(false);
-
-        public async Task<IUserMessage> ReplyPaginated(IReadOnlyList<string> pages, SocketGuild guildIcon, string authorName, string title = null, int count = 5)
-            => await SendPaginator(pages, guildIcon.IconUrl, authorName, title, count).ConfigureAwait(false);
-
-        private async Task<IUserMessage> SendPaginator(IReadOnlyList<string> pages, string icon, string authorName, string title, int count = 5)
-        {
-            return await Interactive.SendPaginatedMessageAsync(this, new PaginatedMessage
-            {
-                Color = Colour.Get(Guild.Id),
-                Author = new EmbedAuthorBuilder { IconUrl = icon, Name = authorName },
-                Title = title,
-                Pages = PageBuilder(pages, count),
-                Options = new PaginatedAppearanceOptions
-                {
-                    First = new Emoji("⏮"),
-                    Back = new Emoji("◀"),
-                    Next = new Emoji("▶"),
-                    Last = new Emoji("⏭"),
-                    Stop = null,
-                    Jump = null,
-                    Info = null
-                }
-            });
-        }
-
-        private IEnumerable<string> PageBuilder(IReadOnlyList<string> list, int count)
-        {
-            var pages = new List<string>();
-            for (var i = 0; i < list.Count;)
-            {
-                var page = new StringBuilder();
-                for (var j = 0; j < count; j++)
-                {
-                    if (i >= list.Count) continue;
-                    var index = list[i];
-                    page.AppendLine(index);
-                    i++;
-                }
-
-                pages.Add(page.ToString());
-            }
-
-            if (pages.Count != 0) return pages;
-            pages.Add("No items in list");
-            return pages;
-        }
     }
-    */
 }

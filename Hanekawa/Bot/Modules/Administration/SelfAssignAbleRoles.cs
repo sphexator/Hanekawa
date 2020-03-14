@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -19,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Administration
 {
     [Name("Self Assignable Roles")]
     [RequiredChannel]
-    public class SelfAssignAbleRoles : InteractiveBase
+    public class SelfAssignAbleRoles : DiscordModuleBase<HanekawaContext>
     {
         [Name("I am")]
         [Command("iam", "give")]

@@ -10,6 +10,7 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Account
 {
     [Name("Account")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Account : DiscordModuleBase
+    public partial class Account : DiscordModuleBase<HanekawaContext>
     {
         private readonly ExpService _exp;
         private readonly ImageGenerator _image;

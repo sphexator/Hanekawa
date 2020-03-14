@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("ssc", "sschannel")]
         [Description(
             "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
         public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
         {
             using (var db = new DbService())
@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest Yes Emote")]
         [Command("ssy", "ssyes")]
         [Description("Set custom yes emote for suggestions")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteYesAsync(Emote emote = null)
         {
             using (var db = new DbService())
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest No Emote")]
         [Command("ssn", "ssno")]
         [Description("Set custom no emote for suggestions")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
         public async Task SetSuggestEmoteNoAsync(Emote emote = null)
         {
             using (var db = new DbService())

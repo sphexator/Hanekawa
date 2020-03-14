@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Drop;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Drop")]
     [RequireUserPermission(GuildPermission.ManageGuild)]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Drop : InteractiveBase
+    public class Drop : DiscordModuleBase<HanekawaContext>
     {
         private readonly DropService _drop;
         public Drop(DropService drop) => _drop = drop;

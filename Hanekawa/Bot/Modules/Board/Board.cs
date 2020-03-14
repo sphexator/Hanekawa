@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Board;
@@ -10,6 +11,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +22,7 @@ namespace Hanekawa.Bot.Modules.Board
 {
     [Name("Board")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Board : InteractiveBase
+    public partial class Board : DiscordModuleBase<HanekawaContext>
     {
         private readonly InternalLogService _log;
         private readonly BoardService _service;

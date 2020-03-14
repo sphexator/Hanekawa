@@ -2,11 +2,13 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Game.Ship;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Game
     [Description(
         "Ship game is a game mode where you search for opponements based on your level and fight them. Change between classes to get a feel of different fight styles.")]
     [RequiredChannel]
-    public class Game : InteractiveBase
+    public class Game : DiscordModuleBase<HanekawaContext>
     {
         private readonly ShipGameService _shipGame;
         public Game(ShipGameService shipGame) => _shipGame = shipGame;

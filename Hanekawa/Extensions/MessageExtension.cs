@@ -9,7 +9,7 @@ namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<IMessage>> FilterMessagesAsync(this CachedTextChannel channel, int amount = 100,
+        public static async Task<List<IMessage>> FilterMessagesAsync(this ICachedMessageChannel channel, int amount = 100,
             CachedMember filterBy = null)
         {
             var messages = await channel.GetMessagesAsync(amount);

@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders
 {
-    public class EnumTypeParser : HanekawaTypeParser<Enum>
+    public class EnumTypeParser : TypeParser<Enum>
     {
-        public override ValueTask<TypeParserResult<Enum>> ParseAsync(Parameter parameter, string value,
-            HanekawaContext context, IServiceProvider provider) =>
-            throw new NotImplementedException();
+        public override ValueTask<TypeParserResult<Enum>> ParseAsync(Parameter parameter, string value, CommandContext context) => throw new NotImplementedException();
     }
 }

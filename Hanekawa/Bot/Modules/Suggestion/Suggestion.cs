@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -11,7 +10,6 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -21,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
     [Name("Suggestion")]
     [Description(
         "Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
-    public partial class Suggestion : InteractiveBase
+    public partial class Suggestion : DiscordModuleBase<HanekawaContext>
     {
         [Name("Suggest")]
         [Command("suggest")]
@@ -52,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Approve Suggestion")]
         [Command("approve", "ar")]
         [Description("Approves a suggestion by its Id with a optional reason")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
         public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
@@ -78,7 +76,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Decline Suggestion")]
         [Command("decline", "dr")]
         [Description("Decline a suggestion by its ID with a optional reason")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
         public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();

@@ -1,35 +1,36 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        private Task UserLeft(SocketGuildUser user)
+        private Task UserLeft(MemberLeftEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var user = e.User;
+                var guild = e.Guild;
                 try
                 {
                     using (var db = new DbService())
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                         if (!cfg.LogJoin.HasValue) return;
-                        var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                        var channel = guild.GetTextChannel(cfg.LogJoin.Value);
                         if (channel == null) return;
 
-                        var embed = new EmbedBuilder
+                        var embed = new LocalEmbedBuilder
                         {
                             Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
                             Color = Color.Red,
-                            Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
 
@@ -39,16 +40,17 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
+                        $"(Log Service) Error in {guild.Id.RawValue} for Join Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;
         }
 
-        private Task UserJoined(SocketGuildUser user)
+        private Task UserJoined(MemberJoinedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var user = e.Member;
                 try
                 {
                     using (var db = new DbService())
@@ -58,12 +60,12 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                         if (channel == null) return;
 
-                        var embed = new EmbedBuilder
+                        var embed = new LocalEmbedBuilder
                         {
                             Description = $"📥 {user.Mention} has joined ( *{user.Id}* )\n" +
                                           $"Account created: {user.CreatedAt.Humanize()}",
                             Color = Color.Green,
-                            Footer = new EmbedFooterBuilder {Text = $"Username: {user}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
 

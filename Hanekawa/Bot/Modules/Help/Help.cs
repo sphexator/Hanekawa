@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Qmmands;
 using Quartz.Util;
 using Cooldown = Hanekawa.Shared.Command.Cooldown;
@@ -18,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Help
 {
     [Name("Help")]
     [Description("Displays all commands and how to execute them")]
-    public class Help : InteractiveBase
+    public class Help : DiscordModuleBase<HanekawaContext>
     {
         private readonly CommandService _command;
         private readonly CommandHandlingService _commandHandling;

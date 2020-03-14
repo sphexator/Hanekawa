@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Club
 {
     [Name("Club")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Club : InteractiveBase
+    public partial class Club : DiscordModuleBase<HanekawaContext>
     {
         private readonly ClubService _club;
 

@@ -11,7 +11,6 @@ using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +22,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using Qmmands;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
@@ -62,7 +60,6 @@ namespace Hanekawa
                 }
             }));
             */
-            services.AddSingleton<InteractiveService>();
             services.AddSingleton<ColourService>();
             services.AddSingleton(new AnimeSimulCastClient());
             /*

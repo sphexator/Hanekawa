@@ -1,8 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
@@ -75,17 +74,17 @@ namespace Hanekawa.Bot.Services.ImageGen
             _profileTemplate = Image.Load("Data/Profile/Template/Template.png");
         }
 
-        private async Task<Image<Rgba32>> GetAvatarAsync(SocketGuildUser user, Size size, int radius)
+        private async Task<Image<Rgba32>> GetAvatarAsync(CachedMember user, Size size, int radius)
         {
-            var response = await _client.GetStreamAsync(user.GetAvatar());
+            var response = await _client.GetStreamAsync(user.GetAvatarUrl());
             using var img = Image.Load(response);
             var avi = img.CloneAndConvertToAvatarWithoutApply(size, radius);
             return avi.Clone();
         }
 
-        private async Task<Image<Rgba32>> GetAvatarAsync(SocketGuildUser user, Size size)
+        private async Task<Image<Rgba32>> GetAvatarAsync(CachedMember user, Size size)
         {
-            var response = await _client.GetStreamAsync(user.GetAvatar());
+            var response = await _client.GetStreamAsync(user.GetAvatarUrl());
             using var img = Image.Load(response);
             img.Mutate(x => x.Resize(size));
             return img.Clone();

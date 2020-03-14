@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
@@ -20,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Level
 {
     [Name("Level")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Level : InteractiveBase
+    public partial class Level : DiscordModuleBase<HanekawaContext>
     {
         private readonly ExpService _exp;
         public Level(ExpService exp) => _exp = exp;

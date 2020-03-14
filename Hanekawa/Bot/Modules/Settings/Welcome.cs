@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -13,18 +12,16 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Welcome")]
-    [RequireBotPermission(GuildPermission.EmbedLinks, GuildPermission.AttachFiles)]
-    public class Welcome : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks, Permission.AttachFiles)]
+    public class Welcome : DiscordModuleBase<HanekawaContext>
     {
         private readonly ImageGenerator _image;
         public Welcome(ImageGenerator image) => _image = image;
@@ -32,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Banner Add")]
         [Command("wa", "welcadd")]
         [Description("Adds a welcome banner to the bot")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddWelcomeBannerAsync(string url)
         {
             if (!url.IsPictureUrl())
@@ -74,7 +71,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Banner Remove")]
         [Command("wr", "welcremove")]
         [Description("Removes a welcome banner by given ID")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveWelcomeBannerAsync(int id)
         {
             using (var db = new DbService())
@@ -97,7 +94,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Banner List")]
         [Command("wl", "welclist")]
         [Description("Shows a paginated message of all saved banners")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.ManageMessages)]
         public async Task WelcomeBannerListAsync()
         {
             using (var db = new DbService())
@@ -129,7 +126,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Message")]
         [Command("wm", "welcmsg")]
         [Description("Sets welcome message")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeMessageAsync([Remainder] string message = null)
         {
             using (var db = new DbService())
@@ -144,8 +141,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Channel")]
         [Command("wc", "welchannel")]
         [Description("Sets welcome channel, leave empty to disable")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task WelcomeChannelAsync(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task WelcomeChannelAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -175,7 +172,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Auto Delete")]
         [Command("wad", "welcautodel")]
         [Description("A timeout for when welcome messages are automatically deleted. Leave empty to disable")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeTimeout(TimeSpan? timeout = null)
         {
             using (var db = new DbService())
@@ -202,23 +199,23 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Template")]
         [Command("wt", "welctemplate")]
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.ManageMessages)]
         public async Task WelcomeTemplate()
         {
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
                 .Create(
                     "The PSD file contains everything that's needed to get started creating your own banners.\n" +
                     "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
                     "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Colour.Get(Context.Guild.Id))
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
-            await Context.Channel.SendFileAsync("Data/Welcome/WelcomeTemplate.psd", null, false, embed.Build());
+            await Context.Channel.SendMessageAsync(new LocalAttachment("Data/Welcome/WelcomeTemplate.psd", "WelcomeTemplate.psd"), null, false, embed.Build());
         }
 
         [Name("Banner Toggle")]
         [Command("wbt", "welcbantog")]
         [Description("Toggles whether welcome banners should be posted or just message")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task Welcomebanner()
         {
             using (var db = new DbService())
@@ -242,7 +239,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Ignore New Account")]
         [Command("wia")]
         [Description("Sets if welcomes should ignore new accounts by a defined time. Disabled by default")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)
         {
             using var db = new DbService();

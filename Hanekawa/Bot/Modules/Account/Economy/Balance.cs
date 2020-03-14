@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Database;
@@ -30,13 +31,13 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         {
             using (var db = new DbService())
             {
-                if (user == null) user = Context.User;
+                if (user == null) user = Context.Member;
                 var userData = await db.GetOrCreateUserData(user);
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                var embed = new EmbedBuilder()
+                var embed = new LocalEmbedBuilder()
                     .Create($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
                                    $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}", Context.Colour.Get(Context.Guild.Id))
-                    .WithAuthor(new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()});
+                    .WithAuthor(new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName});
                 await Context.ReplyAsync(embed);
             }
         }
@@ -51,7 +52,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             if (users.Contains(Context.User)) return;
             using (var db = new DbService())
             {
-                var userData = await db.GetOrCreateUserData(Context.User);
+                var userData = await db.GetOrCreateUserData(Context.Member);
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (userData.Credit < amount * users.Length)
                 {
@@ -82,11 +83,11 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("daily")]
         [Description("Daily credit command, usable once every 18hrs")]
         [RequiredChannel]
-        public async Task DailyAsync(SocketGuildUser user = null)
+        public async Task DailyAsync(CachedMember user = null)
         {
             using (var db = new DbService())
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.User);
+                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
                 {
@@ -100,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 int reward;
                 if (user == null || user == Context.User)
                 {
-                    user = Context.User;
+                    user = Context.Member;
                     reward = 200;
                     var userData = await db.GetOrCreateUserData(user);
                     userData.DailyCredit = DateTime.UtcNow;
@@ -113,7 +114,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 else
                 {
                     reward = new Random().Next(200, 300);
-                    var userData = await db.GetOrCreateUserData(Context.User);
+                    var userData = await db.GetOrCreateUserData(Context.Member);
                     var receiverData = await db.GetOrCreateUserData(user);
                     userData.DailyCredit = DateTime.UtcNow;
                     receiverData.Credit += reward;
@@ -142,7 +143,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 {
                     var strBuilder = new StringBuilder();
                     var x = users[i];
-                    var user = Context.Guild.GetUser(x.UserId);
+                    var user = Context.Guild.GetMember(x.UserId);
                     var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
                     strBuilder.AppendLine($"**Rank: {i + 1}** - {name}");
                     strBuilder.AppendLine($"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
@@ -157,8 +158,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Name("Reward")]
         [Command("reward", "award")]
         [Description("Rewards special credit to users (does not remove from yourself)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RewardCreditAsync(int amount, params SocketGuildUser[] users)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RewardCreditAsync(int amount, params CachedMember[] users)
         {
             if (amount <= 0) return;
             using (var db = new DbService())

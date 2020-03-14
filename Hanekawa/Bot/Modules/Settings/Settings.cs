@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -15,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Description("Server settings")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequireUserPermission(GuildPermission.ManageGuild)]
-    public class Settings : InteractiveBase
+    public class Settings : DiscordModuleBase<HanekawaContext>
     {
         private readonly ColourService _colourService;
         private readonly CommandHandlingService _command;

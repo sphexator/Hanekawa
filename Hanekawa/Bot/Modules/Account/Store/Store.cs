@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Database;
@@ -10,16 +10,15 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Store
 {
     [Name("Store")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Store : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public partial class Store : DiscordModuleBase<HanekawaContext>
     {
         private readonly CurrencyService _currency;
         public Store(CurrencyService currency) => _currency = currency;
@@ -65,7 +64,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Command("equip", "use")]
         [Description("Equips a role you have in your inventory")]
         [RequiredChannel]
-        public async Task EquipRoleAsync([Remainder] SocketRole role)
+        public async Task EquipRoleAsync([Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -78,13 +77,13 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     return;
                 }
 
-                if (Context.User.Roles.Contains(role))
+                if (Context.Member.Roles.Values.Contains(role))
                 {
                     await Context.ReplyAsync("You already have this role added");
                     return;
                 }
 
-                await Context.User.TryAddRoleAsync(role);
+                await Context.Member.TryAddRoleAsync(role);
                 await Context.ReplyAsync($"{Context.User.Mention} equipped {role.Name}");
             }
         }
@@ -93,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Command("unequip", "unuse")]
         [Description("Equips a role you have in your inventory")]
         [RequiredChannel]
-        public async Task UnequipRoleAsync([Remainder] SocketRole role)
+        public async Task UnequipRoleAsync([Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -106,13 +105,13 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     return;
                 }
 
-                if (!Context.User.Roles.Contains(role))
+                if (!Context.Member.Roles.Values.Contains(role))
                 {
                     await Context.ReplyAsync("You don't have this role added");
                     return;
                 }
 
-                await Context.User.TryRemoveRoleAsync(role);
+                await Context.Member.TryRemoveRoleAsync(role);
                 await Context.ReplyAsync($"{Context.User.Mention} unequipped {role.Name}");
             }
         }
@@ -150,7 +149,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Description("Purchase an item from the store")]
         [Priority(1)]
         [RequiredChannel]
-        public async Task BuyAsync([Remainder] SocketRole role)
+        public async Task BuyAsync([Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -163,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     return;
                 }
 
-                var userData = await db.GetOrCreateUserData(Context.User as IGuildUser);
+                var userData = await db.GetOrCreateUserData(Context.Member);
                 var item = await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);
                 var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (serverData.SpecialCredit)
@@ -210,7 +209,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 await Context.ReplyAsync(
                     $"Purchased {Context.Guild.GetRole(item.Role.Value)} for {_currency.ToCurrency(creditCfg, serverData.Price, serverData.SpecialCredit)}",
                     Color.Green);
-                await Context.User.TryAddRoleAsync(role);
+                await Context.Member.TryAddRoleAsync(role);
             }
         }
     }

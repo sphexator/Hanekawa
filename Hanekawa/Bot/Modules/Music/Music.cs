@@ -2,19 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
-using Victoria;
-using Victoria.Entities;
 
 namespace Hanekawa.Bot.Modules.Music
 {
@@ -23,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Music
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequiredMusicChannel]
     [RequiredChannel]
-    public class Music : InteractiveBase
+    public class Music : DiscordModuleBase<HanekawaContext>
     {
         private readonly RequiredMusicChannel _channel;
         private readonly LavaRestClient _lavaRestClient;

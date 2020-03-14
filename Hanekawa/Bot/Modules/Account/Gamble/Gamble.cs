@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Gamble
 {
     [Name("Gamble")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Gamble : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public class Gamble : DiscordModuleBase<HanekawaContext>
     {
         [Name("Bet")]
         [Command("bet")]
@@ -26,7 +24,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             if (bet <= 0) return;
             using (var db = new DbService())
             {
-                var userData = await db.GetOrCreateUserData(Context.User);
+                var userData = await db.GetOrCreateUserData(Context.Member);
                 if (userData.Credit == 0)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
@@ -47,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             if (bet <= 0) return;
             using (var db = new DbService())
             {
-                var userData = await db.GetOrCreateUserData(Context.User);
+                var userData = await db.GetOrCreateUserData(Context.Member);
                 if (userData.Credit == 0)
                 {
                     await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
@@ -59,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             }
         }
 
-        private async Task<EmbedBuilder> GambleBetAsync(DbService db, HanekawaContext context,
+        private async Task<LocalEmbedBuilder> GambleBetAsync(DbService db, HanekawaContext context,
             Database.Tables.Account.Account userData, int bet)
         {
             if (userData.Credit < bet) bet = BetAdjust(userData);
@@ -70,19 +68,19 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             {
                 userData.Credit += bet * 5;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Create(
+                return new LocalEmbedBuilder().Create(
                     $"Congratulations {context.User.Mention}!, You made a total of **${bet * 5}** off ${bet}!\n" +
                     $"You rolled: {userRoll} - Bot rolled: {botRoll}", Color.Green);
             }
 
             userData.Credit -= bet;
             await db.SaveChangesAsync();
-            return new EmbedBuilder().Create(
+            return new LocalEmbedBuilder().Create(
                 $"Sorry **{context.User.Mention}**, You rolled **{userRoll}** and lost ${bet}\n " +
                 $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red);
         }
 
-        private async Task<EmbedBuilder> GambleRollAsync(DbService db, HanekawaContext context,
+        private async Task<LocalEmbedBuilder> GambleRollAsync(DbService db, HanekawaContext context,
             Database.Tables.Account.Account userData, int bet)
         {
             if (userData.Credit < bet) bet = BetAdjust(userData);
@@ -94,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             {
                 userData.Credit += bet * 2;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Create(
+                return new LocalEmbedBuilder().Create(
                     $"{context.User.Mention} rolled **{rolled}** and won ${bet * 2}",
                     Color.Green);
             }
@@ -103,13 +101,13 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             {
                 userData.Credit += bet;
                 await db.SaveChangesAsync();
-                return new EmbedBuilder().Create($"{context.User.Mention} rolled **{rolled}** and won ${bet}",
+                return new LocalEmbedBuilder().Create($"{context.User.Mention} rolled **{rolled}** and won ${bet}",
                     Color.Green);
             }
 
             userData.Credit -= bet;
             await db.SaveChangesAsync();
-            return new EmbedBuilder().Create(
+            return new LocalEmbedBuilder().Create(
                 $"Sorry **{context.User.Mention}**, You have lost ${bet} Off a roll of **{rolled}**",
                 Color.Red);
         }

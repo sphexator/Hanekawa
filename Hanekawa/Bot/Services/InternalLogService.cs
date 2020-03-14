@@ -1,43 +1,40 @@
 using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord.Bot;
+using Disqord.Logging;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 using Qmmands;
-using Victoria;
-using Victoria.Entities;
 
 namespace Hanekawa.Bot.Services
 {
     public class InternalLogService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _castClient;
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly CommandService _command;
-        private readonly LavaSocketClient _lavaClient;
         private readonly ILogger<InternalLogService> _logger;
 
-        public InternalLogService(DiscordSocketClient client, CommandService command,
-            ILogger<InternalLogService> logger, LavaSocketClient lavaClient, AnimeSimulCastClient castClient)
+        public InternalLogService(DiscordBot client, CommandService command,
+            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient)
         {
             _client = client;
             _command = command;
             _logger = logger;
-            _lavaClient = lavaClient;
             _castClient = castClient;
 
-            _client.Log += LogDiscord;
-            _command.CommandErrored += CommandErrorLog;
+            //_client.Log += LogDiscord;
+            _command.CommandExecutionFailed += CommandErrorLog;
             _command.CommandExecuted += CommandExecuted;
 
             _castClient.Log += SimulCastClientLog;
-
+            /*
             _lavaClient.Log += LavaClientLog;
             _lavaClient.OnPlayerUpdated += LavaClientOnPlayerUpdated;
             _lavaClient.OnServerStats += LavaClientOnServerStats;
             _lavaClient.OnSocketClosed += LavaClientOnSocketClosed;
+            */
         }
 
         public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
@@ -56,12 +53,12 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private Task CommandErrorLog(CommandErroredEventArgs e)
+        private Task CommandErrorLog(CommandExecutionFailedEventArgs e)
         {
             _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             return Task.CompletedTask;
         }
-
+        /*
         private Task LogDiscord(LogMessage log)
         {
             _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
@@ -91,22 +88,20 @@ namespace Hanekawa.Bot.Services
             _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
             return Task.CompletedTask;
         }
-
-        private LogLevel LogSevToLogLevel(LogSeverity log)
+        */
+        private LogLevel LogSevToLogLevel(LogMessageSeverity log)
         {
             switch (log)
             {
-                case LogSeverity.Critical:
+                case LogMessageSeverity.Critical:
                     return LogLevel.Critical;
-                case LogSeverity.Error:
+                case LogMessageSeverity.Error:
                     return LogLevel.Error;
-                case LogSeverity.Warning:
+                case LogMessageSeverity.Warning:
                     return LogLevel.Warning;
-                case LogSeverity.Info:
+                case LogMessageSeverity.Information:
                     return LogLevel.Information;
-                case LogSeverity.Verbose:
-                    return LogLevel.Trace;
-                case LogSeverity.Debug:
+                case LogMessageSeverity.Debug:
                     return LogLevel.Trace;
                 default:
                     return LogLevel.None;

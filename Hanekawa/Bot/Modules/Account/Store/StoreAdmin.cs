@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Stores;
-using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Store
@@ -20,8 +17,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Command("sa")]
         [Priority(1)]
         [Description("Adds an item to the store with regular credit")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddStoreItemAsync(int price, [Remainder] SocketRole role)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddStoreItemAsync(int price, [Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -53,8 +50,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Command("sas")]
         [Priority(1)]
         [Description("Adds an item to the store with special credit")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddSpecialStoreItemAsync(int price, [Remainder] SocketRole role)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddSpecialStoreItemAsync(int price, [Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -85,8 +82,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [Name("Store remove")]
         [Command("sr")]
         [Description("Removes a role from the store")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveStoreItemAsync([Remainder] SocketRole role)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RemoveStoreItemAsync([Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {

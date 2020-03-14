@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        private Task UserUnbanned(SocketUser user, SocketGuild guild)
+        private Task UserUnbanned(MemberUnbannedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var guild = e.Guild;
+                var user = e.User;
                 try
                 {
                     using (var db = new DbService())
@@ -26,17 +26,17 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = guild.GetTextChannel(cfg.LogBan.Value);
                         if (channel == null) return;
                         var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
-                        var embed = new EmbedBuilder
+                        var embed = new LocalEmbedBuilder
                         {
                             Color = Color.Green,
-                            Author = new EmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
-                            Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
+                            Author = new LocalEmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                             Timestamp = DateTimeOffset.UtcNow,
-                            Fields = new List<EmbedFieldBuilder>
+                            Fields =
                             {
-                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = true},
-                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
-                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
+                                new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = true},
+                                new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
+                                new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
                             }
                         };
                         var msg = await channel.SendMessageAsync(null, false, embed.Build());
@@ -52,10 +52,12 @@ namespace Hanekawa.Bot.Services.Logging
             return Task.CompletedTask;
         }
 
-        private Task UserBanned(SocketUser user, SocketGuild guild)
+        private Task UserBanned(MemberBannedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var user = e.User;
+                var guild = e.Guild;
                 try
                 {
                     using (var db = new DbService())
@@ -66,17 +68,17 @@ namespace Hanekawa.Bot.Services.Logging
                         if (channel == null) return;
 
                         var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
-                        var embed = new EmbedBuilder
+                        var embed = new LocalEmbedBuilder
                         {
                             Color = Color.Red,
-                            Author = new EmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId.Id} | {user}"},
-                            Fields = new List<EmbedFieldBuilder>
+                            Author = new LocalEmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId.Id} | {user}"},
+                            Fields =
                             {
-                                new EmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
-                                new EmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
-                                new EmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                                new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
+                                new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
+                                new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
                             },
-                            Footer = new EmbedFooterBuilder {Text = $"User ID: {user.Id}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
                         var msg = await channel.SendMessageAsync(null, false, embed.Build());

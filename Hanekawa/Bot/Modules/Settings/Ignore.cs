@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Ignore")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequireUserPermission(GuildPermission.ManageGuild)]
-    public class Ignore : InteractiveBase
+    public class Ignore : DiscordModuleBase<HanekawaContext>
     {
         private readonly RequiredChannel _requiredChannel;
 

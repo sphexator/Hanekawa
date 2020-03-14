@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Rest;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Database;
@@ -11,15 +11,15 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SqlServer.Server;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Administration
 {
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Administration : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public class Administration : DiscordModuleBase<HanekawaContext>
     {
         private readonly MuteService _mute;
         private readonly WarnService _warn;
@@ -34,35 +34,35 @@ namespace Hanekawa.Bot.Modules.Administration
         [Command("ban")]
         [Description("Bans a user")]
         [Priority(1)]
-        [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task BanAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
+        [RequireMemberGuildPermissions(Permission.BanMembers, Permission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.BanMembers)]
+        public async Task BanAsync(CachedMember user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
             if (Context.User == user) return;
-            if (!Context.Guild.CurrentUser.HierarchyCheck(user))
+            if (!Context.Guild.CurrentMember.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
                     null,
                     false,
-                    new EmbedBuilder()
+                    new LocalEmbedBuilder()
                         .Create("Cannot ban someone that's higher than me in hierarchy.",
                             Color.Red).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            if (!Context.User.HierarchyCheck(user))
+            if (!Context.Member.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Create(
+                    new LocalEmbedBuilder().Create(
                         $"{Context.User.Mention}, can't ban someone that's equal or more power than you.",
                         Color.Red).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            await Context.Guild.AddBanAsync(user, 7, $"{Context.User} ({Context.User.Id}) reason: {reason}");
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Create(
+            await Context.Guild.BanMemberAsync(user.Id, $"{Context.User} ({Context.User.Id}) reason: {reason}", 7);
+            await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 Color.Green).Build(), TimeSpan.FromSeconds(20));
         }
@@ -70,24 +70,24 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user by their ID, doesn't require to be in the server")]
-        [RequireBotPermission(GuildPermission.BanMembers, GuildPermission.ManageMessages)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireBotGuildPermissions(Permission.BanMembers, Permission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.BanMembers)]
         public async Task BanAsync(ulong userId, [Remainder] string reason = "No reason applied")
         {
             await Context.Message.TryDeleteMessageAsync();
-            var user = Context.Guild.GetUser(userId);
+            var user = Context.Guild.GetMember(userId);
             if (user != null) await BanAsync(user, reason);
             else
                 try
                 {
-                    await Context.Guild.AddBanAsync(userId, reason: reason);
-                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Create(
+                    await Context.Guild.BanMemberAsync(userId, reason, 7);
+                    await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                         $"Banned {Format.Bold($"{userId}")} from {Context.Guild.Name}.",
                         Color.Green).Build(), TimeSpan.FromSeconds(20));
                 }
                 catch
                 {
-                    await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Create(
+                    await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                         "Couldn't fetch a user by that ID.",
                         Color.Green).Build(), TimeSpan.FromSeconds(20));
                 }
@@ -96,34 +96,34 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Kick")]
         [Command("kick")]
         [Description("Kicks a user")]
-        [RequireBotPermission(GuildPermission.KickMembers, GuildPermission.ManageMessages)]
-        [RequireUserPermission(GuildPermission.KickMembers)]
-        public async Task KickAsync(SocketGuildUser user, [Remainder] string reason = "No reason applied")
+        [RequireBotGuildPermissions(Permission.KickMembers, Permission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.KickMembers)]
+        public async Task KickAsync(CachedMember user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            if (!Context.Guild.CurrentUser.HierarchyCheck(user))
+            if (!Context.Guild.CurrentMember.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
                     null,
                     false,
-                    new EmbedBuilder()
+                    new LocalEmbedBuilder()
                         .Create("Cannot kick someone that's higher than me in hierarchy.",
                             Color.Red).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            if (!Context.User.HierarchyCheck(user))
+            if (!Context.Member.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Create(
+                    new LocalEmbedBuilder().Create(
                         $"{Context.User.Mention}, can't kick someone that's equal or more power than you.",
                         Color.Red).Build(), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            await Context.User.KickAsync($"{Context.User} ({Context.User.Id}) reason: {reason}");
-            await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Create(
+            await user.KickAsync(RestRequestOptions.FromReason(reason));
+            await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Kicked {user.Mention} from {Context.Guild.Name}.",
                 Color.Green).Build(), TimeSpan.FromSeconds(20));
         }
@@ -131,20 +131,20 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Prune")]
         [Command("prune")]
         [Description("Prunes X messages, user specific is optional")]
-        [RequireBotPermission(GuildPermission.ManageMessages)]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task PruneAsync(int amount = 5, SocketGuildUser user = null)
+        [RequireBotGuildPermissions(Permission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.ManageMessages)]
+        public async Task PruneAsync(int amount = 5, CachedMember user = null)
         {
             if (amount <= 0) return;
             await Context.Message.TryDeleteMessageAsync();
             var messages = await Context.Channel.FilterMessagesAsync(amount, user);
-            if (await Context.Channel.TryDeleteMessagesAsync(messages))
+            if (await Context.Channel.DeleteMessageAsync(messages))
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Create($"Deleted {amount} messages", Color.Green).Build(),
+                    new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green).Build(),
                     TimeSpan.FromSeconds(20));
             else
                 await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder()
+                    new LocalEmbedBuilder()
                         .Create("Couldn't delete messages, missing permissions?", Color.Red).Build(),
                     TimeSpan.FromSeconds(20));
         }
@@ -152,22 +152,22 @@ namespace Hanekawa.Bot.Modules.Administration
         [Name("Soft Ban")]
         [Command("softban", "sb")]
         [Description("In the last 50 messages, deletes the messages user has sent and mutes")]
-        [RequireBotPermission(GuildPermission.ManageMessages, GuildPermission.ManageRoles, GuildPermission.MuteMembers)]
-        [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task SoftBanAsync(SocketGuildUser user)
+        [RequireBotGuildPermissions(Permission.ManageMessages, Permission.ManageRoles, Permission.MuteMembers)]
+        [RequireMemberGuildPermissions(Permission.ManageMessages)]
+        public async Task SoftBanAsync(CachedMember user)
         {
-            if (Context.User == user) return;
+            if (Context.Member == user) return;
             await Context.Message.TryDeleteMessageAsync();
 
             using (var db = new DbService())
             {
                 if (!await _mute.Mute(user, db))
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().Create("Couldn't mute user. ", Color.Red).Build(),
+                        new LocalEmbedBuilder().Create("Couldn't mute user. ", Color.Red).Build(),
                         TimeSpan.FromSeconds(20));
 
                 var messages = await Context.Channel.FilterMessagesAsync(50, user);
-                await Context.Channel.TryDeleteMessagesAsync(messages);
+                await Context.Channel.DeleteMessagesAsync(messages);
             }
         }
 
