@@ -25,15 +25,18 @@ namespace Hanekawa.Bot.Modules.Owner
         public async Task ServersAsync()
         {
             var servers = new List<string>();
+            var totalMembers = 0;
             foreach (var x in Context.Client.Guilds)
             {
+                totalMembers += x.MemberCount;
                 var sb = new StringBuilder();
                 sb.AppendLine($"Server: {x.Name} ({x.Id})");
                 sb.AppendLine($"Members: {x.MemberCount}");
-                sb.AppendLine($"Owner: {x.OwnerId}");
+                sb.AppendLine($"Owner: {x.Owner.Mention}");
                 servers.Add(sb.ToString());
             }
-            await PagedReplyAsync(servers.PaginateBuilder(Context.Guild, Context.User.GetName(), $"Total Servers: {Context.Client.Guilds.Count}"));
+            await PagedReplyAsync(servers.PaginateBuilder(Context.Guild, Context.User.GetName(), $"Total Servers: {Context.Client.Guilds.Count}\n " +
+                                                                                                 $"Total Members: {totalMembers}"));
         }
 
         [Name("Blacklist")]

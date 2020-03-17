@@ -122,7 +122,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            await Context.User.KickAsync($"{Context.User} ({Context.User.Id}) reason: {reason}");
+            await user.KickAsync($"{Context.User} ({Context.User.Id}) reason: {reason}");
             await ReplyAndDeleteAsync(null, false, new EmbedBuilder().Create(
                 $"Kicked {user.Mention} from {Context.Guild.Name}.",
                 Color.Green).Build(), TimeSpan.FromSeconds(20));
