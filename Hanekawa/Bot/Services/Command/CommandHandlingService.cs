@@ -6,16 +6,15 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Net;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.Logging;
@@ -24,23 +23,22 @@ using Module = Qmmands.Module;
 
 namespace Hanekawa.Bot.Services.Command
 {
+    /*
     public class CommandHandlingService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly ColourService _colourService;
         private readonly CommandService _command;
-        private readonly InteractiveService _interactive;
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
         private readonly IServiceProvider _provider;
 
-        public CommandHandlingService(DiscordSocketClient client, CommandService command, IServiceProvider provider,
-            InteractiveService interactive, ColourService colourService, InternalLogService log)
+        public CommandHandlingService(DiscordBot client, CommandService command, IServiceProvider provider, 
+            ColourService colourService, InternalLogService log)
         {
             _client = client;
             _command = command;
             _provider = provider;
-            _interactive = interactive;
             _colourService = colourService;
             _log = log;
 
@@ -52,7 +50,7 @@ namespace Hanekawa.Bot.Services.Command
                 return Task.CompletedTask;
             };
 
-            _command.CommandErrored += log =>
+            _command.CommandExecutionFailed += log =>
             {
                 _ = OnCommandError(log);
                 return Task.CompletedTask;
@@ -70,13 +68,7 @@ namespace Hanekawa.Bot.Services.Command
 
         public void InitializeAsync()
         {
-            _command.AddTypeParser(new EmoteTypeReader());
-            _command.AddTypeParser(new GuildUserParser());
-            _command.AddTypeParser(new RoleParser());
-            _command.AddTypeParser(new TextChannelParser());
             _command.AddTypeParser(new TimeSpanTypeParser());
-            _command.AddTypeParser(new VoiceChannelParser());
-            _command.AddTypeParser(new CategoryParser());
             var modules = _command.AddModules(Assembly.GetEntryAssembly());
             _log.LogAction(LogLevel.Information, $"Added {modules.Count} modules");
         }
@@ -101,11 +93,11 @@ namespace Hanekawa.Bot.Services.Command
             if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id),
                 out output) && !message.HasMentionPrefix(user.Guild.CurrentUser, out var prefix, out output)) return;
             var result = await _command.ExecuteAsync(output,
-                new HanekawaContext(_client, message, user, _colourService, _interactive), _provider);
+                new HanekawaContext(_client, message, user, _colourService), _provider);
             if (!result.IsSuccessful) _log.LogAction(LogLevel.Warning, $"Command: {result}");
         }
 
-        private async Task OnCommandError(CommandErroredEventArgs e)
+        private async Task OnCommandError(CommandExecutionFailedEventArgs e)
         {
             _log.LogAction(LogLevel.Error, e.Result.Exception, "Command Error");
             if (!(e.Context is HanekawaContext context)) return;
@@ -143,9 +135,6 @@ namespace Hanekawa.Bot.Services.Command
                 case ExecutionFailedResult err:
                     switch (err.Exception)
                     {
-                        case HttpException _:
-                            response.AppendLine("Something went wrong...");
-                            break;
                         case HttpRequestException _:
                             response.AppendLine("I am missing the required permissions to perform this action");
                             break;
@@ -184,26 +173,27 @@ namespace Hanekawa.Bot.Services.Command
                 $"{e.Result.Exception.ToString().Truncate(1500)}");
         }
 
-        private Task ClientJoined(SocketGuild guild)
+        private Task ClientJoined(JoinedGuildEventArgs e)
         {
             _ = Task.Run(async () =>
             {
                 using var db = new DbService();
-                var cfg = await db.GetOrCreateGuildConfigAsync(guild);
-                _prefixes.TryAdd(guild.Id, cfg.Prefix);
-                _colourService.AddOrUpdate(guild.Id, new Color(cfg.EmbedColor));
+                var cfg = await db.GetOrCreateGuildConfigAsync(e.Guild);
+                _prefixes.TryAdd(e.Guild.Id, cfg.Prefix);
+                _colourService.AddOrUpdate(e.Guild.Id, new Color(cfg.EmbedColor));
             });
             return Task.CompletedTask;
         }
 
-        private Task ClientLeft(SocketGuild guild)
+        private Task ClientLeft(LeftGuildEventArgs e)
         {
             _ = Task.Run(() =>
             {
-                _prefixes.TryRemove(guild.Id, out _);
-                _colourService.TryRemove(guild.Id);
+                _prefixes.TryRemove(e.Guild.Id, out _);
+                _colourService.TryRemove(e.Guild.Id);
             });
             return Task.CompletedTask;
         }
     }
+    */
 }

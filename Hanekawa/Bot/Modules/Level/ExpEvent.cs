@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -23,7 +24,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Text Exp Multiplier")]
         [Command("txtexpmulti", "tem")]
         [Description("Sets a new exp multiplier permanently")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task TextExpMultiplierAsync(double multiplier)
         {
             using (var db = new DbService())
@@ -41,7 +42,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Voice Exp Multiplier")]
         [Command("voiceexpmulti", "vem")]
         [Description("Sets a new exp multiplier permanently")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task VoiceExpMultiplierAsync(double multiplier)
         {
             using (var db = new DbService())
@@ -59,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Enable/Disable Voice Exp")]
         [Command("voicexp", "ve")]
         [Description("Enable/Disables experience gained from being in voice channels")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ToggleVoiceExp()
         {
             using (var db = new DbService())
@@ -85,7 +86,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Exp Event")]
         [Command("expevent")]
         [Description("Starts a exp event with a specified multiplier for a period of time")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ExpEventAsync(double multiplier, TimeSpan? duration = null)
         {
             if (multiplier <= 0) return;

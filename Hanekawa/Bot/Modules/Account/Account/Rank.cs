@@ -85,9 +85,9 @@ namespace Hanekawa.Bot.Modules.Account
                 var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
                 var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
                 var result = new List<string>();
+                var strBuilder = new StringBuilder();
                 for (var i = 0; i < users.Length; i++)
                 {
-                    var strBuilder = new StringBuilder();
                     var user = users[i];
                     var username = Context.Guild.GetMember(user.UserId);
                     strBuilder.AppendLine(
@@ -96,9 +96,10 @@ namespace Hanekawa.Bot.Modules.Account
                             : $"**Rank: {i + 1}** - User left server({user.UserId})");
                     strBuilder.AppendLine($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
                     result.Add(strBuilder.ToString());
+                    strBuilder.Clear();
                 }
 
-                await Context.ReplyPaginated(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}", null, 10);
+                await Context.PaginatedReply(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}");
             }
         }
 

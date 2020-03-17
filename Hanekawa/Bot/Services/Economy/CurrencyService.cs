@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Discord;
+using Disqord;
+using Disqord.Bot.Parsers;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -31,10 +32,10 @@ namespace Hanekawa.Bot.Services.Economy
                 ? $"{sign}{amount}"
                 : $"{amount} {sign}";
 
-        private IEmote CurrencySignEmote(string emoteString)
+        private IEmoji CurrencySignEmote(string emoteString)
         {
-            if (Emote.TryParse(emoteString, out var emote)) return emote;
-            Emote.TryParse("<a:wawa:475462796214009856>", out var defaultEmote);
+            if (LocalCustomEmoji.TryParse(emoteString, out var emote)) return emote;
+            LocalCustomEmoji.TryParse("<a:wawa:475462796214009856>", out var defaultEmote);
             return defaultEmote;
         }
     }

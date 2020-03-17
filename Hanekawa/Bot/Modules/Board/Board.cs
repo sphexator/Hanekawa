@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services;
@@ -12,16 +11,14 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
-using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Board
 {
     [Name("Board")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public partial class Board : DiscordModuleBase<HanekawaContext>
     {
         private readonly InternalLogService _log;
@@ -37,13 +34,12 @@ namespace Hanekawa.Bot.Modules.Board
         [Command("boardstats")]
         [Description("Overview of board stats of this server")]
         [RequiredChannel]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
         public async Task BoardStatsAsync()
         {
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
-                var emote = cfg.Emote.ParseStringEmote();
+                LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
                 var boards = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 var topStars = boards.OrderByDescending(x => x.StarAmount).Take(3).ToList();
                 var topReceive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id)
@@ -55,7 +51,7 @@ namespace Hanekawa.Bot.Modules.Board
                 for (var i = 0; i < topReceive.Count; i++)
                 {
                     var index = topReceive[i];
-                    var user = Context.Guild.GetUser(index.UserId);
+                    var user = Context.Guild.GetMember(index.UserId);
                     topReceived += $"{i}: {user.Mention ?? "User left the server"} ({index.StarReceived} {emote})\n";
                 }
 
@@ -66,13 +62,13 @@ namespace Hanekawa.Bot.Modules.Board
                     topStarMessages += $"{i}: {index.MessageId} ({index.StarAmount} {emote})\n";
                 }
 
-                var embed = new EmbedBuilder
+                var embed = new LocalEmbedBuilder()
                 {
                     Description = $"{boards.Count} messages boarded with a total of {totalStars} {emote} given",
-                    Fields = new List<EmbedFieldBuilder>
+                    Fields =
                     {
-                        new EmbedFieldBuilder { Name = $"Top {emote} Posts", Value = $"{topStarMessages ?? "N/A"}" },
-                        new EmbedFieldBuilder { Name = $"Top {emote} Receivers", Value = $"{topReceived ?? "N/A"}" }
+                        new LocalEmbedFieldBuilder { Name = $"Top {emote} Posts", Value = $"{topStarMessages ?? "N/A"}" },
+                        new LocalEmbedFieldBuilder { Name = $"Top {emote} Receivers", Value = $"{topReceived ?? "N/A"}" }
                     }
                 };
                 await Context.ReplyAsync(embed);
@@ -83,12 +79,12 @@ namespace Hanekawa.Bot.Modules.Board
         [Command("boardstats")]
         [Description("Shows board stats for a user")]
         [RequiredChannel]
-        public async Task BoardStatsAsync(SocketGuildUser user)
+        public async Task BoardStatsAsync(CachedMember user)
         {
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
-                var emote = cfg.Emote.ParseStringEmote();
+                LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
                 var userData = await db.GetOrCreateUserData(user);
                 var boardData = await db.Boards.Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id)
                     .OrderByDescending(x => x.StarAmount).ToListAsync();
@@ -107,15 +103,15 @@ namespace Hanekawa.Bot.Modules.Board
                     topStar += $"No {emote} messages";
                 }
 
-                var embed = new EmbedBuilder
+                var embed = new LocalEmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder {IconUrl = user.GetAvatar(), Name = user.GetName()},
-                    Fields = new List<EmbedFieldBuilder>
+                    Author = new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName},
+                    Fields = 
                     {
-                        new EmbedFieldBuilder{ Name = "Boarded Messages", Value = $"{boardData.Count}", IsInline = true },
-                        new EmbedFieldBuilder{ Name = $"{emote} Received", Value = $"{userData.StarReceived}", IsInline = true },
-                        new EmbedFieldBuilder{ Name = $"{emote} Given", Value = $"{userData.StarGiven}", IsInline = true },
-                        new EmbedFieldBuilder{ Name = $"Top {emote} Posts", Value = $"{topStar ?? "N/A"}" }
+                        new LocalEmbedFieldBuilder{ Name = "Boarded Messages", Value = $"{boardData.Count}", IsInline = true },
+                        new LocalEmbedFieldBuilder{ Name = $"{emote} Received", Value = $"{userData.StarReceived}", IsInline = true },
+                        new LocalEmbedFieldBuilder{ Name = $"{emote} Given", Value = $"{userData.StarGiven}", IsInline = true },
+                        new LocalEmbedFieldBuilder{ Name = $"Top {emote} Posts", Value = $"{topStar ?? "N/A"}" }
                     }
                 };
                 await Context.ReplyAsync(embed);

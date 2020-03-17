@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Bot.Prefixes;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
@@ -13,16 +14,14 @@ namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Settings")]
     [Description("Server settings")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    [RequireUserPermission(GuildPermission.ManageGuild)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireMemberGuildPermissions(Permission.ManageGuild)]
     public class Settings : DiscordModuleBase<HanekawaContext>
     {
         private readonly ColourService _colourService;
-        private readonly CommandHandlingService _command;
 
-        public Settings(CommandHandlingService command, ColourService colourService)
+        public Settings(ColourService colourService)
         {
-            _command = command;
             _colourService = colourService;
         }
 
@@ -32,7 +31,8 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
             using var db = new DbService();
-            if (await _command.AddPrefix(Context.Guild.Id, prefix, db))
+            var prefixes = (Context.Bot.PrefixProvider as DefaultPrefixProvider).Prefixes.Contains(new StringPrefix());
+            if (.AddPrefix(Context.Guild.Id, prefix, db))
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
             else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
         }
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             if (colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
             colorHex = colorHex.Insert(0, "0x");
-            var color = new Color(Convert.ToUInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
+            var color = new Color(Convert.ToInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await NextMessageAsync();
             if (response == null)

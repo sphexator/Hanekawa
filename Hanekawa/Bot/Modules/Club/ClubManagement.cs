@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
-using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive.Criteria;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -30,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Club
             if (name.IsNullOrWhiteSpace()) return;
             using (var db = new DbService())
             {
-                var userData = await db.GetOrCreateUserData(Context.User);
+                var userData = await db.GetOrCreateUserData(Context.Member);
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
                 if (userData.Level < cfg.ChannelRequiredLevel)
                 {
@@ -68,7 +65,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubadd", "cadd")]
         [Description("Adds a member to your club")]
         [RequiredChannel]
-        public async Task AddClubMemberAsync(SocketGuildUser user)
+        public async Task AddClubMemberAsync(CachedMember user)
         {
             if (user == Context.User) return;
             using (var db = new DbService())
@@ -91,18 +88,18 @@ namespace Hanekawa.Bot.Modules.Club
                     return;
                 }
 
-                var clubData = await db.GetClubAsync(Context.User, clubUser.ClubId);
+                var clubData = await db.GetClubAsync(Context.Member, clubUser.ClubId);
                 await Context.ReplyAsync(
                     $"{user.Mention}, {Context.User.Mention} has invited you to {clubData.Name}, do you accept? (y/n)");
                 var status = true;
                 while (status)
                     try
                     {
-                        var response = await NextMessageAsync(new EnsureFromUserCriterion(user.Id),
-                            TimeSpan.FromSeconds(30));
+                        var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                            x.Message.Author.Id == user.Id && x.Message.Guild.Id == user.Guild.Id, TimeSpan.FromMinutes(1));
 
-                        if (response.Content.ToLower() == "y") status = false;
-                        if (response.Content.ToLower() == "n") return;
+                        if (response.Message.Content.ToLower() == "y") status = false;
+                        if (response.Message.Content.ToLower() == "n") return;
                     }
                     catch
                     {
@@ -120,16 +117,16 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubremove", "clubkick", "ckick")]
         [Description("Removes a user from your club")]
         [RequiredChannel]
-        public async Task RemoveClubMemberAsync(SocketGuildUser user)
+        public async Task RemoveClubMemberAsync(CachedMember user)
         {
-            if (user == Context.User) return;
+            if (user == Context.Member) return;
             using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.LeaderId == Context.User.Id);
                 if (club == null) return;
                 await Context.Channel.TriggerTypingAsync();
-                if (!await _club.RemoveUserAsync(user, club.Id, db))
+                if (!await _club.RemoveUserAsync(user, user.Guild, club.Id, db))
                 {
                     await Context.ReplyAsync($"Couldn't remove {user.Mention}", Color.Red);
                     return;
@@ -151,7 +148,7 @@ namespace Hanekawa.Bot.Modules.Club
                     x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ClubId == id);
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id && x.Id == clubUser.ClubId);
-                await _club.RemoveUserAsync(Context.User, club.Id, db);
+                await _club.RemoveUserAsync(Context.Member, Context.Guild, club.Id, db);
                 await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green);
             }
         }
@@ -183,14 +180,15 @@ namespace Hanekawa.Bot.Modules.Club
                 }
 
                 await Context.ReplyAsync($"Which club would you like to leave? Provide ID\n{str}");
-                var response = await NextMessageAsync();
-                if (response == null || response.Content.IsNullOrWhiteSpace())
+                var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                    x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == Context.Member.Guild.Id, TimeSpan.FromMinutes(1));
+                if (response == null || response.Message.Content.IsNullOrWhiteSpace())
                 {
                     await Context.ReplyAsync("Timed out", Color.Red);
                     return;
                 }
 
-                var check = int.TryParse(response.Content, out var result);
+                var check = int.TryParse(response.Message.Content, out var result);
                 if (!check) return;
                 var club = clubInfos.FirstOrDefault(x => x.Id == result);
                 if (club == null)
@@ -199,7 +197,7 @@ namespace Hanekawa.Bot.Modules.Club
                     return;
                 }
 
-                var leave = await _club.RemoveUserAsync(Context.User, club.Id, db);
+                var leave = await _club.RemoveUserAsync(Context.User, Context.Guild, club.Id, db);
                 if (leave) await Context.ReplyAsync($"Successfully left {club.Name}", Color.Green);
                 else await Context.ReplyAsync($"Something went wrong, couldn't leave {club.Name}", Color.Red);
             }
@@ -209,7 +207,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubpromote", "cprom")]
         [Description("Promotes someone to a higher rank")]
         [RequiredChannel]
-        public async Task ClubPromoteAsync(SocketGuildUser user)
+        public async Task ClubPromoteAsync(CachedMember user)
         {
             if (Context.User == user) return;
             using (var db = new DbService())
@@ -245,8 +243,9 @@ namespace Hanekawa.Bot.Modules.Club
                 {
                     await Context.ReplyAsync(
                         $"Are you sure you want to transfer ownership of {club.Name} to {user.Mention}? (y/n)");
-                    var response = await NextMessageAsync(timeout: TimeSpan.FromSeconds(45));
-                    if (response == null || response.Content.ToLower() != "y")
+                    var response = await Context.Bot.GetInteractivity()
+                        .WaitForMessageAsync(x => x.Message.Guild.Id == user.Guild.Id, TimeSpan.FromMinutes(1));
+                    if (response == null || response.Message.Content.ToLower() != "y")
                     {
                         await Context.ReplyAsync("Cancelling...");
                         return;
@@ -267,7 +266,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubdemote", "cdem")]
         [Description("Demotes someone to a lower rank")]
         [RequiredChannel]
-        public async Task ClubDemoteAsync(SocketGuildUser user)
+        public async Task ClubDemoteAsync(CachedMember user)
         {
             if (Context.User == user) return;
             using (var db = new DbService())
@@ -301,7 +300,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("clubblacklist", "cblacklist", "cb")]
         [Description("Blacklist a user from their club")]
         [RequiredChannel]
-        public async Task BlackListUser(SocketGuildUser user, [Remainder] string reason = null)
+        public async Task BlackListUser(CachedMember user, [Remainder] string reason = null)
         {
             if (Context.User == user) return;
             using (var db = new DbService())
@@ -312,19 +311,20 @@ namespace Hanekawa.Bot.Modules.Club
                 var toBlacklist = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.ClubId == club.Id && x.UserId == user.Id && x.GuildId == Context.Guild.Id);
                 if (toBlacklist == null) return;
-                var blacklist = await _club.AddBlacklist(user, Context.User, club, db, reason);
+                var blacklist = await _club.AddBlacklist(user, Context.Member, Context.Guild, club, db, reason);
                 if (!blacklist)
                 {
                     await Context.ReplyAsync(
                         "User is already blacklisted. Do you wish to remove it? (y/n)");
-                    var response = await NextMessageAsync();
-                    if (response == null || response.Content.IsNullOrWhiteSpace()) return;
-                    if (response.Content.ToLower() != "y")
+                    var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                        x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == user.Guild.Id, TimeSpan.FromMinutes(1));
+                    if (response == null || response.Message.Content.IsNullOrWhiteSpace()) return;
+                    if (response.Message.Content.ToLower() != "y")
                     {
                         await Context.ReplyAsync("User stays blacklisted");
                         return;
                     }
-                    await _club.RemoveBlacklist(user, club, db);
+                    await _club.RemoveBlacklist(user, Context.Guild, club, db);
                     await Context.ReplyAsync($"Removed blacklist for {user.Mention} in {club.Name}",
                         Color.Green);
                 }
@@ -362,7 +362,7 @@ namespace Hanekawa.Bot.Modules.Club
                     result.Add(stringBuilder.ToString());
                 }
 
-                await Context.ReplyPaginated(result, Context.Guild, $"Blacklisted users for {club.Name}");
+                await Context.PaginatedReply(result, Context.Guild, $"Blacklisted users for {club.Name}");
             }
         }
     }

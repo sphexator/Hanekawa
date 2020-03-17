@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -15,8 +15,8 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club Setting Advertisement")]
         [Command("ca")]
         [Description("Sets channel where club advertisements will be posted. \nLeave empty to disable")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ClubSetAdvertisementChannel(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task ClubSetAdvertisementChannel(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -48,8 +48,8 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club Setting Category")]
         [Command("Clubcategory", "ccat")]
         [Description("Sets location in where club channels will be created. \nLeave empty to disable")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ClubSetCategory(SocketCategoryChannel category = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task ClubSetCategory(CachedCategoryChannel category = null)
         {
             using (var db = new DbService())
             {
@@ -81,7 +81,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club Setting Level")]
         [Command("Clublevel", "cl")]
         [Description("Sets level requirement for people to create a club")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubSetLevelRequirement(int level)
         {
             if (level <= 0) return;
@@ -99,7 +99,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Club Setting Channel Amount")]
         [Command("cca")]
         [Description("Sets amount required that's above the level requirement to create a channel")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubSetAmountRequirement(int amount)
         {
             if (amount <= 0) return;

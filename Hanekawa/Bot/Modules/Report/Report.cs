@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
@@ -16,7 +17,7 @@ using Quartz.Util;
 namespace Hanekawa.Bot.Modules.Report
 {
     [Name("Report")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Report : DiscordModuleBase<HanekawaContext>
     {
         private readonly ColourService _colour;
@@ -35,13 +36,13 @@ namespace Hanekawa.Bot.Modules.Report
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
-            var embed = new EmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id))
-                .WithAuthor(new EmbedAuthorBuilder
+            var embed = new LocalEmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id))
+                .WithAuthor(new LocalEmbedAuthorBuilder()
                 {
-                    IconUrl = Context.User.GetAvatar(),
-                    Name = Context.User.GetName()
+                    IconUrl = Context.User.GetAvatarUrl(),
+                    Name = Context.Member.DisplayName
                 })
-                .WithFooter(new EmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
+                .WithFooter(new LocalEmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow));
 
             if (Context.Message.Attachments.FirstOrDefault() != null)
@@ -50,13 +51,13 @@ namespace Hanekawa.Bot.Modules.Report
             report.MessageId = msg.Id;
             await db.SaveChangesAsync();
             await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Create("Report sent!", Color.Green).Build());
+                new LocalEmbedBuilder().Create("Report sent!", Color.Green).Build());
         }
 
         [Name("Respond")]
         [Command("respond")]
         [Description("Respond to a report that's been sent")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RespondAsync(int id, [Remainder] string text)
         {
             if (text.IsNullOrWhiteSpace()) return;
@@ -71,10 +72,10 @@ namespace Hanekawa.Bot.Modules.Report
                 .GetMessageAsync(report.MessageId.Value);
             var embed = msg.Embeds.First().ToEmbedBuilder();
             embed.Color = Color.Orange;
-            embed.AddField(Context.User.GetName(), text);
+            embed.AddField(Context.Member.DisplayName, text);
             try
             {
-                var suggestUser = Context.Guild.GetUser(report.UserId);
+                var suggestUser = Context.Guild.GetMember(report.UserId);
                 await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
                     "Your report got a response!\n" +
                     "report:\n" +
@@ -93,8 +94,8 @@ namespace Hanekawa.Bot.Modules.Report
         [Name("Channel")]
         [Command("rc")]
         [Description("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetReportChannelAsync(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetReportChannelAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {

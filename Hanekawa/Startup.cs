@@ -22,7 +22,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using LogLevel = NLog.LogLevel;
+using Qmmands;
 
 namespace Hanekawa
 {
@@ -46,33 +46,21 @@ namespace Hanekawa
             services.AddLogging();
             services.AddSingleton(
                 new DiscordBot(TokenType.Bot, Configuration["token"], new DefaultPrefixProvider(),
-                    DiscordBotConfiguration.Default));
+                    new DiscordBotConfiguration
+                    {
+                        CommandServiceConfiguration = new CommandServiceConfiguration
+                        {
+                            DefaultRunMode = RunMode.Sequential,
+                            CooldownBucketKeyGenerator = (x, context) =>
+                            {
+                                var ctx = (HanekawaContext) context;
+                                return ctx.User.Id;
+                            }
+                        }
+                    }));
             services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
-            /*
-             NOTE: This might not be needed anymore with Disqord due to Qmmands already being implemented
-            services.AddSingleton(new CommandService(new CommandServiceConfiguration
-            {
-                DefaultRunMode = RunMode.Parallel,
-                CooldownBucketKeyGenerator = (obj, cxt, provider) =>
-                {
-                    var context = (HanekawaContext) cxt;
-                    return context.User.Id;
-                }
-            }));
-            */
             services.AddSingleton<ColourService>();
             services.AddSingleton(new AnimeSimulCastClient());
-            /*
-             TODO: Add Lavalink client here later
-            services.AddSingleton(new LavaSocketClient());
-            services.AddSingleton(new LavaRestClient(new Configuration
-            {
-                AutoDisconnect = true,
-                SelfDeaf = false,
-                LogSeverity = LogSeverity.Info,
-                PreservePlayers = true
-            }));
-            */
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
             services.UseQuartz(typeof(WarnService));
@@ -99,7 +87,6 @@ namespace Hanekawa
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             app.UseHttpsRedirection();
-
             NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
         }
 
@@ -184,12 +171,9 @@ namespace Hanekawa
             config.AddTarget(asyncFileTarget);
             config.AddTarget(asyncDatabaseTarget);
 
-            // var minFileLog = LogLevel.Info;
-            var minDbLog = LogLevel.Warn;
-
             config.AddRuleForAllLevels(asyncConsoleTarget);
-            // config.AddRule(minFileLog, LogLevel.Fatal, fileTarget);
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncDatabaseTarget);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);
+            config.AddRule(LogLevel.Warn, LogLevel.Fatal, asyncDatabaseTarget);
 
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;

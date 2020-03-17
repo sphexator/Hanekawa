@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly ConcurrentDictionary<ulong, MemoryCache> _serverExpCooldown
             = new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private bool OnServerCooldown(SocketGuildUser user)
+        private bool OnServerCooldown(CachedMember user)
         {
             var users = _serverExpCooldown.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id, out _)) return true;
@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Experience
             return false;
         }
 
-        private bool OnGlobalCooldown(SocketGuildUser user)
+        private bool OnGlobalCooldown(CachedMember user)
         {
             if (_globalCooldown.TryGetValue(user.Id, out _)) return true;
             _globalCooldown.Set(user.Id, user, TimeSpan.FromMinutes(1));

@@ -12,14 +12,14 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Log")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    [RequireUserPermission(GuildPermission.ManageGuild)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireMemberGuildPermissions(Permission.ManageGuild)]
     public class Log : DiscordModuleBase<HanekawaContext>
     {
         [Name("Join/Leave")]
         [Command("logjoin")]
         [Description("Logs users joining and leaving server, leave empty to disable")]
-        public async Task JoinLogAsync(SocketTextChannel channel = null)
+        public async Task JoinLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -41,7 +41,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Warnings")]
         [Command("logwarn")]
         [Description("Logs warnings given out from the bot, leave empty to disable")]
-        public async Task WarnLogAsync(SocketTextChannel channel = null)
+        public async Task WarnLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Messages")]
         [Command("logmsgs")]
         [Description("Logs deleted and updated messages, leave empty to disable")]
-        public async Task MessageLogAsync(SocketTextChannel channel = null)
+        public async Task MessageLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Ban")]
         [Command("logban")]
         [Description("Logs users getting banned and muted, leave empty to disable")]
-        public async Task BanLogAsync(SocketTextChannel channel = null)
+        public async Task BanLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -107,7 +107,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("User")]
         [Command("loguser")]
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
-        public async Task UserLogAsync(SocketTextChannel channel = null)
+        public async Task UserLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -130,7 +130,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Command("logautomod")]
         [Description(
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
-        public async Task AutoModeratorLogAsync(SocketTextChannel channel = null)
+        public async Task AutoModeratorLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -153,7 +153,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Voice")]
         [Command("logvoice")]
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
-        public async Task VoiceLogAsync(SocketTextChannel channel = null)
+        public async Task VoiceLogAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {

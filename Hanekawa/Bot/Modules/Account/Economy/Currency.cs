@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 cfg.EmoteCurrency = true;
-                cfg.CurrencySign = emote.ParseEmoteString();
+                cfg.CurrencySign = emote.MessageFormat;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set regular currency sign to {emote}", Color.Green);
             }
@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 cfg.SpecialEmoteCurrency = true;
-                cfg.SpecialCurrencySign = emote.ParseEmoteString();
+                cfg.SpecialCurrencySign = emote.MessageFormat;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set special currency sign to {emote}", Color.Green);
             }

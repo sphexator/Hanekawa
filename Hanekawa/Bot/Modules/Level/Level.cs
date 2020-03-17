@@ -2,25 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
-using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Level
 {
     [Name("Level")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public partial class Level : DiscordModuleBase<HanekawaContext>
     {
         private readonly ExpService _exp;
@@ -29,14 +27,16 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Level Reset")]
         [Command("lr", "lvlreset")]
         [Description("Reset the server level/exp back to 0")]
-        [RequireServerOwner]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
+        [GuildOwnerOnly]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ResetAsync()
         {
             await Context.ReplyAsync(
                 "You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
-            var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
-            if (response == null || response.Content.ToLower() != "y")
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
+                x => x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == Context.Guild.Id,
+                TimeSpan.FromMinutes(1));
+            if (response == null || response.Message.Content.ToLower() != "y")
             {
                 await Context.ReplyAsync("Aborting...");
                 return;
@@ -66,8 +66,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Set Level")]
         [Command("sl", "setlvl")]
         [Description("Sets a user to a desired level")]
-        [RequireServerOwner]
-        public async Task SetLevelAsync(SocketGuildUser user, int level)
+        [GuildOwnerOnly]
+        public async Task SetLevelAsync(CachedMember user, int level)
         {
             if (level <= 0) return;
             var totalExp = 0;
@@ -87,7 +87,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Level Role Stack")]
         [Command("lrs", "lvlstack")]
         [Description("Toggles between level roles stacking or keep the highest earned one")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task StackToggleAsync()
         {
             using (var db = new DbService())
@@ -113,21 +113,21 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Level Stack Role Add")]
         [Command("lsa", "lvlsadd")]
         [Description("Adds a role reward which will stack regardless of setting (useful for permission role)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task StackAddAsync(int level, [Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task StackAddAsync(int level, [Remainder] CachedRole role) =>
             await AddLevelRole(Context, level, role, true);
 
         [Name("Level Role Add")]
         [Command("la", "lvladd")]
         [Description("Adds a role reward")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddAsync(int level, [Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddAsync(int level, [Remainder] CachedRole role) =>
             await AddLevelRole(Context, level, role, false);
 
         [Name("Level Role Remove")]
         [Command("lr", "lvlremove")]
         [Description("Adds a role reward")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveAsync(int level)
         {
             using (var db = new DbService())
@@ -143,7 +143,7 @@ namespace Hanekawa.Bot.Modules.Level
                 db.LevelRewards.Remove(role);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"Removed {Context.Guild.Roles.First(x => x.Id == role.Role).Name} from level rewards!",
+                    $"Removed {Context.Guild.Roles.First(x => x.Key == role.Role).Value.Name} from level rewards!",
                     Color.Green);
             }
         }
@@ -170,8 +170,7 @@ namespace Hanekawa.Bot.Modules.Level
                     var x = levels[i];
                     try
                     {
-                        var role = Context.Guild.GetRole(x.Role) ??
-                                   Context.Guild.Roles.FirstOrDefault(z => z.Id == x.Role);
+                        var role = Context.Guild.GetRole(x.Role);
                         if (role == null) pages.Add("Role not found");
                         else
                             pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
@@ -185,11 +184,11 @@ namespace Hanekawa.Bot.Modules.Level
                     }
                 }
 
-                await Context.ReplyPaginated(pages, Context.Guild, $"Level Roles for {Context.Guild.Name}");
+                await Context.PaginatedReply(pages, Context.Guild, $"Level Roles for {Context.Guild.Name}");
             }
         }
 
-        private async Task AddLevelRole(HanekawaContext context, int level, SocketRole role, bool stack)
+        private async Task AddLevelRole(HanekawaContext context, int level, CachedRole role, bool stack)
         {
             if (level <= 0) return;
             using (var db = new DbService())
@@ -201,14 +200,16 @@ namespace Hanekawa.Bot.Modules.Level
                     if (gRole != null)
                     {
                         await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
-                        var response = await NextMessageAsync();
-                        if (response == null || response.Content.ToLower() != "y")
+                        var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
+                            x => x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == Context.Guild.Id,
+                            TimeSpan.FromMinutes(1));
+                        if (response == null || response.Message.Content.ToLower() != "y")
                         {
                             await context.ReplyAsync("Cancelling.");
                             return;
                         }
 
-                        if (response.Content.ToLower() != "yes")
+                        if (response.Message.Content.ToLower() != "yes")
                         {
                             await context.ReplyAsync("Cancelling.");
                             return;

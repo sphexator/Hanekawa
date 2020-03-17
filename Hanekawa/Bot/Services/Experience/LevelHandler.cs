@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Account;

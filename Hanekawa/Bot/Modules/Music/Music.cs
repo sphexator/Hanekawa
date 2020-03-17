@@ -1,20 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Disqord.Bot;
-using Hanekawa.Bot.Preconditions;
-using Hanekawa.Database;
-using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Command;
-using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
-using Quartz.Util;
-
-namespace Hanekawa.Bot.Modules.Music
+﻿namespace Hanekawa.Bot.Modules.Music
 {
+    /*
     [Name("Music")]
     [Description("Music module")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
@@ -368,4 +354,5 @@ namespace Hanekawa.Bot.Modules.Music
             }
         }
     }
+    */
 }

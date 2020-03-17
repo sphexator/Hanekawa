@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                     return;
                 }
 
-                await Context.ReplyPaginated(result, Context.User, $"Inventory for {Context.User}");
+                await Context.PaginatedReply(result, Context.Member, $"Inventory for {Context.User}");
             }
         }
 
@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                         $"{Context.Guild.GetRole(x.RoleId).Name ?? "No role found"} - {_currency.ToCurrency(cfg, x.Price, x.SpecialCredit)}");
                 }
 
-                await Context.ReplyPaginated(result, Context.Guild, $"Store for {Context.Guild.Name}");
+                await Context.PaginatedReply(result, Context.Guild, $"Store for {Context.Guild.Name}");
             }
         }
 

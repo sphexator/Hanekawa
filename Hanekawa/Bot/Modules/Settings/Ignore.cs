@@ -10,14 +10,13 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Ignore")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    [RequireUserPermission(GuildPermission.ManageGuild)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireMemberGuildPermissions(Permission.ManageGuild)]
     public class Ignore : DiscordModuleBase<HanekawaContext>
     {
         private readonly RequiredChannel _requiredChannel;
@@ -27,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Ignore")]
         [Command("ignore")]
         [Description("Adds or removes a channel from ignore list")]
-        public async Task IgnoreChannelAsync(SocketTextChannel channel = null)
+        public async Task IgnoreChannelAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -125,8 +124,8 @@ namespace Hanekawa.Bot.Modules.Settings
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
-                var embed = new EmbedBuilder().Create(content, Context.Colour.Get(Context.Guild.Id))
-                    .WithAuthor(new EmbedAuthorBuilder {IconUrl = Context.Guild.IconUrl, Name = title});
+                var embed = new LocalEmbedBuilder().Create(content, Context.Colour.Get(Context.Guild.Id))
+                    .WithAuthor(new LocalEmbedAuthorBuilder {IconUrl = Context.Guild.GetIconUrl(), Name = title});
                 await Context.ReplyAsync(embed);
             }
         }

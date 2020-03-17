@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
+using Disqord.Extensions.Interactivity.Menus.Paged;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -18,8 +20,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Add Experience")]
         [Command("addexp")]
         [Description("Give a certain amount of experience to a one or more users")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddExp(int exp, params SocketGuildUser[] users)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddExp(int exp, params CachedMember[] users)
         {
             if (exp == 0) return;
             if (exp < 0)
@@ -48,8 +50,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Remove Experience")]
         [Command("remexp")]
         [Description("Removes a certain amount of experience to a one or more users")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveExp(int exp, params SocketGuildUser[] users)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RemoveExp(int exp, params CachedMember[] users)
         {
             if (exp <= 0) return;
             using (var db = new DbService())
@@ -72,8 +74,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Add Exp Ignore Channel")]
         [Command("eia")]
         [Description("Adds one or more channels to ignore exp")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddExpIgnoreChannel(params SocketTextChannel[] channels)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddExpIgnoreChannel(params CachedTextChannel[] channels)
         {
             using (var db = new DbService())
             {
@@ -109,8 +111,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Add Exp Ignore Channel")]
         [Command("eia")]
         [Description("Adds one or more channels to ignore exp")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddExpIgnoreChannel(params SocketVoiceChannel[] channels)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddExpIgnoreChannel(params CachedVoiceChannel[] channels)
         {
             using (var db = new DbService())
             {
@@ -146,8 +148,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Add Exp Ignore Category")]
         [Command("eia")]
         [Description("Adds one or more categories to ignore giving exp")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddExpIgnoreChannel(params SocketCategoryChannel[] category)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
             using (var db = new DbService())
             {
@@ -183,8 +185,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Remove Exp Ignore Channel")]
         [Command("eir")]
         [Description("Removes one or more channels from ignore exp table")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveExpIgnoreChannel(params SocketTextChannel[] channels)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RemoveExpIgnoreChannel(params CachedTextChannel[] channels)
         {
             using (var db = new DbService())
             {
@@ -216,8 +218,8 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Remove Exp Ignore Category")]
         [Command("eir")]
         [Description("Removes one or more category from ignore exp table")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveExpIgnoreChannel(params SocketCategoryChannel[] category)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RemoveExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
             using (var db = new DbService())
             {
@@ -249,21 +251,29 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Remove Exp Ignore Category")]
         [Command("eir")]
         [Description("Removes one or more category from ignore exp table")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         [RequiredChannel]
         public async Task ExpIgnoreList()
         {
             var channels = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
             var categories = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
-            var result = new List<string>();
-            if (channels.Count == 0 && categories.Count == 0) result.Add("No channels");
-
+            var result = new StringBuilder();
+            var pages = new List<Page>();
+            if (channels.Count == 0 && categories.Count == 0) result.AppendLine("No channels");
+            var count = 0;
             if (channels.Count > 0)
                 foreach (var x in channels)
                 {
                     var channel = Context.Guild.GetTextChannel(x);
                     if (channel == null) continue;
-                    result.Add($"Channel: {channel.Mention}");
+                    if (count > 5)
+                    {
+                        pages.Add(new Page(result.ToString()));
+                        result.Clear();
+                        count = 0;
+                    }
+                    result.AppendLine($"Channel: {channel.Mention}");
+                    count++;
                 }
 
             if (categories.Count > 0)
@@ -271,10 +281,18 @@ namespace Hanekawa.Bot.Modules.Level
                 {
                     var category = Context.Guild.GetCategoryChannel(x);
                     if (category == null) continue;
-                    result.Add($"Category: {category.Name}");
+                    if (count > 5)
+                    {
+                        pages.Add(new Page(result.ToString()));
+                        result.Clear();
+                        count = 0;
+                    }
+                    result.AppendLine($"Category: {category.Name}");
+                    count++;
                 }
 
-            await Context.ReplyPaginated(result, Context.Guild, "Experience Channel Ignore");
+            await Context.Bot.GetInteractivity().StartMenuAsync(Context.Channel,
+                new PagedMenu(Context.Member.Id, new DefaultPageProvider(pages)));
         }
     }
 }

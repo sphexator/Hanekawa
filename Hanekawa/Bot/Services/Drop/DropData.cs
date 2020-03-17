@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
             new ConcurrentDictionary<ulong, MemoryCache>();
 
-        public async Task<bool> AddLootChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> AddLootChannel(CachedTextChannel channel, DbService db)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             if (channels.ContainsKey(channel.Id)) return false;
@@ -40,7 +40,7 @@ namespace Hanekawa.Bot.Services.Drop
             return true;
         }
 
-        public async Task<bool> RemoveLootChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> RemoveLootChannel(CachedTextChannel channel, DbService db)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             if (!channels.ContainsKey(channel.Id)) return false;
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Services.Drop
             return true;
         }
 
-        private bool IsDropChannel(SocketTextChannel channel)
+        private bool IsDropChannel(CachedTextChannel channel)
         {
             var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
             return channels.TryGetValue(channel.Id, out _);
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Services.Drop
             return false;
         }
 
-        private bool OnUserCooldown(SocketGuildUser user)
+        private bool OnUserCooldown(CachedMember user)
         {
             var users = _userCooldown.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id, out _)) return true;
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Services.Drop
             return false;
         }
 
-        private bool OnGuildCooldown(SocketGuild guild)
+        private bool OnGuildCooldown(CachedGuild guild)
         {
             if (_guildCooldown.TryGetValue(guild.Id, out _)) return true;
             _guildCooldown.Set(guild.Id, true, TimeSpan.FromMinutes(1));

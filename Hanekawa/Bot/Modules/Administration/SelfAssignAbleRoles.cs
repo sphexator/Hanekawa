@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
@@ -10,7 +11,6 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Administration
@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Modules.Administration
         [Command("iam", "give")]
         [Description("Assigns a role that's setup as self-assignable")]
         [RequiredChannel]
-        public async Task AssignSelfRoleAsync([Remainder] SocketRole role)
+        public async Task AssignSelfRoleAsync([Remainder] CachedRole role)
         {
             using (var db = new DbService())
             {
@@ -37,7 +37,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 }
 
                 bool addedRole;
-                var gUser = Context.User;
+                var gUser = Context.Member;
                 if (dbRole.Exclusive)
                 {
                     var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id && x.Exclusive)
@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Administration
                     foreach (var x in roles)
                     {
                         var exclusiveRole = Context.Guild.GetRole(x.RoleId);
-                        if (gUser.Roles.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
+                        if (gUser.Roles.Values.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
                     }
 
                     addedRole = await gUser.TryAddRoleAsync(role);
@@ -57,13 +57,13 @@ namespace Hanekawa.Bot.Modules.Administration
 
                 if (addedRole)
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().Create($"Added {role.Name} to {Context.User.Mention}",
+                        new LocalEmbedBuilder().Create($"Added {role.Name} to {Context.User.Mention}",
                                 Color.Green)
                             .Build(),
                         TimeSpan.FromSeconds(10));
                 else
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder().Create(
+                        new LocalEmbedBuilder().Create(
                                 $"Couldn't add {role.Name} to {Context.User.Mention}, missing permission or role position?",
                                 Color.Red)
                             .Build(),
@@ -75,10 +75,9 @@ namespace Hanekawa.Bot.Modules.Administration
         [Command("iamnot", "iamn")]
         [Description("Removes a role that's setup as self-assignable")]
         [RequiredChannel]
-        public async Task RemoveSelfRoleAsync([Remainder] SocketRole role)
+        public async Task RemoveSelfRoleAsync([Remainder] CachedRole role)
         {
-            if (!(Context.User is SocketGuildUser user)) return;
-            if (user.Roles.FirstOrDefault(x => x.Id == role.Id) == null) return;
+            if (Context.Member.Roles.Values.FirstOrDefault(x => x.Id == role.Id) == null) return;
             using (var db = new DbService())
             {
                 await Context.Message.TryDeleteMessageAsync();
@@ -90,14 +89,14 @@ namespace Hanekawa.Bot.Modules.Administration
                     return;
                 }
 
-                if (await user.TryRemoveRoleAsync(role))
+                if (await Context.Member.TryRemoveRoleAsync(role))
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder()
+                        new LocalEmbedBuilder()
                             .Create($"Removed {role.Name} from {Context.User.Mention}", Color.Green)
                             .Build(), TimeSpan.FromSeconds(10));
                 else
                     await ReplyAndDeleteAsync(null, false,
-                        new EmbedBuilder()
+                        new LocalEmbedBuilder()
                             .Create(
                                 $"Couldn't remove {role.Name} from {Context.User.Mention}, missing permission or role position?",
                                 Color.Red)
@@ -124,36 +123,36 @@ namespace Hanekawa.Bot.Modules.Administration
                 foreach (var x in list)
                 {
                     var role = Context.Guild.GetRole(x.RoleId) ??
-                               Context.Guild.Roles.FirstOrDefault(z => z.Id == x.RoleId);
+                               Context.Guild.Roles.Values.FirstOrDefault(z => z.Id == x.RoleId);
                     if (role != null) result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
-                await Context.ReplyPaginated(result, Context.Guild,
-                    $"Self-assignable roles for {Context.Guild.Name}", null, 10);
+                await Context.PaginatedReply(result, Context.Guild,
+                    $"Self-assignable roles for {Context.Guild.Name}");
             }
         }
 
         [Name("Exclusive role add")]
         [Command("era")]
         [Description("Adds a role to the list of self-assignable roles")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task ExclusiveRole([Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task ExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, true);
 
         [Name("Role add")]
         [Command("roleadd", "ra")]
         [Description("Adds a role to the list of self-assignable roles")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task NonExclusiveRole([Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task NonExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, false);
 
         [Name("Role remove")]
         [Command("roleremove", "rr")]
         [Description("Removes a role from the list of self-assignable roles")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task RemoveSelfAssignAbleRoleAsync([Remainder] SocketRole role)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task RemoveSelfAssignAbleRoleAsync([Remainder] CachedRole role)
         {
-            if (!Context.User.HierarchyCheck(role))
+            if (!Context.Member.HierarchyCheck(role))
             {
                 await Context.ReplyAsync("Can't remove a role that's higher then your highest role.",
                     Color.Red);
@@ -178,9 +177,9 @@ namespace Hanekawa.Bot.Modules.Administration
             }
         }
 
-        private async Task AddSelfAssignAbleRoleAsync(HanekawaContext context, SocketRole role, bool exclusive)
+        private async Task AddSelfAssignAbleRoleAsync(HanekawaContext context, CachedRole role, bool exclusive)
         {
-            if (!context.User.HierarchyCheck(role))
+            if (!context.Member.HierarchyCheck(role))
             {
                 await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
                 return;

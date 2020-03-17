@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Drop;
@@ -15,8 +16,8 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Drop")]
-    [RequireUserPermission(GuildPermission.ManageGuild)]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
+    [RequireMemberGuildPermissions(Permission.ManageGuild)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Drop : DiscordModuleBase<HanekawaContext>
     {
         private readonly DropService _drop;
@@ -34,7 +35,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Emote")]
         [Command("de", "dropemote")]
         [Description("Changes claim emote")]
-        public async Task DropEmote(Emote emote)
+        public async Task DropEmote(CachedGuildEmoji emote)
         {
             await _drop.ChangeEmote(Context.Guild, emote);
             await Context.ReplyAsync($"Changed claim emote to {emote}");
@@ -43,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Add")]
         [Command("da", "dropadd")]
         [Description("Adds a channel to be eligible for drops")]
-        public async Task AddDropChannel(SocketTextChannel channel = null)
+        public async Task AddDropChannel(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -66,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Remove")]
         [Command("dr", "dropremove")]
         [Description("Removes a channel from being eligible for drops")]
-        public async Task RemoveDropChannel(SocketTextChannel channel = null)
+        public async Task RemoveDropChannel(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -93,8 +94,8 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             using (var db = new DbService())
             {
-                var embed = new EmbedBuilder().WithAuthor(new EmbedAuthorBuilder
-                    {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.IconUrl});
+                var embed = new LocalEmbedBuilder().WithAuthor(new LocalEmbedAuthorBuilder
+                    {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.GetIconUrl()});
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)
                 {

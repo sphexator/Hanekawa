@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions.Embed;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -16,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Rename Club")]
         [Command("csn")]
         [Description("Force changes a name of a club")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceRename(int clubId, [Remainder] string name)
         {
             using (var db = new DbService())
@@ -61,7 +59,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Change Club Icon")]
         [Command("csicon")]
         [Description("Force changes icon of a club")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReIcon(int clubId, [Remainder] string icon)
         {
             using (var db = new DbService())
@@ -88,7 +86,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Change Club Image")]
         [Command("csi", "csimage")]
         [Description("Force changes image of a club")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReImage(int clubId, [Remainder] string image)
         {
             using (var db = new DbService())
@@ -115,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Name("Change Club Description")]
         [Command("csd")]
         [Description("Force changes a name of a club")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReDescription(int clubId, [Remainder] string desc)
         {
             using (var db = new DbService())
@@ -145,7 +143,7 @@ namespace Hanekawa.Bot.Modules.Club
         [Command("crt")]
         [Description(
             "Toggles the use of creating roles for club or channel permission. Auto to channel when above 50 roles")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ToggleClubRole()
         {
             using (var db = new DbService())

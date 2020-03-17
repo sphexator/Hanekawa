@@ -40,7 +40,7 @@ namespace Hanekawa.Bot
                                 && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
                 for (var i = 0; i < serviceList.Count; i++) _provider.GetRequiredService(serviceList[i]);
 
-                _provider.GetRequiredService<CommandHandlingService>().InitializeAsync();
+                // _provider.GetRequiredService<CommandHandlingService>().InitializeAsync();
                 var scheduler = _provider.GetRequiredService<IScheduler>();
                 QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             }

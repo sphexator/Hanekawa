@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
@@ -14,10 +15,11 @@ namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService
     {
-        private Task GiveRolesBackAsync(CachedMember user)
+        private Task GiveRolesBackAsync(MemberJoinedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
+                var user = e.Member;
                 using var db = new DbService();
 
                 var userData = await db.GetOrCreateUserData(user);

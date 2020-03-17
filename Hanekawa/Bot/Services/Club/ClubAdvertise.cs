@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
@@ -10,7 +9,6 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Club
@@ -206,12 +204,12 @@ namespace Hanekawa.Bot.Services.Club
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        private async Task SendPostAsync(DbService db, ClubConfig cfg, SocketGuild guild, ClubInformation club)
+        private async Task SendPostAsync(DbService db, ClubConfig cfg, CachedGuild guild, ClubInformation club)
         {
             if (!cfg.AdvertisementChannel.HasValue) return;
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
                 .Create(club.Description ?? "No description added", _colourService.Get(guild.Id))
-                .WithAuthor(new EmbedAuthorBuilder {Name = club.Name})
+                .WithAuthor(new LocalEmbedAuthorBuilder() {Name = club.Name})
                 .WithImageUrl(club.ImageUrl);
             var msg = await guild.GetTextChannel(cfg.AdvertisementChannel.Value).ReplyAsync(embed);
             club.AdMessage = msg.Id;
@@ -219,7 +217,7 @@ namespace Hanekawa.Bot.Services.Club
             if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
         }
 
-        private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, SocketGuild guild,
+        private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, CachedGuild guild,
             bool enabled)
         {
             var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);

@@ -150,8 +150,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     pages.Add(strBuilder.ToString());
                 }
 
-                await Context.ReplyPaginated(pages, Context.Guild,
-                    $"Money leaderboard for {Context.Guild.Name}", null, 10);
+                await Context.PaginatedReply(pages, Context.Guild, $"Money leaderboard for {Context.Guild.Name}");
             }
         }
 

@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
@@ -14,7 +16,7 @@ namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
 
@@ -27,7 +29,7 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordSocketClient client, Random random, InternalLogService log)
+        public ExpService(DiscordBot client, Random random, InternalLogService log)
         {
             _client = client;
             _random = random;
@@ -37,8 +39,8 @@ namespace Hanekawa.Bot.Services.Experience
 
             _client.MessageReceived += ServerMessageExpAsync;
             _client.MessageReceived += GlobalMessageExpAsync;
-            _client.UserVoiceStateUpdated += VoiceExpAsync;
-            _client.UserJoined += GiveRolesBackAsync;
+            _client.VoiceStateUpdated += VoiceExpAsync;
+            _client.MemberJoined += GiveRolesBackAsync;
 
             using (var db = new DbService())
             {
@@ -92,12 +94,12 @@ namespace Hanekawa.Bot.Services.Experience
             }
         }
 
-        private Task GlobalMessageExpAsync(SocketMessage msg)
+        private Task GlobalMessageExpAsync(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(msg.Author is SocketGuildUser user)) return;
-                if (!(msg.Channel is SocketTextChannel channel)) return;
+                if (!(e.Message.Author is CachedMember user)) return;
+                if (!(e.Message.Channel is CachedTextChannel channel)) return;
                 if (user.IsBot) return;
                 if (OnGlobalCooldown(user)) return;
                 try
@@ -115,12 +117,12 @@ namespace Hanekawa.Bot.Services.Experience
             return Task.CompletedTask;
         }
 
-        private Task ServerMessageExpAsync(SocketMessage msg)
+        private Task ServerMessageExpAsync(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(msg.Author is SocketGuildUser user)) return;
-                if (!(msg.Channel is SocketTextChannel channel)) return;
+                if (!(e.Message.Author is CachedMember user)) return;
+                if (!(e.Message.Channel is CachedTextChannel channel)) return;
                 if (user.IsBot) return;
                 if (OnServerCooldown(user)) return;
                 try
@@ -141,28 +143,31 @@ namespace Hanekawa.Bot.Services.Experience
             return Task.CompletedTask;
         }
 
-        private Task VoiceExpAsync(SocketUser usr, SocketVoiceState before, SocketVoiceState after)
+        private Task VoiceExpAsync(VoiceStateUpdatedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(usr is SocketGuildUser user)) return;
+                var user = e.Member;
+                var after = e.NewVoiceState;
+                var before = e.OldVoiceState;
                 try
                 {
                     using var db = new DbService();
                     var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                     if (!cfg.VoiceExpEnabled) return;
-                    if (before.VoiceChannel != null && after.VoiceChannel != null) return;
+                    if (before != null && after != null) return;
                     var userData = await db.GetOrCreateUserData(user);
-                    if (before.VoiceChannel == null && after.VoiceChannel != null)
+                    if (before == null && after != null)
                     {
                         userData.VoiceExpTime = DateTime.UtcNow;
                         await db.SaveChangesAsync();
                         return;
                     }
 
-                    if (before.VoiceChannel != null && after.VoiceChannel == null)
+                    if (before != null && after == null)
                     {
-                        var exp = GetExp(before.VoiceChannel, DateTime.UtcNow - userData.VoiceExpTime);
+                        user.Guild.VoiceChannels.TryGetValue(before.ChannelId, out var vcChannel);
+                        var exp = GetExp(vcChannel, DateTime.UtcNow - userData.VoiceExpTime);
                         await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db);
                     }
                 }
@@ -175,21 +180,21 @@ namespace Hanekawa.Bot.Services.Experience
             return Task.CompletedTask;
         }
 
-        private int GetExp(SocketTextChannel channel)
+        private int GetExp(CachedTextChannel channel)
         {
             var xp = _random.Next(10, 20);
             if (IsReducedExp(channel)) xp = Convert.ToInt32(xp / 10);
             return xp;
         }
 
-        private int GetExp(SocketVoiceChannel channel, TimeSpan period)
+        private int GetExp(CachedVoiceChannel channel, TimeSpan period)
         {
             var xp = Convert.ToInt32(period.TotalMinutes * 2);
             if (IsReducedExp(channel)) xp = Convert.ToInt32(xp / 10);
             return xp;
         }
 
-        private bool IsReducedExp(SocketTextChannel channel)
+        private bool IsReducedExp(CachedTextChannel channel)
         {
             var isChannel = ServerTextChanReduction.TryGetValue(channel.Guild.Id, out var channels);
             var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
@@ -200,7 +205,7 @@ namespace Hanekawa.Bot.Services.Experience
             return isChannel && channels.TryGetValue(channel.Id, out _);
         }
 
-        private bool IsReducedExp(SocketVoiceChannel channel)
+        private bool IsReducedExp(CachedVoiceChannel channel)
         {
             var isChannel = ServerVoiceChanReduction.TryGetValue(channel.Guild.Id, out var channels);
             var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
