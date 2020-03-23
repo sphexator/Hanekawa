@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
                 if (dbRole == null)
                 {
-                    await ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
+                    await Context.ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
                         timeout: TimeSpan.FromSeconds(15));
                     return;
                 }
@@ -56,18 +56,14 @@ namespace Hanekawa.Bot.Modules.Administration
                 }
 
                 if (addedRole)
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder().Create($"Added {role.Name} to {Context.User.Mention}",
-                                Color.Green)
-                            .Build(),
-                        TimeSpan.FromSeconds(10));
+                                Color.Green),TimeSpan.FromSeconds(10));
                 else
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder().Create(
                                 $"Couldn't add {role.Name} to {Context.User.Mention}, missing permission or role position?",
-                                Color.Red)
-                            .Build(),
-                        TimeSpan.FromSeconds(10));
+                                Color.Red),TimeSpan.FromSeconds(10));
             }
         }
 
@@ -84,23 +80,21 @@ namespace Hanekawa.Bot.Modules.Administration
                 var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
                 if (dbRole == null)
                 {
-                    await ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
+                    await Context.ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
                         timeout: TimeSpan.FromSeconds(15));
                     return;
                 }
 
                 if (await Context.Member.TryRemoveRoleAsync(role))
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
-                            .Create($"Removed {role.Name} from {Context.User.Mention}", Color.Green)
-                            .Build(), TimeSpan.FromSeconds(10));
+                            .Create($"Removed {role.Name} from {Context.User.Mention}", Color.Green), TimeSpan.FromSeconds(10));
                 else
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
                             .Create(
                                 $"Couldn't remove {role.Name} from {Context.User.Mention}, missing permission or role position?",
-                                Color.Red)
-                            .Build(), TimeSpan.FromSeconds(10));
+                                Color.Red), TimeSpan.FromSeconds(10));
             }
         }
 

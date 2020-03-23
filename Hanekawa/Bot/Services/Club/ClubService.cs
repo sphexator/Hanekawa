@@ -22,6 +22,7 @@ namespace Hanekawa.Bot.Services.Club
         private readonly ColourService _colourService;
 
         private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(19520));
+        private readonly OverwritePermissions _allowOverwrite = new OverwritePermissions(new ChannelPermissions(19520), ChannelPermissions.None);
 
         public ClubService(DiscordBot client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {

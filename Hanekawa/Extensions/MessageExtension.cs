@@ -9,16 +9,16 @@ namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<IMessage>> FilterMessagesAsync(this ICachedMessageChannel channel, int amount = 100,
+        public static async Task<List<Snowflake>> FilterMessagesAsync(this ICachedMessageChannel channel, int amount = 100,
             CachedMember filterBy = null)
         {
             var messages = await channel.GetMessagesAsync(amount);
             return messages.ToList().FilterMessages(filterBy);
         }
 
-        public static List<IMessage> FilterMessages(this List<RestMessage> msgs, CachedMember filterBy = null)
+        public static List<Snowflake> FilterMessages(this List<RestMessage> msgs, CachedMember filterBy = null)
         {
-            var result = new List<IMessage>();
+            var result = new List<Snowflake>();
             for (var i = 0; i < msgs.Count; i++)
             {
                 var x = msgs[i];
@@ -28,7 +28,7 @@ namespace Hanekawa.Extensions
                 {
                     // If we're filtering, don't add if its not from the filtered user.
                     if (filterBy != null && x.Author.Id != filterBy.Id) continue;
-                    result.Add(x);
+                    result.Add(x.Id);
                 }
             }
 

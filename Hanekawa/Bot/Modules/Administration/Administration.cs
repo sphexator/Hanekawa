@@ -44,28 +44,28 @@ namespace Hanekawa.Bot.Modules.Administration
             if (Context.User == user) return;
             if (!Context.Guild.CurrentMember.HierarchyCheck(user))
             {
-                await ReplyAndDeleteAsync(
+                await Context.ReplyAndDeleteAsync(
                     null,
                     false,
                     new LocalEmbedBuilder()
                         .Create("Cannot ban someone that's higher than me in hierarchy.",
-                            Color.Red).Build(), TimeSpan.FromSeconds(20));
+                            Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
             if (!Context.Member.HierarchyCheck(user))
             {
-                await ReplyAndDeleteAsync(null, false,
+                await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder().Create(
                         $"{Context.User.Mention}, can't ban someone that's equal or more power than you.",
-                        Color.Red).Build(), TimeSpan.FromSeconds(20));
+                        Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
             await Context.Guild.BanMemberAsync(user.Id, $"{Context.User} ({Context.User.Id}) reason: {reason}", 7);
-            await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
+            await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
-                Color.Green).Build(), TimeSpan.FromSeconds(20));
+                Color.Green), TimeSpan.FromSeconds(20));
         }
 
         [Name("Ban")]
@@ -82,15 +82,15 @@ namespace Hanekawa.Bot.Modules.Administration
                 try
                 {
                     await Context.Guild.BanMemberAsync(userId, reason, 7);
-                    await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
-                        $"Banned {Format.Bold($"{userId}")} from {Context.Guild.Name}.",
-                        Color.Green).Build(), TimeSpan.FromSeconds(20));
+                    await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
+                        $"Banned **{userId}** from {Context.Guild.Name}.",
+                        Color.Green), TimeSpan.FromSeconds(20));
                 }
                 catch
                 {
-                    await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
+                    await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                         "Couldn't fetch a user by that ID.",
-                        Color.Green).Build(), TimeSpan.FromSeconds(20));
+                        Color.Green), TimeSpan.FromSeconds(20));
                 }
         }
 
@@ -105,28 +105,28 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.Message.TryDeleteMessageAsync();
             if (!Context.Guild.CurrentMember.HierarchyCheck(user))
             {
-                await ReplyAndDeleteAsync(
+                await Context.ReplyAndDeleteAsync(
                     null,
                     false,
                     new LocalEmbedBuilder()
                         .Create("Cannot kick someone that's higher than me in hierarchy.",
-                            Color.Red).Build(), TimeSpan.FromSeconds(20));
+                            Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
             if (!Context.Member.HierarchyCheck(user))
             {
-                await ReplyAndDeleteAsync(null, false,
+                await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder().Create(
                         $"{Context.User.Mention}, can't kick someone that's equal or more power than you.",
-                        Color.Red).Build(), TimeSpan.FromSeconds(20));
+                        Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
             await user.KickAsync(RestRequestOptions.FromReason(reason));
-            await ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
+            await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Kicked {user.Mention} from {Context.Guild.Name}.",
-                Color.Green).Build(), TimeSpan.FromSeconds(20));
+                Color.Green), TimeSpan.FromSeconds(20));
         }
 
         [Name("Prune")]
@@ -139,15 +139,20 @@ namespace Hanekawa.Bot.Modules.Administration
             if (amount <= 0) return;
             await Context.Message.TryDeleteMessageAsync();
             var messages = await Context.Channel.FilterMessagesAsync(amount, user);
-            if (await Context.Channel.DeleteMessageAsync(messages))
-                await ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green).Build(),
+            try
+            {
+                await Context.Channel.DeleteMessagesAsync(messages);
+                await Context.ReplyAndDeleteAsync(null, false,
+                    new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green),
                     TimeSpan.FromSeconds(20));
-            else
-                await ReplyAndDeleteAsync(null, false,
+            }
+            catch (Exception e)
+            {
+                await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder()
-                        .Create("Couldn't delete messages, missing permissions?", Color.Red).Build(),
+                        .Create("Couldn't delete messages, missing permissions?", Color.Red),
                     TimeSpan.FromSeconds(20));
+            }
         }
 
         [Name("Soft Ban")]
@@ -163,8 +168,8 @@ namespace Hanekawa.Bot.Modules.Administration
             using (var db = new DbService())
             {
                 if (!await _mute.Mute(user, db))
-                    await ReplyAndDeleteAsync(null, false,
-                        new LocalEmbedBuilder().Create("Couldn't mute user. ", Color.Red).Build(),
+                    await Context.ReplyAndDeleteAsync(null, false,
+                        new LocalEmbedBuilder().Create("Couldn't mute user. ", Color.Red),
                         TimeSpan.FromSeconds(20));
 
                 var messages = await Context.Channel.FilterMessagesAsync(50, user);
@@ -187,14 +192,14 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 var muteRes = await _mute.TimedMute(user, Context.Member, duration.Value, db, reason);
                 if (muteRes)
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder().Create($"Muted {user.Mention} for {duration.Value.Humanize(2)}",
-                            Color.Green).Build(), TimeSpan.FromSeconds(20));
+                            Color.Green), TimeSpan.FromSeconds(20));
                 else
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
                             .Create($"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
-                                Color.Red).Build(),
+                                Color.Red),
                         TimeSpan.FromSeconds(20));
             }
         }
@@ -212,14 +217,14 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 var muteRes = await _mute.Mute(user, db);
                 if (muteRes)
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder().Create($"Muted {user.Mention}",
-                            Color.Green).Build(), TimeSpan.FromSeconds(20));
+                            Color.Green), TimeSpan.FromSeconds(20));
                 else
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
                             .Create($"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
-                                Color.Red).Build(),
+                                Color.Red),
                         TimeSpan.FromSeconds(20));
             }
         }
@@ -236,15 +241,15 @@ namespace Hanekawa.Bot.Modules.Administration
             using (var db = new DbService())
             {
                 if (await _mute.UnMuteUser(user, db))
-                    await ReplyAndDeleteAsync(null, false,
-                        new LocalEmbedBuilder().Create($"Unmuted {user.Mention}", Color.Green).Build(),
+                    await Context.ReplyAndDeleteAsync(null, false,
+                        new LocalEmbedBuilder().Create($"Unmuted {user.Mention}", Color.Green),
                         TimeSpan.FromSeconds(20));
                 else
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
                             .Create(
                                 $"Couldn't unmute {user.Mention}, missing permissions or role not accessible ?",
-                                Color.Red).Build(),
+                                Color.Red),
                         TimeSpan.FromSeconds(20));
             }
         }
@@ -261,8 +266,8 @@ namespace Hanekawa.Bot.Modules.Administration
             using (var db = new DbService())
             {
                 await _warn.AddWarn(db, user, Context.Member, reason, WarnReason.Warned, true);
-                await ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder().Create($"Warned {user.Mention}", Color.Green).Build(),
+                await Context.ReplyAndDeleteAsync(null, false,
+                    new LocalEmbedBuilder().Create($"Warned {user.Mention}", Color.Green),
                     TimeSpan.FromSeconds(20));
             }
         }
@@ -302,17 +307,17 @@ namespace Hanekawa.Bot.Modules.Administration
                 var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
                 if (modCase == null)
                 {
-                    await ReplyAndDeleteAsync(null, false,
+                    await Context.ReplyAndDeleteAsync(null, false,
                         new LocalEmbedBuilder()
                             .Create("Couldn't find a case with that ID. Sure you wrote the right ID?",
-                                Color.Red).Build(), TimeSpan.FromSeconds(20));
+                                Color.Red), TimeSpan.FromSeconds(20));
                     return;
                 }
 
                 var updMsg = await Context.Channel.GetMessageAsync(modCase.MessageId) as IUserMessage;
                 if (updMsg == null)
                 {
-                    await ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
+                    await Context.ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
                         timeout: TimeSpan.FromSeconds(10));
                     var delay = Task.Delay(5000);
                     var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
@@ -324,14 +329,14 @@ namespace Hanekawa.Bot.Modules.Administration
 
                 if (updMsg == null)
                 {
-                    await ReplyAndDeleteAsync("Something went wrong, aborting.", timeout: TimeSpan.FromSeconds(10));
+                    await Context.ReplyAndDeleteAsync("Something went wrong, aborting.", timeout: TimeSpan.FromSeconds(10));
                     return;
                 }
 
                 var embed = updMsg.Embeds.FirstOrDefault().ToEmbedBuilder();
                 if (embed == null)
                 {
-                    await ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
+                    await Context.ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
                     return;
                 }
 
@@ -345,8 +350,8 @@ namespace Hanekawa.Bot.Modules.Administration
                 modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
                 modCase.ModId = Context.User.Id;
                 await db.SaveChangesAsync();
-                await ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder().Create($"Updated mod log for {id}", Color.Green).Build(),
+                await Context.ReplyAndDeleteAsync(null, false,
+                    new LocalEmbedBuilder().Create($"Updated mod log for {id}", Color.Green),
                     TimeSpan.FromSeconds(10));
             }
         }

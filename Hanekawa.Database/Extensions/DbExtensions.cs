@@ -33,7 +33,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<Board> GetOrCreateBoard(this DbService context, CachedGuild guild, IUserMessage msg)
+        public static async Task<Board> GetOrCreateBoard(this DbService context, CachedGuild guild, IMessage msg)
         {
             var check = await context.Boards.FindAsync(guild.Id, msg.Id).ConfigureAwait(false);
             if (check != null) return check;

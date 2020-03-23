@@ -17,8 +17,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("ssc", "sschannel")]
         [Description(
             "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
-        public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestionChannelAsync(CachedTextChannel channel = null)
         {
             using (var db = new DbService())
             {
@@ -42,8 +42,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest Yes Emote")]
         [Command("ssy", "ssyes")]
         [Description("Set custom yes emote for suggestions")]
-        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
-        public async Task SetSuggestEmoteYesAsync(Emote emote = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestEmoteYesAsync(CachedGuildEmoji emote = null)
         {
             using (var db = new DbService())
             {
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     return;
                 }
 
-                cfg.EmoteYes = emote.ParseEmoteString();
+                cfg.EmoteYes = emote.MessageFormat;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
             }
@@ -65,8 +65,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest No Emote")]
         [Command("ssn", "ssno")]
         [Description("Set custom no emote for suggestions")]
-        [RequireMemberGuildPermissions(GuildPermission.ManageGuild)]
-        public async Task SetSuggestEmoteNoAsync(Emote emote = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestEmoteNoAsync(CachedGuildEmoji emote = null)
         {
             using (var db = new DbService())
             {
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     return;
                 }
 
-                cfg.EmoteNo = emote.ParseEmoteString();
+                cfg.EmoteNo = emote.MessageFormat;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
             }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Prefixes;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
@@ -31,10 +32,16 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
             using var db = new DbService();
-            var prefixes = (Context.Bot.PrefixProvider as DefaultPrefixProvider).Prefixes.Contains(new StringPrefix());
-            if (.AddPrefix(Context.Guild.Id, prefix, db))
+            var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            if (config.Prefix != prefix)
+            {
+                config.Prefix = prefix;
+                db.GuildConfigs.Update(config);
+                await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
-            else await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
+                return;
+            }
+            await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
         }
 
         [Name("Set embed color")]
@@ -42,18 +49,19 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Changes the embed colour of the bot")]
         public async Task SetEmbedColorAsync(uint color)
         {
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color(color));
-            var response = await NextMessageAsync();
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color((int)color));
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
             if (response == null)
             {
                 await Context.ReplyAsync("Timed out...", Color.Red);
                 return;
             }
-            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id, new Color(color));
+                    _colourService.AddOrUpdate(Context.Guild.Id, new Color((int)color));
                     cfg.EmbedColor = color;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
@@ -69,18 +77,19 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             var color = new Color(r, g, b);
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
-            var response = await NextMessageAsync();
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
             if (response == null)
             {
                 await Context.ReplyAsync("Timed out...", Color.Red);
                 return;
             }
-            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);
-                    cfg.EmbedColor = color.RawValue;
+                    cfg.EmbedColor = (uint)color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
                 }
@@ -97,18 +106,19 @@ namespace Hanekawa.Bot.Modules.Settings
             colorHex = colorHex.Insert(0, "0x");
             var color = new Color(Convert.ToInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
-            var response = await NextMessageAsync();
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
             if (response == null)
             {
                 await Context.ReplyAsync("Timed out...", Color.Red);
                 return;
             }
-            if (response.Content.ToLower() == "y" || response.Content.ToLower() == "yes")
+            if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id, color);
-                    cfg.EmbedColor = color.RawValue;
+                    cfg.EmbedColor = (uint)color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
                 }

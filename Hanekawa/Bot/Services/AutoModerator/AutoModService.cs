@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
-using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
@@ -14,12 +15,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
 {
     public class AutoModService
     {
-        private readonly DiscordSocketClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
 
-        public AutoModService(DiscordSocketClient client, LogService logService, MuteService muteService,
+        public AutoModService(DiscordBot client, LogService logService, MuteService muteService,
             InternalLogService log)
         {
             _client = client;
@@ -31,24 +32,24 @@ namespace Hanekawa.Bot.Services.AutoModerator
             _client.MessageReceived += InviteFilter;
         }
 
-        private Task InviteFilter(SocketMessage message)
+        private Task InviteFilter(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(message.Channel is SocketTextChannel channel)) return;
-                if (!(message.Author is SocketGuildUser user)) return;
+                if (!(e.Message.Channel is CachedTextChannel channel)) return;
+                if (!(e.Message.Author is CachedMember user)) return;
                 if (user.IsBot) return;
-                if (user.GuildPermissions.ManageGuild) return;
-                if (!message.Content.IsDiscordInvite(out var invite)) return;
+                if (user.Permissions.ManageGuild) return;
+                if (!e.Message.Content.IsDiscordInvite(out var invite)) return;
                 try
                 {
                     using (var db = new DbService())
                     {
                         var cfg = await db.GetOrCreateAdminConfigAsync(user.Guild);
                         if (!cfg.FilterInvites) return;
-                        await message.TryDeleteMessagesAsync();
+                        await e.Message.TryDeleteMessagesAsync();
                         await _muteService.Mute(user, db);
-                        await _logService.Mute(user, user.Guild.CurrentUser, $"Invite link - {invite.Truncate(80)}",
+                        await _logService.Mute(user, user.Guild.CurrentMember, $"Invite link - {invite.Truncate(80)}",
                             db);
                     }
 
@@ -63,14 +64,15 @@ namespace Hanekawa.Bot.Services.AutoModerator
             return Task.CompletedTask;
         }
 
-        private Task MessageLength(SocketMessage message)
+        private Task MessageLength(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(message.Channel is SocketTextChannel channel)) return;
-                if (!(message.Author is SocketGuildUser user)) return;
+                if (!(e.Message.Channel is CachedTextChannel channel)) return;
+                if (!(e.Message.Author is CachedMember user)) return;
                 if (user.IsBot) return;
-                if (user.GuildPermissions.ManageMessages) return;
+                if (user.Permissions.ManageMessages) return;
+                var message = e.Message;
                 try
                 {
                     using (var db = new DbService())

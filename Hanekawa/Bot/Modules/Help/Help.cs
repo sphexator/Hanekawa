@@ -10,6 +10,7 @@ using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Microsoft.SqlServer.Server;
 using Qmmands;
 using Quartz.Util;
 
@@ -21,11 +22,7 @@ namespace Hanekawa.Bot.Modules.Help
     {
         private readonly CommandService _command;
 
-        public Help(CommandService command)
-        {
-            _command = command;
-
-        }
+        public Help(CommandService command) => _command = command;
 
         [Name("Help")]
         [Command("help")]
@@ -44,6 +41,11 @@ namespace Hanekawa.Bot.Modules.Help
                 {
                     if (i >= modules.Count) continue;
                     var x = modules[i];
+                    if (x.Name == "Owner")
+                    {
+                        i++;
+                        continue;
+                    }
                     strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }
@@ -93,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Help
                     for (var i = 0; i < amount; i++)
                     {
                         var x = orderedList[i];
-                        response.AppendLine($"{i + 1}: {Format.Bold(x.Item1.Name)}");
+                        response.AppendLine($"{i + 1}: **{x.Item1.Name}**");
                     }
                 }
 
@@ -120,15 +122,15 @@ namespace Hanekawa.Bot.Modules.Help
                 var content = new StringBuilder();
                 var perms = PermBuilder(cmd);
                 content.AppendLine(!cmd.Name.IsNullOrWhiteSpace()
-                    ? Format.Bold(cmd.Name)
-                    : Format.Bold(cmd.Aliases.FirstOrDefault()));
-                if (!perms.IsNullOrWhiteSpace()) content.AppendLine(Format.Bold($"Require {perms}"));
+                    ? $"**{cmd.Name}**"
+                    : $"**{cmd.Aliases.FirstOrDefault()}**");
+                if (!perms.IsNullOrWhiteSpace()) content.AppendLine($"**Require {perms}**");
                 content.AppendLine(
-                    $"Alias: {Format.Bold(cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, "))}");
+                    $"Alias: **{cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}**");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
                 if (!cmd.Remarks.IsNullOrWhiteSpace()) content.AppendLine(cmd.Remarks);
-                content.AppendLine($"Usage: {Format.Bold($"{Context.Prefix}{command} {ParamBuilder(cmd)}")}");
-                content.AppendLine($"Example: {Format.Bold($"{Context.Prefix}{command} {ExampleParamBuilder(cmd)}")}");
+                content.AppendLine($"Usage: **{Context.Prefix}{command} {ParamBuilder(cmd)}");
+                content.AppendLine($"Example: {Context.Prefix}{command} {ExampleParamBuilder(cmd)}");
                 result.Add(content.ToString());
             }
 
@@ -199,8 +201,8 @@ namespace Hanekawa.Bot.Modules.Help
             {
                 if (x is RequireMemberGuildPermissionsAttribute perm)
                 {
-                    if (perm.Permissions.Length == 1) str.AppendLine(perm.Perms.FirstOrDefault().ToString());
-                    else foreach (var e in perm.Perms) str.Append($"{e.ToString()}, ");
+                    if (perm.Permissions.Count(x => true) == 1) str.AppendLine(perm.Permissions.FirstOrDefault().ToString());
+                    else foreach (var e in perm.Permissions) str.Append($"{e.ToString()}, ");
                 }
             }
 

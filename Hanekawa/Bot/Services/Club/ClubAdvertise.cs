@@ -168,7 +168,7 @@ namespace Hanekawa.Bot.Services.Club
                     }
                     else
                     {
-                        await msg.TryDeleteMessageAsync();
+                        await msg.DeleteAsync();
                         await SendPostAsync(db, cfg, context.Guild, leader);
                         await context.ReplyAsync("Re-posted ad!", Color.Green);
                     }
@@ -214,7 +214,7 @@ namespace Hanekawa.Bot.Services.Club
             var msg = await guild.GetTextChannel(cfg.AdvertisementChannel.Value).ReplyAsync(embed);
             club.AdMessage = msg.Id;
             await db.SaveChangesAsync();
-            if (club.Public) await msg.AddReactionAsync(new Emoji("\u2714"));
+            if (club.Public) await msg.AddReactionAsync(new LocalEmoji("\u2714"));
         }
 
         private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, CachedGuild guild,
@@ -230,7 +230,7 @@ namespace Hanekawa.Bot.Services.Club
                 if (enabled)
                 {
                     if (msg == null) await SendPostAsync(db, cfg, guild, club);
-                    else await msg.AddReactionAsync(new Emoji("\u2714"));
+                    else await msg.AddReactionAsync(new LocalEmoji("\u2714"));
                 }
                 else
                 {
@@ -241,7 +241,7 @@ namespace Hanekawa.Bot.Services.Club
                     }
                     else
                     {
-                        await msg.RemoveAllReactionsAsync();
+                        await msg.ClearReactionsAsync();
                     }
                 }
             }

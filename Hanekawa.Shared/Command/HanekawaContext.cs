@@ -7,6 +7,7 @@ using Disqord.Bot;
 using Disqord.Bot.Prefixes;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
+using Disqord.Rest;
 
 namespace Hanekawa.Shared.Command
 {
@@ -107,6 +108,18 @@ namespace Hanekawa.Shared.Command
                 sb.Clear();
             }
             await Bot.GetInteractivity().StartMenuAsync(Channel, new PagedMenu(User.Id, new DefaultPageProvider(pages)));
+        }
+
+        public async Task<RestUserMessage> ReplyAndDeleteAsync(string content, bool isTts = false,
+            LocalEmbedBuilder embed = null,
+            TimeSpan? timeout = null)
+        {
+            timeout ??= TimeSpan.FromSeconds(25);
+            var message = await Channel.SendMessageAsync(content, isTts, embed.Build(), LocalMentions.NoEveryone).ConfigureAwait(false);
+            _ = Task.Delay(timeout.Value)
+                .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
+                .ConfigureAwait(false);
+            return message;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -39,17 +40,17 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
 
-            var example = await _image.WelcomeBuilder(Context.User, url);
+            var example = await _image.WelcomeBuilder(Context.Member, url);
             example.Position = 0;
-            var msg = await Context.Channel.SendFileAsync(example, "WelcomeExample.png",
+            var msg = await Context.Channel.SendMessageAsync(new LocalAttachment(example, "WelcomeExample.png"),
                 "Do you want to add this banner? (y/N)");
-            var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-            if (response == null || response.Content.ToLower() != "y")
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                x.Message.Author == Context.Member && x.Message.Guild == Context.Guild && x.Message.Channel == Context.Channel, TimeSpan.FromMinutes(2));
+            if (response == null || response.Message.Content.ToLower() != "y")
             {
-                await msg.TryDeleteMessageAsync();
-                await ReplyAndDeleteAsync(null, false,
-                    new EmbedBuilder().Create("Aborting...", Color.Red).Build(),
-                    TimeSpan.FromSeconds(20));
+                await msg.DeleteAsync();
+                await Context.ReplyAndDeleteAsync(null, false,
+                    new LocalEmbedBuilder().Create("Aborting...", Color.Red),TimeSpan.FromSeconds(20));
                 return;
             }
 
@@ -114,12 +115,12 @@ namespace Hanekawa.Bot.Modules.Settings
                     strBuilder.AppendLine($"ID: {index.Id}");
                     strBuilder.AppendLine($"URL: {index.Url}");
                     strBuilder.AppendLine(
-                        $"Uploader: {Context.Guild.GetUser(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
+                        $"Uploader: {Context.Guild.GetMember(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
                     strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
                     pages.Add(strBuilder.ToString());
                 }
 
-                await Context.ReplyPaginated(pages, Context.Guild, $"Welcome banners for {Context.Guild.Name}");
+                await Context.PaginatedReply(pages, Context.Guild, $"Welcome banners for {Context.Guild.Name}");
             }
         }
 

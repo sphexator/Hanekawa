@@ -3,14 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
-using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -50,8 +48,8 @@ namespace Hanekawa.Bot.Modules.Report
             var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).ReplyAsync(embed);
             report.MessageId = msg.Id;
             await db.SaveChangesAsync();
-            await ReplyAndDeleteAsync(null, false,
-                new LocalEmbedBuilder().Create("Report sent!", Color.Green).Build());
+            await Context.ReplyAndDeleteAsync(null, false,
+                new LocalEmbedBuilder().Create("Report sent!", Color.Green));
         }
 
         [Name("Respond")]
@@ -68,20 +66,29 @@ namespace Hanekawa.Bot.Modules.Report
 
             if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
 
-            var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
-                .GetMessageAsync(report.MessageId.Value);
+            var msg = Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
+                .GetMessage(report.MessageId.Value);
             var embed = msg.Embeds.First().ToEmbedBuilder();
             embed.Color = Color.Orange;
             embed.AddField(Context.Member.DisplayName, text);
             try
             {
                 var suggestUser = Context.Guild.GetMember(report.UserId);
-                await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
+                if(suggestUser.DmChannel != null) await suggestUser.DmChannel.ReplyAsync(
                     "Your report got a response!\n" +
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
                     $"{text}", _colour.Get(Context.Guild.Id));
+                else
+                {
+                    var dm = await suggestUser.CreateDmChannelAsync();
+                    await dm.ReplyAsync("Your report got a response!\n" +
+                                        "report:\n" +
+                                        $"{embed.Description.Truncate(400)}\n" +
+                                        $"Answer from {Context.User.Mention}:\n" +
+                                        $"{text}", _colour.Get(Context.Guild.Id));
+                }
             }
             catch
             {
