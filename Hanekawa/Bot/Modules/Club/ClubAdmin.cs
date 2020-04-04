@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using Quartz.Util;

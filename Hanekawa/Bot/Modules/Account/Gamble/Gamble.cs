@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -13,7 +12,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
 {
     [Name("Gamble")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Gamble : DiscordModuleBase<HanekawaContext>
+    public class Gamble : HanekawaModule
     {
         [Name("Bet")]
         [Command("bet")]

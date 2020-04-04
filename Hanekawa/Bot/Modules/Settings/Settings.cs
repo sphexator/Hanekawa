@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Bot.Prefixes;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Preconditions;
-using Hanekawa.Bot.Services.Command;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -17,7 +13,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Description("Server settings")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
-    public class Settings : DiscordModuleBase<HanekawaContext>
+    public class Settings : HanekawaModule
     {
         private readonly ColourService _colourService;
 

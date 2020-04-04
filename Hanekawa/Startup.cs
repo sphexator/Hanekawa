@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Bot.Prefixes;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Database;
@@ -23,6 +21,7 @@ using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
+using Quartz;
 
 namespace Hanekawa
 {
@@ -44,20 +43,20 @@ namespace Hanekawa
             services.AddHostedService<Bot.Hanekawa>();
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddSingleton(
-                new DiscordBot(TokenType.Bot, Configuration["token"], new DefaultPrefixProvider(),
-                    new DiscordBotConfiguration
-                    {
-                        CommandServiceConfiguration = new CommandServiceConfiguration
-                        {
-                            DefaultRunMode = RunMode.Sequential,
-                            CooldownBucketKeyGenerator = (x, context) =>
-                            {
-                                var ctx = (HanekawaContext) context;
-                                return ctx.User.Id;
-                            }
-                        }
-                    }));
+            services.AddSingleton(new DiscordClient(TokenType.Bot, Configuration["token"],
+                new DiscordClientConfiguration
+                {
+                    MessageCache = new Optional<MessageCache>(new DefaultMessageCache(100))
+                }));
+            services.AddSingleton(new CommandService(new CommandServiceConfiguration
+            {
+                DefaultRunMode = RunMode.Sequential,
+                CooldownBucketKeyGenerator = (x, context) =>
+                {
+                    var ctx = (HanekawaContext)context;
+                    return ctx.User.Id;
+                }
+            }));
             services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
             services.AddSingleton<ColourService>();
             services.AddSingleton(new AnimeSimulCastClient());
@@ -88,6 +87,15 @@ namespace Hanekawa
                 app.UseHsts();
             app.UseHttpsRedirection();
             NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
+            var assembly = Assembly.GetEntryAssembly();
+            var serviceList = assembly.GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
+                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
+            for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
+            app.ApplicationServices.GetRequiredService<CommandService>().AddModules(assembly);
+            // _provider.GetRequiredService<CommandHandlingService>().InitializeAsync();
+            var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
+            QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
         }
 
         private LoggingConfiguration ConfigureNLog()
@@ -172,7 +180,9 @@ namespace Hanekawa
             config.AddTarget(asyncDatabaseTarget);
 
             config.AddRuleForAllLevels(asyncConsoleTarget);
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);
+#if(DEBUG == false)
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);      
+#endif
             config.AddRule(LogLevel.Warn, LogLevel.Fatal, asyncDatabaseTarget);
 
             LogManager.Configuration = config;

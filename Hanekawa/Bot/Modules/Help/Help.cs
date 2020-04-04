@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
-using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Microsoft.SqlServer.Server;
 using Qmmands;
 using Quartz.Util;
 
@@ -18,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Help
 {
     [Name("Help")]
     [Description("Displays all commands and how to execute them")]
-    public class Help : DiscordModuleBase<HanekawaContext>
+    public class Help : HanekawaModule
     {
         private readonly CommandService _command;
 

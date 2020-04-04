@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
@@ -17,7 +16,7 @@ namespace Hanekawa.Bot.Modules.Administration
 {
     [Name("Self Assignable Roles")]
     [RequiredChannel]
-    public class SelfAssignAbleRoles : DiscordModuleBase<HanekawaContext>
+    public class SelfAssignAbleRoles : HanekawaModule
     {
         [Name("I am")]
         [Command("iam", "give")]

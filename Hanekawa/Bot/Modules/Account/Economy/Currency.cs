@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -11,7 +10,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
 {
     [Name("Economy")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Economy : DiscordModuleBase<HanekawaContext>
+    public partial class Economy : HanekawaModule
     {
         [Name("Regular Currency Name")]
         [Command("rcn")]

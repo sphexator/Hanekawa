@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
@@ -19,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Account
 {
     [Name("Account")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Account : DiscordModuleBase<HanekawaContext>
+    public partial class Account : HanekawaModule
     {
         private readonly ExpService _exp;
         private readonly ImageGenerator _image;

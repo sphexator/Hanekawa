@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Game.Ship;
 using Hanekawa.Database;
@@ -16,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Game
     [Description(
         "Ship game is a game mode where you search for opponements based on your level and fight them. Change between classes to get a feel of different fight styles.")]
     [RequiredChannel]
-    public class Game : DiscordModuleBase<HanekawaContext>
+    public class Game : HanekawaModule
     {
         private readonly ShipGameService _shipGame;
         public Game(ShipGameService shipGame) => _shipGame = shipGame;

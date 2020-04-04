@@ -3,11 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
+using Disqord.Bot.Parsers;
 using Disqord.Events;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
@@ -23,17 +22,16 @@ using Module = Qmmands.Module;
 
 namespace Hanekawa.Bot.Services.Command
 {
-    /*
     public class CommandHandlingService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
         private readonly ColourService _colourService;
         private readonly CommandService _command;
         private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
         private readonly IServiceProvider _provider;
 
-        public CommandHandlingService(DiscordBot client, CommandService command, IServiceProvider provider, 
+        public CommandHandlingService(DiscordClient client, CommandService command, IServiceProvider provider, 
             ColourService colourService, InternalLogService log)
         {
             _client = client;
@@ -42,13 +40,21 @@ namespace Hanekawa.Bot.Services.Command
             _colourService = colourService;
             _log = log;
 
+            _command.AddTypeParser(CachedRoleTypeParser.Instance);
+            _command.AddTypeParser(CachedMemberTypeParser.Instance);
+            _command.AddTypeParser(CachedUserTypeParser.Instance);
+            _command.AddTypeParser(CachedGuildChannelTypeParser<CachedGuildChannel>.Instance);
+            _command.AddTypeParser(CachedGuildChannelTypeParser<CachedTextChannel>.Instance);
+            _command.AddTypeParser(CachedGuildChannelTypeParser<CachedVoiceChannel>.Instance);
+            _command.AddTypeParser(CachedGuildChannelTypeParser<CachedCategoryChannel>.Instance);
+            _command.AddTypeParser(LocalCustomEmojiTypeParser.Instance);
+            _command.AddTypeParser(SnowflakeTypeParser.Instance);
+            _command.AddTypeParser(ColorTypeParser.Instance);
+            _command.AddTypeParser(new TimeSpanTypeParser());
+
             _client.LeftGuild += ClientLeft;
             _client.JoinedGuild += ClientJoined;
-            _client.MessageReceived += message =>
-            {
-                _ = OnMessageReceived(message);
-                return Task.CompletedTask;
-            };
+            _client.MessageReceived += OnMessageReceived;
 
             _command.CommandExecutionFailed += log =>
             {
@@ -61,16 +67,9 @@ namespace Hanekawa.Bot.Services.Command
                 foreach (var x in db.GuildConfigs)
                 {
                     _prefixes.TryAdd(x.GuildId, x.Prefix);
-                    _colourService.AddOrUpdate(x.GuildId, new Color(x.EmbedColor));
+                    _colourService.AddOrUpdate(x.GuildId, new Color((int)x.EmbedColor));
                 }
             }
-        }
-
-        public void InitializeAsync()
-        {
-            _command.AddTypeParser(new TimeSpanTypeParser());
-            var modules = _command.AddModules(Assembly.GetEntryAssembly());
-            _log.LogAction(LogLevel.Information, $"Added {modules.Count} modules");
         }
 
         public string GetPrefix(ulong id) => _prefixes.GetOrAdd(id, "h.");
@@ -84,16 +83,17 @@ namespace Hanekawa.Bot.Services.Command
             return true;
         }
 
-        private async Task OnMessageReceived(SocketMessage rawMsg)
+        private async Task OnMessageReceived(MessageReceivedEventArgs e)
         {
-            if (!(rawMsg is SocketUserMessage message)) return;
-            if (!(message.Author is SocketGuildUser user)) return;
+            if (!(e.Message is CachedUserMessage message)) return;
+            if (!(message.Author is CachedMember user)) return;
             if (user.IsBot) return;
             string output;
+            var prefix = GetPrefix(user.Guild.Id);
             if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id),
-                out output) && !message.HasMentionPrefix(user.Guild.CurrentUser, out var prefix, out output)) return;
+                out output) && !message.HasMentionPrefix(user.Guild.CurrentMember, out var prefixs, out output)) return;
             var result = await _command.ExecuteAsync(output,
-                new HanekawaContext(_client, message, user, _colourService), _provider);
+                new HanekawaContext(_client, message, prefix, _colourService, _provider));
             if (!result.IsSuccessful) _log.LogAction(LogLevel.Warning, $"Command: {result}");
         }
 
@@ -180,7 +180,7 @@ namespace Hanekawa.Bot.Services.Command
                 using var db = new DbService();
                 var cfg = await db.GetOrCreateGuildConfigAsync(e.Guild);
                 _prefixes.TryAdd(e.Guild.Id, cfg.Prefix);
-                _colourService.AddOrUpdate(e.Guild.Id, new Color(cfg.EmbedColor));
+                _colourService.AddOrUpdate(e.Guild.Id, new Color((int)cfg.EmbedColor));
             });
             return Task.CompletedTask;
         }
@@ -195,5 +195,4 @@ namespace Hanekawa.Bot.Services.Command
             return Task.CompletedTask;
         }
     }
-    */
 }

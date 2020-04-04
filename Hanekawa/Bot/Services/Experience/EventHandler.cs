@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -16,7 +15,7 @@ namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
 
@@ -29,7 +28,7 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordBot client, Random random, InternalLogService log)
+        public ExpService(DiscordClient client, Random random, InternalLogService log)
         {
             _client = client;
             _random = random;

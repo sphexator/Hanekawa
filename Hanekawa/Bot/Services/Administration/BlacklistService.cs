@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Disqord.Bot;
+using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Shared.Interfaces;
@@ -10,10 +10,10 @@ namespace Hanekawa.Bot.Services.Administration
 {
     public class BlacklistService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
 
-        public BlacklistService(DiscordBot client, InternalLogService log)
+        public BlacklistService(DiscordClient client, InternalLogService log)
         {
             _client = client;
             _log = log;

@@ -84,19 +84,18 @@ namespace Hanekawa.Bot.Services.Experience
             for (var i = 0; i < roleList.Count; i++)
             {
                 var x = roleList[i];
+                var getRole = user.Guild.GetRole(x.Role);
+                if (getRole == null) continue;
                 if (stack)
                 {
                     if (userData.Level < x.Level) continue;
-                    var getRole = user.Guild.GetRole(x.Role);
-                    if (getRole == null) continue;
                     if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
                 }
                 else
                 {
-                    if (userData.Level >= x.Level && x.Stackable)
+                    if (userData.Level >= x.Level && x.Stackable && currentUser.HierarchyCheck(getRole))
                     {
-                        var getRole = user.Guild.GetRole(x.Role);
-                        if (getRole != null && currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
+                        roles.Add(getRole);
                     }
 
                     if (userData.Level >= x.Level) role = x.Role;

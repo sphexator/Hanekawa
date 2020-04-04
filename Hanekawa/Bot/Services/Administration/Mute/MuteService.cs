@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
@@ -18,7 +17,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 {
     public partial class MuteService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
 
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
@@ -26,7 +25,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly LogService _logService;
         private readonly WarnService _warn;
 
-        public MuteService(DiscordBot client, LogService logService, InternalLogService log, WarnService warn)
+        public MuteService(DiscordClient client, LogService logService, InternalLogService log, WarnService warn)
         {
             _client = client;
             _logService = logService;

@@ -10,38 +10,23 @@ using Qmmands;
 
 namespace Hanekawa.Shared.Command
 {
-    public class HanekawaContext : CommandContext
+    public class HanekawaModule : ModuleBase<HanekawaContext>
     {
-        public virtual DiscordClient Bot { get; }
-
-        public virtual string Prefix { get; }
-
-        public virtual CachedUserMessage Message { get; }
-
-        public virtual CachedTextChannel Channel => Message.Channel as CachedTextChannel;
-
-        public virtual CachedUser User => Message.Author;
-
-        public virtual CachedMember Member => User as CachedMember;
-
-        public virtual CachedGuild Guild => Member?.Guild;
-        
-        public virtual ColourService Colour { get; }
-
-        public HanekawaContext(DiscordClient bot, CachedUserMessage message, string prefix, ColourService colour, IServiceProvider provider) : base(provider)
-        {
-            Bot = bot;
-            prefix = prefix;
-            Message = message;
-            Colour = colour;
-        }
+        public DiscordClient Bot => Context.Bot;
+        public string Prefix => Context.Prefix;
+        public CachedUserMessage Message => Context.Message;
+        public CachedTextChannel Channel => Context.Channel;
+        public CachedUser User => Context.User;
+        public CachedMember Member => Context.Member;
+        public CachedGuild Guild => Context.Guild;
+        public ColourService Colour => Context.Colour;
 
         public async Task<IUserMessage> ReplyAsync(string content) =>
-    await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
-    {
-        Color = Colour.Get(Guild.Id),
-        Description = content
-    }.Build());
+            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
+            {
+                Color = Colour.Get(Guild.Id),
+                Description = content
+            }.Build());
 
         public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
             await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
@@ -74,7 +59,7 @@ namespace Hanekawa.Shared.Command
 
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder { Name = authorTitle, IconUrl = userIcon.GetAvatarUrl() },
+                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = userIcon.GetAvatarUrl()},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color
@@ -104,7 +89,7 @@ namespace Hanekawa.Shared.Command
 
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder { Name = authorTitle, IconUrl = guildIcon.GetIconUrl() },
+                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = guildIcon.GetIconUrl()},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color

@@ -3,11 +3,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Disqord.Bot;
+using Disqord;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
-using Hanekawa.Bot.Services.Command;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -19,20 +17,19 @@ namespace Hanekawa.Bot
 {
     public class Hanekawa : BackgroundService
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly IConfiguration _config;
         private readonly IServiceProvider _provider;
 
-        public Hanekawa(DiscordBot client, IServiceProvider provider, IConfiguration config)
+        public Hanekawa(DiscordClient client, IServiceProvider provider, IConfiguration config)
         {
             _client = client;
             _provider = provider;
             _config = config;
         }
 
-        private void Initialize()
+        private void Initialize(Assembly assembly)
         {
-            var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
                 var serviceList = assembly.GetTypes()
@@ -48,7 +45,8 @@ namespace Hanekawa.Bot
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Initialize();
+            // var assembly = Assembly.GetEntryAssembly();
+            // Initialize(assembly);
             await _client.AddExtensionAsync(new InteractivityExtension());
             await _client.RunAsync(stoppingToken);
             await Task.Delay(-1, stoppingToken);

@@ -2,8 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Extensions.Interactivity;
 using Disqord.Rest;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
@@ -20,7 +18,7 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Administration
 {
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Administration : DiscordModuleBase<HanekawaContext>
+    public class Administration : HanekawaModule
     {
         private readonly MuteService _mute;
         private readonly WarnService _warn;
@@ -146,7 +144,7 @@ namespace Hanekawa.Bot.Modules.Administration
                     new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green),
                     TimeSpan.FromSeconds(20));
             }
-            catch (Exception e)
+            catch
             {
                 await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder()

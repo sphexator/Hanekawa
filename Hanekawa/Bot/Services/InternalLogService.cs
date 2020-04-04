@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Disqord.Bot;
+using Disqord;
 using Disqord.Logging;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Shared.Interfaces;
@@ -12,17 +12,17 @@ namespace Hanekawa.Bot.Services
     public class InternalLogService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _castClient;
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly CommandService _command;
         private readonly ILogger<InternalLogService> _logger;
 
-        public InternalLogService(DiscordBot client, CommandService command,
-            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient)
+        public InternalLogService(DiscordClient client,
+            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient, CommandService command)
         {
             _client = client;
-            _command = command;
             _logger = logger;
             _castClient = castClient;
+            _command = command;
 
             //_client.Log += LogDiscord;
             _command.CommandExecutionFailed += CommandErrorLog;

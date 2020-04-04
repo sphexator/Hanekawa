@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
@@ -13,7 +12,7 @@ namespace Hanekawa.Bot.Modules.Info
 {
     [Name("Info")]
     [Description("Commands for delivering information about the bot")]
-    public class Info : DiscordModuleBase<HanekawaContext>
+    public class Info : HanekawaModule
     {
         [Name("About")]
         [Command("about", "info", "bot", "botinfo")]

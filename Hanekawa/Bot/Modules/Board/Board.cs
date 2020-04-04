@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Board;
@@ -19,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Board
 {
     [Name("Board")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Board : DiscordModuleBase<HanekawaContext>
+    public partial class Board : HanekawaModule
     {
         private readonly InternalLogService _log;
         private readonly BoardService _service;

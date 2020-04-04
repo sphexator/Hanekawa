@@ -2,15 +2,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
-using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Drop;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -18,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Drop")]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Drop : DiscordModuleBase<HanekawaContext>
+    public class Drop : HanekawaModule
     {
         private readonly DropService _drop;
         public Drop(DropService drop) => _drop = drop;
@@ -104,7 +100,12 @@ namespace Hanekawa.Bot.Modules.Settings
                 else
                 {
                     var result = new List<string>();
-                    foreach (var x in list) result.Add(Context.Guild.GetTextChannel(x.ChannelId).Mention);
+                    foreach (var x in list)
+                    {
+                        var channel = Context.Guild.GetTextChannel(x.ChannelId);
+                        if (channel == null) continue;
+                        result.Add(channel.Mention);
+                    }
                     embed.Description = string.Join("\n", result);
                 }
 

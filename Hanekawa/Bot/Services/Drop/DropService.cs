@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
@@ -18,14 +17,14 @@ namespace Hanekawa.Bot.Services.Drop
 {
     public partial class DropService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly ExpService _expService;
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public DropService(DiscordBot client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public DropService(DiscordClient client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;

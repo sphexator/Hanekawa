@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Disqord.Rest;
 using Hanekawa.Database;
@@ -15,10 +14,10 @@ namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
 
-        public BoardService(DiscordBot client, InternalLogService log)
+        public BoardService(DiscordClient client, InternalLogService log)
         {
             _client = client;
             _log = log;
@@ -129,11 +128,11 @@ namespace Hanekawa.Bot.Services.Board
             {
                 Author = new LocalEmbedAuthorBuilder
                 {
-                    Name = $"{user.DisplayName} (Jump!)",
-                    Url = user.GetAvatarUrl(),
+                    Name = $"{user?.DisplayName ?? msg.Author.Name} (Jump!)",
+                    Url = user?.GetAvatarUrl() ?? msg.Author.GetAvatarUrl(),
                     IconUrl = msg.JumpUrl
                 },
-                Color = user.Roles.OrderByDescending(x => x.Value.Position)
+                Color = user?.Roles.OrderByDescending(x => x.Value.Position)
                     .FirstOrDefault(x => x.Value.Color != null && x.Value.Color.Value != 0).Value.Color,
                 Description = msg.Content,
                 Footer = new LocalEmbedFooterBuilder {Text = msg.Channel.Name},

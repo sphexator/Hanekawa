@@ -2,14 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
@@ -18,7 +16,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
 {
     [Name("Store")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Store : DiscordModuleBase<HanekawaContext>
+    public partial class Store : HanekawaModule
     {
         private readonly CurrencyService _currency;
         public Store(CurrencyService currency) => _currency = currency;

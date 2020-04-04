@@ -2,13 +2,13 @@
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 using ChannelType = Hanekawa.Shared.ChannelType;

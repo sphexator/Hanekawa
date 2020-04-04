@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.Experience;
@@ -11,7 +10,6 @@ using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
-using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -19,12 +17,12 @@ namespace Hanekawa.Bot.Services.Welcome
 {
     public partial class WelcomeService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly ExpService _exp;
         private readonly ImageGenerator _img;
         private readonly InternalLogService _log;
 
-        public WelcomeService(DiscordBot client, ImageGenerator img, InternalLogService log, ExpService exp)
+        public WelcomeService(DiscordClient client, ImageGenerator img, InternalLogService log, ExpService exp)
         {
             _client = client;
             _img = img;
@@ -80,7 +78,7 @@ namespace Hanekawa.Bot.Services.Welcome
             return Task.CompletedTask;
         }
 
-        private async Task WelcomeRewardAsync(DiscordBot bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
+        private async Task WelcomeRewardAsync(DiscordClient bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
             var response = await bot.GetInteractivity().WaitForMessageAsync(

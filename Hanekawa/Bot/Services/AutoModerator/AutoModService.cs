@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Logging;
@@ -15,12 +14,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
 {
     public class AutoModService
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
 
-        public AutoModService(DiscordBot client, LogService logService, MuteService muteService,
+        public AutoModService(DiscordClient client, LogService logService, MuteService muteService,
             InternalLogService log)
         {
             _client = client;

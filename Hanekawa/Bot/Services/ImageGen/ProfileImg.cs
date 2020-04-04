@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -17,7 +16,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -94,8 +92,8 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<Image<Rgba32>> GetProfileBackground(DbService db)
         {
-            var background = await db.Backgrounds.OrderBy(r => _random.Next()).Take(1).FirstOrDefaultAsync();
-            if (background == null)
+            var background = await db.Backgrounds.ToListAsync();
+            if (background == null || background.Count == 0)
             {
                 var files = Directory.GetFiles("Data/Profile/default/", "*.jpg");
                 var file = files[_random.Next(files.Length)];
@@ -105,7 +103,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             }
             else
             {
-                using var img = Image.Load(await _client.GetStreamAsync(background.BackgroundUrl));
+                using var img = Image.Load(await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl));
                 img.Mutate(x => x.Resize(400, 400));
                 return img.Clone();
             }
@@ -132,9 +130,9 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<string> GetRankAsync(CachedMember user, Account userData, DbService db)
         {
-            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
+            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id.RawValue);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id);
+                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id.RawValue);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 

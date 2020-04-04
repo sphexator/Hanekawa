@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Stores;
+using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
 using Qmmands;
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -18,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
     [Name("Suggestion")]
     [Description(
         "Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
-    public partial class Suggestion : DiscordModuleBase<HanekawaContext>
+    public partial class Suggestion : HanekawaModule
     {
         [Name("Suggest")]
         [Command("suggest")]

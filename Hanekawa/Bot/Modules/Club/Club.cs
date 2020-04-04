@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
@@ -11,14 +10,13 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Club
 {
     [Name("Club")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Club : DiscordModuleBase<HanekawaContext>
+    public partial class Club : HanekawaModule
     {
         private readonly ClubService _club;
 

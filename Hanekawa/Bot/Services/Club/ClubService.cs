@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -15,7 +14,7 @@ namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
@@ -24,7 +23,7 @@ namespace Hanekawa.Bot.Services.Club
         private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(19520));
         private readonly OverwritePermissions _allowOverwrite = new OverwritePermissions(new ChannelPermissions(19520), ChannelPermissions.None);
 
-        public ClubService(DiscordBot client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public ClubService(DiscordClient client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;

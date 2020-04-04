@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Shared.Command;
 
@@ -11,13 +10,13 @@ namespace Hanekawa.Bot.Services.Highlight
 {
     public class HighlightService
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colour;
         private readonly ConcurrentDictionary<(ulong, ulong), string[]> _highlights =
             new ConcurrentDictionary<(ulong, ulong), string[]>();
 
-        public HighlightService(DiscordBot client, IServiceProvider provider, ColourService colour)
+        public HighlightService(DiscordClient client, IServiceProvider provider, ColourService colour)
         {
             _client = client;
             _provider = provider;

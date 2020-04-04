@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
@@ -14,10 +13,10 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly DiscordClient _client;
         private readonly InternalLogService _log;
 
-        public AchievementService(DiscordBot client, InternalLogService log)
+        public AchievementService(DiscordClient client, InternalLogService log)
         {
             _client = client;
             _log = log;

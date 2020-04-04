@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
@@ -22,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Welcome")]
     [RequireBotGuildPermissions(Permission.EmbedLinks, Permission.AttachFiles)]
-    public class Welcome : DiscordModuleBase<HanekawaContext>
+    public class Welcome : HanekawaModule
     {
         private readonly ImageGenerator _image;
         public Welcome(ImageGenerator image) => _image = image;

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
@@ -16,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Report
 {
     [Name("Report")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Report : DiscordModuleBase<HanekawaContext>
+    public class Report : HanekawaModule
     {
         private readonly ColourService _colour;
 

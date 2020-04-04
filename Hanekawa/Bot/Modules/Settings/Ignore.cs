@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -17,7 +16,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Ignore")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
-    public class Ignore : DiscordModuleBase<HanekawaContext>
+    public class Ignore : HanekawaModule
     {
         private readonly RequiredChannel _requiredChannel;
 

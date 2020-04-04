@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot.Parsers;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
 
 namespace Hanekawa.Bot.Services.Board
 {

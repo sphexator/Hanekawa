@@ -4,14 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Giveaway
 {
-    public class Giveaway : DiscordModuleBase<HanekawaContext>
+    public class Giveaway : HanekawaModule
     {
         [Name("Draw")]
         [Command("draw")]
