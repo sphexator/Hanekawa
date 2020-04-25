@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Welcome
             _img = img;
             _log = log;
             _exp = exp;
-
+            
             _client.MemberJoined += WelcomeUser;
             _client.LeftGuild += LeftGuild;
         }
