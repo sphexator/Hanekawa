@@ -24,19 +24,14 @@ namespace Hanekawa.Bot.Services
             _castClient = castClient;
             _command = command;
 
-            //_client.Log += LogDiscord;
+            _client.Logger.MessageLogged += Logger_MessageLogged;
             _command.CommandExecutionFailed += CommandErrorLog;
             _command.CommandExecuted += CommandExecuted;
 
             _castClient.Log += SimulCastClientLog;
-            /*
-            _lavaClient.Log += LavaClientLog;
-            _lavaClient.OnPlayerUpdated += LavaClientOnPlayerUpdated;
-            _lavaClient.OnServerStats += LavaClientOnServerStats;
-            _lavaClient.OnSocketClosed += LavaClientOnSocketClosed;
-            */
         }
 
+        private void Logger_MessageLogged(object sender, MessageLoggedEventArgs e) => _logger.Log(LogSevToLogLevel(e.Severity), e.Exception, e.Message);
         public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
 
         public void LogAction(LogLevel l, string m) => _logger.Log(l, m);
@@ -58,37 +53,7 @@ namespace Hanekawa.Bot.Services
             _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             return Task.CompletedTask;
         }
-        /*
-        private Task LogDiscord(LogMessage log)
-        {
-            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
-            return Task.CompletedTask;
-        }
 
-        private Task LavaClientOnSocketClosed(int code, string reason, bool remote)
-        {
-            _logger.LogInformation("Victoria", $"Lavasocket closed: {code} | {reason} | {remote}");
-            return Task.CompletedTask;
-        }
-
-        private Task LavaClientOnServerStats(ServerStats stats)
-        {
-            _logger.LogInformation("Victoria", $"Uptime: {stats.Uptime}");
-            return Task.CompletedTask;
-        }
-
-        private Task LavaClientOnPlayerUpdated(LavaPlayer player, LavaTrack track, TimeSpan position)
-        {
-            _logger.LogInformation("Victoria", $"Player Updated For {player.VoiceChannel.GuildId}: {position}");
-            return Task.CompletedTask;
-        }
-
-        private Task LavaClientLog(LogMessage log)
-        {
-            _logger.Log(LogSevToLogLevel(log.Severity), log.Exception, log.Message);
-            return Task.CompletedTask;
-        }
-        */
         private LogLevel LogSevToLogLevel(LogMessageSeverity log)
         {
             switch (log)

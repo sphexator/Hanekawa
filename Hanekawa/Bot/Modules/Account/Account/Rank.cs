@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Account
                     {
                         Name = "Rank",
                         Value =
-                            $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id && x.TotalExp >= serverData.TotalExp)}" +
+                            $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.TotalExp >= serverData.TotalExp)}" +
                             $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
                         IsInline = true
                     },

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Rest;
@@ -31,7 +32,7 @@ namespace Hanekawa.Shared.Command
         public HanekawaContext(DiscordClient bot, CachedUserMessage message, string prefix, ColourService colour, IServiceProvider provider) : base(provider)
         {
             Bot = bot;
-            prefix = prefix;
+            Prefix = prefix;
             Message = message;
             Colour = colour;
         }
@@ -92,11 +93,11 @@ namespace Hanekawa.Shared.Command
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = Colour.Get(Guild.Id);
-            for (var i = 0; i < pages.Count;)
+            for (var i = 0; i < content.Count;)
             {
                 for (var j = 0; j < 5; j++)
                 {
-                    if (i >= pages.Count) continue;
+                    if (i >= content.Count) continue;
                     var x = content[i];
                     sb.AppendLine(x);
                     i++;

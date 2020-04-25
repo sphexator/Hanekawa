@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Preconditions
         {
             using (var db = new DbService())
             {
-                var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
+                var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
                 if (check == null) return false;
                 var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
                 ch.TryAdd(context.Channel.Id, true);
