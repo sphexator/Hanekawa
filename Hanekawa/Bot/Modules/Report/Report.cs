@@ -33,19 +33,19 @@ namespace Hanekawa.Bot.Modules.Report
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
-            var embed = new LocalEmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id))
+            var embed = new LocalEmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id.RawValue))
                 .WithAuthor(new LocalEmbedAuthorBuilder()
                 {
                     IconUrl = Context.User.GetAvatarUrl(),
                     Name = Context.Member.DisplayName
                 })
-                .WithFooter(new LocalEmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
+                .WithFooter(new LocalEmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id.RawValue}"})
                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow));
 
             if (Context.Message.Attachments.FirstOrDefault() != null)
                 embed.ImageUrl = Context.Message.Attachments.First().Url;
             var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).ReplyAsync(embed);
-            report.MessageId = msg.Id;
+            report.MessageId = msg.Id.RawValue;
             await db.SaveChangesAsync();
             await Context.ReplyAndDeleteAsync(null, false,
                 new LocalEmbedBuilder().Create("Report sent!", Color.Green));
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Report
             if (text.IsNullOrWhiteSpace()) return;
             using var db = new DbService();
 
-            var report = await db.Reports.FindAsync(id, Context.Guild.Id);
+            var report = await db.Reports.FindAsync(id, Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
 
             if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Modules.Report
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
-                    $"{text}", _colour.Get(Context.Guild.Id));
+                    $"{text}", _colour.Get(Context.Guild.Id.RawValue));
                 else
                 {
                     var dm = await suggestUser.CreateDmChannelAsync();
@@ -86,7 +86,7 @@ namespace Hanekawa.Bot.Modules.Report
                                         "report:\n" +
                                         $"{embed.Description.Truncate(400)}\n" +
                                         $"Answer from {Context.User.Mention}:\n" +
-                                        $"{text}", _colour.Get(Context.Guild.Id));
+                                        $"{text}", _colour.Get(Context.Guild.Id.RawValue));
                 }
             }
             catch
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Modules.Report
                 }
 
                 if (channel == null) channel = Context.Channel;
-                cfg.ReportChannel = channel.Id;
+                cfg.ReportChannel = channel.Id.RawValue;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
                     Color.Green);

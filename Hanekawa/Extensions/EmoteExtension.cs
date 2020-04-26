@@ -4,7 +4,7 @@
     {
     /*
         public static string ParseEmoteString(this Emote emote) =>
-            emote.Animated ? $"<a:{emote.Name}:{emote.Id}>" : $"<:{emote.Name}:{emote.Id}>";
+            emote.Animated ? $"<a:{emote.Name}:{emote.Id.RawValue}>" : $"<:{emote.Name}:{emote.Id.RawValue}>";
 
         public static IEmote ParseStringEmote(this string emote)
         {

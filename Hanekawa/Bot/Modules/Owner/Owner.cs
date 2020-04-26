@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Owner
             {
                 totalMembers += x.Value.MemberCount;
                 var sb = new StringBuilder();
-                sb.AppendLine($"Server: {x.Value.Name} ({x.Value.Id})");
+                sb.AppendLine($"Server: {x.Value.Name} ({x.Value.Id.RawValue})");
                 sb.AppendLine($"Members: {x.Value.MemberCount}");
                 sb.AppendLine($"Owner: {x.Value.Owner.Mention}");
                 servers.Add(sb.ToString());
@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Modules.Owner
                 await db.Blacklists.AddAsync(new Blacklist
                 {
                     GuildId = guildId,
-                    ResponsibleUser = Context.User.Id,
+                    ResponsibleUser = Context.User.Id.RawValue,
                     Reason = reason
                 });
                 await db.SaveChangesAsync();

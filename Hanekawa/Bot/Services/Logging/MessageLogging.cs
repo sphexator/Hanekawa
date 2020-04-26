@@ -40,7 +40,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new LocalEmbedBuilder
                         {
                             Description = $"{user.Mention} updated a message in {chx.Mention}",
-                            Color = _colourService.Get(user.Guild.Id),
+                            Color = _colourService.Get(user.Guild.Id.RawValue),
                             Author = new LocalEmbedAuthorBuilder { Name = "Message Updated" },
                             Fields =
                             {
@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Services.Logging
                                 new LocalEmbedFieldBuilder
                                     {Name = "Old Message", Value = before.Value.Content.Truncate(980), IsInline = true}
                             },
-                            Footer = new LocalEmbedFooterBuilder {Text = $"User: {user.Id} | {after.Id}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User: {user.Id.RawValue} | {after.Id.RawValue}"},
                             Timestamp = after.EditedAt ?? after.CreatedAt
                         };
 
@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for Message Updated - {e.Message}");
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -85,12 +85,12 @@ namespace Hanekawa.Bot.Services.Logging
                         var embed = new LocalEmbedBuilder
                         {
                             Description = msg.Value.Content.Truncate(1900),
-                            Color = _colourService.Get(chx.Guild.Id),
+                            Color = _colourService.Get(chx.Guild.Id.RawValue),
                             Author = new LocalEmbedAuthorBuilder {Name = "Message Deleted"},
                             Title = $"{msg.Value.Author} deleted a message in {chx.Name}",
                             Timestamp = msg.Value.CreatedAt,
                             Footer = new LocalEmbedFooterBuilder
-                                {Text = $"User: {msg.Value.Author.Id} | Message ID: {msg.Id}"}
+                                {Text = $"User: {msg.Value.Author.Id.RawValue} | Message ID: {msg.Id.RawValue}"}
                         };
 
                         if (msg.Value.Attachments.Count > 0 && !chx.IsNsfw)
@@ -111,7 +111,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
+                        $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -154,7 +154,7 @@ namespace Hanekawa.Bot.Services.Logging
                             var embed = new LocalEmbedBuilder
                             {
                                 Description = messageContent[i],
-                                Color = _colourService.Get(ch.Guild.Id),
+                                Color = _colourService.Get(ch.Guild.Id.RawValue),
                                 Title = $"Bulk delete in {ch.Name}"
                             };
                             await logChannel.ReplyAsync(embed);
@@ -165,7 +165,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {ch.Guild.Id} for Bulk Message Deleted - {e.Message}");
+                        $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;

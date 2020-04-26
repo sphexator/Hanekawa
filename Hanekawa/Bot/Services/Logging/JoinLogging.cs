@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Logging
 
                         var embed = new LocalEmbedBuilder
                         {
-                            Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
+                            Description = $"📤 {user.Mention} has left ( *{user.Id.RawValue}* )",
                             Color = Color.Red,
                             Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                             Timestamp = DateTimeOffset.UtcNow
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Services.Logging
 
                         var embed = new LocalEmbedBuilder
                         {
-                            Description = $"📥 {user.Mention} has joined ( *{user.Id}* )\n" +
+                            Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
                                           $"Account created: {user.CreatedAt.Humanize()}",
                             Color = Color.Green,
                             Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for Join Log - {e.Message}");
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

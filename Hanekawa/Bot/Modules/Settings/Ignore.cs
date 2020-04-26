@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Modules.Settings
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
-                var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 string content;
                 if (list.Count != 0)
                 {
@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 var title = cfg.IgnoreAllChannels
                     ? "Channel commands are enabled in:"
                     : "Channel commands are ignored in:";
-                var embed = new LocalEmbedBuilder().Create(content, Context.Colour.Get(Context.Guild.Id))
+                var embed = new LocalEmbedBuilder().Create(content, Context.Colour.Get(Context.Guild.Id.RawValue))
                     .WithAuthor(new LocalEmbedAuthorBuilder {IconUrl = Context.Guild.GetIconUrl(), Name = title});
                 await Context.ReplyAsync(embed);
             }

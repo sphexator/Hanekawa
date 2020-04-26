@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Services.Logging
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Author = new LocalEmbedAuthorBuilder {Name = "User Mute Warned"},
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"},
+                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Services.Logging
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Author = new LocalEmbedAuthorBuilder {Name = "User Warned"},
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"},
+                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},

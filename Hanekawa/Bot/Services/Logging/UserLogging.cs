@@ -31,11 +31,11 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
                         if (channel is null) return;
 
-                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id), Description = ""};
+                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id.RawValue), Description = ""};
                         if (before.Name != after.Name)
                         {
                             embed.Title = "Username Change";
-                            embed.Description = $"{before} || {before.Id}";
+                            embed.Description = $"{before} || {before.Id.RawValue}";
                             embed.AddField(x =>
                             {
                                 x.Name = "Old Name";
@@ -52,7 +52,7 @@ namespace Hanekawa.Bot.Services.Logging
                         else if (before.AvatarHash != after.AvatarHash)
                         {
                             embed.Title = "Avatar Change";
-                            embed.Description = $"{before} | {before.Id}";
+                            embed.Description = $"{before} | {before.Id.RawValue}";
                             embed.ThumbnailUrl = before.GetAvatarUrl();
                             embed.ImageUrl = after.GetAvatarUrl();
                         }
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for User Updated - {e.Message}");
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for User Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -90,9 +90,9 @@ namespace Hanekawa.Bot.Services.Logging
 
                         var embed = new LocalEmbedBuilder
                         {
-                            Color = _colourService.Get(before.Guild.Id),
+                            Color = _colourService.Get(before.Guild.Id.RawValue),
                             Description = "",
-                            Title = $"{after} | {after.Id}",
+                            Title = $"{after} | {after.Id.RawValue}",
                             Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = ""}
                         };
                         if (before.Nick != after.Nick)
@@ -133,7 +133,7 @@ namespace Hanekawa.Bot.Services.Logging
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {before.Guild.Id} for Guild Member Log - {e.Message}");
+                        $"(Log Service) Error in {before.Guild.Id.RawValue} for Guild Member Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

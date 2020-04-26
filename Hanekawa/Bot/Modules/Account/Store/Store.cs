@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
             using (var db = new DbService())
             {
                 var inventory = await db.Inventories
-                    .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
+                    .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
                 if (inventory.Count == 0)
                 {
                     await Context.ReplyAsync("Your inventory is empty");
@@ -67,8 +67,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
             using (var db = new DbService())
             {
                 var inventory = await db.Inventories
-                    .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
-                var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id && z.Role == role.Id);
+                    .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
+                var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id.RawValue && z.Role == role.Id.RawValue);
                 if (inventory.FirstOrDefault(x => x.ItemId == item.Id) == null)
                 {
                     await Context.ReplyAsync("You do not own this item");
@@ -95,8 +95,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
             using (var db = new DbService())
             {
                 var inventory = await db.Inventories
-                    .Where(x => x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id).ToListAsync();
-                var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id && z.Role == role.Id);
+                    .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
+                var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id.RawValue && z.Role == role.Id.RawValue);
                 if (inventory.FirstOrDefault(x => x.ItemId == item.Id) == null)
                 {
                     await Context.ReplyAsync("You can't remove a role you do not own or have.");
@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                var store = await db.ServerStores.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var store = await db.ServerStores.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 if (store.Count == 0)
                 {
                     await Context.ReplyAsync("Store is empty");
@@ -153,7 +153,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
             {
                 var serverData =
                     await db.ServerStores.FirstOrDefaultAsync(x =>
-                        x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
+                        x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);
                 if (serverData == null)
                 {
                     await Context.ReplyAsync("Couldn't find an item with that ID.");
@@ -161,7 +161,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 }
 
                 var userData = await db.GetOrCreateUserData(Context.Member);
-                var item = await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);
+                var item = await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.Role == role.Id.RawValue);
                 var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 if (serverData.SpecialCredit)
                 {
@@ -185,7 +185,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 }
 
                 var invItem = await db.Inventories.FirstOrDefaultAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.UserId == Context.User.Id && x.ItemId == item.Id);
+                    x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue && x.ItemId == item.Id);
                 if (invItem != null)
                 {
                     await Context.ReplyAsync($"You've already purchased {Context.Guild.GetRole(item.Role.Value).Name}.",
@@ -199,8 +199,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 await db.Inventories.AddAsync(new Inventory
                 {
                     Amount = 1,
-                    GuildId = Context.Guild.Id,
-                    UserId = Context.User.Id,
+                    GuildId = Context.Guild.Id.RawValue,
+                    UserId = Context.User.Id.RawValue,
                     ItemId = item.Id
                 });
                 await db.SaveChangesAsync();

@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id, new Color((int)color));
+                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color((int)color));
                     cfg.EmbedColor = color;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
@@ -84,7 +84,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id, color);
+                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
                     cfg.EmbedColor = (uint)color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 using (var db = new DbService())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id, color);
+                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
                     cfg.EmbedColor = (uint)color.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync("Changed default embed color");

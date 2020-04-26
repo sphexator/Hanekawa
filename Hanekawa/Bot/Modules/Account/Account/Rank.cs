@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Account
                         Name = "Rank",
                         Value =
                             $"{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.TotalExp >= serverData.TotalExp)}" +
-                            $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
+                            $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue)}",
                         IsInline = true
                     },
                     new LocalEmbedFieldBuilder
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Account
             using (var db = new DbService())
             {
                 var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-                var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
+                var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
                 var result = new List<string>();
                 var strBuilder = new StringBuilder();
                 for (var i = 0; i < users.Length; i++)

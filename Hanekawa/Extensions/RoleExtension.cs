@@ -11,7 +11,7 @@ namespace Hanekawa.Extensions
             var currentUser = user.Guild.CurrentMember;
             if (currentUser.Permissions.ManageRoles && currentUser.HierarchyCheck(role))
             {
-                await user.GrantRoleAsync(role.Id);
+                await user.GrantRoleAsync(role.Id.RawValue);
                 return true;
             }
 
@@ -25,7 +25,7 @@ namespace Hanekawa.Extensions
             if (!currentUser.Permissions.ManageRoles) return false;
             foreach (var x in roles)
                 if (currentUser.HierarchyCheck(x))
-                    await user.GrantRoleAsync(x.Id);
+                    await user.GrantRoleAsync(x.Id.RawValue);
             return true;
         }
 
@@ -34,7 +34,7 @@ namespace Hanekawa.Extensions
             var currentUser = user.Guild.CurrentMember;
             if (currentUser.Permissions.ManageRoles && currentUser.HierarchyCheck(role))
             {
-                await user.RevokeRoleAsync(role.Id);
+                await user.RevokeRoleAsync(role.Id.RawValue);
                 return true;
             }
 
@@ -48,7 +48,7 @@ namespace Hanekawa.Extensions
             if (!currentUser.Permissions.ManageRoles) return false;
             foreach (var x in roles)
                 if (currentUser.HierarchyCheck(x))
-                    await user.RevokeRoleAsync(x.Id);
+                    await user.RevokeRoleAsync(x.Id.RawValue);
             return true;
         }
     }

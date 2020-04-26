@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Services.Logging
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Author = new LocalEmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"},
+                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
             };
             var msg = await channel.SendMessageAsync(null, false, embed.Build());
-            caseId.MessageId = msg.Id;
+            caseId.MessageId = msg.Id.RawValue;
             await db.SaveChangesAsync();
         }
 
@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Logging
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Author = new LocalEmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
-                Footer = new LocalEmbedFooterBuilder() {Text = $"Username: {user} ({user.Id})"},
+                Footer = new LocalEmbedFooterBuilder() {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields = 
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
@@ -58,7 +58,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
             };
             var msg = await channel.SendMessageAsync(null, false, embed.Build());
-            caseId.MessageId = msg.Id;
+            caseId.MessageId = msg.Id.RawValue;
             await db.SaveChangesAsync();
         }
     }

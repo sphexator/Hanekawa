@@ -50,15 +50,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
             await user.TryMute();
-            _log.LogAction(LogLevel.Information, $"(Mute service) Muted {user.Id} in {user.Guild.Id}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) Muted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
             return true;
         }
 
         public async Task<bool> UnMuteUser(CachedMember user, DbService db)
         {
-            await StopUnMuteTimerAsync(user.Guild.Id, user.Id, db);
+            await StopUnMuteTimerAsync(user.Guild.Id.RawValue, user.Id.RawValue, db);
             await user.TryUnMute();
-            _log.LogAction(LogLevel.Information, $"(Mute service) Unmuted {user.Id} in {user.Guild.Id}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) Unmuted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
             return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as CachedRole);
         }
 
@@ -69,15 +69,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             var unMuteAt = DateTime.UtcNow + after;
             await db.MuteTimers.AddAsync(new MuteTimer
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
+                GuildId = user.Guild.Id.RawValue,
+                UserId = user.Id.RawValue,
                 Time = unMuteAt
             });
             await db.SaveChangesAsync();
-            StartUnMuteTimer(user.Guild.Id, user.Id, after);
+            StartUnMuteTimer(user.Guild.Id.RawValue, user.Id.RawValue, after);
             await _logService.Mute(user, staff, reason, after, db);
 
-            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id} muted {user.Id} in {user.Guild.Id} for {after.Humanize(2)}");
+            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id.RawValue} muted {user.Id.RawValue} in {user.Guild.Id.RawValue} for {after.Humanize(2)}");
             return true;
         }
 
@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 });
                 role = cRole;
             }
-            cfg.MuteRole = role.Id;
+            cfg.MuteRole = role.Id.RawValue;
             await db.SaveChangesAsync();
             return role;
         }
@@ -120,7 +120,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Value.Guild.Id} in channel {x.Key}");
+                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Value.Guild.Id.RawValue} in channel {x.Key}");
                 }
 
                 await Task.Delay(200).ConfigureAwait(false);

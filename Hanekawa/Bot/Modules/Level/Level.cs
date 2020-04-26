@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Level
             await Context.ReplyAsync(
                 "You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
-                x => x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == Context.Guild.Id,
+                x => x.Message.Author.Id.RawValue == Context.Member.Id.RawValue && x.Message.Guild.Id.RawValue == Context.Guild.Id.RawValue,
                 TimeSpan.FromMinutes(1));
             if (response == null || response.Message.Content.ToLower() != "y")
             {
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Modules.Level
             var msg = await Context.ReplyAsync("Server level reset in progress...");
             using (var db = new DbService())
             {
-                var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id);
+                var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue);
                 foreach (var x in users)
                 {
                     x.Level = 1;
@@ -132,7 +132,7 @@ namespace Hanekawa.Bot.Modules.Level
             using (var db = new DbService())
             {
                 var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.Level == level);
+                    x.GuildId == Context.Guild.Id.RawValue && x.Level == level);
                 if (role == null)
                 {
                     await Context.ReplyAsync("Couldn't find a role with that level", Color.Red);
@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.Level)
+                var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderBy(x => x.Level)
                     .ToListAsync();
                 if (levels.Count == 0)
                 {
@@ -192,7 +192,7 @@ namespace Hanekawa.Bot.Modules.Level
             if (level <= 0) return;
             using (var db = new DbService())
             {
-                var check = await db.LevelRewards.FindAsync(context.Guild.Id, level);
+                var check = await db.LevelRewards.FindAsync(context.Guild.Id.RawValue, level);
                 if (check != null)
                 {
                     var gRole = context.Guild.GetRole(check.Role);
@@ -200,7 +200,7 @@ namespace Hanekawa.Bot.Modules.Level
                     {
                         await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
                         var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
-                            x => x.Message.Author.Id == Context.Member.Id && x.Message.Guild.Id == Context.Guild.Id,
+                            x => x.Message.Author.Id.RawValue == Context.Member.Id.RawValue && x.Message.Guild.Id.RawValue == Context.Guild.Id.RawValue,
                             TimeSpan.FromMinutes(1));
                         if (response == null || response.Message.Content.ToLower() != "y")
                         {
@@ -218,9 +218,9 @@ namespace Hanekawa.Bot.Modules.Level
 
                 var data = new LevelReward
                 {
-                    GuildId = context.Guild.Id,
+                    GuildId = context.Guild.Id.RawValue,
                     Level = level,
-                    Role = role.Id,
+                    Role = role.Id.RawValue,
                     Stackable = stack
                 };
                 await db.LevelRewards.AddAsync(data);

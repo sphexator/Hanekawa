@@ -52,12 +52,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
                             db);
                     }
 
-                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Invite link ({invite})");
+                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Invite link ({invite})");
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Automod) Error in {channel.Guild.Id} for Invite link - {e.Message}");
+                        $"(Automod) Error in {channel.Guild.Id.RawValue} for Invite link - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -82,12 +82,12 @@ namespace Hanekawa.Bot.Services.AutoModerator
                         await message.TryDeleteMessagesAsync();
                     }
 
-                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id} in {user.Guild.Id}. reason: Message length ({message.Content.Length})");
+                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Message length ({message.Content.Length})");
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Automod) Error in {channel.Guild.Id} for Message Length - {e.Message}");
+                        $"(Automod) Error in {channel.Guild.Id.RawValue} for Message Length - {e.Message}");
                 }
             });
             return Task.CompletedTask;

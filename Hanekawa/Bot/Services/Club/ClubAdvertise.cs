@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (club == null) return;
                 await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
@@ -54,7 +54,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (leader == null) return;
                 await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (leader == null) return;
                 await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (leader == null) return;
                 await context.Message.TryDeleteMessageAsync();
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (club == null) return;
                 if (club.Public)
                 {
@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Services.Club
             using (var db = new DbService())
             {
                 var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id && x.LeaderId == context.User.Id);
+                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
                 if (leader == null) return;
                 var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
                 if (!cfg.AdvertisementChannel.HasValue)
@@ -208,11 +208,11 @@ namespace Hanekawa.Bot.Services.Club
         {
             if (!cfg.AdvertisementChannel.HasValue) return;
             var embed = new LocalEmbedBuilder()
-                .Create(club.Description ?? "No description added", _colourService.Get(guild.Id))
+                .Create(club.Description ?? "No description added", _colourService.Get(guild.Id.RawValue))
                 .WithAuthor(new LocalEmbedAuthorBuilder() {Name = club.Name})
                 .WithImageUrl(club.ImageUrl);
             var msg = await guild.GetTextChannel(cfg.AdvertisementChannel.Value).ReplyAsync(embed);
-            club.AdMessage = msg.Id;
+            club.AdMessage = msg.Id.RawValue;
             await db.SaveChangesAsync();
             if (club.Public) await msg.AddReactionAsync(new LocalEmoji("\u2714"));
         }

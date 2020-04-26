@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Info
                     new LocalEmbedFieldBuilder { Name = "Support", Value = "[Invite Link](https://discord.gg/gGu5TT6)", IsInline = true },
                     new LocalEmbedFieldBuilder { Name = "Bot Invite", Value = "[Invite Link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", IsInline = true }
                 }
-            }.Create(appData.Description, Context.Colour.Get(Context.Guild.Id));
+            }.Create(appData.Description, Context.Colour.Get(Context.Guild.Id.RawValue));
             await Context.ReplyAsync(embed);
         }
 

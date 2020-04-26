@@ -17,18 +17,18 @@ namespace Hanekawa.Bot.Services.Experience
         public async Task StartEventAsync(DbService db, HanekawaContext context, double multiplier, TimeSpan duration,
             bool announce = false)
         {
-            var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id);
+            var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id.RawValue);
             if (checkExisting != null && _expEventTimer != null)
             {
                 checkExisting.Time = DateTime.UtcNow + duration;
                 checkExisting.Multiplier = multiplier;
-                if (_expEventTimer.Item1 == context.Guild.Id) _expEventTimer.Item2.Dispose();
+                if (_expEventTimer.Item1 == context.Guild.Id.RawValue) _expEventTimer.Item2.Dispose();
             }
             else
             {
                 await db.LevelExpEvents.AddAsync(new LevelExpEvent
                 {
-                    GuildId = context.Guild.Id,
+                    GuildId = context.Guild.Id.RawValue,
                     Multiplier = multiplier,
                     Time = DateTime.UtcNow + duration,
                     ChannelId = null,
@@ -37,8 +37,8 @@ namespace Hanekawa.Bot.Services.Experience
             }
 
             await db.SaveChangesAsync();
-            _voiceExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (k, v) => multiplier);
-            _textExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (key, v) => multiplier);
+            _voiceExpMultiplier.AddOrUpdate(context.Guild.Id.RawValue, multiplier, (k, v) => multiplier);
+            _textExpMultiplier.AddOrUpdate(context.Guild.Id.RawValue, multiplier, (key, v) => multiplier);
         }
 
         private async Task EventHandler(CancellationToken stopToken)

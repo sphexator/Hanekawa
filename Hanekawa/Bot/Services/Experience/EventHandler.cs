@@ -110,7 +110,7 @@ namespace Hanekawa.Bot.Services.Experience
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Exp Service) Error in {user.Guild.Id} for Global Exp - {e.Message}");
+                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Global Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -136,7 +136,7 @@ namespace Hanekawa.Bot.Services.Experience
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Exp Service) Error in {user.Guild.Id} for Server Exp - {e.Message}");
+                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Server Exp - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -173,7 +173,7 @@ namespace Hanekawa.Bot.Services.Experience
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Exp Service) Error in {user.Guild.Id} for Voice - {e.Message}");
+                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Voice - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -195,24 +195,24 @@ namespace Hanekawa.Bot.Services.Experience
 
         private bool IsReducedExp(CachedTextChannel channel)
         {
-            var isChannel = ServerTextChanReduction.TryGetValue(channel.Guild.Id, out var channels);
-            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
-            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id, out _);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id, out _);
+            var isChannel = ServerTextChanReduction.TryGetValue(channel.Guild.Id.RawValue, out var channels);
+            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id.RawValue, out var category);
+            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
+            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
             if (category.TryGetValue(channel.CategoryId.Value, out _))
                 return true;
-            return isChannel && channels.TryGetValue(channel.Id, out _);
+            return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
         }
 
         private bool IsReducedExp(CachedVoiceChannel channel)
         {
-            var isChannel = ServerVoiceChanReduction.TryGetValue(channel.Guild.Id, out var channels);
-            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id, out var category);
-            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id, out _);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id, out _);
+            var isChannel = ServerVoiceChanReduction.TryGetValue(channel.Guild.Id.RawValue, out var channels);
+            var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id.RawValue, out var category);
+            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
+            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
             if (category.TryGetValue(channel.CategoryId.Value, out _))
                 return true;
-            return isChannel && channels.TryGetValue(channel.Id, out _);
+            return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
         }
     }
 }

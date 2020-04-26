@@ -79,19 +79,19 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Channels added to exp ignore list:");
                 for (var i = 0; i < channels.Length; i++)
                 {
                     var x = channels[i];
-                    if (!channeList.TryGetValue(x.Id, out _))
+                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
                     {
-                        channeList.Add(x.Id);
+                        channeList.Add(x.Id.RawValue);
                         var data = new LevelExpReduction
                         {
-                            GuildId = Context.Guild.Id,
-                            ChannelId = x.Id,
+                            GuildId = Context.Guild.Id.RawValue,
+                            ChannelId = x.Id.RawValue,
                             ChannelType = ChannelType.Text
                         };
                         await db.LevelExpReductions.AddAsync(data);
@@ -116,19 +116,19 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Channels added to exp ignore list:");
                 for (var i = 0; i < channels.Length; i++)
                 {
                     var x = channels[i];
-                    if (!channeList.TryGetValue(x.Id, out _))
+                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
                     {
-                        channeList.Add(x.Id);
+                        channeList.Add(x.Id.RawValue);
                         var data = new LevelExpReduction
                         {
-                            GuildId = Context.Guild.Id,
-                            ChannelId = x.Id,
+                            GuildId = Context.Guild.Id.RawValue,
+                            ChannelId = x.Id.RawValue,
                             ChannelType = ChannelType.Voice
                         };
                         await db.LevelExpReductions.AddAsync(data);
@@ -153,19 +153,19 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Categories added to exp ignore list:");
                 for (var i = 0; i < category.Length; i++)
                 {
                     var x = category[i];
-                    if (!channeList.TryGetValue(x.Id, out _))
+                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
                     {
-                        channeList.Add(x.Id);
+                        channeList.Add(x.Id.RawValue);
                         var data = new LevelExpReduction
                         {
-                            GuildId = Context.Guild.Id,
-                            ChannelId = x.Id,
+                            GuildId = Context.Guild.Id.RawValue,
+                            ChannelId = x.Id.RawValue,
                             ChannelType = ChannelType.Category
                         };
                         await db.LevelExpReductions.AddAsync(data);
@@ -190,17 +190,17 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Channels removed from exp ignore list:");
                 for (var i = 0; i < channels.Length; i++)
                 {
                     var x = channels[i];
-                    if (channeList.TryGetValue(x.Id, out _))
+                    if (channeList.TryGetValue(x.Id.RawValue, out _))
                     {
-                        channeList.Remove(x.Id);
+                        channeList.Remove(x.Id.RawValue);
                         var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
-                            z.GuildId == Context.Guild.Id && z.ChannelId == x.Id);
+                            z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
                         db.LevelExpReductions.Remove(data);
                         content.AppendLine($"Removed {x.Mention}");
                     }
@@ -223,17 +223,17 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
                 var content = new StringBuilder();
                 content.AppendLine("Categories removed from exp ignore list:");
                 for (var i = 0; i < category.Length; i++)
                 {
                     var x = category[i];
-                    if (channeList.TryGetValue(x.Id, out _))
+                    if (channeList.TryGetValue(x.Id.RawValue, out _))
                     {
-                        channeList.Remove(x.Id);
+                        channeList.Remove(x.Id.RawValue);
                         var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
-                            z.GuildId == Context.Guild.Id && z.ChannelId == x.Id);
+                            z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
                         db.LevelExpReductions.Remove(data);
                         content.AppendLine($"Removed {x.Name}");
                     }
@@ -255,8 +255,8 @@ namespace Hanekawa.Bot.Modules.Level
         [RequiredChannel]
         public async Task ExpIgnoreList()
         {
-            var channels = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
-            var categories = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id, new HashSet<ulong>());
+            var channels = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var categories = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var result = new StringBuilder();
             var pages = new List<Page>();
             if (channels.Count == 0 && categories.Count == 0) result.AppendLine("No channels");
@@ -292,7 +292,7 @@ namespace Hanekawa.Bot.Modules.Level
                 }
 
             await Context.Bot.GetInteractivity().StartMenuAsync(Context.Channel,
-                new PagedMenu(Context.Member.Id, new DefaultPageProvider(pages)));
+                new PagedMenu(Context.Member.Id.RawValue, new DefaultPageProvider(pages)));
         }
     }
 }

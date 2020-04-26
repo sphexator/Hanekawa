@@ -15,7 +15,7 @@ namespace Hanekawa.Shared.Command
             {
                 case TokenType.Bot:
                 {
-                    return (await context.Bot.CurrentApplication.GetAsync().ConfigureAwait(false)).Owner.Id == context.User.Id
+                    return (await context.Bot.CurrentApplication.GetAsync().ConfigureAwait(false)).Owner.Id.RawValue == context.User.Id.RawValue
                         ? CheckResult.Successful
                         : CheckResult.Unsuccessful("This can only be executed by the bot's owner.");
                 }
@@ -23,7 +23,7 @@ namespace Hanekawa.Shared.Command
                 case TokenType.Bearer:
                 case TokenType.User:
                 {
-                    return context.Bot.CurrentUser.Id == context.User.Id
+                    return context.Bot.CurrentUser.Id.RawValue == context.User.Id.RawValue
                         ? CheckResult.Successful
                         : CheckResult.Unsuccessful("This can only be executed by the currently logged in user.");
                 }

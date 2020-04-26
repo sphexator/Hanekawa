@@ -46,19 +46,19 @@ namespace Hanekawa.Bot.Services.Club
                 {
                     using (var db = new DbService())
                     {
-                        var clubs = await db.ClubPlayers.Where(x => x.GuildId == guild.Id && x.UserId == user.Id)
+                        var clubs = await db.ClubPlayers.Where(x => x.GuildId == guild.Id.RawValue && x.UserId == user.Id.RawValue)
                             .ToListAsync();
                         if (clubs.Count == 0) return;
                         var cfg = await db.GetOrCreateClubConfigAsync(guild);
                         foreach (var x in clubs) await RemoveUserAsync(user, guild, x.Id, db, cfg);
-                        _log.LogAction(LogLevel.Information, $"(Club Service) {user.Id} left {guild.Id} and left {clubs.Count} clubs");
+                        _log.LogAction(LogLevel.Information, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left {clubs.Count} clubs");
                     }
                     
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Club Service) Error in {guild.Id} for User Left- {e.Message}");
+                        $"(Club Service) Error in {guild.Id.RawValue} for User Left- {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -87,14 +87,14 @@ namespace Hanekawa.Bot.Services.Club
                     {
                         var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
                         if (!cfg.AdvertisementChannel.HasValue) return;
-                        if (cfg.AdvertisementChannel.Value != channel.Id) return;
+                        if (cfg.AdvertisementChannel.Value != channel.Id.RawValue) return;
 
                         var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                            x.GuildId == channel.Guild.Id && x.AdMessage == msg.Id);
+                            x.GuildId == channel.Guild.Id.RawValue && x.AdMessage == msg.Id.RawValue);
                         if (club == null || !club.Public) return;
 
                         var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                            x.UserId == user.Id && x.GuildId == channel.Guild.Id && x.ClubId == club.Id);
+                            x.UserId == user.Id.RawValue && x.GuildId == channel.Guild.Id.RawValue && x.ClubId == club.Id);
                         if (clubUser == null) await AddUserAsync(user as CachedMember, club.Id, db, cfg);
                         else await RemoveUserAsync(user as CachedUser, channel.Guild, club.Id, db, cfg);
                     }
@@ -102,7 +102,7 @@ namespace Hanekawa.Bot.Services.Club
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Club Service) Error in {channel.Guild.Id} for Reaction added or removed - {e.Message}");
+                        $"(Club Service) Error in {channel.Guild.Id.RawValue} for Reaction added or removed - {e.Message}");
                 }
             });
             return Task.CompletedTask;

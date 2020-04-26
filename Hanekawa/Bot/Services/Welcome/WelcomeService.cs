@@ -66,13 +66,13 @@ namespace Hanekawa.Bot.Services.Welcome
                         var del = DeleteWelcomeAsync(message, cfg);
                         var exp = WelcomeRewardAsync(_client, channel, cfg, db);
                         await Task.WhenAll(del, exp);
-                        _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Welcome Service) Error in {user.Guild.Id} for User Joined - {e.Message}");
+                        $"(Welcome Service) Error in {user.Guild.Id.RawValue} for User Joined - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -106,16 +106,16 @@ namespace Hanekawa.Bot.Services.Welcome
                 {
                     using (var db = new DbService())
                     {
-                        var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id);
+                        var banners = db.WelcomeBanners.Where(x => x.GuildId == guild.Id.RawValue);
                         db.WelcomeBanners.RemoveRange(banners);
                         await db.SaveChangesAsync();
                     }
-                    _log.LogAction(LogLevel.Information, $"(Welcome Service) Cleaned up banners in {guild.Id} as bot left server");
+                    _log.LogAction(LogLevel.Information, $"(Welcome Service) Cleaned up banners in {guild.Id.RawValue} as bot left server");
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Welcome Service) Error in {guild.Id} for Bot Left Guild - {e.Message}");
+                        $"(Welcome Service) Error in {guild.Id.RawValue} for Bot Left Guild - {e.Message}");
                 }
             });
             return Task.CompletedTask;

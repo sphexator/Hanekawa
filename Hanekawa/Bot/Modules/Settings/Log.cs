@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogJoin = channel.Id;
+                cfg.LogJoin = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set join/leave logging channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogWarn = channel.Id;
+                cfg.LogWarn = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set warn logging channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -72,7 +72,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogMsg = channel.Id;
+                cfg.LogMsg = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set message logging channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogBan = channel.Id;
+                cfg.LogBan = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set ban logging channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogAvi = channel.Id;
+                cfg.LogAvi = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set user logging channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogAutoMod = channel.Id;
+                cfg.LogAutoMod = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set auto mod log channel to {channel.Mention}!", Color.Green);
                 await db.SaveChangesAsync();
             }
@@ -162,7 +162,7 @@ namespace Hanekawa.Bot.Modules.Settings
                     return;
                 }
 
-                cfg.LogVoice = channel.Id;
+                cfg.LogVoice = channel.Id.RawValue;
                 await Context.ReplyAsync($"Set voice activity logging channel to {channel.Mention}!",
                     Color.Green);
                 await db.SaveChangesAsync();

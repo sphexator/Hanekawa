@@ -30,14 +30,14 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
                 var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
-                var embed = new LocalEmbedBuilder().Create(suggestion, Context.Colour.Get(Context.Guild.Id));
+                var embed = new LocalEmbedBuilder().Create(suggestion, Context.Colour.Get(Context.Guild.Id.RawValue));
                 embed.Author = new LocalEmbedAuthorBuilder
                     {IconUrl = Context.User.GetAvatarUrl(), Name = Context.Member.DisplayName};
                 embed.Footer = new LocalEmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"};
                 embed.Timestamp = DateTimeOffset.UtcNow;
                 if (Context.Message.Attachments.Count > 0) embed.WithImageUrl(Context.Message.Attachments.First().Url);
                 var msg = await Context.Guild.GetTextChannel(cfg.Channel.Value).ReplyAsync(embed);
-                caseId.MessageId = msg.Id;
+                caseId.MessageId = msg.Id.RawValue;
                 await db.SaveChangesAsync();
                 await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder().Create("Suggestion sent!", Color.Green));
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
                 if (suggestion?.MessageId == null)
                 {
                     await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red);
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
                 if (suggestion?.MessageId == null)
                 {
                     await Context.ReplyAsync("Couldn't find a suggestion with that id.", Color.Red);
@@ -107,9 +107,9 @@ namespace Hanekawa.Bot.Modules.Suggestion
             {
                 var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
                 if (!cfg.Channel.HasValue) return;
-                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
+                var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
                 if (!Context.Member.Permissions.Has(Permission.ManageGuild) &&
-                    Context.User.Id != suggestion.UserId) return;
+                    Context.User.Id.RawValue != suggestion.UserId) return;
 
                 if (suggestion?.MessageId == null)
                 {
@@ -121,7 +121,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     .GetMessageAsync(suggestion.MessageId.Value) as IUserMessage;
                 if (msg == null) return;
                 var sugstMessage = await CommentSuggestion(Context.Member, msg, reason);
-                if (Context.User.Id != suggestion.UserId) await RespondUser(suggestion, sugstMessage, reason);
+                if (Context.User.Id.RawValue != suggestion.UserId) await RespondUser(suggestion, sugstMessage, reason);
             }
         }
 
@@ -178,7 +178,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                     "Suggestion:\n" +
                     $"{sugst.Truncate(300)}\n" +
                     $"Answer from {Context.User}:\n" +
-                    $"{response.Truncate(1200)}", Context.Colour.Get(Context.Guild.Id));
+                    $"{response.Truncate(1200)}", Context.Colour.Get(Context.Guild.Id.RawValue));
                 if (suggestUser.DmChannel != null) await suggestUser.DmChannel.SendMessageAsync(null, false, embed.Build());
                 else
                 {

@@ -13,7 +13,7 @@ namespace Hanekawa.Shared.Command
 
         public override ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
         {
-            return Id == context.Member.Id
+            return Id == context.Member.Id.RawValue
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("You are not authorized to execute this.");
         }

@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
                 if (club == null)
                 {
                     await Context.ReplyAsync("There's no club with that ID in this guild");
@@ -64,7 +64,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
                 if (club == null)
                 {
                     await Context.ReplyAsync("There's no club with that ID in this guild");
@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
                 if (club == null)
                 {
                     await Context.ReplyAsync("There's no club with that ID in this guild");
@@ -118,7 +118,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
                 if (club == null)
                 {
                     await Context.ReplyAsync("There's no club with that ID in this guild");

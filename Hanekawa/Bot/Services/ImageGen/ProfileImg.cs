@@ -145,7 +145,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<string> GetAchievementPoints(CachedMember user, DbService db)
         {
-            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
+            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id.RawValue);
             return $"{points * 10}";
         }
     }

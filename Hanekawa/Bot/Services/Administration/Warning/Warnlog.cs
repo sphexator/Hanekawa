@@ -36,9 +36,9 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                           $"Amount: {userdata.Sessions}\n" +
                           $"Time: {userdata.StatVoiceTime.Humanize(2)} ({userdata.StatVoiceTime})";
             var embed = new LocalEmbedBuilder()
-                .Create(content, _colourService.Get(user.Guild.Id));
+                .Create(content, _colourService.Get(user.Guild.Id.RawValue));
             embed.Author = new LocalEmbedAuthorBuilder
-                {IconUrl = user.GetAvatarUrl(), Name = $"{user.Name}#{user.Discriminator} ({user.Id})"};
+                {IconUrl = user.GetAvatarUrl(), Name = $"{user.Name}#{user.Discriminator} ({user.Id.RawValue})"};
             foreach (var x in warnings) embed.AddField(x);
             return embed;
         }
@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         public async Task<List<string>> GetFullWarnlogAsync(CachedMember user, DbService db)
         {
             var userdata = await db.GetOrCreateUserData(user);
-            var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id).ToListAsync();
+            var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue).ToListAsync();
             var roleList = (from x in user.Roles where x.Value.Name != "@everyone" select x.Value.Name).ToList();
             var roles = string.Join(", ", roleList);
             var result = new List<string>();
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         private async Task<List<LocalEmbedFieldBuilder>> GetWarnings(CachedMember user, DbService db)
         {
             var result = new List<LocalEmbedFieldBuilder>();
-            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id && x.Valid)
+            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue && x.Valid)
                 .ToListAsync();
             var count = list.Count;
             if (count > 10) count = 10;

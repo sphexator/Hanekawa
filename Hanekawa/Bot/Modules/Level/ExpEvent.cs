@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Description("Checks what the current exp multiplier is")]
         [RequiredChannel]
         public async Task ExpMultiplierAsync()
-            => await Context.ReplyAsync($"Current multiplier is: {_exp.GetMultiplier(Context.Guild.Id)}");
+            => await Context.ReplyAsync($"Current multiplier is: {_exp.GetMultiplier(Context.Guild.Id.RawValue)}");
 
         [Name("Text Exp Multiplier")]
         [Command("txtexpmulti", "tem")]
@@ -27,11 +27,11 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var old = _exp.GetMultiplier(Context.Guild.Id);
+                var old = _exp.GetMultiplier(Context.Guild.Id.RawValue);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 cfg.TextExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
-                _exp.AdjustTextMultiplier(Context.Guild.Id, multiplier);
+                _exp.AdjustTextMultiplier(Context.Guild.Id.RawValue, multiplier);
                 await Context.ReplyAsync($"Changed text exp multiplier from {old} to {multiplier}",
                     Color.Green);
             }
@@ -45,11 +45,11 @@ namespace Hanekawa.Bot.Modules.Level
         {
             using (var db = new DbService())
             {
-                var old = _exp.GetMultiplier(Context.Guild.Id);
+                var old = _exp.GetMultiplier(Context.Guild.Id.RawValue);
                 var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
                 cfg.VoiceExpMultiplier = multiplier;
                 await db.SaveChangesAsync();
-                _exp.AdjustVoiceMultiplier(Context.Guild.Id, multiplier);
+                _exp.AdjustVoiceMultiplier(Context.Guild.Id.RawValue, multiplier);
                 await Context.ReplyAsync($"Changed voice exp multiplier from {old} to {multiplier}",
                     Color.Green);
             }

@@ -41,7 +41,7 @@ namespace Hanekawa.Bot.Modules.Board
                 }
                 else
                 {
-                    cfg.Channel = channel.Id;
+                    cfg.Channel = channel.Id.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green);
                 }

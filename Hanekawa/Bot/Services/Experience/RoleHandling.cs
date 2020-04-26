@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Services.Experience
 
         private async Task NewLevelManagerAsync(Account userData, CachedMember user, DbService db)
         {
-            var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
+            var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
             if (roles == null || roles.Count == 0) return;
 
             var lvRole = roles.FirstOrDefault(x => x.Level == userData.Level);
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Services.Experience
             var roles = new List<CachedRole>();
             ulong role = 0;
             var currentUser = user.Guild.CurrentMember;
-            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id).ToListAsync();
+            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
 
             for (var i = 0; i < roleList.Count; i++)
             {

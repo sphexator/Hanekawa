@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 }
 
                 if (channel == null) channel = Context.Channel;
-                cfg.Channel = channel.Id;
+                cfg.Channel = channel.Id.RawValue;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
                     Color.Green);

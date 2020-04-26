@@ -89,8 +89,8 @@ namespace Hanekawa.Bot.Services.Command
             if (!(message.Author is CachedMember user)) return;
             if (user.IsBot) return;
             string output;
-            var prefix = GetPrefix(user.Guild.Id);
-            if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id),
+            var prefix = GetPrefix(user.Guild.Id.RawValue);
+            if (!CommandUtilities.HasPrefix(message.Content, GetPrefix(user.Guild.Id.RawValue),
                 out output) && !message.HasMentionPrefix(user.Guild.CurrentMember, out var prefixs, out output)) return;
             var result = await _command.ExecuteAsync(output,
                 new HanekawaContext(_client, message, prefix, _colourService, _provider));
@@ -157,7 +157,7 @@ namespace Hanekawa.Bot.Services.Command
 
                     var reCmd = list.OrderByDescending(x => x.Item2).FirstOrDefault();
                     if (reCmd == null) return;
-                    _prefixes.TryGetValue(context.Guild.Id, out var prefix);
+                    _prefixes.TryGetValue(context.Guild.Id.RawValue, out var prefix);
                     response.AppendLine(
                         $"Did you mean **{reCmd.Item1.Name}** ? (command: {prefix}{reCmd.Item1.FullAliases.FirstOrDefault()})");
                     break;
@@ -179,8 +179,8 @@ namespace Hanekawa.Bot.Services.Command
             {
                 using var db = new DbService();
                 var cfg = await db.GetOrCreateGuildConfigAsync(e.Guild);
-                _prefixes.TryAdd(e.Guild.Id, cfg.Prefix);
-                _colourService.AddOrUpdate(e.Guild.Id, new Color((int)cfg.EmbedColor));
+                _prefixes.TryAdd(e.Guild.Id.RawValue, cfg.Prefix);
+                _colourService.AddOrUpdate(e.Guild.Id.RawValue, new Color((int)cfg.EmbedColor));
             });
             return Task.CompletedTask;
         }
@@ -189,8 +189,8 @@ namespace Hanekawa.Bot.Services.Command
         {
             _ = Task.Run(() =>
             {
-                _prefixes.TryRemove(e.Guild.Id, out _);
-                _colourService.TryRemove(e.Guild.Id);
+                _prefixes.TryRemove(e.Guild.Id.RawValue, out _);
+                _colourService.TryRemove(e.Guild.Id.RawValue);
             });
             return Task.CompletedTask;
         }

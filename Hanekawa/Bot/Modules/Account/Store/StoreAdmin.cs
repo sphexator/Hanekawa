@@ -25,16 +25,16 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 var date = DateTime.UtcNow;
                 var item = new Item
                 {
-                    GuildId = Context.Guild.Id,
-                    Role = role.Id,
+                    GuildId = Context.Guild.Id.RawValue,
+                    Role = role.Id.RawValue,
                     DateAdded = date
                 };
                 var storeItem = new ServerStore
                 {
-                    GuildId = Context.Guild.Id,
+                    GuildId = Context.Guild.Id.RawValue,
                     Price = price,
                     SpecialCredit = false,
-                    RoleId = role.Id
+                    RoleId = role.Id.RawValue
                 };
                 var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 await db.Items.AddAsync(item);
@@ -58,16 +58,16 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 var date = DateTime.UtcNow;
                 var item = new Item
                 {
-                    GuildId = Context.Guild.Id,
-                    Role = role.Id,
+                    GuildId = Context.Guild.Id.RawValue,
+                    Role = role.Id.RawValue,
                     DateAdded = date
                 };
                 var storeItem = new ServerStore
                 {
-                    GuildId = Context.Guild.Id,
+                    GuildId = Context.Guild.Id.RawValue,
                     Price = price,
                     SpecialCredit = true,
-                    RoleId = role.Id
+                    RoleId = role.Id.RawValue
                 };
                 var creditCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 await db.Items.AddAsync(item);
@@ -88,7 +88,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
             using (var db = new DbService())
             {
                 var itemCheck =
-                    await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.Role == role.Id);
+                    await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.Role == role.Id.RawValue);
                 if (itemCheck == null)
                 {
                     await Context.ReplyAsync($"{role.Name} is not a part of the store");
@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
                 }
 
                 var serverItem = await db.ServerStores.FirstOrDefaultAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
+                    x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);
 
                 db.ServerStores.Remove(serverItem);
                 await db.SaveChangesAsync();

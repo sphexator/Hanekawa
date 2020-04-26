@@ -28,19 +28,19 @@ namespace Hanekawa.Bot.Services.Achievement
                     AchievementId = achieve.AchievementId,
                     TypeId = Drop,
                     Achievement = achieve,
-                    UserId = user.Id
+                    UserId = user.Id.RawValue
                 };
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
             }
             else
             {
                 var below = achievements.Where(x => x.Requirement < progCount && !x.Once).ToList();
                 if (below.Count != 0)
                 {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue).ToListAsync();
                     foreach (var x in below)
                     {
                         if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         {
                             AchievementId = x.AchievementId,
                             TypeId = Drop,
-                            UserId = user.Id,
+                            UserId = user.Id.RawValue,
                             Achievement = x
                         };
                         await db.AchievementUnlocks.AddAsync(data);

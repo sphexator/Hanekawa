@@ -9,19 +9,19 @@ namespace Hanekawa.Database.Extensions
         public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, CachedMember user,
             int type)
         {
-            var check = await context.AchievementTrackers.FindAsync(type, user.Id).ConfigureAwait(false);
+            var check = await context.AchievementTrackers.FindAsync(type, user.Id.RawValue).ConfigureAwait(false);
             if (check != null) return check;
             var data = new AchievementTracker
             {
                 Count = 0,
                 Type = type,
-                UserId = user.Id
+                UserId = user.Id.RawValue
             };
             try
             {
                 await context.AchievementTrackers.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.AchievementTrackers.FindAsync(type, user.Id).ConfigureAwait(false);
+                return await context.AchievementTrackers.FindAsync(type, user.Id.RawValue).ConfigureAwait(false);
             }
             catch
             {

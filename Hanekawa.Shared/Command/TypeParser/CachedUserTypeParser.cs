@@ -33,14 +33,14 @@ namespace Hanekawa.Shared.Command.TypeParser
             {
                 users = new Dictionary<Snowflake, CachedUser>
                 {
-                    [dmChannel.Recipient.Id] = dmChannel.Recipient,
-                    [context.Bot.CurrentUser.Id] = context.Bot.CurrentUser
+                    [dmChannel.Recipient.Id.RawValue] = dmChannel.Recipient,
+                    [context.Bot.CurrentUser.Id.RawValue] = context.Bot.CurrentUser
                 };
             }
             else if (context.Message.Channel is CachedGroupChannel groupChannel)
             {
                 var dictionary = groupChannel.Recipients.ToDictionary(x => x.Key, x => x.Value);
-                dictionary[context.Bot.CurrentUser.Id] = context.Bot.CurrentUser;
+                dictionary[context.Bot.CurrentUser.Id.RawValue] = context.Bot.CurrentUser;
                 users = dictionary;
             }
             else

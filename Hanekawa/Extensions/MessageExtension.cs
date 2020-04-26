@@ -27,8 +27,8 @@ namespace Hanekawa.Extensions
                 if (x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow)
                 {
                     // If we're filtering, don't add if its not from the filtered user.
-                    if (filterBy != null && x.Author.Id != filterBy.Id) continue;
-                    result.Add(x.Id);
+                    if (filterBy != null && x.Author.Id.RawValue != filterBy.Id.RawValue) continue;
+                    result.Add(x.Id.RawValue);
                 }
             }
 

@@ -59,16 +59,16 @@ namespace Hanekawa.Bot.Services.Drop
                 var claim = await GetClaimEmote(context.Guild, db);
                 var triggerMsg = await context.Channel.ReplyAsync(
                     $"{context.Member.DisplayName} has spawned a crate! \nClick {claim} reaction on this message to claim it```",
-                    _colourService.Get(context.Guild.Id));
+                    _colourService.Get(context.Guild.Id.RawValue));
                 var emotes = await ReturnEmotes(context.Guild, db);
                 foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
                     try
                     {
                         if (x.Name == claim.Name)
                         {
-                            var messages = _normalLoot.GetOrAdd(context.Guild.Id,
+                            var messages = _normalLoot.GetOrAdd(context.Guild.Id.RawValue,
                                 new MemoryCache(new MemoryCacheOptions()));
-                            messages.Set(triggerMsg.Id, false, TimeSpan.FromHours(1));
+                            messages.Set(triggerMsg.Id.RawValue, false, TimeSpan.FromHours(1));
                         }
 
                         await triggerMsg.AddReactionAsync(x);
@@ -104,21 +104,21 @@ namespace Hanekawa.Bot.Services.Drop
                             {
                                 if (x.Name == claim.Name)
                                 {
-                                    var messages = _normalLoot.GetOrAdd(ch.Guild.Id,
+                                    var messages = _normalLoot.GetOrAdd(ch.Guild.Id.RawValue,
                                         new MemoryCache(new MemoryCacheOptions()));
-                                    messages.Set(triggerMsg.Id, false, TimeSpan.FromHours(1));
+                                    messages.Set(triggerMsg.Id.RawValue, false, TimeSpan.FromHours(1));
                                 }
 
                                 await triggerMsg.AddReactionAsync(x);
                             }
                         }
 
-                        _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event created in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event created in {user.Guild.Id.RawValue}");
                     }
                     catch (Exception e)
                     {
                         _log.LogAction(LogLevel.Error, e,
-                            $"(Drop Service) Error in {user.Guild.Id} for drop create - {e.Message}");
+                            $"(Drop Service) Error in {user.Guild.Id.RawValue} for drop create - {e.Message}");
                     }
             });
             return Task.CompletedTask;
@@ -138,18 +138,18 @@ namespace Hanekawa.Bot.Services.Drop
                     {
                         var claim = await GetClaimEmote(user.Guild, db);
                         if (e.Emoji.MessageFormat != claim.Name) return;
-                        if (!IsDropMessage(user.Guild.Id, e.Message.Id, out var special)) return;
+                        if (!IsDropMessage(user.Guild.Id.RawValue, e.Message.Id.RawValue, out var special)) return;
                         var message = await e.Message.GetAsync();
                         if (special) await ClaimSpecial(message, channel, user, db);
                         else await ClaimNormal(message, channel, user, db);
                     }
 
-                    _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event claimed by {user.Id} in {user.Guild.Id}");
+                    _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event claimed by {user.Id.RawValue} in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Drop Service) Error in {user.Guild.Id} for drop claim - {e.Message}");
+                        $"(Drop Service) Error in {user.Guild.Id.RawValue} for drop claim - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -158,8 +158,8 @@ namespace Hanekawa.Bot.Services.Drop
         private async Task ClaimSpecial(IMessage msg, CachedTextChannel channel, CachedMember user, DbService db)
         {
             await msg.DeleteAsync();
-            var loots = _spawnedLoot.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            loots.Remove(msg.Id);
+            var loots = _spawnedLoot.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(150, 250);
             var userdata = await db.GetOrCreateUserData(user);
             await _expService.AddExpAsync(user, userdata, rand, rand, db);
@@ -173,8 +173,8 @@ namespace Hanekawa.Bot.Services.Drop
         private async Task ClaimNormal(IMessage msg, CachedTextChannel channel, CachedMember user, DbService db)
         {
             await msg.DeleteAsync();
-            var loots = _normalLoot.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            loots.Remove(msg.Id);
+            var loots = _normalLoot.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(15, 150);
             var userdata = await db.GetOrCreateUserData(user);
             await _expService.AddExpAsync(user, userdata, rand, rand, db);

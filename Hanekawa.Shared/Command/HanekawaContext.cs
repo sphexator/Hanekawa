@@ -40,7 +40,7 @@ namespace Hanekawa.Shared.Command
         public async Task<IUserMessage> ReplyAsync(string content) =>
     await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
     {
-        Color = Colour.Get(Guild.Id),
+        Color = Colour.Get(Guild.Id.RawValue),
         Description = content
     }.Build());
 
@@ -53,7 +53,7 @@ namespace Hanekawa.Shared.Command
 
         public async Task<IUserMessage> ReplyAsync(LocalEmbedBuilder embed)
         {
-            if (embed.Color == null || embed.Color == Color.Purple) embed.Color = Colour.Get(Guild.Id);
+            if (embed.Color == null || embed.Color == Color.Purple) embed.Color = Colour.Get(Guild.Id.RawValue);
             return await Channel.SendMessageAsync(null, false, embed.Build());
         }
 
@@ -62,7 +62,7 @@ namespace Hanekawa.Shared.Command
         {
             var pages = new List<Page>();
             var sb = new StringBuilder();
-            var color = Colour.Get(Guild.Id);
+            var color = Colour.Get(Guild.Id.RawValue);
             for (var i = 0; i < pages.Count;)
             {
                 for (var j = 0; j < 5; j++)
@@ -84,7 +84,7 @@ namespace Hanekawa.Shared.Command
             }
 
             await Bot.GetInteractivity()
-                .StartMenuAsync(Channel, new PagedMenu(User.Id, new DefaultPageProvider(pages)));
+                .StartMenuAsync(Channel, new PagedMenu(User.Id.RawValue, new DefaultPageProvider(pages)));
         }
 
         public async Task PaginatedReply(List<string> content, CachedGuild guildIcon, string authorTitle,
@@ -92,7 +92,7 @@ namespace Hanekawa.Shared.Command
         {
             var pages = new List<Page>();
             var sb = new StringBuilder();
-            var color = Colour.Get(Guild.Id);
+            var color = Colour.Get(Guild.Id.RawValue);
             for (var i = 0; i < content.Count;)
             {
                 for (var j = 0; j < 5; j++)
@@ -114,7 +114,7 @@ namespace Hanekawa.Shared.Command
             }
 
             await Bot.GetInteractivity()
-                .StartMenuAsync(Channel, new PagedMenu(User.Id, new DefaultPageProvider(pages)));
+                .StartMenuAsync(Channel, new PagedMenu(User.Id.RawValue, new DefaultPageProvider(pages)));
         }
 
         public async Task<RestUserMessage> ReplyAndDeleteAsync(string content, bool isTts = false,

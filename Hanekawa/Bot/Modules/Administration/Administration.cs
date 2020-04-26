@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            await Context.Guild.BanMemberAsync(user.Id, $"{Context.User} ({Context.User.Id}) reason: {reason}", 7);
+            await Context.Guild.BanMemberAsync(user.Id.RawValue, $"{Context.User} ({Context.User.Id.RawValue}) reason: {reason}", 7);
             await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 Color.Green), TimeSpan.FromSeconds(20));
@@ -302,7 +302,7 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.Message.TryDeleteMessageAsync();
             using (var db = new DbService())
             {
-                var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
+                var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id.RawValue);
                 if (modCase == null)
                 {
                     await Context.ReplyAndDeleteAsync(null, false,
@@ -346,7 +346,7 @@ namespace Hanekawa.Bot.Modules.Administration
 
                 await updMsg.ModifyAsync(m => m.Embed = embed.Build());
                 modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
-                modCase.ModId = Context.User.Id;
+                modCase.ModId = Context.User.Id.RawValue;
                 await db.SaveChangesAsync();
                 await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder().Create($"Updated mod log for {id}", Color.Green),

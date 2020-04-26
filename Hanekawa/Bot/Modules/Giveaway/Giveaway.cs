@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
                 foreach (var x in result)
                 {
                     if (nr <= winners) winnerString.AppendLine($"{x}");
-                    await file.WriteLineAsync($"{nr}: {x.Id} - {x.Name}#{x.Discriminator}");
+                    await file.WriteLineAsync($"{nr}: {x.Id.RawValue} - {x.Name}#{x.Discriminator}");
                     nr++;
                 }
 

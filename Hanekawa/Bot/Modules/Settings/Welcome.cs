@@ -57,9 +57,9 @@ namespace Hanekawa.Bot.Modules.Settings
             {
                 var data = new WelcomeBanner
                 {
-                    GuildId = Context.Guild.Id,
+                    GuildId = Context.Guild.Id.RawValue,
                     UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
-                    Uploader = Context.User.Id,
+                    Uploader = Context.User.Id.RawValue,
                     Url = url
                 };
                 await db.WelcomeBanners.AddAsync(data);
@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Settings
             using (var db = new DbService())
             {
                 var banner =
-                    await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
+                    await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
                 if (banner == null)
                 {
                     await Context.ReplyAsync("Couldn\'t remove a banner with that ID.", Color.Red);
@@ -99,7 +99,7 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             using (var db = new DbService())
             {
-                var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 if (list.Count == 0)
                 {
                     await Context.ReplyAsync("No banners added, using default one if enabled", Color.Red);
@@ -156,13 +156,13 @@ namespace Hanekawa.Bot.Modules.Settings
                 else if (channel == null)
                 {
                     channel = Context.Channel;
-                    cfg.Channel = channel.Id;
+                    cfg.Channel = channel.Id.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
                 }
                 else
                 {
-                    cfg.Channel = channel.Id;
+                    cfg.Channel = channel.Id.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
                 }
@@ -206,7 +206,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 .Create(
                     "The PSD file contains everything that's needed to get started creating your own banners.\n" +
                     "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
-                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Colour.Get(Context.Guild.Id))
+                    "The dimension or resolution for a banner is 600px wide and 78px height (600x78)", Context.Colour.Get(Context.Guild.Id.RawValue))
                 .WithTitle("Welcome template")
                 .WithImageUrl("https://i.imgur.com/rk5BBmf.png");
             await Context.Channel.SendMessageAsync(new LocalAttachment("Data/Welcome/WelcomeTemplate.psd", "WelcomeTemplate.psd"), null, false, embed.Build());

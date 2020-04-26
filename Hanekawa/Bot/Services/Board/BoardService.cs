@@ -63,13 +63,13 @@ namespace Hanekawa.Bot.Services.Board
                             await db.SaveChangesAsync();
                             await SendMessageAsync(user, e.Message.Value as CachedUserMessage, cfg);
                         }
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} added a reaction in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} added a reaction in {user.Guild.Id.RawValue}");
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Board Service) Error in {ch.Guild.Id} for Reaction Added - {e.Message}");
+                        $"(Board Service) Error in {ch.Guild.Id.RawValue} for Reaction Added - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -97,13 +97,13 @@ namespace Hanekawa.Bot.Services.Board
                         stat.StarAmount--;
                         await db.SaveChangesAsync();
                         DecreaseReactionAmount(user.Guild, e.Message.Value);
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} removed a reaction in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} removed a reaction in {user.Guild.Id.RawValue}");
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Board Service) Error in {ch.Guild.Id} for Reaction Removed - {e.Message}");
+                        $"(Board Service) Error in {ch.Guild.Id.RawValue} for Reaction Removed - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -114,9 +114,9 @@ namespace Hanekawa.Bot.Services.Board
             _ = Task.Run(() =>
             {
                 if (!(e.Channel is CachedTextChannel ch)) return;
-                var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
+                var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id.RawValue, out var messages);
                 if (!msgCheck) return;
-                if (messages.TryGetValue(e.Message.Id, out _)) messages.Remove(e.Message.Id);
+                if (messages.TryGetValue(e.Message.Id.RawValue, out _)) messages.Remove(e.Message.Id.RawValue);
             });
             return Task.CompletedTask;
         }

@@ -12,7 +12,7 @@ namespace Hanekawa.Shared.Command
         public RequireUserAttribute(ulong id) => Id = id;
 
         public override ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider) =>
-            Id == context.User.Id
+            Id == context.User.Id.RawValue
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("You are not authorized to execute this.");
     }

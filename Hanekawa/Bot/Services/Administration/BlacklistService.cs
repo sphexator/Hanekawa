@@ -30,15 +30,15 @@ namespace Hanekawa.Bot.Services.Administration
                 {
                     using (var db = new DbService())
                     {
-                        var check = await db.Blacklists.FindAsync(guild.Id);
+                        var check = await db.Blacklists.FindAsync(guild.Id.RawValue);
                         if (check == null) return;
                         await guild.LeaveAsync();
-                        _log.LogAction(LogLevel.Information, $"Left {guild.Id} as the server is blacklisted");
+                        _log.LogAction(LogLevel.Information, $"Left {guild.Id.RawValue} as the server is blacklisted");
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Blacklist Service) Error for {guild.Id} - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Blacklist Service) Error for {guild.Id.RawValue} - {e.Message}");
                 }
             });
             return Task.CompletedTask;

@@ -36,7 +36,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
                 var embed = new LocalEmbedBuilder()
                     .Create($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
-                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}", Context.Colour.Get(Context.Guild.Id))
+                                   $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}", Context.Colour.Get(Context.Guild.Id.RawValue))
                     .WithAuthor(new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName});
                 await Context.ReplyAsync(embed);
             }
@@ -136,7 +136,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
 
                 amount = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
+                var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id.RawValue)
                     .OrderByDescending(account => account.Credit).Take(amount).ToListAsync();
                 var pages = new List<string>();
                 for (var i = 0; i < users.Count; i++)

@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions.Embed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -29,48 +26,100 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogVoice.Value);
                         if (channel == null) return;
 
-                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id)};
-                        embed.Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id})"};
-                        if ((before.IsDeafened || before.IsSelfDeafened) != (after.IsDeafened || after.IsSelfDeafened))
+                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id.RawValue)};
+                        embed.Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"};
+                        // User muted, deafend or streaming
+                        if (before != null && after != null && before.ChannelId == after.ChannelId)
                         {
-                            embed.Author = new LocalEmbedAuthorBuilder {Name = "User Deafened"};
-                            embed.Description = $"{user} deafened in {user.VoiceChannel.Name}";
+                            if (before.IsDeafened && !after.IsDeafened)
+                            {
+                                // User undeafend
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Undeafend" };
+                                embed.Description = $"{user} got server deafend in {user.VoiceChannel.Name}";
+                            }
+                            else if (!before.IsDeafened && after.IsDeafened)
+                            {
+                                // User deafend
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Deafend" };
+                                embed.Description = $"{user} got server deafend in {user.VoiceChannel.Name}";
+                            }
+                            else if (before.IsMuted && !after.IsMuted)
+                            {
+                                // User unmuted
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Unmuted" };
+                                embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            }
+                            else if (!before.IsMuted && after.IsMuted)
+                            {
+                                // User muted
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Muted" };
+                                embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            }
+                            // Self deafend
+                            else if (before.IsSelfDeafened && !after.IsSelfDeafened)
+                            {
+                                // User Self undeafend
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Undeafened" };
+                                embed.Description = $"{user} deafened in {user.VoiceChannel.Name}";
+                            }
+                            else if (!before.IsSelfDeafened && after.IsSelfDeafened)
+                            {
+                                // User Self deafend
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Deafened" };
+                                embed.Description = $"{user} deafened in {user.VoiceChannel.Name}";
+                            }
+                            else if (before.IsSelfMuted && !after.IsSelfMuted)
+                            {
+                                // User Self unmuted
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Unmuted" };
+                                embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            }
+                            else if (!before.IsSelfMuted && after.IsSelfMuted)
+                            {
+                                // User Self muted
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Muted" };
+                                embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            }
+                            else if (!before.IsVideoStreaming && after.IsVideoStreaming)
+                            {
+                                // User Started Streaming
+                                embed.Author = new LocalEmbedAuthorBuilder { Name = "User Started Streaming" };
+                                embed.Description = $"{user} started stream in {user.VoiceChannel.Name}";
+                            }
+                            else if (before.IsVideoStreaming && !after.IsVideoStreaming)
+                            {
+                                // User Stopped Streaming
+                                embed.Author = new LocalEmbedAuthorBuilder {Name = "User Stopped Streaming"};
+                                embed.Description = $"{user} stopped stream in {user.VoiceChannel.Name}";
+                            }
+                            else return;
                         }
-
-                        if ((before.IsMuted || before.IsSelfMuted) != (after.IsMuted || after.IsSelfMuted))
+                        else if (before == null && after != null)
                         {
-                            embed.Author = new LocalEmbedAuthorBuilder {Name = "User Muted"};
-                            embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Joined" };
+                            embed.AddField("Old Channel", "N/A");
+                            embed.AddField("New Channel", user.Guild.GetVoiceChannel(e.NewVoiceState.ChannelId.RawValue).Name);
                         }
-
-                        if (before.ChannelId.RawValue != after.ChannelId.RawValue)
+                        else if (before != null && after == null)
+                        {
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Left" };
+                            embed.AddField("Old Channel", user.Guild.GetVoiceChannel(before.ChannelId.RawValue).Name);
+                            embed.AddField("New Channel", "N/A");
+                        }
+                        else if (before != null && before.ChannelId != after.ChannelId)
                         {
                             embed.Author = new LocalEmbedAuthorBuilder {Name = "Voice Channel Change"};
-                            if (before == null)
-                            {
-                                embed.AddField("Old Channel", "N/A");
-                                embed.AddField("New Channel", user.Guild.GetTextChannel(after.ChannelId).Name);
-                            }
-
-                            if (after == null)
-                            {
-                                embed.AddField("Old Channel", user.Guild.GetVoiceChannel(before.ChannelId).Name);
-                                embed.AddField("New Channel", "N/A");
-                            }
-                            else
-                            {
-                                embed.AddField("Old Channel", user.Guild.GetVoiceChannel(before.ChannelId).Name);
-                                embed.AddField("New Channel", user.Guild.GetVoiceChannel(after.ChannelId).Name);
-                            }
+                            embed.AddField("Old Channel", user.Guild.GetVoiceChannel(before.ChannelId).Name);
+                            embed.AddField("New Channel", user.Guild.GetVoiceChannel(after.ChannelId).Name);
                         }
-
+                        else return;
                         await channel.SendMessageAsync(null, false, embed.Build());
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for Voice Log - {e.Message}");
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Voice Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;

@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
             var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), enemy.ImageUrl);
             img.Seek(0, SeekOrigin.Begin);
-            var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id));
+            var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
             embed.AddField($"{context.Member.DisplayName}", $"{playerOneHp}/{playerOneHpMax}", true);
             embed.AddField($"{enemy.Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
             var msg = await context.Channel.SendMessageAsync(new LocalAttachment(img, "banner.png"), null, false, embed.Build());
@@ -206,7 +206,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"0/{playerTwoHpMax}";
                     await msg.ModifyAsync(x => x.Embed = embed.Build());
-                    //var _ = NpcKill(context.User.Id);
+                    //var _ = NpcKill(context.User.Id.RawValue);
                     // TODO: Invoke this into achievement
                     continue;
                 }
@@ -321,7 +321,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
                 var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), playerTwoUser.GetAvatarUrl());
                 img.Seek(0, SeekOrigin.Begin);
-                var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id));
+                var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
 
                 embed.AddField($"{p1Name}", $"{playerOneHp}/{playerOneHpMax}", true);
                 embed.AddField($"{p2Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
@@ -469,67 +469,67 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         private GameEnemy GetEnemyData(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryGetValue(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryGetValue(context.User.Id.RawValue, out var game);
             return game;
         }
 
         private bool ActiveBattle(HanekawaContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id, out var value);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
             if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id, true);
+            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
             return false;
         }
 
         private void UpdateBattle(HanekawaContext context, bool status)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
         private bool ActiveDuel(HanekawaContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id, out var value);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
             if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id, true);
+            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
             return false;
         }
 
         private void UpdateDuel(HanekawaContext context, bool status)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
         private bool IsInBattle(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            var check = battles.TryGetValue(context.User.Id, out _);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            var check = battles.TryGetValue(context.User.Id.RawValue, out _);
             return check;
         }
 
         private void AddBattle(HanekawaContext context, GameEnemy enemy)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryAdd(context.User.Id, enemy);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryAdd(context.User.Id.RawValue, enemy);
         }
 
         private void RemoveBattle(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryRemove(context.User.Id.RawValue, out var game);
         }
 
         public void ClearUser(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryRemove(context.User.Id.RawValue, out var game);
 
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, false, (key, old) => old = false);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, false, (key, old) => old = false);
         }
 
         private string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);

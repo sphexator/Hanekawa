@@ -39,9 +39,9 @@ namespace Hanekawa.Bot.Modules.Board
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
-                var boards = await db.Boards.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var boards = await db.Boards.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 var topStars = boards.OrderByDescending(x => x.StarAmount).Take(3).ToList();
-                var topReceive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id)
+                var topReceive = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue)
                     .OrderByDescending(x => x.StarReceived).Take(3).ToListAsync();
                 var totalStars = 0;
                 for (var i = 0; i < boards.Count; i++) totalStars += boards[i].StarAmount;
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Board
                 var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
                 LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
                 var userData = await db.GetOrCreateUserData(user);
-                var boardData = await db.Boards.Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id)
+                var boardData = await db.Boards.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == user.Id.RawValue)
                     .OrderByDescending(x => x.StarAmount).ToListAsync();
                 string topStar = null;
                 if (boardData.Count != 0)

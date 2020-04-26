@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Help
                 result.AppendLine($"{strBuilder}");
             }
 
-            var embed = new LocalEmbedBuilder().Create(result.ToString(), Context.Colour.Get(Context.Guild.Id));
+            var embed = new LocalEmbedBuilder().Create(result.ToString(), Context.Colour.Get(Context.Guild.Id.RawValue));
             embed.Author = new LocalEmbedAuthorBuilder {Name = "Module list"};
             embed.Footer = new LocalEmbedFooterBuilder
             {
@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Modules.Help
 
                 if (moduleInfo == null)
                 {
-                    var embed = new LocalEmbedBuilder().Create(response.ToString(), Context.Colour.Get(Context.Guild.Id));
+                    var embed = new LocalEmbedBuilder().Create(response.ToString(), Context.Colour.Get(Context.Guild.Id.RawValue));
                     embed.Author = new LocalEmbedAuthorBuilder { Name = "Module list" };
                     embed.Title = "Couldn't find a module with that name";
                     embed.Footer = new LocalEmbedFooterBuilder

@@ -54,7 +54,7 @@ namespace Hanekawa
                 CooldownBucketKeyGenerator = (x, context) =>
                 {
                     var ctx = (HanekawaContext)context;
-                    return ctx.User.Id;
+                    return ctx.User.Id.RawValue;
                 }
             }));
             services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));

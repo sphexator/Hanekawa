@@ -27,14 +27,14 @@ namespace Hanekawa.Bot.Modules.Club
                     return;
                 }
 
-                if (cfg.AdvertisementChannel.HasValue && cfg.AdvertisementChannel.Value == channel.Id)
+                if (cfg.AdvertisementChannel.HasValue && cfg.AdvertisementChannel.Value == channel.Id.RawValue)
                 {
                     await Context.ReplyAsync($"Advertisement channel has already been set to {channel.Mention}",
                         Color.Red);
                 }
                 else
                 {
-                    cfg.AdvertisementChannel = channel.Id;
+                    cfg.AdvertisementChannel = channel.Id.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Advertisement channel set has been been set to {channel.Mention}",
                         Color.Green);
@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Modules.Club
             using (var db = new DbService())
             {
                 var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
-                if (cfg.ChannelCategory.HasValue && cfg.ChannelCategory.Value == category.Id)
+                if (cfg.ChannelCategory.HasValue && cfg.ChannelCategory.Value == category.Id.RawValue)
                 {
                     await Context.ReplyAsync($"Club category channel has already been set to {category.Name}",
                         Color.Red);
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Club
                 }
                 else
                 {
-                    cfg.ChannelCategory = category.Id;
+                    cfg.ChannelCategory = category.Id.RawValue;
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Club category channel set has been been set to {category.Name}",
                         Color.Green);

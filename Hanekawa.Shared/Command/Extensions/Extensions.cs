@@ -22,7 +22,7 @@ namespace Hanekawa.Shared.Command
             if (!TryParseUser(content.Substring(0, endPos + 1), out var userId))
                 return false;
 
-            if (userId != user.Id) return false;
+            if (userId != user.Id.RawValue) return false;
             parsed = content.Substring(endPos + 2);
 
             prefix = user.Mention;

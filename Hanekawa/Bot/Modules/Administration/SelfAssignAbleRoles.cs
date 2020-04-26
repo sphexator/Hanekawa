@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Administration
             using (var db = new DbService())
             {
                 await Context.Message.TryDeleteMessageAsync();
-                var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
+                var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
                 if (dbRole == null)
                 {
                     await Context.ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 var gUser = Context.Member;
                 if (dbRole.Exclusive)
                 {
-                    var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id && x.Exclusive)
+                    var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Exclusive)
                         .ToListAsync();
                     foreach (var x in roles)
                     {
@@ -72,11 +72,11 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] CachedRole role)
         {
-            if (Context.Member.Roles.Values.FirstOrDefault(x => x.Id == role.Id) == null) return;
+            if (Context.Member.Roles.Values.FirstOrDefault(x => x.Id.RawValue == role.Id.RawValue) == null) return;
             using (var db = new DbService())
             {
                 await Context.Message.TryDeleteMessageAsync();
-                var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id, role.Id);
+                var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
                 if (dbRole == null)
                 {
                     await Context.ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
@@ -105,7 +105,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             using (var db = new DbService())
             {
-                var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 if (list == null || list.Count == 0)
                 {
                     await Context.ReplyAsync("No self-assignable roles added");
@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 foreach (var x in list)
                 {
                     var role = Context.Guild.GetRole(x.RoleId) ??
-                               Context.Guild.Roles.Values.FirstOrDefault(z => z.Id == x.RoleId);
+                               Context.Guild.Roles.Values.FirstOrDefault(z => z.Id.RawValue == x.RoleId);
                     if (role != null) result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
@@ -156,7 +156,7 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 var roleCheck =
                     await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
-                        x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
+                        x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);
                 if (roleCheck == null)
                 {
                     await Context.ReplyAsync($"There is no self-assignable role by the name {role.Name}",
@@ -180,7 +180,7 @@ namespace Hanekawa.Bot.Modules.Administration
 
             using (var db = new DbService())
             {
-                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);
+                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id.RawValue, role.Id.RawValue);
                 if (roleCheck != null)
                 {
                     if (exclusive && !roleCheck.Exclusive)
@@ -208,8 +208,8 @@ namespace Hanekawa.Bot.Modules.Administration
 
                 var data = new SelfAssignAbleRole
                 {
-                    GuildId = context.Guild.Id,
-                    RoleId = role.Id,
+                    GuildId = context.Guild.Id.RawValue,
+                    RoleId = role.Id.RawValue,
                     Exclusive = exclusive
                 };
                 await db.SelfAssignAbleRoles.AddAsync(data);

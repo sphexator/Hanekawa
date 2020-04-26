@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Settings
             {
                 var embed = new LocalEmbedBuilder().WithAuthor(new LocalEmbedAuthorBuilder
                     {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.GetIconUrl()});
-                var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 if (list.Count == 0)
                 {
                     embed.Description = "No loot channels has been added to this server";

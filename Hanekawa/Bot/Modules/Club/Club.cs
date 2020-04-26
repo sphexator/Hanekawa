@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var clubs = await db.ClubInfos.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var clubs = await db.ClubInfos.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
                 if (clubs.Count == 0)
                 {
                     await Context.ReplyAsync("No clubs on this server");
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Modules.Club
                     var x = clubs[i];
                     if (x.LeaderId == 1) continue;
                     var memberCount =
-                        await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id && y.ClubId == x.Id);
+                        await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id.RawValue && y.ClubId == x.Id);
                     if (memberCount == 0) continue;
                     var leader = Context.Guild.GetMember(x.LeaderId).Mention ??
                                  "Couldn't find user or left server.";
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             using (var db = new DbService())
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
+                var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
                 if (club == null)
                 {
                     await Context.ReplyAsync("Couldn't find a club with that ID.", Color.Red);
@@ -76,7 +76,7 @@ namespace Hanekawa.Bot.Modules.Club
                 }
 
                 var clubUsers =
-                    await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id && x.ClubId == club.Id).ToListAsync();
+                    await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.ClubId == club.Id).ToListAsync();
                 var officers = new StringBuilder();
                 foreach (var x in clubUsers.Where(x => x.Rank == 2))
                     officers.AppendLine($"{Context.Guild.GetMember(x.UserId).Mention}\n");
@@ -100,7 +100,7 @@ namespace Hanekawa.Bot.Modules.Club
                         new LocalEmbedFieldBuilder
                             {IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}
                     }
-                }.Create(club.Description, Context.Colour.Get(Context.Guild.Id));
+                }.Create(club.Description, Context.Colour.Get(Context.Guild.Id.RawValue));
                 await Context.ReplyAsync(embed);
             }
         }

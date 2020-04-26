@@ -15,7 +15,7 @@ namespace Hanekawa.Shared.Command
             var baseResult = base.CheckAsync(context).Result;
             return !baseResult.IsSuccessful
                 ? baseResult
-                : (ValueTask<CheckResult>)(context.User.Id == context.Guild.OwnerId
+                : (ValueTask<CheckResult>)(context.User.Id.RawValue == context.Guild.OwnerId
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("This can only be executed by the guild's owner."));
         }

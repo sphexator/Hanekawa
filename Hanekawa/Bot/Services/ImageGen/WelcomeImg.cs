@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.ImageGen
         public async Task<Stream> WelcomeBuilder(CachedMember user, DbService db)
         {
             var stream = new MemoryStream();
-            using (var img = await GetBanner(user.Guild.Id, db))
+            using (var img = await GetBanner(user.Guild.Id.RawValue, db))
             {
                 var avatar = await GetAvatarAsync(user, new Size(60, 60), 32);
                 img.Mutate(x => x.DrawImage(avatar, new Point(10, 10), _options));

@@ -30,7 +30,7 @@
                 return;
             }
 
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 player = await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
@@ -47,7 +47,7 @@
         [Description("Moves the bot to a different voice channel")]
         public async Task MoveAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
@@ -68,7 +68,7 @@
         public async Task StopAsync()
         {
             if (Context.User.VoiceChannel == null) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (Context.User.VoiceChannel != player.VoiceChannel) return;
             var song = player.CurrentTrack;
@@ -88,7 +88,7 @@
         public async Task DisconnectAsync()
         {
             if (Context.User.VoiceChannel == null) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (Context.User.VoiceChannel != player.VoiceChannel) return;
             var song = player.CurrentTrack;
@@ -101,7 +101,7 @@
         [Description("Display which song is currently playing")]
         public async Task NowPlayingAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || !player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing");
@@ -122,7 +122,7 @@
                 return;
             }
 
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id) ??
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue) ??
                          await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
             if (player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -142,7 +142,7 @@
                 var song = songResult.Tracks.FirstOrDefault();
                 var msg = player.Queue.Count == 0 ? $"Started playing {song?.Title}" : $"Queued {song?.Title}";
                 await player.PlayAsync(song);
-                _lavaSocketClient.UpdateTextChannel(Context.Guild.Id, Context.Channel);
+                _lavaSocketClient.UpdateTextChannel(Context.Guild.Id.RawValue, Context.Channel);
                 await Context.ReplyAsync(msg);
             }
         }
@@ -152,7 +152,7 @@
         [Description("Displays the current queue")]
         public async Task QueueAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (player.Queue.Count == 0)
             {
@@ -164,7 +164,7 @@
             for (var i = 0; i < player.Queue.Count; i++)
             {
                 var x = player.Queue.Items.ElementAt(i);
-                queue.Add(i == 0 ? $"{i + 1}> {x.Id}" : $"{i + 1}: {x.Id}");
+                queue.Add(i == 0 ? $"{i + 1}> {x.Id.RawValue}" : $"{i + 1}: {x.Id.RawValue}");
             }
 
             await Context.ReplyPaginated(queue, Context.Guild, $"Current queue in {Context.Guild.Name}");
@@ -175,7 +175,7 @@
         [Description("Pauses the player if its currently playing")]
         public async Task PauseAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -193,7 +193,7 @@
         [Description("Resumes the player if its paused")]
         public async Task ResumeAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || !player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -212,7 +212,7 @@
         public async Task VolumeAsync(int volume)
         {
             if (volume < 0) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -241,7 +241,7 @@
         [Description("Skips current song")]
         public async Task SkipAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -270,7 +270,7 @@
         [Description("Clears current playlist")]
         public async Task ClearAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -301,7 +301,7 @@
             "Goes back, or rewinds back to a part of the song, if past the limit of the song, starts from teh beginning")]
         public async Task RewindsAsync(TimeSpan rewind)
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -346,7 +346,7 @@
                 }
                 else
                 {
-                    cfg.TextChId = channel.Id;
+                    cfg.TextChId = channel.Id.RawValue;
                     _channel.AddOrRemoveChannel(Context.Guild, channel);
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Set music channel to {channel.Mention}");

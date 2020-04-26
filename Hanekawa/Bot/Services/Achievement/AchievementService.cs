@@ -49,12 +49,12 @@ namespace Hanekawa.Bot.Services.Achievement
                                 {
                                     AchievementId = achieve.AchievementId,
                                     TypeId = Fun,
-                                    UserId = user.Id,
+                                    UserId = user.Id.RawValue,
                                     Achievement = achieve
                                 };
                                 await db.AchievementUnlocks.AddAsync(data);
                                 await db.SaveChangesAsync();
-                                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
                             }
                         }
                     }
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Achievement Service) Error for {user.Id} in {user.Guild.Id} for Message Count - {e.Message}");
+                        $"(Achievement Service) Error for {user.Id.RawValue} in {user.Guild.Id.RawValue} for Message Count - {e.Message}");
                 }
             });
             return Task.CompletedTask;

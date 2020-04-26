@@ -32,7 +32,7 @@ namespace Hanekawa.Models
 
         public ShipGameUser(CachedMember userOne, int level, GameClass gameClass, int damage, int health)
         {
-            Id = userOne.Id;
+            Id = userOne.Id.RawValue;
             Name = userOne.DisplayName;
             Level = level;
 

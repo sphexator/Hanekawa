@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             Color = Color.Green,
                             Author = new LocalEmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
-                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
                             Timestamp = DateTimeOffset.UtcNow,
                             Fields =
                             {
@@ -40,13 +40,13 @@ namespace Hanekawa.Bot.Services.Logging
                             }
                         };
                         var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                        caseId.MessageId = msg.Id;
+                        caseId.MessageId = msg.Id.RawValue;
                         await db.SaveChangesAsync();
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id} for UnBan Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id.RawValue} for UnBan Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -78,17 +78,17 @@ namespace Hanekawa.Bot.Services.Logging
                                 new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
                                 new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
                             },
-                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id}"},
+                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
                             Timestamp = DateTimeOffset.UtcNow
                         };
                         var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                        caseId.MessageId = msg.Id;
+                        caseId.MessageId = msg.Id.RawValue;
                         await db.SaveChangesAsync();
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id} for Ban Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {e.Message}");
                 }
             });
             return Task.CompletedTask;
