@@ -13,7 +13,7 @@ namespace Hanekawa.Bot.Modules.Board
         [Command("boardemote")]
         [Description("Sets a emote to be used for the board")]
         [RequireBotGuildPermissions(Permission.ManageGuild)]
-        public async Task BoardEmoteAsync(Emoji emote)
+        public async Task BoardEmoteAsync(LocalCustomEmoji emote)
         {
             using (var db = new DbService())
             {

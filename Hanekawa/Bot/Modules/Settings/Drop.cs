@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Emote")]
         [Command("de", "dropemote")]
         [Description("Changes claim emote")]
-        public async Task DropEmote(CachedGuildEmoji emote)
+        public async Task DropEmote(LocalCustomEmoji emote)
         {
             await _drop.ChangeEmote(Context.Guild, emote);
             await Context.ReplyAsync($"Changed claim emote to {emote}");

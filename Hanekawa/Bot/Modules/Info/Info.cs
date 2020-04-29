@@ -22,18 +22,18 @@ namespace Hanekawa.Bot.Modules.Info
         [RequiredChannel]
         public async Task AboutAsync()
         {
-            var appData = await Context.Bot.GetCurrentApplicationAsync();
+            // var appData = await Context.Bot.GetCurrentApplicationAsync();
 
             var embed = new LocalEmbedBuilder
             {
-                Author = new LocalEmbedAuthorBuilder { Name = appData.Name, IconUrl = appData.IconHash },
+                Author = new LocalEmbedAuthorBuilder { Name = Context.Bot.CurrentUser.Name, IconUrl = Context.Bot.CurrentUser.GetAvatarUrl() },
                 Fields =
                 {
                     new LocalEmbedFieldBuilder { Name = "Up Time", Value = (DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize(3), IsInline = true },
                     new LocalEmbedFieldBuilder { Name = "Support", Value = "[Invite Link](https://discord.gg/gGu5TT6)", IsInline = true },
                     new LocalEmbedFieldBuilder { Name = "Bot Invite", Value = "[Invite Link](https://discordapp.com/api/oauth2/authorize?client_id=431610594290827267&scope=bot&permissions=8)", IsInline = true }
                 }
-            }.Create(appData.Description, Context.Colour.Get(Context.Guild.Id.RawValue));
+            }.Create("Hanekawa is a bot focused on rewarding user activity while giving server owners and moderators the tools they need for moderation, short and long-term.", Context.Colour.Get(Context.Guild.Id.RawValue));
             await Context.ReplyAsync(embed);
         }
 
@@ -44,6 +44,6 @@ namespace Hanekawa.Bot.Modules.Info
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         [RequiredChannel]
         public async Task UptimeAsync() 
-            => await Context.ReplyAsync($"Current up time: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize(3)}");
+            => await Context.ReplyAsync($"Current up time: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}");
     }
 }

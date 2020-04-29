@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("ssy", "ssyes")]
         [Description("Set custom yes emote for suggestions")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetSuggestEmoteYesAsync(CachedGuildEmoji emote = null)
+        public async Task SetSuggestEmoteYesAsync(LocalCustomEmoji emote = null)
         {
             using (var db = new DbService())
             {
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("ssn", "ssno")]
         [Description("Set custom no emote for suggestions")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetSuggestEmoteNoAsync(CachedGuildEmoji emote = null)
+        public async Task SetSuggestEmoteNoAsync(LocalCustomEmoji emote = null)
         {
             using (var db = new DbService())
             {

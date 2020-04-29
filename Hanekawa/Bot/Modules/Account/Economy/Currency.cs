@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("rcs")]
         [Description("Change the symbol of regular currency (default: $)")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetRegularSymbolAsync(Emoji emote)
+        public async Task SetRegularSymbolAsync(LocalCustomEmoji emote)
         {
             using (var db = new DbService())
             {
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [Command("scs")]
         [Description("Change the symbol of special currency (default: $)")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task SetSpecialSymbolAsync(Emoji emote)
+        public async Task SetSpecialSymbolAsync(LocalCustomEmoji emote)
         {
             using (var db = new DbService())
             {

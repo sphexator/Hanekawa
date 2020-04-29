@@ -29,6 +29,7 @@ namespace Hanekawa.Extensions
         public static string GetGame(this CachedUser user)
         {
             string result;
+            if (user.Presence.Activity == null) return "Currently not playing";
             switch (user.Presence.Activity.Type)
             {
                 case ActivityType.Listening:

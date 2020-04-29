@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Bot.Preconditions;
@@ -7,11 +6,8 @@ using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Board;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Board

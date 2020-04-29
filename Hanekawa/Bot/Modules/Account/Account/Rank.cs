@@ -93,7 +93,7 @@ namespace Hanekawa.Bot.Modules.Account
                         username != null
                             ? $"**Rank: {i + 1}** - {username.Mention}"
                             : $"**Rank: {i + 1}** - User left server({user.UserId})");
-                    strBuilder.AppendLine($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
+                    strBuilder.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
                     result.Add(strBuilder.ToString());
                     strBuilder.Clear();
                 }

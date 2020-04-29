@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Services.Drop
     {
         private readonly ConcurrentDictionary<ulong, IEmoji> _emotes = new ConcurrentDictionary<ulong, IEmoji>();
 
-        public async Task ChangeEmote(CachedGuild guild, CachedGuildEmoji emote)
+        public async Task ChangeEmote(CachedGuild guild, LocalCustomEmoji emote)
         {
             using (var db = new DbService())
             {

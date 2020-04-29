@@ -15,7 +15,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
     {
         [Name("Store add")]
         [Command("sa")]
-        [Priority(1)]
         [Description("Adds an item to the store with regular credit")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] CachedRole role)
@@ -48,7 +47,6 @@ namespace Hanekawa.Bot.Modules.Account.Store
 
         [Name("Store add special")]
         [Command("sas")]
-        [Priority(1)]
         [Description("Adds an item to the store with special credit")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] CachedRole role)

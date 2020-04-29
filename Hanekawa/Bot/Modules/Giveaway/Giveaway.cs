@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
         [Description("Draw(s) winner(s) from a reaction on a message")]
         [Remarks("draw 5 <emote> 5435346235434 #general")]
         [RequireMemberGuildPermissions(Permission.ManageMessages)]
-        public async Task DrawWinnerAsync(int winners, Emoji emote, ulong messageId, CachedTextChannel channel = null)
+        public async Task DrawWinnerAsync(int winners, LocalCustomEmoji emote, ulong messageId, CachedTextChannel channel = null)
         {
             await Context.Message.TryDeleteMessageAsync();
             var stream = new MemoryStream();
@@ -60,10 +60,11 @@ namespace Hanekawa.Bot.Modules.Giveaway
             }
         }
 
-        private static int GetReactionAmount(IUserMessage message, Emoji emote)
+        private static int GetReactionAmount(IUserMessage message, LocalCustomEmoji emote)
         {
             message.Reactions.TryGetValue(emote, out var reactionData);
-            return reactionData.Count;
+            if (reactionData != null) return reactionData.Count;
+            return 0;
         }
     }
 }

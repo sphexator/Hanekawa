@@ -63,11 +63,11 @@ namespace Hanekawa.Shared.Command
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = Colour.Get(Guild.Id.RawValue);
-            for (var i = 0; i < pages.Count;)
+            for (var i = 0; i < content.Count;)
             {
                 for (var j = 0; j < 5; j++)
                 {
-                    if (i >= pages.Count) continue;
+                    if (i >= content.Count) continue;
                     var x = content[i];
                     sb.AppendLine(x);
                     i++;

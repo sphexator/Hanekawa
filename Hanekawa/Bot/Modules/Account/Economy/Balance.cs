@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                     var user = Context.Guild.GetMember(x.UserId);
                     var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
                     strBuilder.AppendLine($"**Rank: {i + 1}** - {name}");
-                    strBuilder.AppendLine($"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
+                    strBuilder.Append($"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
                     pages.Add(strBuilder.ToString());
                 }
 

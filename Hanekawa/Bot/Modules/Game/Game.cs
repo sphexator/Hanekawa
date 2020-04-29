@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Bot.Preconditions;
@@ -53,8 +54,8 @@ namespace Hanekawa.Bot.Modules.Game
         {
             using var db = new DbService();
             var result = new List<string>();
-            var classes = await db.GameClasses.ToListAsync();
-            for (var i = 0; i < classes.Count; i++)
+            var classes = await db.GameClasses.OrderBy(x =>  x.LevelRequirement).ToListAsync();
+            for (var i = 0; i < classes.Count(); i++)
             {
                 var x = classes[i];
                 result.Add($"{x.Id} - {x.Name} (level: {x.LevelRequirement})");
@@ -78,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Game
                 return;
             }
 
-            await Context.ReplyAsync($"Information for {classInfo.Name}\n" +
+            await Context.ReplyAsync($"Information for **{classInfo.Name}**\n" +
                                      $"Health: {100 * classInfo.ModifierHealth}\n" +
                                      $"Damage: {100 * classInfo.ModifierDamage}\n" +
                                      $"Critical Chance: {classInfo.ChanceCrit}\n" +
@@ -102,7 +103,7 @@ namespace Hanekawa.Bot.Modules.Game
 
             userData.Class = classInfo.Id;
             await db.SaveChangesAsync();
-            await Context.ReplyAsync($"Switched class to {classInfo.Name}", Color.Green);
+            await Context.ReplyAsync($"Switched class to **{classInfo.Name}**", Color.Green);
         }
     }
 }
