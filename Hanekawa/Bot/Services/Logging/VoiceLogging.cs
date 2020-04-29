@@ -26,8 +26,11 @@ namespace Hanekawa.Bot.Services.Logging
                         var channel = user.Guild.GetTextChannel(cfg.LogVoice.Value);
                         if (channel == null) return;
 
-                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id.RawValue)};
-                        embed.Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"};
+                        var embed = new LocalEmbedBuilder
+                        {
+                            Color = _colourService.Get(user.Guild.Id.RawValue),
+                            Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"}
+                        };
                         // User muted, deafend or streaming
                         if (before != null && after != null && before.ChannelId == after.ChannelId)
                         {
