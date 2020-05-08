@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Drop
 {
@@ -14,13 +15,12 @@ namespace Hanekawa.Bot.Services.Drop
 
         public async Task ChangeEmote(CachedGuild guild, LocalCustomEmoji emote)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateDropConfig(guild);
-                cfg.Emote = emote.MessageFormat;
-                _emotes.AddOrUpdate(guild.Id.RawValue, GetDefaultEmote(), (key, value) => emote);
-                await db.SaveChangesAsync();
-            }
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateDropConfig(guild);
+            cfg.Emote = emote.MessageFormat;
+            _emotes.AddOrUpdate(guild.Id.RawValue, GetDefaultEmote(), (key, value) => emote);
+            await db.SaveChangesAsync();
         }
 
         private async Task<List<IEmoji>> ReturnEmotes(CachedGuild guild, DbService db)

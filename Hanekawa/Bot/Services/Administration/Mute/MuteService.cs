@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
@@ -11,38 +12,39 @@ using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
     public partial class MuteService : INService, IRequired
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
 
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
         private readonly InternalLogService _log;
         private readonly LogService _logService;
-        private readonly WarnService _warn;
+        private readonly IServiceProvider _provider;
 
-        public MuteService(DiscordClient client, LogService logService, InternalLogService log, WarnService warn)
+        public MuteService(DiscordBot client, LogService logService, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _logService = logService;
             _log = log;
-            _warn = warn;
+            _provider = provider;
 
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            foreach (var x in db.MuteTimers)
             {
-                foreach (var x in db.MuteTimers)
-                {
-                    TimeSpan after;
-                    if (x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow) after = TimeSpan.FromMinutes(2);
-                    else after = x.Time - DateTime.UtcNow;
-                    StartUnMuteTimer(x.GuildId, x.UserId, after);
-                }
+                var after = x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
+                    ? TimeSpan.FromMinutes(2)
+                    : x.Time - DateTime.UtcNow;
+                StartUnMuteTimer(x.GuildId, x.UserId, after);
             }
         }
+
         public async Task<bool> Mute(CachedMember user, DbService db)
         {
             var role = await GetMuteRoleAsync(user.Guild, db);
@@ -84,9 +86,9 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private async Task<IRole> GetMuteRoleAsync(CachedGuild guild, DbService db)
         {
             var cfg = await db.GetOrCreateAdminConfigAsync(guild);
-            IRole role;
-            if (!cfg.MuteRole.HasValue) role = await CreateRole(guild, cfg, db);
-            else role = guild.GetRole(cfg.MuteRole.Value) ?? await CreateRole(guild, cfg, db);
+            var role = !cfg.MuteRole.HasValue
+                ? await CreateRole(guild, cfg, db)
+                : guild.GetRole(cfg.MuteRole.Value) ?? await CreateRole(guild, cfg, db);
             return role;
         }
 

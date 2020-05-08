@@ -35,21 +35,23 @@ namespace Hanekawa.Extensions
             return result;
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this CachedTextChannel channel,
-            IEnumerable<Snowflake> msgs)
+        public static async Task<bool> TryDeleteMessagesAsync(this ICachedMessageChannel channel,
+            IEnumerable<Snowflake> messageIds)
         {
-            var currentUser = channel.Guild.CurrentMember;
+            if (!(channel is CachedTextChannel gChannel)) return true;
+            var currentUser = gChannel.Guild.CurrentMember;
             if (!currentUser.Permissions.ManageMessages) return false;
-            await channel.DeleteMessagesAsync(msgs);
+            await gChannel.DeleteMessagesAsync(messageIds);
             return true;
         }
 
-        public static async Task<bool> TryDeleteMessageAsync(this CachedTextChannel channel, Snowflake msg)
+        public static async Task<bool> TryDeleteMessageAsync(this ICachedMessageChannel channel, Snowflake messageId)
         {
-            var currentUser = channel.Guild.CurrentMember;
+            if (!(channel is CachedTextChannel gChannel)) return true;
+            var currentUser = gChannel.Guild.CurrentMember;
             if (!currentUser.Permissions.ManageMessages) return false;
-            if (msg.CreatedAt.AddDays(14) <= DateTimeOffset.UtcNow) return false;
-            await channel.DeleteMessageAsync(msg);
+            if (messageId.CreatedAt.AddDays(14) <= DateTimeOffset.UtcNow) return false;
+            await channel.DeleteMessageAsync(messageId);
             return true;
         }
 

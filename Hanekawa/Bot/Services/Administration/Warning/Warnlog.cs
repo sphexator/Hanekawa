@@ -49,14 +49,16 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue).ToListAsync();
             var roleList = (from x in user.Roles where x.Value.Name != "@everyone" select x.Value.Name).ToList();
             var roles = string.Join(", ", roleList);
-            var result = new List<string>();
-            result.Add("*⮞ User Information**\n" +
-                       $"Status: {user.GetStatus()}\n" +
-                       $"{user.GetGame()}\n" +
-                       $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n");
-            result.Add("**⮞ Member Information**\n" +
-                       $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
-                       $"Roles: {roles}\n");
+            var result = new List<string>
+            {
+                "*⮞ User Information**\n" +
+                $"Status: {user.GetStatus()}\n" +
+                $"{user.GetGame()}\n" +
+                $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n",
+                "**⮞ Member Information**\n" +
+                $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
+                $"Roles: {roles}\n"
+            };
             if (userdata.FirstMessage != null)
                 result.Add("**⮞ Activity**\n" +
                            $"Last Message: {userdata.LastMessage.Humanize()}\n" +

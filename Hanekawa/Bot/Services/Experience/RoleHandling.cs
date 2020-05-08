@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -20,7 +21,8 @@ namespace Hanekawa.Bot.Services.Experience
             _ = Task.Run(async () =>
             {
                 var user = e.Member;
-                using var db = new DbService();
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
 
                 var userData = await db.GetOrCreateUserData(user);
                 if (userData == null || userData.Level < 2) return;

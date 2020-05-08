@@ -2,12 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -28,7 +30,8 @@ namespace Hanekawa.Bot.Modules.Report
         {
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -58,7 +61,8 @@ namespace Hanekawa.Bot.Modules.Report
         public async Task RespondAsync(int id, [Remainder] string text)
         {
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.Reports.FindAsync(id, Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -103,23 +107,22 @@ namespace Hanekawa.Bot.Modules.Report
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetReportChannelAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            if (cfg.ReportChannel.HasValue && channel == null)
             {
-                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
-                if (cfg.ReportChannel.HasValue && channel == null)
-                {
-                    cfg.ReportChannel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled report channel", Color.Green);
-                    return;
-                }
-
-                if (channel == null) channel = Context.Channel;
-                cfg.ReportChannel = channel.Id.RawValue;
+                cfg.ReportChannel = null;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
-                    Color.Green);
+                await Context.ReplyAsync("Disabled report channel", Color.Green);
+                return;
             }
+
+            if (channel == null) channel = Context.CachedChannel;
+            cfg.ReportChannel = channel.Id.RawValue;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
+                Color.Green);
         }
     }
 }

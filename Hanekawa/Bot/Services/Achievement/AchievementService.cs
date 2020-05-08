@@ -2,24 +2,28 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public AchievementService(DiscordClient client, InternalLogService log)
+        public AchievementService(DiscordBot client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.MessageReceived += MessageCount;
         }
@@ -34,28 +38,27 @@ namespace Hanekawa.Bot.Services.Achievement
                 if (msg.Content.Length != 1499) return;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
-                        if (achievements == null) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
+                    if (achievements == null) return;
 
-                        if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                    if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                    {
+                        var achieve =
+                            achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
+                        if (achieve != null)
                         {
-                            var achieve =
-                                achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
-                            if (achieve != null)
+                            var data = new AchievementUnlock
                             {
-                                var data = new AchievementUnlock
-                                {
-                                    AchievementId = achieve.AchievementId,
-                                    TypeId = Fun,
-                                    UserId = user.Id.RawValue,
-                                    Achievement = achieve
-                                };
-                                await db.AchievementUnlocks.AddAsync(data);
-                                await db.SaveChangesAsync();
-                                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
-                            }
+                                AchievementId = achieve.AchievementId,
+                                TypeId = Fun,
+                                UserId = user.Id.RawValue,
+                                Achievement = achieve
+                            };
+                            await db.AchievementUnlocks.AddAsync(data);
+                            await db.SaveChangesAsync();
+                            _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
                         }
                     }
                 }

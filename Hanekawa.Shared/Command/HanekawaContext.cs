@@ -4,45 +4,33 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Bot.Prefixes;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Rest;
-using Qmmands;
 
 namespace Hanekawa.Shared.Command
 {
-    public class HanekawaContext : CommandContext
+    public class HanekawaContext : DiscordCommandContext
     {
-        public virtual DiscordClient Bot { get; }
-
-        public virtual string Prefix { get; }
-
-        public virtual CachedUserMessage Message { get; }
-
-        public virtual CachedTextChannel Channel => Message.Channel as CachedTextChannel;
-
-        public virtual CachedUser User => Message.Author;
-
-        public virtual CachedMember Member => User as CachedMember;
-
-        public virtual CachedGuild Guild => Member?.Guild;
-        
-        public virtual ColourService Colour { get; }
-
-        public HanekawaContext(DiscordClient bot, CachedUserMessage message, string prefix, ColourService colour, IServiceProvider provider) : base(provider)
+        public HanekawaContext(DiscordBot bot, CachedUserMessage message, IPrefix prefix, ColourService colour,
+            IServiceProvider provider) : base(bot, prefix, message)
         {
-            Bot = bot;
-            Prefix = prefix;
-            Message = message;
             Colour = colour;
+            Provider = provider;
+            CachedChannel = message.Channel as CachedTextChannel;
         }
 
+        public virtual CachedTextChannel CachedChannel { get; }
+        public virtual ColourService Colour { get; }
+        public IServiceProvider Provider { get; set; }
+
         public async Task<IUserMessage> ReplyAsync(string content) =>
-    await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
-    {
-        Color = Colour.Get(Guild.Id.RawValue),
-        Description = content
-    }.Build());
+            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
+            {
+                Color = Colour.Get(Guild.Id.RawValue),
+                Description = content
+            }.Build());
 
         public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
             await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
@@ -75,7 +63,7 @@ namespace Hanekawa.Shared.Command
 
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder { Name = authorTitle, IconUrl = userIcon.GetAvatarUrl() },
+                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = userIcon.GetAvatarUrl()},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color
@@ -105,7 +93,7 @@ namespace Hanekawa.Shared.Command
 
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder { Name = authorTitle, IconUrl = guildIcon.GetIconUrl() },
+                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = guildIcon.GetIconUrl()},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color

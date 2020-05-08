@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -17,17 +19,15 @@ namespace Hanekawa.Bot.Modules.Settings
     {
         private readonly ColourService _colourService;
 
-        public Settings(ColourService colourService)
-        {
-            _colourService = colourService;
-        }
+        public Settings(ColourService colourService) => _colourService = colourService;
 
         [Name("Add prefix")]
         [Command("addprefix", "aprefix")]
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
@@ -54,7 +54,8 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var scope = Context.ServiceProvider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color((int)color));
@@ -81,7 +82,8 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var scope = Context.ServiceProvider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
@@ -110,7 +112,8 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var db = new DbService())
+                using (var scope = Context.ServiceProvider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);

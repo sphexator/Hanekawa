@@ -9,6 +9,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Club
@@ -18,160 +19,154 @@ namespace Hanekawa.Bot.Services.Club
         public async Task AdNameAsync(HanekawaContext context, string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (club == null) return;
+            await context.Message.TryDeleteMessageAsync();
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            club.Name = name;
+            await db.SaveChangesAsync();
+            await context.ReplyAsync($"Updated club name to `{name}` !");
+            if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (club == null) return;
-                await context.Message.TryDeleteMessageAsync();
-                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
-                club.Name = name;
-                await db.SaveChangesAsync();
-                await context.ReplyAsync($"Updated club name to `{name}` !");
-                if (club.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
-                {
-                    var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
-                        .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                    await UpdatePostNameAsync(msg, name);
-                }
+                var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                    .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
+                await UpdatePostNameAsync(msg, name);
+            }
 
-                if (club.Role.HasValue)
-                {
-                    var role = context.Guild.GetRole(club.Role.Value);
-                    await role.ModifyAsync(x => x.Name = name);
-                }
+            if (club.Role.HasValue)
+            {
+                var role = context.Guild.GetRole(club.Role.Value);
+                await role.ModifyAsync(x => x.Name = name);
+            }
 
-                if (club.Channel.HasValue)
-                {
-                    var channel = context.Guild.GetTextChannel(club.Channel.Value);
-                    await channel.ModifyAsync(x => x.Name = name);
-                }
+            if (club.Channel.HasValue)
+            {
+                var channel = context.Guild.GetTextChannel(club.Channel.Value);
+                await channel.ModifyAsync(x => x.Name = name);
             }
         }
 
         public async Task AdDescAsync(HanekawaContext context, string desc)
         {
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (leader == null) return;
+            await context.Message.TryDeleteMessageAsync();
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            leader.Description = desc;
+            await db.SaveChangesAsync();
+            await context.ReplyAsync("Updated description of club!", Color.Green);
+            if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
             {
-                var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (leader == null) return;
-                await context.Message.TryDeleteMessageAsync();
-                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
-                leader.Description = desc;
-                await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green);
-                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
-                {
-                    var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                    await UpdatePostDescriptionAsync(msg, desc);
-                }
+                var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                    .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
+                await UpdatePostDescriptionAsync(msg, desc);
             }
         }
 
         public async Task AdImageAsync(HanekawaContext context, string image)
         {
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (leader == null) return;
+            await context.Message.TryDeleteMessageAsync();
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            leader.ImageUrl = image;
+            await db.SaveChangesAsync();
+            await context.ReplyAsync("Updated description of club!", Color.Green);
+            if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
             {
-                var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (leader == null) return;
-                await context.Message.TryDeleteMessageAsync();
-                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
-                leader.ImageUrl = image;
-                await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green);
-                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
-                {
-                    var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                    await UpdatePostImageAsync(msg, image);
-                }
+                var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                    .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
+                await UpdatePostImageAsync(msg, image);
             }
         }
 
         public async Task AdIconAsync(HanekawaContext context, string icon)
         {
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (leader == null) return;
+            await context.Message.TryDeleteMessageAsync();
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            leader.IconUrl = icon;
+            await db.SaveChangesAsync();
+            await context.ReplyAsync("Updated description of club!", Color.Green);
+            if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
             {
-                var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (leader == null) return;
-                await context.Message.TryDeleteMessageAsync();
-                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
-                leader.IconUrl = icon;
-                await db.SaveChangesAsync();
-                await context.ReplyAsync("Updated description of club!", Color.Green);
-                if (leader.AdMessage.HasValue && cfg.AdvertisementChannel.HasValue)
-                {
-                    var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
-                    await UpdatePostIconAsync(msg, icon);
-                }
+                var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                    .GetMessageAsync(leader.AdMessage.Value) as IUserMessage;
+                await UpdatePostIconAsync(msg, icon);
             }
         }
 
         public async Task AdPublicAsync(HanekawaContext context)
         {
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (club == null) return;
+            if (club.Public)
             {
-                var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (club == null) return;
-                if (club.Public)
-                {
-                    club.Public = false;
-                    await db.SaveChangesAsync();
-                    await context.ReplyAsync("Club is no longer public. People need invite to enter the club.",
-                        Color.Green);
-                    if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, false);
-                }
-                else
-                {
-                    club.Public = true;
-                    await db.SaveChangesAsync();
-                    await context.ReplyAsync("Set club as public. Anyone can join!", Color.Green);
-                    if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, true);
-                }
+                club.Public = false;
+                await db.SaveChangesAsync();
+                await context.ReplyAsync("Club is no longer public. People need invite to enter the club.",
+                    Color.Green);
+                if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, false);
+            }
+            else
+            {
+                club.Public = true;
+                await db.SaveChangesAsync();
+                await context.ReplyAsync("Set club as public. Anyone can join!", Color.Green);
+                if (club.AdMessage.HasValue) await PublicHandle(db, context, club, context.Guild, true);
             }
         }
 
         public async Task AdAdvertiseAsync(HanekawaContext context)
         {
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
+            if (leader == null) return;
+            var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
+            if (!cfg.AdvertisementChannel.HasValue)
             {
-                var leader = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                    x.GuildId == context.Guild.Id.RawValue && x.LeaderId == context.User.Id.RawValue);
-                if (leader == null) return;
-                var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);
-                if (!cfg.AdvertisementChannel.HasValue)
-                {
-                    await context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
-                        Color.Red);
-                    return;
-                }
+                await context.ReplyAsync("This server hasn't setup or doesn't allow club advertisement.",
+                    Color.Red);
+                return;
+            }
 
-                if (!leader.AdMessage.HasValue)
+            if (!leader.AdMessage.HasValue)
+            {
+                await SendPostAsync(db, cfg, context.Guild, leader);
+                await context.ReplyAsync("Posted ad!", Color.Green);
+            }
+            else
+            {
+                var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
+                    .GetMessageAsync(leader.AdMessage.Value);
+                if (msg == null)
                 {
                     await SendPostAsync(db, cfg, context.Guild, leader);
                     await context.ReplyAsync("Posted ad!", Color.Green);
                 }
                 else
                 {
-                    var msg = await context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
-                        .GetMessageAsync(leader.AdMessage.Value);
-                    if (msg == null)
-                    {
-                        await SendPostAsync(db, cfg, context.Guild, leader);
-                        await context.ReplyAsync("Posted ad!", Color.Green);
-                    }
-                    else
-                    {
-                        await msg.DeleteAsync();
-                        await SendPostAsync(db, cfg, context.Guild, leader);
-                        await context.ReplyAsync("Re-posted ad!", Color.Green);
-                    }
+                    await msg.DeleteAsync();
+                    await SendPostAsync(db, cfg, context.Guild, leader);
+                    await context.ReplyAsync("Re-posted ad!", Color.Green);
                 }
             }
         }

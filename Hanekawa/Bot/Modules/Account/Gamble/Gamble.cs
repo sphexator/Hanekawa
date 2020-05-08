@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account.Gamble
@@ -21,18 +23,17 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task BetAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var userData = await db.GetOrCreateUserData(Context.Member);
+            if (userData.Credit == 0)
             {
-                var userData = await db.GetOrCreateUserData(Context.Member);
-                if (userData.Credit == 0)
-                {
-                    await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
-                        Color.Red);
-                    return;
-                }
-
-                await Context.ReplyAsync(await GambleBetAsync(db, Context, userData, bet));
+                await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
+                    Color.Red);
+                return;
             }
+
+            await Context.ReplyAsync(await GambleBetAsync(db, Context, userData, bet));
         }
 
         [Name("Roll")]
@@ -42,18 +43,17 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task RollAsync(int bet)
         {
             if (bet <= 0) return;
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var userData = await db.GetOrCreateUserData(Context.Member);
+            if (userData.Credit == 0)
             {
-                var userData = await db.GetOrCreateUserData(Context.Member);
-                if (userData.Credit == 0)
-                {
-                    await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
-                        Color.Red);
-                    return;
-                }
-
-                await Context.ReplyAsync(await GambleRollAsync(db, Context, userData, bet));
+                await Context.ReplyAsync($"{Context.User.Mention} doesn't have any credit to gamble with",
+                    Color.Red);
+                return;
             }
+
+            await Context.ReplyAsync(await GambleRollAsync(db, Context, userData, bet));
         }
 
         private async Task<LocalEmbedBuilder> GambleBetAsync(DbService db, HanekawaContext context,

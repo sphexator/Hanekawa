@@ -5,6 +5,7 @@ using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -19,23 +20,22 @@ namespace Hanekawa.Bot.Services.Logging
                 var guild = e.Guild;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                    if (!cfg.LogJoin.HasValue) return;
+                    var channel = guild.GetTextChannel(cfg.LogJoin.Value);
+                    if (channel == null) return;
+
+                    var embed = new LocalEmbedBuilder
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
-                        if (!cfg.LogJoin.HasValue) return;
-                        var channel = guild.GetTextChannel(cfg.LogJoin.Value);
-                        if (channel == null) return;
+                        Description = $"📤 {user.Mention} has left ( *{user.Id.RawValue}* )",
+                        Color = Color.Red,
+                        Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
+                        Timestamp = DateTimeOffset.UtcNow
+                    };
 
-                        var embed = new LocalEmbedBuilder
-                        {
-                            Description = $"📤 {user.Mention} has left ( *{user.Id.RawValue}* )",
-                            Color = Color.Red,
-                            Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
-                            Timestamp = DateTimeOffset.UtcNow
-                        };
-
-                        await channel.SendMessageAsync(null, false, embed.Build());
-                    }
+                    await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception e)
                 {
@@ -53,24 +53,23 @@ namespace Hanekawa.Bot.Services.Logging
                 var user = e.Member;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogJoin.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                    if (channel == null) return;
+
+                    var embed = new LocalEmbedBuilder
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
-                        if (!cfg.LogJoin.HasValue) return;
-                        var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                        if (channel == null) return;
+                        Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
+                                      $"Account created: {user.CreatedAt.Humanize()}",
+                        Color = Color.Green,
+                        Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
+                        Timestamp = DateTimeOffset.UtcNow
+                    };
 
-                        var embed = new LocalEmbedBuilder
-                        {
-                            Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
-                                          $"Account created: {user.CreatedAt.Humanize()}",
-                            Color = Color.Green,
-                            Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
-                            Timestamp = DateTimeOffset.UtcNow
-                        };
-
-                        await channel.SendMessageAsync(null, false, embed.Build());
-                    }
+                    await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception e)
                 {

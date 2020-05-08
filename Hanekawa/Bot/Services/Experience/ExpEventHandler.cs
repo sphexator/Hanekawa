@@ -7,6 +7,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -45,7 +46,8 @@ namespace Hanekawa.Bot.Services.Experience
         {
             while (stopToken.IsCancellationRequested)
             {
-                using (var db = new DbService())
+                using (var scope = _provider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var nextEvent = await db.LevelExpEvents.OrderBy(x => x.Time).FirstOrDefaultAsync(stopToken);
 
@@ -67,7 +69,7 @@ namespace Hanekawa.Bot.Services.Experience
                         {
                             var timer = new Timer(async _ =>
                                 {
-                                    using var dbService = new DbService();
+                                    await using var dbService = scope.ServiceProvider.GetRequiredService<DbService>();
                                     var cfg = await dbService.GetOrCreateLevelConfigAsync(nextEvent.GuildId);
 
                                     _voiceExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.VoiceExpMultiplier,

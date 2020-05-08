@@ -2,6 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Hanekawa.Bot.Preconditions;
@@ -10,6 +11,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using ChannelType = Hanekawa.Shared.ChannelType;
 
@@ -30,21 +32,20 @@ namespace Hanekawa.Bot.Modules.Level
                 return;
             }
 
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            string userString = null;
+            for (var i = 0; i < users.Length; i++)
             {
-                string userString = null;
-                for (var i = 0; i < users.Length; i++)
-                {
-                    var user = users[i];
-                    var userData = await db.GetOrCreateUserData(users[i]);
-                    await _exp.AddExpAsync(user, userData, exp, 0, db);
-                    userString += $"{user.Mention ?? "Couldn't find user"}\n";
-                }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Added {exp} to:\n" +
-                                         $"{userString}");
+                var user = users[i];
+                var userData = await db.GetOrCreateUserData(users[i]);
+                await _exp.AddExpAsync(user, userData, exp, 0, db);
+                userString += $"{user.Mention ?? "Couldn't find user"}\n";
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Added {exp} to:\n" +
+                                     $"{userString}");
         }
 
         [Name("Remove Experience")]
@@ -54,21 +55,20 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task RemoveExp(int exp, params CachedMember[] users)
         {
             if (exp <= 0) return;
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            string userString = null;
+            for (var i = 0; i < users.Length; i++)
             {
-                string userString = null;
-                for (var i = 0; i < users.Length; i++)
-                {
-                    var user = users[i];
-                    var userData = await db.GetOrCreateUserData(users[i]);
-                    await _exp.AddExpAsync(user, userData, exp * -1, 0, db);
-                    userString += $"{user.Mention}\n";
-                }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Removed {exp} from:\n" +
-                                         $"{userString}");
+                var user = users[i];
+                var userData = await db.GetOrCreateUserData(users[i]);
+                await _exp.AddExpAsync(user, userData, exp * -1, 0, db);
+                userString += $"{user.Mention}\n";
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Removed {exp} from:\n" +
+                                     $"{userString}");
         }
 
         [Name("Add Exp Ignore Channel")]
@@ -77,35 +77,34 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params CachedTextChannel[] channels)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var content = new StringBuilder();
+            content.AppendLine("Channels added to exp ignore list:");
+            for (var i = 0; i < channels.Length; i++)
             {
-                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
-                var content = new StringBuilder();
-                content.AppendLine("Channels added to exp ignore list:");
-                for (var i = 0; i < channels.Length; i++)
+                var x = channels[i];
+                if (!channeList.TryGetValue(x.Id.RawValue, out _))
                 {
-                    var x = channels[i];
-                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
+                    channeList.Add(x.Id.RawValue);
+                    var data = new LevelExpReduction
                     {
-                        channeList.Add(x.Id.RawValue);
-                        var data = new LevelExpReduction
-                        {
-                            GuildId = Context.Guild.Id.RawValue,
-                            ChannelId = x.Id.RawValue,
-                            ChannelType = ChannelType.Text
-                        };
-                        await db.LevelExpReductions.AddAsync(data);
-                        content.AppendLine($"Added {x.Mention}");
-                    }
-                    else
-                    {
-                        content.AppendLine($"{x.Mention} is already added");
-                    }
+                        GuildId = Context.Guild.Id.RawValue,
+                        ChannelId = x.Id.RawValue,
+                        ChannelType = ChannelType.Text
+                    };
+                    await db.LevelExpReductions.AddAsync(data);
+                    content.AppendLine($"Added {x.Mention}");
                 }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(content.ToString());
+                else
+                {
+                    content.AppendLine($"{x.Mention} is already added");
+                }
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(content.ToString());
         }
 
         [Name("Add Exp Ignore Channel")]
@@ -114,35 +113,34 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params CachedVoiceChannel[] channels)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var content = new StringBuilder();
+            content.AppendLine("Channels added to exp ignore list:");
+            for (var i = 0; i < channels.Length; i++)
             {
-                var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
-                var content = new StringBuilder();
-                content.AppendLine("Channels added to exp ignore list:");
-                for (var i = 0; i < channels.Length; i++)
+                var x = channels[i];
+                if (!channeList.TryGetValue(x.Id.RawValue, out _))
                 {
-                    var x = channels[i];
-                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
+                    channeList.Add(x.Id.RawValue);
+                    var data = new LevelExpReduction
                     {
-                        channeList.Add(x.Id.RawValue);
-                        var data = new LevelExpReduction
-                        {
-                            GuildId = Context.Guild.Id.RawValue,
-                            ChannelId = x.Id.RawValue,
-                            ChannelType = ChannelType.Voice
-                        };
-                        await db.LevelExpReductions.AddAsync(data);
-                        content.AppendLine($"Added {x.Name}");
-                    }
-                    else
-                    {
-                        content.AppendLine($"{x.Name} is already added");
-                    }
+                        GuildId = Context.Guild.Id.RawValue,
+                        ChannelId = x.Id.RawValue,
+                        ChannelType = ChannelType.Voice
+                    };
+                    await db.LevelExpReductions.AddAsync(data);
+                    content.AppendLine($"Added {x.Name}");
                 }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(content.ToString());
+                else
+                {
+                    content.AppendLine($"{x.Name} is already added");
+                }
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(content.ToString());
         }
 
         [Name("Add Exp Ignore Category")]
@@ -151,35 +149,34 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var content = new StringBuilder();
+            content.AppendLine("Categories added to exp ignore list:");
+            for (var i = 0; i < category.Length; i++)
             {
-                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
-                var content = new StringBuilder();
-                content.AppendLine("Categories added to exp ignore list:");
-                for (var i = 0; i < category.Length; i++)
+                var x = category[i];
+                if (!channeList.TryGetValue(x.Id.RawValue, out _))
                 {
-                    var x = category[i];
-                    if (!channeList.TryGetValue(x.Id.RawValue, out _))
+                    channeList.Add(x.Id.RawValue);
+                    var data = new LevelExpReduction
                     {
-                        channeList.Add(x.Id.RawValue);
-                        var data = new LevelExpReduction
-                        {
-                            GuildId = Context.Guild.Id.RawValue,
-                            ChannelId = x.Id.RawValue,
-                            ChannelType = ChannelType.Category
-                        };
-                        await db.LevelExpReductions.AddAsync(data);
-                        content.AppendLine($"Added {x.Name}");
-                    }
-                    else
-                    {
-                        content.AppendLine($"{x.Name} is already added");
-                    }
+                        GuildId = Context.Guild.Id.RawValue,
+                        ChannelId = x.Id.RawValue,
+                        ChannelType = ChannelType.Category
+                    };
+                    await db.LevelExpReductions.AddAsync(data);
+                    content.AppendLine($"Added {x.Name}");
                 }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(content.ToString());
+                else
+                {
+                    content.AppendLine($"{x.Name} is already added");
+                }
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(content.ToString());
         }
 
         [Name("Remove Exp Ignore Channel")]
@@ -188,31 +185,30 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params CachedTextChannel[] channels)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var content = new StringBuilder();
+            content.AppendLine("Channels removed from exp ignore list:");
+            for (var i = 0; i < channels.Length; i++)
             {
-                var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
-                var content = new StringBuilder();
-                content.AppendLine("Channels removed from exp ignore list:");
-                for (var i = 0; i < channels.Length; i++)
+                var x = channels[i];
+                if (channeList.TryGetValue(x.Id.RawValue, out _))
                 {
-                    var x = channels[i];
-                    if (channeList.TryGetValue(x.Id.RawValue, out _))
-                    {
-                        channeList.Remove(x.Id.RawValue);
-                        var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
-                            z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
-                        db.LevelExpReductions.Remove(data);
-                        content.AppendLine($"Removed {x.Mention}");
-                    }
-                    else
-                    {
-                        content.AppendLine($"Can't remove {x.Mention} as it's not added");
-                    }
+                    channeList.Remove(x.Id.RawValue);
+                    var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
+                        z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
+                    db.LevelExpReductions.Remove(data);
+                    content.AppendLine($"Removed {x.Mention}");
                 }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(content.ToString());
+                else
+                {
+                    content.AppendLine($"Can't remove {x.Mention} as it's not added");
+                }
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(content.ToString());
         }
 
         [Name("Remove Exp Ignore Category")]
@@ -221,31 +217,30 @@ namespace Hanekawa.Bot.Modules.Level
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
+            var content = new StringBuilder();
+            content.AppendLine("Categories removed from exp ignore list:");
+            for (var i = 0; i < category.Length; i++)
             {
-                var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
-                var content = new StringBuilder();
-                content.AppendLine("Categories removed from exp ignore list:");
-                for (var i = 0; i < category.Length; i++)
+                var x = category[i];
+                if (channeList.TryGetValue(x.Id.RawValue, out _))
                 {
-                    var x = category[i];
-                    if (channeList.TryGetValue(x.Id.RawValue, out _))
-                    {
-                        channeList.Remove(x.Id.RawValue);
-                        var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
-                            z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
-                        db.LevelExpReductions.Remove(data);
-                        content.AppendLine($"Removed {x.Name}");
-                    }
-                    else
-                    {
-                        content.AppendLine($"Can't remove {x.Name} as it's not added");
-                    }
+                    channeList.Remove(x.Id.RawValue);
+                    var data = await db.LevelExpReductions.FirstOrDefaultAsync(z =>
+                        z.GuildId == Context.Guild.Id.RawValue && z.ChannelId == x.Id.RawValue);
+                    db.LevelExpReductions.Remove(data);
+                    content.AppendLine($"Removed {x.Name}");
                 }
-
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(content.ToString());
+                else
+                {
+                    content.AppendLine($"Can't remove {x.Name} as it's not added");
+                }
             }
+
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(content.ToString());
         }
 
         [Name("Remove Exp Ignore Category")]

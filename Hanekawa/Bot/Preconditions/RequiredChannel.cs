@@ -8,6 +8,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
@@ -42,11 +43,10 @@ namespace Hanekawa.Bot.Preconditions
 
         private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
-                return cfg.IgnoreAllChannels;
-            }
+            using var scope = context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
+            return cfg.IgnoreAllChannels;
         }
 
         private bool EligibleChannel(HanekawaContext context, bool ignoreAll = false)
@@ -56,21 +56,18 @@ namespace Hanekawa.Bot.Preconditions
             var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
             var ignore = ch.TryGetValue(context.Channel.Id.RawValue, out var status);
             if (!ignore) ignore = DoubleCheckChannel(context);
-            if (!ignoreAll) // If its only ignoring specific channels in the dictionary
-                return !ignore;
-            return ignore;
+            return !ignoreAll ? !ignore : ignore;
         }
 
         private bool DoubleCheckChannel(HanekawaContext context)
         {
-            using (var db = new DbService())
-            {
-                var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
-                if (check == null) return false;
-                var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-                ch.TryAdd(context.Channel.Id.RawValue, true);
-                return true;
-            }
+            using var scope = context.ServiceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
+            if (check == null) return false;
+            var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            ch.TryAdd(context.Channel.Id.RawValue, true);
+            return true;
         }
 
         public async Task<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)

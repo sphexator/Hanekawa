@@ -27,8 +27,7 @@ namespace Hanekawa.Bot.Services.Board
                 return new LocalEmoji("U+2B50");
             }
 
-            if (LocalCustomEmoji.TryParse(emoteString, out var emote)) return emote;
-            return new LocalEmoji("U+2B50");
+            return LocalCustomEmoji.TryParse(emoteString, out var emote) ? (IEmoji) emote : new LocalEmoji("U+2B50");
         }
     }
 }

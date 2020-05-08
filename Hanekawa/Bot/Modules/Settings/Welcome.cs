@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
@@ -14,6 +15,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -53,19 +55,18 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
 
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var data = new WelcomeBanner
             {
-                var data = new WelcomeBanner
-                {
-                    GuildId = Context.Guild.Id.RawValue,
-                    UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
-                    Uploader = Context.User.Id.RawValue,
-                    Url = url
-                };
-                await db.WelcomeBanners.AddAsync(data);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Added banner to the collection!", Color.Green);
-            }
+                GuildId = Context.Guild.Id.RawValue,
+                UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
+                Uploader = Context.User.Id.RawValue,
+                Url = url
+            };
+            await db.WelcomeBanners.AddAsync(data);
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync("Added banner to the collection!", Color.Green);
         }
 
         [Name("Banner Remove")]
@@ -74,21 +75,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveWelcomeBannerAsync(int id)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var banner =
+                await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
+            if (banner == null)
             {
-                var banner =
-                    await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
-                if (banner == null)
-                {
-                    await Context.ReplyAsync("Couldn\'t remove a banner with that ID.", Color.Red);
-                    return;
-                }
-
-                db.WelcomeBanners.Remove(banner);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Removed {banner.Url} with ID {banner.Id} from the bot",
-                    Color.Green);
+                await Context.ReplyAsync("Couldn\'t remove a banner with that ID.", Color.Red);
+                return;
             }
+
+            db.WelcomeBanners.Remove(banner);
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Removed {banner.Url} with ID {banner.Id} from the bot",
+                Color.Green);
         }
 
         [Name("Banner List")]
@@ -97,30 +97,29 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageMessages)]
         public async Task WelcomeBannerListAsync()
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
+            if (list.Count == 0)
             {
-                var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
-                if (list.Count == 0)
-                {
-                    await Context.ReplyAsync("No banners added, using default one if enabled", Color.Red);
-                    return;
-                }
-
-                var pages = new List<string>();
-                for (var i = 0; i < list.Count; i++)
-                {
-                    var index = list[i];
-                    var strBuilder = new StringBuilder();
-                    strBuilder.AppendLine($"ID: {index.Id}");
-                    strBuilder.AppendLine($"URL: {index.Url}");
-                    strBuilder.AppendLine(
-                        $"Uploader: {Context.Guild.GetMember(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
-                    strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
-                    pages.Add(strBuilder.ToString());
-                }
-
-                await Context.PaginatedReply(pages, Context.Guild, $"Welcome banners for {Context.Guild.Name}");
+                await Context.ReplyAsync("No banners added, using default one if enabled", Color.Red);
+                return;
             }
+
+            var pages = new List<string>();
+            for (var i = 0; i < list.Count; i++)
+            {
+                var index = list[i];
+                var strBuilder = new StringBuilder();
+                strBuilder.AppendLine($"ID: {index.Id}");
+                strBuilder.AppendLine($"URL: {index.Url}");
+                strBuilder.AppendLine(
+                    $"Uploader: {Context.Guild.GetMember(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
+                strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
+                pages.Add(strBuilder.ToString());
+            }
+
+            await Context.PaginatedReply(pages, Context.Guild, $"Welcome banners for {Context.Guild.Name}");
         }
 
         [Name("Message")]
@@ -129,13 +128,12 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeMessageAsync([Remainder] string message = null)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Updated welcome message!", Color.Green);
-            }
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync("Updated welcome message!", Color.Green);
         }
 
         [Name("Channel")]
@@ -144,28 +142,27 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeChannelAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            if (channel == null && cfg.Channel.HasValue)
             {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (channel == null && cfg.Channel.HasValue)
-                {
-                    cfg.Channel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled welcome messages!", Color.Green);
-                }
-                else if (channel == null)
-                {
-                    channel = Context.Channel;
-                    cfg.Channel = channel.Id.RawValue;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
-                }
-                else
-                {
-                    cfg.Channel = channel.Id.RawValue;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
-                }
+                cfg.Channel = null;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Disabled welcome messages!", Color.Green);
+            }
+            else if (channel == null)
+            {
+                channel = Context.CachedChannel;
+                cfg.Channel = channel.Id.RawValue;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
+            }
+            else
+            {
+                cfg.Channel = channel.Id.RawValue;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
             }
         }
 
@@ -175,25 +172,24 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeTimeout(TimeSpan? timeout = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            if (!cfg.TimeToDelete.HasValue && timeout == null) return;
+            if (timeout == null)
             {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (!cfg.TimeToDelete.HasValue && timeout == null) return;
-                if (timeout == null)
-                {
-                    cfg.TimeToDelete = null;
-                    await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green);
-                }
-                else
-                {
-                    cfg.TimeToDelete = timeout.Value;
-                    await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
-                                             $"I will now delete the message after {timeout.Value.Humanize(2)}!",
-                        Color.Green);
-                }
-
-                await db.SaveChangesAsync();
+                cfg.TimeToDelete = null;
+                await Context.ReplyAsync("Disabled auto-deletion of welcome messages!", Color.Green);
             }
+            else
+            {
+                cfg.TimeToDelete = timeout.Value;
+                await Context.ReplyAsync("Enabled auto-deletion of welcome messages!\n" +
+                                         $"I will now delete the message after {timeout.Value.Humanize(2)}!",
+                    Color.Green);
+            }
+
+            await db.SaveChangesAsync();
         }
 
         [Name("Template")]
@@ -218,22 +214,21 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task Welcomebanner()
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            if (cfg.Banner)
             {
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-                if (cfg.Banner)
-                {
-                    cfg.Banner = false;
-                    await Context.ReplyAsync("Disabled welcome banners!", Color.Green);
-                }
-                else
-                {
-                    cfg.Banner = true;
-                    await Context.ReplyAsync("Enabled welcome banners!", Color.Green);
-                }
-
-                await db.SaveChangesAsync();
+                cfg.Banner = false;
+                await Context.ReplyAsync("Disabled welcome banners!", Color.Green);
             }
+            else
+            {
+                cfg.Banner = true;
+                await Context.ReplyAsync("Enabled welcome banners!", Color.Green);
+            }
+
+            await db.SaveChangesAsync();
         }
 
         [Name("Ignore New Account")]
@@ -242,7 +237,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)
         {
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (time == null)
             {

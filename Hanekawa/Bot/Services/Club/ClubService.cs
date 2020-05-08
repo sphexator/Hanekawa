@@ -2,19 +2,21 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService : INService, IRequired
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
@@ -23,7 +25,7 @@ namespace Hanekawa.Bot.Services.Club
         private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(19520));
         private readonly OverwritePermissions _allowOverwrite = new OverwritePermissions(new ChannelPermissions(19520), ChannelPermissions.None);
 
-        public ClubService(DiscordClient client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public ClubService(DiscordBot client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
@@ -44,16 +46,14 @@ namespace Hanekawa.Bot.Services.Club
                 var guild = e.Guild;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var clubs = await db.ClubPlayers.Where(x => x.GuildId == guild.Id.RawValue && x.UserId == user.Id.RawValue)
-                            .ToListAsync();
-                        if (clubs.Count == 0) return;
-                        var cfg = await db.GetOrCreateClubConfigAsync(guild);
-                        foreach (var x in clubs) await RemoveUserAsync(user, guild, x.Id, db, cfg);
-                        _log.LogAction(LogLevel.Information, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left {clubs.Count} clubs");
-                    }
-                    
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var clubs = await db.ClubPlayers.Where(x => x.GuildId == guild.Id.RawValue && x.UserId == user.Id.RawValue)
+                        .ToListAsync();
+                    if (clubs.Count == 0) return;
+                    var cfg = await db.GetOrCreateClubConfigAsync(guild);
+                    foreach (var x in clubs) await RemoveUserAsync(user, guild, x.Id, db, cfg);
+                    _log.LogAction(LogLevel.Information, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left {clubs.Count} clubs");
                 }
                 catch (Exception e)
                 {
@@ -83,21 +83,20 @@ namespace Hanekawa.Bot.Services.Club
                 if (!(ch is CachedTextChannel channel)) return;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
-                        if (!cfg.AdvertisementChannel.HasValue) return;
-                        if (cfg.AdvertisementChannel.Value != channel.Id.RawValue) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateClubConfigAsync(channel.Guild);
+                    if (!cfg.AdvertisementChannel.HasValue) return;
+                    if (cfg.AdvertisementChannel.Value != channel.Id.RawValue) return;
 
-                        var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
-                            x.GuildId == channel.Guild.Id.RawValue && x.AdMessage == msg.Id.RawValue);
-                        if (club == null || !club.Public) return;
+                    var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
+                        x.GuildId == channel.Guild.Id.RawValue && x.AdMessage == msg.Id.RawValue);
+                    if (club == null || !club.Public) return;
 
-                        var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
-                            x.UserId == user.Id.RawValue && x.GuildId == channel.Guild.Id.RawValue && x.ClubId == club.Id);
-                        if (clubUser == null) await AddUserAsync(user as CachedMember, club.Id, db, cfg);
-                        else await RemoveUserAsync(user as CachedUser, channel.Guild, club.Id, db, cfg);
-                    }
+                    var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
+                        x.UserId == user.Id.RawValue && x.GuildId == channel.Guild.Id.RawValue && x.ClubId == club.Id);
+                    if (clubUser == null) await AddUserAsync(user as CachedMember, club.Id, db);
+                    else await RemoveUserAsync(user as CachedUser, channel.Guild, club.Id, db, cfg);
                 }
                 catch (Exception e)
                 {

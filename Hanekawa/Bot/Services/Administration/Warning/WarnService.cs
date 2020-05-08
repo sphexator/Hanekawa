@@ -24,24 +24,25 @@ namespace Hanekawa.Bot.Services.Administration.Warning
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly ColourService _colourService;
+        private readonly IServiceProvider _provider;
 
-        public WarnService(LogService logService, InternalLogService log, ColourService colourService)
+        public WarnService(LogService logService, InternalLogService log, ColourService colourService, IServiceProvider provider)
         {
             _logService = logService;
             _log = log;
             _colourService = colourService;
+            _provider = provider;
         }
 
         public Task Execute(IJobExecutionContext context) => VoidWarning();
 
         private async Task VoidWarning()
         {
-            using (var db = new DbService())
-            {
-                await db.Warns.Where(x => x.Time.AddDays(7).Date <= DateTime.UtcNow.Date)
-                    .ForEachAsync(x => x.Valid = false);
-                await db.SaveChangesAsync();
-            }
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await db.Warns.Where(x => x.Time.AddDays(7).Date <= DateTime.UtcNow.Date)
+                .ForEachAsync(x => x.Valid = false);
+            await db.SaveChangesAsync();
         }
 
         public async Task AddWarn(DbService db, CachedMember user, CachedMember staff, string reason,

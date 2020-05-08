@@ -334,7 +334,7 @@
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateMusicConfig(Context.Guild);
                 if (channel == null)

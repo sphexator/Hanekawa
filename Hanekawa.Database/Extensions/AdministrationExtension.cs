@@ -31,11 +31,7 @@ namespace Hanekawa.Database.Extensions
             DateTime time)
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id.RawValue).ConfigureAwait(false);
-            int nr;
-            if (counter == 0)
-                nr = 1;
-            else
-                nr = counter + 1;
+            var nr = counter == 0 ? 1 : counter + 1;
 
             var data = new Report
             {

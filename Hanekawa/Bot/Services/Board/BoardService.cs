@@ -2,34 +2,37 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Events;
 using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService : INService, IRequired
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public BoardService(DiscordClient client, InternalLogService log)
+        public BoardService(DiscordBot client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.ReactionAdded += ReactionAddedAsync;
             _client.ReactionRemoved += ReactionRemovedAsync;
             _client.ReactionsCleared += ReactionsClearedAsync;
 
-            using (var db = new DbService())
-            {
-                foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
-            }
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
         }
 
         private Task ReactionAddedAsync(ReactionAddedEventArgs e)
@@ -42,29 +45,28 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var emote = await GetEmote(user.Guild, db);
-                        if (!e.Emoji.Equals(emote)) return;
-                        var cfg = await db.GetOrCreateBoardConfigAsync(ch.Guild);
-                        if (!cfg.Channel.HasValue) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var emote = await GetEmote(user.Guild, db);
+                    if (!e.Emoji.Equals(emote)) return;
+                    var cfg = await db.GetOrCreateBoardConfigAsync(ch.Guild);
+                    if (!cfg.Channel.HasValue) return;
 
-                        var stat = await db.GetOrCreateBoard(ch.Guild, e.Message.Value);
-                        var giver = await db.GetOrCreateUserData(user);
-                        var receiver = await db.GetOrCreateUserData(e.Message.Value.Author as CachedMember);
-                        receiver.StarReceived++;
-                        giver.StarGiven++;
-                        stat.StarAmount++;
+                    var stat = await db.GetOrCreateBoard(ch.Guild, e.Message.Value);
+                    var giver = await db.GetOrCreateUserData(user);
+                    var receiver = await db.GetOrCreateUserData(e.Message.Value.Author as CachedMember);
+                    receiver.StarReceived++;
+                    giver.StarGiven++;
+                    stat.StarAmount++;
+                    await db.SaveChangesAsync();
+                    IncreaseReactionAmount(user.Guild, e.Message.Value);
+                    if (GetReactionAmount(user.Guild, e.Message.Value) >= 4 && !stat.Boarded.HasValue)
+                    {
+                        stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                         await db.SaveChangesAsync();
-                        IncreaseReactionAmount(user.Guild, e.Message.Value);
-                        if (GetReactionAmount(user.Guild, e.Message.Value) >= 4 && !stat.Boarded.HasValue)
-                        {
-                            stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
-                            await db.SaveChangesAsync();
-                            await SendMessageAsync(user, e.Message.Value as CachedUserMessage, cfg);
-                        }
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} added a reaction in {user.Guild.Id.RawValue}");
+                        await SendMessageAsync(user, e.Message.Value as CachedUserMessage, cfg);
                     }
+                    _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} added a reaction in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
@@ -85,20 +87,19 @@ namespace Hanekawa.Bot.Services.Board
                 if (user.IsBot) return;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var emote = await GetEmote(user.Guild, db);
-                        if (!e.Emoji.Equals(emote)) return;
-                        var stat = await db.GetOrCreateBoard(ch.Guild, e.Message.Value);
-                        var giver = await db.GetOrCreateUserData(user);
-                        var receiver = await db.GetOrCreateUserData(e.Message.Value.Author as CachedMember);
-                        receiver.StarReceived--;
-                        giver.StarGiven--;
-                        stat.StarAmount--;
-                        await db.SaveChangesAsync();
-                        DecreaseReactionAmount(user.Guild, e.Message.Value);
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} removed a reaction in {user.Guild.Id.RawValue}");
-                    }
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var emote = await GetEmote(user.Guild, db);
+                    if (!e.Emoji.Equals(emote)) return;
+                    var stat = await db.GetOrCreateBoard(ch.Guild, e.Message.Value);
+                    var giver = await db.GetOrCreateUserData(user);
+                    var receiver = await db.GetOrCreateUserData(e.Message.Value.Author as CachedMember);
+                    receiver.StarReceived--;
+                    giver.StarGiven--;
+                    stat.StarAmount--;
+                    await db.SaveChangesAsync();
+                    DecreaseReactionAmount(user.Guild, e.Message.Value);
+                    _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} removed a reaction in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {

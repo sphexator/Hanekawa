@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
@@ -12,6 +13,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Account
@@ -35,8 +37,9 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task RankAsync(CachedMember user = null)
         {
-            using var db = new DbService();
-            if (user == null) user = Context.Member;
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            user ??= Context.Member;
             var serverData = await db.GetOrCreateUserData(user);
             var globalData = await db.GetOrCreateGlobalUserData(user);
             var embed = new LocalEmbedBuilder
@@ -79,27 +82,26 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
+            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
+            var result = new List<string>();
+            var strBuilder = new StringBuilder();
+            for (var i = 0; i < users.Length; i++)
             {
-                var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-                var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
-                var result = new List<string>();
-                var strBuilder = new StringBuilder();
-                for (var i = 0; i < users.Length; i++)
-                {
-                    var user = users[i];
-                    var username = Context.Guild.GetMember(user.UserId);
-                    strBuilder.AppendLine(
-                        username != null
-                            ? $"**Rank: {i + 1}** - {username.Mention}"
-                            : $"**Rank: {i + 1}** - User left server({user.UserId})");
-                    strBuilder.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
-                    result.Add(strBuilder.ToString());
-                    strBuilder.Clear();
-                }
-
-                await Context.PaginatedReply(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}");
+                var user = users[i];
+                var username = Context.Guild.GetMember(user.UserId);
+                strBuilder.AppendLine(
+                    username != null
+                        ? $"**Rank: {i + 1}** - {username.Mention}"
+                        : $"**Rank: {i + 1}** - User left server({user.UserId})");
+                strBuilder.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
+                result.Add(strBuilder.ToString());
+                strBuilder.Clear();
             }
+
+            await Context.PaginatedReply(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}");
         }
 
         [Name("Reputation")]
@@ -109,41 +111,40 @@ namespace Hanekawa.Bot.Modules.Account
         public async Task RepAsync(CachedMember user = null)
         {
             if (user == Context.User) return;
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
+            if (user == null)
             {
-                var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
-                if (user == null)
-                {
-                    if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
-                    {
-                        var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                        await Context.ReplyAsync(
-                            $"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}");
-                    }
-                    else
-                    {
-                        await Context.ReplyAsync(
-                            $"{Context.User.Mention}, you got a reputation point available!",
-                            Color.Green);
-                    }
-
-                    return;
-                }
-
                 if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
                 {
                     var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                    await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}",
-                        Color.Red);
-                    return;
+                    await Context.ReplyAsync(
+                        $"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}");
+                }
+                else
+                {
+                    await Context.ReplyAsync(
+                        $"{Context.User.Mention}, you got a reputation point available!",
+                        Color.Green);
                 }
 
-                var userData = await db.GetOrCreateUserData(user);
-                cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
-                userData.Rep++;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green);
+                return;
             }
+
+            if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+            {
+                var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}",
+                    Color.Red);
+                return;
+            }
+
+            var userData = await db.GetOrCreateUserData(user);
+            cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
+            userData.Rep++;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green);
         }
     }
 }

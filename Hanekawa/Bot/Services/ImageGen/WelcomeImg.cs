@@ -54,20 +54,16 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
-            using (var img = Image.Load(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url)))
-            {
-                img.Mutate(x => x.Resize(600, 78));
-                return img.Clone();
-            }
+            using var img = Image.Load(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url));
+            img.Mutate(x => x.Resize(600, 78));
+            return img.Clone();
         }
 
         private async Task<Image<Rgba32>> GetBanner(string url)
         {
-            using (var img = Image.Load(await _client.GetStreamAsync(url)))
-            {
-                img.Mutate(x => x.Resize(600, 78));
-                return img.Clone();
-            }
+            using var img = Image.Load(await _client.GetStreamAsync(url));
+            img.Mutate(x => x.Resize(600, 78));
+            return img.Clone();
         }
     }
 }

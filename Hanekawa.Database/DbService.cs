@@ -23,13 +23,7 @@ namespace Hanekawa.Database
 {
     public class DbService : DbContext
     {
-        public DbService()
-        {
-        }
-
-        public DbService(DbContextOptions options) : base(options)
-        {
-        }
+        public DbService(DbContextOptions options) : base(options) { }
 
         // Account
         public virtual DbSet<Account> Accounts { get; set; }
@@ -104,13 +98,6 @@ namespace Hanekawa.Database
 
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseNpgsql(Config.ConnectionString
-                                         ?? throw new NullReferenceException("No database connection string set"));
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

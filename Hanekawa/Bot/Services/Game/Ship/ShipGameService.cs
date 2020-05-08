@@ -18,6 +18,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Game.Ship
@@ -30,8 +31,9 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly Random _random;
         private readonly AchievementService _achievement;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log)
+        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log, IServiceProvider provider)
         {
             _random = random;
             _img = img;
@@ -39,8 +41,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
             _colourService = colourService;
             _achievement = achievement;
             _log = log;
+            _provider = provider;
 
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = db.GameConfigs.Find(1);
             if (cfg != null)
             {
@@ -54,7 +58,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
             if (IsInBattle(context))
                 return new LocalEmbedBuilder().Create($"{context.User.Mention} is already in a fight",
                     Color.Red);
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(context.Member);
             var chance = _random.Next(100);
             GameEnemy enemy;
@@ -124,7 +129,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
             GameClass playerOne = null;
             GameClass playerTwo = null;
 
-            using (var db = new DbService())
+            using (var scope = _provider.CreateScope())
+            await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
             {
                 var userData = await db.GetOrCreateUserData(context.Member);
                 playerOne = await GetClass(userData.Class, db);
@@ -190,7 +196,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
                                     $"Looted **${enemy.CreditGain}** and gained **{enemy.ExpGain}** exp.");
                     RemoveBattle(context);
 
-                    using (var db = new DbService())
+                    using (var scope = _provider.CreateScope())
+                    await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         var userData = await db.GetOrCreateUserData(context.Member);
                         await _exp.AddExpAsync(context.Member, userData, enemy.ExpGain, enemy.CreditGain, db);
@@ -300,7 +307,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 Account winner = null;
                 Account loser = null;
 
-                using (var db = new DbService())
+                using (var scope = _provider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     userData = await db.GetOrCreateUserData(context.Member);
                     userData2 = await db.GetOrCreateUserData(playerTwoUser);
@@ -447,7 +455,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 }
 
                 if (bet.HasValue && bet != 0)
-                    using (var db = new DbService())
+                    using (var scope = _provider.CreateScope())
+                    await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         winner.Credit += bet.Value;
                         loser.Credit -= bet.Value;

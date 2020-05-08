@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
 
@@ -18,7 +20,8 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularNameAsync([Remainder] string name = null)
         {
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             if (name.IsNullOrWhiteSpace())
             {
@@ -39,22 +42,21 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSpecialNameAsync([Remainder] string name = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            if (name.IsNullOrWhiteSpace())
             {
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                if (name.IsNullOrWhiteSpace())
-                {
-                    cfg.SpecialCurrencyName = "Special Credit";
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set regular back to default `Special Credit`",
-                        Color.Green);
-                    return;
-                }
-
-                cfg.SpecialCurrencyName = name;
+                cfg.SpecialCurrencyName = "Special Credit";
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green);
+                await Context.ReplyAsync("Set regular back to default `Special Credit`",
+                    Color.Green);
+                return;
             }
+
+            cfg.SpecialCurrencyName = name;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set regular currency name to {name}", Color.Green);
         }
 
         [Name("Regular Currency Symbol")]
@@ -63,14 +65,13 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularSymbolAsync(LocalCustomEmoji emote)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                cfg.EmoteCurrency = true;
-                cfg.CurrencySign = emote.MessageFormat;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set regular currency sign to {emote}", Color.Green);
-            }
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            cfg.EmoteCurrency = true;
+            cfg.CurrencySign = emote.MessageFormat;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set regular currency sign to {emote}", Color.Green);
         }
 
         [Name("Regular Currency Symbol")]
@@ -79,16 +80,15 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetRegularSymbolAsync([Remainder] string symbol)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                if (symbol.IsNullOrWhiteSpace()) symbol = "$";
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            if (symbol.IsNullOrWhiteSpace()) symbol = "$";
 
-                cfg.EmoteCurrency = false;
-                cfg.CurrencySign = symbol;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set regular currency sign to {symbol}", Color.Green);
-            }
+            cfg.EmoteCurrency = false;
+            cfg.CurrencySign = symbol;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set regular currency sign to {symbol}", Color.Green);
         }
 
         [Name("Special Currency Symbol")]
@@ -97,14 +97,13 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSpecialSymbolAsync(LocalCustomEmoji emote)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                cfg.SpecialEmoteCurrency = true;
-                cfg.SpecialCurrencySign = emote.MessageFormat;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set special currency sign to {emote}", Color.Green);
-            }
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            cfg.SpecialEmoteCurrency = true;
+            cfg.SpecialCurrencySign = emote.MessageFormat;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set special currency sign to {emote}", Color.Green);
         }
 
         [Name("Special Currency Symbol")]
@@ -113,16 +112,15 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSpecialSymbolAsync([Remainder] string symbol)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-                if (symbol.IsNullOrWhiteSpace()) symbol = "$";
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            if (symbol.IsNullOrWhiteSpace()) symbol = "$";
 
-                cfg.SpecialEmoteCurrency = false;
-                cfg.SpecialCurrencySign = symbol;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set special currency sign to {symbol}", Color.Green);
-            }
+            cfg.SpecialEmoteCurrency = false;
+            cfg.SpecialCurrencySign = symbol;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set special currency sign to {symbol}", Color.Green);
         }
     }
 }

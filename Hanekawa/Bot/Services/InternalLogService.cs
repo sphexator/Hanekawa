@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Logging;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Shared.Interfaces;
@@ -12,11 +13,11 @@ namespace Hanekawa.Bot.Services
     public class InternalLogService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _castClient;
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly CommandService _command;
         private readonly ILogger<InternalLogService> _logger;
 
-        public InternalLogService(DiscordClient client,
+        public InternalLogService(DiscordBot client,
             ILogger<InternalLogService> logger, AnimeSimulCastClient castClient, CommandService command)
         {
             _client = client;
@@ -54,23 +55,15 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private LogLevel LogSevToLogLevel(LogMessageSeverity log)
-        {
-            switch (log)
+        private LogLevel LogSevToLogLevel(LogMessageSeverity log) =>
+            log switch
             {
-                case LogMessageSeverity.Critical:
-                    return LogLevel.Critical;
-                case LogMessageSeverity.Error:
-                    return LogLevel.Error;
-                case LogMessageSeverity.Warning:
-                    return LogLevel.Warning;
-                case LogMessageSeverity.Information:
-                    return LogLevel.Information;
-                case LogMessageSeverity.Debug:
-                    return LogLevel.Trace;
-                default:
-                    return LogLevel.None;
-            }
-        }
+                LogMessageSeverity.Critical => LogLevel.Critical,
+                LogMessageSeverity.Error => LogLevel.Error,
+                LogMessageSeverity.Warning => LogLevel.Warning,
+                LogMessageSeverity.Information => LogLevel.Information,
+                LogMessageSeverity.Debug => LogLevel.Trace,
+                _ => LogLevel.None
+            };
     }
 }

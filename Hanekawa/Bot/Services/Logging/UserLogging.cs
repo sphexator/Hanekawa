@@ -24,45 +24,44 @@ namespace Hanekawa.Bot.Services.Logging
                 if (!(before is CachedMember user)) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogAvi.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
+                    if (channel is null) return;
+
+                    var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id.RawValue), Description = ""};
+                    if (before.Name != after.Name)
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
-                        if (!cfg.LogAvi.HasValue) return;
-                        var channel = user.Guild.GetTextChannel(cfg.LogAvi.Value);
-                        if (channel is null) return;
-
-                        var embed = new LocalEmbedBuilder {Color = _colourService.Get(user.Guild.Id.RawValue), Description = ""};
-                        if (before.Name != after.Name)
+                        embed.Title = "Username Change";
+                        embed.Description = $"{before} || {before.Id.RawValue}";
+                        embed.AddField(x =>
                         {
-                            embed.Title = "Username Change";
-                            embed.Description = $"{before} || {before.Id.RawValue}";
-                            embed.AddField(x =>
-                            {
-                                x.Name = "Old Name";
-                                x.Value = $"{before.Name}";
-                                x.IsInline = true;
-                            });
-                            embed.AddField(x =>
-                            {
-                                x.Name = "New Name";
-                                x.Value = $"{after.Name}";
-                                x.IsInline = true;
-                            });
-                        }
-                        else if (before.AvatarHash != after.AvatarHash)
+                            x.Name = "Old Name";
+                            x.Value = $"{before.Name}";
+                            x.IsInline = true;
+                        });
+                        embed.AddField(x =>
                         {
-                            embed.Title = "Avatar Change";
-                            embed.Description = $"{before} | {before.Id.RawValue}";
-                            embed.ThumbnailUrl = before.GetAvatarUrl();
-                            embed.ImageUrl = after.GetAvatarUrl();
-                        }
-                        else
-                        {
-                            return;
-                        }
-
-                        await channel.ReplyAsync(embed);
+                            x.Name = "New Name";
+                            x.Value = $"{after.Name}";
+                            x.IsInline = true;
+                        });
                     }
+                    else if (before.AvatarHash != after.AvatarHash)
+                    {
+                        embed.Title = "Avatar Change";
+                        embed.Description = $"{before} | {before.Id.RawValue}";
+                        embed.ThumbnailUrl = before.GetAvatarUrl();
+                        embed.ImageUrl = after.GetAvatarUrl();
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    await channel.ReplyAsync(embed);
                 }
                 catch (Exception e)
                 {
@@ -81,54 +80,53 @@ namespace Hanekawa.Bot.Services.Logging
                 var after = e.NewMember;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(before.Guild);
-                        if (!cfg.LogAvi.HasValue) return;
-                        var channel = before.Guild.GetTextChannel(cfg.LogAvi.Value);
-                        if (channel == null) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(before.Guild);
+                    if (!cfg.LogAvi.HasValue) return;
+                    var channel = before.Guild.GetTextChannel(cfg.LogAvi.Value);
+                    if (channel == null) return;
 
-                        var embed = new LocalEmbedBuilder
+                    var embed = new LocalEmbedBuilder
+                    {
+                        Color = _colourService.Get(before.Guild.Id.RawValue),
+                        Description = "",
+                        Title = $"{after} | {after.Id.RawValue}",
+                        Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = ""}
+                    };
+                    if (before.Nick != after.Nick)
+                    {
+                        embed.Author = new LocalEmbedAuthorBuilder {Name = "Nickname Change"};
+                        embed.AddField("New Nick", after.Nick ?? after.Name);
+                        embed.AddField("Old Nick", before.Nick ?? before.Name);
+                    }
+                    else if (before.Roles.SequenceEqual(after.Roles))
+                    {
+                        if (before.Roles.Count < after.Roles.Count)
                         {
-                            Color = _colourService.Get(before.Guild.Id.RawValue),
-                            Description = "",
-                            Title = $"{after} | {after.Id.RawValue}",
-                            Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = ""}
-                        };
-                        if (before.Nick != after.Nick)
-                        {
-                            embed.Author = new LocalEmbedAuthorBuilder {Name = "Nickname Change"};
-                            embed.AddField("New Nick", after.Nick ?? after.Name);
-                            embed.AddField("Old Nick", before.Nick ?? before.Name);
+                            var roleDiffer = after.Roles
+                                .Where(x => !before.Roles.Contains(x)).Select(x => x.Value.Name);
+                            embed.WithAuthor(x => x.WithName("User Role Added"))
+                                .WithDescription(string.Join(", ", roleDiffer));
                         }
-                        else if (before.Roles.SequenceEqual(after.Roles))
+                        else if (before.Roles.Count > after.Roles.Count)
                         {
-                            if (before.Roles.Count < after.Roles.Count)
-                            {
-                                var roleDiffer = after.Roles
-                                    .Where(x => !before.Roles.Contains(x)).Select(x => x.Value.Name);
-                                embed.WithAuthor(x => x.WithName("User Role Added"))
-                                    .WithDescription(string.Join(", ", roleDiffer));
-                            }
-                            else if (before.Roles.Count > after.Roles.Count)
-                            {
-                                var roleDiffer = before.Roles
-                                    .Where(x => !after.Roles.Contains(x)).Select(x => x.Value.Name);
-                                embed.WithAuthor(x => x.WithName("User Role Removed"))
-                                    .WithDescription(string.Join(", ", roleDiffer));
-                            }
-                            else
-                            {
-                                return;
-                            }
+                            var roleDiffer = before.Roles
+                                .Where(x => !after.Roles.Contains(x)).Select(x => x.Value.Name);
+                            embed.WithAuthor(x => x.WithName("User Role Removed"))
+                                .WithDescription(string.Join(", ", roleDiffer));
                         }
                         else
                         {
                             return;
                         }
-
-                        await channel.ReplyAsync(embed);
                     }
+                    else
+                    {
+                        return;
+                    }
+
+                    await channel.ReplyAsync(embed);
                 }
                 catch (Exception e)
                 {

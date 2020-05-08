@@ -30,18 +30,18 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var globalData = await db.GetOrCreateGlobalUserData(user);
                 var progressBar = CreateProfileProgressBar(userData);
                 // TODO: Create a inventory for backgrounds
-                var background = GetProfileBackground(db);
+                var background = await GetProfileBackground(db);
                 var avi = GetAvatarAsync(user, new Size(110, 110), 61);
 
-                var serverRank = await GetRankAsync(user, userData, db);
-                var globalRank = await GetRankAsync(user, globalData, db);
+                var serverRank = await GetRankAsync(userData, db);
+                var globalRank = await GetRankAsync(globalData, db);
                 var achievePoints = await GetAchievementPoints(user, db);
                 var color = new Color((int)globalData.UserColor);
-                await Task.WhenAll(background, avi);
+                await Task.WhenAll(avi);
 
                 img.Mutate(x =>
                 {
-                    x.DrawImage(background.Result, 1);
+                    x.DrawImage(background, 1);
                     x.DrawImage(_profileTemplate, new Point(0, 0), _options);
                     x.DrawImage(avi.Result, new Point(145, 4), _options);
                     x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
@@ -128,15 +128,15 @@ namespace Hanekawa.Bot.Services.ImageGen
             return points;
         }
 
-        private async Task<string> GetRankAsync(CachedMember user, Account userData, DbService db)
+        private async Task<string> GetRankAsync(Account userData, DbService db)
         {
-            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id.RawValue);
+            var total = await db.Accounts.CountAsync(x => x.GuildId == userData.GuildId);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id.RawValue);
+                x.TotalExp >= userData.TotalExp && x.GuildId == userData.GuildId);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetRankAsync(CachedMember user, AccountGlobal userData, DbService db)
+        private async Task<string> GetRankAsync(AccountGlobal userData, DbService db)
         {
             var total = await db.AccountGlobals.CountAsync();
             var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userData.TotalExp);

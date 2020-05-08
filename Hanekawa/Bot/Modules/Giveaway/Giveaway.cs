@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
 using Qmmands;
@@ -21,7 +22,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
         {
             await Context.Message.TryDeleteMessageAsync();
             var stream = new MemoryStream();
-            if (channel == null) channel = Context.Channel;
+            if (channel == null) channel = Context.CachedChannel;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 await Context.ReplyAsync($"Couldn't find a message with that ID in {channel.Mention}",
@@ -43,28 +44,25 @@ namespace Hanekawa.Bot.Modules.Giveaway
             var result = users.OrderBy(item => rnd.Next());
             var winnerString = new StringBuilder();
 
-            using (var file = new StreamWriter(stream))
+            await using var file = new StreamWriter(stream);
+            var nr = 1;
+            foreach (var x in result)
             {
-                var nr = 1;
-                foreach (var x in result)
-                {
-                    if (nr <= winners) winnerString.AppendLine($"{x}");
-                    await file.WriteLineAsync($"{nr}: {x.Id.RawValue} - {x.Name}#{x.Discriminator}");
-                    nr++;
-                }
-
-                await file.FlushAsync();
-                stream.Seek(0, SeekOrigin.Begin);
-                await channel.SendMessageAsync(new LocalAttachment(stream, "participants.txt"),
-                    $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
+                if (nr <= winners) winnerString.AppendLine($"{x}");
+                await file.WriteLineAsync($"{nr}: {x.Id.RawValue} - {x.Name}#{x.Discriminator}");
+                nr++;
             }
+
+            await file.FlushAsync();
+            stream.Seek(0, SeekOrigin.Begin);
+            await channel.SendMessageAsync(new LocalAttachment(stream, "participants.txt"),
+                $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
         }
 
         private static int GetReactionAmount(IUserMessage message, LocalCustomEmoji emote)
         {
             message.Reactions.TryGetValue(emote, out var reactionData);
-            if (reactionData != null) return reactionData.Count;
-            return 0;
+            return reactionData != null ? reactionData.Count : 0;
         }
     }
 }

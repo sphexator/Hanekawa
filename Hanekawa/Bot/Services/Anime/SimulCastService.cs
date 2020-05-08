@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.AnimeSimulCast.Entity;
@@ -11,6 +12,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Anime
@@ -18,12 +20,12 @@ namespace Hanekawa.Bot.Services.Anime
     public class SimulCastService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _anime;
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordClient client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public SimulCastService(AnimeSimulCastClient anime, DiscordBot client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _anime = anime;
             _client = client;
@@ -45,16 +47,15 @@ namespace Hanekawa.Bot.Services.Anime
         {
             _ = Task.Run(async () =>
             {
-                using (var db = new DbService())
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
+                foreach (var x in premiumList)
                 {
-                    var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
-                    foreach (var x in premiumList)
-                    {
-                        await PostAsync(x, data).ConfigureAwait(false);
-                        await Task.Delay(5000).ConfigureAwait(false);
-                    }
-                    _log.LogAction(LogLevel.Information, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
+                    await PostAsync(x, data).ConfigureAwait(false);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
+                _log.LogAction(LogLevel.Information, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
             });
             return Task.CompletedTask;
         }

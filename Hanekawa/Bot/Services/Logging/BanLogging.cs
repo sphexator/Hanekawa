@@ -5,6 +5,7 @@ using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -19,30 +20,29 @@ namespace Hanekawa.Bot.Services.Logging
                 var user = e.User;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                    if (!cfg.LogBan.HasValue) return;
+                    var channel = guild.GetTextChannel(cfg.LogBan.Value);
+                    if (channel == null) return;
+                    var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
+                    var embed = new LocalEmbedBuilder
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
-                        if (!cfg.LogBan.HasValue) return;
-                        var channel = guild.GetTextChannel(cfg.LogBan.Value);
-                        if (channel == null) return;
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Unban);
-                        var embed = new LocalEmbedBuilder
+                        Color = Color.Green,
+                        Author = new LocalEmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
+                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
+                        Timestamp = DateTimeOffset.UtcNow,
+                        Fields =
                         {
-                            Color = Color.Green,
-                            Author = new LocalEmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
-                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
-                            Timestamp = DateTimeOffset.UtcNow,
-                            Fields =
-                            {
-                                new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = true},
-                                new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
-                                new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
-                            }
-                        };
-                        var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                        caseId.MessageId = msg.Id.RawValue;
-                        await db.SaveChangesAsync();
-                    }
+                            new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = true},
+                            new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
+                            new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
+                        }
+                    };
+                    var msg = await channel.SendMessageAsync(null, false, embed.Build());
+                    caseId.MessageId = msg.Id.RawValue;
+                    await db.SaveChangesAsync();
                 }
                 catch (Exception e)
                 {
@@ -60,31 +60,30 @@ namespace Hanekawa.Bot.Services.Logging
                 var guild = e.Guild;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
-                        if (!cfg.LogBan.HasValue) return;
-                        var channel = guild.GetTextChannel(cfg.LogBan.Value);
-                        if (channel == null) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                    if (!cfg.LogBan.HasValue) return;
+                    var channel = guild.GetTextChannel(cfg.LogBan.Value);
+                    if (channel == null) return;
 
-                        var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
-                        var embed = new LocalEmbedBuilder
+                    var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
+                    var embed = new LocalEmbedBuilder
+                    {
+                        Color = Color.Red,
+                        Author = new LocalEmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId.Id} | {user}"},
+                        Fields =
                         {
-                            Color = Color.Red,
-                            Author = new LocalEmbedAuthorBuilder {Name = $"User Banned | Case ID: {caseId.Id} | {user}"},
-                            Fields =
-                            {
-                                new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
-                                new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
-                                new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
-                            },
-                            Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
-                            Timestamp = DateTimeOffset.UtcNow
-                        };
-                        var msg = await channel.SendMessageAsync(null, false, embed.Build());
-                        caseId.MessageId = msg.Id.RawValue;
-                        await db.SaveChangesAsync();
-                    }
+                            new LocalEmbedFieldBuilder {Name = "User", Value = $"{user.Mention}", IsInline = false},
+                            new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
+                            new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                        },
+                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
+                        Timestamp = DateTimeOffset.UtcNow
+                    };
+                    var msg = await channel.SendMessageAsync(null, false, embed.Build());
+                    caseId.MessageId = msg.Id.RawValue;
+                    await db.SaveChangesAsync();
                 }
                 catch (Exception e)
                 {

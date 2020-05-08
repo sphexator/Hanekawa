@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Settings
@@ -17,21 +19,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs users joining and leaving server, leave empty to disable")]
         public async Task JoinLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogJoin = null;
-                    await Context.ReplyAsync("Disabled logging of join/leave!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogJoin = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set join/leave logging channel to {channel.Mention}!", Color.Green);
+                cfg.LogJoin = null;
+                await Context.ReplyAsync("Disabled logging of join/leave!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogJoin = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set join/leave logging channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("Warnings")]
@@ -39,21 +40,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs warnings given out from the bot, leave empty to disable")]
         public async Task WarnLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogWarn = null;
-                    await Context.ReplyAsync("Disabled logging of warnings!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogWarn = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set warn logging channel to {channel.Mention}!", Color.Green);
+                cfg.LogWarn = null;
+                await Context.ReplyAsync("Disabled logging of warnings!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogWarn = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set warn logging channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("Messages")]
@@ -61,21 +61,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs deleted and updated messages, leave empty to disable")]
         public async Task MessageLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogMsg = null;
-                    await Context.ReplyAsync("Disabled logging of messages!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogMsg = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set message logging channel to {channel.Mention}!", Color.Green);
+                cfg.LogMsg = null;
+                await Context.ReplyAsync("Disabled logging of messages!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogMsg = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set message logging channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("Ban")]
@@ -83,21 +82,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs users getting banned and muted, leave empty to disable")]
         public async Task BanLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogBan = null;
-                    await Context.ReplyAsync("Disabled logging of bans!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogBan = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set ban logging channel to {channel.Mention}!", Color.Green);
+                cfg.LogBan = null;
+                await Context.ReplyAsync("Disabled logging of bans!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogBan = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set ban logging channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("User")]
@@ -105,21 +103,20 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
         public async Task UserLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogAvi = null;
-                    await Context.ReplyAsync("Disabled logging of users!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogAvi = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set user logging channel to {channel.Mention}!", Color.Green);
+                cfg.LogAvi = null;
+                await Context.ReplyAsync("Disabled logging of users!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogAvi = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set user logging channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("Auto-Moderator")]
@@ -128,22 +125,21 @@ namespace Hanekawa.Bot.Modules.Settings
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
         public async Task AutoModeratorLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogAutoMod = null;
-                    await Context.ReplyAsync("Disabled separate logging of auto-moderator actions!",
-                        Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogAutoMod = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set auto mod log channel to {channel.Mention}!", Color.Green);
+                cfg.LogAutoMod = null;
+                await Context.ReplyAsync("Disabled separate logging of auto-moderator actions!",
+                    Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogAutoMod = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set auto mod log channel to {channel.Mention}!", Color.Green);
+            await db.SaveChangesAsync();
         }
 
         [Name("Voice")]
@@ -151,22 +147,21 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
         public async Task VoiceLogAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.LogVoice = null;
-                    await Context.ReplyAsync("Disabled logging of voice activity!", Color.Green);
-                    await db.SaveChangesAsync();
-                    return;
-                }
-
-                cfg.LogVoice = channel.Id.RawValue;
-                await Context.ReplyAsync($"Set voice activity logging channel to {channel.Mention}!",
-                    Color.Green);
+                cfg.LogVoice = null;
+                await Context.ReplyAsync("Disabled logging of voice activity!", Color.Green);
                 await db.SaveChangesAsync();
+                return;
             }
+
+            cfg.LogVoice = channel.Id.RawValue;
+            await Context.ReplyAsync($"Set voice activity logging channel to {channel.Mention}!",
+                Color.Green);
+            await db.SaveChangesAsync();
         }
     }
 }

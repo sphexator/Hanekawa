@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 }
             }
 
-            progress.Count = progress.Count + 1;
+            progress.Count += 1;
             await db.SaveChangesAsync();
         }
 

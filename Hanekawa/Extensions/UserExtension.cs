@@ -28,56 +28,28 @@ namespace Hanekawa.Extensions
 
         public static string GetGame(this CachedUser user)
         {
-            string result;
             if (user.Presence.Activity == null) return "Currently not playing";
-            switch (user.Presence.Activity.Type)
+            var result = user.Presence.Activity.Type switch
             {
-                case ActivityType.Listening:
-                    result = $"Listening: {user.Presence.Activity.Name}";
-                    break;
-                case ActivityType.Playing:
-                    result = $"Playing: {user.Presence.Activity.Name}";
-                    break;
-                case ActivityType.Streaming:
-                    result = $"Streaming: {user.Presence.Activity.Name}";
-                    break;
-                case ActivityType.Watching:
-                    result = $"Watching: {user.Presence.Activity.Name}";
-                    break;
-                default:
-                    result = "Currently not playing";
-                    break;
-            }
+                ActivityType.Listening => $"Listening: {user.Presence.Activity.Name}",
+                ActivityType.Playing => $"Playing: {user.Presence.Activity.Name}",
+                ActivityType.Streaming => $"Streaming: {user.Presence.Activity.Name}",
+                ActivityType.Watching => $"Watching: {user.Presence.Activity.Name}",
+                _ => "Currently not playing"
+            };
 
             return result;
         }
 
-        public static string GetStatus(this CachedUser user)
-        {
-            string result;
-            switch (user.Presence.Status)
+        public static string GetStatus(this CachedUser user) =>
+            user.Presence.Status switch
             {
-                case UserStatus.Online:
-                    result = "Online";
-                    break;
-                case UserStatus.Idle:
-                    result = "Idle";
-                    break;
-                case UserStatus.DoNotDisturb:
-                    result = "DND";
-                    break;
-                case UserStatus.Invisible:
-                    result = "Invisible";
-                    break;
-                case UserStatus.Offline:
-                    result = "Offline";
-                    break;
-                default:
-                    result = "N/A";
-                    break;
-            }
-
-            return result;
-        }
+                UserStatus.Online => "Online",
+                UserStatus.Idle => "Idle",
+                UserStatus.DoNotDisturb => "DND",
+                UserStatus.Invisible => "Invisible",
+                UserStatus.Offline => "Offline",
+                _ => "N/A"
+            };
     }
 }

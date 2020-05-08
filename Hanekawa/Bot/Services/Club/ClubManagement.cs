@@ -35,14 +35,14 @@ namespace Hanekawa.Bot.Services.Club
             await db.SaveChangesAsync();
         }
 
-        public async Task DemoteAsync(CachedMember user, ClubUser clubUser, ClubInformation clubInfo, DbService db)
+        public async Task DemoteAsync(ClubUser clubUser, DbService db)
         {
             if (clubUser.Rank == 3) return;
             clubUser.Rank++;
             await db.SaveChangesAsync();
         }
 
-        public async Task AddUserAsync(CachedMember user, int id, DbService db, ClubConfig cfg = null)
+        public async Task AddUserAsync(CachedMember user, int id, DbService db)
         {
             await db.ClubPlayers.AddAsync(new ClubUser
             {
@@ -124,7 +124,7 @@ namespace Hanekawa.Bot.Services.Club
         private async Task AddRoleOrChannelPermissions(CachedMember user, ClubInformation club, DbService db,
             ClubConfig cfg = null)
         {
-            if (cfg == null) cfg = await db.GetOrCreateClubConfigAsync(user.Guild);
+            cfg ??= await db.GetOrCreateClubConfigAsync(user.Guild);
             if (cfg.RoleEnabled && club.Role.HasValue)
                 await user.Guild.GetMember(user.Id.RawValue).TryAddRoleAsync(user.Guild.GetRole(club.Role.Value));
             if (!cfg.RoleEnabled && club.Channel.HasValue)

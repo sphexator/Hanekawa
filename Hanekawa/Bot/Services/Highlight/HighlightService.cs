@@ -3,26 +3,28 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Highlight
 {
     public class HighlightService
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly IServiceProvider _provider;
-        private readonly ColourService _colour;
+
         private readonly ConcurrentDictionary<(ulong, ulong), string[]> _highlights =
             new ConcurrentDictionary<(ulong, ulong), string[]>();
 
-        public HighlightService(DiscordClient client, IServiceProvider provider, ColourService colour)
+        public HighlightService(DiscordBot client, IServiceProvider provider)
         {
             _client = client;
             _provider = provider;
-            _colour = colour;
 
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             {
                 foreach (var x in db.Highlights)
                     _highlights.TryAdd((x.GuildId, x.UserId), x.Highlights);
@@ -35,7 +37,8 @@ namespace Hanekawa.Bot.Services.Highlight
             var newList = text.Where(x => !highlights.Contains(x)).ToList();
             var returnList = text.Where(x => highlights.Contains(x)).ToArray();
             if (newList.Count == 0) return returnList;
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var highlightDb = await db.Highlights.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
             if (highlightDb == null)
             {
@@ -59,7 +62,8 @@ namespace Hanekawa.Bot.Services.Highlight
             var newList = text.Where(x => highlights.Contains(x)).ToList();
             var returnList = text.Where(x => !highlights.Contains(x)).ToArray();
             if (newList.Count == 0) return returnList;
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var highlightDb = await db.Highlights.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
             
             if (highlightDb == null && newList.Count > 0)

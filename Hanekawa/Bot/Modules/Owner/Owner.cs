@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Owner
@@ -42,7 +44,8 @@ namespace Hanekawa.Bot.Modules.Owner
         [Description("Blacklists a server for the bot to join")]
         public async Task BlacklistAsync(ulong guildId, string reason = null)
         {
-            using var db = new DbService();
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var blacklist = await db.Blacklists.FindAsync(guildId);
             if (blacklist == null)
             {

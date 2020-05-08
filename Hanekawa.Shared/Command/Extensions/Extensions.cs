@@ -31,12 +31,11 @@ namespace Hanekawa.Shared.Command
 
         public static bool TryParseUser(string text, out ulong userId)
         {
-            if (text.Length >= 3 && text[0] == '<' && text[1] == '@' && text[text.Length - 1] == '>')
+            if (text.Length >= 3 && text[0] == '<' && text[1] == '@' && text[^1] == '>')
             {
-                if (text.Length >= 4 && text[2] == '!')
-                    text = text.Substring(3, text.Length - 4); //<@!123>
-                else
-                    text = text.Substring(2, text.Length - 3); //<@123>
+                text = text.Length >= 4 && text[2] == '!'
+                    ? text[3..^1]
+                    : text[2..^1];
 
                 if (ulong.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out userId))
                     return true;

@@ -4,20 +4,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService : INService, IRequired
     {
-        private readonly DiscordClient _client;
+        private readonly DiscordBot _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
+        private readonly IServiceProvider _provider;
 
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerCategoryReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
@@ -28,11 +31,12 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordClient client, Random random, InternalLogService log)
+        public ExpService(DiscordBot client, Random random, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _random = random;
             _log = log;
+            _provider = provider;
 
             _ = EventHandler(new CancellationToken());
 
@@ -41,54 +45,53 @@ namespace Hanekawa.Bot.Services.Experience
             _client.VoiceStateUpdated += VoiceExpAsync;
             _client.MemberJoined += GiveRolesBackAsync;
 
-            using (var db = new DbService())
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            foreach (var x in db.LevelConfigs)
             {
-                foreach (var x in db.LevelConfigs)
-                {
-                    _textExpMultiplier.TryAdd(x.GuildId, x.TextExpMultiplier);
-                    _voiceExpMultiplier.TryAdd(x.GuildId, x.VoiceExpMultiplier);
-                }
+                _textExpMultiplier.TryAdd(x.GuildId, x.TextExpMultiplier);
+                _voiceExpMultiplier.TryAdd(x.GuildId, x.VoiceExpMultiplier);
+            }
 
-                foreach (var x in db.LevelExpReductions)
+            foreach (var x in db.LevelExpReductions)
+            {
+                try
                 {
-                    try
+                    switch (x.ChannelType)
                     {
-                        switch (x.ChannelType)
+                        case ChannelType.Category:
                         {
-                            case ChannelType.Category:
-                            {
-                                var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                                categories.Add(x.ChannelId);
-                                ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                    (arg1, list) => categories);
-                                break;
-                            }
-
-                            case ChannelType.Text:
-                            {
-                                var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                                channel.Add(x.ChannelId);
-                                ServerTextChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                    (arg1, list) => channel);
-                                break;
-                            }
-
-                            case ChannelType.Voice:
-                            {
-                                var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
-                                channel.Add(x.ChannelId);
-                                ServerVoiceChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
-                                    (arg1, list) => channel);
-                                break;
-                            }
-                            default:
-                                continue;
+                            var categories = ServerCategoryReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            categories.Add(x.ChannelId);
+                            ServerCategoryReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => categories);
+                            break;
                         }
+
+                        case ChannelType.Text:
+                        {
+                            var channel = ServerTextChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            channel.Add(x.ChannelId);
+                            ServerTextChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => channel);
+                            break;
+                        }
+
+                        case ChannelType.Voice:
+                        {
+                            var channel = ServerVoiceChanReduction.GetOrAdd(x.GuildId, new HashSet<ulong>());
+                            channel.Add(x.ChannelId);
+                            ServerVoiceChanReduction.AddOrUpdate(x.GuildId, new HashSet<ulong>(),
+                                (arg1, list) => channel);
+                            break;
+                        }
+                        default:
+                            continue;
                     }
-                    catch (Exception e)
-                    {
-                        _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
-                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
                 }
             }
         }
@@ -103,9 +106,10 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnGlobalCooldown(user)) return;
                 try
                 {
-                    using var db = new DbService();
-                    var userdata = await db.GetOrCreateGlobalUserData(user);
-                    await AddExpAsync(userdata, GetExp(channel), _random.Next(1, 3), db);
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var userData = await db.GetOrCreateGlobalUserData(user);
+                    await AddExpAsync(userData, GetExp(channel), _random.Next(1, 3), db);
                 }
                 catch (Exception e)
                 {
@@ -126,10 +130,11 @@ namespace Hanekawa.Bot.Services.Experience
                 if (OnServerCooldown(user)) return;
                 try
                 {
-                    using var db = new DbService();
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
-                    if (!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
+                    userData.FirstMessage ??= DateTime.UtcNow;
 
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(1, 3), db);
                 }
@@ -151,7 +156,8 @@ namespace Hanekawa.Bot.Services.Experience
                 var before = e.OldVoiceState;
                 try
                 {
-                    using var db = new DbService();
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                     if (!cfg.VoiceExpEnabled) return;
                     if (before != null && after != null) return;
@@ -197,22 +203,24 @@ namespace Hanekawa.Bot.Services.Experience
         {
             var isChannel = ServerTextChanReduction.TryGetValue(channel.Guild.Id.RawValue, out var channels);
             var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id.RawValue, out var category);
-            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
-            if (category.TryGetValue(channel.CategoryId.Value, out _))
-                return true;
-            return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
+            return !isCategory
+                ? isChannel && channels.TryGetValue(channel.Id.RawValue, out _)
+                : !channel.CategoryId.HasValue
+                    ? isChannel && channels.TryGetValue(channel.Id.RawValue, out _)
+                    : category.TryGetValue(channel.CategoryId.Value, out _) ||
+                      isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
         }
 
         private bool IsReducedExp(CachedVoiceChannel channel)
         {
             var isChannel = ServerVoiceChanReduction.TryGetValue(channel.Guild.Id.RawValue, out var channels);
             var isCategory = ServerCategoryReduction.TryGetValue(channel.Guild.Id.RawValue, out var category);
-            if (!isCategory) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
-            if (!channel.CategoryId.HasValue) return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
-            if (category.TryGetValue(channel.CategoryId.Value, out _))
-                return true;
-            return isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
+            return !isCategory
+                ? isChannel && channels.TryGetValue(channel.Id.RawValue, out _)
+                : !channel.CategoryId.HasValue
+                    ? isChannel && channels.TryGetValue(channel.Id.RawValue, out _)
+                    : category.TryGetValue(channel.CategoryId.Value, out _) ||
+                      isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
         }
     }
 }

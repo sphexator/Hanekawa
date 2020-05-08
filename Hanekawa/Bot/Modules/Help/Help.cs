@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
@@ -178,18 +179,15 @@ namespace Hanekawa.Bot.Modules.Help
             return output.ToString();
         }
 
-        private string PermTypeBuilder(Parameter parameter)
-        {
-            if (parameter.Type == typeof(CachedMember)) return "@bob#0000";
-            if (parameter.Type == typeof(CachedRole)) return "role";
-            if (parameter.Type == typeof(CachedTextChannel)) return "#General";
-            if (parameter.Type == typeof(CachedVoiceChannel)) return "VoiceChannel";
-            if (parameter.Type == typeof(CachedCategoryChannel)) return "Category";
-            if (parameter.Type == typeof(int)) return "5";
-            if (parameter.Type == typeof(string)) return "Example text";
-            if (parameter.Type == typeof(ulong)) return "431610594290827267";
-            return parameter.Name;
-        }
+        private string PermTypeBuilder(Parameter parameter) =>
+            parameter.Type == typeof(CachedMember) ? "@bob#0000" :
+            parameter.Type == typeof(CachedRole) ? "role" :
+            parameter.Type == typeof(CachedTextChannel) ? "#General" :
+            parameter.Type == typeof(CachedVoiceChannel) ? "VoiceChannel" :
+            parameter.Type == typeof(CachedCategoryChannel) ? "Category" :
+            parameter.Type == typeof(int) ? "5" :
+            parameter.Type == typeof(string) ? "Example text" :
+            parameter.Type == typeof(ulong) ? "431610594290827267" : parameter.Name;
 
         private string PermBuilder(Command cmd)
         {
@@ -199,7 +197,7 @@ namespace Hanekawa.Bot.Modules.Help
                 if (x is RequireMemberGuildPermissionsAttribute perm)
                 {
                     if (perm.Permissions.Count(x => true) == 1) str.AppendLine(perm.Permissions.FirstOrDefault().ToString());
-                    else foreach (var e in perm.Permissions) str.Append($"{e.ToString()}, ");
+                    else foreach (var e in perm.Permissions) str.Append($"{e}, ");
                 }
             }
 
