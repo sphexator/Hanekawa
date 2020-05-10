@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Runtime.InteropServices.ComTypes;
 using Disqord;
 using Hanekawa.Shared.Interfaces;
 

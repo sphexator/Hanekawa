@@ -29,7 +29,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
                 return;
             }
 
-            if (channel == null) channel = Context.CachedChannel;
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
             cfg.Channel = channel.Id.RawValue;
             await db.SaveChangesAsync();
             await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",

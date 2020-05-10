@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Reflection;
 using Disqord;
 using Disqord.Bot;
-using Disqord.Bot.Prefixes;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Prefix;
 using Hanekawa.Bot.Services.Administration.Warning;

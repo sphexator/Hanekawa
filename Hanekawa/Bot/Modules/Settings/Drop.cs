@@ -46,7 +46,8 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             using var scope = Context.ServiceProvider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            if (channel == null) channel = Context.CachedChannel;
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
             try
             {
                 await Context.Message.TryDeleteMessageAsync();
@@ -68,7 +69,8 @@ namespace Hanekawa.Bot.Modules.Settings
         {
             using var scope = Context.ServiceProvider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            if (channel == null) channel = Context.CachedChannel;
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
             try
             {
                 await Context.Message.TryDeleteMessageAsync();

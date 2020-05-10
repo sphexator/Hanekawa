@@ -145,24 +145,27 @@ namespace Hanekawa.Bot.Modules.Settings
             using var scope = Context.ServiceProvider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
-            if (channel == null && cfg.Channel.HasValue)
+            switch (channel)
             {
-                cfg.Channel = null;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync("Disabled welcome messages!", Color.Green);
-            }
-            else if (channel == null)
-            {
-                channel = Context.CachedChannel;
-                cfg.Channel = channel.Id.RawValue;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
-            }
-            else
-            {
-                cfg.Channel = channel.Id.RawValue;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
+                case null when cfg.Channel.HasValue:
+                    cfg.Channel = null;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync("Disabled welcome messages!", Color.Green);
+                    break;
+                case null:
+                {
+                    channel = Context.Channel as CachedTextChannel;
+                    if (channel == null) return;
+                    cfg.Channel = channel.Id.RawValue;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"Set welcome channel to {channel.Mention}", Color.Green);
+                    break;
+                }
+                default:
+                    cfg.Channel = channel.Id.RawValue;
+                    await db.SaveChangesAsync();
+                    await Context.ReplyAsync($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
+                    break;
             }
         }
 

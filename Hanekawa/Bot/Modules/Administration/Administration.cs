@@ -142,10 +142,17 @@ namespace Hanekawa.Bot.Modules.Administration
             var messages = await Context.Channel.FilterMessagesAsync(amount, user);
             try
             {
-                await Context.CachedChannel.DeleteMessagesAsync(messages);
-                await Context.ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green),
-                    TimeSpan.FromSeconds(20));
+                if (await Context.Channel.TryDeleteMessagesAsync(messages))
+                {
+                    await Context.ReplyAndDeleteAsync(null, false,
+                        new LocalEmbedBuilder().Create($"Deleted {amount} messages", Color.Green),
+                        TimeSpan.FromSeconds(20));
+                }
+                else
+                {
+                    await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create($"Couldn't delete {amount} messages, missing permission?",
+                        Color.Red), TimeSpan.FromSeconds(20));
+                }
             }
             catch
             {
@@ -176,7 +183,7 @@ namespace Hanekawa.Bot.Modules.Administration
             }
 
             var messages = await Context.Channel.FilterMessagesAsync(50, user);
-            await Context.CachedChannel.DeleteMessagesAsync(messages);
+            await Context.Channel.TryDeleteMessagesAsync(messages);
         }
 
         [Name("Mute")]

@@ -18,10 +18,8 @@ namespace Hanekawa.Shared.Command
         {
             Colour = colour;
             Provider = provider;
-            CachedChannel = message.Channel as CachedTextChannel;
         }
 
-        public virtual CachedTextChannel CachedChannel { get; }
         public virtual ColourService Colour { get; }
         public IServiceProvider Provider { get; set; }
 

@@ -22,7 +22,8 @@ namespace Hanekawa.Bot.Modules.Giveaway
         {
             await Context.Message.TryDeleteMessageAsync();
             var stream = new MemoryStream();
-            if (channel == null) channel = Context.CachedChannel;
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
                 await Context.ReplyAsync($"Couldn't find a message with that ID in {channel.Mention}",

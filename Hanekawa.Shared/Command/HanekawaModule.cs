@@ -23,33 +23,6 @@ namespace Hanekawa.Shared.Command
         public CachedGuild Guild => Context.Guild;
         public ColourService Colour => Context.Colour;
 
-        protected override ValueTask AfterExecutedAsync() => base.AfterExecutedAsync();
-        protected override ValueTask BeforeExecutedAsync() => base.BeforeExecutedAsync();
-
-
-        protected override Task<RestUserMessage> ReplyAsync(string content, bool isTts = false,
-            LocalEmbed embed = null, LocalMentions mentions = null,
-            RestRequestOptions options = null) => Channel.SendMessageAsync(null, false, new LocalEmbedBuilder 
-        {
-            Color = Colour.Get(Guild.Id.RawValue),
-            Description = content
-        }.Build());
-
-        protected override Task<RestUserMessage> ReplyAsync(IEnumerable<LocalAttachment> attachments, string content = null, bool isTts = false, LocalEmbed embed = null,
-            LocalMentions mentions = null, RestRequestOptions options = null) =>
-            base.ReplyAsync(attachments, content, isTts, embed, mentions, options);
-
-        protected override Task<RestUserMessage> ReplyAsync(LocalAttachment attachment, string content = null, bool isTts = false, LocalEmbed embed = null,
-            LocalMentions mentions = null, RestRequestOptions options = null) =>
-            base.ReplyAsync(attachment, content, isTts, embed, mentions, options);
-        /*
-        public async Task<IUserMessage> ReplyAsync(string content) =>
-            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
-            {
-                Color = Colour.Get(Guild.Id.RawValue),
-                Description = content
-            }.Build());
-        */
         public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
             await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
             {
