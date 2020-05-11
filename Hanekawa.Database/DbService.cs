@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Reflection.Metadata.Ecma335;
-using System.Xml.Serialization;
-using Disqord;
-using Disqord.Bot.Parsers;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;

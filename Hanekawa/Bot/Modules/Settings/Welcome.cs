@@ -57,12 +57,14 @@ namespace Hanekawa.Bot.Modules.Settings
 
             using var scope = Context.ServiceProvider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
             var data = new WelcomeBanner
             {
                 GuildId = Context.Guild.Id.RawValue,
                 UploadTimeOffset = new DateTimeOffset(DateTime.UtcNow),
                 Uploader = Context.User.Id.RawValue,
-                Url = url
+                Url = url,
+                IsNsfw = false
             };
             await db.WelcomeBanners.AddAsync(data);
             await db.SaveChangesAsync();

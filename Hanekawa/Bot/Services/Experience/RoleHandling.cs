@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -30,6 +32,29 @@ namespace Hanekawa.Bot.Services.Experience
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                 var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
                 await user.TryAddRolesAsync(roles);
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task RemoveRole(RoleDeletedEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
+                        x.GuildId == e.Role.Guild.Id.RawValue && x.Role == e.Role.Id.RawValue);
+                    if (role == null) return;
+                    db.LevelRewards.Remove(role);
+                    await db.SaveChangesAsync();
+                    _log.LogAction(LogLevel.Information, $"Removed Level Reward from guild {e.Role.Guild.Id.RawValue} for level {role.Level} - role id: {e.Role.Id.RawValue}");
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, exception.Message);
+                }
             });
             return Task.CompletedTask;
         }

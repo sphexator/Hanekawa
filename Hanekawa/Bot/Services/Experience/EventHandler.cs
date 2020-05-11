@@ -44,6 +44,7 @@ namespace Hanekawa.Bot.Services.Experience
             _client.MessageReceived += GlobalMessageExpAsync;
             _client.VoiceStateUpdated += VoiceExpAsync;
             _client.MemberJoined += GiveRolesBackAsync;
+            _client.RoleDeleted += RemoveRole;
 
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
