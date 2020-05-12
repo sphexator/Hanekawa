@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
@@ -51,6 +52,44 @@ namespace Hanekawa.Bot.Services.Drop
                 var channels = _lootChannels.GetOrAdd(x.GuildId, new ConcurrentDictionary<ulong, bool>());
                 channels.TryAdd(x.ChannelId, true);
             }
+        }
+
+        private Task OnEmoteUpdated(GuildEmojisUpdatedEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if ((e.NewEmojis.Count + 1) == e.OldEmojis.Count) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateDropConfig(e.Guild);
+                    using var removed = e.OldEmojis.Except(e.NewEmojis).GetEnumerator();
+                    var list = new List<CachedGuildEmoji>();
+                    while (removed.MoveNext())
+                    {
+                        list.Add(removed.Current.Value);
+                    }
+
+                    if (list.Count == 0) return;
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var x = list[i];
+                        if (x.MessageFormat == cfg.Emote)
+                        {
+                            cfg.Emote = null;
+                            await db.SaveChangesAsync();
+                            _log.LogAction(LogLevel.Information, $"Removed drop emote from {x.Guild.Id} as it was deleted");
+                            return;
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, exception.Message);
+                }
+            });
+            return Task.CompletedTask;
         }
 
         public async Task SpawnAsync(HanekawaContext context)

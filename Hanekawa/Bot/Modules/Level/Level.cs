@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Modules.Level
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderBy(x => x.Level)
                 .ToListAsync();
-            if (levels.Count == 0)
+            if (levels == null || levels.Count == 0)
             {
                 await Context.ReplyAsync("No level roles added.");
                 return;
