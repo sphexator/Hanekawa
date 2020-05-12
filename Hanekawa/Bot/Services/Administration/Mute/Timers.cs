@@ -24,7 +24,8 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     try
                     {
                         var guild = _client.GetGuild(guildId);
-                        var user = guild.GetUser(userId);
+                        var user = guild?.GetUser(userId);
+                        if (user == null) return;
                         await UnMuteUser(user, db);
                     }
                     catch (Exception e)
@@ -48,7 +49,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await RemoveTimerFromDbAsync(guildId, userId, db);
             if (!_unMuteTimers.TryGetValue(guildId, out var unMuteTimers)) return;
             if (!unMuteTimers.TryRemove(userId, out var removed)) return;
-            removed.Dispose();
+            await removed.DisposeAsync();
         }
 
         private async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId, DbService db)
