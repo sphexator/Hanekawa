@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -59,8 +61,17 @@ namespace Hanekawa.Bot.Services.Logging
                     new EmbedFieldBuilder {Name = "Duration", Value = $"{duration.Humanize(2)}", IsInline = false}
                 }
             };
-            var msg = await channel.SendMessageAsync(null, false, embed.Build());
-            caseId.MessageId = msg.Id;
+            RestUserMessage msg = null;
+            try
+            {
+                msg = await channel.SendMessageAsync(null, false, embed.Build());
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, $"Couldn't log mute in {user.Guild.Name} ({user.Guild.Id})");
+            }
+
+            caseId.MessageId = msg?.Id ?? 0;
             await db.SaveChangesAsync();
         }
     }

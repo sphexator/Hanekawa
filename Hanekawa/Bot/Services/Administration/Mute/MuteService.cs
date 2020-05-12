@@ -49,6 +49,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         public async Task<bool> Mute(SocketGuildUser user, DbService db)
         {
             var role = await GetMuteRoleAsync(user.Guild, db);
+            if (role == null) return false;
             var check = await user.TryAddRoleAsync(role as SocketRole);
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
