@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
-using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
