@@ -9,6 +9,8 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,15 +25,17 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
         private readonly InternalLogService _log;
+        private readonly ColourService _colour;
         private readonly LogService _logService;
         private readonly IServiceProvider _provider;
 
-        public MuteService(DiscordBot client, LogService logService, InternalLogService log, IServiceProvider provider)
+        public MuteService(DiscordBot client, LogService logService, InternalLogService log, IServiceProvider provider, ColourService colour)
         {
             _client = client;
             _logService = logService;
             _log = log;
             _provider = provider;
+            _colour = colour;
 
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -77,9 +81,22 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.Guild.Id.RawValue, user.Id.RawValue, after);
             await _logService.Mute(user, staff, reason, after, db);
-
+            await NotifyUser(user, after);
             _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id.RawValue} muted {user.Id.RawValue} in {user.Guild.Id.RawValue} for {after.Humanize(2)}");
             return true;
+        }
+
+        private async Task NotifyUser(CachedMember user, TimeSpan duration)
+        {
+            try
+            {
+                await user.SendMessageAsync(null, false,
+                    new LocalEmbedBuilder().Create($"You've been muted in {user.Guild.Name} for {duration.Humanize()}", _colour.Get(user.Guild.Id.RawValue)).Build());
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, "Couldn't DM user");
+            }
         }
 
         private async Task<IRole> GetMuteRoleAsync(CachedGuild guild, DbService db)
