@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Events;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -37,6 +40,8 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             _provider = provider;
             _colour = colour;
 
+            _client.MemberJoined += MuteCheck;
+
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             foreach (var x in db.MuteTimers)
@@ -46,6 +51,26 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     : x.Time - DateTime.UtcNow;
                 StartUnMuteTimer(x.GuildId, x.UserId, after);
             }
+        }
+
+        private Task MuteCheck(MemberJoinedEventArgs e)
+        {
+            if (e.Member.IsBot) return Task.CompletedTask;
+            _ = Task.Run(async () =>
+            {
+                using var scope = _provider.CreateScope();
+                using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                var check = await db.MuteTimers.FindAsync(e.Member.Id.RawValue, e.Member.Guild.Id.RawValue);
+                if (check == null) return;
+                await Mute(e.Member, db);
+                var after = check.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
+                    ? TimeSpan.FromMinutes(2)
+                    : check.Time - DateTime.UtcNow;
+                var muteTimers = _unMuteTimers.GetOrAdd(e.Member.Guild.Id.RawValue, new ConcurrentDictionary<ulong, Timer>());
+                if (muteTimers.TryGetValue(e.Member.Id, out _)) return;
+                StartUnMuteTimer(e.Member.Guild.Id.RawValue, e.Member.Id.RawValue, after);
+            });
+            return Task.CompletedTask;
         }
 
         public async Task<bool> Mute(CachedMember user, DbService db)
