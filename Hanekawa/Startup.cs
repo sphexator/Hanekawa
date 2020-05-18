@@ -180,7 +180,7 @@ namespace Hanekawa
             config.AddTarget(asyncFileTarget);
             config.AddTarget(asyncDatabaseTarget);
 
-            config.AddRuleForAllLevels(asyncConsoleTarget);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncConsoleTarget);
 #if(DEBUG == false)
             config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);      
 #endif

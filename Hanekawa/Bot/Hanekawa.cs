@@ -1,15 +1,8 @@
-using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Services.Administration.Warning;
-using Hanekawa.Extensions;
-using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace Hanekawa.Bot
