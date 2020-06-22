@@ -59,15 +59,15 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             _ = Task.Run(async () =>
             {
                 using var scope = _provider.CreateScope();
-                using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var check = await db.MuteTimers.FindAsync(e.Member.Id.RawValue, e.Member.Guild.Id.RawValue);
                 if (check == null) return;
-                await Mute(e.Member, db);
+                if(!await Mute(e.Member, db)) return;
+                var muteTimers = _unMuteTimers.GetOrAdd(e.Member.Guild.Id.RawValue, new ConcurrentDictionary<ulong, Timer>());
+                if (muteTimers.TryGetValue(e.Member.Id, out _)) return;
                 var after = check.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
                     ? TimeSpan.FromMinutes(2)
                     : check.Time - DateTime.UtcNow;
-                var muteTimers = _unMuteTimers.GetOrAdd(e.Member.Guild.Id.RawValue, new ConcurrentDictionary<ulong, Timer>());
-                if (muteTimers.TryGetValue(e.Member.Id, out _)) return;
                 StartUnMuteTimer(e.Member.Guild.Id.RawValue, e.Member.Id.RawValue, after);
             });
             return Task.CompletedTask;
