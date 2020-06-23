@@ -42,16 +42,14 @@ namespace Hanekawa.AnimeSimulCast
                 try
                 {
                     var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
-                    if (_lastItem == null) _lastItem = feed;
-                    if (_lastItem != null && feed?.Id != _lastItem.Id)
-                    {
-                        _lastItem = feed;
-                        _ = AnimeAired(ToReturnType(feed));
-                    }
+                    _lastItem ??= feed;
+                    if (_lastItem == null || feed?.Id == _lastItem.Id) return;
+                    _lastItem = feed;
+                    _ = AnimeAired(ToReturnType(feed));
                 }
                 catch (Exception e)
                 {
-                    Log(e);
+                    _ = Log(e);
                 }
             }, token, TimeSpan.Zero, TimeSpan.FromMinutes(5));
             return Task.CompletedTask;

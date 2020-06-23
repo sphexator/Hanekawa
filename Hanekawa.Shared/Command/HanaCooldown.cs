@@ -1,6 +1,6 @@
 ﻿namespace Hanekawa.Shared.Command
 {
-    public enum Cooldown
+    public enum HanaCooldown
     {
         // I honestly don't understand the need for an enum on Qmmands cooldown bucket
         // But apparently its needed so here's the enum.

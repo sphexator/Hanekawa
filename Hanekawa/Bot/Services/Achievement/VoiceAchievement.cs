@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;
@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task TotalTime(SocketGuildUser user, TimeSpan time, DbService db)
+        public async Task TotalTime(CachedMember user, TimeSpan time, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == Voice && x.AchievementNameId == 15)
                 .ToListAsync();
@@ -32,13 +32,13 @@ namespace Hanekawa.Bot.Services.Achievement
                     {
                         AchievementId = achieve.AchievementId,
                         TypeId = Voice,
-                        UserId = user.Id,
+                        UserId = user.Id.RawValue,
                         Achievement = achieve
                     };
                     await db.AchievementUnlocks.AddAsync(data);
                     await db.SaveChangesAsync();
 
-                    _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                    _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
                 }
             }
             else
@@ -55,7 +55,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         {
                             AchievementId = x.AchievementId,
                             TypeId = Voice,
-                            UserId = user.Id,
+                            UserId = user.Id.RawValue,
                             Achievement = x
                         };
                         await db.AchievementUnlocks.AddAsync(data);
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Services.Achievement
             await db.SaveChangesAsync();
         }
 
-        public async Task TimeAtOnce(SocketGuildUser user, TimeSpan time, DbService db)
+        public async Task TimeAtOnce(CachedMember user, TimeSpan time, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.TypeId == Voice).ToListAsync();
             if (achievements == null || achievements.Count == 0) return;
@@ -79,25 +79,25 @@ namespace Hanekawa.Bot.Services.Achievement
             {
                 var achieve = achievements.First(x => x.Requirement == totalTime && x.Once);
                 var unlockCheck = await db.AchievementUnlocks.FirstOrDefaultAsync(x =>
-                    x.AchievementId == achieve.AchievementId && x.UserId == user.Id);
+                    x.AchievementId == achieve.AchievementId && x.UserId == user.Id.RawValue);
                 if (unlockCheck != null) return;
 
                 var data = new AchievementUnlock
                 {
                     AchievementId = achieve.AchievementId,
                     TypeId = Voice,
-                    UserId = user.Id,
+                    UserId = user.Id.RawValue,
                     Achievement = achieve
                 };
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
             }
             else
             {
                 var below = achievements.Where(x => x.Requirement < totalTime).ToList();
-                var unlock = await db.AchievementUnlocks.Where(x => x.UserId == user.Id && x.TypeId == Voice)
+                var unlock = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue && x.TypeId == Voice)
                     .ToListAsync();
                 foreach (var x in below)
                 {
@@ -107,7 +107,7 @@ namespace Hanekawa.Bot.Services.Achievement
                     {
                         AchievementId = x.AchievementId,
                         TypeId = Level,
-                        UserId = user.Id,
+                        UserId = user.Id.RawValue,
                         Achievement = x
                     };
                     await db.AchievementUnlocks.AddAsync(data);

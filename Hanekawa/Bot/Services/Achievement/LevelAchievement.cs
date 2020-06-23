@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
@@ -11,12 +11,12 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService
     {
-        public async Task ServerLevel(SocketGuildUser user, Account userData, DbService db)
+        public async Task ServerLevel(CachedMember user, Account userData, DbService db)
         {
             var achievements =
                 await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global).ToListAsync();
             if (achievements == null || achievements.Count == 0) return;
-            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue).ToListAsync();
             if (achievements.Any(x => x.Requirement == userData.Level))
             {
                 var achieve = achievements.First(x => x.Requirement == userData.Level);
@@ -26,13 +26,13 @@ namespace Hanekawa.Bot.Services.Achievement
                 {
                     AchievementId = achieve.AchievementId,
                     TypeId = Level,
-                    UserId = user.Id,
+                    UserId = user.Id.RawValue,
                     Achievement = achieve
                 };
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
             }
             else
             {
@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         {
                             AchievementId = x.AchievementId,
                             TypeId = Level,
-                            UserId = user.Id,
+                            UserId = user.Id.RawValue,
                             Achievement = x
                         };
                         await db.AchievementUnlocks.AddAsync(data);
@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Services.Achievement
             }
         }
 
-        public async Task GlobalLevel(SocketGuildUser user, AccountGlobal userData, DbService db)
+        public async Task GlobalLevel(CachedMember user, AccountGlobal userData, DbService db)
         {
             var achievements = await db.Achievements
                 .Where(x => x.TypeId == Level && !x.Once && x.Global).ToListAsync();
@@ -72,20 +72,20 @@ namespace Hanekawa.Bot.Services.Achievement
                 {
                     AchievementId = achieve.AchievementId,
                     TypeId = Level,
-                    UserId = user.Id,
+                    UserId = user.Id.RawValue,
                     Achievement = achieve
                 };
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
+                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
             }
             else
             {
                 var belowAchieves = achievements.Where(x => x.Requirement < userData.Level).ToList();
                 if (belowAchieves.Count > 0)
                 {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id).ToListAsync();
+                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue).ToListAsync();
                     foreach (var x in belowAchieves)
                     {
                         if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Services.Achievement
                         {
                             AchievementId = x.AchievementId,
                             TypeId = Level,
-                            UserId = user.Id,
+                            UserId = user.Id.RawValue,
                             Achievement = x
                         };
                         await db.AchievementUnlocks.AddAsync(data);

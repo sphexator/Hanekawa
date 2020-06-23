@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Account;
 using Microsoft.Extensions.Logging;
@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Experience
         private int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
         public int ExpToNextLevel(int level) => 3 * level * level + 150;
 
-        public async Task AddExpAsync(SocketGuildUser user, Account userData, int exp, int credit, DbService db)
+        public async Task AddExpAsync(CachedMember user, Account userData, int exp, int credit, DbService db)
         {
             if (userData.Exp + exp >= ExpToNextLevel(userData))
             {

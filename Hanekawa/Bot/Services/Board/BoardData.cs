@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Board
@@ -14,44 +13,44 @@ namespace Hanekawa.Bot.Services.Board
         private readonly ConcurrentDictionary<ulong, MemoryCache> _reactionMessages
             = new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private int GetReactionAmount(SocketGuild guild, IUserMessage msg)
+        private int GetReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            var check = messages.TryGetValue(msg.Id, out var result);
+            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (check)
             {
                 var amount = (int) result;
-                messages.Set(msg.Id, amount, TimeSpan.FromDays(1));
+                messages.Set(msg.Id.RawValue, amount, TimeSpan.FromDays(1));
                 return amount;
             }
 
             return 0;
         }
 
-        private void IncreaseReactionAmount(SocketGuild guild, IUserMessage msg)
+        private void IncreaseReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            var check = messages.TryGetValue(msg.Id, out var result);
+            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (check)
             {
                 var amount = (int) result;
-                messages.Set(msg.Id, amount + 1, TimeSpan.FromDays(1));
+                messages.Set(msg.Id.RawValue, amount + 1, TimeSpan.FromDays(1));
                 return;
             }
 
-            messages.Set(msg.Id, 1, TimeSpan.FromDays(1));
+            messages.Set(msg.Id.RawValue, 1, TimeSpan.FromDays(1));
         }
 
-        private void DecreaseReactionAmount(SocketGuild guild, IUserMessage msg)
+        private void DecreaseReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            var check = messages.TryGetValue(msg.Id, out var result);
+            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (!check) return;
             var amount = (int) result;
             if (amount - 1 <= 0)
-                messages.Remove(msg.Id);
+                messages.Remove(msg.Id.RawValue);
             else
-                messages.Set(msg.Id, amount - 1, TimeSpan.FromDays(1));
+                messages.Set(msg.Id.RawValue, amount - 1, TimeSpan.FromDays(1));
         }
     }
 }

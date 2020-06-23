@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Bot.Services.Achievement;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
@@ -19,6 +18,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Game.Ship
@@ -31,8 +31,9 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly Random _random;
         private readonly AchievementService _achievement;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log)
+        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log, IServiceProvider provider)
         {
             _random = random;
             _img = img;
@@ -40,8 +41,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
             _colourService = colourService;
             _achievement = achievement;
             _log = log;
+            _provider = provider;
 
-            using var db = new DbService();
+            using var scope = _provider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = db.GameConfigs.Find(1);
             if (cfg != null)
             {
@@ -50,13 +53,14 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        public async Task<EmbedBuilder> SearchAsync(HanekawaContext context)
+        public async Task<LocalEmbedBuilder> SearchAsync(HanekawaContext context)
         {
             if (IsInBattle(context))
-                return new EmbedBuilder().Create($"{context.User.Mention} is already in a fight",
+                return new LocalEmbedBuilder().Create($"{context.User.Mention} is already in a fight",
                     Color.Red);
-            using var db = new DbService();
-            var userData = await db.GetOrCreateUserData(context.User);
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var userData = await db.GetOrCreateUserData(context.Member);
             var chance = _random.Next(100);
             GameEnemy enemy;
             /*
@@ -78,15 +82,15 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
             else
             {
-                return new EmbedBuilder().Create(
+                return new LocalEmbedBuilder().Create(
                     $"{context.User.Mention} searched throughout the sea and found no enemy",
                     Color.Red);
             }
 
             AddBattle(context, enemy);
-            var embed = new EmbedBuilder
+            var embed = new LocalEmbedBuilder
             {
-                Author = new EmbedAuthorBuilder {IconUrl = enemy.ImageUrl, Name = enemy.Name},
+                Author = new LocalEmbedAuthorBuilder {IconUrl = enemy.ImageUrl, Name = enemy.Name},
                 Description = "You encountered an enemy!\n" +
                               $"{enemy.Name}",
                 Color = Color.Green
@@ -125,9 +129,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
             GameClass playerOne = null;
             GameClass playerTwo = null;
 
-            using (var db = new DbService())
+            using (var scope = _provider.CreateScope())
+            await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
             {
-                var userData = await db.GetOrCreateUserData(context.User);
+                var userData = await db.GetOrCreateUserData(context.Member);
                 playerOne = await GetClass(userData.Class, db);
                 playerTwo = await GetClass(enemy.ClassId, db);
                 playerOneHp = GetHealth(userData.Level, playerOne);
@@ -139,14 +144,14 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
 
             var msgLog = new LinkedList<string>();
-            msgLog.AddFirst($"**{context.User.GetName()}** VS **{enemy.Name}**");
+            msgLog.AddFirst($"**{context.Member.DisplayName}** VS **{enemy.Name}**");
 
-            var img = await _img.ShipGameBuilder(context.User.GetAvatar(), enemy.ImageUrl);
+            var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), enemy.ImageUrl);
             img.Seek(0, SeekOrigin.Begin);
-            var embed = new EmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id));
-            embed.AddField($"{context.User.GetName()}", $"{playerOneHp}/{playerOneHpMax}", true);
+            var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
+            embed.AddField($"{context.Member.DisplayName}", $"{playerOneHp}/{playerOneHpMax}", true);
             embed.AddField($"{enemy.Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
-            var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
+            var msg = await context.Channel.SendMessageAsync(new LocalAttachment(img, "banner.png"), null, false, embed.Build());
             var alive = true;
             await Task.Delay(2000);
             while (alive)
@@ -161,12 +166,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     {
                         msgLog.RemoveLast();
                         msgLog.AddFirst(
-                            $"**{context.User.GetName()}** hit **{enemy.Name}** for **{usrDmg}**");
+                            $"**{context.Member.DisplayName}** hit **{enemy.Name}** for **{usrDmg}**");
                     }
                     else
                     {
                         msgLog.AddFirst(
-                            $"**{context.User.GetName()}** hit **{enemy.Name}** for **{usrDmg}**");
+                            $"**{context.Member.DisplayName}** hit **{enemy.Name}** for **{usrDmg}**");
                     }
                 }
                 else
@@ -175,39 +180,40 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     {
                         msgLog.RemoveLast();
                         msgLog.AddFirst(
-                            $"**{context.User.GetName()}** hit **{enemy.Name}** for **{usrDmg}**");
+                            $"**{context.Member.DisplayName}** hit **{enemy.Name}** for **{usrDmg}**");
                     }
                     else
                     {
                         msgLog.AddFirst(
-                            $"**{context.User.GetName()}** hit **{enemy.Name}** for **{usrDmg}**");
+                            $"**{context.Member.DisplayName}** hit **{enemy.Name}** for **{usrDmg}**");
                     }
 
                     // End game
                     alive = false;
 
                     msgLog.RemoveLast();
-                    msgLog.AddFirst($"**{context.User.GetName()}** defeated **{enemy.Name}**!\n" +
+                    msgLog.AddFirst($"**{context.Member.DisplayName}** defeated **{enemy.Name}**!\n" +
                                     $"Looted **${enemy.CreditGain}** and gained **{enemy.ExpGain}** exp.");
                     RemoveBattle(context);
 
-                    using (var db = new DbService())
+                    using (var scope = _provider.CreateScope())
+                    await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
-                        var userData = await db.GetOrCreateUserData(context.User);
-                        await _exp.AddExpAsync(context.User, userData, enemy.ExpGain, enemy.CreditGain, db);
+                        var userData = await db.GetOrCreateUserData(context.Member);
+                        await _exp.AddExpAsync(context.Member, userData, enemy.ExpGain, enemy.CreditGain, db);
                         userData.GameKillAmount += 1;
                         await db.SaveChangesAsync();
-                        await _achievement.PveKill(context.User, db);
+                        await _achievement.PveKill(context.Member, db);
                     }
 
                     embed.Color = Color.Green;
                     embed.Description = UpdateCombatLog(msgLog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{context.User.GetName()}");
+                    var userField = embed.Fields.First(x => x.Name == $"{context.Member.DisplayName}");
                     var enemyField = embed.Fields.First(x => x.Name == $"{enemy.Name}");
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"0/{playerTwoHpMax}";
                     await msg.ModifyAsync(x => x.Embed = embed.Build());
-                    //var _ = NpcKill(context.User.Id);
+                    //var _ = NpcKill(context.User.Id.RawValue);
                     // TODO: Invoke this into achievement
                     continue;
                 }
@@ -219,12 +225,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     {
                         msgLog.RemoveLast();
                         msgLog.AddFirst(
-                            $"**{enemy.Name}** hit **{context.User.GetName()}** for **{npcDmg}**");
+                            $"**{enemy.Name}** hit **{context.Member.DisplayName}** for **{npcDmg}**");
                     }
                     else
                     {
                         msgLog.AddFirst(
-                            $"**{enemy.Name}** hit **{context.User.GetName()}** for **{npcDmg}**");
+                            $"**{enemy.Name}** hit **{context.Member.DisplayName}** for **{npcDmg}**");
                     }
                 }
                 else
@@ -233,25 +239,25 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     {
                         msgLog.RemoveLast();
                         msgLog.AddFirst(
-                            $"**{enemy.Name}** hit **{context.User.GetName()}** for **{npcDmg}**");
+                            $"**{enemy.Name}** hit **{context.Member.DisplayName}** for **{npcDmg}**");
                     }
                     else
                     {
                         msgLog.AddFirst(
-                            $"**{enemy.Name}** hit **{context.User.GetName()}** for **{npcDmg}**");
+                            $"**{enemy.Name}** hit **{context.Member.DisplayName}** for **{npcDmg}**");
                     }
 
                     // End game
                     alive = false;
 
                     msgLog.RemoveLast();
-                    msgLog.AddFirst($"**{enemy.Name}** defeated **{context.User.GetName()}**!\n" +
-                                    $"**{context.User.GetName()}** died.");
+                    msgLog.AddFirst($"**{enemy.Name}** defeated **{context.Member.DisplayName}**!\n" +
+                                    $"**{context.Member.DisplayName}** died.");
                     RemoveBattle(context);
 
                     embed.Color = Color.Red;
                     embed.Description = UpdateCombatLog(msgLog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{context.User.GetName()}");
+                    var userField = embed.Fields.First(x => x.Name == $"{context.Member.DisplayName}");
                     var enemyField = embed.Fields.First(x => x.Name == $"{enemy.Name}");
                     userField.Value = $"0/{playerOneHpMax}";
                     enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
@@ -261,7 +267,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 if (!alive) continue;
                 {
                     embed.Description = UpdateCombatLog(msgLog.Reverse());
-                    var userField = embed.Fields.First(x => x.Name == $"{context.User.GetName()}");
+                    var userField = embed.Fields.First(x => x.Name == $"{context.Member.DisplayName}");
                     var enemyField = embed.Fields.First(x => x.Name == $"{enemy.Name}");
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"{playerTwoHp}/{playerTwoHpMax}";
@@ -274,7 +280,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             _log.LogAction(LogLevel.Information, "(Ship Game) Completed game");
         }
 
-        public async Task AttackAsync(HanekawaContext context, SocketGuildUser playerTwoUser, int? bet = 0)
+        public async Task AttackAsync(HanekawaContext context, CachedMember playerTwoUser, int? bet = 0)
         {
             if (ActiveDuel(context))
             {
@@ -288,8 +294,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
             {
                 Account userData;
                 Account userData2;
-                var p1Name = context.User.GetName();
-                var p2Name = playerTwoUser.GetName();
+                var p1Name = context.Member.DisplayName;
+                var p2Name = playerTwoUser.DisplayName;
                 int playerOneHp;
                 int playerTwoHp;
                 int playerOneDmg;
@@ -301,9 +307,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 Account winner = null;
                 Account loser = null;
 
-                using (var db = new DbService())
+                using (var scope = _provider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
-                    userData = await db.GetOrCreateUserData(context.User);
+                    userData = await db.GetOrCreateUserData(context.Member);
                     userData2 = await db.GetOrCreateUserData(playerTwoUser);
                     if (userData.Credit < bet) return;
                     if (userData2.Credit < bet) return;
@@ -320,13 +327,13 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 var msgLog = new LinkedList<string>();
                 msgLog.AddFirst($"**{p1Name}** VS **{p2Name}**");
 
-                var img = await _img.ShipGameBuilder(context.User.GetAvatar(), playerTwoUser.GetAvatar());
+                var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), playerTwoUser.GetAvatarUrl());
                 img.Seek(0, SeekOrigin.Begin);
-                var embed = new EmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id));
+                var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
 
                 embed.AddField($"{p1Name}", $"{playerOneHp}/{playerOneHpMax}", true);
                 embed.AddField($"{p2Name}", $"{playerTwoHp}/{playerTwoHpMax}", true);
-                var msg = await context.Channel.SendFileAsync(img, "banner.png", null, false, embed.Build());
+                var msg = await context.Channel.SendMessageAsync(new LocalAttachment(img, "banner.png"), null, false, embed.Build());
                 var alive = true;
                 while (alive)
                 {
@@ -448,7 +455,8 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 }
 
                 if (bet.HasValue && bet != 0)
-                    using (var db = new DbService())
+                    using (var scope = _provider.CreateScope())
+                    await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         winner.Credit += bet.Value;
                         loser.Credit -= bet.Value;
@@ -470,67 +478,67 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         private GameEnemy GetEnemyData(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryGetValue(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryGetValue(context.User.Id.RawValue, out var game);
             return game;
         }
 
         private bool ActiveBattle(HanekawaContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id, out var value);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
             if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id, true);
+            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
             return false;
         }
 
         private void UpdateBattle(HanekawaContext context, bool status)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
         private bool ActiveDuel(HanekawaContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id, out var value);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
             if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id, true);
+            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
             return false;
         }
 
         private void UpdateDuel(HanekawaContext context, bool status)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, status, (key, old) => old = status);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
         private bool IsInBattle(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            var check = battles.TryGetValue(context.User.Id, out _);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            var check = battles.TryGetValue(context.User.Id.RawValue, out _);
             return check;
         }
 
         private void AddBattle(HanekawaContext context, GameEnemy enemy)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryAdd(context.User.Id, enemy);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryAdd(context.User.Id.RawValue, enemy);
         }
 
         private void RemoveBattle(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryRemove(context.User.Id.RawValue, out var game);
         }
 
         public void ClearUser(HanekawaContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id, out var game);
+            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            battles.TryRemove(context.User.Id.RawValue, out var game);
 
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id, false, (key, old) => old = false);
+            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            gChannels.AddOrUpdate(context.Channel.Id.RawValue, false, (key, old) => old = false);
         }
 
         private string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);

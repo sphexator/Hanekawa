@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
@@ -23,10 +23,11 @@ namespace Hanekawa.Bot.Preconditions
 
         public override async ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
         {
-            if (context.User.GuildPermissions.ManageGuild)
+            if (context == null) return CheckResult.Unsuccessful("woopsie command context wrong :)");
+            if (context.Member.Permissions.ManageGuild)
                 return CheckResult.Successful;
 
-            var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id, out var status);
+            var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id.RawValue, out var status);
             if (!ignoreAll) status = await UpdateIgnoreAllStatus(context);
 
             var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
@@ -42,61 +43,57 @@ namespace Hanekawa.Bot.Preconditions
 
         private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
-                return cfg.IgnoreAllChannels;
-            }
+            using var scope = context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
+            return cfg.IgnoreAllChannels;
         }
 
         private bool EligibleChannel(HanekawaContext context, bool ignoreAll = false)
         {
             // True = command passes
             // False = command fails
-            var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            var ignore = ch.TryGetValue(context.Channel.Id, out var status);
+            var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            var ignore = ch.TryGetValue(context.Channel.Id.RawValue, out var status);
             if (!ignore) ignore = DoubleCheckChannel(context);
-            if (!ignoreAll) // If its only ignoring specific channels in the dictionary
-                return !ignore;
-            return ignore;
+            return !ignoreAll ? !ignore : ignore;
         }
 
         private bool DoubleCheckChannel(HanekawaContext context)
         {
-            using (var db = new DbService())
-            {
-                var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
-                if (check == null) return false;
-                var ch = ChannelEnable.GetOrAdd(context.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-                ch.TryAdd(context.Channel.Id, true);
-                return true;
-            }
+            using var scope = context.ServiceProvider.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
+            if (check == null) return false;
+            var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            ch.TryAdd(context.Channel.Id.RawValue, true);
+            return true;
         }
 
-        public async Task<bool> AddOrRemoveChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)
         {
-            var check = await db.IgnoreChannels.FindAsync(channel.Guild.Id, channel.Id);
+            var check = await db.IgnoreChannels.FindAsync(channel.Guild.Id.RawValue, channel.Id.RawValue);
             if (check != null)
             {
-                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-                ch.TryRemove(channel.Id, out _);
+                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+                ch.TryRemove(channel.Id.RawValue, out _);
 
                 var result =
                     await db.IgnoreChannels.FirstOrDefaultAsync(x =>
-                        x.GuildId == channel.Guild.Id && x.ChannelId == channel.Id);
+                        x.GuildId == channel.Guild.Id.RawValue && x.ChannelId == channel.Id.RawValue);
                 db.IgnoreChannels.Remove(result);
                 await db.SaveChangesAsync();
                 return false;
             }
             else
             {
-                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-                ch.TryAdd(channel.Id, true);
+                var ch = ChannelEnable.GetOrAdd(channel.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+                ch.TryAdd(channel.Id.RawValue, true);
 
                 var data = new IgnoreChannel
                 {
-                    GuildId = channel.Guild.Id,
-                    ChannelId = channel.Id
+                    GuildId = channel.Guild.Id.RawValue,
+                    ChannelId = channel.Id.RawValue
                 };
                 await db.IgnoreChannels.AddAsync(data);
                 db.IgnoreChannels.Update(data);

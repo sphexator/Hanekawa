@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Microsoft.EntityFrameworkCore;
@@ -25,28 +25,28 @@ namespace Hanekawa.Bot.Services.Drop
         private readonly ConcurrentDictionary<ulong, MemoryCache> _userCooldown =
             new ConcurrentDictionary<ulong, MemoryCache>();
 
-        public async Task<bool> AddLootChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> AddLootChannel(CachedTextChannel channel, DbService db)
         {
-            var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            if (channels.ContainsKey(channel.Id)) return false;
-            channels.TryAdd(channel.Id, true);
+            var channels = _lootChannels.GetOrAdd(channel.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            if (channels.ContainsKey(channel.Id.RawValue)) return false;
+            channels.TryAdd(channel.Id.RawValue, true);
             var data = new LootChannel
             {
-                GuildId = channel.Guild.Id,
-                ChannelId = channel.Id
+                GuildId = channel.Guild.Id.RawValue,
+                ChannelId = channel.Id.RawValue
             };
             await db.LootChannels.AddAsync(data);
             await db.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> RemoveLootChannel(SocketTextChannel channel, DbService db)
+        public async Task<bool> RemoveLootChannel(CachedTextChannel channel, DbService db)
         {
-            var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            if (!channels.ContainsKey(channel.Id)) return false;
-            channels.TryRemove(channel.Id, out _);
+            var channels = _lootChannels.GetOrAdd(channel.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            if (!channels.ContainsKey(channel.Id.RawValue)) return false;
+            channels.TryRemove(channel.Id.RawValue, out _);
             var data = await db.LootChannels.FirstOrDefaultAsync(x =>
-                x.GuildId == channel.Guild.Id && x.ChannelId == channel.Id);
+                x.GuildId == channel.Guild.Id.RawValue && x.ChannelId == channel.Id.RawValue);
             if (data != null)
             {
                 db.LootChannels.Remove(data);
@@ -56,10 +56,10 @@ namespace Hanekawa.Bot.Services.Drop
             return true;
         }
 
-        private bool IsDropChannel(SocketTextChannel channel)
+        private bool IsDropChannel(CachedTextChannel channel)
         {
-            var channels = _lootChannels.GetOrAdd(channel.Guild.Id, new ConcurrentDictionary<ulong, bool>());
-            return channels.TryGetValue(channel.Id, out _);
+            var channels = _lootChannels.GetOrAdd(channel.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
+            return channels.TryGetValue(channel.Id.RawValue, out _);
         }
 
         private bool IsDropMessage(ulong guildId, ulong messageId, out bool special)
@@ -82,18 +82,18 @@ namespace Hanekawa.Bot.Services.Drop
             return false;
         }
 
-        private bool OnUserCooldown(SocketGuildUser user)
+        private bool OnUserCooldown(CachedMember user)
         {
-            var users = _userCooldown.GetOrAdd(user.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            if (users.TryGetValue(user.Id, out _)) return true;
-            users.Set(user.Id, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            var users = _userCooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            if (users.TryGetValue(user.Id.RawValue, out _)) return true;
+            users.Set(user.Id.RawValue, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
             return false;
         }
 
-        private bool OnGuildCooldown(SocketGuild guild)
+        private bool OnGuildCooldown(CachedGuild guild)
         {
-            if (_guildCooldown.TryGetValue(guild.Id, out _)) return true;
-            _guildCooldown.Set(guild.Id, true, TimeSpan.FromMinutes(1));
+            if (_guildCooldown.TryGetValue(guild.Id.RawValue, out _)) return true;
+            _guildCooldown.Set(guild.Id.RawValue, true, TimeSpan.FromMinutes(1));
             return false;
         }
     }

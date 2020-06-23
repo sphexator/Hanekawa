@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Runtime.InteropServices.ComTypes;
-using Discord;
+using Disqord;
 using Hanekawa.Shared.Interfaces;
 
 namespace Hanekawa.Shared.Command

@@ -37,28 +37,34 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Discord.Net.WebSocket" Version="2.1.1" />
+        <PackageReference Include="Disqord" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Extensions.Audio" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Extensions.Interactivity" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00053" />
+        <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0-nightly-00053" />
         <PackageReference Include="Humanizer" Version="2.7.9" />
         <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.2" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.2">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.3">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.2" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.3" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.3" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.10" />
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
         <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="NLog" Version="4.6.8" />
+        <PackageReference Include="NLog" Version="4.7.0" />
         <PackageReference Include="NLog.Extensions.Logging" Version="1.6.2" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.0" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.1" />
         <PackageReference Include="Npgsql" Version="4.1.3.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.2" />
-        <PackageReference Include="Qmmands" Version="3.0.0-nightly-00196" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.3" />
+        <PackageReference Include="Qmmands" Version="3.1.1" />
         <PackageReference Include="Quartz" Version="3.0.7" />
         <PackageReference Include="SixLabors.Core" Version="1.0.0-beta0007" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0008" />
@@ -67,10 +73,10 @@
         <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0008" />
         <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0008" />
         <PackageReference Include="System.Linq" Version="4.3.0" />
-        <PackageReference Include="Victoria" Version="4.0.17" />
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Bot\Services\Music\" />
       <Folder Include="Controllers\" />
       <Folder Include="Data\Fonts\" />
       <Folder Include="Data\Game\Border\" />

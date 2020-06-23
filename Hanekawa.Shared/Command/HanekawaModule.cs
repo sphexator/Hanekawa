@@ -8,27 +8,20 @@ using Disqord.Bot.Prefixes;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Rest;
+using Qmmands;
 
 namespace Hanekawa.Shared.Command
 {
-    public class HanekawaContext : DiscordCommandContext
+    public class HanekawaModule : DiscordModuleBase<HanekawaContext>
     {
-        public HanekawaContext(DiscordBot bot, CachedUserMessage message, IPrefix prefix, ColourService colour,
-            IServiceProvider provider) : base(bot, prefix, message)
-        {
-            Colour = colour;
-            Provider = provider;
-        }
-
-        public virtual ColourService Colour { get; }
-        public IServiceProvider Provider { get; set; }
-
-        public async Task<IUserMessage> ReplyAsync(string content) =>
-            await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
-            {
-                Color = Colour.Get(Guild.Id.RawValue),
-                Description = content
-            }.Build());
+        public DiscordBotBase Bot => Context.Bot;
+        public IPrefix Prefix => Context.Prefix;
+        public CachedUserMessage Message => Context.Message;
+        public CachedTextChannel Channel => Context.Channel as CachedTextChannel;
+        public CachedUser User => Context.User;
+        public CachedMember Member => Context.Member;
+        public CachedGuild Guild => Context.Guild;
+        public ColourService Colour => Context.Colour;
 
         public async Task<IUserMessage> ReplyAsync(string content, Color color) =>
             await Channel.SendMessageAsync(null, false, new LocalEmbedBuilder
@@ -49,11 +42,11 @@ namespace Hanekawa.Shared.Command
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = Colour.Get(Guild.Id.RawValue);
-            for (var i = 0; i < content.Count;)
+            for (var i = 0; i < pages.Count;)
             {
                 for (var j = 0; j < 5; j++)
                 {
-                    if (i >= content.Count) continue;
+                    if (i >= pages.Count) continue;
                     var x = content[i];
                     sb.AppendLine(x);
                     i++;
@@ -79,11 +72,11 @@ namespace Hanekawa.Shared.Command
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = Colour.Get(Guild.Id.RawValue);
-            for (var i = 0; i < content.Count;)
+            for (var i = 0; i < pages.Count;)
             {
                 for (var j = 0; j < 5; j++)
                 {
-                    if (i >= content.Count) continue;
+                    if (i >= pages.Count) continue;
                     var x = content[i];
                     sb.AppendLine(x);
                     i++;

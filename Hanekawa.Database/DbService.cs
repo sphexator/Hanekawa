@@ -19,7 +19,6 @@ namespace Hanekawa.Database
 {
     public class DbService : DbContext
     {
-        public DbService() { }
         public DbService(DbContextOptions options) : base(options) { }
 
         // Account
@@ -96,13 +95,6 @@ namespace Hanekawa.Database
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseNpgsql(Config.ConnectionString
-                                         ?? throw new NullReferenceException("No database connection string set"));
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             InventoryBuilder(modelBuilder);
@@ -120,49 +112,37 @@ namespace Hanekawa.Database
             InternalBuilder(modelBuilder);
         }
 
-        private void OwnerBuilder(ModelBuilder modelBuilder)
+        private void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>
         {
-            modelBuilder.Entity<Blacklist>(x =>
-            {
-                x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ResponsibleUser).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => e.GuildId);
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.ResponsibleUser).HasConversion<long>();
+        });
 
-        private void InventoryBuilder(ModelBuilder modelBuilder)
+        private void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
         {
-            modelBuilder.Entity<Inventory>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.UserId).HasConversion<long>();
+        });
 
-        private void ItemBuilder(ModelBuilder modelBuilder)
+        private void ItemBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Item>(x =>
         {
-            modelBuilder.Entity<Item>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.Role).HasConversion<long>();
-                x.Property(e => e.Type).HasConversion(
-                    v => v.ToString(),
-                    v => (ItemType)Enum.Parse(typeof(ItemType), v));
-            });
-        }
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.Role).HasConversion<long>();
+            x.Property(e => e.Type).HasConversion(
+                v => v.ToString(),
+                v => (ItemType) Enum.Parse(typeof(ItemType), v));
+        });
 
-        private void StoreBuilder(ModelBuilder modelBuilder)
+        private void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>
         {
-            modelBuilder.Entity<ServerStore>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.RoleId });
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.RoleId).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => new {e.GuildId, e.RoleId});
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.RoleId).HasConversion<long>();
+        });
 
         private void AccountBuilder(ModelBuilder modelBuilder)
         {
@@ -315,7 +295,7 @@ namespace Hanekawa.Database
         {
             modelBuilder.Entity<ClubInformation>(x =>
             {
-                x.HasKey(e => new { e.Id });
+                x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.LeaderId).HasConversion<long>();
@@ -326,7 +306,7 @@ namespace Hanekawa.Database
 
             modelBuilder.Entity<ClubUser>(x =>
             {
-                x.HasKey(e => new { e.Id });
+                x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
@@ -458,7 +438,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.ChannelId).HasConversion<long>();
                 x.Property(e => e.ChannelType).HasConversion(
                     v => v.ToString(),
-                    v => (ChannelType)Enum.Parse(typeof(ChannelType), v));
+                    v => (ChannelType) Enum.Parse(typeof(ChannelType), v));
             });
             modelBuilder.Entity<SelfAssignAbleRole>(x =>
             {
@@ -468,14 +448,11 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ProfileBuilder(ModelBuilder modelBuilder)
+        private void ProfileBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Background>(x =>
         {
-            modelBuilder.Entity<Background>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-        }
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+        });
 
         private void MusicBuilder(ModelBuilder modelBuilder)
         {
@@ -492,14 +469,11 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
             });
         }
-        
-        private void InternalBuilder(ModelBuilder modelBuilder)
+
+        private void InternalBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Log>(x =>
         {
-            modelBuilder.Entity<Log>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-            });
-        }
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+        });
     }
 }

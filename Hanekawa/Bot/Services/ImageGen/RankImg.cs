@@ -1,12 +1,12 @@
 using System.IO;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public Task<Stream> RankBuilder(SocketGuildUser user)
+        public Task<Stream> RankBuilder(CachedMember user)
         {
             // TODO: Create rank picture
             var stream = new MemoryStream();

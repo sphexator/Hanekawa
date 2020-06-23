@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
@@ -18,13 +16,12 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using SixLabors.Shapes;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> ProfileBuilder(SocketGuildUser user, DbService db)
+        public async Task<Stream> ProfileBuilder(CachedMember user, DbService db)
         {
             var stream = new MemoryStream();
             using (var img = new Image<Rgba32>(400, 400))
@@ -33,24 +30,24 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var globalData = await db.GetOrCreateGlobalUserData(user);
                 var progressBar = CreateProfileProgressBar(userData);
                 // TODO: Create a inventory for backgrounds
-                var background = GetProfileBackground(db);
+                var background = await GetProfileBackground(db);
                 var avi = GetAvatarAsync(user, new Size(110, 110), 61);
 
-                var serverRank = await GetRankAsync(user, userData, db);
-                var globalRank = await GetRankAsync(user, globalData, db);
+                var serverRank = await GetRankAsync(userData, db);
+                var globalRank = await GetRankAsync(globalData, db);
                 var achievePoints = await GetAchievementPoints(user, db);
-                var color = new Color(globalData.UserColor);
-                await Task.WhenAll(background, avi);
+                var color = new Color((int)globalData.UserColor);
+                await Task.WhenAll(avi);
 
                 img.Mutate(x =>
                 {
-                    x.DrawImage(background.Result, 1);
+                    x.DrawImage(background, 1);
                     x.DrawImage(_profileTemplate, new Point(0, 0), _options);
                     x.DrawImage(avi.Result, new Point(145, 4), _options);
                     x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
                     if (progressBar.Count >= 2)
                         x.DrawLines(_options, new Rgba32(color.R, color.G, color.B), 4, progressBar.ToArray());
-                    var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.Username.Truncate(25)));
+                    var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(25)));
                     x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
 
                     //Text
@@ -131,24 +128,24 @@ namespace Hanekawa.Bot.Services.ImageGen
             return points;
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, Account userData, DbService db)
+        private async Task<string> GetRankAsync(Account userData, DbService db)
         {
-            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
+            var total = await db.Accounts.CountAsync(x => x.GuildId == userData.GuildId);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id);
+                x.TotalExp >= userData.TotalExp && x.GuildId == userData.GuildId);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetRankAsync(SocketGuildUser user, AccountGlobal userData, DbService db)
+        private async Task<string> GetRankAsync(AccountGlobal userData, DbService db)
         {
             var total = await db.AccountGlobals.CountAsync();
             var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userData.TotalExp);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private async Task<string> GetAchievementPoints(SocketGuildUser user, DbService db)
+        private async Task<string> GetAchievementPoints(CachedMember user, DbService db)
         {
-            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
+            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id.RawValue);
             return $"{points * 10}";
         }
     }

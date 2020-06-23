@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Music;
@@ -9,8 +8,8 @@ namespace Hanekawa.Database.Extensions
 {
     public static class ConfigExtension
     {
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateGuildConfigAsync(context, guild.Id).ConfigureAwait(false);
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, CachedGuild guild) =>
+            await GetOrCreateGuildConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, ulong guild)
         {
@@ -30,8 +29,8 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
-            GetOrCreateGuildConfig(context, guild.Id);
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, CachedGuild guild) =>
+            GetOrCreateGuildConfig(context, guild.Id.RawValue);
 
         public static GuildConfig GetOrCreateGuildConfig(this DbService context, ulong guild)
         {
@@ -52,7 +51,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateAdminConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateAdminConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, ulong guild)
         {
@@ -73,7 +72,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateBoardConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateBoardConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, ulong guild)
         {
@@ -94,7 +93,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateChannelConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateChannelConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, ulong guild)
         {
@@ -115,7 +114,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateClubConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateClubConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, ulong guild)
         {
@@ -135,7 +134,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateCurrencyConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateCurrencyConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, ulong guild)
         {
@@ -155,7 +154,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateLevelConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateLevelConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, ulong guild)
         {
@@ -175,7 +174,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateLoggingConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateLoggingConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, ulong guild)
         {
@@ -197,7 +196,7 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context,
             IGuild guild) =>
-            await GetOrCreateSuggestionConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateSuggestionConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context, ulong guild)
         {
@@ -218,7 +217,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateWelcomeConfigAsync(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateWelcomeConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, ulong guild)
         {
@@ -239,7 +238,7 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, IGuild guild) =>
-            await GetOrCreateDropConfig(context, guild.Id).ConfigureAwait(false);
+            await GetOrCreateDropConfig(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, ulong guildId)
         {
@@ -258,8 +257,8 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, SocketGuild guild) =>
-            await GetOrCreateMusicConfig(context, guild.Id).ConfigureAwait(false);
+        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, CachedGuild guild) =>
+            await GetOrCreateMusicConfig(context, guild.Id.RawValue).ConfigureAwait(false);
 
         public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, ulong guildId)
         {

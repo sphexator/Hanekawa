@@ -3,159 +3,167 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService
     {
-        private Task MessageUpdated(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel ch)
+        private Task MessageUpdated(MessageUpdatedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(after.Author is SocketGuildUser user)) return;
+                var ch = e.Channel;
+                var before = e.OldMessage;
+                var after = e.NewMessage;
+                if (!(after.Author is CachedMember user)) return;
                 if (user.IsBot) return;
                 if (!(ch is ITextChannel chx)) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                    if (!cfg.LogMsg.HasValue) return;
+                    var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
+                    if (channel == null) return;
+
+                    if (before.Value.Content == null) return;
+                    if (before.Value.Content == after.Content) return;
+
+                    var embed = new LocalEmbedBuilder
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
-                        if (!cfg.LogMsg.HasValue) return;
-                        var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
-                        if (channel == null) return;
-
-                        IUserMessage beforeMsg;
-                        if (!before.HasValue) beforeMsg = await before.GetOrDownloadAsync() as IUserMessage;
-                        else beforeMsg = before.Value as IUserMessage;
-                        if (beforeMsg == null) return;
-                        if (beforeMsg.Content == after.Content) return;
-
-                        var embed = new EmbedBuilder().Create(
-                            $"{user.Mention} updated a message in {chx.Mention}", _colourService.Get(user.Guild.Id));
-                        embed.Author = new EmbedAuthorBuilder {Name = "Message Updated"};
-                        embed.Timestamp = after.EditedTimestamp ?? after.Timestamp;
-                        embed.Fields = new List<EmbedFieldBuilder>
+                        Description = $"{user.Mention} updated a message in {chx.Mention}",
+                        Color = _colourService.Get(user.Guild.Id.RawValue),
+                        Author = new LocalEmbedAuthorBuilder { Name = "Message Updated" },
+                        Fields =
                         {
-                            new EmbedFieldBuilder
+                            new LocalEmbedFieldBuilder
                                 {Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true},
-                            new EmbedFieldBuilder
-                                {Name = "Old Message", Value = beforeMsg.Content.Truncate(980), IsInline = true}
-                        };
-                        embed.Footer = new EmbedFooterBuilder {Text = $"User: {user.Id} | {after.Id}"};
+                            new LocalEmbedFieldBuilder
+                                {Name = "Old Message", Value = before.Value.Content.Truncate(980), IsInline = true}
+                        },
+                        Footer = new LocalEmbedFooterBuilder {Text = $"User: {user.Id.RawValue} | {after.Id.RawValue}"},
+                        Timestamp = after.EditedAt ?? after.CreatedAt
+                    };
 
-                        await channel.ReplyAsync(embed);
-                    }
+                    await channel.ReplyAsync(embed);
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id} for Message Updated - {e.Message}");
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {e.Message}");
                 }
             });
             return Task.CompletedTask;
         }
 
-        private Task MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel ch)
+        private Task MessageDeleted(MessageDeletedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(ch is ITextChannel chx)) return;
+                var ch = e.Channel;
+                var msg = e.Message;
+                if (!(ch is CachedTextChannel chx)) return;
                 try
                 {
-                    using (var db = new DbService())
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
+                    if (!cfg.LogMsg.HasValue) return;
+                    var channel = chx.Guild.GetTextChannel(cfg.LogMsg.Value);
+                    if (channel == null) return;
+                    if (!msg.HasValue) return;
+                    if (msg.Value.Author.IsBot) return;
+                    var embed = new LocalEmbedBuilder
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(chx.Guild);
-                        if (!cfg.LogMsg.HasValue) return;
-                        var channel = await chx.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
-                        if (channel == null) return;
-                        var msg = await message.GetOrDownloadAsync();
-                        if (msg == null) return;
-                        if (msg.Author.IsBot) return;
-                        var embed = new EmbedBuilder().Create(msg.Content.Truncate(1900), _colourService.Get(chx.GuildId));
-                        embed.Author = new EmbedAuthorBuilder {Name = "Message Deleted"};
-                        embed.Title = $"{msg.Author} deleted a message in {chx.Name}";
-                        embed.Timestamp = msg.Timestamp;
-                        embed.Footer = new EmbedFooterBuilder
-                            {Text = $"User: {msg.Author.Id} | Message ID: {msg.Id}"};
+                        Description = msg.Value.Content.Truncate(1900),
+                        Color = _colourService.Get(chx.Guild.Id.RawValue),
+                        Author = new LocalEmbedAuthorBuilder {Name = "Message Deleted"},
+                        Title = $"{msg.Value.Author} deleted a message in {chx.Name}",
+                        Timestamp = msg.Value.CreatedAt,
+                        Footer = new LocalEmbedFooterBuilder
+                            {Text = $"User: {msg.Value.Author.Id.RawValue} | Message ID: {msg.Id.RawValue}"}
+                    };
 
-                        if (msg.Attachments.Count > 0 && !chx.IsNsfw)
-                        {
-                            var file = msg.Attachments.FirstOrDefault();
-                            if (file != null)
-                                embed.AddField(x =>
-                                {
-                                    x.Name = "File";
-                                    x.IsInline = false;
-                                    x.Value = msg.Attachments.FirstOrDefault()?.Url;
-                                });
-                        }
-
-                        await channel.SendMessageAsync(null, false, embed.Build());
-                    }
-                }
-                catch (Exception e)
-                {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {chx.Guild.Id} for Message Deleted - {e.Message}");
-                }
-            });
-            return Task.CompletedTask;
-        }
-
-        private Task MessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> messages,
-            ISocketMessageChannel channel)
-        {
-            _ = Task.Run(async () =>
-            {
-                if (!(channel is ITextChannel ch)) return;
-                try
-                {
-                    using (var db = new DbService())
+                    if (msg.Value.Attachments.Count > 0 && !chx.IsNsfw)
                     {
-                        var cfg = await db.GetOrCreateLoggingConfigAsync(ch.Guild);
-                        if (!cfg.LogMsg.HasValue) return;
-                        var logChannel = await ch.Guild.GetTextChannelAsync(cfg.LogMsg.Value);
-                        if (logChannel == null) return;
-
-                        var messageContent = new List<string>();
-                        var content = new StringBuilder();
-                        foreach (var x in messages)
-                        {
-                            var msg = await x.GetOrDownloadAsync();
-                            if(msg == null) continue;
-                            var user = msg.Author;
-                            if (content.Length + x.Value.Content.Length >= 1950)
+                        var file = msg.Value.Attachments.FirstOrDefault();
+                        if (file != null)
+                            embed.AddField(x =>
                             {
-                                messageContent.Add(content.ToString());
-                                content.Clear();
-                            }
+                                x.Name = "File";
+                                x.IsInline = false;
+                                x.Value = msg.Value.Attachments.FirstOrDefault()?.Url;
+                            });
+                    }
 
-                            content.AppendLine($"{user.Mention}: {msg.Content}");
-                        }
+                    await channel.SendMessageAsync(null, false, embed.Build());
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {e.Message}");
+                }
+            });
+            return Task.CompletedTask;
+        }
 
-                        if (content.Length > 0) messageContent.Add(content.ToString());
+        private Task MessagesBulkDeleted(MessagesBulkDeletedEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                var ch = e.Channel;
+                var messages = e.Messages;
+                try
+                {
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var cfg = await db.GetOrCreateLoggingConfigAsync(ch.Guild);
+                    if (!cfg.LogMsg.HasValue) return;
+                    var logChannel = ch.Guild.GetTextChannel(cfg.LogMsg.Value);
+                    if (logChannel == null) return;
 
-                        for (var i = 0; i < messageContent.Count; i++)
+                    var messageContent = new List<string>();
+                    var content = new StringBuilder();
+                    foreach (var x in messages)
+                    {
+                        if(!x.HasValue) continue;
+                        var user = x.Value.Author;
+                        if (content.Length + x.Value.Content.Length >= 1950)
                         {
-                            var embed = new EmbedBuilder().Create(messageContent[i], _colourService.Get(ch.GuildId));
-                            embed.Title = $"Bulk delete in {ch.Name}";
-                            await logChannel.ReplyAsync(embed);
-                            await Task.Delay(1000);
+                            messageContent.Add(content.ToString());
+                            content.Clear();
                         }
+
+                        content.AppendLine($"{user.Mention}: {x.Value.Content}");
+                    }
+
+                    if (content.Length > 0) messageContent.Add(content.ToString());
+
+                    for (var i = 0; i < messageContent.Count; i++)
+                    {
+                        var embed = new LocalEmbedBuilder
+                        {
+                            Description = messageContent[i],
+                            Color = _colourService.Get(ch.Guild.Id.RawValue),
+                            Title = $"Bulk delete in {ch.Name}"
+                        };
+                        await logChannel.ReplyAsync(embed);
+                        await Task.Delay(1000);
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {ch.Guild.Id} for Bulk Message Deleted - {e.Message}");
+                        $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {e.Message}");
                 }
             });
             return Task.CompletedTask;

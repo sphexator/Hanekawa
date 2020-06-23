@@ -1,29 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
-using Hanekawa.Database;
-using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Interactive;
-using Humanizer;
-using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
-using Quartz.Util;
-using Victoria;
-using Victoria.Entities;
-
-namespace Hanekawa.Bot.Modules.Music
+﻿namespace Hanekawa.Bot.Modules.Music
 {
+    /*
     [Name("Music")]
     [Description("Music module")]
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequiredMusicChannel]
     [RequiredChannel]
-    public class Music : InteractiveBase
+    public class Music : DiscordModuleBase<HanekawaContext>
     {
         private readonly RequiredMusicChannel _channel;
         private readonly LavaRestClient _lavaRestClient;
@@ -47,7 +30,7 @@ namespace Hanekawa.Bot.Modules.Music
                 return;
             }
 
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 player = await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
@@ -64,7 +47,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Moves the bot to a different voice channel")]
         public async Task MoveAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
@@ -85,7 +68,7 @@ namespace Hanekawa.Bot.Modules.Music
         public async Task StopAsync()
         {
             if (Context.User.VoiceChannel == null) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (Context.User.VoiceChannel != player.VoiceChannel) return;
             var song = player.CurrentTrack;
@@ -105,7 +88,7 @@ namespace Hanekawa.Bot.Modules.Music
         public async Task DisconnectAsync()
         {
             if (Context.User.VoiceChannel == null) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (Context.User.VoiceChannel != player.VoiceChannel) return;
             var song = player.CurrentTrack;
@@ -118,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Display which song is currently playing")]
         public async Task NowPlayingAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || !player.IsPlaying)
             {
                 await Context.ReplyAsync("Currently not playing");
@@ -139,7 +122,7 @@ namespace Hanekawa.Bot.Modules.Music
                 return;
             }
 
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id) ??
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue) ??
                          await _lavaSocketClient.ConnectAsync(Context.User.VoiceChannel, Context.Channel);
             if (player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -159,7 +142,7 @@ namespace Hanekawa.Bot.Modules.Music
                 var song = songResult.Tracks.FirstOrDefault();
                 var msg = player.Queue.Count == 0 ? $"Started playing {song?.Title}" : $"Queued {song?.Title}";
                 await player.PlayAsync(song);
-                _lavaSocketClient.UpdateTextChannel(Context.Guild.Id, Context.Channel);
+                _lavaSocketClient.UpdateTextChannel(Context.Guild.Id.RawValue, Context.Channel);
                 await Context.ReplyAsync(msg);
             }
         }
@@ -169,7 +152,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Displays the current queue")]
         public async Task QueueAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null) return;
             if (player.Queue.Count == 0)
             {
@@ -181,7 +164,7 @@ namespace Hanekawa.Bot.Modules.Music
             for (var i = 0; i < player.Queue.Count; i++)
             {
                 var x = player.Queue.Items.ElementAt(i);
-                queue.Add(i == 0 ? $"{i + 1}> {x.Id}" : $"{i + 1}: {x.Id}");
+                queue.Add(i == 0 ? $"{i + 1}> {x.Id.RawValue}" : $"{i + 1}: {x.Id.RawValue}");
             }
 
             await Context.ReplyPaginated(queue, Context.Guild, $"Current queue in {Context.Guild.Name}");
@@ -192,7 +175,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Pauses the player if its currently playing")]
         public async Task PauseAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -210,7 +193,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Resumes the player if its paused")]
         public async Task ResumeAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null || !player.IsPaused) return;
             if (Context.User.VoiceChannel == null || player.VoiceChannel != Context.User.VoiceChannel)
             {
@@ -229,7 +212,7 @@ namespace Hanekawa.Bot.Modules.Music
         public async Task VolumeAsync(int volume)
         {
             if (volume < 0) return;
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -258,7 +241,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Skips current song")]
         public async Task SkipAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -287,7 +270,7 @@ namespace Hanekawa.Bot.Modules.Music
         [Description("Clears current playlist")]
         public async Task ClearAsync()
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -318,7 +301,7 @@ namespace Hanekawa.Bot.Modules.Music
             "Goes back, or rewinds back to a part of the song, if past the limit of the song, starts from teh beginning")]
         public async Task RewindsAsync(TimeSpan rewind)
         {
-            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id);
+            var player = _lavaSocketClient.GetPlayer(Context.Guild.Id.RawValue);
             if (player == null)
             {
                 await Context.ReplyAsync("Currently not connected to any channel", Color.Red);
@@ -351,7 +334,7 @@ namespace Hanekawa.Bot.Modules.Music
         [RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task MusicChannelAsync(SocketTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
             {
                 var cfg = await db.GetOrCreateMusicConfig(Context.Guild);
                 if (channel == null)
@@ -363,7 +346,7 @@ namespace Hanekawa.Bot.Modules.Music
                 }
                 else
                 {
-                    cfg.TextChId = channel.Id;
+                    cfg.TextChId = channel.Id.RawValue;
                     _channel.AddOrRemoveChannel(Context.Guild, channel);
                     await db.SaveChangesAsync();
                     await Context.ReplyAsync($"Set music channel to {channel.Mention}");
@@ -371,4 +354,5 @@ namespace Hanekawa.Bot.Modules.Music
             }
         }
     }
+    */
 }

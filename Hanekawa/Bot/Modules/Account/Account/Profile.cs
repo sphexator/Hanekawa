@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Disqord;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,13 +15,14 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task ProfileAsync()
         {
-            var user = Context.User;
+            var user = Context.Member;
             //if (user == null) user = Context.User;
             await Context.Channel.TriggerTypingAsync();
-            using var db = new DbService();
-            using var image = await _image.ProfileBuilder(user, db);
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var image = await _image.ProfileBuilder(user, db);
             image.Position = 0;
-            await Context.Channel.SendFileAsync(image, "profile.png", null);
+            await Context.Channel.SendMessageAsync(new LocalAttachment(image, "profile.png"));
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -16,39 +14,37 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Emote")]
         [Command("boardemote")]
         [Description("Sets a emote to be used for the board")]
-        [RequireBotPermission(GuildPermission.ManageGuild)]
-        public async Task BoardEmoteAsync(Emote emote)
+        [RequireBotGuildPermissions(Permission.ManageGuild)]
+        public async Task BoardEmoteAsync(LocalCustomEmoji emote)
         {
-            using (var db = new DbService())
-            {
-                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
-                cfg.Emote = emote.ParseEmoteString();
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green);
-            }
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
+            cfg.Emote = emote.MessageFormat;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Changed board emote to {emote}", Color.Green);
         }
 
         [Name("Board Channel")]
         [Command("boardchannel")]
         [Description("Sets which channel starred messages go")]
-        [RequireBotPermission(GuildPermission.ManageGuild)]
-        public async Task BoardChannelAsync(SocketTextChannel channel = null)
+        [RequireBotGuildPermissions(Permission.ManageGuild)]
+        public async Task BoardChannelAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            using var scope = Context.ServiceProvider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
+            if (channel == null)
             {
-                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
-                if (channel == null)
-                {
-                    cfg.Channel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled starboard", Color.Green);
-                }
-                else
-                {
-                    cfg.Channel = channel.Id;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green);
-                }
+                cfg.Channel = null;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Disabled starboard", Color.Green);
+            }
+            else
+            {
+                cfg.Channel = channel.Id.RawValue;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync($"Set board channel to {channel.Mention}", Color.Green);
             }
         }
     }
