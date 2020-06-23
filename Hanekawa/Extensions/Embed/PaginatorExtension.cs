@@ -5,7 +5,6 @@ namespace Hanekawa.Extensions.Embed
 {
     public static class PaginatorExtension
     {
-        /*
         public static PaginatedMessage PaginateBuilder(this List<string> pages, SocketGuild guild, string authorName,
             string title, int count = 5)
             => new PaginatedMessage().Builder(pages, guild.Id.RawValue, guild.IconUrl, authorName, title, count);
@@ -14,10 +13,8 @@ namespace Hanekawa.Extensions.Embed
             string title, int count = 5)
             => new PaginatedMessage().Builder(pages, user.Guild.Id.RawValue, user.GetAvatar(), authorName, title, count);
 
-        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages,
-            ulong guildId, string authorIcon, string authorName, string title, int count)
+        private static PaginatedMessage Builder(this PaginatedMessage paginated, IReadOnlyList<string> pages, string authorIcon, string authorName, string title, int count)
         {
-            paginated.Color = new Color().GetDefaultColor(guildId);
             paginated.Pages = PageBuilder(pages, count);
             paginated.Author = new EmbedAuthorBuilder {IconUrl = authorIcon, Name = authorName};
             paginated.Title = title;
@@ -53,6 +50,5 @@ namespace Hanekawa.Extensions.Embed
 
             return pages;
         }
-        */
     }
 }

@@ -5,6 +5,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Humanizer;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {

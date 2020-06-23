@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await RemoveTimerFromDbAsync(guildId, userId, db);
             if (!_unMuteTimers.TryGetValue(guildId, out var unMuteTimers)) return;
             if (!unMuteTimers.TryRemove(userId, out var removed)) return;
-            removed.Dispose();
+            await removed.DisposeAsync();
         }
 
         private async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId, DbService db)

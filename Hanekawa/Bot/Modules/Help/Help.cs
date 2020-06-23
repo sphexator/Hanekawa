@@ -111,7 +111,7 @@ namespace Hanekawa.Bot.Modules.Help
                     return;
                 }
             }
-
+            if (moduleInfo.Name == "Owner") return;
             var result = new List<string>();
             for (var i = 0; i < moduleInfo.Commands.Count; i++)
             {
