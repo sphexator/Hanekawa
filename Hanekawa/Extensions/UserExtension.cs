@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Rest;
 
 namespace Hanekawa.Extensions
 {
