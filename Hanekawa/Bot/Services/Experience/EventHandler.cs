@@ -8,6 +8,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -39,6 +40,7 @@ namespace Hanekawa.Bot.Services.Experience
             _client.MessageReceived += GlobalMessageExpAsync;
             _client.UserVoiceStateUpdated += VoiceExpAsync;
             _client.UserJoined += GiveRolesBackAsync;
+            _client.UserLeft += DisableUserLeft;
 
             using (var db = new DbService())
             {
@@ -90,6 +92,20 @@ namespace Hanekawa.Bot.Services.Experience
                     }
                 }
             }
+        }
+
+        private Task DisableUserLeft(SocketGuildUser user)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (user.IsBot) return;
+                await using var db = new DbService();
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == user.Guild.Id && x.UserId == user.Id);
+                userData.Active = false;
+                await db.SaveChangesAsync();
+            });
+            return Task.CompletedTask;
         }
 
         private Task GlobalMessageExpAsync(SocketMessage msg)

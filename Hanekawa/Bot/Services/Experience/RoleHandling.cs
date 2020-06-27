@@ -22,7 +22,15 @@ namespace Hanekawa.Bot.Services.Experience
 
                 var userData = await db.GetOrCreateUserData(user);
                 if (userData == null || userData.Level < 2) return;
+                if (userData.Level < 2)
+                {
+                    userData.Active = true;
+                    await db.SaveChangesAsync();
+                    return;
+                }
 
+                if (!userData.Active) userData.Active = true;
+                await db.SaveChangesAsync();
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                 var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
                 await user.TryAddRolesAsync(roles);
