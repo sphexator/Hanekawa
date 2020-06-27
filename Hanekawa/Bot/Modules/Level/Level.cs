@@ -62,10 +62,130 @@ namespace Hanekawa.Bot.Modules.Level
             await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
         }
 
+        [Name("Reset User")]
+        [Command("resetuser")]
+        [Description("Resets a users level and exp back to 0")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Priority(1)]
+        public async Task ResetUserAsync(SocketGuildUser user)
+        {
+            await using (var db = new DbService())
+            {
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id);
+                if (userData == null)
+                {
+                    await Context.ReplyAsync("Couldn't find a user with that ID...", Color.Red);
+                    return;
+                }
+                userData.Level = 1;
+                userData.Exp = 0;
+                userData.TotalExp = 0;
+
+                await db.SaveChangesAsync();
+            }
+
+            await Context.ReplyAsync($"Fully reset {user.Mention} back to level 1!", Color.Green);
+        }
+
+        [Name("Reset User")]
+        [Command("resetuser")]
+        [Description("Resets a users level and exp back to 0")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ResetUserAsync(ulong user)
+        {
+            await using (var db = new DbService())
+            {
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
+                if (userData == null)
+                {
+                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
+                    return;
+                }
+                userData.Level = 1;
+                userData.Exp = 0;
+                userData.TotalExp = 0;
+
+                await db.SaveChangesAsync();
+            }
+
+            await Context.ReplyAsync($"Fully reset {user} back to level 1!", Color.Green);
+        }
+
+        [Name("Remove User")]
+        [Command("removeuser")]
+        [Description("Removes a user the database by their ID")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task RemoveUserAsync(ulong user)
+        {
+            await using (var db = new DbService())
+            {
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
+                if (userData == null)
+                {
+                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
+                    return;
+                }
+                db.Accounts.Remove(userData);
+                await db.SaveChangesAsync();
+            }
+
+            await Context.ReplyAsync($"Fully removed {user} from the database!", Color.Green);
+        }
+
+        [Name("Disable User")]
+        [Command("disableuser")]
+        [Description("Manually disables a user from the bot (automatically enabled once typing again). This prevents them from showing on leaderboards.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task DisableUserAsync(ulong user)
+        {
+            await using (var db = new DbService())
+            {
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
+                if (userData == null)
+                {
+                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
+                    return;
+                }
+
+                userData.Active = false;
+                await db.SaveChangesAsync();
+            }
+
+            await Context.ReplyAsync($"Disabled {user} from the database!", Color.Green);
+        }
+
+        [Name("Disable User")]
+        [Command("disableuser")]
+        [Description("Manually disables a user from the bot (automatically enabled once typing again). This prevents them from showing on leaderboards.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Priority(1)]
+        public async Task DisableUserAsync(SocketGuildUser user)
+        {
+            await using (var db = new DbService())
+            {
+                var userData =
+                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id);
+                if (userData == null)
+                {
+                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
+                    return;
+                }
+
+                userData.Active = false;
+                await db.SaveChangesAsync();
+            }
+
+            await Context.ReplyAsync($"Disabled {user.Mention} from the database!", Color.Green);
+        }
+
         [Name("Set Level")]
         [Command("sl", "setlvl")]
         [Description("Sets a user to a desired level")]
-        [RequireServerOwner]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetLevelAsync(SocketGuildUser user, int level)
         {
             if (level <= 0) return;

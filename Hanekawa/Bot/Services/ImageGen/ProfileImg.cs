@@ -133,9 +133,9 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<string> GetRankAsync(SocketGuildUser user, Account userData, DbService db)
         {
-            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id);
+            var total = await db.Accounts.CountAsync(x => x.GuildId == user.Guild.Id && x.Active);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id);
+                x.TotalExp >= userData.TotalExp && x.GuildId == user.Guild.Id && x.Active);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 

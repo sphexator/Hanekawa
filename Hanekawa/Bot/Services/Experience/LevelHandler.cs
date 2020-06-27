@@ -43,6 +43,7 @@ namespace Hanekawa.Bot.Services.Experience
 
             userData.TotalExp += exp;
             userData.Credit += credit;
+            if(!userData.Active) userData.Active = true;
             await db.SaveChangesAsync();
         }
 
