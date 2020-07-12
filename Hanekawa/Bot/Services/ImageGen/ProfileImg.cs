@@ -31,19 +31,18 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var progressBar = CreateProfileProgressBar(userData);
                 // TODO: Create a inventory for backgrounds
                 var background = await GetProfileBackground(db);
-                var avi = GetAvatarAsync(user, new Size(110, 110), 61);
+                var avi = await GetAvatarAsync(user, new Size(110, 110), 61);
 
                 var serverRank = await GetRankAsync(userData, db);
                 var globalRank = await GetRankAsync(globalData, db);
                 var achievePoints = await GetAchievementPoints(user, db);
                 var color = new Color((int)globalData.UserColor);
-                await Task.WhenAll(avi);
 
                 img.Mutate(x =>
                 {
                     x.DrawImage(background, 1);
                     x.DrawImage(_profileTemplate, new Point(0, 0), _options);
-                    x.DrawImage(avi.Result, new Point(145, 4), _options);
+                    x.DrawImage(avi, new Point(145, 4), _options);
                     x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
                     if (progressBar.Count >= 2)
                         x.DrawLines(_options, new Rgba32(color.R, color.G, color.B), 4, progressBar.ToArray());
