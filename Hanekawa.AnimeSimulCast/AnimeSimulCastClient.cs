@@ -13,19 +13,18 @@ namespace Hanekawa.AnimeSimulCast
     {
         private SyndicationItem _lastItem;
         private Timer _timer;
-
+        private const string RssFeed = "https://www.crunchyroll.com/rss/anime?lang=enGB";
         public AnimeSimulCastClient() => Initialize();
 
         public event AsyncEvent<AnimeData> AnimeAired;
-        public event AsyncEvent<Exception> Log; 
-
+        public event AsyncEvent<Exception> Log;
         public async Task Start() => await Main(new CancellationToken());
 
         private void Initialize()
         {
             try
             {
-                var reader = XmlReader.Create(Constants.RssFeed);
+                using var reader = XmlReader.Create(RssFeed);
                 var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
                 _lastItem = feed;
             }
@@ -41,15 +40,16 @@ namespace Hanekawa.AnimeSimulCast
             {
                 try
                 {
-                    var feed = SyndicationFeed.Load(XmlReader.Create(Constants.RssFeed)).Items.FirstOrDefault();
+                    using var reader = XmlReader.Create(RssFeed);
+                    var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
                     _lastItem ??= feed;
                     if (_lastItem == null || feed?.Id == _lastItem.Id) return;
                     _lastItem = feed;
-                    _ = AnimeAired(ToReturnType(feed));
+                    _ = AnimeAired?.Invoke(ToReturnType(feed));
                 }
                 catch (Exception e)
                 {
-                    _ = Log(e);
+                    _ = Log?.Invoke(e);
                 }
             }, token, TimeSpan.Zero, TimeSpan.FromMinutes(5));
             return Task.CompletedTask;
