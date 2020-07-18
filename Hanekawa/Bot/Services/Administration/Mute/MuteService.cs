@@ -71,12 +71,20 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         {
             await Mute(user, db).ConfigureAwait(false);
             var unMuteAt = DateTime.UtcNow + after;
-            await db.MuteTimers.AddAsync(new MuteTimer
+            var muteCheck = await db.MuteTimers.FindAsync(user.Id, user.Guild.Id);
+            if (muteCheck == null)
             {
-                GuildId = user.Guild.Id,
-                UserId = user.Id,
-                Time = unMuteAt
-            });
+                await db.MuteTimers.AddAsync(new MuteTimer
+                {
+                    GuildId = user.Guild.Id,
+                    UserId = user.Id,
+                    Time = unMuteAt
+                });
+            }
+            else
+            {
+                muteCheck.Time = unMuteAt;
+            }
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.Guild.Id, user.Id, after);
             await _logService.Mute(user, staff, reason, after, db);
