@@ -43,7 +43,7 @@ namespace Hanekawa.AnimeSimulCast
                     using var reader = XmlReader.Create(RssFeed);
                     var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
                     _lastItem ??= feed;
-                    if (_lastItem == null || feed?.Id == _lastItem.Id) return;
+                    if (_lastItem == null || feed?.Title == _lastItem.Title) return;
                     _lastItem = feed;
                     _ = AnimeAired?.Invoke(ToReturnType(feed));
                 }
