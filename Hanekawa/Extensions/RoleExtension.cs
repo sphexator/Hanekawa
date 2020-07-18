@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord.WebSocket;
@@ -11,8 +12,15 @@ namespace Hanekawa.Extensions
             var currentUser = user.Guild.CurrentUser;
             if (currentUser.GuildPermissions.ManageRoles && currentUser.HierarchyCheck(role))
             {
-                await user.AddRoleAsync(role);
-                return true;
+                try
+                {
+                    await user.AddRoleAsync(role);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             return false;
@@ -28,9 +36,15 @@ namespace Hanekawa.Extensions
                 if (currentUser.HierarchyCheck(x))
                     rolesToAdd.Add(x);
             if (rolesToAdd.Count == 0) return false;
-
-            await user.AddRolesAsync(rolesToAdd);
-            return true;
+            try
+            {
+                await user.AddRolesAsync(rolesToAdd);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static async Task<bool> TryRemoveRoleAsync(this SocketGuildUser user, SocketRole role)
@@ -38,8 +52,15 @@ namespace Hanekawa.Extensions
             var currentUser = user.Guild.CurrentUser;
             if (currentUser.GuildPermissions.ManageRoles && currentUser.HierarchyCheck(role))
             {
-                await user.RemoveRoleAsync(role);
-                return true;
+                try
+                {
+                    await user.RemoveRoleAsync(role);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             return false;
@@ -55,9 +76,15 @@ namespace Hanekawa.Extensions
                 if (currentUser.HierarchyCheck(x))
                     rolesToRemove.Add(x);
             if (rolesToRemove.Count == 0) return false;
-
-            await user.RemoveRolesAsync(rolesToRemove);
-            return true;
+            try
+            {
+                await user.RemoveRolesAsync(rolesToRemove);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
