@@ -25,6 +25,7 @@ using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
 using Quartz;
+using ColourService = Hanekawa.Bot.Services.ColourService;
 
 namespace Hanekawa
 {
@@ -45,6 +46,7 @@ namespace Hanekawa
             services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
+            services.AddSingleton(new ColourService());
             services.UseQuartz(typeof(WarnService));
 
             var assembly = Assembly.GetAssembly(typeof(Program));
