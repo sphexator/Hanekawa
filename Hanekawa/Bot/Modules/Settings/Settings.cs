@@ -8,7 +8,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
-using ColourService = Hanekawa.Bot.Services.ColourService;
 
 namespace Hanekawa.Bot.Modules.Settings
 {

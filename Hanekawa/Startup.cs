@@ -25,7 +25,6 @@ using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
 using Quartz;
-using ColourService = Hanekawa.Bot.Services.ColourService;
 
 namespace Hanekawa
 {
@@ -88,7 +87,10 @@ namespace Hanekawa
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             app.UseHttpsRedirection();
-            using(var db = app.ApplicationServices.GetRequiredService<DbService>()) db.Database.Migrate();
+            using var scope = app.ApplicationServices.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            db.Database.Migrate();
+
             NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
 
             var assembly = Assembly.GetEntryAssembly();
@@ -96,23 +98,7 @@ namespace Hanekawa
                 .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
             for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
-            var cmdService = app.ApplicationServices.GetRequiredService<DiscordBot>();
-            cmdService.AddModules(assembly);
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedRoleTypeParser>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedMemberTypeParser>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedUserTypeParser>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedGuildChannelTypeParser<CachedGuildChannel>>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedGuildChannelTypeParser<CachedTextChannel>>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedGuildChannelTypeParser<CachedVoiceChannel>>());
-            cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedGuildChannelTypeParser<CachedCategoryChannel>>());
-            cmdService.AddTypeParser(new CachedRoleTypeParser(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedMemberTypeParser(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedUserTypeParser(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedGuildChannel>(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
-            cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
-
+            
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
         }
