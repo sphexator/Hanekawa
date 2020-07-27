@@ -1,47 +1,36 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
 
 namespace Hanekawa.Extensions
 {
     public static class ImageExtension
     {
-        public static IImageProcessingContext<Rgba32> ConvertToAvatar(
-            this IImageProcessingContext<Rgba32> processingContext, Size size, float cornerRadius)
-        {
-            return processingContext.Resize(new ResizeOptions
+        public static IImageProcessingContext ConvertToAvatar(this IImageProcessingContext processingContext, Size size, float cornerRadius) =>
+            processingContext.Resize(new ResizeOptions
             {
                 Size = size,
                 Mode = ResizeMode.Crop
-            }).Apply(i => ApplyRoundedCorners(i, cornerRadius));
-        }
+            }).ApplyRoundedCorners(cornerRadius);
 
-        public static Image<Rgba32> CloneAndConvertToAvatarWithoutApply(this Image<Rgba32> image, Size size,
-            float cornerRadius)
+        private static IImageProcessingContext ApplyRoundedCorners(this IImageProcessingContext ctx, float cornerRadius)
         {
-            var result = image.Clone(
-                ctx => ctx.Resize(
-                    new ResizeOptions
-                    {
-                        Size = size,
-                        Mode = ResizeMode.Crop
-                    }));
+            var size = ctx.GetCurrentSize();
+            var corners = BuildCorners(size.Width, size.Height, cornerRadius);
 
-            ApplyRoundedCorners(result, cornerRadius);
-            return result;
-        }
-
-        private static void ApplyRoundedCorners(Image<Rgba32> img, float cornerRadius)
-        {
-            var corners = BuildCorners(img.Width, img.Height, cornerRadius);
-
-            var graphicOptions = new GraphicsOptions(true)
+            ctx.SetGraphicsOptions(new GraphicsOptions()
             {
+                Antialias = true,
                 AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
-            };
-            img.Mutate(x => x.Fill(graphicOptions, Rgba32.LimeGreen, corners));
+            });
+
+            foreach (var c in corners)
+            {
+                ctx = ctx.Fill(Color.Red, c);
+            }
+            return ctx;
         }
 
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)

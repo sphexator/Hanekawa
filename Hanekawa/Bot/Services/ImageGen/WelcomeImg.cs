@@ -7,10 +7,9 @@ using Hanekawa.Database;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -26,8 +25,8 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
-                    x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
-                img.Save(stream, new PngEncoder());
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 46)));
+                await img.SaveAsync(stream, new PngEncoder());
             }
 
             return stream;
@@ -43,27 +42,27 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
-                    x => x.DrawText(_centerText, username, _welcomeFontRegular, Rgba32.White, new Point(245, 46)));
-                img.Save(stream, new PngEncoder());
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 46)));
+                await img.SaveAsync(stream, new PngEncoder());
             }
 
             return stream;
         }
 
-        private async Task<Image<Rgba32>> GetBanner(ulong guildId, DbService db)
+        private async Task<Image> GetBanner(ulong guildId, DbService db)
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
-            using var img = Image.Load(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url));
+            using var img = await Image.LoadAsync(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url));
             img.Mutate(x => x.Resize(600, 78));
-            return img.Clone();
+            return img;
         }
 
-        private async Task<Image<Rgba32>> GetBanner(string url)
+        private async Task<Image> GetBanner(string url)
         {
-            using var img = Image.Load(await _client.GetStreamAsync(url));
+            using var img = await Image.LoadAsync(await _client.GetStreamAsync(url));
             img.Mutate(x => x.Resize(600, 78));
-            return img.Clone();
+            return img;
         }
     }
 }

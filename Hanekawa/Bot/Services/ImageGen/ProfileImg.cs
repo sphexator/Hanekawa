@@ -11,11 +11,12 @@ using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using SixLabors.Shapes;
+using Color = SixLabors.ImageSharp.Color;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -36,60 +37,60 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var serverRank = await GetRankAsync(userData, db);
                 var globalRank = await GetRankAsync(globalData, db);
                 var achievePoints = await GetAchievementPoints(user, db);
-                var color = new Color((int)globalData.UserColor);
+                var color = new Color(new Rgba32(globalData.UserColor));
 
                 img.Mutate(x =>
                 {
                     x.DrawImage(background, 1);
                     x.DrawImage(_profileTemplate, new Point(0, 0), _options);
                     x.DrawImage(avi, new Point(145, 4), _options);
-                    x.Fill(_options, Rgba32.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
+                    x.Fill(Color.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
                     if (progressBar.Count >= 2)
-                        x.DrawLines(_options, new Rgba32(color.R, color.G, color.B), 4, progressBar.ToArray());
+                        x.DrawLines(color, 4, progressBar.ToArray());
                     var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(25)));
-                    x.DrawText(_centerText, username, _profileName, Rgba32.White, new PointF(200, 120));
+                    x.DrawText(_centerText, username, _profileName, Color.White, new PointF(200, 120));
 
                     //Text
-                    x.DrawText(_leftText, "Server", _profileText, Rgba32.White, new PointF(72, 160));
-                    x.DrawText(_leftText, "Global", _profileText, Rgba32.White, new PointF(270, 160));
+                    x.DrawText(_leftText, "Server", _profileText, Color.White, new PointF(72, 160));
+                    x.DrawText(_leftText, "Global", _profileText, Color.White, new PointF(270, 160));
 
                     // Server
-                    x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF(8, 256));
-                    x.DrawText(_rightText, $"{serverRank}", _profileText, Rgba32.White, new PointF(194, 256));
+                    x.DrawText(_leftText, "Rank", _profileText, Color.White, new PointF(8, 256));
+                    x.DrawText(_rightText, $"{serverRank}", _profileText, Color.White, new PointF(194, 256));
 
-                    x.DrawText(_leftText, "Level", _profileText, Rgba32.White, new PointF(8, 184));
-                    x.DrawText(_rightText, $"{userData.Level}", _profileText, Rgba32.White, new PointF(194, 184));
+                    x.DrawText(_leftText, "Level", _profileText, Color.White, new PointF(8, 184));
+                    x.DrawText(_rightText, $"{userData.Level}", _profileText, Color.White, new PointF(194, 184));
 
-                    x.DrawText(_leftText, "Exp", _profileText, Rgba32.White, new PointF(8, 208));
-                    x.DrawText(_rightText, $"{userData.Exp}", _profileText, Rgba32.White, new PointF(194, 208));
+                    x.DrawText(_leftText, "Exp", _profileText, Color.White, new PointF(8, 208));
+                    x.DrawText(_rightText, $"{userData.Exp}", _profileText, Color.White, new PointF(194, 208));
 
-                    x.DrawText(_leftText, "Credit", _profileText, Rgba32.White, new PointF(8, 232));
-                    x.DrawText(_rightText, $"{userData.Credit}", _profileText, Rgba32.White, new PointF(194, 232));
+                    x.DrawText(_leftText, "Credit", _profileText, Color.White, new PointF(8, 232));
+                    x.DrawText(_rightText, $"{userData.Credit}", _profileText, Color.White, new PointF(194, 232));
 
-                    x.DrawText(_leftText, "Achievement Points", _profileText, Rgba32.White, new PointF(22, 286));
-                    x.DrawText(_rightText, $"{achievePoints}", _profileText, Rgba32.White, new PointF(377, 286));
+                    x.DrawText(_leftText, "Achievement Points", _profileText, Color.White, new PointF(22, 286));
+                    x.DrawText(_rightText, $"{achievePoints}", _profileText, Color.White, new PointF(377, 286));
 
                     // Global
-                    x.DrawText(_leftText, "Rank", _profileText, Rgba32.White, new PointF(206, 256));
-                    x.DrawText(_rightText, $"{globalRank}", _profileText, Rgba32.White, new PointF(391, 256));
+                    x.DrawText(_leftText, "Rank", _profileText, Color.White, new PointF(206, 256));
+                    x.DrawText(_rightText, $"{globalRank}", _profileText, Color.White, new PointF(391, 256));
 
-                    x.DrawText(_leftText, "Credit", _profileText, Rgba32.White, new PointF(206, 232));
-                    x.DrawText(_rightText, $"{globalData.Credit}", _profileText, Rgba32.White, new PointF(391, 232));
+                    x.DrawText(_leftText, "Credit", _profileText, Color.White, new PointF(206, 232));
+                    x.DrawText(_rightText, $"{globalData.Credit}", _profileText, Color.White, new PointF(391, 232));
 
-                    x.DrawText(_leftText, "Exp", _profileText, Rgba32.White, new PointF(206, 208));
-                    x.DrawText(_rightText, $"{globalData.Exp}", _profileText, Rgba32.White, new PointF(391, 208));
+                    x.DrawText(_leftText, "Exp", _profileText, Color.White, new PointF(206, 208));
+                    x.DrawText(_rightText, $"{globalData.Exp}", _profileText, Color.White, new PointF(391, 208));
 
-                    x.DrawText(_leftText, "Level", _profileText, Rgba32.White, new PointF(206, 184));
-                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Rgba32.White, new PointF(391, 184));
+                    x.DrawText(_leftText, "Level", _profileText, Color.White, new PointF(206, 184));
+                    x.DrawText(_rightText, $"{globalData.Level}", _profileText, Color.White, new PointF(391, 184));
                 });
 
-                img.Save(stream, new PngEncoder());
+                await img.SaveAsync(stream, new PngEncoder());
             }
 
             return stream;
         }
 
-        private async Task<Image<Rgba32>> GetProfileBackground(DbService db)
+        private async Task<Image> GetProfileBackground(DbService db)
         {
             var background = await db.Backgrounds.ToListAsync();
             if (background == null || background.Count == 0)
@@ -98,13 +99,13 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var file = files[_random.Next(files.Length)];
                 using var img = Image.Load(file);
                 img.Mutate(x => x.Resize(400, 400));
-                return img.Clone();
+                return img;
             }
             else
             {
-                using var img = Image.Load(await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl));
+                using var img = await Image.LoadAsync(await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl));
                 img.Mutate(x => x.Resize(400, 400));
-                return img.Clone();
+                return img;
             }
         }
 
