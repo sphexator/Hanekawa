@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Services
         private readonly ILogger<InternalLogService> _logger;
 
         public InternalLogService(DiscordBot client,
-            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient, CommandService command)
+            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient)
         {
             _client = client;
             _logger = logger;

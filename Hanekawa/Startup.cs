@@ -94,7 +94,7 @@ namespace Hanekawa
                 .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
             for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
-            var cmdService = app.ApplicationServices.GetRequiredService<CommandService>();
+            var cmdService = app.ApplicationServices.GetRequiredService<DiscordBot>();
             cmdService.AddModules(assembly);
             cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedRoleTypeParser>());
             cmdService.RemoveTypeParser(cmdService.GetTypeParser<CachedMemberTypeParser>());
