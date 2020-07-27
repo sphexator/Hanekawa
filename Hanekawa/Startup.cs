@@ -110,6 +110,7 @@ namespace Hanekawa
             cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
             cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
             cmdService.AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
+
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
         }

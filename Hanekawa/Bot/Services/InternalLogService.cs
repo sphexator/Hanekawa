@@ -22,7 +22,6 @@ namespace Hanekawa.Bot.Services
     {
         private readonly AnimeSimulCastClient _castClient;
         private readonly DiscordBot _client;
-        private readonly CommandService _command;
         private readonly ILogger<InternalLogService> _logger;
 
         public InternalLogService(DiscordBot client,
@@ -31,11 +30,10 @@ namespace Hanekawa.Bot.Services
             _client = client;
             _logger = logger;
             _castClient = castClient;
-            _command = command;
 
             _client.Logger.MessageLogged += Logger_MessageLogged;
-            _command.CommandExecutionFailed += CommandErrorLog;
-            _command.CommandExecuted += CommandExecuted;
+            _client.CommandExecutionFailed += CommandErrorLog;
+            _client.CommandExecuted += CommandExecuted;
 
             _castClient.Log += SimulCastClientLog;
         }
@@ -108,7 +106,7 @@ namespace Hanekawa.Bot.Services
                         break;
                     case CommandNotFoundResult _:
                         var list = new List<Tuple<Qmmands.Command, int>>();
-                        var commands = _command.GetAllCommands();
+                        var commands = _client.GetAllCommands();
                         foreach (var x in commands)
                             for (var i = 0; i < x.Aliases.Count; i++)
                             {

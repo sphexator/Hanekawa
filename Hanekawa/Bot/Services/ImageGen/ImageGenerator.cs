@@ -16,26 +16,12 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator : INService
     {
-        private readonly FontFamily _arial;
-
-        private readonly TextGraphicsOptions _centerText = new TextGraphicsOptions
-        {
-            GraphicsOptions = new GraphicsOptions
-            {
-                Antialias = true
-            },
-            TextOptions = new TextOptions
-            {
-                HorizontalAlignment = HorizontalAlignment.Center
-            }
-        };
-
         private readonly HttpClient _client;
         private readonly ExpService _expService;
 
         // Fonts
         private readonly FontCollection _fonts;
-
+        private readonly FontFamily _arial;
         private readonly TextGraphicsOptions _leftText = new TextGraphicsOptions
         {
             GraphicsOptions = new GraphicsOptions
@@ -47,7 +33,17 @@ namespace Hanekawa.Bot.Services.ImageGen
                 HorizontalAlignment = HorizontalAlignment.Left
             }
         };
-
+        private readonly TextGraphicsOptions _centerText = new TextGraphicsOptions
+        {
+            GraphicsOptions = new GraphicsOptions
+            {
+                Antialias = true
+            },
+            TextOptions = new TextOptions
+            {
+                HorizontalAlignment = HorizontalAlignment.Center
+            }
+        };
         private readonly GraphicsOptions _options = new GraphicsOptions
         {
             Antialias = true
@@ -70,7 +66,6 @@ namespace Hanekawa.Bot.Services.ImageGen
                 HorizontalAlignment = HorizontalAlignment.Right
             }
         };
-
         private readonly FontFamily _times;
 
         // Welcome
