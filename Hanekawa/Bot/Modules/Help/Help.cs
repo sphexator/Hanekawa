@@ -18,10 +18,6 @@ namespace Hanekawa.Bot.Modules.Help
     [Description("Displays all commands and how to execute them")]
     public class Help : HanekawaModule
     {
-        private readonly CommandService _command;
-
-        public Help(CommandService command) => _command = command;
-
         [Name("Help")]
         [Command("help")]
         [Description("List all modules")]
@@ -31,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Help
         public async Task HelpAsync()
         {
             var result = new StringBuilder();
-            var modules = _command.GetAllModules();
+            var modules = Context.Bot.GetAllModules();
             for (var i = 0; i < modules.Count;)
             {
                 var strBuilder = new StringBuilder();
@@ -68,13 +64,13 @@ namespace Hanekawa.Bot.Modules.Help
         [Cooldown(1, 2, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task HelpAsync([Remainder] string module)
         {
-            var moduleInfo = _command.GetAllModules().FirstOrDefault(x =>
+            var moduleInfo = Context.Bot.GetAllModules().FirstOrDefault(x =>
                 string.Equals(x.Name, module, StringComparison.CurrentCultureIgnoreCase));
             if (moduleInfo == null)
             {
                 var response = new StringBuilder();
                 var moduleList = new List<Tuple<Module, int>>();
-                var modules = _command.GetAllModules();
+                var modules = Context.Bot.GetAllModules();
                 for (var i = 0; i < modules.Count; i++)
                 {
                     if (i >= modules.Count) continue;
