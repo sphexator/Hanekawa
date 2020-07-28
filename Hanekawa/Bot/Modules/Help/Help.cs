@@ -118,7 +118,7 @@ namespace Hanekawa.Bot.Modules.Help
                 content.AppendLine(!cmd.Name.IsNullOrWhiteSpace()
                     ? $"**{cmd.Name}**"
                     : $"**{cmd.Aliases.FirstOrDefault()}**");
-                if (!perms.IsNullOrWhiteSpace()) content.AppendLine($"**Require {perms}**");
+                if (!perms.IsNullOrWhiteSpace()) content.Append($"**Require {perms}**");
                 content.AppendLine(
                     $"Alias: **{cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}**");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
@@ -133,6 +133,7 @@ namespace Hanekawa.Bot.Modules.Help
             else await Context.ReplyAsync("Couldn't find any commands in that module", Color.Red);
         }
 
+        // Showcases the params
         private string ParamBuilder(Command command)
         {
             var output = new StringBuilder();
@@ -154,6 +155,7 @@ namespace Hanekawa.Bot.Modules.Help
             return output.ToString();
         }
 
+        // Adds examples, ie. for user it adds bob#0000
         private string ExampleParamBuilder(Command command)
         {
             var output = new StringBuilder();
@@ -185,6 +187,7 @@ namespace Hanekawa.Bot.Modules.Help
             parameter.Type == typeof(string) ? "Example text" :
             parameter.Type == typeof(ulong) ? "431610594290827267" : parameter.Name;
 
+        // Appends permission requirements
         private string PermBuilder(Command cmd)
         {
             var str = new StringBuilder();
@@ -192,7 +195,7 @@ namespace Hanekawa.Bot.Modules.Help
             {
                 if (x is RequireMemberGuildPermissionsAttribute perm)
                 {
-                    if (perm.Permissions.Count(x => true) == 1) str.AppendLine(perm.Permissions.FirstOrDefault().ToString());
+                    if (perm.Permissions.Count() == 1) str.AppendLine(perm.Permissions.FirstOrDefault().ToString());
                     else foreach (var e in perm.Permissions) str.Append($"{e}, ");
                 }
             }
