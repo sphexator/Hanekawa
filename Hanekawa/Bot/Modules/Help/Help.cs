@@ -124,7 +124,7 @@ namespace Hanekawa.Bot.Modules.Help
                     $"Alias: **{cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}**");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
                 if (!cmd.Remarks.IsNullOrWhiteSpace()) content.AppendLine(cmd.Remarks);
-                content.AppendLine($"Usage: **{Context.Prefix}{command} {ParamBuilder(cmd)}");
+                content.AppendLine($"Usage: **{Context.Prefix}{command} {ParamBuilder(cmd)}**");
                 content.AppendLine($"Example: {Context.Prefix}{command} {ExampleParamBuilder(cmd)}");
                 result.Add(content.ToString());
             }
