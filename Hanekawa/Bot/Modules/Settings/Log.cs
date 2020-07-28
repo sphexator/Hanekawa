@@ -4,6 +4,7 @@ using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -12,7 +13,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Log")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
-    public class Log : HanekawaModule
+    public class Log : HanekawaCommandModule
     {
         [Name("Join/Leave")]
         [Command("logjoin")]

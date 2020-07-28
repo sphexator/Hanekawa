@@ -10,6 +10,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
 {
     [Name("Store")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Store : HanekawaModule
+    public partial class Store : HanekawaCommandModule
     {
         private readonly CurrencyService _currency;
         public Store(CurrencyService currency) => _currency = currency;

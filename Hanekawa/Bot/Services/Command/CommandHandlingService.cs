@@ -4,13 +4,13 @@ namespace Hanekawa.Bot.Services.Command
  public class CommandHandlingService : INService, IRequired
  {
      
-     private readonly DiscordBot _client;
+     private readonly Hanekawa _client;
      private readonly InternalLogService _log;
      private readonly ColourService _colourService;
      private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
      private readonly IServiceProvider _provider;
 
-     public CommandHandlingService(DiscordBot client, CommandService command, IServiceProvider provider, 
+     public CommandHandlingService(Hanekawa client, CommandService command, IServiceProvider provider, 
          ColourService colourService, InternalLogService log)
      {
          _client = client;

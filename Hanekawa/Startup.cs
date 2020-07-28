@@ -3,9 +3,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Parsers;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Prefix;
 using Hanekawa.Bot.Services.Administration.Warning;
@@ -38,7 +41,7 @@ namespace Hanekawa
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddHostedService<Bot.Hanekawa>();
+            services.AddHostedService<RunBot>();
             services.AddSingleton(Configuration);
             services.AddLogging();
             services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
@@ -57,9 +60,10 @@ namespace Hanekawa
                 var x = serviceList[i];
                 services.AddSingleton(x);
             }
+
             services.AddSingleton(x =>
             {
-                var bot = new DiscordBot(TokenType.Bot, Configuration["token"], new GuildPrefix(x),
+                var bot = new Bot.Hanekawa(TokenType.Bot, Configuration["token"], new GuildPrefix(x),
                     new DiscordBotConfiguration
                     {
                         MessageCache = new Optional<MessageCache>(new DefaultMessageCache(100)),
@@ -67,9 +71,9 @@ namespace Hanekawa
                         {
                             DefaultRunMode = RunMode.Parallel,
                             StringComparison = StringComparison.OrdinalIgnoreCase,
-                            CooldownBucketKeyGenerator = (x, context) =>
+                            CooldownBucketKeyGenerator = (e, context) =>
                             {
-                                var ctx = (HanekawaContext)context;
+                                var ctx = (HanekawaCommandContext)context;
                                 return ctx.User.Id.RawValue;
                             }
                         },
@@ -98,7 +102,6 @@ namespace Hanekawa
                 .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
             for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
-            
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
         }
@@ -194,6 +197,19 @@ namespace Hanekawa
             LogManager.ThrowExceptions = Debugger.IsAttached;
             
             return config;
+        }
+    }
+
+    public class RunBot : BackgroundService
+    {
+        private readonly Bot.Hanekawa _client;
+        public RunBot(Bot.Hanekawa client) => _client = client;
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            await _client.AddExtensionAsync(new InteractivityExtension());
+            await _client.RunAsync(stoppingToken);
+            await Task.Delay(-1, stoppingToken);
         }
     }
 }

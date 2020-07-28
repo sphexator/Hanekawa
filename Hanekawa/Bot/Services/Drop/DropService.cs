@@ -20,14 +20,14 @@ namespace Hanekawa.Bot.Services.Drop
 {
     public partial class DropService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly ExpService _expService;
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public DropService(DiscordBot client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public DropService(Hanekawa client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Services.Drop
             return Task.CompletedTask;
         }
 
-        public async Task SpawnAsync(HanekawaContext context)
+        public async Task SpawnAsync(DiscordCommandContext context)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();

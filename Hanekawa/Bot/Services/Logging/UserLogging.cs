@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Services.Logging
                         Color = _colourService.Get(before.Guild.Id.RawValue),
                         Description = "",
                         Title = $"{after} | {after.Id.RawValue}",
-                        Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = ""}
+                        Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = $"User ID: {after.Id.RawValue}"}
                     };
                     if (before.Nick != after.Nick)
                     {

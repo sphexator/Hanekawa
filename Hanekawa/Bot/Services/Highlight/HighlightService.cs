@@ -12,13 +12,13 @@ namespace Hanekawa.Bot.Services.Highlight
 {
     public class HighlightService
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly IServiceProvider _provider;
 
         private readonly ConcurrentDictionary<(ulong, ulong), string[]> _highlights =
             new ConcurrentDictionary<(ulong, ulong), string[]>();
 
-        public HighlightService(DiscordBot client, IServiceProvider provider)
+        public HighlightService(Hanekawa client, IServiceProvider provider)
         {
             _client = client;
             _provider = provider;

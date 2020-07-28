@@ -7,11 +7,11 @@ namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
-        public LogService(DiscordBot client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public LogService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _log = log;

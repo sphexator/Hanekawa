@@ -11,6 +11,7 @@ using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Account
 {
     [Name("Account")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Account : HanekawaModule
+    public partial class Account : HanekawaCommandModule
     {
         private readonly ExpService _exp;
         private readonly ImageGenerator _image;
@@ -108,6 +109,7 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("rep")]
         [Description("Rewards a reputation to a user. Usable once a day")]
         [Remarks("rep @bob#0000")]
+        [RequiredChannel]
         public async Task RepAsync(CachedMember user = null)
         {
             if (user == Context.User) return;

@@ -6,6 +6,7 @@ using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Qmmands;
 
@@ -13,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Info
 {
     [Name("Info")]
     [Description("Commands for delivering information about the bot")]
-    public class Info : HanekawaModule
+    public class Info : HanekawaCommandModule
     {
         [Name("About")]
         [Command("about", "info", "bot", "botinfo")]

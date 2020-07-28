@@ -3,6 +3,7 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 

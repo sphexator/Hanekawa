@@ -7,6 +7,7 @@ using Hanekawa.Bot.Services.Drop;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Drop")]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Drop : HanekawaModule
+    public class Drop : HanekawaCommandModule
     {
         private readonly DropService _drop;
         public Drop(DropService drop) => _drop = drop;

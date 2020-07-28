@@ -20,12 +20,12 @@ namespace Hanekawa.Bot.Services.Anime
     public class SimulCastService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _anime;
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public SimulCastService(AnimeSimulCastClient anime, DiscordBot client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public SimulCastService(AnimeSimulCastClient anime, Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
             _anime = anime;
             _client = client;

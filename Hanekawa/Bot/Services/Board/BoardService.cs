@@ -16,11 +16,11 @@ namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
 
-        public BoardService(DiscordBot client, InternalLogService log, IServiceProvider provider)
+        public BoardService(Hanekawa client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;

@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Administration
 {
     [Name("Self Assignable Roles")]
     [RequiredChannel]
-    public class SelfAssignAbleRoles : HanekawaModule
+    public class SelfAssignAbleRoles : HanekawaCommandModule
     {
         [Name("I am")]
         [Command("iam", "give")]
@@ -176,11 +177,11 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green);
         }
 
-        private async Task AddSelfAssignAbleRoleAsync(HanekawaContext context, CachedRole role, bool exclusive)
+        private async Task AddSelfAssignAbleRoleAsync(DiscordCommandContext context, CachedRole role, bool exclusive)
         {
             if (!context.Member.HierarchyCheck(role))
             {
-                await context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
+                await Context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
                 return;
             }
 
@@ -193,19 +194,19 @@ namespace Hanekawa.Bot.Modules.Administration
                 {
                     roleCheck.Exclusive = true;
                     await db.SaveChangesAsync();
-                    await context.ReplyAsync($"Changed {role.Name} to a exclusive self-assignable role!",
+                    await Context.ReplyAsync($"Changed {role.Name} to a exclusive self-assignable role!",
                         Color.Green);
                 }
                 else if (!exclusive && roleCheck.Exclusive)
                 {
                     roleCheck.Exclusive = false;
                     await db.SaveChangesAsync();
-                    await context.ReplyAsync($"Changed {role.Name} to a non-exclusive self-assignable role!",
+                    await Context.ReplyAsync($"Changed {role.Name} to a non-exclusive self-assignable role!",
                         Color.Green);
                 }
                 else
                 {
-                    await context.ReplyAsync($"{role.Name} is already added as self-assignable",
+                    await Context.ReplyAsync($"{role.Name} is already added as self-assignable",
                         Color.Red);
                 }
 
@@ -220,7 +221,7 @@ namespace Hanekawa.Bot.Modules.Administration
             };
             await db.SelfAssignAbleRoles.AddAsync(data);
             await db.SaveChangesAsync();
-            await context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green);
+            await Context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green);
         }
     }
 }

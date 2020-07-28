@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
@@ -8,6 +9,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz.Util;
@@ -16,7 +18,7 @@ namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService
     {
-        public async Task AdNameAsync(HanekawaContext context, string name)
+        public async Task AdNameAsync(HanekawaCommandContext context, string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
             using var scope = _provider.CreateScope();
@@ -49,7 +51,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task AdDescAsync(HanekawaContext context, string desc)
+        public async Task AdDescAsync(HanekawaCommandContext context, string desc)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -69,7 +71,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task AdImageAsync(HanekawaContext context, string image)
+        public async Task AdImageAsync(HanekawaCommandContext context, string image)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -89,7 +91,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task AdIconAsync(HanekawaContext context, string icon)
+        public async Task AdIconAsync(HanekawaCommandContext context, string icon)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -109,7 +111,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task AdPublicAsync(HanekawaContext context)
+        public async Task AdPublicAsync(HanekawaCommandContext context)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -133,7 +135,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task AdAdvertiseAsync(HanekawaContext context)
+        public async Task AdAdvertiseAsync(HanekawaCommandContext context)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -212,7 +214,7 @@ namespace Hanekawa.Bot.Services.Club
             if (club.Public) await msg.AddReactionAsync(new LocalEmoji("\u2714"));
         }
 
-        private async Task PublicHandle(DbService db, HanekawaContext context, ClubInformation club, CachedGuild guild,
+        private async Task PublicHandle(DbService db, DiscordCommandContext context, ClubInformation club, CachedGuild guild,
             bool enabled)
         {
             var cfg = await db.GetOrCreateClubConfigAsync(context.Guild);

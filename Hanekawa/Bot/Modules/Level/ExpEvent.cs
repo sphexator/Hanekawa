@@ -6,6 +6,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;

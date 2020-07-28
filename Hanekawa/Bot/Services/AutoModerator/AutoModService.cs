@@ -16,13 +16,13 @@ namespace Hanekawa.Bot.Services.AutoModerator
 {
     public class AutoModService
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
         private readonly IServiceProvider _provider;
 
-        public AutoModService(DiscordBot client, LogService logService, MuteService muteService,
+        public AutoModService(Hanekawa client, LogService logService, MuteService muteService,
             InternalLogService log, IServiceProvider provider)
         {
             _client = client;

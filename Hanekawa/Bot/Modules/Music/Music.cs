@@ -6,7 +6,7 @@
     [RequireBotPermission(GuildPermission.EmbedLinks)]
     [RequiredMusicChannel]
     [RequiredChannel]
-    public class Music : DiscordModuleBase<HanekawaContext>
+    public class Music : HanekawaCommandModule<DiscordCommandContext>
     {
         private readonly RequiredMusicChannel _channel;
         private readonly LavaRestClient _lavaRestClient;

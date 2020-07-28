@@ -9,6 +9,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Name("Ignore")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
-    public class Ignore : HanekawaModule
+    public class Ignore : HanekawaCommandModule
     {
         private readonly RequiredChannel _requiredChannel;
 

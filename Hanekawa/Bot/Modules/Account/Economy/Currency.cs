@@ -4,6 +4,7 @@ using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
@@ -12,7 +13,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
 {
     [Name("Economy")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Economy : HanekawaModule
+    public partial class Economy : HanekawaCommandModule
     {
         [Name("Regular Currency Name")]
         [Command("rcn")]

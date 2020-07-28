@@ -12,11 +12,11 @@ namespace Hanekawa.Bot.Services.Administration
 {
     public class BlacklistService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
 
-        public BlacklistService(DiscordBot client, InternalLogService log, IServiceProvider provider)
+        public BlacklistService(Hanekawa client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;

@@ -15,11 +15,11 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
 
-        public AchievementService(DiscordBot client, InternalLogService log, IServiceProvider provider)
+        public AchievementService(Hanekawa client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;

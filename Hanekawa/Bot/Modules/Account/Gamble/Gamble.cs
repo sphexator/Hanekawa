@@ -7,6 +7,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -14,7 +15,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
 {
     [Name("Gamble")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Gamble : HanekawaModule
+    public class Gamble : HanekawaCommandModule
     {
         [Name("Bet")]
         [Command("bet")]
@@ -56,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
             await Context.ReplyAsync(await GambleRollAsync(db, Context, userData, bet));
         }
 
-        private async Task<LocalEmbedBuilder> GambleBetAsync(DbService db, HanekawaContext context,
+        private async Task<LocalEmbedBuilder> GambleBetAsync(DbService db, DiscordCommandContext context,
             Database.Tables.Account.Account userData, int bet)
         {
             if (userData.Credit < bet) bet = BetAdjust(userData);
@@ -79,7 +80,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
                 $"You rolled:{userRoll} - Bot rolled: {botRoll}", Color.Red);
         }
 
-        private async Task<LocalEmbedBuilder> GambleRollAsync(DbService db, HanekawaContext context,
+        private async Task<LocalEmbedBuilder> GambleRollAsync(DbService db, DiscordCommandContext context,
             Database.Tables.Account.Account userData, int bet)
         {
             if (userData.Credit < bet) bet = BetAdjust(userData);

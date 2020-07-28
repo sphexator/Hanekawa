@@ -9,6 +9,7 @@ using Hanekawa.Bot.Preconditions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Qmmands;
 using Quartz.Util;
 
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Help
 {
     [Name("Help")]
     [Description("Displays all commands and how to execute them")]
-    public class Help : HanekawaModule
+    public class Help : HanekawaCommandModule
     {
         [Name("Help")]
         [Command("help")]

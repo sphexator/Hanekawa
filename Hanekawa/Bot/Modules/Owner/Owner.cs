@@ -8,6 +8,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Owner
     [Description("Owner commands for bot overview")]
     [BotOwnerOnly]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Owner : HanekawaModule
+    public class Owner : HanekawaCommandModule
     {
         [Name("Servers")]
         [Command("servers")]

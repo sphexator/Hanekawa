@@ -8,6 +8,7 @@ using Hanekawa.Bot.Services.Board;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Modules.Board
 {
     [Name("Board")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Board : HanekawaModule
+    public partial class Board : HanekawaCommandModule
     {
         [Name("Board Stats")]
         [Command("boardstats")]

@@ -21,10 +21,10 @@ namespace Hanekawa.Bot.Services
     public class InternalLogService : INService, IRequired
     {
         private readonly AnimeSimulCastClient _castClient;
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly ILogger<InternalLogService> _logger;
 
-        public InternalLogService(DiscordBot client,
+        public InternalLogService(Hanekawa client,
             ILogger<InternalLogService> logger, AnimeSimulCastClient castClient)
         {
             _client = client;
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Services
             _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             _ = Task.Run(async () =>
             {
-                if (!(e.Context is HanekawaContext context)) return;
+                if (!(e.Context is DiscordCommandContext context)) return;
                 Command command;
                 Module module = null;
                 var response = new StringBuilder();

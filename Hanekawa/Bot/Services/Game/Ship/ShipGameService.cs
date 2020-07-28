@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Services.Achievement;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
@@ -15,6 +16,7 @@ using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +55,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        public async Task<LocalEmbedBuilder> SearchAsync(HanekawaContext context)
+        public async Task<LocalEmbedBuilder> SearchAsync(DiscordCommandContext context)
         {
             if (IsInBattle(context))
                 return new LocalEmbedBuilder().Create($"{context.User.Mention} is already in a fight",
@@ -103,7 +105,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             return embed;
         }
 
-        public async Task AttackAsync(HanekawaContext context)
+        public async Task AttackAsync(HanekawaCommandContext context)
         {
             if (!IsInBattle(context))
             {
@@ -280,7 +282,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             _log.LogAction(LogLevel.Information, "(Ship Game) Completed game");
         }
 
-        public async Task AttackAsync(HanekawaContext context, CachedMember playerTwoUser, int? bet = 0)
+        public async Task AttackAsync(HanekawaCommandContext context, CachedMember playerTwoUser, int? bet = 0)
         {
             if (ActiveDuel(context))
             {
@@ -476,14 +478,14 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
         }
 
-        private GameEnemy GetEnemyData(HanekawaContext context)
+        private GameEnemy GetEnemyData(DiscordCommandContext context)
         {
             var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryGetValue(context.User.Id.RawValue, out var game);
             return game;
         }
 
-        private bool ActiveBattle(HanekawaContext context)
+        private bool ActiveBattle(DiscordCommandContext context)
         {
             var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
             var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
@@ -492,13 +494,13 @@ namespace Hanekawa.Bot.Services.Game.Ship
             return false;
         }
 
-        private void UpdateBattle(HanekawaContext context, bool status)
+        private void UpdateBattle(DiscordCommandContext context, bool status)
         {
             var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
             gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
-        private bool ActiveDuel(HanekawaContext context)
+        private bool ActiveDuel(DiscordCommandContext context)
         {
             var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
             var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
@@ -507,32 +509,32 @@ namespace Hanekawa.Bot.Services.Game.Ship
             return false;
         }
 
-        private void UpdateDuel(HanekawaContext context, bool status)
+        private void UpdateDuel(DiscordCommandContext context, bool status)
         {
             var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
             gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
         }
 
-        private bool IsInBattle(HanekawaContext context)
+        private bool IsInBattle(DiscordCommandContext context)
         {
             var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
             var check = battles.TryGetValue(context.User.Id.RawValue, out _);
             return check;
         }
 
-        private void AddBattle(HanekawaContext context, GameEnemy enemy)
+        private void AddBattle(DiscordCommandContext context, GameEnemy enemy)
         {
             var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryAdd(context.User.Id.RawValue, enemy);
         }
 
-        private void RemoveBattle(HanekawaContext context)
+        private void RemoveBattle(DiscordCommandContext context)
         {
             var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id.RawValue, out var game);
         }
 
-        public void ClearUser(HanekawaContext context)
+        public void ClearUser(DiscordCommandContext context)
         {
             var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
             battles.TryRemove(context.User.Id.RawValue, out var game);

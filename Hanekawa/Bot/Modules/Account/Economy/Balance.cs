@@ -12,6 +12,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,7 +40,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 .Create($"{cfg.CurrencyName}: {_currency.ToCurrency(cfg, userData.Credit)}\n" +
                         $" {cfg.SpecialCurrencyName}: {_currency.ToCurrency(cfg, userData.CreditSpecial, true)}", Context.Colour.Get(Context.Guild.Id.RawValue))
                 .WithAuthor(new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName});
-            await Context.ReplyAsync(embed);
+            await ReplyAsync(null, false, embed.Build());
         }
 
         [Name("Give")]

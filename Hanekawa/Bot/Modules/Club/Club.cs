@@ -9,6 +9,7 @@ using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Club
 {
     [Name("Club")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Club : HanekawaModule
+    public partial class Club : HanekawaCommandModule
     {
         private readonly ClubService _club;
 

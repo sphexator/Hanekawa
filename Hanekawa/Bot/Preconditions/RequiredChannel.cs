@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
@@ -13,7 +14,7 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Preconditions
 {
-    public class RequiredChannel : HanekawaAttribute, INService
+    public class RequiredChannel : CheckAttribute, INService
     {
         private ConcurrentDictionary<ulong, bool> IgnoreAll { get; }
             = new ConcurrentDictionary<ulong, bool>();
@@ -21,9 +22,9 @@ namespace Hanekawa.Bot.Preconditions
         private ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>> ChannelEnable { get; }
             = new ConcurrentDictionary<ulong, ConcurrentDictionary<ulong, bool>>();
 
-        public override async ValueTask<CheckResult> CheckAsync(HanekawaContext context, IServiceProvider provider)
+        public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            if (context == null) return CheckResult.Unsuccessful("woopsie command context wrong :)");
+            if (!(_ is DiscordCommandContext context)) return CheckResult.Unsuccessful("woopsie command context wrong :)");
             if (context.Member.Permissions.ManageGuild)
                 return CheckResult.Successful;
 
@@ -41,7 +42,7 @@ namespace Hanekawa.Bot.Preconditions
             }
         }
 
-        private async Task<bool> UpdateIgnoreAllStatus(HanekawaContext context)
+        private async Task<bool> UpdateIgnoreAllStatus(DiscordCommandContext context)
         {
             using var scope = context.ServiceProvider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -49,7 +50,7 @@ namespace Hanekawa.Bot.Preconditions
             return cfg.IgnoreAllChannels;
         }
 
-        private bool EligibleChannel(HanekawaContext context, bool ignoreAll = false)
+        private bool EligibleChannel(DiscordCommandContext context, bool ignoreAll = false)
         {
             // True = command passes
             // False = command fails
@@ -59,7 +60,7 @@ namespace Hanekawa.Bot.Preconditions
             return !ignoreAll ? !ignore : ignore;
         }
 
-        private bool DoubleCheckChannel(HanekawaContext context)
+        private bool DoubleCheckChannel(DiscordCommandContext context)
         {
             using var scope = context.ServiceProvider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();

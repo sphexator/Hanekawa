@@ -12,6 +12,7 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -19,7 +20,7 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Administration
 {
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Administration : HanekawaModule
+    public class Administration : HanekawaCommandModule
     {
         private readonly MuteService _mute;
         private readonly WarnService _warn;

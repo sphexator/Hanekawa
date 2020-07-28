@@ -1,51 +1,45 @@
 using System;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Parsers;
-using Disqord.Extensions.Interactivity;
-using Microsoft.Extensions.Hosting;
+using Disqord.Bot.Prefixes;
+using Hanekawa.Shared.Command;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot
 {
-    public class Hanekawa : BackgroundService
+    public class Hanekawa : DiscordBot
     {
-        private readonly DiscordBot _client;
-        private bool _setup = false;
-
-        public Hanekawa(DiscordBot client) => _client = client;
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public Hanekawa(TokenType tokenType, string token, IPrefixProvider prefixProvider, DiscordBotConfiguration configuration = null) : base(tokenType, token, prefixProvider, configuration)
         {
-            await _client.AddExtensionAsync(new InteractivityExtension());
-            await _client.RunAsync(stoppingToken);
-            if(!_setup) Setup();
-            await Task.Delay(-1, stoppingToken);
+            AddModules(Assembly.GetEntryAssembly());
+            RemoveTypeParser(GetSpecificTypeParser<CachedRole, CachedRoleTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedMember, CachedMemberTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedUser, CachedUserTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedGuildChannel, CachedGuildChannelTypeParser<CachedGuildChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedTextChannel, CachedGuildChannelTypeParser<CachedTextChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedVoiceChannel, CachedGuildChannelTypeParser<CachedVoiceChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedCategoryChannel, CachedGuildChannelTypeParser<CachedCategoryChannel>>());
+
+            AddTypeParser(new CachedRoleTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedMemberTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedUserTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedGuildChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
         }
 
-        private void Setup()
+        protected override async ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
+            !message.Author.IsBot && !(message.Channel is IPrivateChannel);
+
+        protected override ValueTask<DiscordCommandContext> GetCommandContextAsync(CachedUserMessage message,
+            IPrefix prefix)
         {
-            var assembly = Assembly.GetEntryAssembly();
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedRoleTypeParser>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedMemberTypeParser>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedUserTypeParser>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedGuildChannelTypeParser<CachedGuildChannel>>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedGuildChannelTypeParser<CachedTextChannel>>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedGuildChannelTypeParser<CachedVoiceChannel>>());
-            _client.RemoveTypeParser(_client.GetTypeParser<CachedGuildChannelTypeParser<CachedCategoryChannel>>());
-
-            _client.AddTypeParser(new CachedRoleTypeParser(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedMemberTypeParser(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedUserTypeParser(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedGuildChannelTypeParser<CachedGuildChannel>(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
-            _client.AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
-
-            _client.AddModules(assembly);
-            _setup = true;
+            var scope = this.CreateScope();
+            return new ValueTask<DiscordCommandContext>(new HanekawaCommandContext(scope.ServiceProvider, this, prefix, message, scope.ServiceProvider.GetRequiredService<ColourService>()));
         }
     }
 }

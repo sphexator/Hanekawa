@@ -7,11 +7,12 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Giveaway
 {
-    public class Giveaway : HanekawaModule
+    public class Giveaway : HanekawaCommandModule
     {
         [Name("Draw")]
         [Command("draw")]

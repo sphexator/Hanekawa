@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
@@ -15,7 +16,7 @@ namespace Hanekawa.Bot.Services.Experience
     {
         private Tuple<ulong, Timer> _expEventTimer;
 
-        public async Task StartEventAsync(DbService db, HanekawaContext context, double multiplier, TimeSpan duration,
+        public async Task StartEventAsync(DbService db, DiscordCommandContext context, double multiplier, TimeSpan duration,
             bool announce = false)
         {
             var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id.RawValue);

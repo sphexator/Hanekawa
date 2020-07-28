@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Game.Ship;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -17,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Game
     [Description(
         "Ship game is a game mode where you search for opponements based on your level and fight them. Change between classes to get a feel of different fight styles.")]
     [RequiredChannel]
-    public class Game : HanekawaModule
+    public class Game : HanekawaCommandModule
     {
         private readonly ShipGameService _shipGame;
         public Game(ShipGameService shipGame) => _shipGame = shipGame;

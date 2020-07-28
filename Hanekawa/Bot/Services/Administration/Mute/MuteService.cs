@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 {
     public partial class MuteService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
 
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         private readonly LogService _logService;
         private readonly IServiceProvider _provider;
 
-        public MuteService(DiscordBot client, LogService logService, InternalLogService log, IServiceProvider provider, ColourService colour)
+        public MuteService(Hanekawa client, LogService logService, InternalLogService log, IServiceProvider provider, ColourService colour)
         {
             _client = client;
             _logService = logService;

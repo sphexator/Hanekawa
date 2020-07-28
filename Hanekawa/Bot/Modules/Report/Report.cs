@@ -8,6 +8,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -17,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Report
 {
     [Name("Report")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public class Report : HanekawaModule
+    public class Report : HanekawaCommandModule
     {
         private readonly ColourService _colour;
 

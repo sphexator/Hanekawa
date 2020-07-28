@@ -19,13 +19,13 @@ namespace Hanekawa.Bot.Services.Welcome
 {
     public partial class WelcomeService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly ExpService _exp;
         private readonly ImageGenerator _img;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
 
-        public WelcomeService(DiscordBot client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
+        public WelcomeService(Hanekawa client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
         {
             _client = client;
             _img = img;
@@ -81,7 +81,7 @@ namespace Hanekawa.Bot.Services.Welcome
             return Task.CompletedTask;
         }
 
-        private async Task WelcomeRewardAsync(DiscordBot bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
+        private async Task WelcomeRewardAsync(Hanekawa bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
             var response = await bot.GetInteractivity().WaitForMessageAsync(

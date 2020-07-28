@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService : INService, IRequired
     {
-        private readonly DiscordBot _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Services.Experience
         public readonly ConcurrentDictionary<ulong, HashSet<ulong>> ServerVoiceChanReduction =
             new ConcurrentDictionary<ulong, HashSet<ulong>>();
 
-        public ExpService(DiscordBot client, Random random, InternalLogService log, IServiceProvider provider)
+        public ExpService(Hanekawa client, Random random, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _random = random;

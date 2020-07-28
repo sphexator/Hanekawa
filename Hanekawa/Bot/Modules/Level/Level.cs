@@ -12,6 +12,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -20,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Level
 {
     [Name("Level")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
-    public partial class Level : HanekawaModule
+    public partial class Level : HanekawaCommandModule
     {
         private readonly ExpService _exp;
         public Level(ExpService exp) => _exp = exp;
@@ -184,7 +185,7 @@ namespace Hanekawa.Bot.Modules.Level
             await Context.PaginatedReply(pages, Context.Guild, $"Level Roles for {Context.Guild.Name}");
         }
 
-        private async Task AddLevelRole(HanekawaContext context, int level, CachedRole role, bool stack)
+        private async Task AddLevelRole(DiscordCommandContext context, int level, CachedRole role, bool stack)
         {
             if (level <= 0) return;
             using var scope = Context.ServiceProvider.CreateScope();
@@ -195,19 +196,19 @@ namespace Hanekawa.Bot.Modules.Level
                 var gRole = context.Guild.GetRole(check.Role);
                 if (gRole != null)
                 {
-                    await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
+                    await Context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
                     var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
                         x => x.Message.Author.Id.RawValue == Context.Member.Id.RawValue && x.Message.Guild.Id.RawValue == Context.Guild.Id.RawValue,
                         TimeSpan.FromMinutes(1));
                     if (response == null || response.Message.Content.ToLower() != "y")
                     {
-                        await context.ReplyAsync("Cancelling.");
+                        await Context.ReplyAsync("Cancelling.");
                         return;
                     }
 
                     if (response.Message.Content.ToLower() != "yes")
                     {
-                        await context.ReplyAsync("Cancelling.");
+                        await Context.ReplyAsync("Cancelling.");
                         return;
                     }
                 }
@@ -222,7 +223,7 @@ namespace Hanekawa.Bot.Modules.Level
             };
             await db.LevelRewards.AddAsync(data);
             await db.SaveChangesAsync();
-            await context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
+            await Context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
         }
     }
 }

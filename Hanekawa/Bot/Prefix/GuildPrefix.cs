@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Prefix
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(message.Guild.Id);
             var prefix = new StringPrefix(cfg.Prefix);
-            var collection = _prefixCollection.GetOrAdd(message.Guild.Id, new HashSet<IPrefix>());
+            var collection = _prefixCollection.GetOrAdd(message.Guild.Id, new HashSet<IPrefix>(new []{prefix}));
 
             if (collection.Contains(prefix)) return collection;
             collection.Add(prefix);

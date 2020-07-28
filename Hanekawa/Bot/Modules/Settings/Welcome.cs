@@ -13,6 +13,7 @@ using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Welcome")]
     [RequireBotGuildPermissions(Permission.EmbedLinks, Permission.AttachFiles)]
-    public class Welcome : HanekawaModule
+    public class Welcome : HanekawaCommandModule
     {
         private readonly ImageGenerator _image;
         public Welcome(ImageGenerator image) => _image = image;

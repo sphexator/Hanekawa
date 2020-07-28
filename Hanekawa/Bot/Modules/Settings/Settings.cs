@@ -6,6 +6,7 @@ using Disqord.Extensions.Interactivity;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -15,7 +16,7 @@ namespace Hanekawa.Bot.Modules.Settings
     [Description("Server settings")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
-    public class Settings : HanekawaModule
+    public class Settings : HanekawaCommandModule
     {
         private readonly ColourService _colourService;
 

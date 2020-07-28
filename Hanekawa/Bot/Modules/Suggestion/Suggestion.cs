@@ -10,6 +10,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -19,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
     [Name("Suggestion")]
     [Description(
         "Module for creating suggestions for a server, adds up/down votes for users to show if they think it's a good idea or not.")]
-    public partial class Suggestion : HanekawaModule
+    public partial class Suggestion : HanekawaCommandModule
     {
         [Name("Suggest")]
         [Command("suggest")]
