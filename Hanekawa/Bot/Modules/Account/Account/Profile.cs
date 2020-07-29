@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Modules.Account
             var user = Context.Member;
             //if (user == null) user = Context.User;
             await Context.Channel.TriggerTypingAsync();
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await using var image = await _image.ProfileBuilder(user, db);
             image.Position = 0;
             await Context.Channel.SendMessageAsync(new LocalAttachment(image, "profile.png"));

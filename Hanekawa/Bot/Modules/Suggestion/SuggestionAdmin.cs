@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task SetSuggestionChannelAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (cfg.Channel.HasValue && channel == null)
             {
@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task SetSuggestEmoteYesAsync(LocalCustomEmoji emote = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (emote == null)
             {
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         public async Task SetSuggestEmoteNoAsync(LocalCustomEmoji emote = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (emote == null)
             {

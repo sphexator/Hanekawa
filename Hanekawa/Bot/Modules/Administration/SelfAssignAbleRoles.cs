@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task AssignSelfRoleAsync([Remainder] CachedRole role)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
             var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
             if (dbRole == null)
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (Context.Member.Roles.Values.FirstOrDefault(x => x.Id.RawValue == role.Id.RawValue) == null) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
             var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
             if (dbRole == null)
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task ListSelfAssignAbleRolesAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (list == null || list.Count == 0)
             {
@@ -161,7 +161,7 @@ namespace Hanekawa.Bot.Modules.Administration
             }
 
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var roleCheck =
                 await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);
@@ -186,7 +186,7 @@ namespace Hanekawa.Bot.Modules.Administration
             }
 
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id.RawValue, role.Id.RawValue);
             if (roleCheck != null)
             {

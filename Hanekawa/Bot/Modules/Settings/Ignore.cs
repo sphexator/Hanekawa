@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task IgnoreChannelAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             channel ??= Context.Channel as CachedTextChannel;
             if (channel == null) return;
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task ToggleIgnoreChannelAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             if (cfg.IgnoreAllChannels)
             {
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task ListIgnoreChannelsAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             string content;

@@ -45,7 +45,7 @@ namespace Hanekawa.Bot
 
         protected override ValueTask AfterExecutedAsync(IResult result, DiscordCommandContext context)
         {
-            (context as HanekawaCommandContext)?.ServiceScope.Dispose();
+            (context as HanekawaCommandContext)?.Scope.Dispose();
             return base.AfterExecutedAsync(result, context);
         }
     }

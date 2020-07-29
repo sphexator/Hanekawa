@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Board
         public async Task BoardEmoteAsync(LocalCustomEmoji emote)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             cfg.Emote = emote.MessageFormat;
             await db.SaveChangesAsync();
@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Modules.Board
         public async Task BoardChannelAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             if (channel == null)
             {

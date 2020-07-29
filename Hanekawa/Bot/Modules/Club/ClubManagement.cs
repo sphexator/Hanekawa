@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (name.IsNullOrWhiteSpace()) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             if (userData.Level < cfg.ChannelRequiredLevel)
@@ -70,7 +70,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (user == Context.User) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var clubUser =
                 await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue && x.Rank <= 2);
@@ -121,7 +121,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (user == Context.Member) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task LeaveClubAsync(int id)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue && x.ClubId == id);
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
@@ -158,7 +158,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task LeaveClubAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var clubs = await db.ClubPlayers.Where(
                 x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
             if (clubs.Count == 0)
@@ -208,7 +208,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (Context.User == user) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.Guild.Id.RawValue);
             if (club == null)
@@ -266,7 +266,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (Context.User == user) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -299,7 +299,7 @@ namespace Hanekawa.Bot.Modules.Club
         {
             if (Context.User == user) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -334,7 +334,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task GetBlackList()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;

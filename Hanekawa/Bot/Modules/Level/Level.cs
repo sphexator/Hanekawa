@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Level
 
             var msg = await Context.ReplyAsync("Server level reset in progress...");
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue);
             foreach (var x in users)
             {
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Modules.Level
             for (var i = 1; i < level + 1; i++) totalExp += _exp.ExpToNextLevel(i);
 
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userdata = await db.GetOrCreateUserData(user);
             userdata.Level = level;
             userdata.Exp = 0;
@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task StackToggleAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
             if (cfg.StackLvlRoles)
             {
@@ -130,7 +130,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task RemoveAsync(int level)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.Level == level);
             if (role == null)
@@ -153,7 +153,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task LevelListAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderBy(x => x.Level)
                 .ToListAsync();
             if (levels == null || levels.Count == 0)
@@ -189,7 +189,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             if (level <= 0) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var check = await db.LevelRewards.FindAsync(context.Guild.Id.RawValue, level);
             if (check != null)
             {

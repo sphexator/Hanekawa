@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Modules.Report
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Report
         {
             if (text.IsNullOrWhiteSpace()) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.Reports.FindAsync(id, Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
@@ -109,7 +109,7 @@ namespace Hanekawa.Bot.Modules.Report
         public async Task SetReportChannelAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (cfg.ReportChannel.HasValue && channel == null)
             {

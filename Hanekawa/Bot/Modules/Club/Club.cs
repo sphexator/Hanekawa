@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubListAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var clubs = await db.ClubInfos.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (clubs.Count == 0)
             {
@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubCheckAsync(int id)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {

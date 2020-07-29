@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task JoinLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WarnLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task MessageLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -84,7 +84,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task BanLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -105,7 +105,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task UserLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -127,7 +127,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task AutoModeratorLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task VoiceLogAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
             {

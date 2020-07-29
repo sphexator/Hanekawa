@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Board
         public async Task BoardStatsAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
             var boards = await db.Boards.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
@@ -70,7 +70,7 @@ namespace Hanekawa.Bot.Modules.Board
         public async Task BoardStatsAsync(CachedMember user)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             LocalCustomEmoji.TryParse(cfg.Emote, out var emote);
             var userData = await db.GetOrCreateUserData(user);

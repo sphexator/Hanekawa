@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task TextExpMultiplierAsync(double multiplier)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var old = _exp.GetMultiplier(Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
             cfg.TextExpMultiplier = multiplier;
@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task VoiceExpMultiplierAsync(double multiplier)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var old = _exp.GetMultiplier(Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
             cfg.VoiceExpMultiplier = multiplier;
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task ToggleVoiceExp()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
             if (cfg.VoiceExpEnabled)
             {
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Modules.Level
             if (multiplier <= 0) return;
             duration ??= TimeSpan.FromDays(1);
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await _exp.StartEventAsync(db, Context, multiplier, duration.Value);
             await Context.ReplyAsync($"Started a {multiplier}x exp event for {duration.Value.Humanize(2)}!",
                 Color.Green);

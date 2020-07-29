@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task AddDropChannel(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             channel ??= Context.Channel as CachedTextChannel;
             if (channel == null) return;
             try
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task RemoveDropChannel(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             channel ??= Context.Channel as CachedTextChannel;
             if (channel == null) return;
             try
@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task ListDropChannelsAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var embed = new LocalEmbedBuilder().WithAuthor(new LocalEmbedAuthorBuilder
                 {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.GetIconUrl()});
             var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();

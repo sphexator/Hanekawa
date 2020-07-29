@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Prefixes;
@@ -10,7 +8,7 @@ namespace Hanekawa.Shared.Command
 {
     public class HanekawaCommandContext : DiscordCommandContext
     {
-        public IServiceScope ServiceScope { get; }
+        public IServiceScope Scope { get; }
         public ColourService Colour { get; }
         public new DiscordBot Bot { get; }
         public new CachedMember Member { get; }
@@ -23,7 +21,7 @@ namespace Hanekawa.Shared.Command
             {
                 throw new InvalidOperationException("Bot should not be used in dms");
             }
-            ServiceScope = scope;
+            Scope = scope;
             Bot = bot;
             Member = member;
             Channel = channel;

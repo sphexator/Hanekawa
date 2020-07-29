@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         {
             if (bet <= 0) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             if (userData.Credit == 0)
             {
@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         {
             if (bet <= 0) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             if (userData.Credit == 0)
             {

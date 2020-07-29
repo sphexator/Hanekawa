@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         public async Task InventoryAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var inventory = await db.Inventories
                 .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
             if (inventory.Count == 0)
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         public async Task EquipRoleAsync([Remainder] CachedRole role)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var inventory = await db.Inventories
                 .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
             var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id.RawValue && z.Role == role.Id.RawValue);
@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         public async Task UnequipRoleAsync([Remainder] CachedRole role)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var inventory = await db.Inventories
                 .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
             var item = await db.Items.FirstOrDefaultAsync(z => z.GuildId == Context.Guild.Id.RawValue && z.Role == role.Id.RawValue);
@@ -121,7 +121,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         public async Task ServerShopAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             var store = await db.ServerStores.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (store.Count == 0)
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Modules.Account.Store
         public async Task BuyAsync([Remainder] CachedRole role)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var serverData =
                 await db.ServerStores.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);

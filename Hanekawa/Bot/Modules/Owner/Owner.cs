@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Modules.Owner
         public async Task BlacklistAsync(ulong guildId, string reason = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var blacklist = await db.Blacklists.FindAsync(guildId);
             if (blacklist == null)
             {

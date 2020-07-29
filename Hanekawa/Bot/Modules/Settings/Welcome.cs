@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Settings
             }
 
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             
             var data = new WelcomeBanner
             {
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task RemoveWelcomeBannerAsync(int id)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var banner =
                 await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
             if (banner == null)
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WelcomeBannerListAsync()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var list = await db.WelcomeBanners.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (list.Count == 0)
             {
@@ -132,7 +132,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WelcomeMessageAsync([Remainder] string message = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
             await db.SaveChangesAsync();
@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WelcomeChannelAsync(CachedTextChannel channel = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             switch (channel)
             {
@@ -179,7 +179,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WelcomeTimeout(TimeSpan? timeout = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (!cfg.TimeToDelete.HasValue && timeout == null) return;
             if (timeout == null)
@@ -221,7 +221,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task Welcomebanner()
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (cfg.Banner)
             {
@@ -244,7 +244,7 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task WelcomeIgnoreUsers(DateTimeOffset? time = null)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (time == null)
             {

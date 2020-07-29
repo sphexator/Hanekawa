@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Level
             }
 
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             string userString = null;
             for (var i = 0; i < users.Length; i++)
             {
@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Modules.Level
         {
             if (exp <= 0) return;
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             string userString = null;
             for (var i = 0; i < users.Length; i++)
             {
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task AddExpIgnoreChannel(params CachedTextChannel[] channels)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var content = new StringBuilder();
             content.AppendLine("Channels added to exp ignore list:");
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task AddExpIgnoreChannel(params CachedVoiceChannel[] channels)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var channeList = _exp.ServerVoiceChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var content = new StringBuilder();
             content.AppendLine("Channels added to exp ignore list:");
@@ -151,7 +151,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task AddExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var content = new StringBuilder();
             content.AppendLine("Categories added to exp ignore list:");
@@ -187,7 +187,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task RemoveExpIgnoreChannel(params CachedTextChannel[] channels)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var channeList = _exp.ServerTextChanReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var content = new StringBuilder();
             content.AppendLine("Channels removed from exp ignore list:");
@@ -219,7 +219,7 @@ namespace Hanekawa.Bot.Modules.Level
         public async Task RemoveExpIgnoreChannel(params CachedCategoryChannel[] category)
         {
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var channeList = _exp.ServerCategoryReduction.GetOrAdd(Context.Guild.Id.RawValue, new HashSet<ulong>());
             var content = new StringBuilder();
             content.AppendLine("Categories removed from exp ignore list:");

@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         {
             await Context.Message.TryDeleteMessageAsync();
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var caseId = await db.CreateSuggestion(Context.User, Context.Guild, DateTime.UtcNow);
@@ -55,7 +55,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         {
             await Context.Message.TryDeleteMessageAsync();
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         {
             await Context.Message.TryDeleteMessageAsync();
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         {
             await Context.Message.TryDeleteMessageAsync();
             
-            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
