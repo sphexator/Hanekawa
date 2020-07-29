@@ -18,8 +18,8 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotGuildPermissions(Permission.ManageGuild)]
         public async Task BoardEmoteAsync(LocalCustomEmoji emote)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             cfg.Emote = emote.MessageFormat;
             await db.SaveChangesAsync();
@@ -32,8 +32,8 @@ namespace Hanekawa.Bot.Modules.Board
         [RequireBotGuildPermissions(Permission.ManageGuild)]
         public async Task BoardChannelAsync(CachedTextChannel channel = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
             if (channel == null)
             {

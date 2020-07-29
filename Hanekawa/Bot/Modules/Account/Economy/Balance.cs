@@ -31,8 +31,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task WalletAsync(CachedMember user = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             user ??= Context.Member;
             var userData = await db.GetOrCreateUserData(user);
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
@@ -51,8 +50,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         {
             if (amount <= 0) return;
             if (users.Contains(Context.User)) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             if (userData.Credit < amount * users.Length)
@@ -85,8 +83,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task DailyAsync(CachedMember user = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
@@ -130,8 +127,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
 
             amount = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
@@ -159,8 +155,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         public async Task RewardCreditAsync(int amount, params CachedMember[] users)
         {
             if (amount <= 0) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var strBuilder = new StringBuilder();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             for (var i = 0; i < users.Length; i++)

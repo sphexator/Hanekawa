@@ -17,8 +17,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubSetAdvertisementChannel(CachedTextChannel channel = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             if (channel == null)
             {
@@ -49,8 +49,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubSetCategory(CachedCategoryChannel category = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             if (cfg.ChannelCategory.HasValue && cfg.ChannelCategory.Value == category.Id.RawValue)
             {
@@ -82,8 +82,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetLevelRequirement(int level)
         {
             if (level <= 0) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             cfg.ChannelRequiredLevel = level;
             await db.SaveChangesAsync();
@@ -99,8 +99,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubSetAmountRequirement(int amount)
         {
             if (amount <= 0) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             cfg.ChannelRequiredAmount = amount;
             await db.SaveChangesAsync();

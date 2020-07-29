@@ -38,8 +38,7 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task RankAsync(CachedMember user = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             user ??= Context.Member;
             var serverData = await db.GetOrCreateUserData(user);
             var globalData = await db.GetOrCreateGlobalUserData(user);
@@ -83,8 +82,7 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task LeaderboardAsync(int amount = 50)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
             var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
             var result = new List<string>();
@@ -113,8 +111,7 @@ namespace Hanekawa.Bot.Modules.Account
         public async Task RepAsync(CachedMember user = null)
         {
             if (user == Context.User) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
             if (user == null)
             {

@@ -30,8 +30,8 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task SearchAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var embed = await _shipGame.SearchAsync(Context);
             if (embed == null) return;
             await Context.ReplyAsync(embed);
@@ -56,8 +56,8 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ClassInfoAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var result = new List<string>();
             var classes = await db.GameClasses.OrderBy(x =>  x.LevelRequirement).ToListAsync();
             for (var i = 0; i < classes.Count(); i++)
@@ -76,8 +76,8 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ClassInfoAsync(int classId)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var classInfo = await db.GameClasses.FindAsync(classId);
             if (classInfo == null)
             {
@@ -98,8 +98,8 @@ namespace Hanekawa.Bot.Modules.Game
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ChooseClassAsync(int id)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var classInfo = await db.GameClasses.FindAsync(id);
             var userData = await db.GetOrCreateUserData(Context.Member);
             if (userData.Level < (int) classInfo.LevelRequirement)

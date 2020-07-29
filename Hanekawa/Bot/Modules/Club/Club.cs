@@ -31,8 +31,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task ClubListAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var clubs = await db.ClubInfos.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (clubs.Count == 0)
             {
@@ -72,8 +72,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task ClubCheckAsync(int id)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {

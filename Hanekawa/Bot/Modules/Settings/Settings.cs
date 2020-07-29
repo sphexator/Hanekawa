@@ -27,8 +27,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds a prefix to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
@@ -55,8 +55,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var scope = Context.ServiceProvider.CreateScope())
-                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
+                await using (var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color((int)color));
@@ -83,8 +82,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var scope = Context.ServiceProvider.CreateScope())
-                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
+                await using (var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
@@ -113,8 +111,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                using (var scope = Context.ServiceProvider.CreateScope())
-                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
+                await using (var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
                     _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);

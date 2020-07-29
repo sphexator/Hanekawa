@@ -116,10 +116,10 @@ namespace Hanekawa.Bot.Services.Welcome
                     }
                     _log.LogAction(LogLevel.Information, $"(Welcome Service) Cleaned up banners in {guild.Id.RawValue} as bot left server");
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Welcome Service) Error in {guild.Id.RawValue} for Bot Left Guild - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Welcome Service) Error in {guild.Id.RawValue} for Bot Left Guild - {exception.Message}");
                 }
             });
             return Task.CompletedTask;

@@ -7,12 +7,13 @@ using Disqord.Bot.Parsers;
 using Disqord.Bot.Prefixes;
 using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
+using Qmmands;
 
 namespace Hanekawa.Bot
 {
     public class Hanekawa : DiscordBot
     {
-        public Hanekawa(TokenType tokenType, string token, IPrefixProvider prefixProvider, DiscordBotConfiguration configuration = null) : base(tokenType, token, prefixProvider, configuration)
+        public Hanekawa(TokenType tokenType, string token, IPrefixProvider prefixProvider, DiscordBotConfiguration configuration) : base(tokenType, token, prefixProvider, configuration)
         {
             AddModules(Assembly.GetEntryAssembly());
             RemoveTypeParser(GetSpecificTypeParser<CachedRole, CachedRoleTypeParser>());
@@ -39,7 +40,13 @@ namespace Hanekawa.Bot
             IPrefix prefix)
         {
             var scope = this.CreateScope();
-            return new ValueTask<DiscordCommandContext>(new HanekawaCommandContext(scope.ServiceProvider, this, prefix, message, scope.ServiceProvider.GetRequiredService<ColourService>()));
+            return new ValueTask<DiscordCommandContext>(new HanekawaCommandContext(scope, this, prefix, message, scope.ServiceProvider.GetRequiredService<ColourService>()));
+        }
+
+        protected override ValueTask AfterExecutedAsync(IResult result, DiscordCommandContext context)
+        {
+            (context as HanekawaCommandContext)?.ServiceScope.Dispose();
+            return base.AfterExecutedAsync(result, context);
         }
     }
 }

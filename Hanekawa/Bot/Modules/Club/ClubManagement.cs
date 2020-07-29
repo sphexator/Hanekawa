@@ -27,8 +27,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task CreateClub([Remainder] string name)
         {
             if (name.IsNullOrWhiteSpace()) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             if (userData.Level < cfg.ChannelRequiredLevel)
@@ -69,8 +69,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task AddClubMemberAsync(CachedMember user)
         {
             if (user == Context.User) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var clubUser =
                 await db.ClubPlayers.FirstOrDefaultAsync(x =>
                     x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue && x.Rank <= 2);
@@ -120,8 +120,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task RemoveClubMemberAsync(CachedMember user)
         {
             if (user == Context.Member) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -141,8 +141,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync(int id)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var clubUser = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue && x.ClubId == id);
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
@@ -157,8 +157,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task LeaveClubAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var clubs = await db.ClubPlayers.Where(
                 x => x.GuildId == Context.Guild.Id.RawValue && x.UserId == Context.User.Id.RawValue).ToListAsync();
             if (clubs.Count == 0)
@@ -207,8 +207,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubPromoteAsync(CachedMember user)
         {
             if (Context.User == user) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.Guild.Id.RawValue);
             if (club == null)
@@ -265,8 +265,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task ClubDemoteAsync(CachedMember user)
         {
             if (Context.User == user) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -298,8 +298,8 @@ namespace Hanekawa.Bot.Modules.Club
         public async Task BlackListUser(CachedMember user, [Remainder] string reason = null)
         {
             if (Context.User == user) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;
@@ -333,8 +333,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequiredChannel]
         public async Task GetBlackList()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x =>
                 x.GuildId == Context.Guild.Id.RawValue && x.LeaderId == Context.User.Id.RawValue);
             if (club == null) return;

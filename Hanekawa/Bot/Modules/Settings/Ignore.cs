@@ -30,8 +30,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Adds or removes a channel from ignore list")]
         public async Task IgnoreChannelAsync(CachedTextChannel channel = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             channel ??= Context.Channel as CachedTextChannel;
             if (channel == null) return;
@@ -66,8 +66,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ToggleIgnoreChannelAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             if (cfg.IgnoreAllChannels)
             {
@@ -89,8 +89,8 @@ namespace Hanekawa.Bot.Modules.Settings
         [Description("Toggles whether common commands is only usable in ignored channels or not")]
         public async Task ListIgnoreChannelsAsync()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
             var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             string content;

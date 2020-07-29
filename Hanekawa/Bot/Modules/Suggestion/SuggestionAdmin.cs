@@ -19,8 +19,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSuggestionChannelAsync(CachedTextChannel channel = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (cfg.Channel.HasValue && channel == null)
             {
@@ -44,8 +44,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSuggestEmoteYesAsync(LocalCustomEmoji emote = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (emote == null)
             {
@@ -66,8 +66,8 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task SetSuggestEmoteNoAsync(LocalCustomEmoji emote = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (emote == null)
             {

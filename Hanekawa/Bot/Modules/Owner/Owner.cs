@@ -46,8 +46,8 @@ namespace Hanekawa.Bot.Modules.Owner
         [Description("Blacklists a server for the bot to join")]
         public async Task BlacklistAsync(ulong guildId, string reason = null)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var blacklist = await db.Blacklists.FindAsync(guildId);
             if (blacklist == null)
             {

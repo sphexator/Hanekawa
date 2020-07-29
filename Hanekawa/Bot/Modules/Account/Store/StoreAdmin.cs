@@ -22,8 +22,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddStoreItemAsync(int price, [Remainder] CachedRole role)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var date = DateTime.UtcNow;
             var item = new Item
             {
@@ -53,8 +53,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task AddSpecialStoreItemAsync(int price, [Remainder] CachedRole role)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var date = DateTime.UtcNow;
             var item = new Item
             {
@@ -84,8 +84,8 @@ namespace Hanekawa.Bot.Modules.Account.Store
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveStoreItemAsync([Remainder] CachedRole role)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var itemCheck =
                 await db.Items.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.Role == role.Id.RawValue);
             if (itemCheck == null)

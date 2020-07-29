@@ -24,8 +24,8 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task BetAsync(int bet)
         {
             if (bet <= 0) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             if (userData.Credit == 0)
             {
@@ -44,8 +44,8 @@ namespace Hanekawa.Bot.Modules.Account.Gamble
         public async Task RollAsync(int bet)
         {
             if (bet <= 0) return;
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             if (userData.Credit == 0)
             {

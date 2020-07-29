@@ -175,8 +175,8 @@ namespace Hanekawa.Bot.Modules.Administration
             if (Context.Member == user) return;
             await Context.Message.TryDeleteMessageAsync();
 
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             if (!await _mute.Mute(user, db))
             {
                 await Context.ReplyAndDeleteAsync(null, false,
@@ -199,8 +199,8 @@ namespace Hanekawa.Bot.Modules.Administration
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
             if (!duration.HasValue) duration = TimeSpan.FromHours(12);
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var muteRes = await _mute.TimedMute(user, Context.Member, duration.Value, db, reason);
             if (muteRes)
             {
@@ -227,8 +227,8 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var muteRes = await _mute.Mute(user, db);
             if (muteRes)
             {
@@ -255,8 +255,8 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             if (await _mute.UnMuteUser(user, db))
             {
                 await Context.ReplyAndDeleteAsync(null, false,
@@ -283,8 +283,8 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             await _warn.AddWarn(db, user, Context.Member, reason, WarnReason.Warned, true);
             await Context.ReplyAndDeleteAsync(null, false,
                 new LocalEmbedBuilder().Create($"Warned {user.Mention}", Color.Green),
@@ -298,8 +298,8 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task WarnLogAsync(CachedMember user, WarnLogType type = WarnLogType.Simple)
         {
             await Context.Message.TryDeleteMessageAsync();
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             if (type == WarnLogType.Simple)
             {
                 await Context.ReplyAsync(await _warn.GetSimpleWarnlogAsync(user, db));
@@ -320,8 +320,8 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (id <= 0) return;
             await Context.Message.TryDeleteMessageAsync();
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id.RawValue);
             if (modCase == null)
             {

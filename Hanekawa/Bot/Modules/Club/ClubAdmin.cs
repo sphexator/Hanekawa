@@ -20,8 +20,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceRename(int clubId, [Remainder] string name)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {
@@ -64,8 +64,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReIcon(int clubId, [Remainder] string icon)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {
@@ -90,8 +90,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReImage(int clubId, [Remainder] string image)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {
@@ -116,8 +116,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ClubForceReDescription(int clubId, [Remainder] string desc)
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var club = await db.ClubInfos.FirstOrDefaultAsync(x => x.Id == clubId && x.GuildId == Context.Guild.Id.RawValue);
             if (club == null)
             {
@@ -145,8 +145,8 @@ namespace Hanekawa.Bot.Modules.Club
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task ToggleClubRole()
         {
-            using var scope = Context.ServiceProvider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            
+            await using var db = Context.ServiceScope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateClubConfigAsync(Context.Guild);
             if (cfg.RoleEnabled)
             {
