@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var background = await db.Backgrounds.ToListAsync();
             if (background == null || background.Count == 0)
             {
-                var files = Directory.GetFiles("Data/Profile/default/", "*.jpg");
+                var files = Directory.GetFiles("Data/Profile/default/");
                 var file = files[_random.Next(files.Length)];
                 using var img = Image.Load(file);
                 return img.Clone(x => x.Resize(400, 400));
