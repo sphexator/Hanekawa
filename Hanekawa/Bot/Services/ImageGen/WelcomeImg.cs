@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Database;
+using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
@@ -53,16 +54,16 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
-            using var img = await Image.LoadAsync(await _client.GetStreamAsync(list[_random.Next(list.Count)].Url));
-            img.Mutate(x => x.Resize(600, 78));
-            return img;
+            var response = await _client.GetStreamAsync(list[_random.Next(list.Count)].Url);
+            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            return img.Clone(x => x.Resize(600, 78));
         }
 
         private async Task<Image> GetBanner(string url)
         {
-            using var img = await Image.LoadAsync(await _client.GetStreamAsync(url));
-            img.Mutate(x => x.Resize(600, 78));
-            return img;
+            var response = await _client.GetStreamAsync(url);
+            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            return img.Clone(x => x.Resize(600, 78));
         }
     }
 }

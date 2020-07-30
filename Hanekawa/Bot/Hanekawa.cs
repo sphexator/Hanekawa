@@ -31,6 +31,14 @@ namespace Hanekawa.Bot
             AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
+
+            this.CommandExecuted += Hanekawa_CommandExecuted;
+        }
+
+        private Task Hanekawa_CommandExecuted(CommandExecutedEventArgs e)
+        {
+            (e.Context as HanekawaCommandContext)?.Scope.Dispose();
+            return Task.CompletedTask;
         }
 
         protected override async ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
@@ -41,12 +49,6 @@ namespace Hanekawa.Bot
         {
             var scope = this.CreateScope();
             return new ValueTask<DiscordCommandContext>(new HanekawaCommandContext(scope, this, prefix, message, scope.ServiceProvider.GetRequiredService<ColourService>()));
-        }
-
-        protected override ValueTask AfterExecutedAsync(IResult result, DiscordCommandContext context)
-        {
-            (context as HanekawaCommandContext)?.Scope.Dispose();
-            return base.AfterExecutedAsync(result, context);
         }
     }
 }

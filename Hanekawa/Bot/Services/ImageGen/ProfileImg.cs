@@ -98,14 +98,13 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var files = Directory.GetFiles("Data/Profile/default/", "*.jpg");
                 var file = files[_random.Next(files.Length)];
                 using var img = Image.Load(file);
-                img.Mutate(x => x.Resize(400, 400));
-                return img;
+                return img.Clone(x => x.Resize(400, 400));
             }
             else
             {
-                using var img = await Image.LoadAsync(await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl));
-                img.Mutate(x => x.Resize(400, 400));
-                return img;
+                var response = await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl);
+                using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+                return img.Clone(x => x.Resize(400, 400));
             }
         }
 

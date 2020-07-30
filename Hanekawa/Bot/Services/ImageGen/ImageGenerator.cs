@@ -9,7 +9,6 @@ using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.Bot.Services.ImageGen
@@ -83,34 +82,38 @@ namespace Hanekawa.Bot.Services.ImageGen
             _arial = _fonts.Install("Data/Fonts/ARIAL.TTF");
 
             _welcomeFontRegular = new Font(_times, 33, FontStyle.Regular);
-            _welcomeTemplate = Image.Load("Data/Welcome/Default.png", new PngDecoder {IgnoreMetadata = true }) as Image<Rgba32>;
+            _welcomeTemplate = Image.Load("Data/Welcome/Default.png", new PngDecoder {IgnoreMetadata = true });
 
             _profileText = new Font(_arial, 20, FontStyle.Regular);
             _profileName = new Font(_arial, 32, FontStyle.Regular);
-            _profileTemplate = Image.Load("Data/Profile/Template/Template.png", new PngDecoder { IgnoreMetadata = true }) as Image<Rgba32>;
+            _profileTemplate = Image.Load("Data/Profile/Template/Template.png", new PngDecoder { IgnoreMetadata = true });
         }
 
         private async Task<Image> GetAvatarAsync(CachedMember user, Size size, int radius)
         {
-            var response = await _client.GetStreamAsync(user.GetAvatarUrl());
-            using var img = await Image.LoadAsync(response);
+            var avatar = await _client.GetStreamAsync(user.GetAvatarUrl(ImageFormat.Png));
+            var response = avatar.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.ConvertToAvatar(size, radius));
         }
 
         private async Task<Image> GetAvatarAsync(CachedMember user, Size size)
         {
-            var response = await _client.GetStreamAsync(user.GetAvatarUrl());
-            using var img = await Image.LoadAsync(response);
-            img.Mutate(x => x.Resize(size));
-            return img;
+            var avatar = await _client.GetStreamAsync(user.GetAvatarUrl(ImageFormat.Png));
+            var response = avatar.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response.ToEditable());
+            return img.Clone(x => x.Resize(size));
         }
 
         private async Task<Image> GetAvatarAsync(string imgUrl, Size size)
         {
-            var response = await _client.GetStreamAsync(imgUrl);
-            using var img = await Image.LoadAsync(response);
-            img.Mutate(x => x.Resize(size));
-            return img;
+            var avatar = await _client.GetStreamAsync(imgUrl);
+            var response = avatar.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            return img.Clone(x => x.Resize(size));
         }
     }
 }
