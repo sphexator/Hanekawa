@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
@@ -22,75 +23,75 @@ namespace Hanekawa.Database
         public DbService(DbContextOptions options) : base(options) { }
 
         // Account
-        public virtual DbSet<Account> Accounts { get; set; }
-        public virtual DbSet<AccountGlobal> AccountGlobals { get; set; }
-        public virtual DbSet<LevelReward> LevelRewards { get; set; }
-        public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
-        public virtual DbSet<EventPayout> EventPayouts { get; set; }
-        public virtual DbSet<Highlight> Highlights { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<AccountGlobal> AccountGlobals { get; set; }
+        public DbSet<LevelReward> LevelRewards { get; set; }
+        public DbSet<LevelExpEvent> LevelExpEvents { get; set; }
+        public DbSet<EventPayout> EventPayouts { get; set; }
+        public DbSet<Highlight> Highlights { get; set; }
 
         // Stores
-        public virtual DbSet<ServerStore> ServerStores { get; set; }
+        public DbSet<ServerStore> ServerStores { get; set; }
 
         // Inventory
-        public virtual DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
 
         // Items
-        public virtual DbSet<Item> Items { get; set; }
-        public virtual DbSet<Background> Backgrounds { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Background> Backgrounds { get; set; }
 
         // Achievements
-        public virtual DbSet<AchievementMeta> Achievements { get; set; }
-        public virtual DbSet<AchievementName> AchievementNames { get; set; }
-        public virtual DbSet<AchievementTracker> AchievementTrackers { get; set; }
-        public virtual DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
-        public virtual DbSet<AchievementDifficulty> AchievementDifficulties { get; set; }
-        public virtual DbSet<AchievementType> AchievementTypes { get; set; }
+        public DbSet<AchievementMeta> Achievements { get; set; }
+        public DbSet<AchievementName> AchievementNames { get; set; }
+        public DbSet<AchievementTracker> AchievementTrackers { get; set; }
+        public DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
+        public DbSet<AchievementDifficulty> AchievementDifficulties { get; set; }
+        public DbSet<AchievementType> AchievementTypes { get; set; }
 
         // Administration
-        public virtual DbSet<Blacklist> Blacklists { get; set; }
-        public virtual DbSet<ApprovalQueue> ApprovalQueues { get; set; }
+        public DbSet<Blacklist> Blacklists { get; set; }
+        public DbSet<ApprovalQueue> ApprovalQueues { get; set; }
 
         //Clubs
-        public virtual DbSet<ClubInformation> ClubInfos { get; set; }
-        public virtual DbSet<ClubUser> ClubPlayers { get; set; }
-        public virtual DbSet<ClubBlacklist> ClubBlacklists { get; set; }
+        public DbSet<ClubInformation> ClubInfos { get; set; }
+        public DbSet<ClubUser> ClubPlayers { get; set; }
+        public DbSet<ClubBlacklist> ClubBlacklists { get; set; }
 
         //Bot Game
-        public virtual DbSet<GameClass> GameClasses { get; set; }
-        public virtual DbSet<GameConfig> GameConfigs { get; set; }
-        public virtual DbSet<GameEnemy> GameEnemies { get; set; }
+        public DbSet<GameClass> GameClasses { get; set; }
+        public DbSet<GameConfig> GameConfigs { get; set; }
+        public DbSet<GameEnemy> GameEnemies { get; set; }
 
         //Config
-        public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
-        public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
-        public virtual DbSet<BoardConfig> BoardConfigs { get; set; }
-        public virtual DbSet<ChannelConfig> ChannelConfigs { get; set; }
-        public virtual DbSet<ClubConfig> ClubConfigs { get; set; }
-        public virtual DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
-        public virtual DbSet<LevelConfig> LevelConfigs { get; set; }
-        public virtual DbSet<LoggingConfig> LoggingConfigs { get; set; }
-        public virtual DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
-        public virtual DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
-        public virtual DbSet<DropConfig> DropConfigs { get; set; }
+        public DbSet<GuildConfig> GuildConfigs { get; set; }
+        public DbSet<AdminConfig> AdminConfigs { get; set; }
+        public DbSet<BoardConfig> BoardConfigs { get; set; }
+        public DbSet<ChannelConfig> ChannelConfigs { get; set; }
+        public DbSet<ClubConfig> ClubConfigs { get; set; }
+        public DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
+        public DbSet<LevelConfig> LevelConfigs { get; set; }
+        public DbSet<LoggingConfig> LoggingConfigs { get; set; }
+        public DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
+        public DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
+        public DbSet<DropConfig> DropConfigs { get; set; }
 
-        public virtual DbSet<LootChannel> LootChannels { get; set; }
-        public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
-        public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
-        public virtual DbSet<Board> Boards { get; set; }
-        public virtual DbSet<LevelExpReduction> LevelExpReductions { get; set; }
-        public virtual DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
+        public DbSet<LootChannel> LootChannels { get; set; }
+        public DbSet<WelcomeBanner> WelcomeBanners { get; set; }
+        public DbSet<IgnoreChannel> IgnoreChannels { get; set; }
+        public DbSet<Board> Boards { get; set; }
+        public DbSet<LevelExpReduction> LevelExpReductions { get; set; }
+        public DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
 
         //Moderation
-        public virtual DbSet<ModLog> ModLogs { get; set; }
-        public virtual DbSet<MuteTimer> MuteTimers { get; set; }
-        public virtual DbSet<Report> Reports { get; set; }
-        public virtual DbSet<Suggestion> Suggestions { get; set; }
-        public virtual DbSet<Warn> Warns { get; set; }
+        public DbSet<ModLog> ModLogs { get; set; }
+        public DbSet<MuteTimer> MuteTimers { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<Suggestion> Suggestions { get; set; }
+        public DbSet<Warn> Warns { get; set; }
 
         // Music 
-        public virtual DbSet<MusicConfig> MusicConfigs { get; set; }
-        public virtual DbSet<Playlist> Playlists { get; set; }
+        public DbSet<MusicConfig> MusicConfigs { get; set; }
+        public DbSet<Playlist> Playlists { get; set; }
 
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
@@ -452,6 +453,45 @@ namespace Hanekawa.Database
         {
             x.HasKey(e => e.Id);
             x.Property(e => e.Id).ValueGeneratedOnAdd();
+            x.HasData(new List<Background>
+            {
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                },
+                new Background
+                {
+                    BackgroundUrl = ""
+                }
+            });
         });
 
         private void MusicBuilder(ModelBuilder modelBuilder)
