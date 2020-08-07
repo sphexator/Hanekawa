@@ -1,21 +1,26 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 
+#nullable enable
+
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService
     {
-        public void SetBoardEmote(SocketGuild guild, string emote) =>
+        public void SetBoardEmote(SocketGuild guild, string emote)
+        {
             _reactionEmote.AddOrUpdate(guild.Id, emote, (key, value) => emote);
+        }
 
         public async Task<IEmote> GetEmote(SocketGuild guild, DbService db)
         {
-            var check = _reactionEmote.TryGetValue(guild.Id, out var emoteString);
-            if (!check)
+            if (!_reactionEmote.TryGetValue(guild.Id, out var emoteString))
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(guild);
                 if (Emote.TryParse(cfg.Emote, out var dbEmote))
@@ -26,11 +31,14 @@ namespace Hanekawa.Bot.Services.Board
 
                 cfg.Emote = null;
                 await db.SaveChangesAsync();
-                return new Emoji("U+2B50");
+            }
+            else if (Emote.TryParse(emoteString, out var emote))
+            {
+                return emote;
             }
 
-            if (Emote.TryParse(emoteString, out var emote)) return emote;
-            return new Emoji("U+2B50");
+            var random = new Random();
+            return guild.Emotes.ToList()[random.Next(guild.Emotes.Count)];
         }
     }
 }

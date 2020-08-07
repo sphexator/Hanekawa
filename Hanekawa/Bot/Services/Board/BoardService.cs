@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -10,6 +9,8 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Logging;
+
+#nullable enable
 
 namespace Hanekawa.Bot.Services.Board
 {
@@ -66,7 +67,9 @@ namespace Hanekawa.Bot.Services.Board
                             await db.SaveChangesAsync();
                             await SendMessageAsync(user, message, cfg);
                         }
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} added a reaction in {user.Guild.Id}");
+
+                        _log.LogAction(LogLevel.Information,
+                            $"(Board Service) {user.Id} added a reaction in {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)
@@ -102,7 +105,8 @@ namespace Hanekawa.Bot.Services.Board
                         stat.StarAmount--;
                         await db.SaveChangesAsync();
                         DecreaseReactionAmount(user.Guild, message);
-                        _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id} removed a reaction in {user.Guild.Id}");
+                        _log.LogAction(LogLevel.Information,
+                            $"(Board Service) {user.Id} removed a reaction in {user.Guild.Id}");
                     }
                 }
                 catch (Exception e)
@@ -121,12 +125,12 @@ namespace Hanekawa.Bot.Services.Board
                 if (!(channel is SocketTextChannel ch)) return;
                 var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id, out var messages);
                 if (!msgCheck) return;
-                if (messages.TryGetValue(message.Id, out _)) messages.Remove(message.Id);
+                if (messages != null && messages.TryGetValue(message.Id, out _)) messages.Remove(message.Id);
             });
             return Task.CompletedTask;
         }
 
-        private async Task<RestUserMessage> SendMessageAsync(SocketGuildUser rctUser, IUserMessage msg, BoardConfig cfg)
+        private async Task SendMessageAsync(SocketGuildUser rctUser, IUserMessage msg, BoardConfig cfg)
         {
             var user = msg.Author as SocketGuildUser;
             var embed = new EmbedBuilder
@@ -137,16 +141,16 @@ namespace Hanekawa.Bot.Services.Board
                     Url = user.GetAvatar(),
                     IconUrl = msg.GetJumpUrl()
                 },
-                Color = user.Roles.OrderByDescending(x => x.Position)
+                Color = user?.Roles.OrderByDescending(x => x.Position)
                     .FirstOrDefault(x => x.Color.RawValue != 0)?.Color,
                 Description = msg.Content,
                 Footer = new EmbedFooterBuilder {Text = msg.Channel.Name},
                 Timestamp = msg.Timestamp
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
-            if (!cfg.Channel.HasValue) return null;
+            if (!cfg.Channel.HasValue) return;
             var channel = rctUser.Guild.GetTextChannel(cfg.Channel.Value);
-            return await channel.SendMessageAsync(null, false, embed.Build());
+            await channel.SendMessageAsync(null, false, embed.Build());
         }
     }
 }
