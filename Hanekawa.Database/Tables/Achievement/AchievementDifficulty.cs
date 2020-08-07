@@ -1,8 +1,10 @@
 ﻿namespace Hanekawa.Database.Tables.Achievement
 {
-    public class AchievementDifficulty
+    public enum AchievementDifficulty
     {
-        public int DifficultyId { get; set; }
-        public string Name { get; set; } = "Test difficulty";
+        Normal,
+        Rare,
+        Epic,
+        Legendary
     }
 }

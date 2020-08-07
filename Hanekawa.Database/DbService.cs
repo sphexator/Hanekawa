@@ -457,39 +457,27 @@ namespace Hanekawa.Database
             {
                 new Background
                 {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/epIb29P.png"
                 },
                 new Background
                 {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
                 },
                 new Background
                 {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
                 },
                 new Background
                 {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
                 },
                 new Background
                 {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
                 },
                 new Background
                 {
-                    BackgroundUrl = ""
-                },
-                new Background
-                {
-                    BackgroundUrl = ""
-                },
-                new Background
-                {
-                    BackgroundUrl = ""
-                },
-                new Background
-                {
-                    BackgroundUrl = ""
+                    BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
                 }
             });
         });
