@@ -306,7 +306,7 @@ namespace Hanekawa.Bot.Modules.Administration
             }
             else
             {
-                var pages = await _warn.GetFullWarnlogAsync(user, db);
+                var pages = await WarnService.GetFullWarnlogAsync(user, db);
                 await Context.PaginatedReply(pages, user, $"Warn log for {user}");
             }
         }

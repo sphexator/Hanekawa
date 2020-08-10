@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             return embed;
         }
 
-        public async Task<List<string>> GetFullWarnlogAsync(CachedMember user, DbService db)
+        public static async Task<List<string>> GetFullWarnlogAsync(CachedMember user, DbService db)
         {
             var userdata = await db.GetOrCreateUserData(user);
             var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue).ToListAsync();
@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             return result;
         }
 
-        private async Task<List<LocalEmbedFieldBuilder>> GetWarnings(CachedMember user, DbService db)
+        private static async Task<List<LocalEmbedFieldBuilder>> GetWarnings(CachedMember user, DbService db)
         {
             var result = new List<LocalEmbedFieldBuilder>();
             var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue && x.Valid)

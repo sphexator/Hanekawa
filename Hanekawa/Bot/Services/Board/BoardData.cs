@@ -7,15 +7,15 @@ namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService
     {
-        private readonly ConcurrentDictionary<ulong, string> _reactionEmote
+        private static readonly ConcurrentDictionary<ulong, string> ReactionEmote
             = new ConcurrentDictionary<ulong, string>();
 
-        private readonly ConcurrentDictionary<ulong, MemoryCache> _reactionMessages
+        private static readonly ConcurrentDictionary<ulong, MemoryCache> ReactionMessages
             = new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private int GetReactionAmount(CachedGuild guild, IMessage msg)
+        private static int GetReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var messages = ReactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (check)
             {
@@ -27,9 +27,9 @@ namespace Hanekawa.Bot.Services.Board
             return 0;
         }
 
-        private void IncreaseReactionAmount(CachedGuild guild, IMessage msg)
+        private static void IncreaseReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var messages = ReactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (check)
             {
@@ -41,9 +41,9 @@ namespace Hanekawa.Bot.Services.Board
             messages.Set(msg.Id.RawValue, 1, TimeSpan.FromDays(1));
         }
 
-        private void DecreaseReactionAmount(CachedGuild guild, IMessage msg)
+        private static void DecreaseReactionAmount(CachedGuild guild, IMessage msg)
         {
-            var messages = _reactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var messages = ReactionMessages.GetOrAdd(guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             var check = messages.TryGetValue(msg.Id.RawValue, out var result);
             if (!check) return;
             var amount = (int) result;

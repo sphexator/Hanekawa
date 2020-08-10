@@ -141,7 +141,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             return role;
         }
 
-        private async Task<IRole> CreateRole(CachedGuild guild, AdminConfig cfg, DbService db)
+        private static async Task<IRole> CreateRole(CachedGuild guild, AdminConfig cfg, DbService db)
         {
             var role = guild.Roles.FirstOrDefault(x => x.Value.Name.ToLower() == "mute").Value as IRole;
             if (role == null)

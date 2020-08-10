@@ -15,7 +15,7 @@ namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService
     {
-        public async Task PromoteUserAsync(CachedMember user, ClubUser clubUser, ClubInformation clubInfo,
+        public static async Task PromoteUserAsync(CachedMember user, ClubUser clubUser, ClubInformation clubInfo,
             DbService db)
         {
             if (clubUser.Rank == 2)
@@ -35,7 +35,7 @@ namespace Hanekawa.Bot.Services.Club
             await db.SaveChangesAsync();
         }
 
-        public async Task DemoteAsync(ClubUser clubUser, DbService db)
+        public static async Task DemoteAsync(ClubUser clubUser, DbService db)
         {
             if (clubUser.Rank == 3) return;
             clubUser.Rank++;
@@ -131,7 +131,7 @@ namespace Hanekawa.Bot.Services.Club
                 await user.Guild.GetTextChannel(club.Channel.Value).AddOrModifyOverwriteAsync(new LocalOverwrite(user.Id.RawValue, OverwriteTargetType.Member, _allowOverwrite));
         }
 
-        private async Task RemoveRoleOrChannelPermissions(CachedUser user, CachedGuild guild, ClubInformation club,
+        private static async Task RemoveRoleOrChannelPermissions(CachedUser user, CachedGuild guild, ClubInformation club,
             ClubConfig cfg = null)
         {
             try
@@ -148,7 +148,7 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        private async Task Disband(CachedUser user, ClubInformation club, DbService db)
+        private static async Task Disband(CachedUser user, ClubInformation club, DbService db)
         {
             var clubMembers = await db.ClubPlayers.Where(x => x.ClubId == club.Id).ToListAsync();
             if (clubMembers.Count == 0)

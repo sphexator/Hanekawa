@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Disqord.Rest;
 using Hanekawa.Database;
@@ -32,7 +31,7 @@ namespace Hanekawa.Bot.Services.Board
 
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            foreach (var x in db.BoardConfigs) _reactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
+            foreach (var x in db.BoardConfigs) ReactionEmote.TryAdd(x.GuildId, x.Emote ?? "⭐");
         }
 
         private Task ReactionAddedAsync(ReactionAddedEventArgs e)
@@ -115,14 +114,14 @@ namespace Hanekawa.Bot.Services.Board
             _ = Task.Run(() =>
             {
                 if (!(e.Channel is CachedTextChannel ch)) return;
-                var msgCheck = _reactionMessages.TryGetValue(ch.Guild.Id.RawValue, out var messages);
+                var msgCheck = ReactionMessages.TryGetValue(ch.Guild.Id.RawValue, out var messages);
                 if (!msgCheck) return;
                 if (messages.TryGetValue(e.Message.Id.RawValue, out _)) messages.Remove(e.Message.Id.RawValue);
             });
             return Task.CompletedTask;
         }
 
-        private async Task<RestUserMessage> SendMessageAsync(CachedMember rctUser, CachedUserMessage msg, BoardConfig cfg)
+        private static async Task<RestUserMessage> SendMessageAsync(CachedMember rctUser, CachedUserMessage msg, BoardConfig cfg)
         {
             var user = msg.Author as CachedMember;
             var embed = new LocalEmbedBuilder

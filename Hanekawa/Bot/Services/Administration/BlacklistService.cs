@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Shared.Interfaces;

@@ -45,7 +45,6 @@ namespace Hanekawa.Database
         public DbSet<AchievementName> AchievementNames { get; set; }
         public DbSet<AchievementTracker> AchievementTrackers { get; set; }
         public DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
-        public DbSet<AchievementDifficulty> AchievementDifficulties { get; set; }
         public DbSet<AchievementType> AchievementTypes { get; set; }
 
         // Administration
@@ -113,21 +112,21 @@ namespace Hanekawa.Database
             InternalBuilder(modelBuilder);
         }
 
-        private void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>
+        private static void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>
         {
             x.HasKey(e => e.GuildId);
             x.Property(e => e.GuildId).HasConversion<long>();
             x.Property(e => e.ResponsibleUser).HasConversion<long>();
         });
 
-        private void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
+        private static void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
         {
             x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
             x.Property(e => e.GuildId).HasConversion<long>();
             x.Property(e => e.UserId).HasConversion<long>();
         });
 
-        private void ItemBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Item>(x =>
+        private static void ItemBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Item>(x =>
         {
             x.HasKey(e => e.Id);
             x.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -138,14 +137,14 @@ namespace Hanekawa.Database
                 v => (ItemType) Enum.Parse(typeof(ItemType), v));
         });
 
-        private void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>
+        private static void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>
         {
             x.HasKey(e => new {e.GuildId, e.RoleId});
             x.Property(e => e.GuildId).HasConversion<long>();
             x.Property(e => e.RoleId).HasConversion<long>();
         });
 
-        private void AccountBuilder(ModelBuilder modelBuilder)
+        private static void AccountBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(x =>
             {
@@ -187,14 +186,13 @@ namespace Hanekawa.Database
             });
         }
 
-        private void AchievementBuilder(ModelBuilder modelBuilder)
+        private static void AchievementBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AchievementMeta>(x =>
             {
                 x.HasKey(e => e.AchievementId);
                 x.Property(e => e.AchievementId).ValueGeneratedOnAdd();
                 x.HasOne(p => p.AchievementName).WithMany();
-                x.HasOne(p => p.AchievementDifficulty).WithMany();
                 x.HasOne(p => p.AchievementType).WithMany();
             });
             modelBuilder.Entity<AchievementName>(x =>
@@ -218,14 +216,9 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.TypeId);
                 x.Property(e => e.TypeId).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<AchievementDifficulty>(x =>
-            {
-                x.HasKey(e => e.DifficultyId);
-                x.Property(e => e.DifficultyId).ValueGeneratedOnAdd();
-            });
         }
 
-        private void GameBuilder(ModelBuilder modelBuilder)
+        private static void GameBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GameClass>(x =>
             {
@@ -245,7 +238,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void AdministrationBuilder(ModelBuilder modelBuilder)
+        private static void AdministrationBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModLog>(x =>
             {
@@ -292,7 +285,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ClubBuilder(ModelBuilder modelBuilder)
+        private static void ClubBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClubInformation>(x =>
             {
@@ -322,7 +315,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ConfigBuilder(ModelBuilder modelBuilder)
+        private static void ConfigBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GuildConfig>(x =>
             {
@@ -449,7 +442,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ProfileBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Background>(x =>
+        private static void ProfileBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Background>(x =>
         {
             x.HasKey(e => e.Id);
             x.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -482,7 +475,7 @@ namespace Hanekawa.Database
             });
         });
 
-        private void MusicBuilder(ModelBuilder modelBuilder)
+        private static void MusicBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MusicConfig>(x =>
             {
@@ -498,7 +491,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void InternalBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Log>(x =>
+        private static void InternalBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Log>(x =>
         {
             x.HasKey(e => e.Id);
             x.Property(e => e.Id).ValueGeneratedOnAdd();

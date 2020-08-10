@@ -173,28 +173,28 @@ namespace Hanekawa.Bot.Services.Club
             }
         }
 
-        public async Task UpdatePostNameAsync(IUserMessage msg, string name)
+        public static async Task UpdatePostNameAsync(IUserMessage msg, string name)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Author.Name = name;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        public async Task UpdatePostDescriptionAsync(IUserMessage msg, string content)
+        public static async Task UpdatePostDescriptionAsync(IUserMessage msg, string content)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Description = content;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        public async Task UpdatePostIconAsync(IUserMessage msg, string icon)
+        public static async Task UpdatePostIconAsync(IUserMessage msg, string icon)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.Author.IconUrl = icon;
             await msg.ModifyAsync(x => x.Embed = embedDesc.Build());
         }
 
-        public async Task UpdatePostImageAsync(IUserMessage msg, string image)
+        public static async Task UpdatePostImageAsync(IUserMessage msg, string image)
         {
             var embedDesc = msg.Embeds.First().ToEmbedBuilder();
             embedDesc.ImageUrl = image;

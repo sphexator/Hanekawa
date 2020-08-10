@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;

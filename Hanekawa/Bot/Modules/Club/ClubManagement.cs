@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
+using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
@@ -248,12 +249,12 @@ namespace Hanekawa.Bot.Modules.Club
                     return;
                 }
 
-                await _club.PromoteUserAsync(user, toPromote, club, db);
+                await ClubService.PromoteUserAsync(user, toPromote, club, db);
                 await Context.ReplyAsync($"Transferred ownership of {club.Name} to {user.Mention}");
             }
             else
             {
-                await _club.PromoteUserAsync(user, toPromote, club, db);
+                await ClubService.PromoteUserAsync(user, toPromote, club, db);
                 await Context.ReplyAsync($"Promoted {user.Mention} to rank 2.");
             }
         }
@@ -286,7 +287,7 @@ namespace Hanekawa.Bot.Modules.Club
             }
 
             if (toDemote.Rank == 1) return;
-            await _club.DemoteAsync(toDemote, db);
+            await ClubService.DemoteAsync(toDemote, db);
             await Context.ReplyAsync($"Demoted {user.Mention} down to rank 3 in {club.Name}",
                 Color.Green);
         }

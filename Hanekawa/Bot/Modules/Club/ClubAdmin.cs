@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -42,7 +43,7 @@ namespace Hanekawa.Bot.Modules.Club
             {
                 var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
                     .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                await _club.UpdatePostNameAsync(msg, name);
+                await ClubService.UpdatePostNameAsync(msg, name);
             }
 
             if (club.Role.HasValue)
@@ -80,7 +81,7 @@ namespace Hanekawa.Bot.Modules.Club
             {
                 var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
                     .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                await _club.UpdatePostIconAsync(msg, icon);
+                await ClubService.UpdatePostIconAsync(msg, icon);
             }
         }
 
@@ -106,7 +107,7 @@ namespace Hanekawa.Bot.Modules.Club
             {
                 var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
                     .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                await _club.UpdatePostImageAsync(msg, image);
+                await ClubService.UpdatePostImageAsync(msg, image);
             }
         }
 
@@ -134,7 +135,7 @@ namespace Hanekawa.Bot.Modules.Club
             {
                 var msg = await Context.Guild.GetTextChannel(cfg.AdvertisementChannel.Value)
                     .GetMessageAsync(club.AdMessage.Value) as IUserMessage;
-                await _club.UpdatePostDescriptionAsync(msg, desc);
+                await ClubService.UpdatePostDescriptionAsync(msg, desc);
             }
         }
 
