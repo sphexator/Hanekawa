@@ -272,7 +272,6 @@ namespace Hanekawa.Database
             modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -282,6 +281,9 @@ namespace Hanekawa.Database
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Uploader).HasConversion<long>();
+                x.Property(e => e.Type).HasConversion(
+                v => v.ToString(),
+                v => (ApprovalQueueType)Enum.Parse(typeof(ApprovalQueueType), v));
             });
         }
 

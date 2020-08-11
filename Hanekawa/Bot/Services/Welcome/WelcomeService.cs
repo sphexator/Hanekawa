@@ -51,7 +51,6 @@ namespace Hanekawa.Bot.Services.Welcome
                     var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
                     if (IsRatelimited(user, cfg)) return;
                     if (!cfg.Channel.HasValue) return;
-                    // if (IsRatelimited(user, cfg)) return;
                     var msg = CreateMessage(cfg.Message, user, user.Guild);
                     IMessage message;
                     var channel = user.Guild.GetTextChannel(cfg.Channel.Value);

@@ -6,12 +6,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Bot.Parsers;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Prefix;
 using Hanekawa.Bot.Services.Administration.Warning;
+using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
@@ -104,6 +103,7 @@ namespace Hanekawa
             for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
+            QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
         }
 
         private LoggingConfiguration ConfigureNLog()
