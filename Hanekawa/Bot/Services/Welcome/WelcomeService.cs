@@ -49,6 +49,7 @@ namespace Hanekawa.Bot.Services.Welcome
                     using var scope = _provider.CreateScope();
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
+                    if (IsRatelimited(user, cfg)) return;
                     if (!cfg.Channel.HasValue) return;
                     // if (IsRatelimited(user, cfg)) return;
                     var msg = CreateMessage(cfg.Message, user, user.Guild);
