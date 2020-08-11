@@ -450,26 +450,32 @@ namespace Hanekawa.Database
             {
                 new Background
                 {
+                    Id = 1,
                     BackgroundUrl = "https://i.imgur.com/epIb29P.png"
                 },
                 new Background
                 {
+                    Id = 2,
                     BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
                 },
                 new Background
                 {
+                    Id = 3,
                     BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
                 },
                 new Background
                 {
+                    Id = 4,
                     BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
                 },
                 new Background
                 {
+                    Id = 5,
                     BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
                 },
                 new Background
                 {
+                    Id = 6,
                     BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
                 }
             });

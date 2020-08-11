@@ -13,7 +13,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.BotGame;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
@@ -66,12 +65,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var chance = _random.Next(100);
             GameEnemy enemy;
             /*
-                if (chance >= 90)
+                if (chance >= 95)
                 {
                     var enemies = await db.GameEnemies.Where(x => x.Rare).ToListAsync();
                     enemy = enemies[new Random().Next(enemies.Count)];
                 }
-                else if (chance >= 80)
+                else if (chance >= 90)
                 {
                     var enemies = await db.GameEnemies.Where(x => x.Elite).ToListAsync();
                     enemy = enemies[new Random().Next(enemies.Count)];
@@ -131,7 +130,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             GameClass playerOne = null;
             GameClass playerTwo = null;
 
-            using (var scope = _provider.CreateScope())
+            using var scope = _provider.CreateScope();
             await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
             {
                 var userData = await db.GetOrCreateUserData(context.Member);
@@ -198,7 +197,6 @@ namespace Hanekawa.Bot.Services.Game.Ship
                                     $"Looted **${enemy.CreditGain}** and gained **{enemy.ExpGain}** exp.");
                     RemoveBattle(context);
 
-                    using (var scope = _provider.CreateScope())
                     await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         var userData = await db.GetOrCreateUserData(context.Member);
@@ -215,8 +213,6 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     userField.Value = $"{playerOneHp}/{playerOneHpMax}";
                     enemyField.Value = $"0/{playerTwoHpMax}";
                     await msg.ModifyAsync(x => x.Embed = embed.Build());
-                    //var _ = NpcKill(context.User.Id.RawValue);
-                    // TODO: Invoke this into achievement
                     continue;
                 }
 
@@ -309,7 +305,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 Account winner = null;
                 Account loser = null;
 
-                using (var scope = _provider.CreateScope())
+                using var scope = _provider.CreateScope();
                 await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     userData = await db.GetOrCreateUserData(context.Member);
@@ -457,7 +453,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 }
 
                 if (bet.HasValue && bet != 0)
-                    using (var scope = _provider.CreateScope())
+                {
                     await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         winner.Credit += bet.Value;
@@ -465,11 +461,10 @@ namespace Hanekawa.Bot.Services.Game.Ship
                         await db.SaveChangesAsync();
                         await _achievement.PvpKill(winner.UserId, winner.GuildId, db);
                     }
+                }
 
                 UpdateDuel(context, false);
                 _log.LogAction(LogLevel.Information, "(Ship Game) Completed duel");
-                // TODO: Invoke PvP achievement here
-                //PvpKill?.Invoke(winner.UserId);
             }
             catch(Exception e)
             {
@@ -543,6 +538,6 @@ namespace Hanekawa.Bot.Services.Game.Ship
             gChannels.AddOrUpdate(context.Channel.Id.RawValue, false, (key, old) => old = false);
         }
 
-        private string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);
+        private static string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);
     }
 }
