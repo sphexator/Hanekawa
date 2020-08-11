@@ -116,6 +116,8 @@ namespace Hanekawa.Bot.Modules.Settings
                     }
 
                 content = string.Join("\n", channels);
+                db.IgnoreChannels.RemoveRange(toRemove);
+                await db.SaveChangesAsync();
             }
             else
             {
