@@ -4,6 +4,8 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 
+#nullable enable
+
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService

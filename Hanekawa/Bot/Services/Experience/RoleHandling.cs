@@ -10,6 +10,8 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 
+#nullable enable
+
 namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService
@@ -51,6 +53,7 @@ namespace Hanekawa.Bot.Services.Experience
                 await RoleCheckAsync(user, cfg, userData, db);
                 return;
             }
+
             var role = user.Guild.GetRole(lvRole.Role);
             if (role == null)
             {
@@ -58,6 +61,7 @@ namespace Hanekawa.Bot.Services.Experience
                 await db.SaveChangesAsync();
                 return;
             }
+
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.TryAddRoleAsync(role);
         }
@@ -91,7 +95,7 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 var x = roleList[i];
                 var getRole = user.Guild.GetRole(x.Role);
-                if(getRole == null) continue;
+                if (getRole == null) continue;
                 if (stack)
                 {
                     if (userData.Level < x.Level) continue;
@@ -100,9 +104,8 @@ namespace Hanekawa.Bot.Services.Experience
                 else
                 {
                     if (userData.Level >= x.Level && x.Stackable)
-                    {
-                        if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
-                    }
+                        if (currentUser.HierarchyCheck(getRole))
+                            roles.Add(getRole);
 
                     if (userData.Level >= x.Level) role = x.Role;
                 }
