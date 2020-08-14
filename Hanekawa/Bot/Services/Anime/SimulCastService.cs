@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.ServiceModel.Syndication;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Disqord;
-using Disqord.Bot;
-using Disqord.Events;
-using Hanekawa.AnimeSimulCast;
-using Hanekawa.AnimeSimulCast.Entity;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions.Embed;
@@ -13,51 +12,76 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Anime
 {
-    public class SimulCastService : INService, IRequired
+    public class SimulCastService : BackgroundService, INService, IRequired
     {
-        private readonly AnimeSimulCastClient _anime;
         private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public SimulCastService(AnimeSimulCastClient anime, Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        private const string RssFeed = "https://www.crunchyroll.com/rss/anime?lang=enGB";
+        private string _lastItem;
+
+        public SimulCastService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
-            _anime = anime;
             _client = client;
             _log = log;
             _provider = provider;
             _colourService = colourService;
-
-            _anime.AnimeAired += AnimeAired;
-            _client.Ready += SetupSimulCast;
         }
 
-        private Task SetupSimulCast(ReadyEventArgs e)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _ = _anime.Start();
-            return Task.CompletedTask;
-        }
-
-        private Task AnimeAired(AnimeData data)
-        {
-            _ = Task.Run(async () =>
+            using var reader = XmlReader.Create(RssFeed);
+            var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
+            if (feed != null)
             {
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync().ConfigureAwait(false);
-                foreach (var x in premiumList)
+                _lastItem = feed.Id;
+            }
+            while (stoppingToken.IsCancellationRequested)
+            {
+                try
                 {
-                    await PostAsync(x, data).ConfigureAwait(false);
-                    await Task.Delay(5000).ConfigureAwait(false);
+                    feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
+                    if (feed == null) return;
+                    if (feed.Id == _lastItem) return;
+                    feed.Id = _lastItem;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var premiumList = await db.GuildConfigs.Where(x => x.Premium).ToListAsync(cancellationToken: stoppingToken).ConfigureAwait(false);
+                    for (var i = 0; i < premiumList.Count; i++)
+                    {
+                        var x = premiumList[i];
+                        try
+                        {
+                            var data = new AnimeData
+                            {
+                                Title = feed.Title.Text,
+                                Time = feed.PublishDate
+                            };
+                            var url = feed.Links.FirstOrDefault();
+                            if (url != null) data.Url = url.Uri.AbsoluteUri;
+                            await PostAsync(x, data);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.LogAction(LogLevel.Error, e, $"(Anime Cast Service) Unable to post to {x.GuildId}");
+                        }
+                    }
+
+                    await db.SaveChangesAsync(stoppingToken);
                 }
-                _log.LogAction(LogLevel.Information, $"(Anime Simulcast) Announced {data.Title} in {premiumList.Count} guilds");
-            });
-            return Task.CompletedTask;
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, "(Anime Cast Service) Error reading feed");
+                }
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+            }
         }
 
         private async Task PostAsync(GuildConfig cfg, AnimeData data)
@@ -68,8 +92,13 @@ namespace Hanekawa.Bot.Services.Anime
                 var guild = _client.GetGuild(cfg.GuildId);
                 if (guild == null) return;
                 _log.LogAction(LogLevel.Information, $"Posting anime event to {guild.Name}");
-                await guild.GetTextChannel(cfg.AnimeAirChannel.Value)
-                    .ReplyAsync(BuildEmbed(data, cfg.GuildId));
+                var channel = guild.GetTextChannel(cfg.AnimeAirChannel.Value);
+                if (channel == null)
+                {
+                    cfg.AnimeAirChannel = null;
+                    return;
+                }
+                await channel.ReplyAsync(BuildEmbed(data, cfg.GuildId));
             }
             catch (Exception e)
             {
@@ -87,5 +116,12 @@ namespace Hanekawa.Bot.Services.Anime
                 .WithTimestamp(data.Time);
             return embed;
         }
+    }
+
+    public class AnimeData
+    {
+        public string Title { get; set; }
+        public string Url { get; set; }
+        public DateTimeOffset Time { get; set; }
     }
 }

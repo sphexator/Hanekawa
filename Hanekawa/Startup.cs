@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.AnimeSimulCast;
 using Hanekawa.Bot.Prefix;
 using Hanekawa.Bot.Services.Administration.Warning;
+using Hanekawa.Bot.Services.Anime;
 using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
@@ -41,16 +41,16 @@ namespace Hanekawa
         {
             services.AddControllers();
             services.AddHostedService<RunBot>();
+            services.AddHostedService<SimulCastService>();
             services.AddSingleton(Configuration);
             services.AddLogging();
             services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
-            services.AddSingleton(new AnimeSimulCastClient());
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
             services.AddSingleton(new ColourService());
             services.UseQuartz(typeof(WarnService));
 
-            var assembly = Assembly.GetAssembly(typeof(Program));
+            var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();

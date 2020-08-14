@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Logging;
-using Hanekawa.AnimeSimulCast;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.Extensions.Logging;
@@ -20,22 +18,18 @@ namespace Hanekawa.Bot.Services
 {
     public class InternalLogService : INService, IRequired
     {
-        private readonly AnimeSimulCastClient _castClient;
         private readonly Hanekawa _client;
         private readonly ILogger<InternalLogService> _logger;
 
         public InternalLogService(Hanekawa client,
-            ILogger<InternalLogService> logger, AnimeSimulCastClient castClient)
+            ILogger<InternalLogService> logger)
         {
             _client = client;
             _logger = logger;
-            _castClient = castClient;
 
             _client.Logger.MessageLogged += Logger_MessageLogged;
             _client.CommandExecutionFailed += CommandErrorLog;
             _client.CommandExecuted += CommandExecuted;
-
-            _castClient.Log += SimulCastClientLog;
         }
 
         private void Logger_MessageLogged(object sender, MessageLoggedEventArgs e) => _logger.Log(LogSevToLogLevel(e.Severity), e.Exception, e.Message);

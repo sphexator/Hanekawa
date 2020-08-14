@@ -73,6 +73,7 @@
         <PackageReference Include="SixLabors.Shapes" Version="1.0.0-beta0009" />
         <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
         <PackageReference Include="System.Linq" Version="4.3.0" />
+        <PackageReference Include="System.ServiceModel.Syndication" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -86,7 +87,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Hanekawa.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj" />
       <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
       <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
     </ItemGroup>

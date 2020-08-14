@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Entity\" />
+  </ItemGroup>
+
 </Project>
