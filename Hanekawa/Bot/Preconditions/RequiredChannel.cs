@@ -98,8 +98,8 @@ namespace Hanekawa.Bot.Preconditions
                     GuildId = channel.Guild.Id,
                     ChannelId = channel.Id
                 };
-                await db.IgnoreChannels.AddAsync(data);
                 db.IgnoreChannels.Update(data);
+                await db.IgnoreChannels.AddAsync(data);
                 await db.SaveChangesAsync();
                 return true;
             }
