@@ -11,6 +11,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
+using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
 using Hanekawa.Shared;
@@ -92,6 +93,9 @@ namespace Hanekawa.Database
         public DbSet<MusicConfig> MusicConfigs { get; set; }
         public DbSet<Playlist> Playlists { get; set; }
 
+        // Premium
+        public DbSet<MvpConfig> MvpConfigs { get; set; }
+
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -109,6 +113,7 @@ namespace Hanekawa.Database
             AdministrationBuilder(modelBuilder);
             ProfileBuilder(modelBuilder);
             MusicBuilder(modelBuilder);
+            PremiumBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
         }
 
@@ -496,6 +501,19 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => new {e.GuildId, e.Name});
                 x.Property(e => e.GuildId).HasConversion<long>();
+            });
+        }
+
+        private static void PremiumBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MvpConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.RoleId).HasConversion<long>();
+                x.Property(e => e.Day).HasConversion(
+                    v => v.ToString(),
+                    v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
             });
         }
 
