@@ -37,16 +37,28 @@ namespace Hanekawa.Bot.Services.Anime
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var reader = XmlReader.Create(RssFeed);
-            var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
-            if (feed != null)
+            try
             {
-                _lastItem = feed.Id;
+                using (var reader = XmlReader.Create(RssFeed))
+                {
+                    var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
+                    if (feed != null)
+                    {
+                        _lastItem = feed.Id;
+                    }
+                }
             }
+            catch
+            {
+                // ignored
+            }
+
             while (stoppingToken.IsCancellationRequested)
             {
                 try
                 {
+                    using var reader = XmlReader.Create(RssFeed);
+                    var feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
                     feed = SyndicationFeed.Load(reader).Items.FirstOrDefault();
                     if (feed == null) return;
                     if (feed.Id == _lastItem) return;
