@@ -107,6 +107,7 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("rep")]
         [Description("Rewards a reputation to a user. Usable once a day")]
         [Remarks("rep @bob#0000")]
+        [RequiredChannel]
         public async Task RepAsync(SocketGuildUser user = null)
         {
             if (user == Context.User) return;

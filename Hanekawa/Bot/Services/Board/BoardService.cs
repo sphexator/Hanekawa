@@ -136,7 +136,7 @@ namespace Hanekawa.Bot.Services.Board
                     Name = $"{user.GetName()}",
                     Url = user.GetAvatar()
                 },
-                Color = user.Roles.OrderByDescending(x => x.Position)
+                Color = user?.Roles.OrderByDescending(x => x.Position)
                     .FirstOrDefault(x => x.Color.RawValue != 0)?.Color,
                 Description = msg.Content,
                 Footer = new EmbedFooterBuilder {Text = msg.Channel.Name},
@@ -144,7 +144,7 @@ namespace Hanekawa.Bot.Services.Board
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
             if (!cfg.Channel.HasValue) return null;
-            embed.AddField("Original", $"[Jump!]({msg.GetJumpUrl()}]");
+            embed.AddField("Original", $"[Jump!]({msg.GetJumpUrl()})");
             var channel = rctUser.Guild.GetTextChannel(cfg.Channel.Value);
             return await channel.SendMessageAsync(null, false, embed.Build());
         }
