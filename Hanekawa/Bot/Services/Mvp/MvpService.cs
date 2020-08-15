@@ -20,13 +20,13 @@ namespace Hanekawa.Bot.Services.Mvp
 {
     public class MvpService : INService, IRequired, IJob
     {
-        private readonly DiscordClient _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _service;
         private static readonly ConcurrentDictionary<ulong, MemoryCache> Cooldown = new ConcurrentDictionary<ulong, MemoryCache>();
         private static readonly List<ulong> Premium = new List<ulong>();
 
-        public MvpService(DiscordClient client, InternalLogService log, IServiceProvider service)
+        public MvpService(Hanekawa client, InternalLogService log, IServiceProvider service)
         {
             _client = client;
             _log = log;
