@@ -129,8 +129,7 @@ namespace Hanekawa.Bot.Services.Board
                 Author = new LocalEmbedAuthorBuilder
                 {
                     Name = $"{user?.DisplayName ?? msg.Author.Name} (Jump!)",
-                    Url = user?.GetAvatarUrl() ?? msg.Author.GetAvatarUrl(),
-                    IconUrl = msg.JumpUrl
+                    IconUrl = user?.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
                 },
                 Color = user?.Roles.OrderByDescending(x => x.Value.Position)
                     .FirstOrDefault(x => x.Value.Color != null && x.Value.Color.Value != 0).Value.Color,
@@ -140,6 +139,7 @@ namespace Hanekawa.Bot.Services.Board
             };
             if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments.First().Url;
             if (!cfg.Channel.HasValue) return null;
+            embed.AddField("Original", $"[Jump!]({msg.JumpUrl})");
             var channel = rctUser.Guild.GetTextChannel(cfg.Channel.Value);
             return await channel.SendMessageAsync(null, false, embed.Build());
         }

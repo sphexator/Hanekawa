@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -25,6 +26,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Suggest")]
         [Command("suggest")]
         [Description("Sends a suggestion to the server, if they have it enabled")]
+        [RequiredChannel]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.TryDeleteMessageAsync();
@@ -99,6 +101,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Name("Comment Suggestion")]
         [Command("Comment", "rr")]
         [Description("Adds a comment onto a suggestion, usable by user suggesting and server admin")]
+        [RequiredChannel]
         public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
