@@ -1,10 +1,14 @@
-﻿namespace Hanekawa.HungerGames
+﻿using System.Threading.Tasks;
+
+namespace Hanekawa.HungerGames
 {
     public class HungerGameClient
     {
-        public HungerGameClient()
-        {
-            
-        }
+        private HungerGameConfig _config;
+        public HungerGameClient(HungerGameConfig config) => _config = config;
+
+        public void StartGame(){}
+
+        public void NextRound(){}
     }
 }

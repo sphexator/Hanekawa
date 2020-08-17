@@ -14,8 +14,12 @@ using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
+using Hanekawa.HungerGames.Entity;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
+using Inventory = Hanekawa.Database.Tables.Account.Inventory;
+using Item = Hanekawa.Database.Tables.Account.Item;
+using ItemType = Hanekawa.Shared.ItemType;
 
 namespace Hanekawa.Database
 {
@@ -96,6 +100,11 @@ namespace Hanekawa.Database
         // Premium
         public DbSet<MvpConfig> MvpConfigs { get; set; }
 
+        // Hunger Games
+        public DbSet<Participant> HgParticipants { get; set; }
+        public DbSet<HungerGames.Entity.Item> HgItems { get; set; }
+        public DbSet<HungerGames.Entity.Inventory> HgInventories { get; set; }
+
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -114,6 +123,7 @@ namespace Hanekawa.Database
             ProfileBuilder(modelBuilder);
             MusicBuilder(modelBuilder);
             PremiumBuilder(modelBuilder);
+            HungerGameBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
         }
 
@@ -514,6 +524,31 @@ namespace Hanekawa.Database
                 x.Property(e => e.Day).HasConversion(
                     v => v.ToString(),
                     v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
+            });
+        }
+
+        private static void HungerGameBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Participant>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasMany(e => e.Inventory)
+                    .WithOne(e => e.User)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<HungerGames.Entity.Item>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasMany(e => e.Inventories).WithOne(e => e.Item).OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<GameHistory>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Winner).HasConversion<long>();
             });
         }
 

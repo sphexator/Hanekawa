@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hanekawa.HungerGames\Hanekawa.HungerGames.csproj" />
     <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
   </ItemGroup>
 

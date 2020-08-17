@@ -1,13 +1,17 @@
-﻿namespace Hanekawa.HungerGames.Entity
+﻿using System.Collections.Generic;
+
+namespace Hanekawa.HungerGames.Entity
 {
     public class Participant
     {
-        public Participant(ulong id)
+        public Participant(ulong guildId, ulong userId)
         {
-            Id = id;
+            GuildId = guildId;
+            UserId = userId;
         }
 
-        public ulong Id { get; set; }
+        public ulong GuildId { get; set; }
+        public ulong UserId { get; set; }
         public string Name { get; set; } = "Test Unit";
         public string Avatar { get; set; } = null;
         public bool Alive { get; set; } = true;
@@ -17,7 +21,8 @@
         public int Thirst { get; set; } = 0;
         public int Tiredness { get; set; } = 0;
         public bool Bleeding { get; set; } = false;
-        public object Inventory { get; set; }
         public ActionType LatestMove { get; set; } = ActionType.Idle;
+
+        public List<Inventory> Inventory { get; set; }
     }
 }
