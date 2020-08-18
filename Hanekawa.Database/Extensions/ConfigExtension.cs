@@ -20,6 +20,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.GuildConfigs.AddAsync(data).ConfigureAwait(false);
+                context.GuildConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.GuildConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -41,6 +42,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 context.GuildConfigs.Add(data);
+                context.GuildConfigs.Update(data);
                 context.SaveChanges();
                 return context.GuildConfigs.Find(guild);
             }
@@ -62,6 +64,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.AdminConfigs.AddAsync(data).ConfigureAwait(false);
+                context.AdminConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.AdminConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -83,6 +86,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.BoardConfigs.AddAsync(data).ConfigureAwait(false);
+                context.BoardConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.BoardConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -104,6 +108,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.ChannelConfigs.AddAsync(data).ConfigureAwait(false);
+                context.ChannelConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.ChannelConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -124,6 +129,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.ClubConfigs.AddAsync(data).ConfigureAwait(false);
+                context.ClubConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.ClubConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -144,6 +150,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.CurrencyConfigs.AddAsync(data).ConfigureAwait(false);
+                context.CurrencyConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.CurrencyConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -164,6 +171,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.LevelConfigs.AddAsync(data).ConfigureAwait(false);
+                context.LevelConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.LevelConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -185,6 +193,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.LoggingConfigs.AddAsync(data).ConfigureAwait(false);
+                context.LoggingConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.LoggingConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -207,6 +216,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.SuggestionConfigs.AddAsync(data).ConfigureAwait(false);
+                context.SuggestionConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.SuggestionConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -228,6 +238,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.WelcomeConfigs.AddAsync(data).ConfigureAwait(false);
+                context.WelcomeConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.WelcomeConfigs.FindAsync(guild).ConfigureAwait(false);
             }
@@ -248,6 +259,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.DropConfigs.AddAsync(data).ConfigureAwait(false);
+                context.DropConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.DropConfigs.FindAsync(guildId).ConfigureAwait(false);
             }
@@ -268,6 +280,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.MusicConfigs.AddAsync(data).ConfigureAwait(false);
+                context.MusicConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
             }

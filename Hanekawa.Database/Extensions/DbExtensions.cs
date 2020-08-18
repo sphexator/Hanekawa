@@ -24,6 +24,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.EventPayouts.AddAsync(data).ConfigureAwait(false);
+                context.EventPayouts.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.EventPayouts.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue).ConfigureAwait(false);
             }
@@ -49,6 +50,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.Boards.AddAsync(data).ConfigureAwait(false);
+                context.Boards.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.Boards.FindAsync(guild.Id.RawValue, msg.Id.RawValue).ConfigureAwait(false);
             }
@@ -75,6 +77,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.Suggestions.AddAsync(data).ConfigureAwait(false);
+                context.Suggestions.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
             }

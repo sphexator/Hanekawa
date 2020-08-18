@@ -36,6 +36,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.Accounts.AddAsync(data).ConfigureAwait(false);
+                context.Accounts.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.Accounts.FindAsync(user, guild).ConfigureAwait(false);
             }
@@ -54,6 +55,7 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.AccountGlobals.AddAsync(data).ConfigureAwait(false);
+                context.AccountGlobals.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.AccountGlobals.FindAsync(userId).ConfigureAwait(false);
             }

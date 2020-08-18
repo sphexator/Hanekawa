@@ -23,6 +23,8 @@
     <Compile Remove="Migrations\20181018212318_UpdateAchievementTwo.cs" />
     <Compile Remove="Migrations\20190609153534_UpdateBotRewriteTwo.cs" />
     <Compile Remove="Migrations\20190609153534_UpdateBotRewriteTwo.Designer.cs" />
+    <Compile Remove="Migrations\20200818121014_AddedHungerGameAndMvp.cs" />
+    <Compile Remove="Migrations\20200818121014_AddedHungerGameAndMvp.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -338,12 +338,14 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
-                x.Property(E => E.EmbedColor).HasConversion<int>();
+                x.Property(e => e.EmbedColor).HasConversion<int>();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.AnimeAirChannel).HasConversion<long>();
                 x.Property(e => e.EmbedColor).HasConversion<int>();
                 x.Property(e => e.MusicChannel).HasConversion<long>();
                 x.Property(e => e.MusicVcChannel).HasConversion<long>();
+                x.Property(e => e.MvpChannel).HasConversion<long>();
+                x.Property(e => e.HungerGameChannel).HasConversion<long>();
             });
             modelBuilder.Entity<AdminConfig>(x =>
             {

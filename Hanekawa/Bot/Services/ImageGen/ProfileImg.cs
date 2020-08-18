@@ -92,8 +92,8 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<Image> GetProfileBackground(DbService db)
         {
-            var background = await db.Backgrounds.ToListAsync();
-            if (background == null || background.Count == 0)
+            var backgroundList = await db.Backgrounds.ToListAsync();
+            if (backgroundList == null || backgroundList.Count == 0)
             {
                 var files = Directory.GetFiles("Data/Profile/default/");
                 var file = files[_random.Next(files.Length)];
@@ -102,8 +102,10 @@ namespace Hanekawa.Bot.Services.ImageGen
             }
             else
             {
-                var response = await _client.GetStreamAsync(background[_random.Next(background.Count)].BackgroundUrl);
-                using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+                var background = await _client.GetStreamAsync(backgroundList[_random.Next(backgroundList.Count)].BackgroundUrl);
+                var response = background.ToEditable();
+                response.Position = 0;
+                using var img = await Image.LoadAsync(response, new PngDecoder());
                 return img.Clone(x => x.Resize(400, 400));
             }
         }
