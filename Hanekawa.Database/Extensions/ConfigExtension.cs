@@ -3,6 +3,7 @@ using Disqord;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Music;
+using Hanekawa.Database.Tables.Premium;
 
 namespace Hanekawa.Database.Extensions
 {
@@ -283,6 +284,27 @@ namespace Hanekawa.Database.Extensions
                 context.MusicConfigs.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return data;
+            }
+        }
+
+        public static async Task<MvpConfig> GetOrCreateMvpConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateMvpConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+
+        public static async Task<MvpConfig> GetOrCreateMvpConfigAsync(this DbService context, ulong guildId)
+        {
+            var response = await context.MvpConfigs.FindAsync(guildId).ConfigureAwait(false);
+            if (response != null) return response;
+            var data = new MvpConfig { GuildId = guildId };
+            try
+            {
+                await context.MvpConfigs.AddAsync(data).ConfigureAwait(false);
+                context.MvpConfigs.Update(data);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.MvpConfigs.FindAsync(guildId).ConfigureAwait(false);
             }
             catch
             {
