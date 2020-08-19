@@ -61,7 +61,9 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<Image> GetBanner(string url)
         {
-            var response = await _client.GetStreamAsync(url);
+            var background = await _client.GetStreamAsync(url);
+            var response = background.ToEditable();
+            response.Position = 0;
             using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
             return img.Clone(x => x.Resize(600, 78));
         }
