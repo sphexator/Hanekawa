@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Rest;
+using Quartz.Util;
+
 #nullable enable warnings
 namespace Hanekawa.Extensions.Embed
 {
@@ -28,13 +31,19 @@ namespace Hanekawa.Extensions.Embed
                 Description = embed.Description,
                 Color = embed.Color,
                 Title = embed.Title,
-                ImageUrl = embed.ImageUrl,
-                ThumbnailUrl = embed.ThumbnailUrl,
                 Timestamp = embed.Timestamp,
-                Url = embed.Url,
-                Author = new LocalEmbedAuthorBuilder{ IconUrl = embed.Author.IconUrl, Name = embed.Author.Name, Url = embed.Author.Url },
-                Footer = new LocalEmbedFooterBuilder{ IconUrl = embed.Footer.IconUrl, Text = embed.Footer.IconUrl }
+                Url = embed.Url
             };
+
+            if (embed.Author.Name != null)
+                newEmbed.Author = new LocalEmbedAuthorBuilder
+                    {IconUrl = embed.Author.IconUrl, Name = embed.Author.Name, Url = embed.Author.Url};
+            if (embed.Footer.Text != null)
+                newEmbed.Footer = new LocalEmbedFooterBuilder
+                    {IconUrl = embed.Footer.IconUrl, Text = embed.Footer.IconUrl};
+
+            if (embed.ImageUrl != null) newEmbed.ImageUrl = embed.ImageUrl;
+            if (embed.ThumbnailUrl != null) newEmbed.ThumbnailUrl = embed.ThumbnailUrl;
             foreach (var x in embed.Fields) newEmbed.AddField(x.Name, x.Value, x.IsInline);
 
             return newEmbed;
@@ -47,13 +56,25 @@ namespace Hanekawa.Extensions.Embed
                 Description = embed.Description,
                 Color = embed.Color,
                 Title = embed.Title,
-                ImageUrl = embed.Image.Url ?? embed.Image.ProxyUrl,
-                ThumbnailUrl = embed.Thumbnail.Url ?? embed.Thumbnail.ProxyUrl,
                 Timestamp = embed.Timestamp,
-                Url = embed.Url,
-                Author = new LocalEmbedAuthorBuilder { IconUrl = embed.Author.IconUrl, Name = embed.Author.Name, Url = embed.Author.Url },
-                Footer = new LocalEmbedFooterBuilder { IconUrl = embed.Footer.IconUrl, Text = embed.Footer.IconUrl }
+                Url = embed.Url
             };
+
+            if (!embed.Author.Name.IsNullOrWhiteSpace())
+                newEmbed.Author = new LocalEmbedAuthorBuilder
+                    { IconUrl = embed.Author.IconUrl, Name = embed.Author.Name, Url = embed.Author.Url };
+            if (!embed.Footer.Text.IsNullOrWhiteSpace())
+                newEmbed.Footer = new LocalEmbedFooterBuilder
+                    { IconUrl = embed.Footer.IconUrl, Text = embed.Footer.Text };
+            try
+            {
+                if (embed.Image.Url != null) newEmbed.ImageUrl = embed.Image.Url;
+                if (embed.Thumbnail.Url != null) newEmbed.ThumbnailUrl = embed.Thumbnail.Url;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             foreach (var x in embed.Fields) newEmbed.AddField(x.Name, x.Value, x.IsInline);
 
             return newEmbed;
