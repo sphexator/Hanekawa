@@ -195,11 +195,7 @@ namespace Hanekawa
             config.AddTarget(asyncDatabaseTarget);
 
             config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncConsoleTarget);
-#if(DEBUG == false)
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);      
-#endif
             config.AddRule(LogLevel.Warn, LogLevel.Fatal, asyncDatabaseTarget);
-
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
             

@@ -11,47 +11,48 @@ using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Qmmands;
+using Logger = NLog.Logger;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa.Bot.Services
 {
     public class InternalLogService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly ILogger<InternalLogService> _logger;
+        private readonly Logger _logger;
 
-        public InternalLogService(Hanekawa client,
-            ILogger<InternalLogService> logger)
+        public InternalLogService(Hanekawa client)
         {
             _client = client;
-            _logger = logger;
+            _logger = LogManager.GetCurrentClassLogger();
 
-            _client.Logger.Logged += Logger_Logged; ;
+            _client.Logger.Logged += DisqordLogger;
             _client.CommandExecutionFailed += CommandErrorLog;
             _client.CommandExecuted += CommandExecuted;
         }
 
-        private void Logger_Logged(object sender, LogEventArgs e) => _logger.Log(LogSevToLogLevel(e.Severity), e.Exception, e.Message);
-        public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
+        private void DisqordLogger(object sender, LogEventArgs e) => _logger.Log(LogSevToNLogLevel(e.Severity), e.Exception, e.Message);
+        public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(LogLvlToNLogLvl(l), e, m);
 
-        public void LogAction(LogLevel l, string m) => _logger.Log(l, m);
+        public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
 
         private Task SimulCastClientLog(Exception e)
         {
-            _logger.Log(LogLevel.Error, e, e.Message);
+            _logger.Log(NLog.LogLevel.Error, e, e.Message);
             return Task.CompletedTask;
         }
 
         private Task CommandExecuted(CommandExecutedEventArgs e)
         {
-            _logger.Log(LogLevel.Information, $"Executed Command {e.Context.Command.Name}");
+            _logger.Log(NLog.LogLevel.Info, $"Executed Command {e.Context.Command.Name}");
             return Task.CompletedTask;
         }
 
         private Task CommandErrorLog(CommandExecutionFailedEventArgs e)
         {
-            _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
+            _logger.Log(NLog.LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             _ = Task.Run(async () =>
             {
                 if (!(e.Context is DiscordCommandContext context)) return;
@@ -133,16 +134,28 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private LogLevel LogSevToLogLevel(LogSeverity log) =>
+        private NLog.LogLevel LogSevToNLogLevel(LogSeverity log) =>
             log switch
             {
-                LogSeverity.Critical => LogLevel.Critical,
-                LogSeverity.Error => LogLevel.Error,
-                LogSeverity.Warning => LogLevel.Warning,
-                LogSeverity.Information => LogLevel.Information,
-                LogSeverity.Trace => LogLevel.Trace,
-                LogSeverity.Debug => LogLevel.Debug,
-                _ => LogLevel.None
+                LogSeverity.Critical => NLog.LogLevel.Fatal,
+                LogSeverity.Error => NLog.LogLevel.Error,
+                LogSeverity.Warning => NLog.LogLevel.Warn,
+                LogSeverity.Information => NLog.LogLevel.Info,
+                LogSeverity.Trace => NLog.LogLevel.Trace,
+                LogSeverity.Debug => NLog.LogLevel.Debug,
+                _ => NLog.LogLevel.Off
+            };
+
+        private NLog.LogLevel LogLvlToNLogLvl(LogLevel log) =>
+            log switch
+            {
+                LogLevel.Critical => NLog.LogLevel.Fatal,
+                LogLevel.Error => NLog.LogLevel.Error,
+                LogLevel.Warning => NLog.LogLevel.Warn,
+                LogLevel.Information => NLog.LogLevel.Info,
+                LogLevel.Trace => NLog.LogLevel.Trace,
+                LogLevel.Debug => NLog.LogLevel.Debug,
+                _ => NLog.LogLevel.Off
             };
     }
 }
