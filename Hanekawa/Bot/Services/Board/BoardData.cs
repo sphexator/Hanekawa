@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using Disqord;
 using Microsoft.Extensions.Caching.Memory;
 
+#nullable enable
+
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService
