@@ -66,7 +66,6 @@ namespace Hanekawa.Bot.Services.Mvp
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var userData = await db.GetOrCreateUserData(user);
                 userData.MvpCount++;
-                db.Accounts.Update(userData);
                 await db.SaveChangesAsync();
             });
             return Task.CompletedTask;

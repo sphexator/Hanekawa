@@ -20,7 +20,6 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.AchievementTrackers.AddAsync(data).ConfigureAwait(false);
-                context.AchievementTrackers.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.AchievementTrackers.FindAsync(type, user.Id.RawValue).ConfigureAwait(false);
             }
@@ -44,7 +43,6 @@ namespace Hanekawa.Database.Extensions
             try
             {
                 await context.AchievementTrackers.AddAsync(data).ConfigureAwait(false);
-                context.AchievementTrackers.Update(data);
                 await context.SaveChangesAsync().ConfigureAwait(false);
                 return await context.AchievementTrackers.FindAsync(type, userId).ConfigureAwait(false);
             }

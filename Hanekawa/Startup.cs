@@ -44,7 +44,10 @@ namespace Hanekawa
             services.AddHostedService<SimulCastService>();
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddDbContextPool<DbService>(x => x.UseNpgsql(Configuration["connectionString"]));
+            services.AddDbContextPool<DbService>(x =>
+            {
+                x.UseNpgsql(Configuration["connectionString"]);
+            });
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
             services.AddSingleton(new ColourService());
