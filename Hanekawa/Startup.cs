@@ -27,6 +27,7 @@ using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
 using Quartz;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
 {
@@ -47,6 +48,8 @@ namespace Hanekawa
             services.AddDbContextPool<DbService>(x =>
             {
                 x.UseNpgsql(Configuration["connectionString"]);
+                x.EnableDetailedErrors();
+                x.EnableSensitiveDataLogging(false);
             });
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
