@@ -52,6 +52,7 @@ namespace Hanekawa
             services.AddSingleton(new HttpClient());
             services.AddSingleton(new ColourService());
             services.UseQuartz(typeof(WarnService));
+            services.UseQuartz(typeof(MvpService));
 
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
