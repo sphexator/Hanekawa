@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
-using Cooldown = Hanekawa.Shared.Command.Cooldown;
 
 namespace Hanekawa.Bot.Modules.Level
 {
     [Name("Level")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public partial class Level : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public partial class Level : HanekawaCommandModule
     {
         private readonly ExpService _exp;
         public Level(ExpService exp) => _exp = exp;
@@ -28,33 +29,34 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Level Reset")]
         [Command("lr", "lvlreset")]
         [Description("Reset the server level/exp back to 0")]
-        [RequireServerOwner]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, Cooldown.WhateverWithMoreSalt)]
+        [GuildOwnerOnly]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ResetAsync()
         {
             await Context.ReplyAsync(
                 "You sure you want to completely reset server levels/exp on this server?(y/n) \nthis change can't be reversed.");
-            var response = await NextMessageAsync(true, true, TimeSpan.FromMinutes(1));
-            if (response == null || response.Content.ToLower() != "y")
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
+                x => x.Message.Author.Id.RawValue == Context.Member.Id.RawValue && x.Message.Guild.Id.RawValue == Context.Guild.Id.RawValue,
+                TimeSpan.FromMinutes(1));
+            if (response == null || response.Message.Content.ToLower() != "y")
             {
                 await Context.ReplyAsync("Aborting...");
                 return;
             }
 
             var msg = await Context.ReplyAsync("Server level reset in progress...");
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue);
+            foreach (var x in users)
             {
-                var users = db.Accounts.Where(x => x.GuildId == Context.Guild.Id);
-                foreach (var x in users)
-                {
-                    x.Level = 1;
-                    x.Exp = 0;
-                    x.TotalExp = 0;
-                }
-
-                db.Accounts.UpdateRange(users);
-                await db.SaveChangesAsync();
+                x.Level = 1;
+                x.Exp = 0;
+                x.TotalExp = 0;
             }
+
+            db.Accounts.UpdateRange(users);
+            await db.SaveChangesAsync();
 
             var updEmbed = msg.Embeds.First().ToEmbedBuilder();
             updEmbed.Color = Color.Green;
@@ -62,209 +64,86 @@ namespace Hanekawa.Bot.Modules.Level
             await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
         }
 
-        [Name("Reset User")]
-        [Command("resetuser")]
-        [Description("Resets a users level and exp back to 0")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [Priority(1)]
-        public async Task ResetUserAsync(SocketGuildUser user)
-        {
-            await using (var db = new DbService())
-            {
-                var userData =
-                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id);
-                if (userData == null)
-                {
-                    await Context.ReplyAsync("Couldn't find a user with that ID...", Color.Red);
-                    return;
-                }
-                userData.Level = 1;
-                userData.Exp = 0;
-                userData.TotalExp = 0;
-
-                await db.SaveChangesAsync();
-            }
-
-            await Context.ReplyAsync($"Fully reset {user.Mention} back to level 1!", Color.Green);
-        }
-
-        [Name("Reset User")]
-        [Command("resetuser")]
-        [Description("Resets a users level and exp back to 0")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task ResetUserAsync(ulong user)
-        {
-            await using (var db = new DbService())
-            {
-                var userData =
-                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
-                if (userData == null)
-                {
-                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
-                    return;
-                }
-                userData.Level = 1;
-                userData.Exp = 0;
-                userData.TotalExp = 0;
-
-                await db.SaveChangesAsync();
-            }
-
-            await Context.ReplyAsync($"Fully reset {user} back to level 1!", Color.Green);
-        }
-
-        [Name("Remove User")]
-        [Command("removeuser")]
-        [Description("Removes a user the database by their ID")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RemoveUserAsync(ulong user)
-        {
-            await using (var db = new DbService())
-            {
-                var userData =
-                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
-                if (userData == null)
-                {
-                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
-                    return;
-                }
-                db.Accounts.Remove(userData);
-                await db.SaveChangesAsync();
-            }
-
-            await Context.ReplyAsync($"Fully removed {user} from the database!", Color.Green);
-        }
-
-        [Name("Disable User")]
-        [Command("disableuser")]
-        [Description("Manually disables a user from the bot (automatically enabled once typing again). This prevents them from showing on leaderboards.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task DisableUserAsync(ulong user)
-        {
-            await using (var db = new DbService())
-            {
-                var userData =
-                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user);
-                if (userData == null)
-                {
-                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
-                    return;
-                }
-
-                userData.Active = false;
-                await db.SaveChangesAsync();
-            }
-
-            await Context.ReplyAsync($"Disabled {user} from the database!", Color.Green);
-        }
-
-        [Name("Disable User")]
-        [Command("disableuser")]
-        [Description("Manually disables a user from the bot (automatically enabled once typing again). This prevents them from showing on leaderboards.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [Priority(1)]
-        public async Task DisableUserAsync(SocketGuildUser user)
-        {
-            await using (var db = new DbService())
-            {
-                var userData =
-                    await db.Accounts.FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id);
-                if (userData == null)
-                {
-                    await Context.ReplyAsync($"Couldn't find a user with that ID...", Color.Red);
-                    return;
-                }
-
-                userData.Active = false;
-                await db.SaveChangesAsync();
-            }
-
-            await Context.ReplyAsync($"Disabled {user.Mention} from the database!", Color.Green);
-        }
-
         [Name("Set Level")]
         [Command("sl", "setlvl")]
         [Description("Sets a user to a desired level")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SetLevelAsync(SocketGuildUser user, int level)
+        [GuildOwnerOnly]
+        public async Task SetLevelAsync(CachedMember user, int level)
         {
             if (level <= 0) return;
             var totalExp = 0;
             for (var i = 1; i < level + 1; i++) totalExp += _exp.ExpToNextLevel(i);
 
-            using (var db = new DbService())
-            {
-                var userdata = await db.GetOrCreateUserData(user);
-                userdata.Level = level;
-                userdata.Exp = 0;
-                userdata.TotalExp = totalExp;
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set {user.Mention} level to {level}", Color.Green);
-            }
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var userdata = await db.GetOrCreateUserData(user);
+            userdata.Level = level;
+            userdata.Exp = 0;
+            userdata.TotalExp = totalExp;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set {user.Mention} level to {level}", Color.Green);
         }
 
         [Name("Level Role Stack")]
         [Command("lrs", "lvlstack")]
         [Description("Toggles between level roles stacking or keep the highest earned one")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task StackToggleAsync()
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
+            if (cfg.StackLvlRoles)
             {
-                var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
-                if (cfg.StackLvlRoles)
-                {
-                    cfg.StackLvlRoles = false;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Users will now only keep the highest earned role.",
-                        Color.Green);
-                }
-                else
-                {
-                    cfg.StackLvlRoles = true;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Level roles does now stack.",
-                        Color.Green);
-                }
+                cfg.StackLvlRoles = false;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Users will now only keep the highest earned role.",
+                    Color.Green);
+            }
+            else
+            {
+                cfg.StackLvlRoles = true;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Level roles does now stack.",
+                    Color.Green);
             }
         }
 
         [Name("Level Stack Role Add")]
         [Command("lsa", "lvlsadd")]
         [Description("Adds a role reward which will stack regardless of setting (useful for permission role)")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task StackAddAsync(int level, [Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task StackAddAsync(int level, [Remainder] CachedRole role) =>
             await AddLevelRole(Context, level, role, true);
 
         [Name("Level Role Add")]
         [Command("la", "lvladd")]
         [Description("Adds a role reward")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task AddAsync(int level, [Remainder] SocketRole role) =>
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task AddAsync(int level, [Remainder] CachedRole role) =>
             await AddLevelRole(Context, level, role, false);
 
         [Name("Level Role Remove")]
         [Command("lr", "lvlremove")]
         [Description("Adds a role reward")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveAsync(int level)
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
+                x.GuildId == Context.Guild.Id.RawValue && x.Level == level);
+            if (role == null)
             {
-                var role = await db.LevelRewards.FirstOrDefaultAsync(x =>
-                    x.GuildId == Context.Guild.Id && x.Level == level);
-                if (role == null)
-                {
-                    await Context.ReplyAsync("Couldn't find a role with that level", Color.Red);
-                    return;
-                }
-
-                db.LevelRewards.Remove(role);
-                await db.SaveChangesAsync();
-                await Context.ReplyAsync(
-                    $"Removed {Context.Guild.Roles.First(x => x.Id == role.Role).Name} from level rewards!",
-                    Color.Green);
+                await Context.ReplyAsync("Couldn't find a role with that level", Color.Red);
+                return;
             }
+
+            db.LevelRewards.Remove(role);
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync(
+                $"Removed {Context.Guild.Roles.First(x => x.Key == role.Role).Value.Name} from level rewards!",
+                Color.Green);
         }
 
         [Name("Level List")]
@@ -273,79 +152,78 @@ namespace Hanekawa.Bot.Modules.Level
         [RequiredChannel]
         public async Task LevelListAsync()
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderBy(x => x.Level)
+                .ToListAsync();
+            if (levels == null || levels.Count == 0)
             {
-                var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id).OrderBy(x => x.Level)
-                    .ToListAsync();
-                if (levels.Count == 0)
-                {
-                    await Context.ReplyAsync("No level roles added.");
-                    return;
-                }
-
-                var pages = new List<string>();
-                for (var i = 0; i < levels.Count; i++)
-                {
-                    var x = levels[i];
-                    try
-                    {
-                        var role = Context.Guild.GetRole(x.Role) ??
-                                   Context.Guild.Roles.FirstOrDefault(z => z.Id == x.Role);
-                        if (role == null) pages.Add("Role not found");
-                        else
-                            pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
-                                      $"Level: {x.Level}\n" +
-                                      $"Stack: {x.Stackable}");
-                    }
-                    catch
-                    {
-                        pages.Add("Role not found");
-                        //todo: Handle this better in the future
-                    }
-                }
-
-                await Context.ReplyPaginated(pages, Context.Guild, $"Level Roles for {Context.Guild.Name}");
+                await Context.ReplyAsync("No level roles added.");
+                return;
             }
+
+            var pages = new List<string>();
+            for (var i = 0; i < levels.Count; i++)
+            {
+                var x = levels[i];
+                try
+                {
+                    var role = Context.Guild.GetRole(x.Role);
+                    if (role == null) pages.Add("Role not found");
+                    else
+                        pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
+                                  $"Level: {x.Level}\n" +
+                                  $"Stack: {x.Stackable}");
+                }
+                catch
+                {
+                    pages.Add("Role not found");
+                    //todo: Handle this better in the future
+                }
+            }
+
+            await Context.PaginatedReply(pages, Context.Guild, $"Level Roles for {Context.Guild.Name}");
         }
 
-        private async Task AddLevelRole(HanekawaContext context, int level, SocketRole role, bool stack)
+        private async Task AddLevelRole(DiscordCommandContext context, int level, CachedRole role, bool stack)
         {
             if (level <= 0) return;
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var check = await db.LevelRewards.FindAsync(context.Guild.Id.RawValue, level);
+            if (check != null)
             {
-                var check = await db.LevelRewards.FindAsync(context.Guild.Id, level);
-                if (check != null)
+                var gRole = context.Guild.GetRole(check.Role);
+                if (gRole != null)
                 {
-                    var gRole = context.Guild.GetRole(check.Role);
-                    if (gRole != null)
+                    await Context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
+                    var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(
+                        x => x.Message.Author.Id.RawValue == Context.Member.Id.RawValue && x.Message.Guild.Id.RawValue == Context.Guild.Id.RawValue,
+                        TimeSpan.FromMinutes(1));
+                    if (response == null || response.Message.Content.ToLower() != "y")
                     {
-                        await context.ReplyAsync($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
-                        var response = await NextMessageAsync();
-                        if (response == null || response.Content.ToLower() != "y")
-                        {
-                            await context.ReplyAsync("Cancelling.");
-                            return;
-                        }
+                        await Context.ReplyAsync("Cancelling.");
+                        return;
+                    }
 
-                        if (response.Content.ToLower() != "yes")
-                        {
-                            await context.ReplyAsync("Cancelling.");
-                            return;
-                        }
+                    if (response.Message.Content.ToLower() != "yes")
+                    {
+                        await Context.ReplyAsync("Cancelling.");
+                        return;
                     }
                 }
-
-                var data = new LevelReward
-                {
-                    GuildId = context.Guild.Id,
-                    Level = level,
-                    Role = role.Id,
-                    Stackable = stack
-                };
-                await db.LevelRewards.AddAsync(data);
-                await db.SaveChangesAsync();
-                await context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
             }
+
+            var data = new LevelReward
+            {
+                GuildId = context.Guild.Id.RawValue,
+                Level = level,
+                Role = role.Id.RawValue,
+                Stackable = stack
+            };
+            await db.LevelRewards.AddAsync(data);
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
         }
     }
 }

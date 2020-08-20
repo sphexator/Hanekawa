@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Discord;
+using Disqord;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -165,7 +165,7 @@ namespace Hanekawa.Database.Extensions
             account.StarGive = 0;
             account.StarReceive = 0;
             account.Credit = 0;
-            account.UserColor = Color.Purple.RawValue;
+            account.UserColor = (uint)Color.Purple.RawValue;
             return account;
         }
 

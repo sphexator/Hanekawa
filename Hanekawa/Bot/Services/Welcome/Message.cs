@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Welcome
@@ -12,7 +11,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private Regex ServerRegex => new Regex("%SERVER%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private Regex MembersRegex => new Regex("%MEMBERS%", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private string CreateMessage(string msg, IMentionable user, SocketGuild guild)
+        private string CreateMessage(string msg, IMentionable user, CachedGuild guild)
         {
             if (msg.IsNullOrWhiteSpace()) return null;
             if (PlayerRegex.IsMatch(msg)) msg = PlayerRegex.Replace(msg, user.Mention);

@@ -11,7 +11,7 @@ COPY ["nuget.config", ""]
 COPY ["Hanekawa/Hanekawa.csproj", "Hanekawa/"]
 COPY ["Hanekawa.Database/Hanekawa.Database.csproj", "Hanekawa.Database/"]
 COPY ["Hanekawa.Shared/Hanekawa.Shared.csproj", "Hanekawa.Shared/"]
-COPY ["Hanekawa.AnimeSimulCast/Hanekawa.AnimeSimulCast.csproj", "Hanekawa.AnimeSimulCast/"]
+COPY ["Hanekawa.HungerGames/Hanekawa.HungerGames.csproj", "Hanekawa.HungerGames/"]
 RUN dotnet restore "Hanekawa/Hanekawa.csproj"
 COPY . .
 WORKDIR "/src/Hanekawa"

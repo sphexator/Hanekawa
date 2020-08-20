@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
@@ -14,11 +13,12 @@ namespace Hanekawa.Bot.Services.Administration.Warning
 {
     public partial class WarnService
     {
-        public async Task<EmbedBuilder> GetSimpleWarnlogAsync(SocketGuildUser user, DbService db)
+        public async Task<LocalEmbedBuilder> GetSimpleWarnlogAsync(CachedMember user, DbService db)
         {
             var userdata = await db.GetOrCreateUserData(user);
-            var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
+            var roleList = (from x in user.Roles where x.Value.Name != "@everyone" select x.Value.Name).ToList();
             var roles = string.Join(", ", roleList);
+            var warnings = await GetWarnings(user, db);
             var content = "**⮞ User Information**\n" +
                           $"Status: {user.GetStatus()}\n" +
                           $"{user.GetGame()}\n" +
@@ -35,28 +35,30 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                           "**⮞ Session**\n" +
                           $"Amount: {userdata.Sessions}\n" +
                           $"Time: {userdata.StatVoiceTime.Humanize(2)} ({userdata.StatVoiceTime})";
-            var embed = new EmbedBuilder()
-                .Create(content, _colourService.Get(user.Guild.Id));
-            embed.Author = new EmbedAuthorBuilder
-                {IconUrl = user.GetAvatar(), Name = $"{user.Username}#{user.DiscriminatorValue} ({user.Id})"};
-            embed.Fields = await GetWarnings(user, db);
+            var embed = new LocalEmbedBuilder()
+                .Create(content, _colourService.Get(user.Guild.Id.RawValue));
+            embed.Author = new LocalEmbedAuthorBuilder
+                {IconUrl = user.GetAvatarUrl(), Name = $"{user.Name}#{user.Discriminator} ({user.Id.RawValue})"};
+            foreach (var x in warnings) embed.AddField(x);
             return embed;
         }
 
-        public async Task<List<string>> GetFullWarnlogAsync(SocketGuildUser user, DbService db)
+        public static async Task<List<string>> GetFullWarnlogAsync(CachedMember user, DbService db)
         {
             var userdata = await db.GetOrCreateUserData(user);
-            var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id).ToListAsync();
-            var roleList = (from x in user.Roles where x.Name != "@everyone" select x.Name).ToList();
+            var warns = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue).ToListAsync();
+            var roleList = (from x in user.Roles where x.Value.Name != "@everyone" select x.Value.Name).ToList();
             var roles = string.Join(", ", roleList);
-            var result = new List<string>();
-            result.Add("*⮞ User Information**\n" +
-                       $"Status: {user.GetStatus()}\n" +
-                       $"{user.GetGame()}\n" +
-                       $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n");
-            result.Add("**⮞ Member Information**\n" +
-                       $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
-                       $"Roles: {roles}\n");
+            var result = new List<string>
+            {
+                "*⮞ User Information**\n" +
+                $"Status: {user.GetStatus()}\n" +
+                $"{user.GetGame()}\n" +
+                $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n",
+                "**⮞ Member Information**\n" +
+                $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
+                $"Roles: {roles}\n"
+            };
             if (userdata.FirstMessage != null)
                 result.Add("**⮞ Activity**\n" +
                            $"Last Message: {userdata.LastMessage.Humanize()}\n" +
@@ -76,7 +78,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             foreach (var x in warns)
             {
                 var input = $"{x.Id} - {x.Type}\n" +
-                            $"Moderator: {user.Guild.GetUser(x.UserId).Mention ?? $"{x.Id}"}\n" +
+                            $"Moderator: {user.Guild.GetMember(x.UserId).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";
@@ -87,24 +89,23 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             return result;
         }
 
-        private async Task<List<EmbedFieldBuilder>> GetWarnings(SocketGuildUser user, DbService db)
+        private static async Task<List<LocalEmbedFieldBuilder>> GetWarnings(CachedMember user, DbService db)
         {
-            var result = new List<EmbedFieldBuilder>();
-            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id && x.UserId == user.Id && x.Valid)
+            var result = new List<LocalEmbedFieldBuilder>();
+            var list = await db.Warns.Where(x => x.GuildId == user.Guild.Id.RawValue && x.UserId == user.Id.RawValue && x.Valid)
                 .ToListAsync();
             var count = list.Count;
             if (count > 10) count = 10;
             for (var i = 0; i < count; i++)
             {
                 var x = list[i];
-                var input = $"Moderator: {user.Guild.GetUser(x.UserId).Mention ?? $"{x.Id}"}\n" +
+                var input = $"Moderator: {user.Guild.GetMember(x.UserId).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";
                 input += $"Date: {x.Time.Humanize()} ({x.Time})";
-                ;
-                result.Add(new EmbedFieldBuilder
-                    {Name = $"Warn ID: {x.Id} - {x.Type}", IsInline = true, Value = input.Truncate(999)});
+                result.Add(new LocalEmbedFieldBuilder
+                    { Name = $"Warn ID: {x.Id} - {x.Type}", IsInline = true, Value = input.Truncate(999)} );
             }
 
             return result;

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using Disqord;
+using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Shared.Interfaces;
@@ -13,55 +14,57 @@ namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
-        private readonly DiscordSocketClient _client;
+        private readonly Hanekawa _client;
         private readonly InternalLogService _log;
+        private readonly IServiceProvider _provider;
 
-        public AchievementService(DiscordSocketClient client, InternalLogService log)
+        public AchievementService(Hanekawa client, InternalLogService log, IServiceProvider provider)
         {
             _client = client;
             _log = log;
+            _provider = provider;
 
             _client.MessageReceived += MessageCount;
         }
 
-        private Task MessageCount(SocketMessage msg)
+        private Task MessageCount(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
             {
-                if (!(msg.Author is SocketGuildUser user)) return;
+                var msg = e.Message;
+                if (!(msg.Author is CachedMember user)) return;
                 if (user.IsBot) return;
                 if (msg.Content.Length != 1499) return;
                 try
                 {
-                    using (var db = new DbService())
-                    {
-                        var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
-                        if (achievements == null) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var achievements = await db.Achievements.Where(x => x.TypeId == Fun).ToListAsync();
+                    if (achievements == null) return;
 
-                        if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                    if (achievements.Any(x => x.Requirement == msg.Content.Length && x.Once))
+                    {
+                        var achieve =
+                            achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
+                        if (achieve != null)
                         {
-                            var achieve =
-                                achievements.FirstOrDefault(x => x.Requirement == msg.Content.Length && x.Once);
-                            if (achieve != null)
+                            var data = new AchievementUnlock
                             {
-                                var data = new AchievementUnlock
-                                {
-                                    AchievementId = achieve.AchievementId,
-                                    TypeId = Fun,
-                                    UserId = user.Id,
-                                    Achievement = achieve
-                                };
-                                await db.AchievementUnlocks.AddAsync(data);
-                                await db.SaveChangesAsync();
-                                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id} scored {achieve.Name} in {user.Guild.Id}");
-                            }
+                                AchievementId = achieve.AchievementId,
+                                TypeId = Fun,
+                                UserId = user.Id.RawValue,
+                                Achievement = achieve
+                            };
+                            await db.AchievementUnlocks.AddAsync(data);
+                            await db.SaveChangesAsync();
+                            _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     _log.LogAction(LogLevel.Error, e,
-                        $"(Achievement Service) Error for {user.Id} in {user.Guild.Id} for Message Count - {e.Message}");
+                        $"(Achievement Service) Error for {user.Id.RawValue} in {user.Guild.Id.RawValue} for Message Count - {e.Message}");
                 }
             });
             return Task.CompletedTask;

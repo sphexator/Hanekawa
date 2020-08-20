@@ -44,5 +44,9 @@ namespace Hanekawa.Database.Tables.Account
 
         // Misc
         public DateTime ChannelVoiceTime { get; set; } = DateTime.UtcNow;
+        
+        // Mvp
+        public int MvpCount { get; set; } = 0;
+        public bool MvpOptOut { get; set; } = false;
     }
 }

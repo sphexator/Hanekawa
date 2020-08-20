@@ -1,4 +1,4 @@
-﻿using Discord;
+﻿using Disqord;
 
 namespace Hanekawa.Database.Tables.Account
 {
@@ -12,6 +12,6 @@ namespace Hanekawa.Database.Tables.Account
         public int Credit { get; set; } = 0;
         public int StarReceive { get; set; } = 0;
         public int StarGive { get; set; } = 0;
-        public uint UserColor { get; set; } = Color.Purple.RawValue;
+        public uint UserColor { get; set; } = (uint)Color.Purple.RawValue;
     }
 }

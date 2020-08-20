@@ -12,6 +12,8 @@ namespace Hanekawa.Database.Tables.Config
         // Premium
         public ulong? AnimeAirChannel { get; set; } = null;
         public bool AutomaticEventSchedule { get; set; } = false;
+        public ulong? MvpChannel { get; set; } = null;
+        public ulong? HungerGameChannel { get; set; } = null;
 
         //Music Settings
         public ulong? MusicChannel { get; set; } = null;

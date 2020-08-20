@@ -1,44 +1,33 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+﻿using System.Threading.Tasks;
+using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
-
-#nullable enable
 
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService
     {
-        public void SetBoardEmote(SocketGuild guild, string emote)
-        {
-            _reactionEmote.AddOrUpdate(guild.Id, emote, (key, value) => emote);
-        }
+        public void SetBoardEmote(CachedGuild guild, string emote) =>
+            ReactionEmote.AddOrUpdate(guild.Id.RawValue, emote, (key, value) => emote);
 
-        public async Task<IEmote> GetEmote(SocketGuild guild, DbService db)
+        public static async Task<IEmoji> GetEmote(CachedGuild guild, DbService db)
         {
-            if (!_reactionEmote.TryGetValue(guild.Id, out var emoteString))
+            var check = ReactionEmote.TryGetValue(guild.Id.RawValue, out var emoteString);
+            if (!check)
             {
                 var cfg = await db.GetOrCreateBoardConfigAsync(guild);
-                if (Emote.TryParse(cfg.Emote, out var dbEmote))
+                if (LocalCustomEmoji.TryParse(cfg.Emote, out var dbEmote))
                 {
-                    _reactionEmote.TryAdd(guild.Id, dbEmote.ParseEmoteString());
+                    ReactionEmote.TryAdd(guild.Id.RawValue, dbEmote.MessageFormat);
                     return dbEmote;
                 }
 
                 cfg.Emote = null;
                 await db.SaveChangesAsync();
-            }
-            else if (Emote.TryParse(emoteString, out var emote))
-            {
-                return emote;
+                return new LocalEmoji("U+2B50");
             }
 
-            var random = new Random();
-            return guild.Emotes.ToList()[random.Next(guild.Emotes.Count)];
+            return LocalCustomEmoji.TryParse(emoteString, out var emote) ? (IEmoji) emote : new LocalEmoji("U+2B50");
         }
     }
 }

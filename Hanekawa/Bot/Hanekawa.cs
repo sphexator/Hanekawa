@@ -1,57 +1,54 @@
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Services;
-using Hanekawa.Bot.Services.Administration.Warning;
-using Hanekawa.Bot.Services.Command;
-using Hanekawa.Extensions;
-using Hanekawa.Shared.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Disqord;
+using Disqord.Bot;
+using Disqord.Bot.Parsers;
+using Disqord.Bot.Prefixes;
+using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Quartz;
+using Qmmands;
 
 namespace Hanekawa.Bot
 {
-    public class Hanekawa : BackgroundService
+    public class Hanekawa : DiscordBot
     {
-        private readonly DiscordSocketClient _client;
-        private readonly IConfiguration _config;
-        private readonly IServiceProvider _provider;
-
-        public Hanekawa(DiscordSocketClient client, IServiceProvider provider, IConfiguration config)
+        public Hanekawa(TokenType tokenType, string token, IPrefixProvider prefixProvider, DiscordBotConfiguration configuration) : base(tokenType, token, prefixProvider, configuration)
         {
-            _client = client;
-            _provider = provider;
-            _config = config;
+            AddModules(Assembly.GetEntryAssembly());
+            RemoveTypeParser(GetSpecificTypeParser<CachedRole, CachedRoleTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedMember, CachedMemberTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedUser, CachedUserTypeParser>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedGuildChannel, CachedGuildChannelTypeParser<CachedGuildChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedTextChannel, CachedGuildChannelTypeParser<CachedTextChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedVoiceChannel, CachedGuildChannelTypeParser<CachedVoiceChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<CachedCategoryChannel, CachedGuildChannelTypeParser<CachedCategoryChannel>>());
+
+            AddTypeParser(new CachedRoleTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedMemberTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedUserTypeParser(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedGuildChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
+
+            this.CommandExecuted += Hanekawa_CommandExecuted;
         }
 
-        private void Initialize()
+        private Task Hanekawa_CommandExecuted(CommandExecutedEventArgs e)
         {
-            var assembly = Assembly.GetEntryAssembly();
-            if (assembly != null)
-            {
-                var serviceList = assembly.GetTypes()
-                    .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
-                                && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-                for (var i = 0; i < serviceList.Count; i++) _provider.GetRequiredService(serviceList[i]);
-
-                _provider.GetRequiredService<CommandHandlingService>().InitializeAsync();
-                var scheduler = _provider.GetRequiredService<IScheduler>();
-                QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
-            }
+            (e.Context as HanekawaCommandContext)?.Scope.Dispose();
+            return Task.CompletedTask;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
+            !message.Author.IsBot && !(message.Channel is IPrivateChannel);
+
+        protected override ValueTask<DiscordCommandContext> GetCommandContextAsync(CachedUserMessage message,
+            IPrefix prefix)
         {
-            Initialize();
-            await _client.LoginAsync(TokenType.Bot, _config["token"]);
-            await _client.StartAsync();
-            await Task.Delay(-1, stoppingToken);
+            var scope = this.CreateScope();
+            return new ValueTask<DiscordCommandContext>(new HanekawaCommandContext(scope, this, prefix, message, scope.ServiceProvider.GetRequiredService<ColourService>()));
         }
     }
 }

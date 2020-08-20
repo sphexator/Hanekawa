@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Hanekawa.Shared.Command;
 using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders
 {
-    public class TimeSpanTypeParser : HanekawaTypeParser<TimeSpan>
+    public class TimeSpanTypeParser : TypeParser<TimeSpan>
     {
         private static readonly string[] Formats =
         {
@@ -28,7 +27,7 @@ namespace Hanekawa.Bot.TypeReaders
         };
 
         public override ValueTask<TypeParserResult<TimeSpan>> ParseAsync(Parameter parameter, string value,
-            HanekawaContext context, IServiceProvider provider)
+            CommandContext context)
         {
             if (TimeSpan.TryParseExact(value.ToLowerInvariant(), Formats, CultureInfo.InvariantCulture,
                 out var timespan)) return TypeParserResult<TimeSpan>.Successful(timespan);

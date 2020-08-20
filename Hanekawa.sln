@@ -5,11 +5,11 @@ VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Database", "Hanekawa.Database\Hanekawa.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.AnimeSimulCast", "Hanekawa.AnimeSimulCast\Hanekawa.AnimeSimulCast.csproj", "{0E497342-3259-49A6-A4A5-AE46D4EC4553}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Shared", "Hanekawa.Shared\Hanekawa.Shared.csproj", "{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.HungerGames", "Hanekawa.HungerGames\Hanekawa.HungerGames.csproj", "{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56714493-6317-4237-B7EA-9A9A25E1C999}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E497342-3259-49A6-A4A5-AE46D4EC4553}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36916A6C-1437-4D5E-AF90-245145F30BED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{36916A6C-1437-4D5E-AF90-245145F30BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36916A6C-1437-4D5E-AF90-245145F30BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

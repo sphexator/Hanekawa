@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Shared.Command;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -14,21 +16,21 @@ namespace Hanekawa.Bot.Services.Experience
     {
         private Tuple<ulong, Timer> _expEventTimer;
 
-        public async Task StartEventAsync(DbService db, HanekawaContext context, double multiplier, TimeSpan duration,
+        public async Task StartEventAsync(DbService db, DiscordCommandContext context, double multiplier, TimeSpan duration,
             bool announce = false)
         {
-            var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id);
+            var checkExisting = await db.LevelExpEvents.FindAsync(context.Guild.Id.RawValue);
             if (checkExisting != null && _expEventTimer != null)
             {
                 checkExisting.Time = DateTime.UtcNow + duration;
                 checkExisting.Multiplier = multiplier;
-                if (_expEventTimer.Item1 == context.Guild.Id) _expEventTimer.Item2.Dispose();
+                if (_expEventTimer.Item1 == context.Guild.Id.RawValue) _expEventTimer.Item2.Dispose();
             }
             else
             {
                 await db.LevelExpEvents.AddAsync(new LevelExpEvent
                 {
-                    GuildId = context.Guild.Id,
+                    GuildId = context.Guild.Id.RawValue,
                     Multiplier = multiplier,
                     Time = DateTime.UtcNow + duration,
                     ChannelId = null,
@@ -37,15 +39,16 @@ namespace Hanekawa.Bot.Services.Experience
             }
 
             await db.SaveChangesAsync();
-            _voiceExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (k, v) => multiplier);
-            _textExpMultiplier.AddOrUpdate(context.Guild.Id, multiplier, (key, v) => multiplier);
+            _voiceExpMultiplier.AddOrUpdate(context.Guild.Id.RawValue, multiplier, (k, v) => multiplier);
+            _textExpMultiplier.AddOrUpdate(context.Guild.Id.RawValue, multiplier, (key, v) => multiplier);
         }
 
         private async Task EventHandler(CancellationToken stopToken)
         {
             while (stopToken.IsCancellationRequested)
             {
-                using (var db = new DbService())
+                using (var scope = _provider.CreateScope())
+                await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
                     var nextEvent = await db.LevelExpEvents.OrderBy(x => x.Time).FirstOrDefaultAsync(stopToken);
 
@@ -67,7 +70,7 @@ namespace Hanekawa.Bot.Services.Experience
                         {
                             var timer = new Timer(async _ =>
                                 {
-                                    using var dbService = new DbService();
+                                    await using var dbService = scope.ServiceProvider.GetRequiredService<DbService>();
                                     var cfg = await dbService.GetOrCreateLevelConfigAsync(nextEvent.GuildId);
 
                                     _voiceExpMultiplier.AddOrUpdate(nextEvent.GuildId, cfg.VoiceExpMultiplier,

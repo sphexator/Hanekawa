@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interactive;
+using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,8 +17,8 @@ using Quartz.Util;
 namespace Hanekawa.Bot.Modules.Report
 {
     [Name("Report")]
-    [RequireBotPermission(GuildPermission.EmbedLinks)]
-    public class Report : InteractiveBase
+    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    public class Report : HanekawaCommandModule
     {
         private readonly ColourService _colour;
 
@@ -32,57 +31,68 @@ namespace Hanekawa.Bot.Modules.Report
         {
             await Context.Message.TryDeleteMessageAsync();
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.CreateReport(Context.User, Context.Guild, DateTime.UtcNow);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
-            var embed = new EmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id))
-                .WithAuthor(new EmbedAuthorBuilder
+            var embed = new LocalEmbedBuilder().Create(text, Context.Colour.Get(Context.Guild.Id.RawValue))
+                .WithAuthor(new LocalEmbedAuthorBuilder()
                 {
-                    IconUrl = Context.User.GetAvatar(),
-                    Name = Context.User.GetName()
+                    IconUrl = Context.User.GetAvatarUrl(),
+                    Name = Context.Member.DisplayName
                 })
-                .WithFooter(new EmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id}"})
+                .WithFooter(new LocalEmbedFooterBuilder {Text = $"Report ID: {report.Id} - UserId: {Context.User.Id.RawValue}"})
                 .WithTimestamp(new DateTimeOffset(DateTime.UtcNow));
 
             if (Context.Message.Attachments.FirstOrDefault() != null)
                 embed.ImageUrl = Context.Message.Attachments.First().Url;
             var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value).ReplyAsync(embed);
-            report.MessageId = msg.Id;
+            report.MessageId = msg.Id.RawValue;
             await db.SaveChangesAsync();
-            await ReplyAndDeleteAsync(null, false,
-                new EmbedBuilder().Create("Report sent!", Color.Green).Build());
+            await Context.ReplyAndDeleteAsync(null, false,
+                new LocalEmbedBuilder().Create("Report sent!", Color.Green));
         }
 
         [Name("Respond")]
         [Command("respond")]
         [Description("Respond to a report that's been sent")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RespondAsync(int id, [Remainder] string text)
         {
             if (text.IsNullOrWhiteSpace()) return;
-            using var db = new DbService();
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
-            var report = await db.Reports.FindAsync(id, Context.Guild.Id);
+            var report = await db.Reports.FindAsync(id, Context.Guild.Id.RawValue);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
 
             if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
 
-            var msg = await Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
-                .GetMessageAsync(report.MessageId.Value);
+            var msg = Context.Guild.GetTextChannel(cfg.ReportChannel.Value)
+                .GetMessage(report.MessageId.Value);
             var embed = msg.Embeds.First().ToEmbedBuilder();
             embed.Color = Color.Orange;
-            embed.AddField(Context.User.GetName(), text);
+            embed.AddField(Context.Member.DisplayName, text);
             try
             {
-                var suggestUser = Context.Guild.GetUser(report.UserId);
-                await (await suggestUser.GetOrCreateDMChannelAsync()).ReplyAsync(
+                var suggestUser = Context.Guild.GetMember(report.UserId);
+                if(suggestUser.DmChannel != null) await suggestUser.DmChannel.ReplyAsync(
                     "Your report got a response!\n" +
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
-                    $"{text}", _colour.Get(Context.Guild.Id));
+                    $"{text}", _colour.Get(Context.Guild.Id.RawValue));
+                else
+                {
+                    var dm = await suggestUser.CreateDmChannelAsync();
+                    await dm.ReplyAsync("Your report got a response!\n" +
+                                        "report:\n" +
+                                        $"{embed.Description.Truncate(400)}\n" +
+                                        $"Answer from {Context.User.Mention}:\n" +
+                                        $"{text}", _colour.Get(Context.Guild.Id.RawValue));
+                }
             }
             catch
             {
@@ -95,26 +105,26 @@ namespace Hanekawa.Bot.Modules.Report
         [Name("Channel")]
         [Command("rc")]
         [Description("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetReportChannelAsync(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetReportChannelAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            if (cfg.ReportChannel.HasValue && channel == null)
             {
-                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
-                if (cfg.ReportChannel.HasValue && channel == null)
-                {
-                    cfg.ReportChannel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled report channel", Color.Green);
-                    return;
-                }
-
-                if (channel == null) channel = Context.Channel;
-                cfg.ReportChannel = channel.Id;
+                cfg.ReportChannel = null;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
-                    Color.Green);
+                await Context.ReplyAsync("Disabled report channel", Color.Green);
+                return;
             }
+
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
+            cfg.ReportChannel = channel.Id.RawValue;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"All reports will now be sent to {channel.Mention} !",
+                Color.Green);
         }
     }
 }

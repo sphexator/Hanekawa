@@ -1,98 +1,54 @@
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using Disqord;
 
 namespace Hanekawa.Extensions
 {
     public static class UserExtension
     {
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketGuildUser comparer) 
+        public static bool HierarchyCheck(this CachedMember mainUser, CachedMember comparer) 
             => mainUser.Hierarchy > comparer.Hierarchy;
 
-        public static bool HierarchyCheck(this SocketGuildUser mainUser, SocketRole role) 
+        public static bool HierarchyCheck(this CachedMember mainUser, CachedRole role) 
             => mainUser.Hierarchy > role.Position;
 
-        public static async Task<bool> TryMute(this SocketGuildUser user)
+        public static async Task<bool> TryMute(this CachedMember user)
         {
-            if (!user.VoiceState.HasValue) return false;
+            if (user.VoiceState == null) return false;
             await user.ModifyAsync(x => x.Mute = true);
             return true;
         }
 
-        public static async Task<bool> TryUnMute(this SocketGuildUser user)
+        public static async Task<bool> TryUnMute(this CachedMember user)
         {
-            if (!user.VoiceState.HasValue) return false;
+            if (user.VoiceState == null) return false;
             await user.ModifyAsync(x => x.Mute = false);
             return true;
         }
 
-        public static string GetName(this SocketGuildUser user)
+        public static string GetGame(this CachedUser user)
         {
-            if (user.Nickname != null) return user.Nickname;
-            return user.Username;
-        }
-
-        public static string GetAvatar(this SocketUser user)
-        {
-            var avi = user.GetAvatarUrl(ImageFormat.Auto, 2048);
-            if (avi != null) return avi;
-            return user.GetDefaultAvatarUrl();
-        }
-
-        public static string GetGame(this SocketUser user)
-        {
-            string result;
-            switch (user.Activity.Type)
+            if (user.Presence.Activity == null) return "Currently not playing";
+            var result = user.Presence.Activity.Type switch
             {
-                case ActivityType.Listening:
-                    result = $"Listening: {user.Activity.Name}";
-                    break;
-                case ActivityType.Playing:
-                    result = $"Playing: {user.Activity.Name}";
-                    break;
-                case ActivityType.Streaming:
-                    result = $"Streaming: {user.Activity.Name}";
-                    break;
-                case ActivityType.Watching:
-                    result = $"Watching: {user.Activity.Name}";
-                    break;
-                default:
-                    result = "Currently not playing";
-                    break;
-            }
+                ActivityType.Listening => $"Listening: {user.Presence.Activity.Name}",
+                ActivityType.Playing => $"Playing: {user.Presence.Activity.Name}",
+                ActivityType.Streaming => $"Streaming: {user.Presence.Activity.Name}",
+                ActivityType.Watching => $"Watching: {user.Presence.Activity.Name}",
+                _ => "Currently not playing"
+            };
 
             return result;
         }
 
-        public static string GetStatus(this SocketUser user)
-        {
-            string result;
-            switch (user.Status)
+        public static string GetStatus(this CachedUser user) =>
+            user.Presence.Status switch
             {
-                case UserStatus.Online:
-                    result = "Online";
-                    break;
-                case UserStatus.Idle:
-                    result = "Idle";
-                    break;
-                case UserStatus.AFK:
-                    result = "AFK";
-                    break;
-                case UserStatus.DoNotDisturb:
-                    result = "DND";
-                    break;
-                case UserStatus.Invisible:
-                    result = "Invisible";
-                    break;
-                case UserStatus.Offline:
-                    result = "Offline";
-                    break;
-                default:
-                    result = "N/A";
-                    break;
-            }
-
-            return result;
-        }
+                UserStatus.Online => "Online",
+                UserStatus.Idle => "Idle",
+                UserStatus.DoNotDisturb => "DND",
+                UserStatus.Invisible => "Invisible",
+                UserStatus.Offline => "Offline",
+                _ => "N/A"
+            };
     }
 }

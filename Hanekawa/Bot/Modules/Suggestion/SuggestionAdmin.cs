@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
-using Hanekawa.Bot.Preconditions;
+using Disqord;
+using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -17,72 +16,70 @@ namespace Hanekawa.Bot.Modules.Suggestion
         [Command("ssc", "sschannel")]
         [Description(
             "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetSuggestionChannelAsync(SocketTextChannel channel = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestionChannelAsync(CachedTextChannel channel = null)
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            if (cfg.Channel.HasValue && channel == null)
             {
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-                if (cfg.Channel.HasValue && channel == null)
-                {
-                    cfg.Channel = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Disabled suggestion channel", Color.Green);
-                    return;
-                }
-
-                if (channel == null) channel = Context.Channel;
-                cfg.Channel = channel.Id;
+                cfg.Channel = null;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
-                    Color.Green);
+                await Context.ReplyAsync("Disabled suggestion channel", Color.Green);
+                return;
             }
+
+            channel ??= Context.Channel as CachedTextChannel;
+            if (channel == null) return;
+            cfg.Channel = channel.Id.RawValue;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"All suggestions will now be sent to {channel.Mention} !",
+                Color.Green);
         }
 
         [Name("Suggest Yes Emote")]
         [Command("ssy", "ssyes")]
         [Description("Set custom yes emote for suggestions")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetSuggestEmoteYesAsync(Emote emote = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestEmoteYesAsync(LocalCustomEmoji emote = null)
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            if (emote == null)
             {
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-                if (emote == null)
-                {
-                    cfg.EmoteYes = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
-                    return;
-                }
-
-                cfg.EmoteYes = emote.ParseEmoteString();
+                cfg.EmoteYes = null;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
+                await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
+                return;
             }
+
+            cfg.EmoteYes = emote.MessageFormat;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
         }
 
         [Name("Suggest No Emote")]
         [Command("ssn", "ssno")]
         [Description("Set custom no emote for suggestions")]
-        [RequireUserPermission(GuildPermission.ManageGuild)]
-        public async Task SetSuggestEmoteNoAsync(Emote emote = null)
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task SetSuggestEmoteNoAsync(LocalCustomEmoji emote = null)
         {
-            using (var db = new DbService())
+            
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            if (emote == null)
             {
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-                if (emote == null)
-                {
-                    cfg.EmoteNo = null;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
-                    return;
-                }
-
-                cfg.EmoteNo = emote.ParseEmoteString();
+                cfg.EmoteNo = null;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
+                await Context.ReplyAsync("Set `no` reaction to default emote", Color.Green);
+                return;
             }
+
+            cfg.EmoteNo = emote.MessageFormat;
+            await db.SaveChangesAsync();
+            await Context.ReplyAsync($"Set `no` reaction to {emote}", Color.Green);
         }
     }
 }

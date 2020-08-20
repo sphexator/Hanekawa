@@ -19,21 +19,20 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());
             var toAdd = new Timer(async _ =>
             {
-                using (var db = new DbService())
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                try
                 {
-                    try
-                    {
-                        var guild = _client.GetGuild(guildId);
-                        var user = guild?.GetUser(userId);
-                        if (user == null) return;
-                        await UnMuteUser(user, db);
-                    }
-                    catch (Exception e)
-                    {
-                        await RemoveTimerFromDbAsync(guildId, userId, db);
-                        _log.LogAction(LogLevel.Error, e,
-                            $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
-                    }
+                    var guild = _client.GetGuild(guildId);
+                    var user = guild?.GetMember(userId);
+                    if (user == null) return;
+                    await UnMuteUser(user, db);
+                }
+                catch (Exception e)
+                {
+                    await RemoveTimerFromDbAsync(guildId, userId, db);
+                    _log.LogAction(LogLevel.Error, e,
+                        $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                 }
             }, null, duration, Timeout.InfiniteTimeSpan);
 
@@ -52,7 +51,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await removed.DisposeAsync();
         }
 
-        private async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId, DbService db)
+        private static async Task RemoveTimerFromDbAsync(ulong guildId, ulong userId, DbService db)
         {
             var data = await db.MuteTimers.FirstOrDefaultAsync(x => x.GuildId == guildId && x.UserId == userId);
             if (data == null) return;

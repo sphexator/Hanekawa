@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
@@ -10,98 +11,102 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
+using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
+using Hanekawa.HungerGames.Entity;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
+using Inventory = Hanekawa.Database.Tables.Account.Inventory;
+using Item = Hanekawa.Database.Tables.Account.Item;
+using ItemType = Hanekawa.Shared.ItemType;
 
 namespace Hanekawa.Database
 {
     public class DbService : DbContext
     {
-        public DbService() { }
         public DbService(DbContextOptions options) : base(options) { }
 
         // Account
-        public virtual DbSet<Account> Accounts { get; set; }
-        public virtual DbSet<AccountGlobal> AccountGlobals { get; set; }
-        public virtual DbSet<LevelReward> LevelRewards { get; set; }
-        public virtual DbSet<LevelExpEvent> LevelExpEvents { get; set; }
-        public virtual DbSet<EventPayout> EventPayouts { get; set; }
-        public virtual DbSet<Highlight> Highlights { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<AccountGlobal> AccountGlobals { get; set; }
+        public DbSet<LevelReward> LevelRewards { get; set; }
+        public DbSet<LevelExpEvent> LevelExpEvents { get; set; }
+        public DbSet<EventPayout> EventPayouts { get; set; }
+        public DbSet<Highlight> Highlights { get; set; }
 
         // Stores
-        public virtual DbSet<ServerStore> ServerStores { get; set; }
+        public DbSet<ServerStore> ServerStores { get; set; }
 
         // Inventory
-        public virtual DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
 
         // Items
-        public virtual DbSet<Item> Items { get; set; }
-        public virtual DbSet<Background> Backgrounds { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Background> Backgrounds { get; set; }
 
         // Achievements
-        public virtual DbSet<AchievementMeta> Achievements { get; set; }
-        public virtual DbSet<AchievementName> AchievementNames { get; set; }
-        public virtual DbSet<AchievementTracker> AchievementTrackers { get; set; }
-        public virtual DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
-        public virtual DbSet<AchievementDifficulty> AchievementDifficulties { get; set; }
-        public virtual DbSet<AchievementType> AchievementTypes { get; set; }
+        public DbSet<AchievementMeta> Achievements { get; set; }
+        public DbSet<AchievementName> AchievementNames { get; set; }
+        public DbSet<AchievementTracker> AchievementTrackers { get; set; }
+        public DbSet<AchievementUnlock> AchievementUnlocks { get; set; }
+        public DbSet<AchievementType> AchievementTypes { get; set; }
 
         // Administration
-        public virtual DbSet<Blacklist> Blacklists { get; set; }
-        public virtual DbSet<ApprovalQueue> ApprovalQueues { get; set; }
+        public DbSet<Blacklist> Blacklists { get; set; }
+        public DbSet<ApprovalQueue> ApprovalQueues { get; set; }
 
         //Clubs
-        public virtual DbSet<ClubInformation> ClubInfos { get; set; }
-        public virtual DbSet<ClubUser> ClubPlayers { get; set; }
-        public virtual DbSet<ClubBlacklist> ClubBlacklists { get; set; }
+        public DbSet<ClubInformation> ClubInfos { get; set; }
+        public DbSet<ClubUser> ClubPlayers { get; set; }
+        public DbSet<ClubBlacklist> ClubBlacklists { get; set; }
 
         //Bot Game
-        public virtual DbSet<GameClass> GameClasses { get; set; }
-        public virtual DbSet<GameConfig> GameConfigs { get; set; }
-        public virtual DbSet<GameEnemy> GameEnemies { get; set; }
+        public DbSet<GameClass> GameClasses { get; set; }
+        public DbSet<GameConfig> GameConfigs { get; set; }
+        public DbSet<GameEnemy> GameEnemies { get; set; }
 
         //Config
-        public virtual DbSet<GuildConfig> GuildConfigs { get; set; }
-        public virtual DbSet<AdminConfig> AdminConfigs { get; set; }
-        public virtual DbSet<BoardConfig> BoardConfigs { get; set; }
-        public virtual DbSet<ChannelConfig> ChannelConfigs { get; set; }
-        public virtual DbSet<ClubConfig> ClubConfigs { get; set; }
-        public virtual DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
-        public virtual DbSet<LevelConfig> LevelConfigs { get; set; }
-        public virtual DbSet<LoggingConfig> LoggingConfigs { get; set; }
-        public virtual DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
-        public virtual DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
-        public virtual DbSet<DropConfig> DropConfigs { get; set; }
+        public DbSet<GuildConfig> GuildConfigs { get; set; }
+        public DbSet<AdminConfig> AdminConfigs { get; set; }
+        public DbSet<BoardConfig> BoardConfigs { get; set; }
+        public DbSet<ChannelConfig> ChannelConfigs { get; set; }
+        public DbSet<ClubConfig> ClubConfigs { get; set; }
+        public DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
+        public DbSet<LevelConfig> LevelConfigs { get; set; }
+        public DbSet<LoggingConfig> LoggingConfigs { get; set; }
+        public DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
+        public DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
+        public DbSet<DropConfig> DropConfigs { get; set; }
 
-        public virtual DbSet<LootChannel> LootChannels { get; set; }
-        public virtual DbSet<WelcomeBanner> WelcomeBanners { get; set; }
-        public virtual DbSet<IgnoreChannel> IgnoreChannels { get; set; }
-        public virtual DbSet<Board> Boards { get; set; }
-        public virtual DbSet<LevelExpReduction> LevelExpReductions { get; set; }
-        public virtual DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
+        public DbSet<LootChannel> LootChannels { get; set; }
+        public DbSet<WelcomeBanner> WelcomeBanners { get; set; }
+        public DbSet<IgnoreChannel> IgnoreChannels { get; set; }
+        public DbSet<Board> Boards { get; set; }
+        public DbSet<LevelExpReduction> LevelExpReductions { get; set; }
+        public DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
 
         //Moderation
-        public virtual DbSet<ModLog> ModLogs { get; set; }
-        public virtual DbSet<MuteTimer> MuteTimers { get; set; }
-        public virtual DbSet<Report> Reports { get; set; }
-        public virtual DbSet<Suggestion> Suggestions { get; set; }
-        public virtual DbSet<Warn> Warns { get; set; }
+        public DbSet<ModLog> ModLogs { get; set; }
+        public DbSet<MuteTimer> MuteTimers { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<Suggestion> Suggestions { get; set; }
+        public DbSet<Warn> Warns { get; set; }
 
         // Music 
-        public virtual DbSet<MusicConfig> MusicConfigs { get; set; }
-        public virtual DbSet<Playlist> Playlists { get; set; }
+        public DbSet<MusicConfig> MusicConfigs { get; set; }
+        public DbSet<Playlist> Playlists { get; set; }
+
+        // Premium
+        public DbSet<MvpConfig> MvpConfigs { get; set; }
+
+        // Hunger Games
+        public DbSet<Participant> HgParticipants { get; set; }
+        public DbSet<HungerGames.Entity.Item> HgItems { get; set; }
+        public DbSet<HungerGames.Entity.Inventory> HgInventories { get; set; }
 
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-                optionsBuilder.UseNpgsql(Config.ConnectionString
-                                         ?? throw new NullReferenceException("No database connection string set"));
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -117,54 +122,44 @@ namespace Hanekawa.Database
             AdministrationBuilder(modelBuilder);
             ProfileBuilder(modelBuilder);
             MusicBuilder(modelBuilder);
+            PremiumBuilder(modelBuilder);
+            HungerGameBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
         }
 
-        private void OwnerBuilder(ModelBuilder modelBuilder)
+        private static void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>
         {
-            modelBuilder.Entity<Blacklist>(x =>
-            {
-                x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.ResponsibleUser).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => e.GuildId);
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.ResponsibleUser).HasConversion<long>();
+        });
 
-        private void InventoryBuilder(ModelBuilder modelBuilder)
+        private static void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
         {
-            modelBuilder.Entity<Inventory>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.UserId).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.UserId).HasConversion<long>();
+        });
 
-        private void ItemBuilder(ModelBuilder modelBuilder)
+        private static void ItemBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Item>(x =>
         {
-            modelBuilder.Entity<Item>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.Role).HasConversion<long>();
-                x.Property(e => e.Type).HasConversion(
-                    v => v.ToString(),
-                    v => (ItemType)Enum.Parse(typeof(ItemType), v));
-            });
-        }
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.Role).HasConversion<long>();
+            x.Property(e => e.Type).HasConversion(
+                v => v.ToString(),
+                v => (ItemType) Enum.Parse(typeof(ItemType), v));
+        });
 
-        private void StoreBuilder(ModelBuilder modelBuilder)
+        private static void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>
         {
-            modelBuilder.Entity<ServerStore>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.RoleId });
-                x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.RoleId).HasConversion<long>();
-            });
-        }
+            x.HasKey(e => new {e.GuildId, e.RoleId});
+            x.Property(e => e.GuildId).HasConversion<long>();
+            x.Property(e => e.RoleId).HasConversion<long>();
+        });
 
-        private void AccountBuilder(ModelBuilder modelBuilder)
+        private static void AccountBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(x =>
             {
@@ -206,14 +201,13 @@ namespace Hanekawa.Database
             });
         }
 
-        private void AchievementBuilder(ModelBuilder modelBuilder)
+        private static void AchievementBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AchievementMeta>(x =>
             {
                 x.HasKey(e => e.AchievementId);
                 x.Property(e => e.AchievementId).ValueGeneratedOnAdd();
                 x.HasOne(p => p.AchievementName).WithMany();
-                x.HasOne(p => p.AchievementDifficulty).WithMany();
                 x.HasOne(p => p.AchievementType).WithMany();
             });
             modelBuilder.Entity<AchievementName>(x =>
@@ -237,14 +231,9 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.TypeId);
                 x.Property(e => e.TypeId).ValueGeneratedOnAdd();
             });
-            modelBuilder.Entity<AchievementDifficulty>(x =>
-            {
-                x.HasKey(e => e.DifficultyId);
-                x.Property(e => e.DifficultyId).ValueGeneratedOnAdd();
-            });
         }
 
-        private void GameBuilder(ModelBuilder modelBuilder)
+        private static void GameBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GameClass>(x =>
             {
@@ -264,7 +253,7 @@ namespace Hanekawa.Database
             });
         }
 
-        private void AdministrationBuilder(ModelBuilder modelBuilder)
+        private static void AdministrationBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ModLog>(x =>
             {
@@ -298,7 +287,6 @@ namespace Hanekawa.Database
             modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
             });
@@ -308,14 +296,17 @@ namespace Hanekawa.Database
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Uploader).HasConversion<long>();
+                x.Property(e => e.Type).HasConversion(
+                v => v.ToString(),
+                v => (ApprovalQueueType)Enum.Parse(typeof(ApprovalQueueType), v));
             });
         }
 
-        private void ClubBuilder(ModelBuilder modelBuilder)
+        private static void ClubBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ClubInformation>(x =>
             {
-                x.HasKey(e => new { e.Id });
+                x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.LeaderId).HasConversion<long>();
@@ -326,7 +317,7 @@ namespace Hanekawa.Database
 
             modelBuilder.Entity<ClubUser>(x =>
             {
-                x.HasKey(e => new { e.Id });
+                x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
@@ -341,18 +332,20 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ConfigBuilder(ModelBuilder modelBuilder)
+        private static void ConfigBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GuildConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(false);
-                x.Property(E => E.EmbedColor).HasConversion<int>();
+                x.Property(e => e.EmbedColor).HasConversion<int>();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.AnimeAirChannel).HasConversion<long>();
                 x.Property(e => e.EmbedColor).HasConversion<int>();
                 x.Property(e => e.MusicChannel).HasConversion<long>();
                 x.Property(e => e.MusicVcChannel).HasConversion<long>();
+                x.Property(e => e.MvpChannel).HasConversion<long>();
+                x.Property(e => e.HungerGameChannel).HasConversion<long>();
             });
             modelBuilder.Entity<AdminConfig>(x =>
             {
@@ -458,7 +451,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.ChannelId).HasConversion<long>();
                 x.Property(e => e.ChannelType).HasConversion(
                     v => v.ToString(),
-                    v => (ChannelType)Enum.Parse(typeof(ChannelType), v));
+                    v => (ChannelType) Enum.Parse(typeof(ChannelType), v));
             });
             modelBuilder.Entity<SelfAssignAbleRole>(x =>
             {
@@ -468,16 +461,46 @@ namespace Hanekawa.Database
             });
         }
 
-        private void ProfileBuilder(ModelBuilder modelBuilder)
+        private static void ProfileBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Background>(x =>
         {
-            modelBuilder.Entity<Background>(x =>
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+            x.HasData(new List<Background>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                new Background
+                {
+                    Id = 1,
+                    BackgroundUrl = "https://i.imgur.com/epIb29P.png"
+                },
+                new Background
+                {
+                    Id = 2,
+                    BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
+                },
+                new Background
+                {
+                    Id = 3,
+                    BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
+                },
+                new Background
+                {
+                    Id = 4,
+                    BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
+                },
+                new Background
+                {
+                    Id = 5,
+                    BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
+                },
+                new Background
+                {
+                    Id = 6,
+                    BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
+                }
             });
-        }
+        });
 
-        private void MusicBuilder(ModelBuilder modelBuilder)
+        private static void MusicBuilder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MusicConfig>(x =>
             {
@@ -492,14 +515,49 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
             });
         }
-        
-        private void InternalBuilder(ModelBuilder modelBuilder)
+
+        private static void PremiumBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Log>(x =>
+            modelBuilder.Entity<MvpConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.RoleId).HasConversion<long>();
+                x.Property(e => e.Day).HasConversion(
+                    v => v.ToString(),
+                    v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
+            });
+        }
+
+        private static void HungerGameBuilder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Participant>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.HasMany(e => e.Inventory)
+                    .WithOne(e => e.User)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<HungerGames.Entity.Item>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.HasMany(e => e.Inventories).WithOne(e => e.Item).OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<GameHistory>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Winner).HasConversion<long>();
             });
         }
+
+        private static void InternalBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Log>(x =>
+        {
+            x.HasKey(e => e.Id);
+            x.Property(e => e.Id).ValueGeneratedOnAdd();
+        });
     }
 }

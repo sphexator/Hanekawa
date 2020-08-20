@@ -19,7 +19,6 @@
         public int TypeId { get; set; }
         public AchievementType AchievementType { get; set; }
 
-        public int DifficultyId { get; set; }
         public AchievementDifficulty AchievementDifficulty { get; set; }
     }
 }
