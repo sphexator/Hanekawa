@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Services.Mvp
                 if (!(await ServerCheck(user.Guild))) return;
                 var userCd = Cooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
                 if (userCd.TryGetValue(user.Id.RawValue, out _)) return;
-                userCd.CreateEntry(user.Id.RawValue);
+                userCd.Set(user.Id.RawValue, false, TimeSpan.FromMinutes(1));
                 using var scope = _service.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var userData = await db.GetOrCreateUserData(user);
