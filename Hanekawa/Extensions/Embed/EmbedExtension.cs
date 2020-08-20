@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Rest;
-
+#nullable enable warnings
 namespace Hanekawa.Extensions.Embed
 {
     public static class EmbedExtension

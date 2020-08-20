@@ -198,7 +198,7 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            if (!duration.HasValue) duration = TimeSpan.FromHours(12);
+            duration ??= TimeSpan.FromHours(12);
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var muteRes = await _mute.TimedMute(user, Context.Member, duration.Value, db, reason);
