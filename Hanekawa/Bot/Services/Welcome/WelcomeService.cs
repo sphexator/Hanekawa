@@ -58,7 +58,7 @@ namespace Hanekawa.Bot.Services.Welcome
                     if (cfg.Banner)
                     {
                         var banner = await _img.WelcomeBuilder(user, db);
-                        banner.Seek(0, SeekOrigin.Begin);
+                        banner.Position = 0;
                         message = await channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.png"), msg);
                     }
                     else

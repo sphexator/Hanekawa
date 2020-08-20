@@ -54,8 +54,10 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
-            var response = await _client.GetStreamAsync(list[_random.Next(list.Count)].Url);
-            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            var background = await _client.GetStreamAsync(list[_random.Next(list.Count)].Url);
+            var response = background.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(600, 78));
         }
 
@@ -64,7 +66,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var background = await _client.GetStreamAsync(url);
             var response = background.ToEditable();
             response.Position = 0;
-            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(600, 78));
         }
     }
