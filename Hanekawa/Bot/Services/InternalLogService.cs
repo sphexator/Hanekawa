@@ -27,12 +27,12 @@ namespace Hanekawa.Bot.Services
             _client = client;
             _logger = logger;
 
-            _client.Logger.MessageLogged += Logger_MessageLogged;
+            _client.Logger.Logged += Logger_Logged; ;
             _client.CommandExecutionFailed += CommandErrorLog;
             _client.CommandExecuted += CommandExecuted;
         }
 
-        private void Logger_MessageLogged(object sender, MessageLoggedEventArgs e) => _logger.Log(LogSevToLogLevel(e.Severity), e.Exception, e.Message);
+        private void Logger_Logged(object sender, LogEventArgs e) => _logger.Log(LogSevToLogLevel(e.Severity), e.Exception, e.Message);
         public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(l, e, m);
 
         public void LogAction(LogLevel l, string m) => _logger.Log(l, m);
@@ -133,15 +133,15 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private LogLevel LogSevToLogLevel(LogMessageSeverity log) =>
+        private LogLevel LogSevToLogLevel(LogSeverity log) =>
             log switch
             {
-                LogMessageSeverity.Critical => LogLevel.Critical,
-                LogMessageSeverity.Error => LogLevel.Error,
-                LogMessageSeverity.Warning => LogLevel.Warning,
-                LogMessageSeverity.Information => LogLevel.Information,
-                LogMessageSeverity.Trace => LogLevel.Trace,
-                LogMessageSeverity.Debug => LogLevel.Debug,
+                LogSeverity.Critical => LogLevel.Critical,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warning,
+                LogSeverity.Information => LogLevel.Information,
+                LogSeverity.Trace => LogLevel.Trace,
+                LogSeverity.Debug => LogLevel.Debug,
                 _ => LogLevel.None
             };
     }
