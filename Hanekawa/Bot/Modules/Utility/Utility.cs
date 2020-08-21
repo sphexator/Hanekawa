@@ -30,11 +30,10 @@ namespace Hanekawa.Bot.Modules.Utility
                 try
                 {
                     var stream = new MemoryStream();
-                    var stream1 = await _httpClient.GetStreamAsync(x.GetUrl(256));
+                    var stream1 = await _httpClient.GetStreamAsync(x.GetUrl());
                     await stream1.FlushAsync();
                     await stream1.CopyToAsync(stream);
                     stream.Position = 0;
-                    stream.Seek(0, SeekOrigin.Begin);
                     try
                     {
                         var result = await Context.Guild.CreateEmojiAsync(stream, x.Name);
