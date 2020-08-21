@@ -13,6 +13,7 @@ using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using NLog;
 using Qmmands;
+using ILogger = Disqord.Logging.ILogger;
 using Logger = NLog.Logger;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -155,6 +156,34 @@ namespace Hanekawa.Bot.Services
                 LogLevel.Information => NLog.LogLevel.Info,
                 LogLevel.Trace => NLog.LogLevel.Trace,
                 LogLevel.Debug => NLog.LogLevel.Debug,
+                _ => NLog.LogLevel.Off
+            };
+    }
+
+    public class DiscordLogger : ILogger, INService, IRequired
+    {
+        private readonly Logger _logger;
+
+        public DiscordLogger()
+        {
+            _logger = LogManager.GetCurrentClassLogger();
+        }
+
+        public void Dispose() { }
+
+        public void Log(object sender, LogEventArgs e) => _logger.Log(SevToLogLevel(e.Severity), e.Exception, e.Message);
+
+        public event EventHandler<LogEventArgs> Logged;
+
+        private static NLog.LogLevel SevToLogLevel(LogSeverity log) =>
+            log switch
+            {
+                LogSeverity.Critical => NLog.LogLevel.Fatal,
+                LogSeverity.Error => NLog.LogLevel.Error,
+                LogSeverity.Warning => NLog.LogLevel.Warn,
+                LogSeverity.Information => NLog.LogLevel.Info,
+                LogSeverity.Trace => NLog.LogLevel.Trace,
+                LogSeverity.Debug => NLog.LogLevel.Debug,
                 _ => NLog.LogLevel.Off
             };
     }
