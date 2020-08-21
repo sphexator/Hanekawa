@@ -21,6 +21,7 @@ namespace Hanekawa.Bot.Modules.Utility
         public Utility(HttpClient httpClient) => _httpClient = httpClient;
 
         [Name("Add Emote")]
+        [Command("emote")]
         [Description("Add(s) emotes to the server by its name")]
         [RequireMemberGuildPermissions(Permission.ManageEmojis)]
         public async Task AddEmotesAsync(params LocalCustomEmoji[] emote)
@@ -40,7 +41,7 @@ namespace Hanekawa.Bot.Modules.Utility
                         var result = await Context.Guild.CreateEmojiAsync(stream, x.Name);
                         list.Append($"{result} ");
                     }
-                    catch (Exception e)
+                    catch
                     {
                         var result = await Context.Guild.CreateEmojiAsync(stream, "ToBeRenamed");
                         list.Append($"{result} (rename)");
