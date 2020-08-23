@@ -18,9 +18,6 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ConcurrentDictionary<ulong, MemoryCache> _rewardCd =
             new ConcurrentDictionary<ulong, MemoryCache>();
 
-        private readonly ConcurrentDictionary<ulong, List<CachedMember>> _rewardUsers =
-            new ConcurrentDictionary<ulong, List<CachedMember>>();
-
         private bool OnCooldown(CachedMember user)
         {
             var users = _cooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
@@ -41,7 +38,7 @@ namespace Hanekawa.Bot.Services.Welcome
         {
             var users = _rewardCd.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id.RawValue, out _)) return true;
-            users.Set(user.Id.RawValue, 0, TimeSpan.FromSeconds(60));
+            users.Set(user.Id.RawValue, 0, TimeSpan.FromMinutes(1));
             return false;
         }
     }

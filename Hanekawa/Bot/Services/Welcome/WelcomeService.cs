@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -26,6 +27,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ImageGenerator _img;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
+        private static LocalCustomEmoji _expEmoji = null;
 
         public WelcomeService(Hanekawa client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
         {
@@ -86,32 +88,37 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(Hanekawa bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            var users = _rewardUsers.GetOrAdd(channel.Guild.Id.RawValue, new List<CachedMember>());
+            if (_expEmoji == null)
+            {
+                LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote);
+                _expEmoji = emote;
+            }
+            var users = new ConcurrentQueue<CachedMember>();
             var s = new Stopwatch();
             s.Start();
             while (s.Elapsed <= TimeSpan.FromMinutes(1))
             {
                 var response = await bot.GetInteractivity().WaitForMessageAsync(
-                    x => x.Message.Content.ToLower().Contains("welcome") &&
+                    x => x.Message.Content.Contains("welcome", StringComparison.OrdinalIgnoreCase) &&
                          x.Message.Guild.Id.RawValue == cfg.GuildId &&
                          x.Message.Channel.Id.RawValue == channel.Id.RawValue &&
                         !x.Message.Author.IsBot,
                     TimeSpan.FromMinutes(1));
-                var _ = Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     var res = response;
                     try
                     {
                         if (res == null) return;
                         if (!(res.Message.Author is CachedMember user)) return;
-                        if (user.IsBot) return;
                         if (IsRewardCd(user)) return;
                         if (user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) return;
                         if (users.Contains(user)) return;
-                        users.Add(user);
-                        _rewardUsers.AddOrUpdate(user.Guild.Id.RawValue, new List<CachedMember>(), (e, list) => users);
-                        if (LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote))
-                            await res.Message.AddReactionAsync(emote);
+                        users.Enqueue(user);
+                        if(!res.Message.Reactions.ContainsKey(_expEmoji)) 
+                        { 
+                            await res.Message.AddReactionAsync(_expEmoji);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -119,14 +126,13 @@ namespace Hanekawa.Bot.Services.Welcome
                     }
                 });
             }
+
             s.Stop();
-            for (var i = 0; i < users.Count; i++)
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            while (users.TryDequeue(out var user))
             {
-                var x = users[i];
-                var userData = await db.GetOrCreateUserData(x);
-                await _exp.AddExpAsync(x, userData, cfg.Reward.Value, 0, db);
-                users.Remove(x);
-                _rewardUsers.AddOrUpdate(channel.Guild.Id.RawValue, new List<CachedMember>(), (e, list) => users);
+                var userData = await db.GetOrCreateUserData(user);
+                await _exp.AddExpAsync(user, userData, cfg.Reward.Value, 0, db);
             }
         }
 

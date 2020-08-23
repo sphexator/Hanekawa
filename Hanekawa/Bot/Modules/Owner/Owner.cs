@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -9,6 +10,7 @@ using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Qmmands;
@@ -21,6 +23,15 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Owner : HanekawaCommandModule
     {
+        [Name("Re-index Server Rankings")]
+        [Command("rankindex")]
+        [Description("Re-indexes the ranks, puts people that's left the server as inactive if they arnt already")]
+        [Disabled]
+        public async Task ReindexAsync()
+        {
+            // Ignore
+        }
+
         [Name("Servers")]
         [Command("servers")]
         [Description("List all servers bot is part of")]
