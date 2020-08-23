@@ -10,6 +10,7 @@ using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -103,20 +104,23 @@ namespace Hanekawa.Bot.Services.Mvp
             {
                 var mvps = new List<CachedMember>();
                 var oldMvps = new List<CachedMember>();
+                var x = premium[i];
+
+                var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
+                if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day) continue;
+                
+                var guild = _client.GetGuild(x.GuildId);
+                var role = guild.GetRole(mvpConfig.RoleId.Value);
                 try
                 {
-                    var x = premium[i];
-                    var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
-                    if(DateTime.UtcNow.DayOfWeek != mvpConfig.Day) continue;
                     if (mvpConfig?.RoleId != null)
                     {
-                        var guild = _client.GetGuild(x.GuildId);
-                        var role = guild.GetRole(mvpConfig.RoleId.Value);
                         if (role != null)
                         {
                             var toAdd = guild.Members.Where(e => e.Value.Roles.ContainsKey(role.Id)).ToList();
                             for (var j = 0; j < toAdd.Count; j++)
                             {
+                                await toAdd[j].Value.TryRemoveRoleAsync(role);
                                 oldMvps.Add(toAdd[j].Value);
                             }
                             var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active).OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count).ToListAsync();
@@ -149,12 +153,21 @@ namespace Hanekawa.Bot.Services.Mvp
                     }
                     await db.SaveChangesAsync();
                     _log.LogAction(LogLevel.Information, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
-                    var strb = new StringBuilder();
-                    for (var j = 0; j < mvps.Count; j++)
+                    var gcfg = await db.GetOrCreateGuildConfigAsync(guild);
+                    if (gcfg.MvpChannel.HasValue)
                     {
-                        var n = mvps[j];
-                        var o = oldMvps[j];
-                        strb.AppendLine($"{o.Mention ?? "User Left"} => {n.Mention}");
+                        var channel = guild.GetTextChannel(gcfg.MvpChannel.Value);
+                        var strb = new StringBuilder();
+                        for (var j = 0; j < mvps.Count; j++)
+                        {
+                            var n = mvps[j];
+                            var o = oldMvps[j];
+                            strb.AppendLine($"{o.Mention ?? "User Left"} => {n.Mention}");
+                        }
+
+                        await channel.SendMessageAsync(null, false, new LocalEmbedBuilder().Create(
+                            $"New Weekly MVP!\n" +
+                            $"{strb}", Color.Green).Build(), LocalMentions.NoEveryone);
                     }
                 }
                 catch (Exception e)
