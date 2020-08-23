@@ -13,7 +13,8 @@ namespace Hanekawa.Bot.Services.ImageGen
             var stream = new MemoryStream();
             using (var img = Image.Load("Data/Game/background.png"))
             {
-                //var border = Image.Load(GetBorder());
+                // var border = Image.Load(GetBorder());
+                // This will be in the future
                 var aviOne = await GetAvatarAsync(pOneAviUrl, new Size(126, 126));
                 var aviTwo = await GetAvatarAsync(pTwoAviUrl, new Size(126, 126));
                 img.Mutate(x => x

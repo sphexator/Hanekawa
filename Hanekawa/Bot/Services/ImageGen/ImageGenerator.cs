@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var avatar = await _client.GetStreamAsync(user.GetAvatarUrl(ImageFormat.Png));
             var response = avatar.ToEditable();
             response.Position = 0;
-            using var img = await Image.LoadAsync(response.ToEditable());
+            using var img = await Image.LoadAsync(response);
             return img.Clone(x => x.Resize(size));
         }
 
@@ -112,7 +112,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var avatar = await _client.GetStreamAsync(imgUrl);
             var response = avatar.ToEditable();
             response.Position = 0;
-            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(size));
         }
     }
