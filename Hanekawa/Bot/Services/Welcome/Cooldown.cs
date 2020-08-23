@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Disqord;
 using Hanekawa.Database.Tables.Config.Guild;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,11 +15,17 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ConcurrentDictionary<ulong, MemoryCache> _ratelimit
             = new ConcurrentDictionary<ulong, MemoryCache>();
 
+        private readonly ConcurrentDictionary<ulong, MemoryCache> _rewardCd =
+            new ConcurrentDictionary<ulong, MemoryCache>();
+
+        private readonly ConcurrentDictionary<ulong, List<CachedMember>> _rewardUsers =
+            new ConcurrentDictionary<ulong, List<CachedMember>>();
+
         private bool OnCooldown(CachedMember user)
         {
             var users = _cooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id.RawValue, out _)) return true;
-            users.Set(user.Id.RawValue, user, TimeSpan.FromSeconds(60));
+            users.Set(user.Id.RawValue, 0, TimeSpan.FromSeconds(60));
             return false;
         }
 
@@ -26,7 +33,15 @@ namespace Hanekawa.Bot.Services.Welcome
         {
             var users = _ratelimit.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             if (users.Count + 1 >= cfg.Limit) return true;
-            users.Set(user.Id.RawValue, user.Id.RawValue, TimeSpan.FromSeconds(5));
+            users.Set(user.Id.RawValue, 0, TimeSpan.FromSeconds(5));
+            return false;
+        }
+
+        private bool IsRewardCd(CachedMember user)
+        {
+            var users = _rewardCd.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            if (users.TryGetValue(user.Id.RawValue, out _)) return true;
+            users.Set(user.Id.RawValue, 0, TimeSpan.FromSeconds(60));
             return false;
         }
     }
