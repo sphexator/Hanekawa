@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Events;
+using Hanekawa.Bot.Modules.Account;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Account = Hanekawa.Database.Tables.Account.Account;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -136,13 +138,14 @@ namespace Hanekawa.Bot.Services.Experience
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
                     userData.FirstMessage ??= DateTime.UtcNow;
-
+                    userData.MvpCount++;
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(1, 3), db);
+                    await MvpCount(db, userData, user);
                 }
-                catch (Exception e)
+                catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Server Exp - {e.Message}");
+                    _log.LogAction(LogLevel.Error, z,
+                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Server Exp - {z.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -155,6 +158,7 @@ namespace Hanekawa.Bot.Services.Experience
                 var user = e.Member;
                 var after = e.NewVoiceState;
                 var before = e.OldVoiceState;
+                if (user.IsBot) return;
                 try
                 {
                     using var scope = _provider.CreateScope();
@@ -177,10 +181,10 @@ namespace Hanekawa.Bot.Services.Experience
                         await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db);
                     }
                 }
-                catch (Exception e)
+                catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Voice - {e.Message}");
+                    _log.LogAction(LogLevel.Error, z,
+                        $"(Exp Service) Error in {user.Guild.Id.RawValue} for Voice - {z.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -222,6 +226,14 @@ namespace Hanekawa.Bot.Services.Experience
                     ? isChannel && channels.TryGetValue(channel.Id.RawValue, out _)
                     : category.TryGetValue(channel.CategoryId.Value, out _) ||
                       isChannel && channels.TryGetValue(channel.Id.RawValue, out _);
+        }
+
+        private async Task MvpCount(DbService db, Account userData, CachedMember user)
+        {
+            var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
+            if (!cfg.Premium) return;
+            userData.MvpCount++;
+            await db.SaveChangesAsync();
         }
     }
 }
