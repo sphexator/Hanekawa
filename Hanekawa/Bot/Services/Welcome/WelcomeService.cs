@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Services.Welcome
             var users = _rewardUsers.GetOrAdd(channel.Guild.Id.RawValue, new List<CachedMember>());
             var s = new Stopwatch();
             s.Start();
-            while (s.Elapsed <= TimeSpan.FromSeconds(30))
+            while (s.Elapsed <= TimeSpan.FromMinutes(1))
             {
                 var response = await bot.GetInteractivity().WaitForMessageAsync(
                     x => x.Message.Content.ToLower().Contains("welcome") &&
@@ -97,16 +97,27 @@ namespace Hanekawa.Bot.Services.Welcome
                          x.Message.Channel.Id.RawValue == channel.Id.RawValue &&
                         !x.Message.Author.IsBot,
                     TimeSpan.FromMinutes(1));
-                if (response == null) continue;
-                if (!(response.Message.Author is CachedMember user)) continue;
-                if (user.IsBot) continue;
-                if (IsRewardCd(user)) continue;
-                if(user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) continue;
-                if(users.Contains(user)) continue;
-                users.Add(user);
-                _rewardUsers.AddOrUpdate(user.Guild.Id.RawValue, new List<CachedMember>(), (e, list) => users);
-                if (LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote))
-                    await response.Message.AddReactionAsync(emote);
+                var _ = Task.Run(async () =>
+                {
+                    var res = response;
+                    try
+                    {
+                        if (res == null) return;
+                        if (!(res.Message.Author is CachedMember user)) return;
+                        if (user.IsBot) return;
+                        if (IsRewardCd(user)) return;
+                        if (user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) return;
+                        if (users.Contains(user)) return;
+                        users.Add(user);
+                        _rewardUsers.AddOrUpdate(user.Guild.Id.RawValue, new List<CachedMember>(), (e, list) => users);
+                        if (LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote))
+                            await res.Message.AddReactionAsync(emote);
+                    }
+                    catch (Exception e)
+                    {
+                        _log.LogAction(LogLevel.Error, e, e.Message);
+                    }
+                });
             }
             s.Stop();
             for (var i = 0; i < users.Count; i++)
