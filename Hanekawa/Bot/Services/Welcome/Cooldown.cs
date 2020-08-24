@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Disqord;
 using Hanekawa.Database.Tables.Config.Guild;
 using Microsoft.Extensions.Caching.Memory;
