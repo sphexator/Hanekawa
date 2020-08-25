@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
@@ -34,6 +35,9 @@ namespace Hanekawa.Database
         public DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public DbSet<EventPayout> EventPayouts { get; set; }
         public DbSet<Highlight> Highlights { get; set; }
+
+        // Voice Role
+        public DbSet<VoiceRoles> VoiceRoles { get; set; }
 
         // Stores
         public DbSet<ServerStore> ServerStores { get; set; }
@@ -125,6 +129,14 @@ namespace Hanekawa.Database
             PremiumBuilder(modelBuilder);
             HungerGameBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
+
+            modelBuilder.Entity<VoiceRoles>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.VoiceId});
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.VoiceId).HasConversion<long>();
+                x.Property(e => e.RoleId).HasConversion<long>();
+            });
         }
 
         private static void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>

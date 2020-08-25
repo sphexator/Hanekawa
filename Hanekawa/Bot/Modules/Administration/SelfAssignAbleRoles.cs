@@ -112,7 +112,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task ListSelfAssignAbleRolesAsync()
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
             if (list == null || list.Count == 0)
