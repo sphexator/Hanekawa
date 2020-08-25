@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Modules.Utility
         [Command("vrole")]
         [Description("Adds channel user is connected to for the specified role")]
         [RequireMemberGuildPermissions(Permission.ManageChannels)]
-        public async Task AddAsync(CachedRole role)
+        public async Task AddAsync([Remainder] CachedRole role)
         {
             if (Context.Member.VoiceState == null)
             {
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Utility
         [Command("vrole")]
         [Description("Adds voice channel and role as linked")]
         [RequireMemberGuildPermissions(Permission.ManageChannels)]
-        public async Task AddAsync(CachedVoiceChannel vc, CachedRole role)
+        public async Task AddAsync(CachedRole role, [Remainder] CachedVoiceChannel vc)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var check = await db.VoiceRoles.FindAsync(Context.Guild.Id.RawValue,
@@ -91,7 +91,27 @@ namespace Hanekawa.Bot.Modules.Utility
 
             db.VoiceRoles.Remove(check);
             await db.SaveChangesAsync();
-            await ReplyAsync($"Removed {role.Mention} as VC role for {vc.Name}!", Color.Green);
+            await ReplyAsync($"Removed {Context.Guild.GetRole(check.RoleId)} as VC role for {vc.Name}!", Color.Green);
+        }
+
+        [Name("Remove Linked Role")]
+        [Command("vrr")]
+        [Description("Removes a role linked to mentioned voice channel")]
+        [RequireMemberGuildPermissions(Permission.ManageChannels)]
+        public async Task RemoveAsync([Remainder] CachedVoiceChannel channel)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var check = await db.VoiceRoles.FindAsync(Context.Guild.Id.RawValue,
+                channel.Id.RawValue);
+            if (check == null)
+            {
+                await ReplyAsync("No role linked to this voice channel!", Color.Red);
+                return;
+            }
+
+            db.VoiceRoles.Remove(check);
+            await db.SaveChangesAsync();
+            await ReplyAsync($"Removed {Context.Guild.GetRole(check.RoleId).Mention} from {channel.Name}!");
         }
 
         [Name("List Voice-Text linked channels")]

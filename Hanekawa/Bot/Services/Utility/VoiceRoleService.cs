@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Services.Utility
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var check = await db.VoiceRoles.FindAsync(e.Member.Guild.Id.RawValue, e.OldVoiceState.ChannelId.RawValue);
+            var check = await db.VoiceRoles.FindAsync(e.Member.Guild.Id.RawValue, e.NewVoiceState.ChannelId.RawValue);
             if (check == null) return;
             await e.Member.GrantRoleAsync(e.Member.Guild.GetRole(check.RoleId).Id);
         }
