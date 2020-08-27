@@ -11,13 +11,12 @@ namespace Hanekawa.HungerGames.Handler
         private readonly Attack _attack;
         private readonly Chance _chance;
         private readonly Die _die;
-        private readonly Consume _eat;
         private readonly Hack _hack;
         private readonly Loot _loot;
         private readonly Sleep _sleep;
 
         internal EventHandler(Chance chance, Loot loot, Attack attack, Hack hack, Die die,
-            Sleep sleep, Consume eat)
+            Sleep sleep)
         {
             _chance = chance;
             _loot = loot;
@@ -25,24 +24,21 @@ namespace Hanekawa.HungerGames.Handler
             _hack = hack;
             _die = die;
             _sleep = sleep;
-            _eat = eat;
         }
 
-        internal void DetermineEvent(List<Participant> users, Participant profile, ItemDrop drops, UserAction activity) =>
-            EventManager(_chance.EventDetermination(profile), users, profile, drops, activity);
+        internal void DetermineEvent(List<Participant> users, Participant profile, UserAction activity) =>
+            EventManager(_chance.EventDetermination(profile), users, profile, activity);
 
-        internal void DetermineEvent(ActionType type, List<Participant> users, Participant profile,
-            ItemDrop drops, UserAction activity) =>
-            EventManager(type, users, profile, drops, activity);
+        internal void DetermineEvent(ActionType type, List<Participant> users, Participant profile, UserAction activity) =>
+            EventManager(type, users, profile, activity);
 
-        private UserAction EventManager(ActionType type, List<Participant> users, Participant profile,
-            ItemDrop drops, UserAction activity)
+        private UserAction EventManager(ActionType type, List<Participant> users, Participant profile, UserAction activity)
         {
             switch (type)
             {
                 case ActionType.Loot:
                 {
-                    return _loot.LootEvent(profile, drops, activity);
+                    return _loot.LootEvent(profile, activity);
                 }
                 case ActionType.Attack:
                 {
@@ -57,7 +53,7 @@ namespace Hanekawa.HungerGames.Handler
                 case ActionType.Hack:
                 {
                     activity.Action = ActionType.Hack;
-                    return _hack.HackEvent(profile, drops, activity);
+                    return _hack.HackEvent(profile, activity);
                 }
                 case ActionType.Die:
                 {
@@ -69,12 +65,6 @@ namespace Hanekawa.HungerGames.Handler
                 {
                     activity.Action = ActionType.Sleep;
                     _sleep.SleepEvent(profile);
-                    return activity;
-                }
-                case ActionType.Eat:
-                {
-                    activity.Action = ActionType.Eat;
-                    _eat.EatEvent(profile);
                     return activity;
                 }
                 default:

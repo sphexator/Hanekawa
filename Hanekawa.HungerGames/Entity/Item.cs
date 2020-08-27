@@ -11,6 +11,7 @@ namespace Hanekawa.HungerGames.Entity
         public int Ammo { get; set; } = 0;
         public bool BleedEffect { get; set; } = false;
         public bool HealOverTime { get; set; } = false;
+        public ItemType Type { get; set; }
 
         public List<Inventory> Inventories { get; set; }
     }

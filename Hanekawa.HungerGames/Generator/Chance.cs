@@ -46,13 +46,18 @@ namespace Hanekawa.HungerGames.Generator
 
         private static int KillChance(Participant profile)
         {
-            if (profile.Inventory.Drinks.Count == 0 || profile.Inventory.Food.Count == 0)
+            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 0 ||
+                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 0)
                 return 0;
-            if (profile.Inventory.Drinks.Count == 1 || profile.Inventory.Food.Count == 1) return Kill;
-            if (profile.Inventory.Weapons.Count >= 1 && (profile.Inventory.Drinks.Count > 2 ||
-                                                         profile.Inventory.Food.Count > 2))
+            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 1 ||
+                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 1) 
+                return Kill;
+            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Weapon) >= 1 &&
+                (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 2 ||
+                 profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 2))
                 return Kill + 10000;
-            if (profile.Inventory.Drinks.Count > 1 || profile.Inventory.Food.Count > 1)
+            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 1 ||
+                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 1)
                 return Kill + 1500;
             return Kill;
         }
@@ -63,15 +68,6 @@ namespace Hanekawa.HungerGames.Generator
             if (profile.Tiredness >= 75) return Sleep + 750;
             if (profile.Tiredness >= 50) return Sleep + 500;
             return Sleep;
-        }
-
-        private static int EatChance(Participant profile)
-        {
-            if (profile.Hunger >= 20 && profile.Inventory.Food.Any()) return Eat + 1000;
-            if (profile.Hunger >= 50 && profile.Inventory.Food.Any()) return Eat + 700;
-            if (profile.Hunger >= 75 && profile.Inventory.Food.Any()) return Eat + 400;
-            if (profile.Hunger >= 90 && profile.Inventory.Food.Any()) return Eat + 200;
-            return Eat;
         }
 
         private static int IdleChance() => Idle;

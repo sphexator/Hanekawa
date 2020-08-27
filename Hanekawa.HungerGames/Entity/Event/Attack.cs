@@ -14,7 +14,8 @@ namespace Hanekawa.HungerGames.Entity.Event
         internal UserAction AttackEvent(List<Participant> profiles, Participant profile, UserAction activity)
         {
             var target = GetTarget(profiles);
-            var weapon = GetBestWeapon(profile) ?? new Weapon();
+            // TODO: HOW TO GET WEAPON
+            var weapon = GetBestWeapon(profile);
             if (target.Health <= target.Health - weapon.Damage)
             {
                 target.Health = 0;
@@ -39,7 +40,7 @@ namespace Hanekawa.HungerGames.Entity.Event
         {
             Weapon weapon = null;
             var dmg = 0;
-            foreach (var x in profile.Inventory.Weapons)
+            foreach (var x in profile.Inventory.Where(x => x.Item))
             {
                 if (x.Weapon.Damage <= dmg) continue;
                 if (x.Weapon.Ammo == null && x.Weapon.Ammo <= 0) continue;

@@ -12,7 +12,7 @@ namespace Hanekawa.HungerGames.Entity.Event
 
         internal Loot(Random random) => _random = random;
 
-        internal UserAction LootEvent(Participant profile, ItemDrop items, UserAction activity)
+        internal UserAction LootEvent(Participant profile, UserAction activity)
         {
             const int pool = FoodAndWater + Weapons + Bandages;
             var result = _random.Next(pool);
