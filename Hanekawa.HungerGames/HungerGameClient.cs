@@ -10,5 +10,7 @@ namespace Hanekawa.HungerGames
         public void StartGame(){}
 
         public void NextRound(){}
+
+        public void Initialize() { }
     }
 }
