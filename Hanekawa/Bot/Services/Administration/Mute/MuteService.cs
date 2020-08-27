@@ -97,7 +97,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         {
             await Mute(user, db).ConfigureAwait(false);
             var unMuteAt = DateTime.UtcNow + after;
-            var muteCheck = await db.MuteTimers.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
+            var muteCheck = await db.MuteTimers.FindAsync(user.Id.RawValue, user.Guild.Id.RawValue);
             if (muteCheck == null)
             {
                 await db.MuteTimers.AddAsync(new MuteTimer

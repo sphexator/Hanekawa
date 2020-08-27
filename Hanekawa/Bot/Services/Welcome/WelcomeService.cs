@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +27,7 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ImageGenerator _img;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
+        //private static LocalCustomEmoji _expEmoji = null;
 
         public WelcomeService(Hanekawa client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
         {
@@ -58,7 +62,7 @@ namespace Hanekawa.Bot.Services.Welcome
                     if (cfg.Banner)
                     {
                         var banner = await _img.WelcomeBuilder(user, db);
-                        banner.Seek(0, SeekOrigin.Begin);
+                        banner.Position = 0;
                         message = await channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.png"), msg);
                     }
                     else
@@ -84,13 +88,56 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(Hanekawa bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            var response = await bot.GetInteractivity().WaitForMessageAsync(
-                x => x.Message.Content == "welcome" && x.Message.Guild.Id.RawValue == cfg.GuildId && x.Message.Channel.Id.RawValue == channel.Id.RawValue,
-                TimeSpan.FromMinutes(5));
-            if (response == null) return;
-            if (!(response.Message.Author is CachedMember user)) return;
-            var userData = await db.GetOrCreateUserData(user);
-            await _exp.AddExpAsync(user, userData, cfg.Reward.Value, 0, db);
+            /*
+            if (_expEmoji == null)
+            {
+                LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote);
+                _expEmoji = emote;
+            }
+            */
+            var users = new ConcurrentQueue<CachedMember>();
+            var s = new Stopwatch();
+            s.Start();
+            while (s.Elapsed <= TimeSpan.FromMinutes(1))
+            {
+                var response = await bot.GetInteractivity().WaitForMessageAsync(
+                    x => x.Message.Content.Contains("welcome", StringComparison.OrdinalIgnoreCase) &&
+                         x.Message.Guild.Id.RawValue == cfg.GuildId &&
+                         x.Message.Channel.Id.RawValue == channel.Id.RawValue &&
+                        !x.Message.Author.IsBot,
+                    TimeSpan.FromMinutes(1));
+                _ = Task.Run(async () =>
+                {
+                    var res = response;
+                    try
+                    {
+                        if (res == null) return;
+                        if (!(res.Message.Author is CachedMember user)) return;
+                        if (IsRewardCd(user)) return;
+                        if (user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) return;
+                        if (users.Contains(user)) return;
+                        users.Enqueue(user);
+                        /*
+                        if(!res.Message.Reactions.ContainsKey(_expEmoji)) 
+                        { 
+                            await res.Message.AddReactionAsync(_expEmoji);
+                        }
+                        */
+                    }
+                    catch (Exception e)
+                    {
+                        _log.LogAction(LogLevel.Error, e, e.Message);
+                    }
+                });
+            }
+
+            s.Stop();
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            while (users.TryDequeue(out var user))
+            {
+                var userData = await db.GetOrCreateUserData(user);
+                await _exp.AddExpAsync(user, userData, cfg.Reward.Value, 0, db);
+            }
         }
 
         private async Task DeleteWelcomeAsync(IMessage msg, WelcomeConfig cfg)

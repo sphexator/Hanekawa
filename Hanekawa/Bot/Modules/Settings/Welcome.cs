@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
+using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -256,6 +257,29 @@ namespace Hanekawa.Bot.Modules.Settings
                 cfg.IgnoreNew = time.Value;
                 await Context.ReplyAsync($"Now ignoring accounts that's younger than {time.Value.Humanize()}",
                     Color.Green);
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        [Name("Welcome Reward")]
+        [Command("welcreward", "wreward")]
+        [Description("Rewards users for welcoming a new member")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        [RequirePremium]
+        public async Task WelcomeRewardAsync(int reward = 0)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            if (reward == 0)
+            {
+                cfg.Reward = null;
+                await ReplyAsync("Disabled welcome rewards!", Color.Green);
+            }
+            else
+            {
+                cfg.Reward = reward;
+                await ReplyAsync($"Enabled or set welcome rewards to {reward}!");
             }
 
             await db.SaveChangesAsync();

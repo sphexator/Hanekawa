@@ -26,7 +26,6 @@ namespace Hanekawa.Database.Extensions
                 IconUrl = null
             };
             await context.ClubInfos.AddAsync(data).ConfigureAwait(false);
-            context.ClubInfos.Update(data);
             await context.SaveChangesAsync().ConfigureAwait(false);
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id.RawValue && x.LeaderId == user.Id.RawValue).ConfigureAwait(false);
         }

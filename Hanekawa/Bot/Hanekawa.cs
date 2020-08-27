@@ -5,6 +5,7 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Parsers;
 using Disqord.Bot.Prefixes;
+using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -31,6 +32,7 @@ namespace Hanekawa.Bot
             AddTypeParser(new CachedGuildChannelTypeParser<CachedTextChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
+            AddTypeParser(new TimeSpanTypeParser());
 
             this.CommandExecuted += Hanekawa_CommandExecuted;
         }

@@ -43,8 +43,11 @@ namespace Hanekawa.Bot.Services.Drop
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             foreach (var x in db.DropConfigs)
             {
-                var emote = LocalCustomEmoji.TryParse(x.Emote, out var result) ? result : GetDefaultEmote();
-                _emotes.TryAdd(x.GuildId, emote);
+                if (LocalCustomEmoji.TryParse(x.Emote, out var result))
+                {
+                    _emotes.TryAdd(x.GuildId, result);
+                }
+                else _emotes.TryAdd(x.GuildId, GetDefaultEmote());
             }
 
             foreach (var x in db.LootChannels)
@@ -106,7 +109,7 @@ namespace Hanekawa.Bot.Services.Drop
                 {
                     if (x.Name == claim.Name)
                     {
-                        var messages = _normalLoot.GetOrAdd(context.Guild.Id.RawValue,
+                        var messages = _spawnedLoot.GetOrAdd(context.Guild.Id.RawValue,
                             new MemoryCache(new MemoryCacheOptions()));
                         messages.Set(triggerMsg.Id.RawValue, false, TimeSpan.FromHours(1));
                     }
@@ -174,8 +177,9 @@ namespace Hanekawa.Bot.Services.Drop
                 {
                     using var scope = _provider.CreateScope();
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                    var claim = await GetClaimEmote(user.Guild, db);
-                    if (e.Emoji.MessageFormat != claim.Name) return;
+                    var check = _emotes.TryGetValue(user.Guild.Id.RawValue, out var claim);
+                    if(!check) claim = await GetClaimEmote(user.Guild, db);
+                    if (e.Emoji.MessageFormat != claim.MessageFormat) return;
                     if (!IsDropMessage(user.Guild.Id.RawValue, e.Message.Id.RawValue, out var special)) return;
                     var message = await e.Message.GetAsync();
                     if (special) await ClaimSpecial(message, channel, user, db);

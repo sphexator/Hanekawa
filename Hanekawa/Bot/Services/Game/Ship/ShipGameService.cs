@@ -18,7 +18,9 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -56,7 +58,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         public async Task<LocalEmbedBuilder> SearchAsync(DiscordCommandContext context)
         {
-            if (IsInBattle(context))
+            if (IsInBattleOrDuel(context))
                 return new LocalEmbedBuilder().Create($"{context.User.Mention} is already in a fight",
                     Color.Red);
             using var scope = _provider.CreateScope();
@@ -106,20 +108,20 @@ namespace Hanekawa.Bot.Services.Game.Ship
 
         public async Task AttackAsync(HanekawaCommandContext context)
         {
-            if (!IsInBattle(context))
+            if (!IsInBattleOrDuel(context))
             {
-                await context.ReplyAsync($"{context.User.Mention} isn't in a fight", Color.Red);
+                await context.ReplyAsync($"{context.User.Mention} isn't in a fight or duel", Color.Red);
                 return;
             }
 
-            if (ActiveBattle(context))
+            if (OnGoingBattleOrDuel(context))
             {
-                await context.ReplyAsync($"{context.User.Mention}, a fight is already in progress, please wait.",
+                await context.ReplyAsync($"{context.User.Mention}, a fight or duel is already in progress, please wait.",
                     Color.Red);
                 return;
             }
 
-            UpdateBattle(context, true);
+            StartBattle(context);
             var enemy = GetEnemyData(context);
             var playerOneHp = 0;
             var playerTwoHp = 0;
@@ -147,7 +149,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             var msgLog = new LinkedList<string>();
             msgLog.AddFirst($"**{context.Member.DisplayName}** VS **{enemy.Name}**");
 
-            var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), enemy.ImageUrl);
+            var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(ImageFormat.Png), enemy.ImageUrl);
             img.Seek(0, SeekOrigin.Begin);
             var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
             embed.AddField($"{context.Member.DisplayName}", $"{playerOneHp}/{playerOneHpMax}", true);
@@ -196,7 +198,6 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     msgLog.AddFirst($"**{context.Member.DisplayName}** defeated **{enemy.Name}**!\n" +
                                     $"Looted **${enemy.CreditGain}** and gained **{enemy.ExpGain}** exp.");
                     RemoveBattle(context);
-
                     await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                     {
                         var userData = await db.GetOrCreateUserData(context.Member);
@@ -252,7 +253,6 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     msgLog.AddFirst($"**{enemy.Name}** defeated **{context.Member.DisplayName}**!\n" +
                                     $"**{context.Member.DisplayName}** died.");
                     RemoveBattle(context);
-
                     embed.Color = Color.Red;
                     embed.Description = UpdateCombatLog(msgLog.Reverse());
                     var userField = embed.Fields.First(x => x.Name == $"{context.Member.DisplayName}");
@@ -274,22 +274,22 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 await Task.Delay(2000);
             }
 
-            UpdateBattle(context, false);
+            RemoveBattle(context);
             _log.LogAction(LogLevel.Information, "(Ship Game) Completed game");
         }
 
         public async Task AttackAsync(HanekawaCommandContext context, CachedMember playerTwoUser, int? bet = 0)
         {
-            if (ActiveDuel(context))
+            if (OnGoingBattleOrDuel(context))
             {
                 await context.ReplyAsync($"{context.User.Mention}, a fight is already in progress, please wait.",
                     Color.Red);
                 return;
             }
 
-            UpdateDuel(context, true);
             try
             {
+                AddDuel(context, playerTwoUser);
                 Account userData;
                 Account userData2;
                 var p1Name = context.Member.DisplayName;
@@ -325,7 +325,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 var msgLog = new LinkedList<string>();
                 msgLog.AddFirst($"**{p1Name}** VS **{p2Name}**");
 
-                var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(), playerTwoUser.GetAvatarUrl());
+                var img = await _img.ShipGameBuilder(context.User.GetAvatarUrl(ImageFormat.Png), playerTwoUser.GetAvatarUrl(ImageFormat.Png));
                 img.Seek(0, SeekOrigin.Begin);
                 var embed = new LocalEmbedBuilder().Create(UpdateCombatLog(msgLog), _colourService.Get(context.Guild.Id.RawValue));
 
@@ -463,79 +463,78 @@ namespace Hanekawa.Bot.Services.Game.Ship
                     }
                 }
 
-                UpdateDuel(context, false);
+                RemoveDuel(context, playerTwoUser);
                 _log.LogAction(LogLevel.Information, "(Ship Game) Completed duel");
             }
             catch(Exception e)
             {
-                UpdateDuel(context, false);
+                RemoveDuel(context, playerTwoUser);
                 _log.LogAction(LogLevel.Error, e, "(Ship Game) Duel failed");
             }
         }
 
         private GameEnemy GetEnemyData(DiscordCommandContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
+            var battles = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             battles.TryGetValue(context.User.Id.RawValue, out var game);
-            return game;
+            return game as GameEnemy;
         }
 
-        private bool ActiveBattle(DiscordCommandContext context)
+        private bool IsInBattleOrDuel(DiscordCommandContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
-            if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
+            var battles = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            if (battles.TryGetValue(context.User.Id.RawValue, out _)) return true;
+            var duels = _activeDuels.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            if (duels.TryGetValue(context.User.Id.RawValue, out _)) return true;
             return false;
         }
 
-        private void UpdateBattle(DiscordCommandContext context, bool status)
+        private bool OnGoingBattleOrDuel(DiscordCommandContext context)
         {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
-        }
-
-        private bool ActiveDuel(DiscordCommandContext context)
-        {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            var check = gChannels.TryGetValue(context.Channel.Id.RawValue, out var value);
-            if (check) return value;
-            gChannels.GetOrAdd(context.Channel.Id.RawValue, true);
-            return false;
-        }
-
-        private void UpdateDuel(DiscordCommandContext context, bool status)
-        {
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id.RawValue, status, (key, old) => old = status);
-        }
-
-        private bool IsInBattle(DiscordCommandContext context)
-        {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
-            var check = battles.TryGetValue(context.User.Id.RawValue, out _);
-            return check;
+            var ongoing = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            return ongoing.TryGetValue(context.Channel.Id.RawValue, out _);
         }
 
         private void AddBattle(DiscordCommandContext context, GameEnemy enemy)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryAdd(context.User.Id.RawValue, enemy);
+            var battles = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            battles.Set(context.User.Id.RawValue, enemy, TimeSpan.FromMinutes(10));
+        }
+
+        private void AddDuel(DiscordCommandContext context, CachedMember user)
+        {
+            var duels = _activeDuels.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var existingBattles =
+                _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            duels.Set(context.User.Id.RawValue, user.Id.RawValue, TimeSpan.FromMinutes(10));
+            duels.Set(user.Id.RawValue, context.User.Id.RawValue, TimeSpan.FromMinutes(10));
+            existingBattles.Set(context.Channel.Id.RawValue, true, TimeSpan.FromMinutes(10));
+        }
+
+        private void StartBattle(DiscordCommandContext context)
+        {
+            var existingBattles =
+                _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            existingBattles.Set(context.Channel.Id.RawValue, true, TimeSpan.FromMinutes(10));
+        }
+
+        private void RemoveDuel(DiscordCommandContext context, CachedMember user)
+        {
+            var duels = _activeDuels.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var existingBattles =
+                _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            duels.Remove(context.User.Id.RawValue);
+            duels.Remove(user.Id.RawValue);
+            existingBattles.Remove(context.Channel.Id.RawValue);
         }
 
         private void RemoveBattle(DiscordCommandContext context)
         {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id.RawValue, out var game);
-        }
-
-        public void ClearUser(DiscordCommandContext context)
-        {
-            var battles = _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, GameEnemy>());
-            battles.TryRemove(context.User.Id.RawValue, out var game);
-
-            var gChannels = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            gChannels.AddOrUpdate(context.Channel.Id.RawValue, false, (key, old) => old = false);
+            var existingBattles =
+                _existingBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            var battles = _activeBattles.GetOrAdd(context.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
+            existingBattles.Remove(context.Channel.Id.RawValue);
+            battles.Remove(context.User.Id.RawValue);
         }
 
         private static string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);

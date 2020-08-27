@@ -33,7 +33,6 @@ namespace Hanekawa.Bot.Modules.Settings
             if (config.Prefix != prefix)
             {
                 config.Prefix = prefix;
-                db.GuildConfigs.Update(config);
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
                 return;

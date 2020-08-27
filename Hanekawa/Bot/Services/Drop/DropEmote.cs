@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Services.Drop
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateDropConfig(guild);
             cfg.Emote = emote.MessageFormat;
-            _emotes.AddOrUpdate(guild.Id.RawValue, GetDefaultEmote(), (key, value) => emote);
+            _emotes.AddOrUpdate(guild.Id.RawValue, emote, (key, value) => emote);
             await db.SaveChangesAsync();
         }
 
@@ -42,7 +42,11 @@ namespace Hanekawa.Bot.Services.Drop
                 result.Add(emote.Value);
             }
 
-            result.Add(_emotes.GetOrAdd(guild.Id.RawValue, await GetClaimEmote(guild, db)));
+            if (_emotes.TryGetValue(guild.Id.RawValue, out var claimEmote))
+            {
+                result.Add(claimEmote);
+            }
+            else result.Add(_emotes.GetOrAdd(guild.Id.RawValue, await GetClaimEmote(guild, db)));
             return result;
         }
 

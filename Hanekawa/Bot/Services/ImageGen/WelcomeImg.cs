@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
-                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 46)));
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 43)));
                 await img.SaveAsync(stream, new PngEncoder());
             }
 
@@ -54,8 +54,10 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return _welcomeTemplate;
-            var response = await _client.GetStreamAsync(list[_random.Next(list.Count)].Url);
-            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            var background = await _client.GetStreamAsync(list[_random.Next(list.Count)].Url);
+            var response = background.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(600, 78));
         }
 
@@ -64,7 +66,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             var background = await _client.GetStreamAsync(url);
             var response = background.ToEditable();
             response.Position = 0;
-            using var img = await Image.LoadAsync(response.ToEditable(), new PngDecoder());
+            using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(600, 78));
         }
     }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Prefix;
+using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Anime;
 using Hanekawa.Bot.Services.Mvp;
@@ -21,12 +22,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
 using Qmmands;
 using Quartz;
+using ILogger = Disqord.Logging.ILogger;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
 {
@@ -44,11 +48,17 @@ namespace Hanekawa
             services.AddHostedService<SimulCastService>();
             services.AddSingleton(Configuration);
             services.AddLogging();
-            services.AddDbContextPool<DbService>(x => x.UseNpgsql("Server=localhost; Port=5432; Database=hanekawa-development; Userid=postgres;Password=1023;"/*Configuration["connectionString"]*/));
+            services.AddDbContextPool<DbService>(x =>
+            {
+                x.UseNpgsql(Configuration["connectionString"]);
+                x.EnableDetailedErrors(true);
+                x.EnableSensitiveDataLogging(false);
+            });
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
             services.AddSingleton(new ColourService());
             services.UseQuartz(typeof(WarnService));
+            services.UseQuartz(typeof(MvpService));
 
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
@@ -66,13 +76,14 @@ namespace Hanekawa
                     new DiscordBotConfiguration
                     {
                         MessageCache = new Optional<MessageCache>(new DefaultMessageCache(100)),
+                        Logger = new Optional<ILogger>(new DiscordLogger()),
                         CommandServiceConfiguration = new CommandServiceConfiguration
                         {
                             DefaultRunMode = RunMode.Parallel,
                             StringComparison = StringComparison.OrdinalIgnoreCase,
                             CooldownBucketKeyGenerator = (e, context) =>
                             {
-                                var ctx = (HanekawaCommandContext)context;
+                                var ctx = (HanekawaCommandContext) context;
                                 return ctx.User.Id.RawValue;
                             }
                         },
@@ -188,11 +199,7 @@ namespace Hanekawa
             config.AddTarget(asyncDatabaseTarget);
 
             config.AddRule(LogLevel.Info, LogLevel.Fatal, asyncConsoleTarget);
-#if(DEBUG == false)
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, fileTarget);      
-#endif
             config.AddRule(LogLevel.Warn, LogLevel.Fatal, asyncDatabaseTarget);
-
             LogManager.Configuration = config;
             LogManager.ThrowExceptions = Debugger.IsAttached;
             

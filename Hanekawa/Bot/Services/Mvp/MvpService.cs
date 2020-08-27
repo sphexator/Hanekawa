@@ -3,12 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,7 +34,9 @@ namespace Hanekawa.Bot.Services.Mvp
             _log = log;
             _service = service;
 
-            _client.MessageReceived += CountMvp;
+            //_client.MessageReceived += CountMvp;
+            // Actual MVP Counting is now done in ExpService 
+            // To use the same cooldown & channel ignore cache
             _client.RoleDeleted += MvpRoleCheckDeletion;
         }
 
@@ -51,7 +55,7 @@ namespace Hanekawa.Bot.Services.Mvp
             });
             return Task.CompletedTask;
         }
-
+/*
         private Task CountMvp(MessageReceivedEventArgs e)
         {
             _ = Task.Run(async () =>
@@ -61,17 +65,16 @@ namespace Hanekawa.Bot.Services.Mvp
                 if (!(await ServerCheck(user.Guild))) return;
                 var userCd = Cooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
                 if (userCd.TryGetValue(user.Id.RawValue, out _)) return;
-                userCd.CreateEntry(user.Id.RawValue);
+                userCd.Set(user.Id.RawValue, false, TimeSpan.FromMinutes(1));
                 using var scope = _service.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var userData = await db.GetOrCreateUserData(user);
                 userData.MvpCount++;
-                db.Accounts.Update(userData);
                 await db.SaveChangesAsync();
             });
             return Task.CompletedTask;
         }
-
+*/
         private async Task<bool> ServerCheck(CachedGuild guild)
         {
             if (Premium.Contains(guild.Id.RawValue)) return true;
@@ -99,22 +102,34 @@ namespace Hanekawa.Bot.Services.Mvp
 
             for (var i = 0; i < premium.Count; i++)
             {
+                var mvps = new List<CachedMember>();
+                var oldMvps = new List<CachedMember>();
+                var x = premium[i];
+
+                var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
+                if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day) continue;
+                
+                var guild = _client.GetGuild(x.GuildId);
+                var role = guild.GetRole(mvpConfig.RoleId.Value);
                 try
                 {
-                    var x = premium[i];
-                    var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
                     if (mvpConfig?.RoleId != null)
                     {
-                        var guild = _client.GetGuild(x.GuildId);
-                        var role = guild.GetRole(mvpConfig.RoleId.Value);
                         if (role != null)
                         {
-                            var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId).OrderByDescending(e => e.MvpCount)
-                                .Take(mvpConfig.Count).ToListAsync();
+                            var toAdd = guild.Members.Where(e => e.Value.Roles.ContainsKey(role.Id)).ToList();
+                            for (var j = 0; j < toAdd.Count; j++)
+                            {
+                                await toAdd[j].Value.TryRemoveRoleAsync(role);
+                                oldMvps.Add(toAdd[j].Value);
+                            }
+                            var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active).OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count).ToListAsync();
                             for (var j = 0; j < mvpConfig.Count; j++)
                             {
                                 var e = users[j];
-                                await guild.GetMember(e.UserId).TryAddRoleAsync(role);
+                                var user = guild.GetMember(e.UserId);
+                                await user.TryAddRoleAsync(role);
+                                mvps.Add(user);
                             }
                             _log.LogAction(LogLevel.Information, $"(MVP Service) Rewarded {mvpConfig.Count} users with MVP role in {guild.Id.RawValue}");
                         }
@@ -138,6 +153,22 @@ namespace Hanekawa.Bot.Services.Mvp
                     }
                     await db.SaveChangesAsync();
                     _log.LogAction(LogLevel.Information, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
+                    var gcfg = await db.GetOrCreateGuildConfigAsync(guild);
+                    if (gcfg.MvpChannel.HasValue)
+                    {
+                        var channel = guild.GetTextChannel(gcfg.MvpChannel.Value);
+                        var strb = new StringBuilder();
+                        for (var j = 0; j < mvps.Count; j++)
+                        {
+                            var n = mvps[j];
+                            var o = oldMvps[j];
+                            strb.AppendLine($"{o.Mention ?? "User Left"} => {n.Mention}");
+                        }
+
+                        await channel.SendMessageAsync(null, false, new LocalEmbedBuilder().Create(
+                            $"New Weekly MVP!\n" +
+                            $"{strb}", Color.Green).Build(), LocalMentions.NoEveryone);
+                    }
                 }
                 catch (Exception e)
                 {

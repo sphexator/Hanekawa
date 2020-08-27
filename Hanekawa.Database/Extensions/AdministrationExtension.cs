@@ -22,7 +22,6 @@ namespace Hanekawa.Database.Extensions
                 Action = action.ToString()
             };
             await context.ModLogs.AddAsync(data).ConfigureAwait(false);
-            context.ModLogs.Update(data);
             await context.SaveChangesAsync().ConfigureAwait(false);
             return await context.ModLogs.FirstOrDefaultAsync(x =>
                 x.Date == time && x.UserId == user.Id.RawValue && x.GuildId == guild.Id.RawValue).ConfigureAwait(false);
@@ -43,7 +42,6 @@ namespace Hanekawa.Database.Extensions
                 Date = time
             };
             await context.Reports.AddAsync(data).ConfigureAwait(false);
-            context.Reports.Update(data);
             await context.SaveChangesAsync().ConfigureAwait(false);
             return await context.Reports.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
         }

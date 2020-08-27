@@ -119,7 +119,8 @@ namespace Hanekawa.Bot.Modules.Help
                 content.AppendLine(!cmd.Name.IsNullOrWhiteSpace()
                     ? $"**{cmd.Name}**"
                     : $"**{cmd.Aliases.FirstOrDefault()}**");
-                if (!perms.IsNullOrWhiteSpace()) content.Append($"**Require {perms}**");
+                if (!perms.IsNullOrWhiteSpace()) content.Append($"**Require {perms}** ");
+                if (PremiumCheck(cmd, out var prem)) content.AppendLine(prem);
                 content.AppendLine(
                     $"Alias: **{cmd.Aliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}**");
                 if (!cmd.Description.IsNullOrWhiteSpace()) content.AppendLine(cmd.Description);
@@ -192,6 +193,14 @@ namespace Hanekawa.Bot.Modules.Help
         private string PermBuilder(Command cmd)
         {
             var str = new StringBuilder();
+            foreach (var x in cmd.Module.Checks)
+            {
+                if (x is RequireMemberGuildPermissionsAttribute perm)
+                {
+                    if (perm.Permissions.Count() == 1) str.AppendLine(perm.Permissions.FirstOrDefault().ToString());
+                    else foreach (var e in perm.Permissions) str.Append($"{e}, ");
+                }
+            }
             foreach (var x in cmd.Checks)
             {
                 if (x is RequireMemberGuildPermissionsAttribute perm)
@@ -202,6 +211,20 @@ namespace Hanekawa.Bot.Modules.Help
             }
 
             return str.ToString();
+        }
+
+        private bool PremiumCheck(Command cmd, out string perm)
+        {
+            var premium = cmd.Checks.FirstOrDefault(x => x is RequirePremium);
+            if (premium == null) premium = cmd.Module.Checks.FirstOrDefault(x => x is RequirePremium);
+            if (premium != null)
+            {
+                perm = "**Require Premium**";
+                return true;
+            }
+
+            perm = null;
+            return false;
         }
     }
 }

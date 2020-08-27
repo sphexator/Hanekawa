@@ -8,6 +8,7 @@ namespace Hanekawa.Extensions
         {
             var toReturn = new MemoryStream();
             stream.CopyTo(toReturn);
+            stream.Flush();
             return toReturn;
         }
     }
