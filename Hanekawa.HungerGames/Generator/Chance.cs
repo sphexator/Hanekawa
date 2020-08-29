@@ -24,9 +24,9 @@ namespace Hanekawa.HungerGames.Generator
             var hack = HackChance();
             var die = DieChance();
             var sleep = SleepChance(profile);
-            var eat = EatChance(profile);
+            //var eat = EatChance(profile);
 
-            var result = loot + kill + idle + hack + die + sleep + eat;
+            var result = loot + kill + idle + hack + die + sleep;
             var generator = _rand.Next(result);
             if (generator <= loot) return ActionType.Loot;
             if (generator <= loot + kill) return ActionType.Attack;
@@ -40,35 +40,29 @@ namespace Hanekawa.HungerGames.Generator
         {
             var drinks = profile.Inventory.FirstOrDefault();
             var food = profile.Inventory.FirstOrDefault();
-            if (drinks == null || food == null) return Loot + 400;
-            return Loot - 200;
+            return drinks == null || food == null ? Loot + 400 : Loot - 200;
         }
 
-        private static int KillChance(Participant profile)
-        {
-            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 0 ||
-                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 0)
-                return 0;
-            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 1 ||
-                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 1) 
-                return Kill;
-            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Weapon) >= 1 &&
-                (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 2 ||
-                 profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 2))
-                return Kill + 10000;
-            if (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 1 ||
-                profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 1)
-                return Kill + 1500;
-            return Kill;
-        }
+        private static int KillChance(Participant profile) =>
+            profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 0 ||
+            profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 0
+                ? 0
+                : profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) == 1 ||
+                  profile.Inventory.Count(x => x.Item.Type == ItemType.Food) == 1
+                    ? Kill
+                    : profile.Inventory.Count(x => x.Item.Type == ItemType.Weapon) >= 1 &&
+                      (profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 2 ||
+                       profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 2)
+                        ? Kill + 10000
+                        : profile.Inventory.Count(x => x.Item.Type == ItemType.Drink) > 1 ||
+                          profile.Inventory.Count(x => x.Item.Type == ItemType.Food) > 1
+                            ? Kill + 1500
+                            : Kill;
 
-        private static int SleepChance(Participant profile)
-        {
-            if (profile.Tiredness >= 90) return Sleep + 1000;
-            if (profile.Tiredness >= 75) return Sleep + 750;
-            if (profile.Tiredness >= 50) return Sleep + 500;
-            return Sleep;
-        }
+        private static int SleepChance(Participant profile) =>
+            profile.Tiredness >= 90 ? Sleep + 1000 :
+            profile.Tiredness >= 75 ? Sleep + 750 :
+            profile.Tiredness >= 50 ? Sleep + 500 : Sleep;
 
         private static int IdleChance() => Idle;
 

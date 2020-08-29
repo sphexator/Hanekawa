@@ -16,17 +16,31 @@ namespace Hanekawa.HungerGames.Entity.Event
             var target = GetTarget(profiles);
             // TODO: HOW TO GET WEAPON
             var weapon = GetBestWeapon(profile);
-            if (target.Health <= target.Health - weapon.Damage)
+            if (weapon == null)
             {
-                target.Health = 0;
-                target.Alive = false;
+                if (target.Health <= target.Health - 5)
+                {
+                    target.Health = 0;
+                    target.Alive = false;
+                }
+                else
+                {
+                    target.Health -= 5;
+                }
             }
             else
             {
-                target.Health -= weapon.Damage;
+                if (target.Health <= target.Health - weapon.GiveOrTake)
+                {
+                    target.Health = 0;
+                    target.Alive = false;
+                }
+                else
+                {
+                    target.Health -= weapon.GiveOrTake;
+                } 
+                if(weapon.Ammo > 0) weapon.Ammo -= 1;
             }
-
-            if (weapon.Ammo != null) weapon.Ammo -= 1;
             return activity;
         }
 
@@ -36,16 +50,16 @@ namespace Hanekawa.HungerGames.Entity.Event
             return users[_random.Next(alive.Count())];
         }
 
-        private static Weapon GetBestWeapon(Participant profile)
+        private static Item GetBestWeapon(Participant profile)
         {
-            Weapon weapon = null;
+            Item weapon = null;
             var dmg = 0;
-            foreach (var x in profile.Inventory.Where(x => x.Item))
+            foreach (var x in profile.Inventory.Where(x => x.Item.Type == ItemType.Weapon).ToList())
             {
-                if (x.Weapon.Damage <= dmg) continue;
-                if (x.Weapon.Ammo == null && x.Weapon.Ammo <= 0) continue;
-                dmg = x.Weapon.Damage;
-                weapon = x.Weapon;
+                if (x.Item.GiveOrTake <= dmg) continue;
+                if (x.Item.Ammo <= 0) continue;
+                dmg = x.Item.GiveOrTake;
+                weapon = x.Item;
             }
 
             return weapon;

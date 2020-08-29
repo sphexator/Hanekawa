@@ -11,7 +11,7 @@ namespace Hanekawa.HungerGames.Entity.Event
         internal UserAction HackEvent(Participant profile, UserAction activity)
         {
             // TODO: Redo hack, supposed to give almost everything
-            return new UserAction();
+            return null;
         }
     }
 }
