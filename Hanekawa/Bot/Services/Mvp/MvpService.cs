@@ -49,19 +49,6 @@ namespace Hanekawa.Bot.Services.Mvp
             return Task.CompletedTask;
         }
 
-        private async Task<bool> ServerCheck(CachedGuild guild)
-        {
-            if (Premium.Contains(guild.Id.RawValue)) return true;
-            using (var scope = _service.CreateScope())
-            await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
-            {
-                var guildCfg = await db.GetOrCreateGuildConfigAsync(guild);
-                if (!guildCfg.Premium) return false;
-                Premium.Add(guild.Id.RawValue);
-            }
-            return true;
-        }
-
         public Task Execute(IJobExecutionContext context)
         {
             _ = MvpReward();
