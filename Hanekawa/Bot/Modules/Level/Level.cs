@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Level Reset")]
         [Command("lr", "lvlreset")]
         [Description("Reset the server level/exp back to 0")]
-        [GuildOwnerOnly]
+        [RequireMemberGuildPermissions(Permission.Administrator)]
         [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
         public async Task ResetAsync()
         {
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Name("Set Level")]
         [Command("sl", "setlvl")]
         [Description("Sets a user to a desired level")]
-        [GuildOwnerOnly]
+        [RequireMemberGuildPermissions(Permission.Administrator)]
         public async Task SetLevelAsync(CachedMember user, int level)
         {
             if (level <= 0) return;

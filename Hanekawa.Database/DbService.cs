@@ -381,6 +381,8 @@ namespace Hanekawa.Database
                 x.Property(e => e.ModChannel).HasConversion<long>();
                 x.Property(e => e.QuestionAndAnswerChannel).HasConversion<long>();
                 x.Property(e => e.ReportChannel).HasConversion<long>();
+                x.Property(e => e.SelfAssignableChannel).HasConversion<long>();
+                x.Property(e => e.SelfAssignableMessages).HasConversion<long[]>();
             });
             modelBuilder.Entity<ClubConfig>(x =>
             {
