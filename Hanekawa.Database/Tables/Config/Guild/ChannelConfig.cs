@@ -13,6 +13,6 @@ namespace Hanekawa.Database.Tables.Config.Guild
         public ulong? QuestionAndAnswerChannel { get; set; } = null;
 
         public ulong? SelfAssignableChannel { get; set; } = null;
-        public List<ulong> SelfAssignableMessages { get; set; } = null;
+        public ulong[] SelfAssignableMessages { get; set; } = null;
     }
 }

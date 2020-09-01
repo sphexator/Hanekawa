@@ -5,6 +5,7 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,16 +37,26 @@ namespace Hanekawa.Bot.Services.Utility
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateChannelConfigAsync(user.Guild);
                 if (!cfg.SelfAssignableChannel.HasValue) return;
-                if (cfg.SelfAssignableMessages.Count > 0) return;
+                if (cfg.SelfAssignableMessages.Length > 0) return;
                 if (e.Channel.Id.RawValue != cfg.SelfAssignableChannel.Value) return;
                 if (!cfg.SelfAssignableMessages.Contains(e.Message.Id.RawValue)) return;
-                var message = cfg.SelfAssignableMessages.FirstOrDefault(x => x == e.Message.Id.RawValue);
                 var reaction = await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
                     x.GuildId == user.Guild.Id.RawValue && x.EmoteMessageFormat == e.Emoji.MessageFormat);
                 if (reaction == null) return;
                 var role = user.Guild.GetRole(reaction.RoleId);
                 if (role == null) return;
-                if (user.Roles.ContainsKey(role.Id)) await user.RevokeRoleAsync(role.Id);
+                if (reaction.Exclusive)
+                {
+                    var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == user.Guild.Id.RawValue && x.Exclusive)
+                        .ToListAsync();
+                    foreach (var x in roles)
+                    {
+                        var exclusiveRole = user.Guild.GetRole(x.RoleId);
+                        if (exclusiveRole == null) continue;
+                        if (user.Roles.Values.Contains(exclusiveRole)) await user.TryRemoveRoleAsync(exclusiveRole);
+                    }
+                }
+                if (!user.Roles.ContainsKey(role.Id)) await user.GrantRoleAsync(role.Id);
             });
             return Task.CompletedTask;
         }
@@ -61,7 +72,7 @@ namespace Hanekawa.Bot.Services.Utility
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateChannelConfigAsync(user.Guild.Id.RawValue);
                 if (!cfg.SelfAssignableChannel.HasValue) return;
-                if (cfg.SelfAssignableMessages.Count > 0) return;
+                if (cfg.SelfAssignableMessages.Length > 0) return;
                 if (e.Channel.Id != cfg.SelfAssignableChannel.Value) return;
                 if (cfg.SelfAssignableMessages.Contains(e.Message.Id.RawValue)) return;
 
@@ -71,7 +82,7 @@ namespace Hanekawa.Bot.Services.Utility
                 if (reaction == null) return;
                 var role = user.Guild.GetRole(reaction.RoleId);
                 if (role == null) return;
-                if (!user.Roles.ContainsKey(role.Id)) await user.GrantRoleAsync(role.Id);
+                if (user.Roles.ContainsKey(role.Id)) await user.RevokeRoleAsync(role.Id);
             });
             return Task.CompletedTask;
         }

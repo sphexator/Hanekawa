@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
@@ -19,6 +20,7 @@ namespace Hanekawa.Bot.Modules.Administration
 {
     [Name("Self Assignable Roles")]
     [RequiredChannel]
+    [RequireBotChannelPermissions(Permission.SendMessages, Permission.EmbedLinks, Permission.ManageMessages)]
     public class SelfAssignAbleRoles : HanekawaCommandModule
     {
         [Name("I am")]
@@ -27,7 +29,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] CachedRole role)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
             var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
@@ -47,6 +48,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 foreach (var x in roles)
                 {
                     var exclusiveRole = Context.Guild.GetRole(x.RoleId);
+                    if(exclusiveRole == null) continue;
                     if (gUser.Roles.Values.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
                 }
 
@@ -132,6 +134,19 @@ namespace Hanekawa.Bot.Modules.Administration
                 $"Self-assignable roles for {Context.Guild.Name}");
         }
 
+        [Name("Post Reaction Message")]
+        [Command("postrolemsg", "prm")]
+        [Description(
+            "Posts a message with all self-assignable roles and their respectable reaction emote, adds reactions to message")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task PostMessageAsync(CachedTextChannel channel = null)
+        {
+            channel ??= Context.Channel;
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var messages = await PostAsync(channel, db);
+
+        }
+
         [Name("Exclusive role add")]
         [Command("era")]
         [Description("Adds a role to the list of self-assignable roles")]
@@ -139,12 +154,28 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task ExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, true);
 
+        [Name("Exclusive role add")]
+        [Command("era")]
+        [Description("Adds a role to the list of self-assignable roles")]
+        [Priority(1)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task ExclusiveRole(CachedRole role, LocalCustomEmoji emote) =>
+            await AddSelfAssignAbleRoleAsync(Context, role, true, emote);
+
         [Name("Role add")]
         [Command("roleadd", "ra")]
         [Description("Adds a role to the list of self-assignable roles")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task NonExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, false);
+
+        [Name("Role add")]
+        [Command("roleadd", "ra")]
+        [Priority(1)]
+        [Description("Adds a role to the list of self-assignable roles")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task NonExclusiveRole(CachedRole role, LocalCustomEmoji emote) =>
+            await AddSelfAssignAbleRoleAsync(Context, role, false, emote);
 
         [Name("Role remove")]
         [Command("roleremove", "rr")]
@@ -176,7 +207,91 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green);
         }
 
-        private async Task AddSelfAssignAbleRoleAsync(DiscordCommandContext context, CachedRole role, bool exclusive)
+        private async Task<List<ulong>> PostAsync(CachedTextChannel channel, DbService db)
+        {
+            var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+            var toReturn = new List<ulong>();
+            var nonExclusive = new List<SelfAssignAbleRole>();
+            for (var i = 0; i < roles.Count;)
+            {
+                var toAddReaction = new List<LocalCustomEmoji>();
+                var message = new StringBuilder();
+                for (var j = 0; j < 20;)
+                {
+                    var line = new StringBuilder();
+                    for (var k = 0; k < 5; k++)
+                    {
+                        var x = roles[i];
+                        var role = Context.Guild.GetRole(x.RoleId);
+                        if (role == null || !x.Exclusive)
+                        {
+                            k--;
+                            if (!x.Exclusive && role != null) nonExclusive.Add(x);
+                            continue;
+                        }
+                        if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
+                        if (j == 4) line.Append($"{role.Mention}");
+                        if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result);
+                        i++;
+                        j++;
+                    }
+
+                    message.AppendLine(line.ToString());
+                }
+                var embed = new LocalEmbedBuilder
+                {
+                    Title = "Self-assignable roles",
+                    Description = message.ToString(),
+                    Color = Context.ServiceProvider.GetRequiredService<ColourService>().Get(Context.Guild.Id.RawValue)
+                };
+                var msg = await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.None);
+                for (var j = 0; j < toAddReaction.Count; j++)
+                {
+                    var reaction = toAddReaction[j];
+                    await msg.AddReactionAsync(reaction);
+                }
+                toReturn.Add(msg.Id.RawValue);
+            }
+
+            if (nonExclusive.Count != 0)
+            {
+                var message = new StringBuilder();
+                var toAddReaction = new List<LocalCustomEmoji>();
+                for (var i = 0; i < nonExclusive.Count;)
+                {
+                    var line = new StringBuilder();
+                    for (var j = 0; j < 5; j++)
+                    {
+                        var x = nonExclusive[i];
+                        var role = Context.Guild.GetRole(x.RoleId);
+                        if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
+                        if (j == 4) line.Append($"{role.Mention}");
+                        if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result); 
+                        i++;
+                    }
+
+                    message.AppendLine(line.ToString());
+                }
+
+                var msg = await channel.SendMessageAsync(null, false, new LocalEmbedBuilder
+                {
+                    Title = "Self-assignable roles",
+                    Description = message.ToString(),
+                    Color = Context.ServiceProvider.GetRequiredService<ColourService>().Get(Context.Guild.Id.RawValue)
+                }.Build(), LocalMentions.None);
+                
+                for (var j = 0; j < toAddReaction.Count; j++)
+                {
+                    var reaction = toAddReaction[j];
+                    await msg.AddReactionAsync(reaction);
+                }
+                toReturn.Add(msg.Id.RawValue);
+            }
+
+            return toReturn;
+        }
+
+        private async Task AddSelfAssignAbleRoleAsync(DiscordCommandContext context, CachedRole role, bool exclusive, LocalCustomEmoji emote = null)
         {
             if (!context.Member.HierarchyCheck(role))
             {
@@ -208,7 +323,6 @@ namespace Hanekawa.Bot.Modules.Administration
                     await Context.ReplyAsync($"{role.Name} is already added as self-assignable",
                         Color.Red);
                 }
-
                 return;
             }
 
@@ -216,7 +330,9 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 GuildId = context.Guild.Id.RawValue,
                 RoleId = role.Id.RawValue,
-                Exclusive = exclusive
+                Exclusive = exclusive,
+                EmoteMessageFormat = emote?.MessageFormat,
+                EmoteReactFormat = emote?.ReactionFormat
             };
             await db.SelfAssignAbleRoles.AddAsync(data);
             await db.SaveChangesAsync();
