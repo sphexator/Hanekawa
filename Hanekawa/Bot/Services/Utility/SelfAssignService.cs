@@ -37,9 +37,10 @@ namespace Hanekawa.Bot.Services.Utility
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateChannelConfigAsync(user.Guild);
                 if (!cfg.SelfAssignableChannel.HasValue) return;
-                if (cfg.SelfAssignableMessages.Length > 0) return;
+                if (cfg.SelfAssignableMessages.Length == 0) return;
                 if (e.Channel.Id.RawValue != cfg.SelfAssignableChannel.Value) return;
                 if (!cfg.SelfAssignableMessages.Contains(e.Message.Id.RawValue)) return;
+                
                 var reaction = await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
                     x.GuildId == user.Guild.Id.RawValue && x.EmoteMessageFormat == e.Emoji.MessageFormat);
                 if (reaction == null) return;
@@ -72,7 +73,7 @@ namespace Hanekawa.Bot.Services.Utility
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateChannelConfigAsync(user.Guild.Id.RawValue);
                 if (!cfg.SelfAssignableChannel.HasValue) return;
-                if (cfg.SelfAssignableMessages.Length > 0) return;
+                if (cfg.SelfAssignableMessages.Length == 0) return;
                 if (e.Channel.Id != cfg.SelfAssignableChannel.Value) return;
                 if (cfg.SelfAssignableMessages.Contains(e.Message.Id.RawValue)) return;
 

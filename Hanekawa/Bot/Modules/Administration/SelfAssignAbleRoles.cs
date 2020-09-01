@@ -7,6 +7,7 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
@@ -144,7 +145,11 @@ namespace Hanekawa.Bot.Modules.Administration
             channel ??= Context.Channel;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var messages = await PostAsync(channel, db);
-
+            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            cfg.SelfAssignableChannel = channel.Id.RawValue;
+            cfg.SelfAssignableMessages = messages.ToArray();
+            await db.SaveChangesAsync();
+            await ReplyAsync($"Sent Self-Assignable React Roles to {channel.Mention}!", Color.Green);
         }
 
         [Name("Exclusive role add")]
@@ -221,6 +226,12 @@ namespace Hanekawa.Bot.Modules.Administration
                     var line = new StringBuilder();
                     for (var k = 0; k < 5; k++)
                     {
+                        if (i >= roles.Count)
+                        {
+                            i++;
+                            j++;
+                            continue;
+                        }
                         var x = roles[i];
                         var role = Context.Guild.GetRole(x.RoleId);
                         if (role == null || !x.Exclusive)
@@ -229,8 +240,9 @@ namespace Hanekawa.Bot.Modules.Administration
                             if (!x.Exclusive && role != null) nonExclusive.Add(x);
                             continue;
                         }
-                        if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
-                        if (j == 4) line.Append($"{role.Mention}");
+                        if(i + 1 >= roles.Count) line.Append($"{role.Mention}");
+                        else if (k >= 0 && k < 4) line.Append($"{role.Mention} - ");
+                        else if (k == 4) line.Append($"{role.Mention}");
                         if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result);
                         i++;
                         j++;
@@ -262,10 +274,18 @@ namespace Hanekawa.Bot.Modules.Administration
                     var line = new StringBuilder();
                     for (var j = 0; j < 5; j++)
                     {
+                        if (i >= roles.Count)
+                        {
+                            i++;
+                            j++;
+                            continue;
+                        }
                         var x = nonExclusive[i];
                         var role = Context.Guild.GetRole(x.RoleId);
-                        if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
-                        if (j == 4) line.Append($"{role.Mention}");
+                        if (i + 1 >= nonExclusive.Count) line.Append($"{role.Mention}");
+                        else if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
+                        else if (j == 4) line.Append($"{role.Mention}");
+                        
                         if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result); 
                         i++;
                     }
