@@ -305,5 +305,34 @@ namespace Hanekawa.Database.Extensions
                 return data;
             }
         }
+
+        public static async Task<BoostConfig> GetOrCreateBoostConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateBoostConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+
+        public static async Task<BoostConfig> GetOrCreateBoostConfigAsync(this DbService context, ulong guildId)
+        {
+            var response = await context.BoostConfigs.FindAsync(guildId).ConfigureAwait(false);
+            if (response != null) return response;
+            var data = new BoostConfig
+            {
+                GuildId = guildId,
+                Message = null,
+                ChannelId = null,
+                CreditGain = 0,
+                ExpBoost = false,
+                ExpGain = 0,
+                SpecialCreditGain = 0
+            };
+            try
+            {
+                await context.BoostConfigs.AddAsync(data).ConfigureAwait(false);
+                await context.SaveChangesAsync().ConfigureAwait(false);
+                return await context.BoostConfigs.FindAsync(guildId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return data;
+            }
+        }
     }
 }

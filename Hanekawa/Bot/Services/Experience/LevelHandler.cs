@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Microsoft.Extensions.Logging;
 
@@ -17,23 +19,19 @@ namespace Hanekawa.Bot.Services.Experience
         private readonly ConcurrentDictionary<ulong, double> _voiceExpMultiplier =
             new ConcurrentDictionary<ulong, double>();
 
-        public int ExpToNextLevel(Account userdata)
-        {
-            return 3 * userdata.Level * userdata.Level + 150;
-        }
+        public int ExpToNextLevel(Account userdata) => 3 * userdata.Level * userdata.Level + 150;
 
-        private int ExpToNextLevel(AccountGlobal userdata)
-        {
-            return 50 * userdata.Level * userdata.Level + 300;
-        }
+        private int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
 
-        public int ExpToNextLevel(int level)
-        {
-            return 3 * level * level + 150;
-        }
+        public int ExpToNextLevel(int level) => 3 * level * level + 150;
 
-        public async Task AddExpAsync(CachedMember user, Account userData, int exp, int credit, DbService db)
+        public async Task<int> AddExpAsync(CachedMember user, Account userData, int exp, int credit, DbService db)
         {
+            if (user.IsBoosting)
+            {
+                var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
+                exp = Convert.ToInt32(exp * cfg.BoostExpMultiplier);
+            }
             if (userData.Exp + exp >= ExpToNextLevel(userData))
             {
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
@@ -60,6 +58,7 @@ namespace Hanekawa.Bot.Services.Experience
             userData.Credit += credit;
             if (!userData.Active) userData.Active = true;
             await db.SaveChangesAsync();
+            return exp;
         }
 
         private async Task AddExpAsync(AccountGlobal userData, int exp, int credit, DbService db)
