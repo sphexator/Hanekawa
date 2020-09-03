@@ -137,12 +137,23 @@ namespace Hanekawa.Shared.Command.Extensions
             LocalEmbedBuilder embed = null,
             TimeSpan? timeout = null)
         {
+            RestUserMessage message;
             timeout ??= TimeSpan.FromSeconds(25);
-            var message = await ctx.Channel.SendMessageAsync(content, isTts, embed.Build(), LocalMentions.NoEveryone)
-                .ConfigureAwait(false);
-            _ = Task.Delay(timeout.Value)
-                .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
-                .ConfigureAwait(false);
+            message = embed != null
+                ? await ctx.Channel.SendMessageAsync(content, isTts, embed.Build(), LocalMentions.NoEveryone)
+                    .ConfigureAwait(false)
+                : await ctx.Channel.SendMessageAsync(content, isTts, null, LocalMentions.NoEveryone)
+                    .ConfigureAwait(false);
+            try
+            {
+                _ = Task.Delay(timeout.Value)
+                    .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignore
+            }
             return message;
         }
     }
