@@ -548,6 +548,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.Day).HasConversion(
                     v => v.ToString(),
                     v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
+                x.Property(e => e.Disabled).HasDefaultValue(true);
             });
         }
 

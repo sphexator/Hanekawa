@@ -7,6 +7,7 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
@@ -22,7 +23,6 @@ namespace Hanekawa.Bot.Services.Mvp
         private readonly Hanekawa _client;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _service;
-        private static readonly List<ulong> Premium = new List<ulong>();
 
         public MvpService(Hanekawa client, InternalLogService log, IServiceProvider service)
         {
@@ -63,22 +63,33 @@ namespace Hanekawa.Bot.Services.Mvp
 
             for (var i = 0; i < premium.Count; i++)
             {
-                var mvp = new List<CachedMember>();
-                var oldMvp = new List<CachedMember>();
                 var x = premium[i];
+                await Reward(x, db);
+            }
+        }
 
-                var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
-                if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day) continue;
-                
-                var guild = _client.GetGuild(x.GuildId);
-                var role = guild.GetRole(mvpConfig.RoleId.Value);
-                try
+        public async Task Reward(GuildConfig x, DbService db)
+        {
+            var mvp = new List<CachedMember>();
+            var oldMvp = new List<CachedMember>();
+
+            var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
+            if (mvpConfig == null) return;
+            if (mvpConfig.Disabled) return;
+            if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day) return;
+
+            var guild = _client.GetGuild(x.GuildId);
+            if (guild == null) return;
+            try
+            {
+                if (mvpConfig.RoleId != null)
                 {
-                    if (mvpConfig?.RoleId != null)
+                    var role = guild.GetRole(mvpConfig.RoleId.Value);
+                    if (role != null)
                     {
-                        if (role != null)
+                        var toAdd = guild.Members.Where(e => e.Value.Roles.ContainsKey(role.Id)).ToList();
+                        if (toAdd.Count > 0)
                         {
-                            var toAdd = guild.Members.Where(e => e.Value.Roles.ContainsKey(role.Id)).ToList();
                             for (var j = 0; j < toAdd.Count; j++)
                             {
                                 try
@@ -91,85 +102,95 @@ namespace Hanekawa.Bot.Services.Mvp
                                     _log.LogAction(LogLevel.Error, e, $"(MVP Service) Couldn't remove role from {toAdd[j].Key}");
                                 }
                             }
+                        }
 
-                            var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active)
-                                .OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count * 2).ToListAsync();
-                            for (var j = 0; j < mvpConfig.Count; j++)
+                        var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active)
+                            .OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count * 2).ToListAsync();
+                        for (var j = 0; j < mvpConfig.Count; j++)
+                        {
+                            if (users.Count < mvpConfig.Count && j >= users.Count) continue;
+                            var e = users[j];
+                            try
                             {
-                                var e = users[j];
-                                try
+                                var user = guild.GetMember(e.UserId);
+                                if (user == null)
                                 {
-                                    var user = guild.GetMember(e.UserId);
-                                    if (user == null)
-                                    {
-                                        j--;
-                                        continue;
-                                    }
-                                    await user.TryAddRoleAsync(role);
-                                    mvp.Add(user);
+                                    j--;
+                                    continue;
                                 }
-                                catch (Exception exception)
-                                {
-                                    _log.LogAction(LogLevel.Error, exception, $"(MVP Service) Couldn't add role to {e.UserId}");
-                                }
+                                await user.TryAddRoleAsync(role);
+                                mvp.Add(user);
                             }
-
-                            _log.LogAction(LogLevel.Information,
-                                $"(MVP Service) Rewarded {mvpConfig.Count} users with MVP role in {guild.Id.RawValue}");
-                        }
-                        else
-                        {
-                            mvpConfig.RoleId = null;
-                            await db.SaveChangesAsync();
-                            _log.LogAction(LogLevel.Information,
-                                $"(MVP Service) Reset MVP role as it was null in {guild.Id.RawValue}");
-                        }
-                    }
-                    try
-                    {
-                        await db.Database.ExecuteSqlRawAsync("UPDATE Accounts" +
-                                                             "SET MvpCount = 0" +
-                                                             $"WHERE GuildId = {x.GuildId}");
-                    }
-                    catch (Exception e)
-                    {
-                        await db.Accounts.ForEachAsync(z => z.MvpCount = 0);
-                        _log.LogAction(LogLevel.Error, e, $"(MVP Service) Failed to execute raw SQL in {x.GuildId}");
-                    }
-                    await db.SaveChangesAsync();
-                    _log.LogAction(LogLevel.Information, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
-
-                    var guildConfig = await db.GetOrCreateGuildConfigAsync(guild);
-                    if (guildConfig.MvpChannel.HasValue)
-                    {
-                        try
-                        {
-                            var channel = guild.GetTextChannel(guildConfig.MvpChannel.Value);
-                            if(channel == null) continue;
-
-                            var stringBuilder = new StringBuilder();
-                            for (var j = 0; j < mvp.Count; j++)
+                            catch (Exception exception)
                             {
-                                var n = mvp[j];
-                                var o = oldMvp[j];
-                                stringBuilder.AppendLine($"{o.Mention ?? "User Left"} => {n.Mention}");
+                                _log.LogAction(LogLevel.Error, exception, $"(MVP Service) Couldn't add role to {e.UserId}");
                             }
+                        }
 
-                            await channel.SendMessageAsync(null, false, new LocalEmbedBuilder().Create(
-                                "New Weekly MVP!\n" +
-                                $"{stringBuilder}", Color.Green).Build());
-                        }
-                        catch (Exception e)
-                        {
-                            _log.LogAction(LogLevel.Error, e,
-                                $"(MVP Service) Couldn't send message for guild {guildConfig.GuildId} in channel {guildConfig.MvpChannel.Value}");
-                        }
+                        _log.LogAction(LogLevel.Information,
+                            $"(MVP Service) Rewarded {mvpConfig.Count} users with MVP role in {guild.Id.RawValue}");
                     }
+                    else
+                    {
+                        mvpConfig.RoleId = null;
+                        await db.SaveChangesAsync();
+                        _log.LogAction(LogLevel.Information,
+                            $"(MVP Service) Reset MVP role as it was null in {guild.Id.RawValue}");
+                    }
+                }
+                try
+                {
+                    await db.Database.ExecuteSqlRawAsync("UPDATE Accounts" +
+                                                         "SET MvpCount = 0" +
+                                                         $"WHERE GuildId = {x.GuildId}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(MVP Service) Error when assigning MVP rewards\n{e.Message}");
+                    await db.Accounts.ForEachAsync(z => z.MvpCount = 0);
+                    _log.LogAction(LogLevel.Error, e, $"(MVP Service) Failed to execute raw SQL in {x.GuildId}");
                 }
+                await db.SaveChangesAsync();
+                _log.LogAction(LogLevel.Information, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
+
+                var guildConfig = await db.GetOrCreateGuildConfigAsync(guild);
+                if (guildConfig.MvpChannel.HasValue)
+                {
+                    try
+                    {
+                        var channel = guild.GetTextChannel(guildConfig.MvpChannel.Value);
+                        if (channel == null)
+                        {
+                            _log.LogAction(LogLevel.Warning, "(MVP Service) Couldn't find announcement channel");
+                            return;
+                        }
+
+                        var stringBuilder = new StringBuilder();
+                        for (var j = 0; j < mvp.Count; j++)
+                        {
+                            CachedMember o = null;
+                            CachedMember n = null;
+                            n = mvp[j];
+                            if (j < oldMvp.Count)
+                            {
+                                o = oldMvp[j];
+                            }
+                            stringBuilder.AppendLine($"{o?.Mention ?? "User Left"} => {n.Mention}");
+                        }
+
+                        await channel.SendMessageAsync(null, false, new LocalEmbedBuilder().Create(
+                            "New Weekly MVP!\n" +
+                            $"{stringBuilder}", Color.Green).Build());
+                    }
+                    catch (Exception e)
+                    {
+                        _log.LogAction(LogLevel.Error, e,
+                            $"(MVP Service) Couldn't send message for guild {guildConfig.GuildId} in channel {guildConfig.MvpChannel.Value}");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, $"(MVP Service) Error when assigning MVP rewards\n{e.Message}");
             }
         }
     }
