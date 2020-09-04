@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Modules.Premium
             {
                 cfg.Disabled = true;
                 await db.SaveChangesAsync();
-                await ReplyAsync($"Disabled MVP service!", Color.Red);
+                await ReplyAsync("Disabled MVP service!", Color.Red);
                 return;
             }
 

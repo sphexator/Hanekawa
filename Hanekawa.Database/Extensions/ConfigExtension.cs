@@ -319,7 +319,6 @@ namespace Hanekawa.Database.Extensions
                 Message = null,
                 ChannelId = null,
                 CreditGain = 0,
-                ExpBoost = false,
                 ExpGain = 0,
                 SpecialCreditGain = 0
             };

@@ -43,13 +43,70 @@ namespace Hanekawa.Bot.Services.Boost
             await _exp.AddExpAsync(user, userData, config.ExpGain, config.CreditGain, db);
             if (config.SpecialCreditGain > 0) userData.CreditSpecial += config.SpecialCreditGain;
             await db.SaveChangesAsync();
+            if (config.ChannelId.HasValue)
+            {
+                var channel = user.Guild.GetTextChannel(config.ChannelId.Value);
+                if (channel != null)
+                {
+                    var embed = new LocalEmbedBuilder
+                    {
+                        Author = new LocalEmbedAuthorBuilder
+                        {
+                            Name = user.DisplayName,
+                            IconUrl = user.GetAvatarUrl()
+                        },
+                        Description = config.Message,
+                        ThumbnailUrl = user.GetAvatarUrl()
+                    };
+                    await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.NoEveryone);
+                }
+            }
+            var logCfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+            if (!logCfg.LogAvi.HasValue) return;
+            var logChannel = user.Guild.GetTextChannel(logCfg.LogAvi.Value);
+            if (logChannel == null) return;
+            var logEmbed = new LocalEmbedBuilder
+            {
+                Author = new LocalEmbedAuthorBuilder
+                {
+                    Name = "Stopped boosting"
+                },
+                Description = $"{user.Mention} has stopped boosting the server!",
+                Color = Color.Purple,
+                Timestamp = DateTimeOffset.UtcNow,
+                Footer = new LocalEmbedFooterBuilder
+                {
+                    Text = $"User: {user} ({user.Id})",
+                    IconUrl = user.GetAvatarUrl()
+                }
+            };
+            await logChannel.SendMessageAsync(null, false, logEmbed.Build(), LocalMentions.NoEveryone);
         }
 
         private async Task EndedBoostingAsync(CachedMember user)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-
+            var logCfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+            if (!logCfg.LogAvi.HasValue) return;
+            var channel = user.Guild.GetTextChannel(logCfg.LogAvi.Value);
+            if (channel == null) return;
+            var embed = new LocalEmbedBuilder
+            {
+                Author = new LocalEmbedAuthorBuilder
+                {
+                    Name = "Stopped boosting"
+                },
+                Description = $"{user.Mention} has stopped boosting the server!",
+                Color = Color.Purple,
+                Timestamp = DateTimeOffset.UtcNow,
+                Footer = new LocalEmbedFooterBuilder
+                {
+                    Text = $"User: {user} ({user.Id})",
+                    IconUrl = user.GetAvatarUrl()
+                }
+            };
+            await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.NoEveryone);
         }
     }
 }
