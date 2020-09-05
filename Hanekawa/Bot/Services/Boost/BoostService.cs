@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Services.Boost
                     {
                         Author = new LocalEmbedAuthorBuilder
                         {
-                            Name = user.DisplayName,
+                            Name = $"{user.DisplayName} Boosted the server!",
                             IconUrl = user.GetAvatarUrl()
                         },
                         Description = MessageUtil.FormatMessage(config.Message, user, user.Guild),
