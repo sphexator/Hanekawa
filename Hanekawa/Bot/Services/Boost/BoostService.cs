@@ -6,6 +6,7 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Interfaces;
+using Hanekawa.Utility;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Services.Boost
@@ -55,12 +56,13 @@ namespace Hanekawa.Bot.Services.Boost
                             Name = user.DisplayName,
                             IconUrl = user.GetAvatarUrl()
                         },
-                        Description = config.Message,
+                        Description = MessageUtil.FormatMessage(config.Message, user, user.Guild),
                         ThumbnailUrl = user.GetAvatarUrl()
                     };
                     await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.NoEveryone);
                 }
             }
+
             var logCfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
             if (!logCfg.LogAvi.HasValue) return;
             var logChannel = user.Guild.GetTextChannel(logCfg.LogAvi.Value);

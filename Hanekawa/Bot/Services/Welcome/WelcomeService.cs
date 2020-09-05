@@ -15,6 +15,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Shared.Interfaces;
+using Hanekawa.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -55,7 +56,7 @@ namespace Hanekawa.Bot.Services.Welcome
                     var cfg = await db.GetOrCreateWelcomeConfigAsync(user.Guild);
                     if (IsRatelimited(user, cfg)) return;
                     if (!cfg.Channel.HasValue) return;
-                    var msg = CreateMessage(cfg.Message, user, user.Guild);
+                    var msg = MessageUtil.FormatMessage(cfg.Message, user, user.Guild);
                     IMessage message;
                     var channel = user.Guild.GetTextChannel(cfg.Channel.Value);
                     if (channel == null) return;
