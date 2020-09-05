@@ -28,7 +28,6 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly ImageGenerator _img;
         private readonly InternalLogService _log;
         private readonly IServiceProvider _provider;
-        //private static LocalCustomEmoji _expEmoji = null;
 
         public WelcomeService(Hanekawa client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
         {
@@ -89,13 +88,6 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(Hanekawa bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            /*
-            if (_expEmoji == null)
-            {
-                LocalCustomEmoji.TryParse("<:exp1:746344675585163384>", out var emote);
-                _expEmoji = emote;
-            }
-            */
             var users = new ConcurrentQueue<CachedMember>();
             var s = new Stopwatch();
             s.Start();

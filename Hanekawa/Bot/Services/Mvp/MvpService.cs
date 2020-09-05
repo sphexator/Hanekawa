@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Services.Mvp
             }
         }
 
-        public async Task Reward(GuildConfig x, DbService db)
+        public async Task Reward(GuildConfig x, DbService db, bool bypass = false)
         {
             var mvp = new List<CachedMember>();
             var oldMvp = new List<CachedMember>();
@@ -76,7 +76,7 @@ namespace Hanekawa.Bot.Services.Mvp
             var mvpConfig = await db.MvpConfigs.FindAsync(x.GuildId);
             if (mvpConfig == null) return;
             if (mvpConfig.Disabled) return;
-            if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day) return;
+            if (DateTime.UtcNow.DayOfWeek != mvpConfig.Day && !bypass) return;
 
             var guild = _client.GetGuild(x.GuildId);
             if (guild == null) return;
