@@ -101,14 +101,12 @@ namespace Hanekawa.Bot.Services.Logging
                     else if (before == null && after != null)
                     {
                         embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Joined" };
-                        embed.AddField("Old Channel", "N/A");
                         embed.AddField("New Channel", user.Guild.GetVoiceChannel(e.NewVoiceState.ChannelId.RawValue).Name);
                     }
                     else if (before != null && after == null)
                     {
                         embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Left" };
                         embed.AddField("Old Channel", user.Guild.GetVoiceChannel(before.ChannelId.RawValue).Name);
-                        embed.AddField("New Channel", "N/A");
                     }
                     else if (before != null && before.ChannelId != after.ChannelId)
                     {
@@ -119,10 +117,10 @@ namespace Hanekawa.Bot.Services.Logging
                     else return;
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Voice Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Voice Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;

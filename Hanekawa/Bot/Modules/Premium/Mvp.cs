@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Modules.Premium
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var guildConfig = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             await ReplyAsync("Executing MVP rewards...");
-            await Context.ServiceProvider.GetRequiredService<MvpService>().Reward(guildConfig, db);
+            await Context.ServiceProvider.GetRequiredService<MvpService>().Reward(guildConfig, db, true);
             await ReplyAsync("Rewarded MVP users and reset MVP counter");
         }
 

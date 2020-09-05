@@ -63,10 +63,10 @@ namespace Hanekawa.Bot.Services.Logging
 
                     await channel.ReplyAsync(embed);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id.RawValue} for User Updated - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for User Updated - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -128,10 +128,10 @@ namespace Hanekawa.Bot.Services.Logging
 
                     await channel.ReplyAsync(embed);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {before.Guild.Id.RawValue} for Guild Member Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {before.Guild.Id.RawValue} for Guild Member Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
