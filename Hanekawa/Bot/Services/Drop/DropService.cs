@@ -203,12 +203,19 @@ namespace Hanekawa.Bot.Services.Drop
             loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(150, 250);
             var userdata = await db.GetOrCreateUserData(user);
-            await _expService.AddExpAsync(user, userdata, rand, rand, db);
+            var exp = await _expService.AddExpAsync(user, userdata, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
-                    $"Rewarded {user.Mention} with {rand} exp & credit!");
-            await Task.Delay(5000);
-            await trgMsg.DeleteAsync();
+                    $"Rewarded {user.Mention} with {exp} exp & {rand} credit!");
+            try
+            {
+                await Task.Delay(5000);
+                await trgMsg.DeleteAsync();
+            }
+            catch
+            {
+                // Ignore
+            }
         }
 
         private async Task ClaimNormal(IMessage msg, CachedTextChannel channel, CachedMember user, DbService db)
@@ -218,12 +225,19 @@ namespace Hanekawa.Bot.Services.Drop
             loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(15, 150);
             var userdata = await db.GetOrCreateUserData(user);
-            await _expService.AddExpAsync(user, userdata, rand, rand, db);
+            var exp = await _expService.AddExpAsync(user, userdata, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
-                    $"Rewarded {user.Mention} with {rand} exp & credit!");
-            await Task.Delay(5000);
-            await trgMsg.DeleteAsync();
+                    $"Rewarded {user.Mention} with {exp} exp & {rand} credit!");
+            try
+            {
+                await Task.Delay(5000);
+                await trgMsg.DeleteAsync();
+            }
+            catch
+            {
+                // Ignore
+            }
         }
     }
 }

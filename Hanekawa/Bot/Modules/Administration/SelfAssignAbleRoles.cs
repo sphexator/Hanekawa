@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
+using Hanekawa.Bot.Services.Utility;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
@@ -19,15 +22,18 @@ namespace Hanekawa.Bot.Modules.Administration
 {
     [Name("Self Assignable Roles")]
     [RequiredChannel]
+    [RequireBotChannelPermissions(Permission.SendMessages, Permission.EmbedLinks, Permission.ManageMessages)]
     public class SelfAssignAbleRoles : HanekawaCommandModule
     {
+        private readonly SelfAssignService _assignService;
+        public SelfAssignAbleRoles(SelfAssignService assignService) => _assignService = assignService;
+
         [Name("I am")]
         [Command("iam", "give")]
         [Description("Assigns a role that's setup as self-assignable")]
         [RequiredChannel]
         public async Task AssignSelfRoleAsync([Remainder] CachedRole role)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
             var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.Guild.Id.RawValue, role.Id.RawValue);
@@ -47,6 +53,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 foreach (var x in roles)
                 {
                     var exclusiveRole = Context.Guild.GetRole(x.RoleId);
+                    if(exclusiveRole == null) continue;
                     if (gUser.Roles.Values.Contains(exclusiveRole)) await gUser.TryRemoveRoleAsync(exclusiveRole);
                 }
 
@@ -132,6 +139,23 @@ namespace Hanekawa.Bot.Modules.Administration
                 $"Self-assignable roles for {Context.Guild.Name}");
         }
 
+        [Name("Post Reaction Message")]
+        [Command("postrolemsg", "prm")]
+        [Description(
+            "Posts a message with all self-assignable roles and their respectable reaction emote, adds reactions to message")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task PostMessageAsync(CachedTextChannel channel = null)
+        {
+            channel ??= Context.Channel;
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var messages = await _assignService.PostAsync(Context, channel, db);
+            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            cfg.SelfAssignableChannel = channel.Id.RawValue;
+            cfg.SelfAssignableMessages = messages.ToArray();
+            await db.SaveChangesAsync();
+            await ReplyAsync($"Sent Self-Assignable React Roles to {channel.Mention}!", Color.Green);
+        }
+
         [Name("Exclusive role add")]
         [Command("era")]
         [Description("Adds a role to the list of self-assignable roles")]
@@ -139,12 +163,28 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task ExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, true);
 
+        [Name("Exclusive role add")]
+        [Command("era")]
+        [Description("Adds a role to the list of self-assignable roles")]
+        [Priority(1)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task ExclusiveRole(CachedRole role, LocalCustomEmoji emote) =>
+            await AddSelfAssignAbleRoleAsync(Context, role, true, emote);
+
         [Name("Role add")]
         [Command("roleadd", "ra")]
         [Description("Adds a role to the list of self-assignable roles")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task NonExclusiveRole([Remainder] CachedRole role) =>
             await AddSelfAssignAbleRoleAsync(Context, role, false);
+
+        [Name("Role add")]
+        [Command("roleadd", "ra")]
+        [Priority(1)]
+        [Description("Adds a role to the list of self-assignable roles")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task NonExclusiveRole(CachedRole role, LocalCustomEmoji emote) =>
+            await AddSelfAssignAbleRoleAsync(Context, role, false, emote);
 
         [Name("Role remove")]
         [Command("roleremove", "rr")]
@@ -176,15 +216,14 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.ReplyAsync($"Removed {role.Name} as a self-assignable role!", Color.Green);
         }
 
-        private async Task AddSelfAssignAbleRoleAsync(DiscordCommandContext context, CachedRole role, bool exclusive)
+        private async Task AddSelfAssignAbleRoleAsync(DiscordCommandContext context, CachedRole role, bool exclusive, LocalCustomEmoji emote = null)
         {
             if (!context.Member.HierarchyCheck(role))
-            {
+            { 
                 await Context.ReplyAsync("Can't add a role that's higher then your highest role.", Color.Red);
                 return;
             }
 
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id.RawValue, role.Id.RawValue);
             if (roleCheck != null)
@@ -208,7 +247,6 @@ namespace Hanekawa.Bot.Modules.Administration
                     await Context.ReplyAsync($"{role.Name} is already added as self-assignable",
                         Color.Red);
                 }
-
                 return;
             }
 
@@ -216,11 +254,14 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 GuildId = context.Guild.Id.RawValue,
                 RoleId = role.Id.RawValue,
-                Exclusive = exclusive
+                Exclusive = exclusive,
+                EmoteMessageFormat = emote?.MessageFormat,
+                EmoteReactFormat = emote?.ReactionFormat
             };
             await db.SelfAssignAbleRoles.AddAsync(data);
             await db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green);
+            if(emote != null) await Context.ReplyAsync($"Added {role.Name} as a self-assignable role with emote {emote}!", Color.Green);
+            else await Context.ReplyAsync($"Added {role.Name} as a self-assignable role!", Color.Green);
         }
     }
 }

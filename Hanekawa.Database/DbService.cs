@@ -82,6 +82,7 @@ namespace Hanekawa.Database
         public DbSet<SuggestionConfig> SuggestionConfigs { get; set; }
         public DbSet<WelcomeConfig> WelcomeConfigs { get; set; }
         public DbSet<DropConfig> DropConfigs { get; set; }
+        public DbSet<BoostConfig> BoostConfigs { get; set; }
 
         public DbSet<LootChannel> LootChannels { get; set; }
         public DbSet<WelcomeBanner> WelcomeBanners { get; set; }
@@ -381,6 +382,8 @@ namespace Hanekawa.Database
                 x.Property(e => e.ModChannel).HasConversion<long>();
                 x.Property(e => e.QuestionAndAnswerChannel).HasConversion<long>();
                 x.Property(e => e.ReportChannel).HasConversion<long>();
+                x.Property(e => e.SelfAssignableChannel).HasConversion<long>();
+                x.Property(e => e.SelfAssignableMessages).HasConversion<long[]>();
             });
             modelBuilder.Entity<ClubConfig>(x =>
             {
@@ -400,6 +403,7 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.BoostExpMultiplier).HasDefaultValue(1);
             });
             modelBuilder.Entity<LoggingConfig>(x =>
             {
@@ -471,6 +475,12 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.RoleId).HasConversion<long>();
             });
+            modelBuilder.Entity<BoostConfig>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.ChannelId).HasConversion<long>();
+            });
         }
 
         private static void ProfileBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Background>(x =>
@@ -538,6 +548,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.Day).HasConversion(
                     v => v.ToString(),
                     v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
+                x.Property(e => e.Disabled).HasDefaultValue(true);
             });
         }
 

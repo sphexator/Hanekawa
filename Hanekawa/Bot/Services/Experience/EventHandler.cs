@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
-using Hanekawa.Bot.Modules.Account;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
@@ -139,7 +137,7 @@ namespace Hanekawa.Bot.Services.Experience
                     userData.LastMessage = DateTime.UtcNow;
                     userData.FirstMessage ??= DateTime.UtcNow;
                     userData.MvpCount++;
-                    await AddExpAsync(user, userData, GetExp(channel), _random.Next(1, 3), db);
+                    await AddExpAsync(user, userData, GetExp(channel), _random.Next(0, 3), db);
                     await MvpCount(db, userData, user);
                 }
                 catch (Exception z)

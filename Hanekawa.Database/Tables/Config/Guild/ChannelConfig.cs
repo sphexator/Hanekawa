@@ -1,4 +1,6 @@
-﻿namespace Hanekawa.Database.Tables.Config.Guild
+﻿using System.Collections.Generic;
+
+namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class ChannelConfig
     {
@@ -9,5 +11,8 @@
         public ulong? ModChannel { get; set; } = null;
         public ulong? DesignChannel { get; set; } = null;
         public ulong? QuestionAndAnswerChannel { get; set; } = null;
+
+        public ulong? SelfAssignableChannel { get; set; } = null;
+        public ulong[] SelfAssignableMessages { get; set; } = null;
     }
 }

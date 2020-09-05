@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Modules.Owner
 {
     [Name("Owner")]
     [Description("Owner commands for bot overview")]
-    [BotOwnerOnly]
+    [RequireUser(111123736660324352)]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Owner : HanekawaCommandModule
     {

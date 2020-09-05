@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using Hanekawa.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Hanekawa.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20200901214406_self-assignable-rework")]
+    partial class selfassignablerework
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -669,32 +671,6 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("BoardConfigs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.BoostConfig", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ChannelId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("CreditGain")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ExpGain")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<int>("SpecialCreditGain")
-                        .HasColumnType("integer");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("BoostConfigs");
-                });
-
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.ChannelConfig", b =>
                 {
                     b.Property<long>("GuildId")
@@ -814,11 +790,6 @@ namespace Hanekawa.Database.Migrations
                     b.Property<long>("GuildId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
-
-                    b.Property<double>("BoostExpMultiplier")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(1.0);
 
                     b.Property<bool>("ExpDisabled")
                         .HasColumnType("boolean");
@@ -1322,11 +1293,6 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("Day")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("Disabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
 
                     b.Property<long?>("RoleId")
                         .HasColumnType("bigint");
