@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
-                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 41)));
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 40)));
                 await img.SaveAsync(stream, new PngEncoder());
             }
 
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Services.ImageGen
 
                 var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(15)));
                 img.Mutate(
-                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 46)));
+                    x => x.DrawText(_centerText, username, _welcomeFontRegular, SixLabors.ImageSharp.Color.White, new Point(245, 40)));
                 await img.SaveAsync(stream, new PngEncoder());
             }
 

@@ -74,6 +74,7 @@ namespace Hanekawa.Shared.Command.Extensions
             string authorTitle,
             string title = null)
         {
+            authorTitle ??= userIcon.DisplayName;
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = ctx.Colour.Get(ctx.Guild.Id.RawValue);
@@ -105,6 +106,7 @@ namespace Hanekawa.Shared.Command.Extensions
             string authorTitle,
             string title = null)
         {
+            authorTitle ??= guildIcon.Name;
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = ctx.Colour.Get(ctx.Guild.Id.RawValue);
@@ -137,9 +139,8 @@ namespace Hanekawa.Shared.Command.Extensions
             LocalEmbedBuilder embed = null,
             TimeSpan? timeout = null)
         {
-            RestUserMessage message;
             timeout ??= TimeSpan.FromSeconds(25);
-            message = embed != null
+            var message = embed != null
                 ? await ctx.Channel.SendMessageAsync(content, isTts, embed.Build(), LocalMentions.NoEveryone)
                     .ConfigureAwait(false)
                 : await ctx.Channel.SendMessageAsync(content, isTts, null, LocalMentions.NoEveryone)
