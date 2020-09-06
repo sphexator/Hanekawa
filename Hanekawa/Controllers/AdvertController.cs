@@ -96,7 +96,7 @@ namespace Hanekawa.Controllers
                     }.Build());
                 }
                 _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
-                if (cfg.Message.IsNullOrWhiteSpace()) return Accepted(); // Check if there's a message to be sent, else we good
+                if (cfg.Message.IsNullOrWhiteSpace() && user == null) return Accepted(); // Check if there's a message to be sent, else we good
                 try
                 {
                     var str = new StringBuilder();
