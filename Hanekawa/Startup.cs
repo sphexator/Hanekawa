@@ -11,6 +11,7 @@ using Hanekawa.Bot.Prefix;
 using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Anime;
+using Hanekawa.Bot.Services.Boost;
 using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
@@ -58,6 +59,7 @@ namespace Hanekawa
             services.AddSingleton(new ColourService());
             services.UseQuartz(typeof(WarnService));
             services.UseQuartz(typeof(MvpService));
+            services.UseQuartz(typeof(BoostService));
 
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
@@ -120,6 +122,7 @@ namespace Hanekawa
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
+            QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
         }
 
         private LoggingConfiguration ConfigureNLog()
