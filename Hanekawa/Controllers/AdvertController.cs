@@ -27,11 +27,13 @@ namespace Hanekawa.Controllers
         private readonly InternalLogService _log;
         private readonly ColourService _colour;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp)
+        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, InternalLogService log, ColourService colour)
         {
             _db = db;
             _client = client;
             _exp = exp;
+            _log = log;
+            _colour = colour;
         }
 
         [HttpPost("dbl")]
