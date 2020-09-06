@@ -59,6 +59,7 @@ namespace Hanekawa.Controllers
                 var userId = Convert.ToUInt64(model.User);
                 var userData = await _db.GetOrCreateUserData(guildId, userId);
                 var user = guild.GetMember(userId);
+                if (cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 if (user != null)
                 {
                     await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db);
@@ -71,7 +72,6 @@ namespace Hanekawa.Controllers
                     if (cfg.ExpGain > 0) userData.TotalExp += cfg.ExpGain;
                     if (cfg.CreditGain > 0) userData.Credit += cfg.CreditGain;
                 }
-                if(cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 // Add a log entry for the vote to keep track of votes
                 await _db.VoteLogs.AddAsync(new VoteLog
                 {
@@ -85,30 +85,29 @@ namespace Hanekawa.Controllers
                 var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
                 if (logCfg.LogAvi.HasValue)
                 {
+                    var name = $"{user}";
+                    if (name.IsNullOrWhiteSpace()) name = $"{userId}";
                     await guild.GetTextChannel(logCfg.LogAvi.Value).SendMessageAsync(null, false, new LocalEmbedBuilder
                     {
                         Title = "Top.gg Vote!",
                         Color = _colour.Get(guild.Id.RawValue),
-                        Description = $"{user} just voted for the server!",
-                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user.GetAvatarUrl(), Text = $"{user} ({user.Id.RawValue})"}
+                        Description = $"{name} just voted for the server!",
+                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"{name} ({userId})"}
                     }.Build());
                 }
-                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {user.Id.RawValue} in {guild.Id.RawValue} for voting on the server!");
-                if (cfg.Message.IsNullOrWhiteSpace()) return Accepted(); // Check if there's a message to be sent, else we good
+                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
+                if (cfg.Message.IsNullOrWhiteSpace() && user == null) return Accepted(); // Check if there's a message to be sent, else we good
                 try
                 {
                     var str = new StringBuilder();
                     if (cfg.ExpGain > 0) str.AppendLine($"{cfg.ExpGain} Exp");
                     if (cfg.CreditGain > 0) str.AppendLine($"{cfg.CreditGain} Credit");
                     if (cfg.SpecialCredit > 0) str.AppendLine($"{cfg.SpecialCredit} Special Credit");
-                    if (user.DmChannel != null
-                    ) // determine if dm channel is already created, else create it and send message
+                    if (user.DmChannel != null) // determine if dm channel is already created, else create it and send message
                         await user.DmChannel.SendMessageAsync(
                             $"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +
                             "You've been rewarded:\n" +
-                            $"{cfg.ExpGain} Exp\n" +
-                            $"{cfg.CreditGain} Credit\n" +
-                            $"{cfg.SpecialCredit} Special Credit", false,
+                            $"{str}", false,
                             null,
                             LocalMentions.None);
                     else
