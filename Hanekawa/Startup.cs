@@ -50,7 +50,7 @@ namespace Hanekawa
             services.AddLogging();
             services.AddDbContextPool<DbService>(x =>
             {
-                x.UseNpgsql("Server=localhost; Port=5432; Database=hanekawa-development; Userid=postgres;Password=1023;"/*Configuration["connectionString"]*/);
+                x.UseNpgsql(Configuration["connectionString"]);
                 x.EnableDetailedErrors(true);
                 x.EnableSensitiveDataLogging(false);
             });
