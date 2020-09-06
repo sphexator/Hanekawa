@@ -95,7 +95,7 @@ namespace Hanekawa.Controllers
                         Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"{name} ({userId})"}
                     }.Build());
                 }
-                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {user?.Id.RawValue ?? userId} in {guild.Id.RawValue} for voting on the server!");
+                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
                 if (cfg.Message.IsNullOrWhiteSpace()) return Accepted(); // Check if there's a message to be sent, else we good
                 try
                 {
