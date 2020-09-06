@@ -58,12 +58,20 @@ namespace Hanekawa.Controllers
                 // Get user data and reward from config
                 var userId = Convert.ToUInt64(model.User);
                 var userData = await _db.GetOrCreateUserData(guildId, userId);
-                var user = _client.GetGuild(guildId).GetMember(userId);
-                await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db);
-                userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
-
-                if (cfg.RoleIdReward.HasValue && !user.Roles.ContainsKey(cfg.RoleIdReward.Value)) // Reward a role if its in the config and the user doesn't already have it
-                    await user.GrantRoleAsync(cfg.RoleIdReward.Value);
+                var user = guild.GetMember(userId);
+                if (user != null)
+                {
+                    await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db);
+                    if (cfg.RoleIdReward.HasValue && !user.Roles.ContainsKey(cfg.RoleIdReward.Value)) // Reward a role if its in the config and the user doesn't already have it
+                        await user.GrantRoleAsync(cfg.RoleIdReward.Value);
+                }
+                else
+                {
+                    if (cfg.ExpGain > 0) userData.Exp += cfg.ExpGain;
+                    if (cfg.ExpGain > 0) userData.TotalExp += cfg.ExpGain;
+                    if (cfg.CreditGain > 0) userData.Credit += cfg.CreditGain;
+                }
+                if(cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 // Add a log entry for the vote to keep track of votes
                 await _db.VoteLogs.AddAsync(new VoteLog
                 {
