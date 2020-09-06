@@ -4,6 +4,7 @@ using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
+using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Database.Tables.BoardConfig;
 using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Database.Tables.Club;
@@ -110,6 +111,10 @@ namespace Hanekawa.Database
         public DbSet<HungerGames.Entity.Item> HgItems { get; set; }
         public DbSet<HungerGames.Entity.Inventory> HgInventories { get; set; }
 
+        // Advertise
+        public DbSet<DblAuth> DblAuths { get; set; }
+        public DbSet<VoteLog> VoteLogs { get; set; }
+
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -130,6 +135,7 @@ namespace Hanekawa.Database
             PremiumBuilder(modelBuilder);
             HungerGameBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
+            Advertise(modelBuilder);
 
             modelBuilder.Entity<VoiceRoles>(x =>
             {
@@ -137,6 +143,24 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.VoiceId).HasConversion<long>();
                 x.Property(e => e.RoleId).HasConversion<long>();
+            });
+        }
+
+        private static void Advertise(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<DblAuth>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.RoleIdReward).HasConversion<long>();
+                x.Property(e => e.AuthKey).ValueGeneratedOnAdd();
+            });
+            modelBuilder.Entity<VoteLog>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
             });
         }
 

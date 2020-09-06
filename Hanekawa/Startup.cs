@@ -49,7 +49,7 @@ namespace Hanekawa
             services.AddLogging();
             services.AddDbContextPool<DbService>(x =>
             {
-                x.UseNpgsql(Configuration["connectionString"]);
+                x.UseNpgsql("Server=localhost; Port=5432; Database=hanekawa-development; Userid=postgres;Password=1023;"/*Configuration["connectionString"]*/);
                 x.EnableDetailedErrors(true);
                 x.EnableSensitiveDataLogging(false);
             });
@@ -103,7 +103,13 @@ namespace Hanekawa
             using var scope = app.ApplicationServices.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             db.Database.Migrate();
-
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    "default",
+                    "{controller}/{action=Index}/{id?}");
+            });
             NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
 
             var assembly = Assembly.GetEntryAssembly();

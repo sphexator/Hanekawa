@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using Hanekawa.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Hanekawa.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    partial class DbServiceModelSnapshot : ModelSnapshot
+    [Migration("20200906103600_DblVoteRewards")]
+    partial class DblVoteRewards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -386,7 +388,7 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("Blacklists");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.DblAuth", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.DslAuth", b =>
                 {
                     b.Property<long>("GuildId")
                         .ValueGeneratedOnAdd()
@@ -413,7 +415,7 @@ namespace Hanekawa.Database.Migrations
 
                     b.HasKey("GuildId");
 
-                    b.ToTable("DblAuths");
+                    b.ToTable("DslAuths");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.VoteLog", b =>

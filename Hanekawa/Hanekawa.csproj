@@ -78,7 +78,6 @@
 
     <ItemGroup>
       <Folder Include="Bot\Services\Music\" />
-      <Folder Include="Controllers\" />
       <Folder Include="Data\Fonts\" />
       <Folder Include="Data\Game\Border\" />
       <Folder Include="Data\Game\Enemy\" />
