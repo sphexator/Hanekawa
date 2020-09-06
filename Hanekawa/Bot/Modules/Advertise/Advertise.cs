@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Database;
@@ -48,7 +49,8 @@ namespace Hanekawa.Bot.Modules.Advertise
                 CreditGain = 0,
                 SpecialCredit = 0,
                 RoleIdReward = null,
-                Message = null
+                Message = null,
+                AuthKey = Guid.NewGuid()
             });
             await db.SaveChangesAsync();
             var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
