@@ -9,6 +9,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Models;
+using Hanekawa.Shared.Command;
 using Hanekawa.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,8 @@ namespace Hanekawa.Controllers
         private readonly Bot.Hanekawa _client;
         private readonly ExpService _exp;
         private readonly InternalLogService _log;
+        private readonly ColourService _colour;
+
         public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp)
         {
             _db = db;
@@ -69,6 +72,18 @@ namespace Hanekawa.Controllers
                 });
                 await _db.SaveChangesAsync();
 
+                var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
+                if (logCfg.LogAvi.HasValue)
+                {
+                    await guild.GetTextChannel(logCfg.LogAvi.Value).SendMessageAsync(null, false, new LocalEmbedBuilder
+                    {
+                        Title = "Top.gg Vote!",
+                        Color = _colour.Get(guild.Id.RawValue),
+                        Description = $"{user} just voted for the server!",
+                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user.GetAvatarUrl(), Text = $"{user} ({user.Id.RawValue})"}
+                    }.Build());
+                }
+                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {user.Id.RawValue} in {guild.Id.RawValue} for voting on the server!");
                 if (cfg.Message.IsNullOrWhiteSpace()) return Accepted(); // Check if there's a message to be sent, else we good
                 try
                 {
@@ -100,7 +115,6 @@ namespace Hanekawa.Controllers
                 {
                     // Ignore, the user likely has closed DMs
                 }
-
                 return Accepted();
             }
             catch (Exception e)
