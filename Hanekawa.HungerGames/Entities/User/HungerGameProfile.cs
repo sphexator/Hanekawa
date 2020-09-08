@@ -1,4 +1,4 @@
-﻿namespace HungerGame.Entities.User
+﻿namespace Hanekawa.HungerGames.Entities.User
 {
     public class HungerGameProfile
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HungerGame.Entities.Internal.Events
+namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
     internal class Meet : IRequired
     {

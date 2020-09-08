@@ -1,4 +1,4 @@
-﻿namespace HungerGame.Entities.Internal
+﻿namespace Hanekawa.HungerGames.Entities.Internal
 {
     internal interface IRequired
     {

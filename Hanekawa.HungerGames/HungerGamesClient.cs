@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using HungerGame.Entities;
-using HungerGame.Entities.Internal;
-using HungerGame.Entities.Items;
-using HungerGame.Entities.User;
-using HungerGame.Handler;
+using Hanekawa.HungerGames.Entities;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.Items;
+using Hanekawa.HungerGames.Entities.Result;
+using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Handler;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HungerGame

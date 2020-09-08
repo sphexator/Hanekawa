@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using HungerGame.Entities.Internal;
-using HungerGame.Entities.Internal.Events;
-using HungerGame.Entities.Items;
-using HungerGame.Entities.User;
-using HungerGame.Generator;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.Internal.Events;
+using Hanekawa.HungerGames.Entities.Items;
+using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Generator;
 
-namespace HungerGame.Handler
+namespace Hanekawa.HungerGames.Handler
 {
     internal class EventHandler : IRequired
     {

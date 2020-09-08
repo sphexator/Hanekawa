@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using HungerGame.Entities.Items;
-using HungerGame.Entities.User;
-using HungerGame.Entities.User.Items;
+using Hanekawa.HungerGames.Entities.Items;
+using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Entities.User.Items;
 
-namespace HungerGame.Entities.Internal.Events
+namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
     internal class Loot : IRequired
     {

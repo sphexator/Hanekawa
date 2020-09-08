@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 
-namespace HungerGame.Entities
+namespace Hanekawa.HungerGames.Entities
 {
     public class HungerGameConfig
     {

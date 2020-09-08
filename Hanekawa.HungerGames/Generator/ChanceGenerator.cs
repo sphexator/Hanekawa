@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using HungerGame.Entities.Internal;
-using HungerGame.Entities.User;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.User;
 
-namespace HungerGame.Generator
+namespace Hanekawa.HungerGames.Generator
 {
     internal class ChanceGenerator : IRequired
     {

@@ -1,6 +1,6 @@
-﻿using HungerGame.Entities.Internal;
+﻿using Hanekawa.HungerGames.Entities.Internal;
 
-namespace HungerGame.Util
+namespace Hanekawa.HungerGames.Util
 {
     internal class DamageOutput : IRequired
     {

@@ -1,6 +1,6 @@
-﻿using HungerGame.Entities.Items;
+﻿using Hanekawa.HungerGames.Entities.Items;
 
-namespace HungerGame.Entities.User.Items
+namespace Hanekawa.HungerGames.Entities.User.Items
 {
     public class FoodInventory
     {

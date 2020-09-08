@@ -1,10 +1,10 @@
-﻿using HungerGame.Entities.Internal;
-using HungerGame.Entities.User;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.User;
 
-namespace HungerGame.Util
+namespace Hanekawa.HungerGames.Util
 {
     internal class Image : IRequired
     {

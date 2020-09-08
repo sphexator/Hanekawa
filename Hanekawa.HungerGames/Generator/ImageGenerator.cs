@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using HungerGame.Entities.Internal;
-using HungerGame.Entities.User;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Extensions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using PointF = SixLabors.ImageSharp.PointF;
 
-namespace HungerGame.Generator
+namespace Hanekawa.HungerGames.Generator
 {
     internal class ImageGenerator : IRequired
     {
@@ -57,27 +56,23 @@ namespace HungerGame.Generator
                         death.Mutate(z => z.Resize(80, 80));
                         avi.Mutate(y => y
                             .BlackWhite()
-                            .Resize(80, 80)
-                            .DrawImage(GraphicsOptions.Default, death, new Point(0, 0)));
-                    }
-                    else
-                    {
-                        avi.Mutate(y => y.Resize(80, 80));
+                            .DrawImage(death, new Point(0, 0), new GraphicsOptions{ Antialias = true }));
                     }
 
                     // Healthbar drawing
                     img.Mutate(a => a
-                        .DrawImage(GraphicsOptions.Default, avi, new Point(20 + 108 * width, 6 + 111 * height))
-                        .FillPolygon(new SolidBrush<Rgba32>(new Rgba32(30, 30, 30)), points));
+                        .DrawImage(avi, new Point(20 + 108 * width, 6 + 111 * height),
+                            new GraphicsOptions {Antialias = true})
+                        .FillPolygon(new SolidBrush(new Color(new Rgb24(30, 30, 30))), points));
                     if (x.Alive)
-                        img.Mutate(a => a.FillPolygon(new SolidBrush<Rgba32>(new Rgba32(46, 204, 113)), hpBar));
+                        img.Mutate(a => a.FillPolygon(new SolidBrush(new Color(new Rgb24(46, 204, 113))), hpBar));
 
                     // Health text drawing
                     var healthTextLocation = GetHealthTextLocation(width, height);
                     var font = SystemFonts.CreateFont("Times New Roman", 15, FontStyle.Regular);
                     var hp = $"       {x.Health} / 100";
-                    img.Mutate(a => a.DrawText(hp, font, Rgba32.White, healthTextLocation));
-
+                    //img.Mutate(a => a.DrawText(hp, font, Rgba32.White, healthTextLocation));
+                    img.Mutate(a => a.DrawText(hp, font, Color.White, healthTextLocation));
                     width++;
                     row++;
                     if (row != 5) continue;
@@ -152,16 +147,20 @@ namespace HungerGame.Generator
             return profile.Count <= 20 ? 409 : 510;
         }
 
-        private async Task<Image<Rgba32>> GetUserAvatar(HungerGameProfile profile)
+        private async Task<Image> GetUserAvatar(HungerGameProfile profile)
         {
             try
             {
-                return Image.Load(
-                    await _httpClient.GetStreamAsync(profile.Avatar)).Clone();
+                var avatar = await _httpClient.GetStreamAsync(profile.Avatar);
+                var response = avatar.ToEditable();
+                response.Position = 0;
+                using var img = await Image.LoadAsync(response, new PngDecoder());
+                return img.Clone(x => x.Resize(new Size(80, 80)));
             }
             catch
             {
-                return Image.Load(@"Cache\DefaultAvatar\Default.png").Clone();
+                using var img = await Image.LoadAsync(@"Cache\DefaultAvatar\Default.png", new PngDecoder());
+                return img.Clone(x => x.Resize(new Size(80, 80)));
             }
         }
     }

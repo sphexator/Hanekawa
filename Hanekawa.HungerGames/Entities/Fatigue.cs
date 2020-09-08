@@ -1,4 +1,4 @@
-﻿namespace HungerGame.Entities
+﻿namespace Hanekawa.HungerGames.Entities
 {
     public class Fatigue
     {

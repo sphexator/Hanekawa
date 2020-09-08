@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HungerGame.Entities.Items
+namespace Hanekawa.HungerGames.Entities.Items
 {
     public class ItemDrop
     {

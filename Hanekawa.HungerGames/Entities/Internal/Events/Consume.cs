@@ -1,7 +1,7 @@
 ﻿using System;
-using HungerGame.Entities.User;
+using Hanekawa.HungerGames.Entities.User;
 
-namespace HungerGame.Entities.Internal.Events
+namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
     internal class Consume : IRequired
     {

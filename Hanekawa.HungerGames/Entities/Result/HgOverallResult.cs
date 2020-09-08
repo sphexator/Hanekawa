@@ -1,8 +1,8 @@
-﻿using HungerGame.Entities.User;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using Hanekawa.HungerGames.Entities.User;
 
-namespace HungerGame.Entities
+namespace Hanekawa.HungerGames.Entities.Result
 {
     public class HgOverallResult
     {

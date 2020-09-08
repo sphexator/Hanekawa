@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
-using HungerGame.Entities;
-using HungerGame.Entities.Internal;
-using HungerGame.Entities.Items;
-using HungerGame.Entities.User;
-using HungerGame.Generator;
+using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.Items;
+using Hanekawa.HungerGames.Entities.Result;
+using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Generator;
 
-namespace HungerGame.Handler
+namespace Hanekawa.HungerGames.Handler
 {
     internal class GameHandler : IRequired
     {

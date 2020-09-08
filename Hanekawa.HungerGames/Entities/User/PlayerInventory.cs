@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using HungerGame.Entities.User.Items;
+using Hanekawa.HungerGames.Entities.User.Items;
 
-namespace HungerGame.Entities.User
+namespace Hanekawa.HungerGames.Entities.User
 {
     public class PlayerInventory
     {

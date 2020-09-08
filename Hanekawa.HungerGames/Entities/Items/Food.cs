@@ -1,4 +1,4 @@
-﻿namespace HungerGame.Entities.Items
+﻿namespace Hanekawa.HungerGames.Entities.Items
 {
     public class Food
     {

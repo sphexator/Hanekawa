@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HungerGame.Entities.Items;
-using HungerGame.Entities.User;
+using Hanekawa.HungerGames.Entities.Items;
+using Hanekawa.HungerGames.Entities.User;
 
-namespace HungerGame.Entities.Internal.Events
+namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
     internal class Attack : IRequired
     {
