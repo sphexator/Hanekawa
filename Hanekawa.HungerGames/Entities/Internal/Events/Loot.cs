@@ -1,9 +1,12 @@
 ﻿using System;
-using Hanekawa.HungerGames.Entity.User;
+using System.Linq;
+using HungerGame.Entities.Items;
+using HungerGame.Entities.User;
+using HungerGame.Entities.User.Items;
 
-namespace Hanekawa.HungerGames.Entity.Event
+namespace HungerGame.Entities.Internal.Events
 {
-    internal class Loot
+    internal class Loot : IRequired
     {
         private const int FoodAndWater = 100;
         private const int Weapons = 15;
@@ -12,7 +15,7 @@ namespace Hanekawa.HungerGames.Entity.Event
 
         internal Loot(Random random) => _random = random;
 
-        internal UserAction LootEvent(Participant profile, UserAction activity)
+        internal UserAction LootEvent(HungerGameProfile profile, ItemDrop items, UserAction activity)
         {
             const int pool = FoodAndWater + Weapons + Bandages;
             var result = _random.Next(pool);
@@ -28,7 +31,7 @@ namespace Hanekawa.HungerGames.Entity.Event
                         var drinkCheck = profile.Inventory.Drinks.FirstOrDefault(x => x.Drink == drink);
 
                         if (drinkCheck == null)
-                            profile.Inventory.Drinks.Add(new DrinkInventory { Amount = 1, Drink = drink });
+                            profile.Inventory.Drinks.Add(new DrinkInventory {Amount = 1, Drink = drink});
                         else drinkCheck.Amount += 1;
                         activity.Reward = drink;
                         return activity;
@@ -36,7 +39,7 @@ namespace Hanekawa.HungerGames.Entity.Event
                         food = items.Foods[_random.Next(items.Foods.Count)];
                         var foodCheck = profile.Inventory.Food.FirstOrDefault(x => x.Food == food);
 
-                        if (foodCheck == null) profile.Inventory.Food.Add(new FoodInventory { Amount = 1, Food = food });
+                        if (foodCheck == null) profile.Inventory.Food.Add(new FoodInventory {Amount = 1, Food = food});
                         else foodCheck.Amount += 1;
                         activity.Reward = food;
                         return activity;
@@ -50,7 +53,7 @@ namespace Hanekawa.HungerGames.Entity.Event
                 var firstAid = items.FirstAids[_random.Next(items.FirstAids.Count)];
                 var firstAidCheck = profile.Inventory.FirstAid.FirstOrDefault(x => x.FirstAid == firstAid);
                 if (firstAidCheck == null)
-                    profile.Inventory.FirstAid.Add(new FirstAidInventory { Amount = 1, FirstAid = firstAid });
+                    profile.Inventory.FirstAid.Add(new FirstAidInventory {Amount = 1, FirstAid = firstAid});
                 else firstAidCheck.Amount += 1;
                 activity.Reward = firstAid;
                 return activity;
@@ -71,7 +74,7 @@ namespace Hanekawa.HungerGames.Entity.Event
             }
             else
             {
-                profile.Inventory.Weapons.Add(new WeaponInventory { Amount = 1, Weapon = weapon });
+                profile.Inventory.Weapons.Add(new WeaponInventory {Amount = 1, Weapon = weapon});
             }
 
             activity.Reward = weapon;

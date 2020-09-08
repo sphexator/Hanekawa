@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using HungerGame.Entities.User;
 
-namespace Hanekawa.HungerGames.Entity.Event
+namespace HungerGame.Entities.Internal.Events
 {
-    internal class Die
+    internal class Die : IRequired
     {
         private readonly string[] _dieResponseStrings =
         {
@@ -17,7 +16,7 @@ namespace Hanekawa.HungerGames.Entity.Event
 
         internal Die(Random random) => _random = random;
 
-        internal void DieEvent(Participant profile)
+        internal void DieEvent(HungerGameProfile profile)
         {
             profile.Alive = false;
             profile.Health = 0;

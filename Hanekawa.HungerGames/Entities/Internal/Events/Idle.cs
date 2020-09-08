@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Hanekawa.HungerGames.Entity.User;
+using System.Reflection.Metadata.Ecma335;
+using HungerGame.Entities.User;
 
-namespace Hanekawa.HungerGames.Entity.Event
+namespace HungerGame.Entities.Internal.Events
 {
-    internal class Idle
+    internal class Idle : IRequired
     {
         private readonly string[] _idleStrings =
         {

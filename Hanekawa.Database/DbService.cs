@@ -15,7 +15,6 @@ using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
-using Hanekawa.HungerGames.Entity;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 using Inventory = Hanekawa.Database.Tables.Account.Inventory;
