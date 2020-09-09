@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Hanekawa.HungerGames.Entities;
-using Hanekawa.HungerGames.Entities.Internal;
+using Hanekawa.HungerGames.Entities.Internal.Events;
 using Hanekawa.HungerGames.Entities.Items;
 using Hanekawa.HungerGames.Entities.Result;
 using Hanekawa.HungerGames.Entities.User;
+using Hanekawa.HungerGames.Generator;
 using Hanekawa.HungerGames.Handler;
+using Hanekawa.HungerGames.Util;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace HungerGame
+namespace Hanekawa.HungerGames
 {
     public class HungerGamesClient
     {
@@ -39,14 +40,26 @@ namespace HungerGame
         private IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton(_config.HttpClient);
-            services.AddSingleton(_config.Random);
-
-            var assembly = Assembly.GetAssembly(typeof(HungerGamesClient));
-            var requiredServices = assembly.GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            foreach (var x in requiredServices) services.AddSingleton(x);
+            services.AddSingleton(new HttpClient());
+            services.AddSingleton(new Random());
+            // Generators 
+            services.AddTransient<ChanceGenerator>();
+            services.AddTransient<ImageGenerator>();
+            // Handlers
+            services.AddTransient<Hanekawa.HungerGames.Handler.EventHandler>();
+            services.AddTransient<GameHandler>();
+            // Util
+            services.AddTransient<DamageOutput>();
+            services.AddTransient<Image>();
+            // Events
+            services.AddTransient<Attack>();
+            services.AddTransient<Consume>();
+            services.AddTransient<Die>();
+            services.AddTransient<Hack>();
+            services.AddTransient<Idle>();
+            services.AddTransient<Loot>();
+            services.AddTransient<Meet>();
+            services.AddTransient<Sleep>();
             return services.BuildServiceProvider();
         }
     }

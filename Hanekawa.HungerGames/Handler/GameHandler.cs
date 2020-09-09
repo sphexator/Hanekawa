@@ -9,7 +9,7 @@ using Hanekawa.HungerGames.Generator;
 
 namespace Hanekawa.HungerGames.Handler
 {
-    internal class GameHandler : IRequired
+    internal class GameHandler
     {
         private readonly EventHandler _eventHandler;
         private readonly ImageGenerator _generator;
@@ -86,7 +86,7 @@ namespace Hanekawa.HungerGames.Handler
             }
             else
             {
-                profile.Health = profile.Health - dmg;
+                profile.Health -= dmg;
             }
         }
 

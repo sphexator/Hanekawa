@@ -3,7 +3,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Consume : IRequired
+    internal class Consume
     {
         private readonly Random _random;
 

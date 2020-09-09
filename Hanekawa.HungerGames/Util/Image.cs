@@ -6,7 +6,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Util
 {
-    internal class Image : IRequired
+    internal class Image
     {
         private readonly HttpClient _client;
         internal Image(HttpClient client) => _client = client;

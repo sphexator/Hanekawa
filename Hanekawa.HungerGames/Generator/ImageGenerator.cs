@@ -15,7 +15,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace Hanekawa.HungerGames.Generator
 {
-    internal class ImageGenerator : IRequired
+    internal class ImageGenerator
     {
         private readonly HttpClient _httpClient;
 
@@ -83,7 +83,7 @@ namespace Hanekawa.HungerGames.Generator
                 }
 
                 img.Mutate(x => x.Resize(400, 400));
-                img.Save(result, new PngEncoder());
+                await img.SaveAsync(result, new PngEncoder());
             }
 
             return result;

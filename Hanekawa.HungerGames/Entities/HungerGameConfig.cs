@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-
-namespace Hanekawa.HungerGames.Entities
+﻿namespace Hanekawa.HungerGames.Entities
 {
     public class HungerGameConfig
     {
@@ -10,7 +7,5 @@ namespace Hanekawa.HungerGames.Entities
         public int ChanceToLoot { get; set; } = 1;
         public int ChanceToSleep { get; set; } = 1;
         public int ChanceToIdle { get; set; } = 1;
-        public Random Random { get; set; } = new Random();
-        public HttpClient HttpClient { get; set; } = new HttpClient();
     }
 }

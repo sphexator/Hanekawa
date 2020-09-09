@@ -3,7 +3,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Die : IRequired
+    internal class Die
     {
         private readonly string[] _dieResponseStrings =
         {

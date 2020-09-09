@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Hanekawa.HungerGames.Entities.Internal;
 using Hanekawa.HungerGames.Entities.Internal.Events;
 using Hanekawa.HungerGames.Entities.Items;
 using Hanekawa.HungerGames.Entities.User;
@@ -7,7 +6,7 @@ using Hanekawa.HungerGames.Generator;
 
 namespace Hanekawa.HungerGames.Handler
 {
-    internal class EventHandler : IRequired
+    internal class EventHandler
     {
         private readonly Attack _attack;
         private readonly ChanceGenerator _chance;

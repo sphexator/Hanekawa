@@ -5,7 +5,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Generator
 {
-    internal class ChanceGenerator : IRequired
+    internal class ChanceGenerator
     {
         private const int Loot = 400;
         private const int Kill = 100;

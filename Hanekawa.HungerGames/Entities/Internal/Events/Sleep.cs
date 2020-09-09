@@ -2,7 +2,7 @@
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Sleep : IRequired
+    internal class Sleep
     {
         internal void SleepEvent(HungerGameProfile profile)
         {

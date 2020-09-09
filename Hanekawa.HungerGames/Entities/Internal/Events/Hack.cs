@@ -5,7 +5,7 @@ using Hanekawa.HungerGames.Entities.User.Items;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Hack : IRequired
+    internal class Hack
     {
         internal UserAction HackEvent(HungerGameProfile profile, ItemDrop items, UserAction activity)
         {

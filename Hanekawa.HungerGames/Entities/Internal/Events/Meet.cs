@@ -2,7 +2,7 @@
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Meet : IRequired
+    internal class Meet
     {
         private readonly string[] _meetEventStrings =
         {

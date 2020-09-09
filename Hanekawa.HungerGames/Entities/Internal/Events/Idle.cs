@@ -3,7 +3,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Idle : IRequired
+    internal class Idle
     {
         private readonly string[] _idleStrings =
         {

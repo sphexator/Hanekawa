@@ -6,7 +6,7 @@ using Hanekawa.HungerGames.Entities.User.Items;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Loot : IRequired
+    internal class Loot
     {
         private const int FoodAndWater = 100;
         private const int Weapons = 15;

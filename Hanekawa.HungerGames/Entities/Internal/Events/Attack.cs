@@ -6,7 +6,7 @@ using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
-    internal class Attack : IRequired
+    internal class Attack
     {
         private readonly Random _random;
 
