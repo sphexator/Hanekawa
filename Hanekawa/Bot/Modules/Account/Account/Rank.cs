@@ -103,6 +103,7 @@ namespace Hanekawa.Bot.Modules.Account
                 strBuilder.Clear();
             }
 
+            await db.SaveChangesAsync();
             await Context.PaginatedReply(result, Context.Guild, $"Leaderboard for {Context.Guild.Name}", pageSize: 10);
         }
 

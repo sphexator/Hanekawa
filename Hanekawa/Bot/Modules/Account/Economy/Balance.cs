@@ -150,6 +150,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 strBuilder.Clear();
             }
 
+            await db.SaveChangesAsync();
             await Context.PaginatedReply(pages, Context.Guild, $"Money leaderboard for {Context.Guild.Name}", pageSize: 10);
         }
 
