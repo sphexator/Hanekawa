@@ -46,6 +46,7 @@ namespace Hanekawa.Bot.Modules.Account
             {
                 Author = new LocalEmbedAuthorBuilder {Name = user.DisplayName},
                 ThumbnailUrl = user.GetAvatarUrl(),
+                Color = Context.Colour.Get(Context.Guild.Id.RawValue),
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
@@ -69,7 +70,7 @@ namespace Hanekawa.Bot.Modules.Account
                         Value =
                             $"{await db.AccountGlobals.CountAsync(x => x.TotalExp >= globalData.TotalExp)}" +
                             $"/{await db.AccountGlobals.CountAsync()}",
-                        IsInline = true
+                        IsInline = false
                     }
                 }
             };
@@ -80,21 +81,23 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("top", "leaderboard", "lb")]
         [Description("Displays highest ranked users")]
         [RequiredChannel]
-        public async Task LeaderboardAsync(int amount = 50)
+        public async Task LeaderboardAsync(int amount = 100)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
+            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Active).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
             var result = new List<string>();
             var strBuilder = new StringBuilder();
             for (var i = 0; i < users.Length; i++)
             {
                 var user = users[i];
                 var username = Context.Guild.GetMember(user.UserId);
-                strBuilder.AppendLine(
-                    username != null
-                        ? $"**Rank: {i + 1}** - {username.Mention}"
-                        : $"**Rank: {i + 1}** - User left server({user.UserId})");
+                if (username == null)
+                {
+                    user.Active = false;
+                    continue;
+                }
+                strBuilder.AppendLine($"**Rank: {i + 1}** - {username.Mention}");
                 strBuilder.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
                 result.Add(strBuilder.ToString());
                 strBuilder.Clear();
