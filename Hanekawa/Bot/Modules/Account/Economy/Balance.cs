@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 receiverData.Credit += reward;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
-                    $"{Context.User.Mention} rewarded {user.Mention} with {_currency.ToCurrency(currencyCfg, reward)}");
+                    $"{Context.User.Mention} rewarded {user.Mention} with {_currency.ToCurrency(currencyCfg, reward)}", Color.Green);
             }
         }
 
@@ -134,18 +134,23 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id.RawValue)
                 .OrderByDescending(account => account.Credit).Take(amount).ToListAsync();
             var pages = new List<string>();
+            var strBuilder = new StringBuilder();
             for (var i = 0; i < users.Count; i++)
             {
-                var strBuilder = new StringBuilder();
                 var x = users[i];
                 var user = Context.Guild.GetMember(x.UserId);
-                var name = user == null ? $"User left server ({x.UserId})" : user.Mention;
-                strBuilder.AppendLine($"**Rank: {i + 1}** - {name}");
+                if (user == null)
+                {
+                    x.Active = false;
+                    continue;
+                }
+                strBuilder.AppendLine($"**Rank: {i + 1}** - {user.Mention}");
                 strBuilder.Append($"-> {cfg.CurrencyName}: {_currency.ToCurrency(cfg, x.Credit)}");
                 pages.Add(strBuilder.ToString());
+                strBuilder.Clear();
             }
 
-            await Context.PaginatedReply(pages, Context.Guild, $"Money leaderboard for {Context.Guild.Name}");
+            await Context.PaginatedReply(pages, Context.Guild, $"Money leaderboard for {Context.Guild.Name}", pageSize: 10);
         }
 
         [Name("Reward")]

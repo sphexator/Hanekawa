@@ -104,7 +104,8 @@ namespace Hanekawa.Shared.Command.Extensions
 
         public static async Task PaginatedReply(this HanekawaCommandContext ctx, List<string> content, CachedGuild guildIcon,
             string authorTitle,
-            string title = null)
+            string title = null,
+            int pageSize = 5)
         {
             authorTitle ??= guildIcon.Name;
             var pages = new List<Page>();
@@ -112,7 +113,7 @@ namespace Hanekawa.Shared.Command.Extensions
             var color = ctx.Colour.Get(ctx.Guild.Id.RawValue);
             for (var i = 0; i < content.Count;)
             {
-                for (var j = 0; j < 5; j++)
+                for (var j = 0; j < pageSize; j++)
                 {
                     if (i >= content.Count) continue;
                     var x = content[i];
@@ -125,7 +126,8 @@ namespace Hanekawa.Shared.Command.Extensions
                     Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = guildIcon.GetIconUrl()},
                     Title = title,
                     Description = sb.ToString(),
-                    Color = color
+                    Color = color,
+                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {i + 1}/{content.Count}"}
                 }.Build()));
                 sb.Clear();
             }
