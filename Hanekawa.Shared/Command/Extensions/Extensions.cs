@@ -127,7 +127,7 @@ namespace Hanekawa.Shared.Command.Extensions
                     Title = title,
                     Description = sb.ToString(),
                     Color = color,
-                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {i + 1}/{content.Count}"}
+                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {pages.Count + 1}/{Convert.ToInt32(content.Count / pageSize)}"}
                 }.Build()));
                 sb.Clear();
             }
