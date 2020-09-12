@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.HungerGames.Entities.User
+﻿namespace Hanekawa.Models.HungerGame
 {
     public enum ActionType
     {
@@ -9,6 +9,7 @@
         Hack,
         Die,
         Sleep,
-        Eat
+        Eat,
+        None
     }
 }

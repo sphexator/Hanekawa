@@ -34,10 +34,10 @@ namespace Hanekawa.HungerGames
         public async Task<IEnumerable<HgResult>> PlayCustomAsync(List<HungerGameProfile> profiles, ItemDrop itemDrops) =>
             await _service.GetRequiredService<GameHandler>().CustomRoundAsync(profiles, itemDrops);
 
-        public async Task<HgOverallResult> PlayDefaultAsync(List<HungerGameProfile> profiles, ItemDrop itemDrops) =>
-            await _service.GetRequiredService<GameHandler>().DefaultRoundAsync(profiles, itemDrops);
+        public async Task<HgOverallResult> PlayDefaultAsync(List<HungerGameProfile> profiles, DbService db) =>
+            await _service.GetRequiredService<GameHandler>().DefaultRoundAsync(profiles, db);
 
-        private IServiceProvider ConfigureServices()
+        private static IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
             services.AddSingleton(new HttpClient());

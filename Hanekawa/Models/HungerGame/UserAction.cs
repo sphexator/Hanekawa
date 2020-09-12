@@ -1,4 +1,6 @@
-﻿namespace Hanekawa.HungerGames.Entities.User
+﻿using Hanekawa.Database.Tables.Account.HungerGame;
+
+namespace Hanekawa.Models.HungerGame
 {
     public class UserAction
     {

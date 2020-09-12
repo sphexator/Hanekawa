@@ -15,8 +15,10 @@ using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
+using Hanekawa.HungerGames.Entities.User;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
+using HungerGameProfile = Hanekawa.Database.Tables.Account.HungerGame.HungerGameProfile;
 using Inventory = Hanekawa.Database.Tables.Account.Inventory;
 using Item = Hanekawa.Database.Tables.Account.Item;
 using ItemType = Hanekawa.Shared.ItemType;
@@ -104,9 +106,8 @@ namespace Hanekawa.Database
         public DbSet<MvpConfig> MvpConfigs { get; set; }
 
         // Hunger Games
-        public DbSet<Participant> HgParticipants { get; set; }
-        public DbSet<HungerGames.Entity.Item> HgItems { get; set; }
-        public DbSet<HungerGames.Entity.Inventory> HgInventories { get; set; }
+        public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
+
 
         // Internal
         public virtual DbSet<Log> Logs { get; set; }

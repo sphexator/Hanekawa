@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hanekawa.HungerGames.Entities.Items;
-using Hanekawa.HungerGames.Entities.User;
 
 namespace Hanekawa.HungerGames.Entities.Internal.Events
 {
