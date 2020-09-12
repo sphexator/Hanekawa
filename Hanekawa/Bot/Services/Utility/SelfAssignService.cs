@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
@@ -20,11 +21,13 @@ namespace Hanekawa.Bot.Services.Utility
     {
         private readonly Hanekawa _client;
         private readonly IServiceProvider _provider;
+        private readonly SemaphoreSlim _lock;
 
         public SelfAssignService(Hanekawa client, IServiceProvider provider)
         {
             _client = client;
             _provider = provider;
+            _lock = new SemaphoreSlim(1, 1);
 
             _client.ReactionAdded += ReactionAdded;
             _client.ReactionRemoved += ReactionRemoved;
@@ -50,18 +53,26 @@ namespace Hanekawa.Bot.Services.Utility
                 if (reaction == null) return;
                 var role = user.Guild.GetRole(reaction.RoleId);
                 if (role == null) return;
-                if (reaction.Exclusive)
+                await _lock.WaitAsync();
+                try
                 {
-                    var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == user.Guild.Id.RawValue && x.Exclusive)
-                        .ToListAsync();
-                    foreach (var x in roles)
+                    if (reaction.Exclusive)
                     {
-                        var exclusiveRole = user.Guild.GetRole(x.RoleId);
-                        if (exclusiveRole == null) continue;
-                        if (user.Roles.Values.Contains(exclusiveRole)) await user.TryRemoveRoleAsync(exclusiveRole);
+                        var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == user.Guild.Id.RawValue && x.Exclusive)
+                            .ToListAsync();
+                        foreach (var x in roles)
+                        {
+                            var exclusiveRole = user.Guild.GetRole(x.RoleId);
+                            if (exclusiveRole == null) continue;
+                            if (user.Roles.Values.Contains(exclusiveRole)) await user.TryRemoveRoleAsync(exclusiveRole);
+                        }
                     }
+                    if (!user.Roles.ContainsKey(role.Id)) await user.GrantRoleAsync(role.Id);
                 }
-                if (!user.Roles.ContainsKey(role.Id)) await user.GrantRoleAsync(role.Id);
+                finally
+                {
+                    _lock.Release();
+                }
             });
             return Task.CompletedTask;
         }
@@ -87,7 +98,15 @@ namespace Hanekawa.Bot.Services.Utility
                 if (reaction == null) return;
                 var role = user.Guild.GetRole(reaction.RoleId);
                 if (role == null) return;
-                if (user.Roles.ContainsKey(role.Id)) await user.RevokeRoleAsync(role.Id);
+                await _lock.WaitAsync();
+                try
+                {
+                    if (user.Roles.ContainsKey(role.Id)) await user.RevokeRoleAsync(role.Id);
+                }
+                finally
+                {
+                    _lock.Release();
+                }
             });
             return Task.CompletedTask;
         }
