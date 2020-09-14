@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Services.Logging
                     var embed = new LocalEmbedBuilder
                     {
                         Color = _colourService.Get(user.Guild.Id.RawValue),
-                        Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"}
+                        Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})", IconUrl = user.GetAvatarUrl()}
                     };
                     // User muted, deafend or streaming
                     if (before != null && after != null && before.ChannelId == after.ChannelId)
@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             // User undeafend
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Undeafend" };
-                            embed.Description = $"{user} got server deafend in {user.VoiceChannel.Name}";
+                            embed.Description = $"{user} got server Undeafend in {user.VoiceChannel.Name}";
                         }
                         else if (!before.IsDeafened && after.IsDeafened)
                         {
@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             // User unmuted
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Unmuted" };
-                            embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            embed.Description = $"{user} Unmuted in {user.VoiceChannel.Name}";
                         }
                         else if (!before.IsMuted && after.IsMuted)
                         {
@@ -64,7 +64,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             // User Self undeafend
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Undeafened" };
-                            embed.Description = $"{user} deafened in {user.VoiceChannel.Name}";
+                            embed.Description = $"{user} Undeafened in {user.VoiceChannel.Name}";
                         }
                         else if (!before.IsSelfDeafened && after.IsSelfDeafened)
                         {
@@ -76,7 +76,7 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             // User Self unmuted
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Unmuted" };
-                            embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
+                            embed.Description = $"{user} Unmuted in {user.VoiceChannel.Name}";
                         }
                         else if (!before.IsSelfMuted && after.IsSelfMuted)
                         {
@@ -84,17 +84,29 @@ namespace Hanekawa.Bot.Services.Logging
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Self Muted" };
                             embed.Description = $"{user} muted in {user.VoiceChannel.Name}";
                         }
+                        else if (!before.IsStreaming && after.IsStreaming)
+                        {
+                            // User Started (game) Streaming
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "User Started Streaming(game)" };
+                            embed.Description = $"{user} started streaming in {user.VoiceChannel.Name}";
+                        }
+                        else if (before.IsStreaming && !after.IsStreaming)
+                        {
+                            // User Stopped (game) Streaming
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "User Stopped Streaming(game)" };
+                            embed.Description = $"{user} stopped streaming in {user.VoiceChannel.Name}";
+                        }
                         else if (!before.IsVideoStreaming && after.IsVideoStreaming)
                         {
-                            // User Started Streaming
-                            embed.Author = new LocalEmbedAuthorBuilder { Name = "User Started Streaming" };
-                            embed.Description = $"{user} started stream in {user.VoiceChannel.Name}";
+                            // User Started video (cam) streaming
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "User Started Streaming(cam)" };
+                            embed.Description = $"{user} started streaming in {user.VoiceChannel.Name}";
                         }
                         else if (before.IsVideoStreaming && !after.IsVideoStreaming)
                         {
-                            // User Stopped Streaming
-                            embed.Author = new LocalEmbedAuthorBuilder {Name = "User Stopped Streaming"};
-                            embed.Description = $"{user} stopped stream in {user.VoiceChannel.Name}";
+                            // User Stopped video (cam) Streaming
+                            embed.Author = new LocalEmbedAuthorBuilder {Name = "User Stopped Streaming(cam)"};
+                            embed.Description = $"{user} stopped streaming in {user.VoiceChannel.Name}";
                         }
                         else return;
                     }

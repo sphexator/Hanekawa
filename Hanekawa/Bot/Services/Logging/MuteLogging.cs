@@ -5,7 +5,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared;
 using Humanizer;
-using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -20,16 +19,16 @@ namespace Hanekawa.Bot.Services.Logging
             var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new LocalEmbedBuilder
             {
+                Author = new LocalEmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - User Muted | {user}" },
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
-                Author = new LocalEmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false}
-                }
+                },
+                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {user} ({user.Id.RawValue})", IconUrl = user.GetAvatarUrl() }
             };
             var msg = await channel.SendMessageAsync(null, false, embed.Build());
             caseId.MessageId = msg.Id.RawValue;
@@ -46,17 +45,17 @@ namespace Hanekawa.Bot.Services.Logging
             var caseId = await db.CreateCaseId(user, user.Guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new LocalEmbedBuilder
             {
+                Author = new LocalEmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - User Muted | {user}" },
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
-                Author = new LocalEmbedAuthorBuilder {Name = $"Case ID: {caseId.Id} - User Muted | {user}"},
-                Footer = new LocalEmbedFooterBuilder() {Text = $"Username: {user} ({user.Id.RawValue})"},
                 Fields = 
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = user.Mention, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Duration", Value = $"{duration.Humanize(2)}", IsInline = false}
-                }
+                },
+                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {user} ({user.Id.RawValue})", IconUrl = user.GetAvatarUrl() }
             };
             var msg = await channel.SendMessageAsync(null, false, embed.Build());
             caseId.MessageId = msg.Id.RawValue;

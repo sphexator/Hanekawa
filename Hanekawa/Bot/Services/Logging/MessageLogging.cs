@@ -40,26 +40,36 @@ namespace Hanekawa.Bot.Services.Logging
 
                     var embed = new LocalEmbedBuilder
                     {
-                        Description = $"{user.Mention} updated a message in {chx.Mention}",
-                        Color = _colourService.Get(user.Guild.Id.RawValue),
                         Author = new LocalEmbedAuthorBuilder { Name = "Message Updated" },
+                        Color = _colourService.Get(user.Guild.Id.RawValue),
+                        Timestamp = after.EditedAt ?? after.CreatedAt,
+                        Description = $"{user.Mention} updated a message in {chx.Mention}",
                         Fields =
                         {
                             new LocalEmbedFieldBuilder
-                                {Name = "Updated Message", Value = after.Content.Truncate(980), IsInline = true},
+                            {
+                                Name = "Updated Message", 
+                                Value = after.Content.Truncate(980), IsInline = false
+                            },
                             new LocalEmbedFieldBuilder
-                                {Name = "Old Message", Value = before.Value.Content.Truncate(980), IsInline = true}
+                            {
+                                Name = "Old Message", 
+                                Value = before.Value.Content.Truncate(980), IsInline = false
+                            }
                         },
-                        Footer = new LocalEmbedFooterBuilder {Text = $"User: {user.Id.RawValue} | {after.Id.RawValue}"},
-                        Timestamp = after.EditedAt ?? after.CreatedAt
+                        Footer = new LocalEmbedFooterBuilder
+                        {
+                            Text = $"User: {user.Id.RawValue} | {after.Id.RawValue}", 
+                            IconUrl = user.GetAvatarUrl()
+                        }
                     };
 
                     await channel.ReplyAsync(embed);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -84,13 +94,23 @@ namespace Hanekawa.Bot.Services.Logging
                     if (msg.Value.Author.IsBot) return;
                     var embed = new LocalEmbedBuilder
                     {
-                        Description = msg.Value.Content.Truncate(1900),
+                        Author = new LocalEmbedAuthorBuilder { Name = "Message Deleted" },
                         Color = _colourService.Get(chx.Guild.Id.RawValue),
-                        Author = new LocalEmbedAuthorBuilder {Name = "Message Deleted"},
-                        Title = $"{msg.Value.Author} deleted a message in {chx.Name}",
                         Timestamp = msg.Value.CreatedAt,
+                        Description = $"{msg.Value.Author.Mention} deleted a message in {chx.Name}",
+                        Fields =
+                        {
+                            new LocalEmbedFieldBuilder
+                            {
+                                Name = "Content", 
+                                Value = msg.Value.Content.Truncate(1499)
+                            }
+                        },
                         Footer = new LocalEmbedFooterBuilder
-                            {Text = $"User: {msg.Value.Author.Id.RawValue} | Message ID: {msg.Id.RawValue}"}
+                        {
+                            Text = $"User: {msg.Value.Author.Id.RawValue} | Message ID: {msg.Id.RawValue}",
+                            IconUrl = msg.Value.Author.GetAvatarUrl()
+                        }
                     };
 
                     if (msg.Value.Attachments.Count > 0 && !chx.IsNsfw)
@@ -107,10 +127,10 @@ namespace Hanekawa.Bot.Services.Logging
 
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -143,7 +163,7 @@ namespace Hanekawa.Bot.Services.Logging
                             content.Clear();
                         }
 
-                        content.AppendLine($"{user.Mention}: {x.Value.Content}");
+                        content.AppendLine($"{user}: {x.Value.Content}");
                     }
 
                     if (content.Length > 0) messageContent.Add(content.ToString());
@@ -152,18 +172,18 @@ namespace Hanekawa.Bot.Services.Logging
                     {
                         var embed = new LocalEmbedBuilder
                         {
-                            Description = messageContent[i],
                             Color = _colourService.Get(ch.Guild.Id.RawValue),
-                            Title = $"Bulk delete in {ch.Name}"
+                            Title = $"Bulk delete in {ch.Name}",
+                            Description = messageContent[i]
                         };
                         await logChannel.ReplyAsync(embed);
                         await Task.Delay(1000);
                     }
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
