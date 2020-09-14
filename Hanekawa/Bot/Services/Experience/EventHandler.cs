@@ -154,6 +154,7 @@ namespace Hanekawa.Bot.Services.Experience
             _ = Task.Run(async () =>
             {
                 var user = e.Member;
+                if (user.IsBot) return;
                 var after = e.NewVoiceState;
                 var before = e.OldVoiceState;
                 if (user.IsBot) return;
