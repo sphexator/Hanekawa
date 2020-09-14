@@ -25,7 +25,11 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 {
                     var guild = _client.GetGuild(guildId);
                     var user = guild?.GetMember(userId);
-                    if (user == null) return;
+                    if (user == null)
+                    {
+                        await RemoveTimerFromDbAsync(guildId, userId, db);
+                        return;
+                    }
                     await UnMuteUser(user, db);
                 }
                 catch (Exception e)
