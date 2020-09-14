@@ -47,6 +47,7 @@ namespace Hanekawa.Bot.Services.Welcome
             {
                 var user = e.Member;
                 if (user.IsBot) return;
+                if (user.CreatedAt >= DateTimeOffset.UtcNow.AddMinutes(10)) return;
                 if (OnCooldown(user)) return;
                 try
                 {
@@ -76,10 +77,10 @@ namespace Hanekawa.Bot.Services.Welcome
                     await Task.WhenAll(del, exp);
                     _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Welcome Service) Error in {user.Guild.Id.RawValue} for User Joined - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Welcome Service) Error in {user.Guild.Id.RawValue} for User Joined - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -88,48 +89,49 @@ namespace Hanekawa.Bot.Services.Welcome
         private async Task WelcomeRewardAsync(Hanekawa bot, CachedTextChannel channel, WelcomeConfig cfg, DbService db)
         {
             if (!cfg.Reward.HasValue) return;
-            var users = new ConcurrentQueue<CachedMember>();
-            var s = new Stopwatch();
-            s.Start();
-            while (s.Elapsed <= TimeSpan.FromMinutes(1))
+            try
             {
-                var response = await bot.GetInteractivity().WaitForMessageAsync(
-                    x => x.Message.Content.Contains("welcome", StringComparison.OrdinalIgnoreCase) &&
-                         x.Message.Guild.Id.RawValue == cfg.GuildId &&
-                         x.Message.Channel.Id.RawValue == channel.Id.RawValue &&
-                        !x.Message.Author.IsBot,
-                    TimeSpan.FromMinutes(1));
-                _ = Task.Run(async () =>
+                var users = new ConcurrentQueue<CachedMember>();
+                var s = new Stopwatch();
+                s.Start();
+                while (s.Elapsed <= TimeSpan.FromMinutes(1))
                 {
-                    var res = response;
-                    try
+                    var response = await bot.GetInteractivity().WaitForMessageAsync(
+                        x => x.Message.Content.Contains("welcome", StringComparison.OrdinalIgnoreCase) &&
+                             x.Message.Guild.Id.RawValue == cfg.GuildId &&
+                             x.Message.Channel.Id.RawValue == channel.Id.RawValue &&
+                             !x.Message.Author.IsBot,
+                        TimeSpan.FromMinutes(1));
+                    _ = Task.Run(() =>
                     {
-                        if (res == null) return;
-                        if (!(res.Message.Author is CachedMember user)) return;
-                        if (IsRewardCd(user)) return;
-                        if (user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) return;
-                        if (users.Contains(user)) return;
-                        users.Enqueue(user);
-                        /*
-                        if(!res.Message.Reactions.ContainsKey(_expEmoji)) 
-                        { 
-                            await res.Message.AddReactionAsync(_expEmoji);
+                        var res = response;
+                        try
+                        {
+                            if (res == null) return;
+                            if (!(res.Message.Author is CachedMember user)) return;
+                            if (IsRewardCd(user)) return;
+                            if (user.JoinedAt.AddHours(2) >= DateTimeOffset.UtcNow) return;
+                            if (users.Contains(user)) return;
+                            users.Enqueue(user);
                         }
-                        */
-                    }
-                    catch (Exception e)
-                    {
-                        _log.LogAction(LogLevel.Error, e, e.Message);
-                    }
-                });
-            }
+                        catch (Exception e)
+                        {
+                            _log.LogAction(LogLevel.Error, e, e.Message);
+                        }
+                    });
+                }
 
-            s.Stop();
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            while (users.TryDequeue(out var user))
+                s.Stop();
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                while (users.TryDequeue(out var user))
+                {
+                    var userData = await db.GetOrCreateUserData(user);
+                    await _exp.AddExpAsync(user, userData, cfg.Reward.Value, 0, db);
+                }
+            }
+            catch (Exception e)
             {
-                var userData = await db.GetOrCreateUserData(user);
-                await _exp.AddExpAsync(user, userData, cfg.Reward.Value, 0, db);
+                _log.LogAction(LogLevel.Error, e, e.Message);
             }
         }
 
