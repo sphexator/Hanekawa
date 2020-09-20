@@ -45,8 +45,6 @@ namespace Hanekawa.Bot.Modules.Utility
                         var result = await Context.Guild.CreateEmojiAsync(stream, "ToBeRenamed");
                         list.Append($"{result} (rename)");
                     }
-                    await stream1.DisposeAsync();
-                    await stream.DisposeAsync();
                 }
                 catch (Exception e)
                 {
