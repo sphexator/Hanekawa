@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Logging;

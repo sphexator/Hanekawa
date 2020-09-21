@@ -93,8 +93,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
         {
             var timers = _timers.GetOrAdd(user.Guild.Id.RawValue, new ConcurrentDictionary<string, Timer>());
             if (timers.Count >= 3) return false;
-            var firstPost = new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0);
-            var timer = CreateTimer(channel, firstPost, interval, message, user.Guild.Id.RawValue, name);
+            var timer = CreateTimer(channel, new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0), interval, message, user.Guild.Id.RawValue, name);
             if (timers.TryAdd(name, timer))
             {
                 await AddToDatabase(user, channel, interval, name, message);
@@ -142,8 +141,8 @@ namespace Hanekawa.Bot.Services.AutoMessage
                 }
 
                 dbTimer.Message = newMessage;
-                var firstPost = new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0);
-                var newTimer = CreateTimer(_client.GetGuild(guildId).GetTextChannel(dbTimer.ChannelId), firstPost,
+                var newTimer = CreateTimer(_client.GetGuild(guildId).GetTextChannel(dbTimer.ChannelId),
+                    new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0),
                     dbTimer.Interval, newMessage, guildId, name);
                 timers.AddOrUpdate(name, newTimer, (s, _) => newTimer);
                 await db.SaveChangesAsync();
@@ -168,8 +167,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             }
 
             dbTimer.Interval = newInterval;
-            var firstPost = new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0);
-            var change = timer.Change(firstPost, newInterval);
+            var change = timer.Change(new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0), newInterval);
             if (change) await db.SaveChangesAsync();
             return change;
         }
@@ -199,7 +197,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
 
                 await channel.SendMessageAsync(null, false,
                     new LocalEmbedBuilder().Create(MessageUtil.FormatMessage(message, null, txt.Guild), _colour.Get(guildId)).Build());
-            }, null, new TimeSpan(0, (60 - DateTime.UtcNow.Minute), 0), interval);
+            }, null, firstPost, interval);
 
         private async Task AddToDatabase(CachedMember user, CachedTextChannel channel, TimeSpan interval, string name, string message)
         {

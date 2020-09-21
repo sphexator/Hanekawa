@@ -62,8 +62,11 @@ namespace Hanekawa.Bot.Modules.Utility
         public async Task EditContentAsync(string name, [Remainder] string editedMessage)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            await _service.EditMessageAsync(Context.Guild.Id.RawValue, name, editedMessage, db);
-            await ReplyAsync($"Changed message to '{editedMessage}' !", Color.Green);
+            if (await _service.EditMessageAsync(Context.Guild.Id.RawValue, name, editedMessage, db))
+                await ReplyAsync($"Changed message to '{editedMessage}' !", Color.Green);
+            else
+                await ReplyAsync($"Couldn't find a automated message by that name ({name}), or something went wrong...",
+                    Color.Red);
         }
 
         [Name("Edit existing message with different interval")]
@@ -72,8 +75,11 @@ namespace Hanekawa.Bot.Modules.Utility
         public async Task EditedIntervalAsync(string name, TimeSpan editedInterval)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            await _service.EditIntervalAsync(Context.Guild.Id.RawValue, name, editedInterval, db);
-            await ReplyAsync($"Changed message interval to '{editedInterval.Humanize()}' !", Color.Green);
+            if (await _service.EditIntervalAsync(Context.Guild.Id.RawValue, name, editedInterval, db))
+                await ReplyAsync($"Changed message interval to '{editedInterval.Humanize()}' !", Color.Green);
+            else
+                await ReplyAsync(
+                    $"Couldn't find a automated message by that name ({name}), or something went wrong...", Color.Red);
         }
     }
 }
