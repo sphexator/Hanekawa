@@ -2,10 +2,13 @@
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.AutoMessage;
 using Hanekawa.Database;
+using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
+using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -25,6 +28,25 @@ namespace Hanekawa.Bot.Modules.Utility
         [Command("amadd")]
         public async Task AddAsync(string name, CachedTextChannel channel, TimeSpan interval, [Remainder] string message)
         {
+            await Context.Channel.SendMessageAsync($"Preview of message, does this look good? (y/n)", false,
+                new LocalEmbedBuilder().Create(MessageUtil.FormatMessage(message, null, Context.Guild),
+                    Context.Colour.Get(Context.Guild.Id.RawValue)).Build());
+            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Channel.Id == Context.Channel.Id);
+            if (response == null)
+            {
+                await ReplyAsync("Abort...", Color.Red);
+                return;
+            }
+
+            if (response.Message.Content.ToLower() != "y")
+            {
+                await ReplyAsync("Cancelling...", Color.Red);
+                return;
+            }
+
+            await ReplyAsync(MessageUtil.FormatMessage(message, null, Context.Guild),
+                Context.Colour.Get(Context.Guild.Id.RawValue));
             if (await _service.AddAutoMessage(Context.Member, channel, interval, name, message))
                 await ReplyAsync(
                     $"Succesfully added a message by name '{name}' that'll be sent every {interval.Humanize()}",
