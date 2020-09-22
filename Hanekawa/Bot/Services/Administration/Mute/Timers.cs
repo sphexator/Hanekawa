@@ -16,35 +16,42 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 
         private void StartUnMuteTimer(ulong guildId, ulong userId, TimeSpan duration)
         {
-            var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());
-            var toAdd = new Timer(async _ =>
+            try
             {
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                try
+                var unMuteTimers = _unMuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<ulong, Timer>());
+                var toAdd = new Timer(async _ =>
                 {
-                    var guild = _client.GetGuild(guildId);
-                    var user = guild?.GetMember(userId);
-                    if (user == null)
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    try
+                    {
+                        var guild = _client.GetGuild(guildId);
+                        var user = guild?.GetMember(userId);
+                        if (user == null)
+                        {
+                            await RemoveTimerFromDbAsync(guildId, userId, db);
+                            return;
+                        }
+                        await UnMuteUser(user, db);
+                    }
+                    catch (Exception e)
                     {
                         await RemoveTimerFromDbAsync(guildId, userId, db);
-                        return;
+                        _log.LogAction(LogLevel.Error, e,
+                            $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
-                    await UnMuteUser(user, db);
-                }
-                catch (Exception e)
-                {
-                    await RemoveTimerFromDbAsync(guildId, userId, db);
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
-                }
-            }, null, duration, Timeout.InfiniteTimeSpan);
+                }, null, duration, Timeout.InfiniteTimeSpan);
 
-            unMuteTimers.AddOrUpdate(userId, key => toAdd, (key, old) =>
+                unMuteTimers.AddOrUpdate(userId, key => toAdd, (key, old) =>
+                {
+                    old.Dispose();
+                    return toAdd;
+                });
+            }
+            catch (Exception e)
             {
-                old.Dispose();
-                return toAdd;
-            });
+                _log.LogAction(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {guildId} for {userId}");
+            }
         }
 
         private async Task StopUnMuteTimerAsync(ulong guildId, ulong userId, DbService db)
