@@ -4,7 +4,9 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Models;
 using Hanekawa.Shared;
+using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +33,7 @@ namespace Hanekawa.Bot.Services.Logging
                     {
                         Color = Color.Green,
                         Author = new LocalEmbedAuthorBuilder {Name = $"User Unbanned | Case ID: {caseId.Id} | {user}"},
-                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
+                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}", IconUrl = user.GetAvatarUrl() },
                         Timestamp = DateTimeOffset.UtcNow,
                         Fields =
                         {
@@ -44,9 +46,9 @@ namespace Hanekawa.Bot.Services.Logging
                     caseId.MessageId = msg.Id.RawValue;
                     await db.SaveChangesAsync();
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id.RawValue} for UnBan Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for UnBan Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -66,7 +68,6 @@ namespace Hanekawa.Bot.Services.Logging
                     if (!cfg.LogBan.HasValue) return;
                     var channel = guild.GetTextChannel(cfg.LogBan.Value);
                     if (channel == null) return;
-
                     var caseId = await db.CreateCaseId(user, guild, DateTime.UtcNow, ModAction.Ban);
                     var embed = new LocalEmbedBuilder
                     {
@@ -78,16 +79,20 @@ namespace Hanekawa.Bot.Services.Logging
                             new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = false},
                             new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
                         },
-                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}"},
+                        Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}", IconUrl = user.GetAvatarUrl() },
                         Timestamp = DateTimeOffset.UtcNow
                     };
+                    var gusr = guild.GetMember(user.Id);
+                    if (gusr != null)
+                        embed.AddField("Time In Server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
+                    
                     var msg = await channel.SendMessageAsync(null, false, embed.Build());
                     caseId.MessageId = msg.Id.RawValue;
                     await db.SaveChangesAsync();
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;

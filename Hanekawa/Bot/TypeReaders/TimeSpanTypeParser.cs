@@ -32,11 +32,11 @@ namespace Hanekawa.Bot.TypeReaders
             if (TimeSpan.TryParseExact(value.ToLowerInvariant(), Formats, CultureInfo.InvariantCulture,
                 out var timespan)) return TypeParserResult<TimeSpan>.Successful(timespan);
 
-            if (!int.TryParse(value, out var minutes))
-                return TypeParserResult<TimeSpan>.Unsuccessful("Failed to parse timespan");
-            return minutes <= 0
+            return !int.TryParse(value, out var minutes)
                 ? TypeParserResult<TimeSpan>.Unsuccessful("Failed to parse timespan")
-                : TypeParserResult<TimeSpan>.Successful(new TimeSpan(0, minutes, 0));
+                : minutes <= 0
+                    ? TypeParserResult<TimeSpan>.Unsuccessful("Failed to parse timespan")
+                    : TypeParserResult<TimeSpan>.Successful(new TimeSpan(0, minutes, 0));
         }
     }
 }

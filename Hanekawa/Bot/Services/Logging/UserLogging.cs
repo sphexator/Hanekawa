@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,18 +36,18 @@ namespace Hanekawa.Bot.Services.Logging
                         embed.Description = $"{before} || {before.Id.RawValue}";
                         embed.AddField(x =>
                         {
-                            x.Name = "Old Name";
-                            x.Value = $"{before.Name}";
-                            x.IsInline = true;
-                        });
-                        embed.AddField(x =>
-                        {
                             x.Name = "New Name";
                             x.Value = $"{after.Name}";
                             x.IsInline = true;
                         });
+                        embed.AddField(x =>
+                        {
+                            x.Name = "Old Name";
+                            x.Value = $"{before.Name}";
+                            x.IsInline = true;
+                        });
                     }
-                    else if (before.AvatarHash != after.AvatarHash)
+                    else if (before.GetAvatarUrl(ImageFormat.Default, 240) != after.GetAvatarUrl(ImageFormat.Default, 240))
                     {
                         embed.Title = "Avatar Change";
                         embed.Description = $"{before} | {before.Id.RawValue}";
@@ -91,8 +89,7 @@ namespace Hanekawa.Bot.Services.Logging
                     {
                         Color = _colourService.Get(before.Guild.Id.RawValue),
                         Description = "",
-                        Title = $"{after} | {after.Id.RawValue}",
-                        Footer = new LocalEmbedFooterBuilder {IconUrl = after.GetAvatarUrl(), Text = $"User ID: {after.Id.RawValue}"}
+                        Footer = new LocalEmbedFooterBuilder {Text = $"Username: {after} ({after.Id.RawValue})", IconUrl = after.GetAvatarUrl()}
                     };
                     if (before.Nick != after.Nick)
                     {

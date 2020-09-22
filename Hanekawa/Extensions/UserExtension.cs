@@ -40,8 +40,10 @@ namespace Hanekawa.Extensions
             return result;
         }
 
-        public static string GetStatus(this CachedUser user) =>
-            user.Presence.Status switch
+        public static string GetStatus(this CachedUser user)
+        {
+            if (user.Presence == null || user.Presence.Status == null) return "N/A";
+            var result = user.Presence.Status switch
             {
                 UserStatus.Online => "Online",
                 UserStatus.Idle => "Idle",
@@ -50,5 +52,7 @@ namespace Hanekawa.Extensions
                 UserStatus.Offline => "Offline",
                 _ => "N/A"
             };
+            return result;
+        }
     }
 }

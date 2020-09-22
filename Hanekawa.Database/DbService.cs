@@ -5,6 +5,7 @@ using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Database.Tables.Advertise;
+using Hanekawa.Database.Tables.AutoMessage;
 using Hanekawa.Database.Tables.BoardConfig;
 using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Database.Tables.Club;
@@ -114,6 +115,7 @@ namespace Hanekawa.Database
         // Advertise
         public DbSet<DblAuth> DblAuths { get; set; }
         public DbSet<VoteLog> VoteLogs { get; set; }
+        public DbSet<AutoMessage> AutoMessages { get; set; }
 
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
@@ -139,10 +141,17 @@ namespace Hanekawa.Database
 
             modelBuilder.Entity<VoiceRoles>(x =>
             {
-                x.HasKey(e => new {e.GuildId, e.VoiceId});
+                x.HasKey(e => new { e.GuildId, e.VoiceId });
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.VoiceId).HasConversion<long>();
                 x.Property(e => e.RoleId).HasConversion<long>();
+            });
+            modelBuilder.Entity<AutoMessage>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.Name });
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Creator).HasConversion<long>();
+                x.Property(e => e.ChannelId).HasConversion<long>();
             });
         }
 

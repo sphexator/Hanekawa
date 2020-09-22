@@ -87,7 +87,7 @@ namespace Hanekawa.Bot.Services.Boost
                     Timestamp = DateTimeOffset.UtcNow,
                     Footer = new LocalEmbedFooterBuilder
                     {
-                        Text = $"User: {user} ({user.Id})",
+                        Text = $"Username: {user} ({user.Id})",
                         IconUrl = user.GetAvatarUrl()
                     }
                 };

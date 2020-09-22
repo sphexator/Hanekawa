@@ -92,7 +92,7 @@ namespace Hanekawa.Controllers
                         Title = "Top.gg Vote!",
                         Color = _colour.Get(guild.Id.RawValue),
                         Description = $"{name} just voted for the server!",
-                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"{name} ({userId})"}
+                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
                     }.Build());
                 }
                 _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
