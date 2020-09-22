@@ -46,10 +46,18 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             foreach (var x in db.MuteTimers)
             {
-                var after = x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
-                    ? TimeSpan.FromMinutes(2)
-                    : x.Time - DateTime.UtcNow;
-                StartUnMuteTimer(x.GuildId, x.UserId, after);
+                try
+                {
+                    var after = x.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
+                        ? TimeSpan.FromMinutes(2)
+                        : x.Time - DateTime.UtcNow;
+                    StartUnMuteTimer(x.GuildId, x.UserId, after);
+                }
+                catch (Exception e)
+                {
+                    db.Remove(x);
+                    _log.LogAction(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
+                }
             }
         }
 
