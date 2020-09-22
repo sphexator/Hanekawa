@@ -25,7 +25,10 @@ namespace Hanekawa.Bot.Services.HungerGames
             return Task.CompletedTask;
         }
 
-        private async Task StartSignUpAsync(){}
+        private async Task StartSignUpAsync()
+        {
+
+        }
         private async Task StartGameAsync(){}
         private async Task NextRoundAsync(){}
     }

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Models.HungerGame
+﻿namespace Hanekawa.Shared.Game.HungerGame
 {
     public enum ActionType
     {
