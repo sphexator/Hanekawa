@@ -42,7 +42,7 @@ namespace Hanekawa.Extensions
 
         public static string GetStatus(this CachedUser user)
         {
-            if (user.Presence == null || user.Presence.Status == null) return "Currently not playing";
+            if (user.Presence == null || user.Presence.Status == null) return "N/A";
             var result = user.Presence.Status switch
             {
                 UserStatus.Online => "Online",
