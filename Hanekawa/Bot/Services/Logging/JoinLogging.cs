@@ -34,7 +34,9 @@ namespace Hanekawa.Bot.Services.Logging
                         Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                         Timestamp = DateTimeOffset.UtcNow
                     };
-
+                    var gusr = guild.GetMember(user.Id);
+                    if (gusr != null)
+                        embed.AddField("Time in server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception e)
