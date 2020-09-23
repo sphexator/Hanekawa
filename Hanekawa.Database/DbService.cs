@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Database.Tables.BoardConfig;
@@ -15,7 +16,6 @@ using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
-using Hanekawa.HungerGames.Entities.User;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 using HungerGameProfile = Hanekawa.Database.Tables.Account.HungerGame.HungerGameProfile;
@@ -106,7 +106,10 @@ namespace Hanekawa.Database
         public DbSet<MvpConfig> MvpConfigs { get; set; }
 
         // Hunger Games
+        public DbSet<HungerGame> HungerGames { get; set; }
+        public DbSet<HungerGameHistory> HungerGameHistories { get; set; }
         public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
+        public DbSet<HungerGameStatus> HungerGameStatus { get; set; }
 
 
         // Internal
@@ -543,26 +546,30 @@ namespace Hanekawa.Database
 
         private static void HungerGameBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Participant>(x =>
-            {
-                x.HasKey(e => new { e.GuildId, e.UserId });
-                x.HasMany(e => e.Inventory)
-                    .WithOne(e => e.User)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<HungerGames.Entity.Item>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.HasMany(e => e.Inventories).WithOne(e => e.Item).OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<GameHistory>(x =>
+            modelBuilder.Entity<HungerGame>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
+            });
+            modelBuilder.Entity<HungerGameHistory>(x =>
+            {
+                x.HasKey(e => e.GameId);
+                x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Winner).HasConversion<long>();
+            });
+            modelBuilder.Entity<HungerGameProfile>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.UserId });
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
+            });
+            modelBuilder.Entity<HungerGameStatus>(x =>
+            {
+                x.HasKey(e => e.GuildId);
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.EventChannel).HasConversion<long>();
+                x.Property(e => e.SignUpChannel).HasConversion<long>();
             });
         }
 

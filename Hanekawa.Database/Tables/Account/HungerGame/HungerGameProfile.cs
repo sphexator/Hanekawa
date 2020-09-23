@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Hanekawa.Shared.Game.HungerGame;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
@@ -20,6 +21,6 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public double Tiredness { get; set; } = 0;
         public ActionType Move { get; set; } = ActionType.None;
 
-        public List<> Inventory { get; set; }
+        public List<ulong> Inventory { get; set; }
     }
 }
