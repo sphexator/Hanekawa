@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
@@ -6,6 +7,7 @@ using Hanekawa.Bot.Services.Game.HungerGames;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
+using Hanekawa.Shared.Game.HungerGame;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Quartz.Util;
@@ -17,7 +19,6 @@ namespace Hanekawa.Bot.Modules.Game
     public class HungerGame : HanekawaCommandModule
     {
         private readonly HungerGameService _service;
-
         public HungerGame(HungerGameService service) => _service = service;
 
         [Name("Start")]
@@ -26,7 +27,44 @@ namespace Hanekawa.Bot.Modules.Game
         [RequireMemberGuildPermissions(Permission.Administrator)]
         public async Task StartAsync()
         {
-            await _service.Execute(null);
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.HungerGameStatus.FindAsync(Context.Guild.Id.RawValue);
+            if (cfg == null)
+            {
+                await ReplyAsync("Please setup a sign-up channel.", Color.Red);
+                return;
+            }
+            if (!cfg.EventChannel.HasValue)
+            {
+                await ReplyAsync("Please setup a event channel with h.hgec <channel>", Color.Red);
+                return;
+            }
+            if (!cfg.SignUpChannel.HasValue)
+            {
+                await ReplyAsync("Please setup a sign-up channel with h.hgsc <channel>", Color.Red);
+                return;
+            }
+
+            switch (cfg.Stage)
+            {
+                case HungerGameStage.Signup:
+                    await ReplyAsync("Closing sign-ups and starting");
+                    if (!(await _service.StartGameAsync(cfg, db, DateTimeOffset.UtcNow)))
+                    {
+                        await ReplyAsync("Please setup event and sign-up channels with h.hgec & h.hgsc", Color.Red);
+                    }
+                    break;
+                case HungerGameStage.OnGoing:
+                    await ReplyAsync("Playing next round");
+                    await _service.NextRoundAsync(cfg, db);
+                    break;
+                case HungerGameStage.Closed:
+                    await ReplyAsync("Starting sign-ups");
+                    await _service.StartSignUpAsync(cfg, db);
+                    break;
+                default:
+                    return;
+            }
         }
 
         [Name("Set Sign-up emote")]
