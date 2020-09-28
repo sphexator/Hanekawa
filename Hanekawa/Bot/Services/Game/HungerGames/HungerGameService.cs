@@ -158,7 +158,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             return Task.CompletedTask;
         }
 
-        private async Task StartSignUpAsync(HungerGameStatus cfg, DbService db)
+        public async Task StartSignUpAsync(HungerGameStatus cfg, DbService db)
         {
             if (!LocalCustomEmoji.TryParse(cfg.EmoteMessageFormat, out var result)) return;
             if (!cfg.SignUpChannel.HasValue) return;
@@ -169,9 +169,10 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             await db.SaveChangesAsync();
         }
 
-        private async Task StartGameAsync(HungerGameStatus cfg, DbService db)
+        public async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, DateTimeOffset? cd = null)
         {
-            if (cfg.SignUpStart.AddHours(23) >= DateTimeOffset.UtcNow) return;
+            if(cd == null) cd = cfg.SignUpStart.AddHours(23);
+            if (cd >= DateTimeOffset.UtcNow) return false;
             cfg.Stage = HungerGameStage.OnGoing;
             var participants = await AddDefaultUsers(db, cfg.GuildId);
             if (cfg.SignUpChannel.HasValue)
@@ -235,9 +236,10 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 Round = 0
             });
             await db.SaveChangesAsync();
+            return true;
         }
 
-        private async Task NextRoundAsync(HungerGameStatus cfg, DbService db)
+        public async Task NextRoundAsync(HungerGameStatus cfg, DbService db)
         {
             var guild = _client.GetGuild(cfg.GuildId);
             if (guild == null) return;
@@ -248,6 +250,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 .ThenBy(x => x.Bot)
                 .ThenBy(x => x.UserId)
                 .ToListAsync();
+            var game = await db.HungerGames.FirstOrDefaultAsync(x => x.GuildId == cfg.GuildId);
             var alive = participants.Count(x => x.Alive);
             
             // Determine each participant event (alive)
@@ -256,6 +259,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             if (!cfg.EventChannel.HasValue) return;
             
             var sb = new StringBuilder();
+            sb.AppendLine($"**Hunger Game Round {game.Round + 1}!**");
             var messages = new List<string>();
             
             // Create text messages
@@ -297,11 +301,12 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             {
                 await channel.SendMessageAsync(messages[i], false, null, LocalMentions.None);
             }
-
+            var resultAlive = result.Count(x => x.AfterProfile.Alive);
+            game.Alive = resultAlive;
+            game.Round++;
+            await db.SaveChangesAsync();
             // Only 1 person alive? Announce and reward
-            if (result.Count(x => x.AfterProfile.Alive) > 1) return;
-            cfg.Stage = HungerGameStage.Closed;
-            cfg.GameId = null;
+            if (resultAlive > 1) return;
             CachedMember user = null;
             var winner = result.FirstOrDefault(x => x.AfterProfile.Alive);
             if (winner != null)
@@ -313,9 +318,11 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 userData.CreditSpecial += cfg.SpecialCreditReward;
             }
 
-            await db.SaveChangesAsync();
-            
-            if (!cfg.SignUpChannel.HasValue) return;
+            if (!cfg.SignUpChannel.HasValue)
+            {
+                await db.SaveChangesAsync();
+                return;
+            }
             var announce = guild.GetTextChannel(cfg.SignUpChannel.Value);
             var stringBuilder = new StringBuilder();
             if (user == null)
@@ -333,6 +340,20 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 if (role != null) stringBuilder.AppendLine($"{role.Mention} role");
             }
             await announce.SendMessageAsync(stringBuilder.ToString(), false, null, LocalMentions.None);
+            await db.HungerGameHistories.AddAsync(new HungerGameHistory
+            {
+                GameId = cfg.GameId.Value,
+                GuildId = cfg.GuildId,
+                Winner = winner.AfterProfile.UserId,
+                CreditReward = cfg.CreditReward,
+                SpecialCreditReward = cfg.SpecialCreditReward,
+                ExpReward = cfg.ExpReward
+            });
+            db.HungerGameProfiles.RemoveRange(participants);
+            db.HungerGames.Remove(game);
+            cfg.Stage = HungerGameStage.Closed;
+            cfg.GameId = null;
+            await db.SaveChangesAsync();
         }
 
         private async Task<CachedRole> RewardRole(HungerGameStatus cfg, CachedMember winner)
