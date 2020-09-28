@@ -77,7 +77,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Bot\Services\HungerGames\Events\" />
       <Folder Include="Bot\Services\Music\" />
       <Folder Include="Controllers\" />
       <Folder Include="Data\Fonts\" />

@@ -71,6 +71,9 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly Font _welcomeFontRegular;
         private readonly Image _welcomeTemplate;
 
+        // Hunger Games
+        private readonly Font _hgTimes;
+
         public ImageGenerator(HttpClient client, Random random, ExpService expService)
         {
             _client = client;
@@ -87,6 +90,8 @@ namespace Hanekawa.Bot.Services.ImageGen
             _profileText = new Font(_arial, 20, FontStyle.Regular);
             _profileName = new Font(_arial, 32, FontStyle.Regular);
             _profileTemplate = Image.Load("Data/Profile/Template/Template.png", new PngDecoder { IgnoreMetadata = true });
+
+            _hgTimes = new Font(_times, 15, FontStyle.Regular);
         }
 
         private async Task<Image> GetAvatarAsync(CachedMember user, Size size, int radius)
@@ -114,6 +119,15 @@ namespace Hanekawa.Bot.Services.ImageGen
             response.Position = 0;
             using var img = await Image.LoadAsync(response, new PngDecoder());
             return img.Clone(x => x.Resize(size));
+        }
+
+        private async Task<Image> GetAvatarAsync(string imgUrl, Size size, int radius)
+        {
+            var avatar = await _client.GetStreamAsync(imgUrl);
+            var response = avatar.ToEditable();
+            response.Position = 0;
+            using var img = await Image.LoadAsync(response, new PngDecoder());
+            return img.Clone(x => x.ConvertToAvatar(size, radius));
         }
     }
 }

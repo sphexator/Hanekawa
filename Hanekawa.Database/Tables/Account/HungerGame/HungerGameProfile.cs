@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Hanekawa.Shared.Game.HungerGame;
+﻿using Hanekawa.Shared.Game.HungerGame;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
@@ -7,6 +6,7 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
     {
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
+        public bool Bot { get; set; } = false;
         
         public string Name { get; set; } = "Test Unit";
         public string Avatar { get; set; } = null;
@@ -21,6 +21,12 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public double Tiredness { get; set; } = 0;
         public ActionType Move { get; set; } = ActionType.None;
 
-        public List<ulong> Inventory { get; set; }
+        public int Food { get; set; } = 0;
+        public int Water { get; set; } = 0;
+        public int FirstAid { get; set; } = 0;
+        public int Weapons { get; set; } = 0;
+        public int MeleeWeapon { get; set; } = 0;
+        public int RangeWeapon { get; set; } = 0;
+        public int Bullets { get; set; } = 0;
     }
 }

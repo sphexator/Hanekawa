@@ -12,7 +12,13 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
 
         public HungerGameStage Stage { get; set; } = HungerGameStage.Closed;
         public DateTimeOffset SignUpStart { get; set; }
-        public ulong? SignUpMessage { get; set; }
+        public string SignUpMessage { get; set; }
         public Guid? GameId { get; set; } = null;
+
+        // Rewards
+        public int ExpReward { get; set; } = 0;
+        public int CreditReward { get; set; } = 0;
+        public int SpecialCreditReward { get; set; } = 0;
+        public ulong? RoleReward { get; set; } = null;
     }
 }

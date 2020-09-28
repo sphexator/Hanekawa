@@ -18,10 +18,6 @@ using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Stores;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
-using HungerGameProfile = Hanekawa.Database.Tables.Account.HungerGame.HungerGameProfile;
-using Inventory = Hanekawa.Database.Tables.Account.Inventory;
-using Item = Hanekawa.Database.Tables.Account.Item;
-using ItemType = Hanekawa.Shared.ItemType;
 
 namespace Hanekawa.Database
 {
@@ -107,6 +103,7 @@ namespace Hanekawa.Database
 
         // Hunger Games
         public DbSet<HungerGame> HungerGames { get; set; }
+        public DbSet<HungerGameDefault> HungerGameDefaults { get; set; }
         public DbSet<HungerGameHistory> HungerGameHistories { get; set; }
         public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
         public DbSet<HungerGameStatus> HungerGameStatus { get; set; }
@@ -570,6 +567,164 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.EventChannel).HasConversion<long>();
                 x.Property(e => e.SignUpChannel).HasConversion<long>();
+            });
+            modelBuilder.Entity<HungerGameDefault>(x =>
+            {
+                x.HasKey(e => e.Id);
+                x.Property(e => e.Id).HasConversion<long>();
+                x.HasData(new List<HungerGameDefault>
+                {
+                    new HungerGameDefault
+                    {
+                        Id = 1,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 2,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 3,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 4,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 5,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 6,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 7,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 8,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 9,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 10,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 11,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 12,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 13,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 14,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 15,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 16,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 17,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 18,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 19,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 20,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 21,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 22,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 23,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 24,
+                        Name = "",
+                        Avatar = ""
+                    },
+                    new HungerGameDefault
+                    {
+                        Id = 25,
+                        Name = "",
+                        Avatar = ""
+                    }
+                });
             });
         }
 
