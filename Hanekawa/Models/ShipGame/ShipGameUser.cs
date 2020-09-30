@@ -1,7 +1,7 @@
 ﻿using Disqord;
 using Hanekawa.Database.Tables.BotGame;
 
-namespace Hanekawa.Models
+namespace Hanekawa.Models.ShipGame
 {
     public class ShipGameUser
     {

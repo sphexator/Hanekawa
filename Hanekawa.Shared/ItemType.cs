@@ -3,6 +3,7 @@
     public enum ItemType
     {
         ServerRole,
+        HungerGame,
         Food,
         Potion,
         Flask,
