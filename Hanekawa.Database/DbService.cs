@@ -106,6 +106,7 @@ namespace Hanekawa.Database
 
         // Hunger Games
         public DbSet<HungerGame> HungerGames { get; set; }
+        public DbSet<HungerGameCustomChar> HungerGameCustomChars { get; set; }
         public DbSet<HungerGameDefault> HungerGameDefaults { get; set; }
         public DbSet<HungerGameHistory> HungerGameHistories { get; set; }
         public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
@@ -611,10 +612,18 @@ namespace Hanekawa.Database
                 x.Property(e => e.EventChannel).HasConversion<long>();
                 x.Property(e => e.SignUpChannel).HasConversion<long>();
             });
+            modelBuilder.Entity<HungerGameCustomChar>(x =>
+            {
+                x.HasKey(e => new {e.Id, e.GuildId});
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.Id).HasConversion<long>();
+                x.Property(e => e.GuildId).HasConversion<long>();
+            });
             modelBuilder.Entity<HungerGameDefault>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).HasConversion<long>();
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.HasData(new List<HungerGameDefault>
                 {
                     new HungerGameDefault
