@@ -108,7 +108,6 @@ namespace Hanekawa.Database
         public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
         public DbSet<HungerGameStatus> HungerGameStatus { get; set; }
 
-
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -577,152 +576,152 @@ namespace Hanekawa.Database
                     new HungerGameDefault
                     {
                         Id = 1,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Dia",
+                        Avatar = "https://i.imgur.com/XMjW8Qn.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 2,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Kanan",
+                        Avatar = "https://i.imgur.com/7URjbvT.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 3,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Yoshiko",
+                        Avatar = "https://i.imgur.com/tPDON9P.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 4,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Kongou",
+                        Avatar = "https://i.imgur.com/dcB1loo.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 5,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Haruna",
+                        Avatar = "https://i.imgur.com/7GC7FvJ.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 6,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Yamato",
+                        Avatar = "https://i.imgur.com/8748bUL.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 7,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Akagi",
+                        Avatar = "https://i.imgur.com/VLsezdF.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 8,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Kaga",
+                        Avatar = "https://i.imgur.com/eyt9k8E.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 9,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Zero Two",
+                        Avatar = "https://i.imgur.com/4XYg6ch.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 10,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Echidna",
+                        Avatar = "https://i.imgur.com/Nl6WsbP.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 11,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Emilia",
+                        Avatar = "https://i.imgur.com/kF9b4SJ.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 12,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Rem",
+                        Avatar = "https://i.imgur.com/y3bb8Sk.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 13,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Ram",
+                        Avatar = "https://i.imgur.com/5CcdVBE.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 14,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Gura",
+                        Avatar = "https://i.imgur.com/0VYBYEg.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 15,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Shiki",
+                        Avatar = "https://i.imgur.com/rYa5iYc.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 16,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Chika",
+                        Avatar = "https://i.imgur.com/PT8SsVB.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 17,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Sora",
+                        Avatar = "https://i.imgur.com/5xR0ImK.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 18,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Nobuna",
+                        Avatar = "https://i.imgur.com/U0NlfJd.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 19,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Akame",
+                        Avatar = "https://i.imgur.com/CI9Osi5.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 20,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Shiina",
+                        Avatar = "https://i.imgur.com/GhSG97V.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 21,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Bocchi",
+                        Avatar = "https://i.imgur.com/VyJf95i.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 22,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Enterprise",
+                        Avatar = "https://i.imgur.com/bv5ao8Z.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 23,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Chocola",
+                        Avatar = "https://i.imgur.com/HoNwKi9.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 24,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Vanilla",
+                        Avatar = "https://i.imgur.com/aijxHla.png"
                     },
                     new HungerGameDefault
                     {
                         Id = 25,
-                        Name = "",
-                        Avatar = ""
+                        Name = "Shiro",
+                        Avatar = "https://i.imgur.com/Wxhd5WY.png"
                     }
                 });
             });
