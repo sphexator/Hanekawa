@@ -140,8 +140,8 @@ namespace Hanekawa.Bot.Services.Mvp
                 }
                 try
                 {
-                    await db.Database.ExecuteSqlRawAsync("UPDATE Accounts" +
-                                                         "SET MvpCount = 0" +
+                    await db.Database.ExecuteSqlRawAsync("UPDATE Accounts " +
+                                                         "SET MvpCount = 0 " +
                                                          $"WHERE GuildId = {x.GuildId}");
                 }
                 catch (Exception e)
