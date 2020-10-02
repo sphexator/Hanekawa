@@ -20,12 +20,12 @@ namespace Hanekawa.Database.Extensions
                 GuildId = guildId,
                 SignUpChannel = null,
                 EventChannel = null,
-                EmoteMessageFormat = null,
+                EmoteMessageFormat = "<:Rooree:761209568365248513>",
                 Stage = HungerGameStage.Closed,
                 SignUpStart = DateTimeOffset.UtcNow,
                 SignUpMessage = null,
                 GameId = null,
-
+                
                 ExpReward = 0,
                 CreditReward = 0,
                 SpecialCreditReward = 0,

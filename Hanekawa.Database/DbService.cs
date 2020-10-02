@@ -611,6 +611,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.EventChannel).HasConversion<long>();
                 x.Property(e => e.SignUpChannel).HasConversion<long>();
+                x.Property(e => e.RoleReward).HasConversion<long>();
             });
             modelBuilder.Entity<HungerGameCustomChar>(x =>
             {
