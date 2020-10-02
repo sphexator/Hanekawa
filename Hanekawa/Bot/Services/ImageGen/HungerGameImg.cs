@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Extensions;
@@ -32,17 +30,18 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             var result = new MemoryStream();
-            using (var img = new Image<Rgba32>(550, GetImageHeight(alive)))
+            using (var img = new Image<Rgba32>(550, GetImageHeight(alive, out var iterate)))
             {
                 var width = 0;
                 var height = 0;
                 var seat = 0;
                 var row = 0;
-                for (var i = 0; i < profile.Count; i++)
+                for (var i = 0; i < iterate; i++)
                 {
                     var x = profile[i];
                     var points = GetBorderPointers(width, height);
-                    var hpBar = GetHeathBar(width, height, x.AfterProfile.Health);
+                    var afterhpBar = GetHeathBar(width, height, x.AfterProfile.Health);
+                    var beforehpBar = GetHeathBar(width, height, x.BeforeProfile.Health);
                     var avi = await GetAvatarAsync(x.AfterProfile.Avatar, new Size(80, 80));
                     if (x.AfterProfile.Health <= 0 && x.AfterProfile.Alive) x.AfterProfile.Alive = false;
 
@@ -64,8 +63,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                         .DrawImage(avi, new Point(20 + 108 * width, 6 + 111 * height),
                             new GraphicsOptions {Antialias = true})
                         .FillPolygon(new SolidBrush(new Color(new Rgb24(30, 30, 30))), points));
-                    if (x.AfterProfile.Alive)
-                        img.Mutate(a => a.FillPolygon(new SolidBrush(new Color(new Rgb24(46, 204, 113))), hpBar));
+                    if (x.BeforeProfile.Alive)
+                    {
+                        img.Mutate(a => a.FillPolygon(new SolidBrush(Color.Red), beforehpBar));
+                        if(x.AfterProfile.Alive) img.Mutate(a => a.FillPolygon(new SolidBrush(new Color(new Rgb24(46, 204, 113))), afterhpBar));
+                    }
 
                     // Health text drawing
                     var healthTextLocation = GetHealthTextLocation(width, height);
@@ -132,16 +134,36 @@ namespace Hanekawa.Bot.Services.ImageGen
         {
             const int starterWidth = 10;
             const int spacerWidth = 108;
-            const int starterHeight = 88;
+            const int starterHeight = 85;
             const int spacerHeight = 111;
 
             return new PointF(starterWidth + seat * spacerWidth, starterHeight + row * spacerHeight);
         }
 
-        private static int GetImageHeight(int amount) =>
-            amount <= 5 ? 106 :
-            amount <= 10 ? 207 :
-            amount <= 15 ? 308 :
-            amount <= 20 ? 409 : 510;
+        private static int GetImageHeight(int amount, out int iterate)
+        {
+            if (amount <= 5)
+            {
+                iterate = 5;
+                return 110;
+            }
+            if (amount <= 10)
+            {
+                iterate = 10;
+                return 220;
+            }
+            if (amount <= 15)
+            {
+                iterate = 15;
+                return 330;
+            }
+            if (amount <= 20)
+            {
+                iterate = 20;
+                return 440;
+            }
+            iterate = 25;
+            return 550;
+        }
     }
 }
