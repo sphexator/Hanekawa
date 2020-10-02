@@ -23,6 +23,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -53,6 +56,7 @@ namespace Hanekawa
                 x.UseNpgsql(Configuration["connectionString"]);
                 x.EnableDetailedErrors(true);
                 x.EnableSensitiveDataLogging(false);
+                x.UseLoggerFactory(MyLoggerFactory);
             });
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
@@ -124,6 +128,16 @@ namespace Hanekawa
             QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
             QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
         }
+
+        private static readonly ILoggerFactory MyLoggerFactory
+            = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddFilter((category, level) =>
+                        category == DbLoggerCategory.Update.Name
+                        && level == Microsoft.Extensions.Logging.LogLevel.Information)
+                    .AddConsole();
+            });
 
         private LoggingConfiguration ConfigureNLog()
         {
