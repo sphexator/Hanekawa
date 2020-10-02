@@ -24,7 +24,29 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             for (var i = 0; i < participants.Count; i++)
             {
                 var x = participants[i];
-                var result = new UserAction { BeforeProfile = x };
+                var result = new UserAction { BeforeProfile = new HungerGameProfile
+                {
+                    GuildId = x.GuildId,
+                    UserId = x.UserId,
+                    Bot = x.Bot,
+                    Name = x.Name,
+                    Avatar = x.Avatar,
+                    Alive = x.Alive,
+                    Health = x.Health,
+                    Stamina = x.Stamina,
+                    Bleeding = x.Bleeding,
+                    Hunger = x.Hunger,
+                    Thirst = x.Thirst,
+                    Tiredness = x.Tiredness,
+                    Move = x.Move,
+                    Food = x.Food,
+                    Water = x.Water,
+                    FirstAid = x.FirstAid,
+                    Weapons = x.Weapons,
+                    MeleeWeapon = x.MeleeWeapon,
+                    RangeWeapon = x.RangeWeapon,
+                    Bullets = x.Bullets
+                } };
                 if (!x.Alive)
                 {
                     result.AfterProfile = x;
@@ -67,6 +89,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
 
                 result.AfterProfile = x;
+                result.Action = hgEvent;
                 results.Add(result);
             }
 
