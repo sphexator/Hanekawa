@@ -8,48 +8,59 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
     {
         public string Attack(HungerGameProfile participant, List<HungerGameProfile> targets)
         {
-            var alive = targets.Where(x => x.Alive && x.Health > 0);
-            var target =  targets[_random.Next(alive.Count())];
+            var alive = targets.Where(x => x.Alive && x.Health > 0).ToList();
+            HungerGameProfile target = null;
+            while (target == null)
+            {
+                var check = targets[_random.Next(alive.Count)];
+                if (check.UserId != participant.UserId) target = check;
+            }
             int dmg;
             var criticalChance = _random.Next(100);
             if (participant.RangeWeapon > 0 && participant.Bullets > 0)
             {
                 participant.Bullets--;
                 dmg = _random.Next(30, 61);
-                if (criticalChance <= 20) dmg *= 2;
+                if (criticalChance <= 20 && !participant.Bot) dmg *= 2;
+                if (target.Bot) dmg *= 2;
+                if (participant.Bot) dmg /= 2;
                 if (target.Health - dmg <= 0)
                 {
                     target.Health = 0;
                     target.Alive = false;
-                    return $"Shot and killed {target.Name} with a bow";
+                    return $"Shot and killed **{target.Name}** with a bow";
                 }
                 target.Health -= dmg;
-                return $"Shot {target.Name} with a bow";
+                return $"Shot **{target.Name}** with a bow";
             }
 
             if (participant.MeleeWeapon > 0)
             {
                 dmg = _random.Next(10, 21);
-                if (criticalChance <= 20) dmg *= 2;
+                if (criticalChance <= 20 && !participant.Bot) dmg *= 2;
+                if (target.Bot) dmg *= 2;
+                if (participant.Bot) dmg /= 2;
                 if (target.Health - dmg <= 0)
                 {
                     target.Health = 0;
                     target.Alive = false;
-                    return $"Slammed and killed {target.Name} with a hammer";
+                    return $"Slammed and killed **{target.Name}** with a hammer";
                 }
                 target.Health -= dmg;
-                return $"Slammed {target.Name} with a hammer";
+                return $"Slammed **{target.Name}** with a hammer";
             }
 
             dmg = _random.Next(5, 11);
+            if (target.Bot) dmg *= 2;
+            if (participant.Bot) dmg /= 2;
             if (target.Health - dmg <= 0)
             {
                 target.Health = 0;
                 target.Alive = false;
-                return $"Bitch slapped and killed {target.Name}";
+                return $"Bitch slapped and killed **{target.Name}**";
             }
             target.Health -= dmg;
-            return $"Bitch slapped {target.Name}";
+            return $"Bitch slapped **{target.Name}*";
         }
     }
 }
