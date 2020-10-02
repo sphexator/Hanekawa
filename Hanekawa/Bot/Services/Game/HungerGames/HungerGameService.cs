@@ -42,6 +42,25 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             _client.ReactionAdded += AddParticipant;
             _client.ReactionRemoved += RemoveParticipant;
             _client.MemberLeft += RemoveParticipant;
+            _client.MemberUpdated += UpdateNameAndAvatar;
+        }
+
+        private Task UpdateNameAndAvatar(MemberUpdatedEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                var status = await db.HungerGameStatus.FindAsync(e.NewMember.Guild.Id.RawValue);
+                if (status == null) return;
+                var profile =
+                    await db.HungerGameProfiles.FindAsync(e.NewMember.Guild.Id.RawValue, e.NewMember.Id.RawValue);
+                if (profile == null) return;
+                profile.Name = e.NewMember.Name;
+                profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
+                await db.SaveChangesAsync();
+            });
+            return Task.CompletedTask;
         }
 
         private Task AddParticipant(ReactionAddedEventArgs e)
@@ -56,14 +75,16 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var status = await db.HungerGameStatus.FindAsync(user.Guild.Id.RawValue);
                 if (status == null) return;
                 if (status.Stage != HungerGameStage.Signup) return;
+                if (!LocalCustomEmoji.TryParse(status.EmoteMessageFormat, out var result)) return;
+                if (e.Emoji.MessageFormat != result.MessageFormat) return;
                 var dbUser = await db.HungerGameProfiles.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
                 if (dbUser != null) return;
                 await db.HungerGameProfiles.AddAsync(new HungerGameProfile
                 {
                     GuildId = user.Guild.Id.RawValue,
                     UserId = user.Id.RawValue,
-                    Name = null,
-                    Avatar = null,
+                    Name = user.Name,
+                    Avatar = user.GetAvatarUrl(ImageFormat.Png),
                     Bot = false,
                     Alive = true,
                     Health = 100,
@@ -163,9 +184,10 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             if (!LocalCustomEmoji.TryParse(cfg.EmoteMessageFormat, out var result)) return;
             if (!cfg.SignUpChannel.HasValue) return;
             cfg.Stage = HungerGameStage.Signup;
-            await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(
+            var msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(
                 "New Hunger Game event has started!\n" +
                 $"To enter, react to this message with {result} !");
+            await msg.AddReactionAsync(result);
             await db.SaveChangesAsync();
         }
 
@@ -199,16 +221,15 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                                 sb.Append($"{name} - ");
                                 break;
                         }
-
-                        sb.AppendLine();
                         i++;
                     }
 
+                    sb.AppendLine();
                     if (sb.Length < 1800) continue;
                     messages.Add(sb.ToString());
                     sb.Clear();
                 }
-
+                if(sb.Length > 0) messages.Add(sb.ToString());
                 var guild = _client.GetGuild(cfg.GuildId);
                 var channel = guild.GetTextChannel(cfg.SignUpChannel.Value);
                 if (channel != null)
@@ -229,7 +250,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
 
             await db.HungerGames.AddAsync(new Database.Tables.Account.HungerGame.HungerGame
             {
-                Id = new Guid(),
+                Id = Guid.NewGuid(),
                 GuildId = cfg.GuildId,
                 Alive = participants.Count,
                 Participants = participants.Count,
@@ -268,7 +289,9 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var x = result[i];
                 if(!x.BeforeProfile.Alive) continue;
                 if(x.Message.IsNullOrWhiteSpace()) continue;
-                var msg = $"{guild.GetMember(x.AfterProfile.UserId).Mention ?? "User Left Server"}: {x.Message}";
+                var msg = !x.AfterProfile.Bot 
+                    ? $"{guild.GetMember(x.AfterProfile.UserId).Mention ?? "User Left Server"}: {x.Message}" 
+                    : $"**{x.AfterProfile.Name}**: {x.Message}";
                 if (sb.Length + msg.Length >= 2000)
                 {
                     messages.Add(sb.ToString());
@@ -277,25 +300,26 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 else sb.AppendLine(msg);
             }
+            if(sb.Length > 0) messages.Add(sb.ToString());
 
             // Generate banners
             var tempPart = result.ToList();
             var images = new List<Stream>();
-            for (var i = 0; i < Math.Ceiling((double)(alive / 25)); i++)
+            
+            var imgCount = Math.Ceiling((double) (alive / 25));
+            if (imgCount == 0) imgCount = 1;
+            var channel = guild.GetTextChannel(cfg.EventChannel.Value);
+            // Make and send images
+            for (var i = 0; i < imgCount; i++)
             {
                 var toTake = tempPart.Count >= 25 ? 25 : tempPart.Count;
-                var amount = tempPart.Take(toTake).ToList();
+                var amount = tempPart.Take(toTake).OrderByDescending(x => x.BeforeProfile.Alive).ToList();
                 tempPart.RemoveRange(0, toTake);
-                images.Add(await _image.GenerateEventImageAsync(amount, amount.Count(x => x.AfterProfile.Alive)));
-            }
-            
-            // Send Images
-            var channel = guild.GetTextChannel(cfg.EventChannel.Value);
-            for (var i = 0; i < images.Count; i++)
-            {
-                await channel.SendMessageAsync(new LocalAttachment(images[i], "HungerGame.png", false), null, false,
+                var image = await _image.GenerateEventImageAsync(amount, alive);
+                await channel.SendMessageAsync(new LocalAttachment(image, "HungerGame.png", false), null, false,
                     null, LocalMentions.None);
             }
+
             // Send Text
             for (var i = 0; i < messages.Count; i++)
             {
@@ -309,7 +333,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             if (resultAlive > 1) return;
             CachedMember user = null;
             var winner = result.FirstOrDefault(x => x.AfterProfile.Alive);
-            if (winner != null)
+            if (winner != null && !winner.AfterProfile.Bot)
             {
                 user = guild.GetMember(winner.AfterProfile.UserId); 
                 var userData = await db.GetOrCreateUserData(winner.AfterProfile.GuildId, winner.AfterProfile.UserId);
@@ -325,9 +349,13 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             }
             var announce = guild.GetTextChannel(cfg.SignUpChannel.Value);
             var stringBuilder = new StringBuilder();
-            if (user == null)
+            if (user == null && !winner.AfterProfile.Bot)
             {
                 stringBuilder.AppendLine("Couldn't find the winner soooo... new Hunger Game soon !");
+            }
+            else if (winner.AfterProfile.Bot)
+            {
+                stringBuilder.AppendLine($"{winner.AfterProfile.Name} is the new Hunger Game Champion, unfortently its a bot so no rewards!");
             }
             else
             {
@@ -339,16 +367,24 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 if (cfg.SpecialCreditReward > 0) stringBuilder.AppendLine(await _currency.ToCurrency(db, cfg.GuildId, cfg.SpecialCreditReward, true));
                 if (role != null) stringBuilder.AppendLine($"{role.Mention} role");
             }
+
             await announce.SendMessageAsync(stringBuilder.ToString(), false, null, LocalMentions.None);
-            await db.HungerGameHistories.AddAsync(new HungerGameHistory
+            try
             {
-                GameId = cfg.GameId.Value,
-                GuildId = cfg.GuildId,
-                Winner = winner.AfterProfile.UserId,
-                CreditReward = cfg.CreditReward,
-                SpecialCreditReward = cfg.SpecialCreditReward,
-                ExpReward = cfg.ExpReward
-            });
+                await db.HungerGameHistories.AddAsync(new HungerGameHistory
+                {
+                    GameId = cfg.GameId.Value,
+                    GuildId = cfg.GuildId,
+                    Winner = winner.AfterProfile.UserId,
+                    CreditReward = cfg.CreditReward,
+                    SpecialCreditReward = cfg.SpecialCreditReward,
+                    ExpReward = cfg.ExpReward
+                });
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, $"(Hunger Game Service) Couldn't add game history - {e.Message}");
+            }
             db.HungerGameProfiles.RemoveRange(participants);
             db.HungerGames.Remove(game);
             cfg.Stage = HungerGameStage.Closed;
@@ -385,10 +421,17 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
 
         private async Task<List<HungerGameProfile>> AddDefaultUsers(DbService db, ulong guildId)
         {
+            var toAdd = 0;
             var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guildId).ToListAsync();
-            var toAdd = (Convert.ToInt32(25 * Math.Ceiling((double) (profiles.Count / 25))) - profiles.Count);
-            if (toAdd < 0)
-                toAdd = Convert.ToInt32(25 * Math.Ceiling((double) ((profiles.Count + 13) / 25))) - profiles.Count;
+            if (profiles.Count == 0) toAdd = 25;
+            else if (profiles.Count <= 25) toAdd = 25 - profiles.Count;
+            else
+            {
+                toAdd = (Convert.ToInt32(25 * Math.Ceiling((double) (profiles.Count / 25))) - profiles.Count);
+                if (toAdd < 0)
+                    toAdd = Convert.ToInt32(25 * Math.Ceiling((double) ((profiles.Count + 13) / 25))) - profiles.Count;
+            }
+
             var defaults = await db.HungerGameDefaults.Take(toAdd).ToListAsync();
             var toAddefaults = new List<HungerGameProfile>();
             for (var i = 0; i < defaults.Count; i++)
