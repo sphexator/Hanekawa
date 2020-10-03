@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Services.Experience;
@@ -71,10 +68,9 @@ namespace Hanekawa.Bot.Services.Welcome
                         if (msg == null) return;
                         message = await channel.SendMessageAsync(msg);
                     }
-
                     var del = DeleteWelcomeAsync(message, cfg);
                     var exp = WelcomeRewardAsync(_client, channel, cfg, db);
-                    await Task.WhenAll(del, exp);
+                    await Task.WhenAny(del, exp);
                     _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                 }
                 catch (Exception exception)
@@ -137,9 +133,16 @@ namespace Hanekawa.Bot.Services.Welcome
 
         private async Task DeleteWelcomeAsync(IMessage msg, WelcomeConfig cfg)
         {
-            if (!cfg.TimeToDelete.HasValue) return;
-            await Task.Delay(cfg.TimeToDelete.Value);
-            await msg.DeleteAsync();
+            try
+            {
+                if (!cfg.TimeToDelete.HasValue) return;
+                await Task.Delay(cfg.TimeToDelete.Value);
+                await msg.DeleteAsync();
+            }
+            catch (Exception e)
+            {
+                _log.LogAction(LogLevel.Error, e, $"(Welcome Service) Couldn't delete banner in {cfg.GuildId}");
+            }
         }
 
         private Task LeftGuild(LeftGuildEventArgs e)
