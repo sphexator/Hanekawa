@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Services.Mvp
                             }
                         }
 
-                        var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active)
+                        var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active && !e.MvpOptOut)
                             .OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count * 2).ToListAsync();
                         for (var j = 0; j < mvpConfig.Count; j++)
                         {
@@ -140,8 +140,8 @@ namespace Hanekawa.Bot.Services.Mvp
                 }
                 try
                 {
-                    await db.Database.ExecuteSqlRawAsync("UPDATE Accounts" +
-                                                         "SET MvpCount = 0" +
+                    await db.Database.ExecuteSqlRawAsync("UPDATE Accounts " +
+                                                         "SET MvpCount = 0 " +
                                                          $"WHERE GuildId = {x.GuildId}");
                 }
                 catch (Exception e)

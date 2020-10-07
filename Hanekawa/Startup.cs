@@ -12,6 +12,7 @@ using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Anime;
 using Hanekawa.Bot.Services.Boost;
+using Hanekawa.Bot.Services.Game.HungerGames;
 using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
@@ -23,6 +24,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -53,6 +57,7 @@ namespace Hanekawa
                 x.UseNpgsql(Configuration["connectionString"]);
                 x.EnableDetailedErrors(true);
                 x.EnableSensitiveDataLogging(false);
+                x.UseLoggerFactory(MyLoggerFactory);
             });
             services.AddSingleton(new Random());
             services.AddSingleton(new HttpClient());
@@ -60,6 +65,7 @@ namespace Hanekawa
             services.UseQuartz(typeof(WarnService));
             services.UseQuartz(typeof(MvpService));
             services.UseQuartz(typeof(BoostService));
+            services.UseQuartz(typeof(HungerGameService));
 
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
@@ -123,7 +129,18 @@ namespace Hanekawa
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
             QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
+            QuartzExtension.StartCronJob<HungerGameService>(scheduler, "0 0 0/6 1/1 * ? *");
         }
+
+        private static readonly ILoggerFactory MyLoggerFactory
+            = LoggerFactory.Create(builder =>
+            {
+                builder
+                    .AddFilter((category, level) =>
+                        category == DbLoggerCategory.Update.Name
+                        && level == Microsoft.Extensions.Logging.LogLevel.Information)
+                    .AddConsole();
+            });
 
         private LoggingConfiguration ConfigureNLog()
         {

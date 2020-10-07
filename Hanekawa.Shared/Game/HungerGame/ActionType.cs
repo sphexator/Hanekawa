@@ -1,12 +1,15 @@
-﻿namespace Hanekawa.HungerGames.Entity
+﻿namespace Hanekawa.Shared.Game.HungerGame
 {
     public enum ActionType
     {
         Loot,
         Attack,
         Idle,
+        Meet,
         Hack,
         Die,
-        Sleep
+        Sleep,
+        Eat,
+        None
     }
 }

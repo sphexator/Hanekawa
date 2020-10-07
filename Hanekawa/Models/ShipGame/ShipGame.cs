@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Models
+﻿namespace Hanekawa.Models.ShipGame
 {
     public class ShipGame
     {
