@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
+using Disqord.Rest;
 using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
@@ -49,16 +50,23 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             _ = Task.Run(async () =>
             {
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.NewMember.Guild.Id.RawValue);
-                if (status == null) return;
-                var profile =
-                    await db.HungerGameProfiles.FindAsync(e.NewMember.Guild.Id.RawValue, e.NewMember.Id.RawValue);
-                if (profile == null) return;
-                profile.Name = e.NewMember.Name;
-                profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
-                await db.SaveChangesAsync();
+                try
+                {
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var status = await db.HungerGameStatus.FindAsync(e.NewMember.Guild.Id.RawValue);
+                    if (status == null) return;
+                    var profile =
+                        await db.HungerGameProfiles.FindAsync(e.NewMember.Guild.Id.RawValue, e.NewMember.Id.RawValue);
+                    if (profile == null) return;
+                    profile.Name = e.NewMember.Name;
+                    profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when updating participant avatar or name - {exception.Message}");
+                }
             });
             return Task.CompletedTask;
         }
@@ -70,39 +78,46 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 if (!e.User.HasValue) return;
                 if (e.User.Value.IsBot) return;
                 if (!(e.User.Value is CachedMember user)) return;
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(user.Guild.Id.RawValue);
-                if (status == null) return;
-                if (status.Stage != HungerGameStage.Signup) return;
-                if (!LocalCustomEmoji.TryParse(status.EmoteMessageFormat, out var result)) return;
-                if (e.Emoji.MessageFormat != result.MessageFormat) return;
-                var dbUser = await db.HungerGameProfiles.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
-                if (dbUser != null) return;
-                await db.HungerGameProfiles.AddAsync(new HungerGameProfile
+                try
                 {
-                    GuildId = user.Guild.Id.RawValue,
-                    UserId = user.Id.RawValue,
-                    Name = user.Name,
-                    Avatar = user.GetAvatarUrl(ImageFormat.Png),
-                    Bot = false,
-                    Alive = true,
-                    Health = 100,
-                    Stamina = 100,
-                    Bleeding = false,
-                    Hunger = 100,
-                    Thirst = 100,
-                    Tiredness = 0,
-                    Move = 0,
-                    Water = 0,
-                    Bullets = 0,
-                    FirstAid = 0,
-                    Food = 0,
-                    MeleeWeapon = 0,
-                    RangeWeapon = 0,
-                    Weapons = 0
-                });
-                await db.SaveChangesAsync();
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var status = await db.HungerGameStatus.FindAsync(user.Guild.Id.RawValue);
+                    if (status == null) return;
+                    if (status.Stage != HungerGameStage.Signup) return;
+                    if (!LocalCustomEmoji.TryParse(status.EmoteMessageFormat, out var result)) return;
+                    if (e.Emoji.MessageFormat != result.MessageFormat) return;
+                    var dbUser = await db.HungerGameProfiles.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
+                    if (dbUser != null) return;
+                    await db.HungerGameProfiles.AddAsync(new HungerGameProfile
+                    {
+                        GuildId = user.Guild.Id.RawValue,
+                        UserId = user.Id.RawValue,
+                        Name = user.Name,
+                        Avatar = user.GetAvatarUrl(ImageFormat.Png),
+                        Bot = false,
+                        Alive = true,
+                        Health = 100,
+                        Stamina = 100,
+                        Bleeding = false,
+                        Hunger = 100,
+                        Thirst = 100,
+                        Tiredness = 0,
+                        Move = 0,
+                        Water = 0,
+                        Bullets = 0,
+                        FirstAid = 0,
+                        Food = 0,
+                        MeleeWeapon = 0,
+                        RangeWeapon = 0,
+                        Weapons = 0
+                    });
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when adding user - {exception.Message}");
+                }
             });
             return Task.CompletedTask;
         }
@@ -111,16 +126,23 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             _ = Task.Run(async () =>
             {
-                if (e.User.IsBot) return;
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.Guild.Id.RawValue);
-                if (status == null) return;
-                if (status.Stage != HungerGameStage.Signup) return;
-                var dbUser = await db.HungerGameProfiles.FindAsync(e.Guild.Id.RawValue, e.User.Id.RawValue);
-                if (dbUser == null) return;
-                db.HungerGameProfiles.Remove(dbUser);
-                await db.SaveChangesAsync();
+                try
+                {
+                    if (e.User.IsBot) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var status = await db.HungerGameStatus.FindAsync(e.Guild.Id.RawValue);
+                    if (status == null) return;
+                    if (status.Stage != HungerGameStage.Signup) return;
+                    var dbUser = await db.HungerGameProfiles.FindAsync(e.Guild.Id.RawValue, e.User.Id.RawValue);
+                    if (dbUser == null) return;
+                    db.HungerGameProfiles.Remove(dbUser);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
+                }
             });
             return Task.CompletedTask;
         }
@@ -129,18 +151,25 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             _ = Task.Run(async () =>
             {
-                if (!e.User.HasValue) return;
-                if (e.User.Value.IsBot) return;
-                if (!(e.User.Value is CachedMember user)) return;
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(user.Guild.Id.RawValue);
-                if (status == null) return;
-                if (status.Stage != HungerGameStage.Signup) return;
-                var dbUser = await db.HungerGameProfiles.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
-                if (dbUser == null) return;
-                db.HungerGameProfiles.Remove(dbUser);
-                await db.SaveChangesAsync();
+                try
+                {
+                    if (!e.User.HasValue) return;
+                    if (e.User.Value.IsBot) return;
+                    if (!(e.User.Value is CachedMember user)) return;
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var status = await db.HungerGameStatus.FindAsync(user.Guild.Id.RawValue);
+                    if (status == null) return;
+                    if (status.Stage != HungerGameStage.Signup) return;
+                    var dbUser = await db.HungerGameProfiles.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue);
+                    if (dbUser == null) return;
+                    db.HungerGameProfiles.Remove(dbUser);
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
+                }
             });
             return Task.CompletedTask;
         }
@@ -149,31 +178,38 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             _ = Task.Run(async () =>
             {
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var list = await db.GuildConfigs.Where(x => x.Premium).ToListAsync();
-                foreach (var x in list)
+                try
                 {
-                    var cfg = await db.HungerGameStatus.FindAsync(x.GuildId);
-                    if (cfg == null) continue;
-                    if (!cfg.EventChannel.HasValue) continue;
-                    if (!cfg.SignUpChannel.HasValue) continue;
-                    switch (cfg.Stage)
+                    using var scope = _provider.CreateScope();
+                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                    var list = await db.GuildConfigs.Where(x => x.Premium).ToListAsync();
+                    foreach (var x in list)
                     {
-                        case HungerGameStage.Signup:
-                            await StartGameAsync(cfg, db);
-                            break;
-                        case HungerGameStage.OnGoing:
-                            await NextRoundAsync(cfg, db);
-                            break;
-                        case HungerGameStage.Closed:
-                            await StartSignUpAsync(cfg, db);
-                            break;
-                        default:
-                            continue;
-                    }
+                        var cfg = await db.HungerGameStatus.FindAsync(x.GuildId);
+                        if (cfg == null) continue;
+                        if (!cfg.EventChannel.HasValue) continue;
+                        if (!cfg.SignUpChannel.HasValue) continue;
+                        switch (cfg.Stage)
+                        {
+                            case HungerGameStage.Signup:
+                                await StartGameAsync(cfg, db);
+                                break;
+                            case HungerGameStage.OnGoing:
+                                await NextRoundAsync(cfg, db);
+                                break;
+                            case HungerGameStage.Closed:
+                                await StartSignUpAsync(cfg, db);
+                                break;
+                            default:
+                                continue;
+                        }
 
-                    await db.SaveChangesAsync();
+                        await db.SaveChangesAsync();
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, $"(Hunger Game Service) Error executing Hunger Games - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -183,10 +219,21 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             if (!LocalCustomEmoji.TryParse(cfg.EmoteMessageFormat, out var result)) return;
             if (!cfg.SignUpChannel.HasValue) return;
+            if (result == null) return;
             cfg.Stage = HungerGameStage.Signup;
-            var msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(
-                "New Hunger Game event has started!\n" +
-                $"To enter, react to this message with {result} !");
+            var msgContent = "New Hunger Game event has started!\n" +
+                             $"To enter, react to this message with {result} !";
+            RestUserMessage msg;
+            try
+            {
+                msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(msgContent);
+            }
+            catch
+            {
+                cfg.EmoteMessageFormat = "<:Rooree:761209568365248513>";
+                LocalCustomEmoji.TryParse("<:Rooree:761209568365248513>", out result);
+                msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(msgContent);
+            }
             await msg.AddReactionAsync(result);
             await db.SaveChangesAsync();
         }
