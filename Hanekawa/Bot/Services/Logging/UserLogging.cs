@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Services.Logging
                             x.IsInline = true;
                         });
                     }
-                    else if (before.GetAvatarUrl(ImageFormat.Default, 240) != after.GetAvatarUrl(ImageFormat.Default, 240))
+                    else if (before.GetAvatarUrl() != after.GetAvatarUrl())
                     {
                         embed.Title = "Avatar Change";
                         embed.Description = $"{before} | {before.Id.RawValue}";
