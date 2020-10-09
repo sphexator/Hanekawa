@@ -9,6 +9,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             participant.Water += 10;
             participant.Food += 10;
             participant.FirstAid++;
+            participant.Weapons++;
             participant.MeleeWeapon++;
             participant.RangeWeapon++;
             participant.Bullets += 10;

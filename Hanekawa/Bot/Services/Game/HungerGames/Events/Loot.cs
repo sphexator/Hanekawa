@@ -23,12 +23,14 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             result = _random.Next(range + melee);
             if (result >= range)
             {
+                participant.Weapons++;
                 participant.MeleeWeapon++;
                 return "found a hammer in a crate";
             }
 
             if (participant.RangeWeapon > 0)
             {
+                participant.Weapons++;
                 participant.RangeWeapon++;
                 participant.Bullets += 10;
                 return "found a bow and arrows in a crate";

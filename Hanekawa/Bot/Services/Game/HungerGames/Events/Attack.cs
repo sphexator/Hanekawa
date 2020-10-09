@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
                 return $"Bitch slapped and killed **{target.Name}**";
             }
             target.Health -= dmg;
-            return $"Bitch slapped **{target.Name}*";
+            return $"Bitch slapped **{target.Name}**";
         }
     }
 }
