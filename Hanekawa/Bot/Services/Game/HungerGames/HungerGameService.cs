@@ -242,8 +242,9 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             if(cd == null) cd = cfg.SignUpStart.AddHours(23);
             if (cd >= DateTimeOffset.UtcNow) return false;
+            var guild = _client.GetGuild(cfg.GuildId);
             cfg.Stage = HungerGameStage.OnGoing;
-            var participants = await AddDefaultUsers(db, cfg.GuildId);
+            var participants = await AddDefaultUsers(db, guild);
             if (cfg.SignUpChannel.HasValue)
             {
                 var messages = new List<string>();
@@ -277,7 +278,6 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                     sb.Clear();
                 }
                 if(sb.Length > 0) messages.Add(sb.ToString());
-                var guild = _client.GetGuild(cfg.GuildId);
                 var channel = guild.GetTextChannel(cfg.SignUpChannel.Value);
                 if (channel != null)
                 {
@@ -466,10 +466,48 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             return role;
         }
 
-        private async Task<List<HungerGameProfile>> AddDefaultUsers(DbService db, ulong guildId)
+        private List<HungerGameProfile> AddBoosters(List<HungerGameProfile> participants, CachedGuild guild)
+        {
+            var toReturn = new List<HungerGameProfile>();
+            foreach (var (key, user) in guild.Members.Where(x => x.Value.IsBoosting).ToList())
+            {
+                var check = participants.FirstOrDefault(x => x.UserId == key);
+                if(check == null) continue;
+                toReturn.Add(new HungerGameProfile
+                {
+                    GuildId = user.Guild.Id.RawValue,
+                    UserId = user.Id.RawValue,
+                    Name = user.Name,
+                    Avatar = user.GetAvatarUrl(ImageFormat.Png),
+                    Bot = false,
+                    Alive = true,
+                    Health = 100,
+                    Stamina = 100,
+                    Bleeding = false,
+                    Hunger = 100,
+                    Thirst = 100,
+                    Tiredness = 0,
+                    Move = 0,
+                    Water = 0,
+                    Bullets = 0,
+                    FirstAid = 0,
+                    Food = 0,
+                    MeleeWeapon = 0,
+                    RangeWeapon = 0,
+                    Weapons = 0
+                });
+            }
+
+            return toReturn;
+        }
+
+        private async Task<List<HungerGameProfile>> AddDefaultUsers(DbService db, CachedGuild guild)
         {
             var toAdd = 0;
-            var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guildId).ToListAsync();
+            var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guild.Id.RawValue).ToListAsync();
+            var boosters = AddBoosters(profiles, guild);
+            profiles.AddRange(boosters);
+            await db.HungerGameProfiles.AddRangeAsync(boosters);
             if (profiles.Count == 0) toAdd = 25;
             else if (profiles.Count <= 25) toAdd = 25 - profiles.Count;
             else
@@ -486,7 +524,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var x = defaults[i];
                 toAddefaults.Add(new HungerGameProfile
                 {
-                    GuildId = guildId,
+                    GuildId = guild.Id.RawValue,
                     UserId = x.Id,
                     Name = x.Name,
                     Avatar = x.Avatar,
