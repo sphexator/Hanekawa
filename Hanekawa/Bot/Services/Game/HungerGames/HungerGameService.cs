@@ -260,13 +260,13 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                         switch (j)
                         {
                             case 0:
-                                sb.Append($"{name} ");
+                                sb.Append($"**{name}** ");
                                 break;
                             case 4:
                                 sb.Append(name);
                                 break;
                             default:
-                                sb.Append($"{name} - ");
+                                sb.Append($"**{name}** - ");
                                 break;
                         }
                         i++;
@@ -304,6 +304,9 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 Round = 0
             });
             await db.SaveChangesAsync();
+            var check = await db.HungerGames.FirstOrDefaultAsync(x => x.GuildId == cfg.GuildId);
+            if (check == null) return true;
+            cfg.GameId = check.Id;
             return true;
         }
 
@@ -320,7 +323,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 .ToListAsync();
             var game = await db.HungerGames.FirstOrDefaultAsync(x => x.GuildId == cfg.GuildId);
             var alive = participants.Count(x => x.Alive);
-            
+            cfg.GameId ??= game.Id;
             // Determine each participant event (alive)
             var result = _game.PlayAsync(participants);
             await db.SaveChangesAsync();
@@ -337,7 +340,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 if(!x.BeforeProfile.Alive) continue;
                 if(x.Message.IsNullOrWhiteSpace()) continue;
                 var msg = !x.AfterProfile.Bot 
-                    ? $"{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}: {x.Message}" 
+                    ? $"**{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}**: {x.Message}" 
                     : $"**{x.AfterProfile.Name}**: {x.Message}";
                 if (sb.Length + msg.Length >= 2000)
                 {
@@ -351,7 +354,6 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
 
             // Generate banners
             var tempPart = result.ToList();
-            var images = new List<Stream>();
             
             var imgCount = Math.Ceiling((double) alive / 25);
             if (imgCount == 0) imgCount = 1;
