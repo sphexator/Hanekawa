@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Services.Experience
             return Task.CompletedTask;
         }
 
-        private async Task NewLevelManagerAsync(Account userData, CachedMember user, DbService db)
+        public async Task NewLevelManagerAsync(Account userData, CachedMember user, DbService db)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
             if (roles == null || roles.Count == 0) return;

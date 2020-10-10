@@ -125,7 +125,7 @@ namespace Hanekawa.Bot.Modules.Level
 
         [Name("Level Role Remove")]
         [Command("lr", "lvlremove")]
-        [Description("Adds a role reward")]
+        [Description("Removes a role reward")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task RemoveAsync(int level)
         {
@@ -223,7 +223,23 @@ namespace Hanekawa.Bot.Modules.Level
             };
             await db.LevelRewards.AddAsync(data);
             await db.SaveChangesAsync();
-            await Context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
+            var users = await db.Accounts.Where(x => x.GuildId == role.Guild.Id.RawValue && x.Level >= level && x.Active)
+                .ToListAsync();
+            if (users.Count <= 10)
+            {
+                for (var i = 0; i < users.Count; i++)
+                {
+                    var x = users[i];
+                    var user = role.Guild.GetMember(x.UserId);
+                    if(user == null) continue;
+                    await _exp.NewLevelManagerAsync(users[i], user, db);
+                }
+            }
+
+            if (users.Count > 10) await Context.ReplyAsync($"Added {role.Name} as a lvl{level} reward!", Color.Green);
+            else
+                await Context.ReplyAsync(
+                    $"Added {role.Name} as a lvl{level} reward, and applied to {users.Count} users", Color.Green);
         }
     }
 }
