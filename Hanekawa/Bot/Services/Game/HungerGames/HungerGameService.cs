@@ -337,7 +337,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 if(!x.BeforeProfile.Alive) continue;
                 if(x.Message.IsNullOrWhiteSpace()) continue;
                 var msg = !x.AfterProfile.Bot 
-                    ? $"{guild.GetMember(x.AfterProfile.UserId).Mention ?? "User Left Server"}: {x.Message}" 
+                    ? $"{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}: {x.Message}" 
                     : $"**{x.AfterProfile.Name}**: {x.Message}";
                 if (sb.Length + msg.Length >= 2000)
                 {
@@ -353,7 +353,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             var tempPart = result.ToList();
             var images = new List<Stream>();
             
-            var imgCount = Math.Ceiling((double) (alive / 25));
+            var imgCount = Math.Ceiling((double) alive / 25);
             if (imgCount == 0) imgCount = 1;
             var channel = guild.GetTextChannel(cfg.EventChannel.Value);
             // Make and send images
