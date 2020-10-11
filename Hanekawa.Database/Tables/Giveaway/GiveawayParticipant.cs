@@ -7,6 +7,7 @@ namespace Hanekawa.Database.Tables.Giveaway
         public Guid Id { get; set; }
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
+        public int Amount { get; set; }
         public DateTimeOffset Entry { get; set; }
 
         public Guid GiveawayId { get; set; }
