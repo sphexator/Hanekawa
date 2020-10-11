@@ -32,21 +32,18 @@ namespace Hanekawa.Bot.Services.Drop
             var result = new List<IEmoji>();
             for (var x = 0; x < 4; x++)
             {
-                var emote = emotes[_random.Next(emotes.Count)];
-                if (result.Contains(emote.Value))
+                var (_, emote) = emotes[_random.Next(emotes.Count)];
+                if (result.Contains(emote) || !emote.IsAvailable)
                 {
                     x--;
                     continue;
                 }
-
-                result.Add(emote.Value);
+                result.Add(emote);
             }
 
-            if (_emotes.TryGetValue(guild.Id.RawValue, out var claimEmote))
-            {
-                result.Add(claimEmote);
-            }
-            else result.Add(_emotes.GetOrAdd(guild.Id.RawValue, await GetClaimEmote(guild, db)));
+            result.Add(_emotes.TryGetValue(guild.Id.RawValue, out var claimEmote)
+                ? claimEmote
+                : _emotes.GetOrAdd(guild.Id.RawValue, await GetClaimEmote(guild, db)));
             return result;
         }
 
