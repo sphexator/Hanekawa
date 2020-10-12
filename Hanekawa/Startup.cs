@@ -129,7 +129,7 @@ namespace Hanekawa
             QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
             QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
             QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
-            QuartzExtension.StartCronJob<HungerGameService>(scheduler, "0 0 0/6 1/1 * ? *");
+            QuartzExtension.StartCronJob<HungerGameService>(scheduler, "0 0 0/3 1/1 * ? *");
         }
 
         private static readonly ILoggerFactory MyLoggerFactory

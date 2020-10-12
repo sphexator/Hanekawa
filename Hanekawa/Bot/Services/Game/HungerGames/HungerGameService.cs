@@ -326,9 +326,8 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             cfg.GameId ??= game.Id;
             // Determine each participant event (alive)
             var result = _game.PlayAsync(participants);
-            await db.SaveChangesAsync();
             if (!cfg.EventChannel.HasValue) return;
-            
+
             var sb = new StringBuilder();
             sb.AppendLine($"**Hunger Game Round {game.Round + 1}!**");
             var messages = new List<string>();
