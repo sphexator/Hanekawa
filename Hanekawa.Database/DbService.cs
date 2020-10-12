@@ -38,7 +38,7 @@ namespace Hanekawa.Database
 
         // Giveaway
         public DbSet<Giveaway> Giveaways { get; set; }
-        public DbSet<GiveawayParticipant> Participants { get; set; }
+        public DbSet<GiveawayParticipant> GiveawayParticipants { get; set; }
         public DbSet<GiveawayHistory> GiveawayHistories { get; set; }
 
         // Voice Role
@@ -172,7 +172,21 @@ namespace Hanekawa.Database
                 x.Property(e => e.Creator).HasConversion<long>();
                 x.HasMany(e => e.Participants)
                     .WithOne(e => e.Giveaway)
-                    .HasForeignKey(e => e.GiveawayId);
+                    .HasForeignKey(e => e.GiveawayId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<GiveawayParticipant>(x =>
+            {
+                x.HasKey(e => new {e.Id, e.GuildId, e.UserId});
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
+            });
+            modelBuilder.Entity<GiveawayHistory>(x =>
+            {
+                x.HasKey(e => new {e.Id, e.GuildId});
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Winner).HasConversion<long>();
             });
         }
 

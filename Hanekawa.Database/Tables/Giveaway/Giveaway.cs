@@ -6,16 +6,26 @@ namespace Hanekawa.Database.Tables.Giveaway
 {
     public class Giveaway
     {
-        public Guid Id { get; set; }
-        public int IdNum { get; set; }
-        public ulong GuildId { get; set; }
-        public string Description { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public int IdNum { get; set; } // Number, incremented by number of giveaways in specific guilds
+        public ulong GuildId { get; set; } // Guild
+        public ulong Creator { get; set; } // Who created
+        public bool Active { get; set; } // Is giveaway active
+        public bool Stack { get; set; } = true; // Entries stack?
+
+        // Requirements
+        public int? LevelRequirement { get; set; } = null;
+        public TimeSpan? AccountAgeRequirement { get; set; } = null;
+        public TimeSpan? ServerAgeRequirement { get; set; } = null;
+
+        // Description of giveaway
+        public string Name { get; set; } = "Giveaway";
+        public string Description { get; set; } = "Giveaway for this server";
         public GiveawayType Type { get; set; }
-        public DateTimeOffset CreatedAtOffset { get; set; }
-        public DateTimeOffset? CloseAtOffset { get; set; }
-        public ulong Creator { get; set; }
-        public bool Active { get; set; }
-        public bool Stack { get; set; }
+        
+        // Timestamps
+        public DateTimeOffset CreatedAtOffset { get; set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset? CloseAtOffset { get; set; } = null;
 
         public virtual List<GiveawayParticipant> Participants { get; set; }
     }
