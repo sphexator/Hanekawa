@@ -8,10 +8,13 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Advertise;
+using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Models;
+using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Utility;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
@@ -44,7 +47,8 @@ namespace Hanekawa.Controllers
                 // Check if header has right agent
                 if (!Request.Headers.TryGetValue("User-Agent", out var agent)) return BadRequest();
                 if (!agent.Contains("DBL")) return BadRequest(); // If not send bad request, only accepting DBL user agents
-                                                                 // Check if user has a authorization in the header, else return forbidden, we only accept requests with an authorization in the header
+                                                                 // Check if user has a authorization in the header, else return forbidden
+                                                                 // we only accept requests with an authorization in the header
                 if (!Request.Headers.TryGetValue("Authorization", out var authCode)) return Unauthorized("No authorization header");
                 var guildId = Convert.ToUInt64(model.Guild);
                 var cfg = await _db.DblAuths.FindAsync(guildId); // Get the key from database
@@ -80,7 +84,6 @@ namespace Hanekawa.Controllers
                     Type = model.Type,
                     Time = DateTimeOffset.UtcNow
                 });
-                await _db.SaveChangesAsync();
 
                 var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
                 if (logCfg.LogAvi.HasValue)
@@ -96,6 +99,29 @@ namespace Hanekawa.Controllers
                     }.Build());
                 }
                 _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
+
+                var giveaways = await _db.Giveaways
+                    .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync();
+                if (giveaways.Count > 0 && user != null)
+                {
+                    for (var i = 0; i < giveaways.Count; i++)
+                    {
+                        var x = giveaways[i];
+                        if(!x.Active) continue;
+                        if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value >= DateTimeOffset.UtcNow) continue;
+                        await _db.GiveawayParticipants.AddAsync(new GiveawayParticipant
+                        {
+                            Id = Guid.NewGuid(),
+                            GuildId = guildId,
+                            UserId = userId,
+                            GiveawayId = x.Id,
+                            Giveaway = x,
+                            Entry = DateTimeOffset.UtcNow
+                        });
+                    }
+                }
+
+                await _db.SaveChangesAsync();
                 if (cfg.Message.IsNullOrWhiteSpace() && user == null) return Accepted(); // Check if there's a message to be sent, else we good
                 try
                 {
