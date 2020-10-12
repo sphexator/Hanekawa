@@ -1,13 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Extensions.Interactivity;
+using Hanekawa.Bot.Preconditions;
+using Hanekawa.Bot.TypeReaders;
+using Hanekawa.Database;
 using Hanekawa.Extensions;
+using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
+using Humanizer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Giveaway
@@ -23,7 +32,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
         {
             await Context.Message.TryDeleteMessageAsync();
             var stream = new MemoryStream();
-            channel ??= Context.Channel as CachedTextChannel;
+            channel ??= Context.Channel;
             if (channel == null) return;
             if (!(await channel.GetMessageAsync(messageId) is IUserMessage message))
             {
@@ -61,10 +70,176 @@ namespace Hanekawa.Bot.Modules.Giveaway
                 $"Drawing winners for giveaway with reaction {emote}:\n{winners}");
         }
 
+        [Name("Draw")]
+        [Command("draw")]
+        [Description("Draw winner from an active giveaway with provided ID")]
+        [Remarks("draw 2")]
+        [Priority(1)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task DrawWinnerAsync(int id)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var giveaway =
+                await db.Giveaways.Include(x => x.Participants).FirstOrDefaultAsync(x => x.GuildId == Context.Guild.Id.RawValue && x.IdNum == id);
+            if (giveaway == null)
+            {
+                await ReplyAsync(
+                    "Couldn't find a giveaway with that ID, please check the ID in the list to make sure you got the correct one",
+                    Color.Red);
+                return;
+            }
+
+            var rand = Context.ServiceProvider.GetRequiredService<Random>();
+            var winner = new List<CachedMember>();
+            for (var i = 0; i < giveaway.WinnerAmount; i++)
+            {
+                var x = giveaway.Participants[rand.Next(giveaway.Participants.Count)];
+                var user = Context.Guild.GetMember(x.UserId);
+                if (user == null)
+                {
+                    i--;
+                    continue;
+                }
+                winner.Add(user);
+            }
+            
+        }
+
+        [Name("Create Giveaway")]
+        [Command("gwcreate")]
+        [Description("Creates a more advanced giveaway (Top.gg vote or activity based)")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task CreateAsync(GiveawayType type)
+        {
+            var giveaway = new Database.Tables.Giveaway.Giveaway
+            {
+                GuildId = Context.Guild.Id.RawValue,
+                Creator = Context.User.Id.RawValue,
+                CreatedAtOffset = DateTimeOffset.UtcNow,
+                Active = true,
+                Stack = true
+            };
+            var interactive = Context.Bot.GetInteractivity();
+
+            await ReplyAsync("What's the name of the giveaway u wanna do?");
+            var name = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            giveaway.Name = name.Message.Content;
+
+            await ReplyAsync("Description of giveaway?");
+            var description = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            giveaway.Description = description.Message.Content;
+
+            await ReplyAsync("How many winners are gonna be drawn?");
+            var winnerString = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            var isIntW = int.TryParse(winnerString.Message.Content, out var winnerAmount);
+            if (isIntW) giveaway.WinnerAmount = winnerAmount;
+
+            await ReplyAsync("Does entries stack? (y/n) (vote multiple times for multiple entries) ");
+            var stackResponse = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            if (stackResponse.Message.Content.ToLower() == "y" || stackResponse.Message.Content.ToLower() == "yes")
+                giveaway.Stack = true;
+            else giveaway.Stack = false;
+
+            await ReplyAsync("Level requirement?");
+            var levelStr = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            var isInt = int.TryParse(levelStr.Message.Content, out var level);
+            if (isInt) giveaway.LevelRequirement = level;
+            var timeParse = new TimeSpanTypeParser();
+            
+            await ReplyAsync("When does the giveaway end? \n(1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Cancel with 'no'");
+            var timespanStr = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            var timespan = await timeParse.ParseAsync(null, timespanStr.Message.Content, Context);
+            if (timespan.IsSuccessful && timespan.HasValue)
+                giveaway.CloseAtOffset = DateTimeOffset.UtcNow.Add(timespan.Value);
+            
+            await ReplyAsync("Restrict participant to server age? Respond like above to define account age \n1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Cancel with 'no'");
+            var serverAge = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            var serverSpan = await timeParse.ParseAsync(null, serverAge.Message.Content, Context);
+            if (serverSpan.IsSuccessful && serverSpan.HasValue) giveaway.ServerAgeRequirement = serverSpan.Value;
+
+            var embed = new LocalEmbedBuilder
+            {
+                Title = giveaway.Name,
+                Description = giveaway.Description,
+                Timestamp = giveaway.CloseAtOffset,
+                Color = Context.Colour.Get(Context.Guild.Id.RawValue),
+                Footer = new LocalEmbedFooterBuilder {Text = "Giveaway ends in:"}
+            };
+            embed.AddField("Amount of winners", $"{giveaway.WinnerAmount}");
+            embed.AddField("Stack Entries", $"{giveaway.Stack}");
+            if (giveaway.LevelRequirement.HasValue)
+                embed.AddField("Level Requirement", $"{giveaway.LevelRequirement.Value}");
+            if (giveaway.ServerAgeRequirement.HasValue)
+                embed.AddField("Server Age Restriction", $"{giveaway.ServerAgeRequirement.Value.Humanize()}");
+            await ReplyAsync("Does this look good? (y/n)", false, embed.Build());
+            var confirm = await interactive.WaitForMessageAsync(x =>
+                x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
+            if (confirm.Message.Content.ToLower() != "y")
+            {
+                await ReplyAsync("Aborting...");
+                return;
+            }
+
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var idHistory = await db.GiveawayHistories.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue);
+            var idActive = await db.Giveaways.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue);
+            giveaway.IdNum = idActive + idHistory + 1;
+            await db.Giveaways.AddAsync(giveaway);
+            await db.SaveChangesAsync();
+            await ReplyAsync($"Giveaway added with id {giveaway.IdNum}!");
+        }
+
+        [Name("Giveaway List")]
+        [Command("gwlist")]
+        [Description("List of giveaways created")]
+        [RequiredChannel]
+        public async Task ListAsync()
+        {
+            var giveaways = new List<string>();
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var current = await db.Giveaways.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
+            var old = await db.GiveawayHistories.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
+            for (var i = 0; i < current.Count; i++)
+            {
+                var x = current[i];
+                var str = new StringBuilder();
+                str.AppendLine($"Id: {x.IdNum}");
+                str.AppendLine($"Name: {x.Name}");
+                str.AppendLine($"Description: {x.Description}");
+                str.AppendLine($"Created At: {x.CreatedAtOffset.Humanize()}");
+                str.AppendLine(
+                    $"Author: {Context.Guild.GetMember(x.Creator).DisplayName ?? $"User left ({x.Creator})"}");
+                giveaways.Add(str.ToString());
+            }
+
+            for (var i = 0; i < old.Count; i++)
+            {
+                var x = old[i];
+                var str = new StringBuilder();
+                str.AppendLine($"Id: {x.IdNum}");
+                str.AppendLine($"Name: {x.Name}");
+                str.AppendLine($"Description: {x.Description}");
+                str.AppendLine($"Winner: {Context.Guild.GetMember(x.Winner).DisplayName ?? $"User left ({x.Winner})"}");
+                str.AppendLine($"Created At: {x.CreatedAtOffset.Humanize()}");
+                str.AppendLine(
+                    $"Author: {Context.Guild.GetMember(x.Creator).DisplayName ?? $"User left ({x.Creator})"}");
+                giveaways.Add(str.ToString());
+            }
+
+            await Context.PaginatedReply(giveaways, Context.Guild, $"Giveaways in {Context.Guild.Name}");
+        }
+
         private static int GetReactionAmount(IUserMessage message, LocalCustomEmoji emote)
         {
             message.Reactions.TryGetValue(emote, out var reactionData);
-            return reactionData != null ? reactionData.Count : 0;
+            return reactionData?.Count ?? 0;
         }
     }
 }

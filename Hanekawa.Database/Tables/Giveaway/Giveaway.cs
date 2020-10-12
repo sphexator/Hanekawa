@@ -12,6 +12,7 @@ namespace Hanekawa.Database.Tables.Giveaway
         public ulong Creator { get; set; } // Who created
         public bool Active { get; set; } // Is giveaway active
         public bool Stack { get; set; } = true; // Entries stack?
+        public int WinnerAmount { get; set; } = 1;
 
         // Requirements
         public int? LevelRequirement { get; set; } = null;
