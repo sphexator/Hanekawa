@@ -5,7 +5,7 @@
         private readonly string[] _idleStrings = {
             "Climbs a tree",
             "Looks at the sky, pondering about life",
-            "frozen in time",
+            "Frozen in time",
             "Standing still, looking at a tree",
             "Wonders if its possible to do ninjutsu"
         };

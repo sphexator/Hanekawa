@@ -15,7 +15,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             {
                 participant.Food++;
                 participant.Water++;
-                return "found some food and water in a crate";
+                return "Found some food and water in a crate";
             }
 
             const int range = 50;
@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             {
                 participant.Weapons++;
                 participant.MeleeWeapon++;
-                return "found a hammer in a crate";
+                return "Found a hammer in a crate";
             }
 
             if (participant.RangeWeapon > 0)
@@ -33,11 +33,11 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
                 participant.Weapons++;
                 participant.RangeWeapon++;
                 participant.Bullets += 10;
-                return "found a bow and arrows in a crate";
+                return "Found a bow and arrows in a crate";
             }
 
             participant.Bullets += 10;
-            return "found 10 arrows in a crate";
+            return "Found 10 arrows in a crate";
         }
     }
 }

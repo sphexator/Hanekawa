@@ -339,9 +339,11 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var x = result[i];
                 if(!x.BeforeProfile.Alive) continue;
                 if(x.Message.IsNullOrWhiteSpace()) continue;
-                var msg = !x.AfterProfile.Bot 
-                    ? $"**{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}**: {x.Message}" 
-                    : $"**{x.AfterProfile.Name}**: {x.Message}";
+                var msg = $"**{x.AfterProfile.Name}**: {x.Message}";
+
+                // var msg = !x.AfterProfile.Bot 
+                //     ? $"**{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}**: {x.Message}" 
+                // : $"**{x.AfterProfile.Name}**: {x.Message}";
                 if (sb.Length + msg.Length >= 2000)
                 {
                     messages.Add(sb.ToString());
