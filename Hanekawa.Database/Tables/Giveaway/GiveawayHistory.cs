@@ -9,7 +9,7 @@ namespace Hanekawa.Database.Tables.Giveaway
         public int IdNum { get; set; }
         public ulong GuildId { get; set; }
         public ulong Creator { get; set; } // Who created
-        public ulong Winner { get; set; }
+        public ulong[] Winner { get; set; }
 
         public string Name { get; set; } = "Giveaway";
         public string Description { get; set; } = "Giveaway for this server";

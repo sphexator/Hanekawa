@@ -10,6 +10,7 @@ using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.TypeReaders;
 using Hanekawa.Database;
+using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Extensions;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
@@ -90,7 +91,8 @@ namespace Hanekawa.Bot.Modules.Giveaway
             }
 
             var rand = Context.ServiceProvider.GetRequiredService<Random>();
-            var winner = new List<CachedMember>();
+            var winner = new ulong[giveaway.IdNum - 1];
+            var strb = new StringBuilder();
             for (var i = 0; i < giveaway.WinnerAmount; i++)
             {
                 var x = giveaway.Participants[rand.Next(giveaway.Participants.Count)];
@@ -100,9 +102,27 @@ namespace Hanekawa.Bot.Modules.Giveaway
                     i--;
                     continue;
                 }
-                winner.Add(user);
+                winner.SetValue(user.Id.RawValue, i);
+                strb.AppendLine(user.Mention);
             }
-            
+            await ReplyAsync($"Drawing winners for giveaway {giveaway.Name} with ID: {giveaway.IdNum}\n" +
+                             $"{strb}");
+            await db.GiveawayHistories.AddAsync(new GiveawayHistory
+            {
+                Id = giveaway.Id,
+                IdNum = giveaway.IdNum,
+                GuildId = giveaway.GuildId,
+                Creator = giveaway.Creator,
+                Winner = winner,
+                ClosedAtOffset = giveaway.CloseAtOffset ?? DateTimeOffset.UtcNow,
+                CreatedAtOffset = giveaway.CreatedAtOffset,
+                Description = giveaway.Description,
+                Name = giveaway.Name,
+                Type = giveaway.Type
+            });
+            await db.SaveChangesAsync();
+            db.Giveaways.Remove(giveaway);
+            await db.SaveChangesAsync();
         }
 
         [Name("Create Giveaway")]
@@ -212,10 +232,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
                 var str = new StringBuilder();
                 str.AppendLine($"Id: {x.IdNum}");
                 str.AppendLine($"Name: {x.Name}");
-                str.AppendLine($"Description: {x.Description}");
                 str.AppendLine($"Created At: {x.CreatedAtOffset.Humanize()}");
-                str.AppendLine(
-                    $"Author: {Context.Guild.GetMember(x.Creator).DisplayName ?? $"User left ({x.Creator})"}");
                 giveaways.Add(str.ToString());
             }
 
@@ -223,13 +240,9 @@ namespace Hanekawa.Bot.Modules.Giveaway
             {
                 var x = old[i];
                 var str = new StringBuilder();
-                str.AppendLine($"Id: {x.IdNum}");
+                str.AppendLine($"Id: {x.IdNum} (closed)");
                 str.AppendLine($"Name: {x.Name}");
-                str.AppendLine($"Description: {x.Description}");
-                str.AppendLine($"Winner: {Context.Guild.GetMember(x.Winner).DisplayName ?? $"User left ({x.Winner})"}");
                 str.AppendLine($"Created At: {x.CreatedAtOffset.Humanize()}");
-                str.AppendLine(
-                    $"Author: {Context.Guild.GetMember(x.Creator).DisplayName ?? $"User left ({x.Creator})"}");
                 giveaways.Add(str.ToString());
             }
 
