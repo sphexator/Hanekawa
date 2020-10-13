@@ -13,6 +13,7 @@ using Hanekawa.Models;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Utility;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -102,13 +103,31 @@ namespace Hanekawa.Controllers
 
                 var giveaways = await _db.Giveaways
                     .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync();
+                var sb = new StringBuilder();
                 if (giveaways.Count > 0 && user != null)
                 {
+                    sb.AppendLine("Your entry has been registered toward the following giveaways:");
+                    var length = sb.Length;
                     for (var i = 0; i < giveaways.Count; i++)
                     {
                         var x = giveaways[i];
                         if(!x.Active) continue;
                         if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value >= DateTimeOffset.UtcNow) continue;
+                        if (x.ServerAgeRequirement.HasValue &&
+                            user.JoinedAt.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
+                        {
+                            sb.AppendLine(
+                                $"You don't qualify for {x.Name} giveaway, your account has to be in the server for at least {x.ServerAgeRequirement.Value.Humanize()}");
+                            continue;
+                        }
+
+                        if (userData.Level < x.LevelRequirement)
+                        {
+                            sb.AppendLine(
+                                $"You don't qualify for {x.Name} giveaway, you need to be at least of level{x.LevelRequirement} to enter.");
+                            continue;
+                        }
+
                         await _db.GiveawayParticipants.AddAsync(new GiveawayParticipant
                         {
                             Id = Guid.NewGuid(),
@@ -118,7 +137,10 @@ namespace Hanekawa.Controllers
                             Giveaway = x,
                             Entry = DateTimeOffset.UtcNow
                         });
+                        sb.AppendLine($"{x.Name}");
                     }
+
+                    if (sb.Length == length) sb.Clear();
                 }
 
                 await _db.SaveChangesAsync();
@@ -133,7 +155,7 @@ namespace Hanekawa.Controllers
                         await user.DmChannel.SendMessageAsync(
                             $"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +
                             "You've been rewarded:\n" +
-                            $"{str}", false,
+                            $"{str}\n{sb}", false,
                             null,
                             LocalMentions.None);
                     else
@@ -141,7 +163,7 @@ namespace Hanekawa.Controllers
                         var channel = await user.CreateDmChannelAsync();
                         await channel.SendMessageAsync($"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +
                                                        "You've been rewarded:\n" +
-                                                       $"{str}", false,
+                                                       $"{str}\n{sb}", false,
                             null,
                             LocalMentions.None);
                     }
