@@ -15,6 +15,7 @@ using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Exception = System.Exception;
 
 namespace Hanekawa.Bot.Services.Drop
 {
@@ -43,11 +44,8 @@ namespace Hanekawa.Bot.Services.Drop
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             foreach (var x in db.DropConfigs)
             {
-                if (LocalCustomEmoji.TryParse(x.Emote, out var result))
-                {
-                    _emotes.TryAdd(x.GuildId, result);
-                }
-                else _emotes.TryAdd(x.GuildId, GetDefaultEmote());
+                _emotes.TryAdd(x.GuildId,
+                    LocalCustomEmoji.TryParse(x.Emote, out var result) ? result : GetDefaultEmote());
             }
 
             foreach (var x in db.LootChannels)
@@ -78,13 +76,11 @@ namespace Hanekawa.Bot.Services.Drop
                     for (var i = 0; i < list.Count; i++)
                     {
                         var x = list[i];
-                        if (x.MessageFormat == cfg.Emote)
-                        {
-                            cfg.Emote = null;
-                            await db.SaveChangesAsync();
-                            _log.LogAction(LogLevel.Information, $"Removed drop emote from {x.Guild.Id} as it was deleted");
-                            return;
-                        }
+                        if (x.MessageFormat != cfg.Emote) continue;
+                        cfg.Emote = null;
+                        await db.SaveChangesAsync();
+                        _log.LogAction(LogLevel.Information, $"Removed drop emote from {x.Guild.Id} as it was deleted");
+                        return;
                     }
                 }
                 catch (Exception exception)
@@ -198,12 +194,16 @@ namespace Hanekawa.Bot.Services.Drop
 
         private async Task ClaimSpecial(IMessage msg, CachedTextChannel channel, CachedMember user, DbService db)
         {
-            await msg.DeleteAsync();
+            try
+            {
+                await msg.DeleteAsync();
+            }
+            catch { /* Ignore */}
             var loots = _spawnedLoot.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(150, 250);
-            var userdata = await db.GetOrCreateUserData(user);
-            var exp = await _expService.AddExpAsync(user, userdata, rand, rand, db);
+            var userData = await db.GetOrCreateUserData(user);
+            var exp = await _expService.AddExpAsync(user, userData, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {exp} exp & {rand} credit!");
@@ -220,12 +220,14 @@ namespace Hanekawa.Bot.Services.Drop
 
         private async Task ClaimNormal(IMessage msg, CachedTextChannel channel, CachedMember user, DbService db)
         {
-            await msg.DeleteAsync();
+            try { await msg.DeleteAsync(); }
+            catch { /* Ignore */}
+
             var loots = _normalLoot.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             loots.Remove(msg.Id.RawValue);
             var rand = _random.Next(15, 150);
-            var userdata = await db.GetOrCreateUserData(user);
-            var exp = await _expService.AddExpAsync(user, userdata, rand, rand, db);
+            var userData = await db.GetOrCreateUserData(user);
+            var exp = await _expService.AddExpAsync(user, userData, rand, rand, db);
             var trgMsg =
                 await channel.SendMessageAsync(
                     $"Rewarded {user.Mention} with {exp} exp & {rand} credit!");
