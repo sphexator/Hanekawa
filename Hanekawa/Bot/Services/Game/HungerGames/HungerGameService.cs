@@ -133,11 +133,24 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var status = await db.HungerGameStatus.FindAsync(e.Guild.Id.RawValue);
                     if (status == null) return;
-                    if (status.Stage != HungerGameStage.Signup) return;
                     var dbUser = await db.HungerGameProfiles.FindAsync(e.Guild.Id.RawValue, e.User.Id.RawValue);
                     if (dbUser == null) return;
-                    db.HungerGameProfiles.Remove(dbUser);
-                    await db.SaveChangesAsync();
+                    switch (status.Stage)
+                    {
+                        case HungerGameStage.OnGoing:
+                            dbUser.Health = 0;
+                            dbUser.Alive = false;
+                            await db.SaveChangesAsync();
+                            break;
+                        case HungerGameStage.Signup:
+                            db.HungerGameProfiles.Remove(dbUser);
+                            await db.SaveChangesAsync();
+                            break;
+                        case HungerGameStage.Closed:
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -469,13 +482,13 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             return role;
         }
 
-        private List<HungerGameProfile> AddBoosters(List<HungerGameProfile> participants, CachedGuild guild)
+        private async Task<List<HungerGameProfile>> AddBoosters(DbService db, List<HungerGameProfile> participants, CachedGuild guild)
         {
             var toReturn = new List<HungerGameProfile>();
             foreach (var (key, user) in guild.Members.Where(x => x.Value.IsBoosting).ToList())
             {
-                var check = participants.FirstOrDefault(x => x.UserId == key);
-                if(check == null) continue;
+                var check = await db.HungerGameProfiles.FindAsync(guild.Id.RawValue, user.Id.RawValue);
+                if(check != null) continue;
                 toReturn.Add(new HungerGameProfile
                 {
                     GuildId = user.Guild.Id.RawValue,
@@ -508,7 +521,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             var toAdd = 0;
             var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guild.Id.RawValue).ToListAsync();
-            var boosters = AddBoosters(profiles, guild);
+            var boosters = await AddBoosters(db, profiles, guild);
             profiles.AddRange(boosters);
             await db.HungerGameProfiles.AddRangeAsync(boosters);
             if (profiles.Count == 0) toAdd = 25;
