@@ -234,6 +234,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             if (!cfg.SignUpChannel.HasValue) return;
             if (result == null) return;
             cfg.Stage = HungerGameStage.Signup;
+            cfg.SignUpStart = DateTimeOffset.UtcNow;
             var msgContent = "New Hunger Game event has started!\n" +
                              $"To enter, react to this message with {result} !";
             RestUserMessage msg;
@@ -253,8 +254,8 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
 
         public async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, DateTimeOffset? cd = null)
         {
-            if(cd == null) cd = cfg.SignUpStart.AddHours(23);
-            if (cd >= DateTimeOffset.UtcNow) return false;
+            if(cd == null) cd = cfg.SignUpStart.AddHours(-3);
+            if (cd.Value.AddHours(23) >= DateTimeOffset.UtcNow) return false;
             var guild = _client.GetGuild(cfg.GuildId);
             cfg.Stage = HungerGameStage.OnGoing;
             var participants = await AddDefaultUsers(db, guild);
