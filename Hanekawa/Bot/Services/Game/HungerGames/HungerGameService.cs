@@ -241,20 +241,21 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             try
             {
                 msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(msgContent);
+                await msg.AddReactionAsync(result);
             }
             catch
             {
                 cfg.EmoteMessageFormat = "<:Rooree:761209568365248513>";
                 LocalCustomEmoji.TryParse("<:Rooree:761209568365248513>", out result);
                 msg = await _client.GetGuild(cfg.GuildId).GetTextChannel(cfg.SignUpChannel.Value).SendMessageAsync(msgContent);
+                await msg.AddReactionAsync(result);
             }
-            await msg.AddReactionAsync(result);
             await db.SaveChangesAsync();
         }
 
         public async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, DateTimeOffset? cd = null)
         {
-            if(cd == null) cd = cfg.SignUpStart.AddHours(-3);
+            cd ??= cfg.SignUpStart.AddHours(-3);
             if (cd.Value.AddHours(23) >= DateTimeOffset.UtcNow) return false;
             var guild = _client.GetGuild(cfg.GuildId);
             cfg.Stage = HungerGameStage.OnGoing;
