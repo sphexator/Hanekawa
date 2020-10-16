@@ -13,7 +13,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             while (target == null)
             {
                 var check = targets[_random.Next(alive.Count)];
-                if (check.UserId != participant.UserId) target = check;
+                if (check.UserId != participant.UserId && (check.Alive || check.Health > 0)) target = check;
             }
             int dmg;
             var criticalChance = _random.Next(100);

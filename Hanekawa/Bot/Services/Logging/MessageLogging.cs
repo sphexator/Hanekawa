@@ -11,6 +11,7 @@ using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -34,9 +35,11 @@ namespace Hanekawa.Bot.Services.Logging
                     if (!cfg.LogMsg.HasValue) return;
                     var channel = user.Guild.GetTextChannel(cfg.LogMsg.Value);
                     if (channel == null) return;
-
-                    if (before.Value.Content == null) return;
-                    if (before.Value.Content == after.Content) return;
+                    if (before.HasValue)
+                    {
+                        if (before.Value.Content == null) return;
+                        if (before.Value.Content == after.Content) return;
+                    }
 
                     var embed = new LocalEmbedBuilder
                     {
@@ -44,26 +47,15 @@ namespace Hanekawa.Bot.Services.Logging
                         Color = _colourService.Get(user.Guild.Id.RawValue),
                         Timestamp = after.EditedAt ?? after.CreatedAt,
                         Description = $"{user.Mention} updated a message in {chx.Mention}",
-                        Fields =
-                        {
-                            new LocalEmbedFieldBuilder
-                            {
-                                Name = "Updated Message", 
-                                Value = after.Content.Truncate(980), IsInline = false
-                            },
-                            new LocalEmbedFieldBuilder
-                            {
-                                Name = "Old Message", 
-                                Value = before.Value.Content.Truncate(980), IsInline = false
-                            }
-                        },
                         Footer = new LocalEmbedFooterBuilder
                         {
                             Text = $"User: {user.Id.RawValue} | {after.Id.RawValue}", 
                             IconUrl = user.GetAvatarUrl()
                         }
                     };
-
+                    embed.AddField("Updated Message", after.Content.Truncate(980));
+                    embed.AddField("Old Message",
+                        before.HasValue ? before.Value.Content.Truncate(980) : "Unknown - Message not in cache");
                     await channel.ReplyAsync(embed);
                 }
                 catch (Exception exception)
@@ -102,8 +94,8 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             new LocalEmbedFieldBuilder
                             {
-                                Name = "Content", 
-                                Value = msg.Value.Content.Truncate(1499)
+                                Name = "Content",
+                                Value = msg.Value.Content.Truncate(990)
                             }
                         },
                         Footer = new LocalEmbedFooterBuilder
@@ -112,7 +104,9 @@ namespace Hanekawa.Bot.Services.Logging
                             IconUrl = msg.Value.Author.GetAvatarUrl()
                         }
                     };
-
+                    if (!msg.Value.Content.IsNullOrWhiteSpace()) 
+                        embed.AddField("Content", msg.Value.Content.Truncate(1499));
+                    
                     if (msg.Value.Attachments.Count > 0 && !chx.IsNsfw)
                     {
                         var file = msg.Value.Attachments.FirstOrDefault();
@@ -121,7 +115,7 @@ namespace Hanekawa.Bot.Services.Logging
                             {
                                 x.Name = "File";
                                 x.IsInline = false;
-                                x.Value = msg.Value.Attachments.FirstOrDefault()?.Url;
+                                x.Value = file.ProxyUrl;
                             });
                     }
 
