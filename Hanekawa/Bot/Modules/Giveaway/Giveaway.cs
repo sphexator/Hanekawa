@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
             }
 
             var rand = Context.ServiceProvider.GetRequiredService<Random>();
-            var winner = new ulong[giveaway.IdNum - 1];
+            var winners = new ulong[giveaway.WinnerAmount];
             var strb = new StringBuilder();
             for (var i = 0; i < giveaway.WinnerAmount; i++)
             {
@@ -102,9 +102,10 @@ namespace Hanekawa.Bot.Modules.Giveaway
                     i--;
                     continue;
                 }
-                winner.SetValue(user.Id.RawValue, i);
+                winners.SetValue(user.Id.RawValue, i);
                 strb.AppendLine(user.Mention);
             }
+
             await ReplyAsync($"Drawing winners for giveaway {giveaway.Name} with ID: {giveaway.IdNum}\n" +
                              $"{strb}");
             await db.GiveawayHistories.AddAsync(new GiveawayHistory
@@ -113,7 +114,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
                 IdNum = giveaway.IdNum,
                 GuildId = giveaway.GuildId,
                 Creator = giveaway.Creator,
-                Winner = winner,
+                Winner = winners,
                 ClosedAtOffset = giveaway.CloseAtOffset ?? DateTimeOffset.UtcNow,
                 CreatedAtOffset = giveaway.CreatedAtOffset,
                 Description = giveaway.Description,
