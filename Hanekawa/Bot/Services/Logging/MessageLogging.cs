@@ -90,14 +90,6 @@ namespace Hanekawa.Bot.Services.Logging
                         Color = _colourService.Get(chx.Guild.Id.RawValue),
                         Timestamp = msg.Value.CreatedAt,
                         Description = $"{msg.Value.Author.Mention} deleted a message in {chx.Name}",
-                        Fields =
-                        {
-                            new LocalEmbedFieldBuilder
-                            {
-                                Name = "Content",
-                                Value = msg.Value.Content.Truncate(990)
-                            }
-                        },
                         Footer = new LocalEmbedFooterBuilder
                         {
                             Text = $"User: {msg.Value.Author.Id.RawValue} | Message ID: {msg.Id.RawValue}",
