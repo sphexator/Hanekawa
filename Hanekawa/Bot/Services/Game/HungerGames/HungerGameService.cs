@@ -427,9 +427,10 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var role = await RewardRole(cfg, user);
                 stringBuilder.AppendLine($"{user.Mention} is the new Hunger Game Champion!");
                 stringBuilder.AppendLine("They have been rewarded with the following:");
+                var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild.Id.RawValue);
                 if (cfg.ExpReward > 0) stringBuilder.AppendLine($"{cfg.ExpReward} exp");
-                if (cfg.CreditReward > 0) stringBuilder.AppendLine(await _currency.ToCurrency(db, cfg.GuildId, cfg.CreditReward));
-                if (cfg.SpecialCreditReward > 0) stringBuilder.AppendLine(await _currency.ToCurrency(db, cfg.GuildId, cfg.SpecialCreditReward, true));
+                if (cfg.CreditReward > 0) stringBuilder.AppendLine($"{currencyCfg.CurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.CreditReward)}");
+                if (cfg.SpecialCreditReward > 0) stringBuilder.AppendLine($"{currencyCfg.SpecialCurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.SpecialCreditReward, true)}");
                 if (role != null) stringBuilder.AppendLine($"{role.Mention} role");
             }
 

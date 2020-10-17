@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Bot.Services;
+using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -30,14 +31,16 @@ namespace Hanekawa.Controllers
         private readonly ExpService _exp;
         private readonly InternalLogService _log;
         private readonly ColourService _colour;
+        private readonly CurrencyService _currency;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, InternalLogService log, ColourService colour)
+        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, InternalLogService log, ColourService colour, CurrencyService currency)
         {
             _db = db;
             _client = client;
             _exp = exp;
             _log = log;
             _colour = colour;
+            _currency = currency;
         }
 
         [HttpPost("dbl")]
@@ -112,7 +115,7 @@ namespace Hanekawa.Controllers
                     {
                         var x = giveaways[i];
                         if(!x.Active) continue;
-                        if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value >= DateTimeOffset.UtcNow) continue;
+                        if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value <= DateTimeOffset.UtcNow) continue;
                         if (x.ServerAgeRequirement.HasValue &&
                             user.JoinedAt.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
                         {
@@ -148,9 +151,10 @@ namespace Hanekawa.Controllers
                 try
                 {
                     var str = new StringBuilder();
+                    var currencyCfg = await _db.GetOrCreateCurrencyConfigAsync(guildId);
                     if (cfg.ExpGain > 0) str.AppendLine($"{cfg.ExpGain} Exp");
-                    if (cfg.CreditGain > 0) str.AppendLine($"{cfg.CreditGain} Credit");
-                    if (cfg.SpecialCredit > 0) str.AppendLine($"{cfg.SpecialCredit} Special Credit");
+                    if (cfg.CreditGain > 0) str.AppendLine($"{currencyCfg.CurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.CreditGain)}");
+                    if (cfg.SpecialCredit > 0) str.AppendLine($"{currencyCfg.SpecialCurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.SpecialCredit, true)}");
                     if (user.DmChannel != null) // determine if dm channel is already created, else create it and send message
                         await user.DmChannel.SendMessageAsync(
                             $"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +

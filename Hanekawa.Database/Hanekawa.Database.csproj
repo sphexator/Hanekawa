@@ -27,6 +27,8 @@
     <Compile Remove="Migrations\20200818121014_AddedHungerGameAndMvp.Designer.cs" />
     <Compile Remove="Migrations\20200930232718_HungerGames.cs" />
     <Compile Remove="Migrations\20200930232718_HungerGames.Designer.cs" />
+    <Compile Remove="Migrations\20201016233253_Giveaway.cs" />
+    <Compile Remove="Migrations\20201016233253_Giveaway.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

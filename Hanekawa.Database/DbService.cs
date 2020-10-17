@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.HungerGame;
@@ -166,7 +167,7 @@ namespace Hanekawa.Database
         {
             modelBuilder.Entity<Giveaway>(x =>
             {
-                x.HasKey(e => new {e.Id, e.GuildId});
+                x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Creator).HasConversion<long>();
@@ -177,16 +178,24 @@ namespace Hanekawa.Database
             });
             modelBuilder.Entity<GiveawayParticipant>(x =>
             {
-                x.HasKey(e => new {e.Id, e.GuildId, e.UserId});
+                x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
+                /*
+                x.HasOne(e => e.Giveaway)
+                    .WithMany(e => e.Participants)
+                    .HasForeignKey(e => e.GiveawayId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                */
             });
             modelBuilder.Entity<GiveawayHistory>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.GuildId).HasConversion<long>();
-                x.Property(e => e.Winner).HasConversion<long>();
+                x.Property(e => e.Creator).HasConversion<long>();
+                x.Property(e => e.Winner).HasConversion(c => c.Select(item => (long) item).ToArray(),
+                    wops => wops.Select(item => (ulong) item).ToArray());
             });
         }
 

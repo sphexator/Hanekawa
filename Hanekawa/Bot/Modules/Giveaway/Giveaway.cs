@@ -92,22 +92,22 @@ namespace Hanekawa.Bot.Modules.Giveaway
 
             var rand = Context.ServiceProvider.GetRequiredService<Random>();
             var winners = new ulong[giveaway.WinnerAmount];
-            var strb = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             for (var i = 0; i < giveaway.WinnerAmount; i++)
             {
                 var x = giveaway.Participants[rand.Next(giveaway.Participants.Count)];
                 var user = Context.Guild.GetMember(x.UserId);
-                if (user == null)
+                if (user == null || winners.Contains(user.Id.RawValue))
                 {
                     i--;
                     continue;
                 }
                 winners.SetValue(user.Id.RawValue, i);
-                strb.AppendLine(user.Mention);
+                stringBuilder.AppendLine($"{i + 1}: {user} ({user.Id.RawValue})");
             }
 
-            await ReplyAsync($"Drawing winners for giveaway {giveaway.Name} with ID: {giveaway.IdNum}\n" +
-                             $"{strb}");
+            await ReplyAsync($"**Drawing winners for giveaway {giveaway.Name} with ID: {giveaway.IdNum}**\n" +
+                             $"{stringBuilder}");
             await db.GiveawayHistories.AddAsync(new GiveawayHistory
             {
                 Id = giveaway.Id,
@@ -202,7 +202,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
             await ReplyAsync("Does this look good? (y/n)", false, embed.Build());
             var confirm = await interactive.WaitForMessageAsync(x =>
                 x.Message.Author.Id == Context.User.Id && x.Message.Guild.Id == Context.Guild.Id);
-            if (confirm.Message.Content.ToLower() != "y")
+            if (confirm == null || confirm.Message.Content.ToLower() != "y")
             {
                 await ReplyAsync("Aborting...");
                 return;
