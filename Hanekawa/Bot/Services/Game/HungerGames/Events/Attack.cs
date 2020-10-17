@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             if (participant.RangeWeapon > 0 && participant.Bullets > 0)
             {
                 participant.Bullets--;
-                dmg = _random.Next(30, 61);
+                dmg = _random.Next(20, 41);
                 if (criticalChance <= 20 && !participant.Bot) dmg *= 2;
                 if (target.Bot) dmg *= 2;
                 if (participant.Bot) dmg /= 2;
