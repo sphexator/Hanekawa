@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account.HungerGame;
+using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Account = Hanekawa.Database.Tables.Account.Account;
@@ -139,6 +143,7 @@ namespace Hanekawa.Bot.Services.Experience
                     userData.MvpCount++;
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(0, 3), db);
                     await MvpCount(db, userData, user);
+                    await GiveawayAsync(db, user);
                 }
                 catch (Exception z)
                 {
@@ -232,6 +237,38 @@ namespace Hanekawa.Bot.Services.Experience
             var cfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
             if (!cfg.Premium) return;
             userData.MvpCount++;
+            await db.SaveChangesAsync();
+        }
+
+        private async Task GiveawayAsync(DbService db, CachedMember user)
+        {
+            var giveaways = await db.Giveaways
+                .Where(x => x.GuildId == user.Guild.Id.RawValue && x.Type == GiveawayType.Activity && x.Active)
+                .ToListAsync();
+            if (giveaways.Count == 0) return;
+            for (var i = 0; i < giveaways.Count; i++)
+            {
+                var x = giveaways[i];
+                if (!x.Active) continue;
+                if (x.CloseAtOffset.HasValue && x.CloseAtOffset.Value >= DateTimeOffset.UtcNow) continue;
+                if (!x.Stack)
+                {
+                    var check = await db.GiveawayParticipants.FirstOrDefaultAsync(e =>
+                        e.UserId == user.Id.RawValue && e.GiveawayId == x.Id);
+                    if(check != null) continue;
+                }
+
+                await db.GiveawayParticipants.AddAsync(new GiveawayParticipant
+                {
+                    Id = Guid.NewGuid(),
+                    GuildId = user.Guild.Id.RawValue,
+                    UserId = user.Id.RawValue,
+                    Entry = DateTimeOffset.UtcNow,
+                    GiveawayId = x.Id,
+                    Giveaway = x
+                });
+            }
+
             await db.SaveChangesAsync();
         }
     }

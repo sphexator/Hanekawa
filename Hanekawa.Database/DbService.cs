@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.HungerGame;
@@ -12,6 +13,7 @@ using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
@@ -34,6 +36,11 @@ namespace Hanekawa.Database
         public DbSet<LevelExpEvent> LevelExpEvents { get; set; }
         public DbSet<EventPayout> EventPayouts { get; set; }
         public DbSet<Highlight> Highlights { get; set; }
+
+        // Giveaway
+        public DbSet<Giveaway> Giveaways { get; set; }
+        public DbSet<GiveawayParticipant> GiveawayParticipants { get; set; }
+        public DbSet<GiveawayHistory> GiveawayHistories { get; set; }
 
         // Voice Role
         public DbSet<VoiceRoles> VoiceRoles { get; set; }
@@ -138,6 +145,7 @@ namespace Hanekawa.Database
             HungerGameBuilder(modelBuilder);
             InternalBuilder(modelBuilder);
             Advertise(modelBuilder);
+            Giveaway(modelBuilder);
 
             modelBuilder.Entity<VoiceRoles>(x =>
             {
@@ -152,6 +160,42 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Creator).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
+            });
+        }
+
+        private static void Giveaway(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Giveaway>(x =>
+            {
+                x.HasKey(e => new { e.Id });
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Creator).HasConversion<long>();
+                x.HasMany(e => e.Participants)
+                    .WithOne(e => e.Giveaway)
+                    .HasForeignKey(e => e.GiveawayId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<GiveawayParticipant>(x =>
+            {
+                x.HasKey(e => new { e.Id });
+                x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.UserId).HasConversion<long>();
+                /*
+                x.HasOne(e => e.Giveaway)
+                    .WithMany(e => e.Participants)
+                    .HasForeignKey(e => e.GiveawayId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                */
+            });
+            modelBuilder.Entity<GiveawayHistory>(x =>
+            {
+                x.HasKey(e => new {e.Id, e.GuildId});
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Creator).HasConversion<long>();
+                x.Property(e => e.Winner).HasConversion(c => c.Select(item => (long) item).ToArray(),
+                    wops => wops.Select(item => (ulong) item).ToArray());
             });
         }
 

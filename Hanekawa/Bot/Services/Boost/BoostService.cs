@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
+using Hanekawa.Bot.Services.Economy;
 using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Hanekawa.Utility;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,13 +26,17 @@ namespace Hanekawa.Bot.Services.Boost
         private readonly ExpService _exp;
         private readonly IServiceProvider _provider;
         private readonly InternalLogService _log;
+        private readonly ColourService _colour;
+        private readonly CurrencyService _currency;
 
-        public BoostService(Hanekawa client, IServiceProvider provider, ExpService exp, InternalLogService log)
+        public BoostService(Hanekawa client, IServiceProvider provider, ExpService exp, InternalLogService log, ColourService colour, CurrencyService currency)
         {
             _client = client;
             _provider = provider;
             _exp = exp;
             _log = log;
+            _colour = colour;
+            _currency = currency;
 
             _client.MemberUpdated += BoostCheck;
         }
@@ -78,12 +87,9 @@ namespace Hanekawa.Bot.Services.Boost
                 if (logChannel == null) return;
                 var logEmbed = new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder
-                    {
-                        Name = "Stopped boosting"
-                    },
-                    Description = $"{user.Mention} has stopped boosting the server!",
-                    Color = Color.Purple,
+                    Title = "Started Boosting",
+                    Description = $"{user.Mention} has started boosting the server!",
+                    Color = _colour.Get(user.Guild.Id.RawValue),
                     Timestamp = DateTimeOffset.UtcNow,
                     Footer = new LocalEmbedFooterBuilder
                     {
@@ -111,12 +117,9 @@ namespace Hanekawa.Bot.Services.Boost
                 if (channel == null) return;
                 var embed = new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder
-                    {
-                        Name = "Stopped boosting"
-                    },
+                    Title = "Stopped Boosting",
                     Description = $"{user.Mention} has stopped boosting the server!",
-                    Color = Color.Purple,
+                    Color = _colour.Get(user.Guild.Id.RawValue),
                     Timestamp = DateTimeOffset.UtcNow,
                     Footer = new LocalEmbedFooterBuilder
                     {
@@ -150,7 +153,8 @@ namespace Hanekawa.Bot.Services.Boost
                 {
                     var guild = _client.GetGuild(x.GuildId);
                     if (guild == null) continue;
-                    var users = guild.Members.Where(x => x.Value.IsBoosting).ToList();
+                    var users = guild.Members.Where(u => u.Value.IsBoosting).ToList();
+                    var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild);
                     foreach (var (_, member) in users)
                     {
                         try
@@ -158,6 +162,26 @@ namespace Hanekawa.Bot.Services.Boost
                             var userData = await db.GetOrCreateUserData(member);
                             await _exp.AddExpAsync(member, userData, x.ExpGain, x.CreditGain, db);
                             userData.CreditSpecial += x.SpecialCreditGain;
+
+                            var channel = member.DmChannel ?? (IDmChannel)await member.CreateDmChannelAsync();
+                            var sb = new StringBuilder();
+                            sb.AppendLine(
+                                $"Thank you for boosting {guild.Name} for {member.BoostedAt.Value.Humanize()} !");
+                            if (x.ExpGain != 0 || x.CreditGain != 0 || x.SpecialCreditGain != 0)
+                                sb.AppendLine("You've been rewarded:");
+                            if (x.ExpGain != 0) sb.AppendLine($"{x.ExpGain} exp");
+                            if (x.CreditGain != 0)
+                                sb.AppendLine(
+                                    $"{currencyCfg.CurrencyName}: {_currency.ToCurrency(currencyCfg, x.CreditGain)}");
+                            if (x.SpecialCreditGain != 0)
+                                sb.AppendLine(
+                                    $"{currencyCfg.SpecialCurrencyName}: {_currency.ToCurrency(currencyCfg, x.SpecialCreditGain, true)}");
+                            await channel.ReplyAsync(new LocalEmbedBuilder
+                            {
+                                Title = "Boost Rewards!",
+                                Color = _colour.Get(guild.Id.RawValue),
+                                Description = sb.ToString()
+                            });
                         }
                         catch (Exception e)
                         {
@@ -177,7 +201,7 @@ namespace Hanekawa.Bot.Services.Boost
             }
 
             _log.LogAction(LogLevel.Information,
-                $"(Boost Service) Finished rewarding users in all guilds configured for it");
+                "(Boost Service) Finished rewarding users in all guilds configured for it");
         }
     }
 }
