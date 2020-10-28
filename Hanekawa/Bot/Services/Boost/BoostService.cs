@@ -165,8 +165,9 @@ namespace Hanekawa.Bot.Services.Boost
 
                             var channel = member.DmChannel ?? (IDmChannel)await member.CreateDmChannelAsync();
                             var sb = new StringBuilder();
+
                             sb.AppendLine(
-                                $"Thank you for boosting {guild.Name} for {member.BoostedAt.Value.Humanize()} !");
+                                $"Thank you for boosting {guild.Name} for {DateTimeOffset.UtcNow - member.BoostedAt.Value}!");
                             if (x.ExpGain != 0 || x.CreditGain != 0 || x.SpecialCreditGain != 0)
                                 sb.AppendLine("You've been rewarded:");
                             if (x.ExpGain != 0) sb.AppendLine($"{x.ExpGain} exp");
