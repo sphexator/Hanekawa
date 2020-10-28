@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
@@ -49,7 +48,7 @@ namespace Hanekawa.Bot.Modules.Game
             {
                 case HungerGameStage.Signup:
                     await ReplyAsync("Closing sign-ups and starting");
-                    if (!(await _service.StartGameAsync(cfg, db, DateTimeOffset.UtcNow)))
+                    if (!await _service.StartGameAsync(cfg, db, true))
                     {
                         await ReplyAsync("Please setup event and sign-up channels with h.hgec & h.hgsc", Color.Red);
                     }

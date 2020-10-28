@@ -18,9 +18,9 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             var loot = LootChance(profile);
             var kill = KillChance(profile);
-            var idle = IdleChance();
-            var meet = MeetChance();
-            var hack = HackChance();
+            var idle = IdleChance(profile);
+            var meet = MeetChance(profile);
+            var hack = HackChance(profile);
             var die = DieChance();
             var sleep = SleepChance(profile);
             var eat = EatChance(profile);
@@ -33,18 +33,14 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             if (generator <= loot + kill + idle + meet) return ActionType.Meet;
             if (generator <= loot + kill + idle + meet + hack) return ActionType.Hack;
             if (generator <= loot + kill + idle + meet + hack + die) return ActionType.Die;
-            else if (generator <= loot + kill + idle + meet + hack + die + sleep)
-                return ActionType.Sleep;
-            else
-                return ActionType.Eat;
+            return generator <= loot + kill + idle + meet + hack + die + sleep ? ActionType.Sleep : ActionType.Eat;
         }
 
         private static int LootChance(HungerGameProfile profile)
         {
             if (profile.Water == 0) return Loot + 400;
             if (profile.Food == 0) return Loot + 400;
-            if (profile.MeleeWeapon == 0 || (profile.RangeWeapon == 0 && profile.Bullets == 0)) return Loot + 400;
-            return Loot - 200;
+            return profile.MeleeWeapon == 0 || (profile.RangeWeapon == 0 && profile.Bullets == 0) ? Loot + 400 : 0;
         }
 
         private static int KillChance(HungerGameProfile profile)
@@ -64,24 +60,23 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
         {
             if (profile.Tiredness >= 90) return Sleep + 1000;
             if (profile.Tiredness >= 75) return Sleep + 750;
-            if (profile.Tiredness >= 50) return Sleep + 500;
-            return Sleep;
+            return profile.Tiredness >= 50 ? Sleep : 0;
         }
 
         private static int EatChance(HungerGameProfile profile)
         {
             if (profile.Hunger >= 20 && profile.Food >= 1) return Eat + 1000;
-            if (profile.Hunger >= 50 && profile.Food >= 1) return Eat + 700;
-            if (profile.Hunger >= 75 && profile.Food >= 1) return Eat + 400;
-            if (profile.Hunger >= 90 && profile.Food >= 1) return Eat + 200;
+            if (profile.Hunger >= 50 && profile.Food >= 1) return Eat + 500;
+            if (profile.Hunger >= 75 && profile.Food >= 1) return Eat;
+            if (profile.Hunger >= 90 && profile.Food >= 1) return 0;
             return Eat;
         }
 
-        private static int IdleChance() => Idle;
+        private static int IdleChance(HungerGameProfile profile) => profile.Move == ActionType.Idle ? 0 : Idle;
 
-        private static int MeetChance() => Meet;
+        private static int MeetChance(HungerGameProfile profile) => profile.Move == ActionType.Meet ? 0 : Meet;
 
-        private static int HackChance() => Hack;
+        private static int HackChance(HungerGameProfile profile) => profile.Move == ActionType.Hack ? 0 : Hack;
 
         private static int DieChance() => Die;
     }

@@ -21,14 +21,14 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
             const int range = 50;
             const int melee = 25;
             result = _random.Next(range + melee);
-            if (result >= range)
+            if (result <= range)
             {
                 participant.Weapons++;
                 participant.MeleeWeapon++;
                 return "Found a hammer in a crate";
             }
 
-            if (participant.RangeWeapon > 0)
+            if (participant.RangeWeapon == 0)
             {
                 participant.Weapons++;
                 participant.RangeWeapon++;
