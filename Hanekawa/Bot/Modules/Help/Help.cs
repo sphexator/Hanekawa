@@ -179,12 +179,13 @@ namespace Hanekawa.Bot.Modules.Help
             return output.ToString();
         }
 
-        private string PermTypeBuilder(Parameter parameter) =>
+        private static string PermTypeBuilder(Parameter parameter) =>
             parameter.Type == typeof(CachedMember) ? "@bob#0000" :
             parameter.Type == typeof(CachedRole) ? "role" :
             parameter.Type == typeof(CachedTextChannel) ? "#General" :
             parameter.Type == typeof(CachedVoiceChannel) ? "VoiceChannel" :
             parameter.Type == typeof(CachedCategoryChannel) ? "Category" :
+            parameter.Type == typeof(TimeSpan) ? "1h2m" :
             parameter.Type == typeof(int) ? "5" :
             parameter.Type == typeof(string) ? "Example text" :
             parameter.Type == typeof(ulong) ? "431610594290827267" : parameter.Name;
