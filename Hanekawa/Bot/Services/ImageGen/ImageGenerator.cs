@@ -103,13 +103,8 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var restUser = await user.Guild.GetMemberAsync(user.Id);
                 url = restUser.GetAvatarUrl(ImageFormat.Png);
             }
-            var avatar = await _client.GetStreamAsync(url);
-            var response = avatar.ToEditable();
-            response.Position = 0;
-            using var img = await Image.LoadAsync(response, new PngDecoder());
-            return radius != null 
-                ? img.Clone(x => x.ConvertToAvatar(size, radius.Value)) 
-                : img.Clone(x => x.Resize(size));
+
+            return await GetAvatarAsync(url, size, radius);
         }
 
         private async Task<Image> GetAvatarAsync(string imgUrl, Size size, int? radius = null)
