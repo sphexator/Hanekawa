@@ -3,7 +3,6 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -15,7 +14,7 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Emote")]
         [Command("boardemote")]
         [Description("Sets a emote to be used for the board")]
-        [RequireBotGuildPermissions(Permission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task BoardEmoteAsync(LocalCustomEmoji emote)
         {
             
@@ -29,7 +28,7 @@ namespace Hanekawa.Bot.Modules.Board
         [Name("Board Channel")]
         [Command("boardchannel")]
         [Description("Sets which channel starred messages go")]
-        [RequireBotGuildPermissions(Permission.ManageGuild)]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task BoardChannelAsync(CachedTextChannel channel = null)
         {
             
