@@ -13,10 +13,9 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("profile")]
         [Description("Showcase yours or another persons profile")]
         [RequiredChannel]
-        public async Task ProfileAsync()
+        public async Task ProfileAsync(CachedMember user = null)
         {
-            var user = Context.Member;
-            //if (user == null) user = Context.User;
+            if (user == null) user = Context.Member;
             await Context.Channel.TriggerTypingAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await using var image = await _image.ProfileBuilder(user, db);
