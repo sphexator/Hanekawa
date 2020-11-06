@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,6 +139,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                         case HungerGameStage.OnGoing:
                             dbUser.Health = 0;
                             dbUser.Alive = false;
+                            dbUser.Avatar = e.Guild.GetIconUrl(ImageFormat.Png);
                             await db.SaveChangesAsync();
                             break;
                         case HungerGameStage.Signup:
@@ -377,7 +377,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var toTake = tempPart.Count >= 25 ? 25 : tempPart.Count;
                 var amount = tempPart.Take(toTake).OrderByDescending(x => x.BeforeProfile.Alive).ToList();
                 tempPart.RemoveRange(0, toTake);
-                var image = await _image.GenerateEventImageAsync(amount, alive);
+                var image = await _image.GenerateEventImageAsync(guild, amount, alive);
                 await channel.SendMessageAsync(new LocalAttachment(image, "HungerGame.png", false), null, false,
                     null, LocalMentions.None);
             }
@@ -385,8 +385,16 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             // Send Text
             for (var i = 0; i < messages.Count; i++)
             {
-                await channel.SendMessageAsync(messages[i], false, null, LocalMentions.None);
+                try
+                {
+                    await channel.SendMessageAsync(messages[i], false, null, LocalMentions.None);
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, e.Message);
+                }
             }
+
             var resultAlive = result.Count(x => x.AfterProfile.Alive);
             game.Alive = resultAlive;
             game.Round++;

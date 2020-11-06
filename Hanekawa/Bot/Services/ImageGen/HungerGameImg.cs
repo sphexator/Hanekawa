@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Disqord;
 using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Extensions;
 using Hanekawa.Models.HungerGame;
@@ -10,6 +11,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Color = SixLabors.ImageSharp.Color;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -26,7 +28,7 @@ namespace Hanekawa.Bot.Services.ImageGen
             return stream;
         }
 
-        public async Task<Stream> GenerateEventImageAsync(List<UserAction> profile, int alive)
+        public async Task<Stream> GenerateEventImageAsync(CachedGuild guild, List<UserAction> profile, int alive)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             var result = new MemoryStream();
@@ -40,9 +42,18 @@ namespace Hanekawa.Bot.Services.ImageGen
                 {
                     var x = profile[i];
                     var points = GetBorderPointers(width, height);
-                    var afterhpBar = GetHeathBar(width, height, x.AfterProfile.Health);
-                    var beforehpBar = GetHeathBar(width, height, x.BeforeProfile.Health);
-                    var avi = await GetAvatarAsync(x.AfterProfile.Avatar, new Size(80, 80));
+                    var afterHpBar = GetHeathBar(width, height, x.AfterProfile.Health);
+                    var beforeHpBar = GetHeathBar(width, height, x.BeforeProfile.Health);
+                    Image avi;
+                    try
+                    {
+                        avi = await GetAvatarAsync(x.AfterProfile.Avatar, new Size(80, 80));
+                    }
+                    catch
+                    {
+                        avi = await GetAvatarAsync(guild.GetIconUrl(ImageFormat.Png), new Size(80, 80));
+                        x.AfterProfile.Avatar = guild.GetIconUrl(ImageFormat.Png);
+                    }
                     if (x.AfterProfile.Health <= 0 && x.AfterProfile.Alive) x.AfterProfile.Alive = false;
 
                     // Profile picture drawing
@@ -65,8 +76,8 @@ namespace Hanekawa.Bot.Services.ImageGen
                         .FillPolygon(new SolidBrush(new Color(new Rgb24(30, 30, 30))), points));
                     if (x.BeforeProfile.Alive)
                     {
-                        img.Mutate(a => a.FillPolygon(new SolidBrush(Color.Red), beforehpBar));
-                        if(x.AfterProfile.Alive) img.Mutate(a => a.FillPolygon(new SolidBrush(new Color(new Rgb24(46, 204, 113))), afterhpBar));
+                        img.Mutate(a => a.FillPolygon(new SolidBrush(Color.Red), beforeHpBar));
+                        if(x.AfterProfile.Alive) img.Mutate(a => a.FillPolygon(new SolidBrush(new Color(new Rgb24(46, 204, 113))), afterHpBar));
                     }
 
                     // Health text drawing
