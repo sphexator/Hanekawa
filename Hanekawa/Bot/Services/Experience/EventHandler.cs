@@ -8,7 +8,6 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
