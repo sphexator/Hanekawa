@@ -8,7 +8,6 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
@@ -139,8 +138,7 @@ namespace Hanekawa.Bot.Services.Experience
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
-                    userData.FirstMessage ??= DateTime.UtcNow;
-                    userData.MvpCount++;
+                    if(!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(0, 3), db);
                     await MvpCount(db, userData, user);
                     await GiveawayAsync(db, user);

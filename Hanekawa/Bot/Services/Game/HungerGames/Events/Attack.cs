@@ -15,6 +15,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
                 var check = targets[_random.Next(alive.Count)];
                 if (check.UserId != participant.UserId && (check.Alive || check.Health > 0)) target = check;
             }
+
             int dmg;
             var criticalChance = _random.Next(100);
             if (participant.RangeWeapon > 0 && participant.Bullets > 0)
@@ -31,6 +32,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames.Events
                     return $"Shot and killed **{target.Name}** with a bow";
                 }
                 target.Health -= dmg;
+                target.Bleeding = true;
                 return $"Shot **{target.Name}** with a bow";
             }
 

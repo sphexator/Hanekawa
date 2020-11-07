@@ -19,6 +19,8 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Administration
 {
+    [Name("Administration")]
+    [Description("Moderation commands")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Administration : HanekawaCommandModule
     {
@@ -36,7 +38,6 @@ namespace Hanekawa.Bot.Modules.Administration
         [Description("Bans a user")]
         [Priority(1)]
         [RequireMemberGuildPermissions(Permission.BanMembers, Permission.ManageMessages)]
-        [RequireMemberGuildPermissions(Permission.BanMembers)]
         public async Task BanAsync(CachedMember user, [Remainder] string reason = "No reason applied")
         {
             if (user == Context.User) return;

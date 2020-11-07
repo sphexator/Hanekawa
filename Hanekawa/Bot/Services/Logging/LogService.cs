@@ -1,5 +1,4 @@
 ﻿using System;
-using Disqord.Bot;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 

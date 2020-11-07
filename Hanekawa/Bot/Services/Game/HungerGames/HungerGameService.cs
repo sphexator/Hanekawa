@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -59,7 +58,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                     var profile =
                         await db.HungerGameProfiles.FindAsync(e.NewMember.Guild.Id.RawValue, e.NewMember.Id.RawValue);
                     if (profile == null) return;
-                    profile.Name = e.NewMember.Name;
+                    profile.Name = e.NewMember.DisplayName;
                     profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
                     await db.SaveChangesAsync();
                 }
@@ -93,7 +92,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                     {
                         GuildId = user.Guild.Id.RawValue,
                         UserId = user.Id.RawValue,
-                        Name = user.Name,
+                        Name = user.DisplayName,
                         Avatar = user.GetAvatarUrl(ImageFormat.Png),
                         Bot = false,
                         Alive = true,
@@ -140,6 +139,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                         case HungerGameStage.OnGoing:
                             dbUser.Health = 0;
                             dbUser.Alive = false;
+                            dbUser.Avatar = e.Guild.GetIconUrl(ImageFormat.Png);
                             await db.SaveChangesAsync();
                             break;
                         case HungerGameStage.Signup:
@@ -253,10 +253,10 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             await db.SaveChangesAsync();
         }
 
-        public async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, DateTimeOffset? cd = null)
+        public async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, bool test = false)
         {
-            cd ??= cfg.SignUpStart.AddHours(-3);
-            if (cd.Value.AddHours(23) >= DateTimeOffset.UtcNow) return false;
+            var cd = cfg.SignUpStart.AddHours(-3);
+            if (!test && cd.AddHours(23) >= DateTimeOffset.UtcNow) return false;
             var guild = _client.GetGuild(cfg.GuildId);
             cfg.Stage = HungerGameStage.OnGoing;
             var participants = await AddDefaultUsers(db, guild);
@@ -274,11 +274,8 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                         if (name.IsNullOrWhiteSpace()) name = x.Name;
                         switch (j)
                         {
-                            case 0:
-                                sb.Append($"**{name}** ");
-                                break;
                             case 4:
-                                sb.Append(name);
+                                sb.Append($"**{name}**");
                                 break;
                             default:
                                 sb.Append($"**{name}** - ");
@@ -380,7 +377,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 var toTake = tempPart.Count >= 25 ? 25 : tempPart.Count;
                 var amount = tempPart.Take(toTake).OrderByDescending(x => x.BeforeProfile.Alive).ToList();
                 tempPart.RemoveRange(0, toTake);
-                var image = await _image.GenerateEventImageAsync(amount, alive);
+                var image = await _image.GenerateEventImageAsync(guild, amount, alive);
                 await channel.SendMessageAsync(new LocalAttachment(image, "HungerGame.png", false), null, false,
                     null, LocalMentions.None);
             }
@@ -388,8 +385,16 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             // Send Text
             for (var i = 0; i < messages.Count; i++)
             {
-                await channel.SendMessageAsync(messages[i], false, null, LocalMentions.None);
+                try
+                {
+                    await channel.SendMessageAsync(messages[i], false, null, LocalMentions.None);
+                }
+                catch (Exception e)
+                {
+                    _log.LogAction(LogLevel.Error, e, e.Message);
+                }
             }
+
             var resultAlive = result.Count(x => x.AfterProfile.Alive);
             game.Alive = resultAlive;
             game.Round++;

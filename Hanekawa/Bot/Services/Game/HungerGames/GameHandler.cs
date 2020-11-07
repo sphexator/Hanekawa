@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hanekawa.Bot.Services.Game.HungerGames.Events;
 using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.Models.HungerGame;
@@ -88,6 +89,11 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                         throw new ArgumentOutOfRangeException();
                 }
 
+                var fatigue = Fatigue(x);
+                if (fatigue != null)
+                {
+                    result.Message += $"\n{fatigue}";
+                }
                 result.AfterProfile = x;
                 result.Action = hgEvent;
                 results.Add(result);
@@ -96,7 +102,65 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             return results;
         }
 
-        private void Fatigue(){}
+        private string Fatigue(HungerGameProfile profile)
+        {
+            profile.Hunger -= 10;
+            profile.Tiredness -= 10;
+            profile.Thirst -= 20;
+
+            if ((profile.Hunger >= 100 || profile.Thirst >= 100) && profile.Bleeding)
+            {
+                if (profile.Hunger >= 100 && profile.Health >= 100)
+                {
+                    if (profile.Health - 50 <= 0)
+                    {
+                        profile.Health = 0;
+                        profile.Alive = false;
+                        return "Died from starvation, dehydration and bleeding out";
+                    }
+                    profile.Health -= 50;
+                    return "Suffered from severe starvation, dehydration and bleeding out";
+                }
+                if (profile.Hunger >= 100)
+                {
+                    if (profile.Health - 30 <= 0)
+                    {
+                        profile.Health = 0;
+                        profile.Alive = false;
+                        return "Died from starvation and bleeding out";
+                    }
+                    profile.Health -= 30;
+                    return "Suffered from severe starvation and bleeding out";
+                }
+
+                if (profile.Thirst >= 100)
+                {
+                    if (profile.Health - 40 <= 0)
+                    {
+                        profile.Health = 0;
+                        profile.Alive = false;
+                        return "Died from dehydration and bleeding out";
+                    }
+                    profile.Health -= 20;
+                    return "Suffered from severe dehydration and bleeding out";
+                }
+            }
+
+            if (profile.Bleeding)
+            {
+                if (profile.Health - 20 <= 0)
+                {
+                    profile.Health = 0;
+                    profile.Alive = false;
+                    return "Bled out and died";
+                } 
+                profile.Health -= 20; 
+                return "Suffered from bleeding";
+            }
+
+            return null;
+        }
+
         private void HungerAndOrThirst(){}
     }
 }
