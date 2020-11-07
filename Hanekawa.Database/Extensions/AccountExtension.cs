@@ -35,9 +35,12 @@ namespace Hanekawa.Database.Extensions
             var data = new Account().DefaultAccount(guild, user);
             try
             {
-                await context.Accounts.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.Accounts.FindAsync(user, guild).ConfigureAwait(false);
+                await context.Accounts.AddAsync(data);
+                await context.SaveChangesAsync();
+                await Task.Delay(20);
+                var toReturn = await context.Accounts.FindAsync(user, guild);
+                if (toReturn != null) return toReturn;
+                return data;
             }
             catch
             {
@@ -53,9 +56,12 @@ namespace Hanekawa.Database.Extensions
             var data = new AccountGlobal().DefaultAccountGlobal(userId);
             try
             {
-                await context.AccountGlobals.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.AccountGlobals.FindAsync(userId).ConfigureAwait(false);
+                await context.AccountGlobals.AddAsync(data);
+                await context.SaveChangesAsync();
+                await Task.Delay(20);
+                var toReturn = await context.AccountGlobals.FindAsync(userId);
+                if (toReturn != null) return toReturn;
+                return data;
             }
             catch
             {
