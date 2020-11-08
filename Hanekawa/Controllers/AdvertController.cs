@@ -10,6 +10,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Database.Tables.Giveaway;
+using Hanekawa.Extensions;
 using Hanekawa.Models;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
@@ -66,7 +67,7 @@ namespace Hanekawa.Controllers
                 // Get user data and reward from config
                 var userId = Convert.ToUInt64(model.User);
                 var userData = await _db.GetOrCreateUserData(guildId, userId);
-                var user = guild.GetMember(userId);
+                var user = await guild.GetOrFetchMemberAsync(userId) as CachedMember;
                 if (cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 if (user != null)
                 {
