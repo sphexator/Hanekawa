@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Modules.Giveaway
             for (var i = 0; i < giveaway.WinnerAmount; i++)
             {
                 var x = giveaway.Participants[rand.Next(giveaway.Participants.Count)];
-                var user = Context.Guild.GetMember(x.UserId);
+                var user = await Context.Guild.GetOrFetchMemberAsync(x.UserId);
                 if (user == null || winners.Contains(user.Id.RawValue))
                 {
                     i--;

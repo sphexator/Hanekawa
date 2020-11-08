@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Disqord;
 using Hanekawa.Database;
+using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,13 +28,18 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     try
                     {
                         var guild = _client.GetGuild(guildId);
-                        var user = guild?.GetMember(userId);
+                        if (guild == null)
+                        {
+                            await RemoveTimerFromDbAsync(guildId, userId, db);
+                            return;
+                        }
+                        var user = await guild.GetOrFetchMemberAsync(userId);
                         if (user == null)
                         {
                             await RemoveTimerFromDbAsync(guildId, userId, db);
                             return;
                         }
-                        await UnMuteUser(user, db);
+                        await UnMuteUser(user as CachedMember, db);
                     }
                     catch (Exception e)
                     {

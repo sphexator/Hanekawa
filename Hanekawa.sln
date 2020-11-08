@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Haneka
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Shared", "Hanekawa.Shared\Hanekawa.Shared.csproj", "{BB7BFBBF-6D9A-4183-B8B7-524DDC0D2B08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.HungerGames", "Hanekawa.HungerGames\Hanekawa.HungerGames.csproj", "{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.HungerGames", "Hanekawa.HungerGames\Hanekawa.HungerGames.csproj", "{C617CC96-B2EE-4E5B-ADB5-68EA9C06F1E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

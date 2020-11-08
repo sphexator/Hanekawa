@@ -126,7 +126,7 @@ namespace Hanekawa.Bot.Services.Club
         {
             cfg ??= await db.GetOrCreateClubConfigAsync(user.Guild);
             if (cfg.RoleEnabled && club.Role.HasValue)
-                await user.Guild.GetMember(user.Id.RawValue).TryAddRoleAsync(user.Guild.GetRole(club.Role.Value));
+                await (await user.Guild.GetOrFetchMemberAsync(user.Id.RawValue) as CachedMember).TryAddRoleAsync(user.Guild.GetRole(club.Role.Value));
             if (!cfg.RoleEnabled && club.Channel.HasValue)
                 await user.Guild.GetTextChannel(club.Channel.Value).AddOrModifyOverwriteAsync(new LocalOverwrite(user.Id.RawValue, OverwriteTargetType.Member, _allowOverwrite));
         }
@@ -138,7 +138,7 @@ namespace Hanekawa.Bot.Services.Club
             {
                 if (!club.Channel.HasValue) return;
                 if (cfg.RoleEnabled && club.Role.HasValue)
-                    await guild.GetMember(user.Id.RawValue).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
+                    await (await guild.GetOrFetchMemberAsync(user.Id.RawValue) as CachedMember).TryRemoveRoleAsync(guild.GetRole(club.Role.Value));
                 if (!cfg.RoleEnabled)
                     await guild.GetTextChannel(club.Channel.Value).DeleteOverwriteAsync(user.Id.RawValue, RestRequestOptions.FromReason("Club Removal"));
             }

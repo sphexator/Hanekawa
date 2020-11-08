@@ -11,6 +11,7 @@ using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.HungerGame;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Game.HungerGame;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -270,15 +271,13 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                     for (var j = 0; j < 5; j++)
                     {
                         var x = participants[i];
-                        var name = x.Bot ? x.Name : _client.GetUser(x.UserId).Mention;
-                        if (name.IsNullOrWhiteSpace()) name = x.Name;
                         switch (j)
                         {
                             case 4:
-                                sb.Append($"**{name}**");
+                                sb.Append($"**{x.Name}**");
                                 break;
                             default:
-                                sb.Append($"**{name}** - ");
+                                sb.Append($"**{x.Name}** - ");
                                 break;
                         }
                         i++;
@@ -401,11 +400,11 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             await db.SaveChangesAsync();
             // Only 1 person alive? Announce and reward
             if (resultAlive > 1) return;
-            CachedMember user = null;
+            IMember user = null;
             var winner = result.FirstOrDefault(x => x.AfterProfile.Alive);
             if (winner != null && !winner.AfterProfile.Bot)
             {
-                user = guild.GetMember(winner.AfterProfile.UserId); 
+                user = await guild.GetOrFetchMemberAsync(winner.AfterProfile.UserId); 
                 var userData = await db.GetOrCreateUserData(winner.AfterProfile.GuildId, winner.AfterProfile.UserId);
                 userData.Exp += cfg.ExpReward;
                 userData.Credit += cfg.CreditReward;
@@ -429,7 +428,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             }
             else
             {
-                var role = await RewardRole(cfg, user);
+                var role = await RewardRole(cfg, user as CachedMember);
                 stringBuilder.AppendLine($"{user.Mention} is the new Hunger Game Champion!");
                 stringBuilder.AppendLine("They have been rewarded with the following:");
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild.Id.RawValue);

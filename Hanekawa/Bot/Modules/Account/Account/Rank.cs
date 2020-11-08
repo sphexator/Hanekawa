@@ -10,6 +10,7 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
@@ -91,7 +92,7 @@ namespace Hanekawa.Bot.Modules.Account
             for (var i = 0; i < users.Length; i++)
             {
                 var user = users[i];
-                var username = Context.Guild.GetMember(user.UserId);
+                var username = await Context.Guild.GetOrFetchMemberAsync(user.UserId);
                 if (username == null)
                 {
                     user.Active = false;

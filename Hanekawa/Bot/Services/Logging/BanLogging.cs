@@ -4,7 +4,7 @@ using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Models;
+using Hanekawa.Extensions;
 using Hanekawa.Shared;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Services.Logging
                         Footer = new LocalEmbedFooterBuilder {Text = $"User ID: {user.Id.RawValue}", IconUrl = user.GetAvatarUrl() },
                         Timestamp = DateTimeOffset.UtcNow
                     };
-                    var gusr = guild.GetMember(user.Id);
+                    var gusr = await guild.GetOrFetchMemberAsync(user.Id);
                     if (gusr != null)
                         embed.AddField("Time In Server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
                     

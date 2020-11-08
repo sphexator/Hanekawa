@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Modules.Administration
         public async Task BanAsync(ulong userId, [Remainder] string reason = "No reason applied")
         {
             await Context.Message.TryDeleteMessageAsync();
-            var user = Context.Guild.GetMember(userId);
+            var user = await Context.Guild.GetOrFetchMemberAsync(userId);
             if (user == null)
             {
                 try
@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Modules.Administration
                         Color.Green), TimeSpan.FromSeconds(20));
                 }
             }
-            else await BanAsync(user, reason);
+            else await BanAsync(user as CachedMember, reason);
         }
 
         [Name("Kick")]

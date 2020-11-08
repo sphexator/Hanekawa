@@ -10,6 +10,7 @@ using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
@@ -230,9 +231,9 @@ namespace Hanekawa.Bot.Modules.Level
                 for (var i = 0; i < users.Count; i++)
                 {
                     var x = users[i];
-                    var user = role.Guild.GetMember(x.UserId);
+                    var user = await role.Guild.GetOrFetchMemberAsync(x.UserId);
                     if(user == null) continue;
-                    await _exp.NewLevelManagerAsync(users[i], user, db);
+                    await _exp.NewLevelManagerAsync(users[i], user as CachedMember, db);
                 }
             }
 

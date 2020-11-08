@@ -171,7 +171,7 @@ namespace Hanekawa.Bot.Modules.Suggestion
         {
             try
             {
-                var suggestUser = Context.Guild.GetMember(suggestion.UserId);
+                var suggestUser = await Context.Guild.GetOrFetchMemberAsync(suggestion.UserId) as CachedMember;
                 if (suggestUser == null) return;
                 var embed = new LocalEmbedBuilder().Create(
                     $"Your suggestion got a response in {Context.Guild.Name}!\n" +

@@ -7,6 +7,7 @@ using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Board;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,7 @@ namespace Hanekawa.Bot.Modules.Board
             for (var i = 0; i < topReceive.Count; i++)
             {
                 var index = topReceive[i];
-                var user = Context.Guild.GetMember(index.UserId);
+                var user = await Context.Guild.GetOrFetchMemberAsync(index.UserId);
                 topReceived += $"{i}: {user.Mention ?? "User left the server"} ({index.StarReceived} {emote})\n";
             }
 

@@ -112,7 +112,7 @@ namespace Hanekawa.Bot.Services.Mvp
                             var e = users[j];
                             try
                             {
-                                var user = guild.GetMember(e.UserId);
+                                var user = await guild.GetOrFetchMemberAsync(e.UserId) as CachedMember;
                                 if (user == null)
                                 {
                                     j--;

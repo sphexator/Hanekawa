@@ -77,14 +77,14 @@ namespace Hanekawa.Bot.Modules.Report
             embed.AddField(Context.Member.DisplayName, text);
             try
             {
-                var suggestUser = Context.Guild.GetMember(report.UserId);
-                if(suggestUser.DmChannel != null) await suggestUser.DmChannel.ReplyAsync(
+                var suggestUser = await Context.Guild.GetOrFetchMemberAsync(report.UserId) as CachedMember;
+                if(suggestUser != null && suggestUser.DmChannel != null) await suggestUser.DmChannel.ReplyAsync(
                     "Your report got a response!\n" +
                     "report:\n" +
                     $"{embed.Description.Truncate(400)}\n" +
                     $"Answer from {Context.User.Mention}:\n" +
                     $"{text}", _colour.Get(Context.Guild.Id.RawValue));
-                else
+                if(suggestUser != null)
                 {
                     var dm = await suggestUser.CreateDmChannelAsync();
                     await dm.ReplyAsync("Your report got a response!\n" +
