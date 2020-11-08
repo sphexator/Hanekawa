@@ -54,5 +54,13 @@ namespace Hanekawa.Extensions
             };
             return result;
         }
+
+        public static async Task<IMember> GetOrFetchMemberAsync(this CachedGuild guild, Snowflake id)
+        {
+            IMember user = guild.GetMember(id);
+            if (user != null) return user;
+            user = await guild.GetMemberAsync(id);
+            return user;
+        }
     }
 }

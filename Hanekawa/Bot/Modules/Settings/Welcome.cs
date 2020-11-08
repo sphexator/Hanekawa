@@ -118,7 +118,7 @@ namespace Hanekawa.Bot.Modules.Settings
                 strBuilder.AppendLine($"ID: {index.Id}");
                 strBuilder.AppendLine($"URL: {index.Url}");
                 strBuilder.AppendLine(
-                    $"Uploader: {Context.Guild.GetMember(index.Uploader).Mention ?? $"User left server ({index.Uploader})"}");
+                    $"Uploader: {(await Context.Guild.GetOrFetchMemberAsync(index.Uploader)).Mention ?? $"User left server ({index.Uploader})"}");
                 strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
                 pages.Add(strBuilder.ToString());
             }

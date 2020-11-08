@@ -7,6 +7,7 @@ using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services.Club;
 using Hanekawa.Database;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
@@ -48,7 +49,7 @@ namespace Hanekawa.Bot.Modules.Club
                 var memberCount =
                     await db.ClubPlayers.CountAsync(y => y.GuildId == Context.Guild.Id.RawValue && y.ClubId == x.Id);
                 if (memberCount == 0) continue;
-                var leader = Context.Guild.GetMember(x.LeaderId).Mention ??
+                var leader = (await Context.Guild.GetOrFetchMemberAsync(x.LeaderId)).Mention ??
                              "Couldn't find user or left server.";
                 pages.Add($"**{x.Name} (id: {x.Id})**\n" +
                           $"Members: {memberCount}\n" +
@@ -85,7 +86,7 @@ namespace Hanekawa.Bot.Modules.Club
                 await db.ClubPlayers.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.ClubId == club.Id).ToListAsync();
             var officers = new StringBuilder();
             foreach (var x in clubUsers.Where(x => x.Rank == 2))
-                officers.AppendLine($"{Context.Guild.GetMember(x.UserId).Mention}\n");
+                officers.AppendLine($"{(await Context.Guild.GetOrFetchMemberAsync(x.UserId)).Mention}\n");
 
             if (officers.Length == 0) officers.AppendLine("No officers");
 
@@ -101,7 +102,7 @@ namespace Hanekawa.Bot.Modules.Club
                     {
                         IsInline = false, Name = "Leader",
                         Value =
-                            $"{Context.Guild.GetMember(club.LeaderId).Mention ?? "Couldn't find user or left server."}"
+                            $"{(await Context.Guild.GetOrFetchMemberAsync(club.LeaderId)).Mention ?? "Couldn't find user or left server."}"
                     },
                     new LocalEmbedFieldBuilder
                         {IsInline = false, Name = "Officers", Value = officers.ToString().Truncate(999)}

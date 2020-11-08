@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var roles = string.Join(", ", roleList);
             var result = new List<string>
             {
-                "*⮞ User Information**\n" +
+                "**⮞ User Information**\n" +
                 $"Status: {user.GetStatus()}\n" +
                 $"{user.GetGame()}\n" +
                 $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n",
@@ -77,8 +77,8 @@ namespace Hanekawa.Bot.Services.Administration.Warning
                        "Next pages contain specific warnings");
             foreach (var x in warns)
             {
-                var input = $"{x.Id} - {x.Type}\n" +
-                            $"Moderator: {user.Guild.GetMember(x.UserId).Mention ?? $"{x.Id}"}\n" +
+                var input = $"**⮞ {x.Id} - {x.Type}**\n" +
+                            $"Moderator: {(await user.Guild.GetOrFetchMemberAsync(x.Moderator)).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";
@@ -99,7 +99,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             for (var i = 0; i < count; i++)
             {
                 var x = list[i];
-                var input = $"Moderator: {user.Guild.GetMember(x.UserId).Mention ?? $"{x.Id}"}\n" +
+                var input = $"Moderator: {(await user.Guild.GetOrFetchMemberAsync(x.UserId)).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";

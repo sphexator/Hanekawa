@@ -138,7 +138,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             for (var i = 0; i < users.Count; i++)
             {
                 var x = users[i];
-                var user = Context.Guild.GetMember(x.UserId);
+                var user = await Context.Guild.GetOrFetchMemberAsync(x.UserId);
                 if (user == null)
                 {
                     x.Active = false;
