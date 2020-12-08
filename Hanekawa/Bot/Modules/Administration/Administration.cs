@@ -199,42 +199,14 @@ namespace Hanekawa.Bot.Modules.Administration
         {
             if (user == Context.User) return;
             await Context.Message.TryDeleteMessageAsync();
-            duration ??= TimeSpan.FromHours(12);
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            duration ??= await _mute.GetMuteTime(user, db);
+            
             var muteRes = await _mute.TimedMute(user, Context.Member, duration.Value, db, reason);
             if (muteRes)
             {
                 await Context.ReplyAndDeleteAsync(null, false,
                     new LocalEmbedBuilder().Create($"Muted {user.Mention} for {duration.Value.Humanize(2)}",
-                        Color.Green), TimeSpan.FromSeconds(20));
-            }
-            else
-            {
-                await Context.ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder()
-                        .Create($"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
-                            Color.Red),
-                    TimeSpan.FromSeconds(20));
-            }
-        }
-
-        [Name("Mute")]
-        [Command("mute")]
-        [Description("Mutes a user")]
-        [RequireBotGuildPermissions(Permission.ManageMessages, Permission.ManageRoles, Permission.MuteMembers)]
-        [RequireMemberGuildPermissions(Permission.ManageMessages)]
-        public async Task MuteAsync(CachedMember user, [Remainder] string reason = "No reason")
-        {
-            if (user == Context.User) return;
-            await Context.Message.TryDeleteMessageAsync();
-            
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var muteRes = await _mute.Mute(user, db);
-            if (muteRes)
-            {
-                await Context.ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder().Create($"Muted {user.Mention}",
                         Color.Green), TimeSpan.FromSeconds(20));
             }
             else
