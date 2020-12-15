@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
+using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,10 +13,11 @@ namespace Hanekawa.Bot.Modules.Account
         [Name("Profile")]
         [Command("profile")]
         [Description("Showcase yours or another persons profile")]
+        [RequireBotGuildPermissions(Permission.AttachFiles, Permission.SendMessages)]
         [RequiredChannel]
         public async Task ProfileAsync(CachedMember user = null)
         {
-            if (user == null) user = Context.Member;
+            user ??= Context.Member;
             await Context.Channel.TriggerTypingAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await using var image = await _image.ProfileBuilder(user, db);
