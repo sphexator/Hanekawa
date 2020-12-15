@@ -20,9 +20,9 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Settings : HanekawaCommandModule
     {
         private readonly ColourService _colourService;
-        private readonly GuildPrefix _prefix;
+        private readonly Services.Caching.Prefix _prefix;
 
-        public Settings(ColourService colourService, GuildPrefix prefix)
+        public Settings(ColourService colourService, Services.Caching.Prefix prefix)
         {
             _colourService = colourService;
             _prefix = prefix;
