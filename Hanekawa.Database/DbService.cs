@@ -492,6 +492,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.LogJoin).HasConversion<long>();
                 x.Property(e => e.LogWarn).HasConversion<long>();
                 x.Property(e => e.LogMsg).HasConversion<long>();
+                x.Property(e => e.LogReaction).HasConversion<long>();
             });
             modelBuilder.Entity<SuggestionConfig>(x =>
             {
