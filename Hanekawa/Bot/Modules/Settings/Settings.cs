@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
+using Hanekawa.Bot.Prefix;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -19,8 +20,13 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Settings : HanekawaCommandModule
     {
         private readonly ColourService _colourService;
+        private readonly GuildPrefix _prefix;
 
-        public Settings(ColourService colourService) => _colourService = colourService;
+        public Settings(ColourService colourService, GuildPrefix prefix)
+        {
+            _colourService = colourService;
+            _prefix = prefix;
+        }
 
         [Name("Add prefix")]
         [Command("addprefix", "aprefix")]
@@ -32,6 +38,7 @@ namespace Hanekawa.Bot.Modules.Settings
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
+                _prefix.AddorUpdatePrefix(Context.Guild, prefix);
                 config.Prefix = prefix;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);

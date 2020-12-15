@@ -10,5 +10,7 @@
         public ulong? LogWarn { get; set; } = null;
         public ulong? LogAutoMod { get; set; } = null;
         public ulong? LogVoice { get; set; } = null;
+        public ulong? LogReaction { get; set; } = null;
+        public string ReactionWebhook { get; set; } = null;
     }
 }

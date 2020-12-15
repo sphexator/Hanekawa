@@ -13,9 +13,11 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
+using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Humanizer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -125,6 +127,18 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             await NotifyUser(user, after);
             _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id.RawValue} muted {user.Id.RawValue} in {user.Guild.Id.RawValue} for {after.Humanize(2)}");
             return true;
+        }
+
+        public async Task<TimeSpan> GetMuteTime(CachedMember user, DbService db)
+        {
+            var warns = await db.Warns.Where(x =>
+                x.GuildId == user.Guild.Id.RawValue && 
+                x.UserId == user.Id.RawValue &&
+                x.Type == WarnReason.Muted &&
+                x.Time >= DateTime.UtcNow.AddDays(-30)).ToListAsync();
+            return warns == null || warns.Count == 0 
+                ? TimeSpan.FromHours(1) 
+                : TimeSpan.FromHours(warns.Count + 2);
         }
 
         private async Task NotifyUser(CachedMember user, TimeSpan duration)

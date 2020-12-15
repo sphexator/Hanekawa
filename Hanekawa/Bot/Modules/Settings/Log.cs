@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -11,6 +14,7 @@ using Qmmands;
 namespace Hanekawa.Bot.Modules.Settings
 {
     [Name("Log")]
+    [Description("Log various actions users do to a channel of your choice so you have a better overview of the server.")]
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     [RequireMemberGuildPermissions(Permission.ManageGuild)]
     public class Log : HanekawaCommandModule
@@ -123,7 +127,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Auto-Moderator")]
         [Command("logautomod")]
         [Description(
-            "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\n Leave empty to disable")]
+            "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\nLeave empty to disable")]
         public async Task AutoModeratorLogAsync(CachedTextChannel channel = null)
         {
             
@@ -163,6 +167,37 @@ namespace Hanekawa.Bot.Modules.Settings
             await Context.ReplyAsync($"Set voice activity logging channel to {channel.Mention}!",
                 Color.Green);
             await db.SaveChangesAsync();
+        }
+
+        [Name("Reaction")]
+        [Command("logreaction", "logreac")]
+        [Description(
+            "Logs reaction activity, when people add or remove a message it'll be logged to specified channel. Provide no channel to disable.")]
+        public async Task LogReactionAsync(CachedTextChannel channel = null)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            if (!cfg.LogReaction.HasValue && channel != null)
+            {
+                var webhook = await channel.GetWebhooksAsync();
+                var check = webhook.FirstOrDefault(x => x.Owner.Id != Context.Guild.CurrentMember.Id);
+                RestWebhook client;
+                if (check == null) client = await channel.CreateWebhookAsync("Hanekawa Log");
+                else client = check;
+                // CFG Null yada yada
+                return;
+            }
+            if (channel == null)
+            {
+
+                return;
+            }
+
+            if (channel.Id.RawValue != cfg.LogReaction.Value)
+            {
+
+                return;
+            }
         }
     }
 }

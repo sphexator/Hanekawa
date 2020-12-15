@@ -8,7 +8,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
 
 namespace Hanekawa.Bot.Prefix
 {
@@ -71,6 +70,14 @@ namespace Hanekawa.Bot.Prefix
 
             mentionPrefix = null;
             return false;
+        }
+
+        public void AddorUpdatePrefix(CachedGuild guild, string prefix)
+        {
+            var prefixes = _prefixCollection.GetOrAdd(guild.Id, new HashSet<IPrefix>());
+            prefixes.Clear();
+            prefixes.Add(new StringPrefix(prefix));
+            _prefixCollection.AddOrUpdate(guild.Id, prefixes, (snowflake, set) => prefixes);
         }
     }
 }

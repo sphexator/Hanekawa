@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 
@@ -26,6 +27,9 @@ namespace Hanekawa.Bot.Services.Logging
             _client.MessageDeleted += MessageDeleted;
             _client.MessageUpdated += MessageUpdated;
             _client.MessagesBulkDeleted += MessagesBulkDeleted;
+
+            _client.ReactionAdded += ReactionAddLog;
+            _client.ReactionRemoved += ReactionRemovedLog;
 
             _client.MemberUpdated += GuildMemberUpdated;
             _client.UserUpdated += UserUpdated;

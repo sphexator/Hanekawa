@@ -61,12 +61,12 @@ namespace Hanekawa.Bot.Services.Welcome
                     {
                         var banner = await _img.WelcomeBuilder(user, db);
                         banner.Position = 0;
-                        message = await channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.png"), msg);
+                        message = await channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.png"), msg, false, null, LocalMentions.None);
                     }
                     else
                     {
                         if (msg == null) return;
-                        message = await channel.SendMessageAsync(msg);
+                        message = await channel.SendMessageAsync(msg, false, null, LocalMentions.None);
                     }
                     var del = DeleteWelcomeAsync(message, cfg);
                     var exp = WelcomeRewardAsync(_client, channel, cfg, db);

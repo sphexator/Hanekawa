@@ -37,12 +37,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Disqord" Version="1.0.0-nightly-00078" />
-        <PackageReference Include="Disqord.Bot" Version="1.0.0-nightly-00078" />
-        <PackageReference Include="Disqord.Core" Version="1.0.0-nightly-00078" />
-        <PackageReference Include="Disqord.Extensions.Audio" Version="1.0.0-nightly-00078" />
-        <PackageReference Include="Disqord.Extensions.Interactivity" Version="1.0.0-nightly-00078" />
-        <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00078" />
+        <PackageReference Include="Disqord" Version="1.0.0-nightly-00080" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-nightly-00080" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-nightly-00080" />
+        <PackageReference Include="Disqord.Extensions.Audio" Version="1.0.0-nightly-00080" />
+        <PackageReference Include="Disqord.Extensions.Interactivity" Version="1.0.0-nightly-00080" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00080" />
         <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0-nightly-00070" />
         <PackageReference Include="Humanizer" Version="2.8.26" />
         <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
