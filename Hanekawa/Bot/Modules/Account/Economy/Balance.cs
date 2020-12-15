@@ -11,7 +11,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
-using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
@@ -84,13 +83,14 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         public async Task DailyAsync(CachedMember user = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
+            var cdCheck = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            if (cooldownCheckAccount.DailyCredit.AddHours(18) >= DateTime.UtcNow)
+            if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
             {
-                var timer = cooldownCheckAccount.DailyCredit.AddHours(18) - DateTime.UtcNow;
+                var timer = cdCheck.DailyCredit.AddHours(18) - DateTime.UtcNow;
                 await Context.ReplyAsync(
-                    $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize(2)}",
+                    $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize(2)}\n" +
+                    "Dailies reset at midnight UTC!",
                     Color.Red);
                 return;
             }
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 user = Context.Member;
                 reward = 200;
                 var userData = await db.GetOrCreateUserData(user);
-                userData.DailyCredit = DateTime.UtcNow;
+                userData.DailyCredit = DateTime.UtcNow.Date;
                 userData.Credit += reward;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(
@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
                 reward = new Random().Next(200, 300);
                 var userData = await db.GetOrCreateUserData(Context.Member);
                 var receiverData = await db.GetOrCreateUserData(user);
-                userData.DailyCredit = DateTime.UtcNow;
+                userData.DailyCredit = DateTime.UtcNow.Date;
                 receiverData.Credit += reward;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync(

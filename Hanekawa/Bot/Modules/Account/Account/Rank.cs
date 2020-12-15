@@ -117,14 +117,15 @@ namespace Hanekawa.Bot.Modules.Account
         {
             if (user == Context.User) return;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cooldownCheckAccount = await db.GetOrCreateUserData(Context.Member);
+            var cdCheck = await db.GetOrCreateUserData(Context.Member);
             if (user == null)
             {
-                if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+                if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
                 {
-                    var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
+                    var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
                     await Context.ReplyAsync(
-                        $"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}");
+                        $"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
+                        "Reputation reset at midnight UTC!");
                 }
                 else
                 {
@@ -136,19 +137,20 @@ namespace Hanekawa.Bot.Modules.Account
                 return;
             }
 
-            if (cooldownCheckAccount.RepCooldown.AddHours(18) >= DateTime.UtcNow)
+            if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow.Date)
             {
-                var timer = cooldownCheckAccount.RepCooldown.AddHours(18) - DateTime.UtcNow;
-                await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}",
+                var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
+                await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
+                                         "Reputation reset at midnight UTC!",
                     Color.Red);
                 return;
             }
 
             var userData = await db.GetOrCreateUserData(user);
-            cooldownCheckAccount.RepCooldown = DateTime.UtcNow;
+            userData.RepCooldown = DateTime.UtcNow.Date;
             userData.Rep++;
             await db.SaveChangesAsync();
-            await Context.ReplyAsync($"rewarded {user.Mention} with a reputation point!", Color.Green);
+            await Context.ReplyAsync($"Rewarded {user.Mention} with a reputation point!", Color.Green);
         }
     }
 }
