@@ -85,9 +85,9 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cdCheck = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
+            if (cdCheck.DailyCredit.Date.AddDays(1) > DateTime.UtcNow)
             {
-                var timer = cdCheck.DailyCredit.AddHours(18) - DateTime.UtcNow;
+                var timer = cdCheck.DailyCredit.Date.AddDays(1) - DateTime.UtcNow;
                 await Context.ReplyAsync(
                     $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize(2)}\n" +
                     "Dailies reset at midnight UTC!",
