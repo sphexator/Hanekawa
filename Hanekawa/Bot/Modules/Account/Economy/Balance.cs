@@ -83,11 +83,11 @@ namespace Hanekawa.Bot.Modules.Account.Economy
         public async Task DailyAsync(CachedMember user = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cdCheck = await db.GetOrCreateUserData(Context.Member);
+            var userData = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            if (cdCheck.DailyCredit.Date.AddDays(1) > DateTime.UtcNow)
+            if (userData.DailyCredit.Date.AddDays(1) >= DateTime.UtcNow.Date)
             {
-                var timer = cdCheck.DailyCredit.Date.AddDays(1) - DateTime.UtcNow;
+                var timer = userData.DailyCredit.Date.AddDays(1) - DateTime.UtcNow;
                 await Context.ReplyAsync(
                     $"{Context.User.Mention} daily {currencyCfg.CurrencyName} refresh in {timer.Humanize(2)}\n" +
                     "Dailies reset at midnight UTC!",
@@ -100,7 +100,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             {
                 user = Context.Member;
                 reward = 200;
-                var userData = await db.GetOrCreateUserData(user);
                 userData.DailyCredit = DateTime.UtcNow.Date;
                 userData.Credit += reward;
                 await db.SaveChangesAsync();
@@ -111,7 +110,6 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             else
             {
                 reward = new Random().Next(200, 300);
-                var userData = await db.GetOrCreateUserData(Context.Member);
                 var receiverData = await db.GetOrCreateUserData(user);
                 userData.DailyCredit = DateTime.UtcNow.Date;
                 receiverData.Credit += reward;
