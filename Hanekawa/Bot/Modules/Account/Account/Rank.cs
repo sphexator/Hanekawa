@@ -115,12 +115,11 @@ namespace Hanekawa.Bot.Modules.Account
         [RequiredChannel]
         public async Task RepAsync(CachedMember user = null)
         {
-            if (user == Context.User) return;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cdCheck = await db.GetOrCreateUserData(Context.Member);
-            if (user == null)
+            if (user == null || user == Context.User)
             {
-                if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
+                if (cdCheck.RepCooldown.Date.AddDays(1) >= DateTime.UtcNow.Date)
                 {
                     var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
                     await Context.ReplyAsync(
@@ -136,8 +135,8 @@ namespace Hanekawa.Bot.Modules.Account
 
                 return;
             }
-
-            if (cdCheck.RepCooldown.Date.AddDays(1) <= DateTime.UtcNow)
+            
+            if (cdCheck.RepCooldown.Date.AddDays(1) >= DateTime.UtcNow.Date)
             {
                 var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
                 await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
@@ -147,7 +146,7 @@ namespace Hanekawa.Bot.Modules.Account
             }
 
             var userData = await db.GetOrCreateUserData(user);
-            userData.RepCooldown = DateTime.UtcNow.Date;
+            cdCheck.RepCooldown = DateTime.UtcNow.Date;
             userData.Rep++;
             await db.SaveChangesAsync();
             await Context.ReplyAsync($"Rewarded {user.Mention} with a reputation point!", Color.Green);
