@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Modules.Account.Economy
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateUserData(Context.Member);
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            if (userData.DailyCredit.Date.AddDays(1) >= DateTime.UtcNow.Date)
+            if (userData.DailyCredit.Date.AddDays(1) > DateTime.UtcNow)
             {
                 var timer = userData.DailyCredit.Date.AddDays(1) - DateTime.UtcNow;
                 await Context.ReplyAsync(
