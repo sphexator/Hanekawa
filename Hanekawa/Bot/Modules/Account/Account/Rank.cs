@@ -119,7 +119,7 @@ namespace Hanekawa.Bot.Modules.Account
             var cdCheck = await db.GetOrCreateUserData(Context.Member);
             if (user == null || user == Context.User)
             {
-                if (cdCheck.RepCooldown.Date.AddDays(1) >= DateTime.UtcNow.Date)
+                if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
                 {
                     var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
                     await Context.ReplyAsync(
@@ -136,7 +136,7 @@ namespace Hanekawa.Bot.Modules.Account
                 return;
             }
             
-            if (cdCheck.RepCooldown.Date.AddDays(1) >= DateTime.UtcNow.Date)
+            if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
             {
                 var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
                 await Context.ReplyAsync($"{Context.User.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
