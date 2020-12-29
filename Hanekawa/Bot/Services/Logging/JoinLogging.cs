@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -35,9 +35,15 @@ namespace Hanekawa.Bot.Services.Logging
                         Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                         Timestamp = DateTimeOffset.UtcNow
                     };
-                    var gusr = await guild.GetOrFetchMemberAsync(user.Id);
+                    var gusr = guild.GetMember(user.Id);
                     if (gusr != null)
+                    {
+                        var roles = new StringBuilder();
+                        foreach (var role in gusr.Roles) roles.Append($"{role.Value.Name}, ");
                         embed.AddField("Time in server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
+                        embed.AddField("Roles", roles.ToString());
+                    }
+
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception exception)
