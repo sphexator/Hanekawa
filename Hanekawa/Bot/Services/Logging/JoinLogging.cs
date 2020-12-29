@@ -40,10 +40,10 @@ namespace Hanekawa.Bot.Services.Logging
                         embed.AddField("Time in server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {guild.Id.RawValue} for Join Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -74,10 +74,10 @@ namespace Hanekawa.Bot.Services.Logging
 
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, e,
-                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {e.Message}");
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
