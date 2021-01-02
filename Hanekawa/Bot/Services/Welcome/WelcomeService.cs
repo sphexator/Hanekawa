@@ -13,6 +13,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Shared.Interfaces;
 using Hanekawa.Utility;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +36,39 @@ namespace Hanekawa.Bot.Services.Welcome
             _provider = provider;
 
             _client.MemberJoined += WelcomeUser;
+            _client.MemberLeft += DeleteBanner;
             _client.LeftGuild += LeftGuild;
+        }
+
+        private Task DeleteBanner(MemberLeftEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if(!_cooldown.TryGetValue(e.Guild.Id.RawValue, out var cooldown)) return;
+                    if (!cooldown.TryGetValue(e.User.Id.RawValue, out var result)) return;
+                    if (!(result is ValueTuple<ulong, ulong> cache)) return;
+                    var channel = e.Guild.GetTextChannel(cache.Item1);
+                    var msg = channel?.GetMessage(cache.Item2);
+                    if (msg == null && channel != null)
+                    {
+                        var message = await channel.GetMessageAsync(cache.Item2);
+                        if (message == null) return;
+                        await message.DeleteAsync();
+                        return;
+                    }
+
+                    if (msg == null) return;
+                    await msg.DeleteAsync();
+                }
+                catch (Exception exception)
+                {
+                    _log.LogAction(LogLevel.Error, exception,
+                        $"(Welcome Service) Error in {e.Guild.Id.RawValue} for User Left (Banner Cleanup) - {exception.Message}");
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private Task WelcomeUser(MemberJoinedEventArgs e)
@@ -68,6 +101,10 @@ namespace Hanekawa.Bot.Services.Welcome
                         if (msg == null) return;
                         message = await channel.SendMessageAsync(msg, false, null, LocalMentions.None);
                     }
+
+                    if (message != null && _cooldown.TryGetValue(user.Guild.Id.RawValue, out var userCooldown)) 
+                        userCooldown.Set(user.Id.RawValue, new ValueTuple<ulong, ulong>(channel.Id.RawValue, message.Id.RawValue));
+
                     var del = DeleteWelcomeAsync(message, cfg);
                     var exp = WelcomeRewardAsync(_client, channel, cfg, db);
                     await Task.WhenAny(del, exp);
