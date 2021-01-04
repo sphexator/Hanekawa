@@ -121,13 +121,15 @@ namespace Hanekawa.Shared.Command.Extensions
                     i++;
                 }
 
+                var page = pages.Count + 1;
+                var maxPage = Convert.ToInt32( Math.Ceiling((double)content.Count / pageSize));
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
                     Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = guildIcon.GetIconUrl()},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color,
-                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {pages.Count + 1}/{Convert.ToInt32(content.Count / pageSize)}"}
+                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {page}/{maxPage}"}
                 }.Build()));
                 sb.Clear();
             }
