@@ -14,7 +14,7 @@
     <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00080" />
     <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0-nightly-00070" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.9" />
-    <PackageReference Include="Qmmands" Version="3.1.3-nightly-00248" />
+    <PackageReference Include="Qmmands" Version="3.1.3-nightly-00249" />
   </ItemGroup>
 
   <ItemGroup>
