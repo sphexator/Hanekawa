@@ -23,6 +23,13 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Owner : HanekawaCommandModule
     {
+        [Command("test")]
+        [Disabled]
+        public async Task TestAsync()
+        {
+
+        }
+
         [Name("Re-index Server Rankings")]
         [Command("rankindex")]
         [Description("Re-indexes the ranks, puts people that's left the server as inactive if they arnt already")]

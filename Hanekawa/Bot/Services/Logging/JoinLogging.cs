@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -68,6 +70,41 @@ namespace Hanekawa.Bot.Services.Logging
                     if (!cfg.LogJoin.HasValue) return;
                     var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                     if (channel == null) return;
+                    Tuple<CachedUser, string> inviteeInfo = null;
+                    var restInvites = await user.Guild.GetInvitesAsync();
+                    if (!_invites.TryGetValue(user.Guild.Id.RawValue, out var invites))
+                    {
+                        invites = _invites.GetOrAdd(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>());
+                        for (var i = 0; i < restInvites.Count; i++)
+                        {
+                            var x = restInvites[i];
+                            invites.Add(new Tuple<string, ulong, int>(x.Code, x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
+                        }
+                    }
+                    else
+                    {
+                        Tuple<string, ulong, int> check = null;
+                        for (var i = 0; i < restInvites.Count; i++)
+                        {
+                            if(check != null) continue;
+                            var x = restInvites[i];
+                            foreach (var y in invites)
+                            {
+                                if(check != null) continue;
+                                if (y.Item3 + 1 == x.Metadata.Uses) check = new Tuple<string, ulong, int>(y.Item1, y.Item2, y.Item3);
+                            }
+                        }
+                        if (check != null)
+                        {
+                            invites.Remove(check);
+                            invites.Add(new Tuple<string, ulong, int>(check.Item1, check.Item2, check.Item3 + 1));
+                            var invitee = user.Guild.GetMember(check.Item2);
+                            if (invitee != null)
+                            {
+                                inviteeInfo = new Tuple<CachedUser, string>(invitee, $"discord.gg/{check.Item1}");
+                            }
+                        }
+                    }
 
                     var embed = new LocalEmbedBuilder
                     {
@@ -77,7 +114,9 @@ namespace Hanekawa.Bot.Services.Logging
                         Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                         Timestamp = DateTimeOffset.UtcNow
                     };
-
+                    if (inviteeInfo != null)
+                        embed.AddField("Invite", $"{inviteeInfo.Item2}\n" +
+                                                 $"by: {e.Member}");
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception exception)
