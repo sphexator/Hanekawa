@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 {
                     if(!_cooldown.TryGetValue(e.Guild.Id.RawValue, out var cooldown)) return;
                     if (!cooldown.TryGetValue(e.User.Id.RawValue, out var result)) return;
-                    if (!(result is ValueTuple<ulong, ulong> cache)) return;
+                    if (!(result is ValueTuple<ulong, ulong, Task> cache)) return;
                     var channel = e.Guild.GetTextChannel(cache.Item1);
                     var msg = channel?.GetMessage(cache.Item2);
                     if (msg == null && channel != null)
@@ -56,11 +56,15 @@ namespace Hanekawa.Bot.Services.Welcome
                         var message = await channel.GetMessageAsync(cache.Item2);
                         if (message == null) return;
                         await message.DeleteAsync();
+                        cooldown.Remove(e.User.Id.RawValue);
+                        if(cache.Item3.Status == TaskStatus.Running) cache.Item3.Dispose();
                         return;
                     }
 
                     if (msg == null) return;
                     await msg.DeleteAsync();
+                    cooldown.Remove(e.User.Id.RawValue);
+                    if (cache.Item3.Status == TaskStatus.Running) cache.Item3.Dispose();
                 }
                 catch (Exception exception)
                 {
@@ -102,11 +106,10 @@ namespace Hanekawa.Bot.Services.Welcome
                         message = await channel.SendMessageAsync(msg, false, null, LocalMentions.None);
                     }
 
-                    if (message != null && _cooldown.TryGetValue(user.Guild.Id.RawValue, out var userCooldown)) 
-                        userCooldown.Set(user.Id.RawValue, new ValueTuple<ulong, ulong>(channel.Id.RawValue, message.Id.RawValue));
-
                     var del = DeleteWelcomeAsync(message, cfg);
                     var exp = WelcomeRewardAsync(_client, channel, cfg, db);
+                    if (message != null && _cooldown.TryGetValue(user.Guild.Id.RawValue, out var userCooldown))
+                        userCooldown.Set(user.Id.RawValue, new ValueTuple<ulong, ulong, Task>(channel.Id.RawValue, message.Id.RawValue, del));
                     await Task.WhenAny(del, exp);
                     _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                 }
