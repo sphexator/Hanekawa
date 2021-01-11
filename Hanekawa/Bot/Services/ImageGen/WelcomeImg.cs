@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Services.ImageGen
         private async Task<Tuple<Image, WelcomeBanner>> GetBanner(ulong guildId, DbService db, bool premium)
         {
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
-            if (list.Count == 0) return null;
+            if (list.Count == 0) return new Tuple<Image, WelcomeBanner>(_welcomeTemplate, _defWelcomeBanner);
             var backgroundRaw = list[_random.Next(list.Count)];
             var background = await _client.GetStreamAsync(backgroundRaw.Url);
             var response = background.ToEditable();

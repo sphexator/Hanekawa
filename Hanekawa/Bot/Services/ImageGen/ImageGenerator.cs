@@ -13,6 +13,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Hanekawa.Database.Tables.Config;
 
 namespace Hanekawa.Bot.Services.ImageGen
 {
@@ -71,8 +72,8 @@ namespace Hanekawa.Bot.Services.ImageGen
         private readonly FontFamily _times;
 
         // Welcome
-        private readonly Font _welcomeFontRegular;
         private readonly Image _welcomeTemplate;
+        private readonly WelcomeBanner _defWelcomeBanner;
 
         // Hunger Games
         private readonly Font _hgTimes;
@@ -88,6 +89,16 @@ namespace Hanekawa.Bot.Services.ImageGen
             _arial = _fonts.Install("Data/Fonts/ARIAL.TTF");
             
             _welcomeTemplate = Image.Load("Data/Welcome/Default.png", new PngDecoder {IgnoreMetadata = true });
+            _defWelcomeBanner = new WelcomeBanner
+            {
+                AvatarSize = 60,
+                AviPlaceX = 10,
+                AviPlaceY = 10,
+                TextSize = 33,
+                TextPlaceX = 245,
+                TextPlaceY = 40,
+                IsNsfw = false
+            };
 
             _profileText = new Font(_arial, 20, FontStyle.Regular);
             _profileName = new Font(_arial, 32, FontStyle.Regular);
