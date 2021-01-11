@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                 var progressBar = CreateProfileProgressBar(userData);
                 // TODO: Create a inventory for backgrounds
                 var background = await GetProfileBackground(db);
-                var avi = await GetAvatarAsync(user, new Size(110, 110), 61);
+                var avi = await GetAvatarAsync(user, new Size(110, 110), false);
 
                 var serverRank = await GetRankAsync(userData, db);
                 var globalRank = await GetRankAsync(globalData, db);

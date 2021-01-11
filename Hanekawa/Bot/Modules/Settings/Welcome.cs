@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Modules.Settings
         [Command("wa", "welcadd")]
         [Description("Adds a welcome banner to the bot")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
-        public async Task AddWelcomeBannerAsync(string url)
+        public async Task AddWelcomeBannerAsync(string url, int aviSize = 60, int aviX = 10, int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
         {
             if (!url.IsPictureUrl())
             {
@@ -42,8 +42,10 @@ namespace Hanekawa.Bot.Modules.Settings
                                          "Example: <https://hanekawa.moe/hanekawa/0003.jpg>", Color.Red);
                 return;
             }
-
-            var example = await _image.WelcomeBuilder(Context.Member, url);
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var guildCfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            await Context.Channel.TriggerTypingAsync();
+            var example = await _image.WelcomeBuilder(Context.Member, url, aviSize, aviX, aviY, textSize, textX, textY, guildCfg.Premium);
             example.Position = 0;
             var msg = await Context.Channel.SendMessageAsync(new LocalAttachment(example, "WelcomeExample.png"),
                 "Do you want to add this banner? (y/N)");
@@ -57,9 +59,6 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
 
-            
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            
             var data = new WelcomeBanner
             {
                 GuildId = Context.Guild.Id.RawValue,

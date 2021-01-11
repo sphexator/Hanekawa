@@ -15,8 +15,8 @@ namespace Hanekawa.Bot.Services.ImageGen
             {
                 // var border = Image.Load(GetBorder());
                 // This will be in the future
-                var aviOne = await GetAvatarAsync(pOneAviUrl, new Size(126, 126));
-                var aviTwo = await GetAvatarAsync(pTwoAviUrl, new Size(126, 126));
+                var aviOne = await GetAvatarAsync(pOneAviUrl, new Size(126, 126), false, false);
+                var aviTwo = await GetAvatarAsync(pTwoAviUrl, new Size(126, 126), false, false);
                 img.Mutate(x => x
                     .DrawImage(aviOne, new Point(3, 92), new GraphicsOptions {Antialias = true})
                     .DrawImage(aviTwo, new Point(223, 92), new GraphicsOptions {Antialias = true})

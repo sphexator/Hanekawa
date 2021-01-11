@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Hanekawa.Bot.Services.ImageGen;
+using Hanekawa.Bot.Services.Welcome;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
@@ -23,11 +25,27 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Owner : HanekawaCommandModule
     {
-        [Command("test")]
-        [Disabled]
-        public async Task TestAsync()
-        {
+        private readonly ImageGenerator _welcome;
+        public Owner(ImageGenerator welcome) => _welcome = welcome;
 
+        [Command("test")]
+        public async Task TestAsync(string image, int aviSize = 60, int aviX = 10, int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var banner = await _welcome.WelcomeBuilder(Context.Member, image, aviSize, aviX, aviY, textSize, textX, textY, true);
+            banner.Position = 0;
+            await Context.Channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.gif"), "Test message", false, null, LocalMentions.None);
+        }
+
+        [Command("pfp")]
+        public async Task PfpAsync()
+        {
+            var embed = new LocalEmbedBuilder
+            {
+                Description = "test",
+                ImageUrl = Context.User.GetAvatarUrl()
+            };
+            await Context.Channel.SendMessageAsync("test avi", false, embed.Build());
         }
 
         [Name("Re-index Server Rankings")]
