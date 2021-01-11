@@ -56,14 +56,14 @@ namespace Hanekawa.Bot.Services.Welcome
                         var message = await channel.GetMessageAsync(cache.Item2);
                         if (message == null) return;
                         await message.DeleteAsync();
-                        cooldown.Remove(e.User.Id.RawValue);
-                        if(cache.Item3.Status == TaskStatus.Running) cache.Item3.Dispose();
+                        cooldown.Set(e.User.Id.RawValue, 0);
+                        if (cache.Item3.Status == TaskStatus.Running) cache.Item3.Dispose();
                         return;
                     }
 
                     if (msg == null) return;
                     await msg.DeleteAsync();
-                    cooldown.Remove(e.User.Id.RawValue);
+                    cooldown.Set(e.User.Id.RawValue, 0);
                     if (cache.Item3.Status == TaskStatus.Running) cache.Item3.Dispose();
                 }
                 catch (Exception exception)
@@ -110,7 +110,8 @@ namespace Hanekawa.Bot.Services.Welcome
                     var del = DeleteWelcomeAsync(message, cfg);
                     var exp = WelcomeRewardAsync(_client, channel, cfg, db);
                     if (message != null && _cooldown.TryGetValue(user.Guild.Id.RawValue, out var userCooldown))
-                        userCooldown.Set(user.Id.RawValue, new ValueTuple<ulong, ulong, Task>(channel.Id.RawValue, message.Id.RawValue, del));
+                        userCooldown.Set(user.Id.RawValue,
+                            new ValueTuple<ulong, ulong, Task>(channel.Id.RawValue, message.Id.RawValue, del));
                     await Task.WhenAny(del, exp);
                     _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                 }
