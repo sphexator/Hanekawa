@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Bot.Services.Logging;
 using Hanekawa.Database;
@@ -26,7 +25,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
     public partial class MuteService : INService, IRequired
     {
         private readonly Hanekawa _client;
-
+        
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
         private readonly InternalLogService _log;
@@ -165,13 +164,16 @@ namespace Hanekawa.Bot.Services.Administration.Mute
 
         private static async Task<IRole> CreateRole(CachedGuild guild, AdminConfig cfg, DbService db)
         {
-            var role = guild.Roles.FirstOrDefault(x => x.Value.Name.ToLower() == "mute").Value as IRole;
+            var role = guild.Roles.FirstOrDefault(x => x.Value.Name.ToLower() == "mute" && x.Value.Position < guild.CurrentMember.Hierarchy).Value as IRole;
             if (role == null)
             {
                 var cRole = await guild.CreateRoleAsync(x =>
                 {
                     x.Name = "mute";
                     x.Permissions = Optional<GuildPermissions>.Empty;
+                    x.IsHoisted = false;
+                    x.IsMentionable = false;
+                    x.Color = new Optional<Color>(Color.DarkRed);
                 });
                 role = cRole;
             }
