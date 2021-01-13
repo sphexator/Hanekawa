@@ -34,8 +34,9 @@ namespace Hanekawa.Bot.Modules.Owner
         }
 
         [Command("pfp")]
-        public async Task PfpAsync()
+        public async Task PfpAsync(string test = "2342", string test2 = "test2", string test3 = "test3")
         {
+            throw new NullReferenceException();
             var embed = new LocalEmbedBuilder
             {
                 Description = "test",
