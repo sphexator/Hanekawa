@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Events;
+using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -70,7 +72,7 @@ namespace Hanekawa.Bot.Services.Logging
                     if (!cfg.LogJoin.HasValue) return;
                     var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
                     if (channel == null) return;
-                    Tuple<CachedUser, string> inviteeInfo = null;
+                    Tuple<IUser, string> inviteeInfo = null;
                     var restInvites = await user.Guild.GetInvitesAsync();
                     if (!_invites.TryGetValue(user.Guild.Id.RawValue, out var invites))
                     {
@@ -98,10 +100,10 @@ namespace Hanekawa.Bot.Services.Logging
                         {
                             invites.Remove(check);
                             invites.Add(new Tuple<string, ulong, int>(check.Item1, check.Item2, check.Item3 + 1));
-                            var invitee = user.Guild.GetMember(check.Item2);
+                            var invitee = await e.Client.GetOrFetchUserAsync(check.Item2);
                             if (invitee != null)
                             {
-                                inviteeInfo = new Tuple<CachedUser, string>(invitee, $"discord.gg/{check.Item1}");
+                                inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{check.Item1}");
                             }
                         }
                     }
@@ -117,10 +119,11 @@ namespace Hanekawa.Bot.Services.Logging
                     if (inviteeInfo != null)
                     {
                         var msg = new StringBuilder();
+                        
                         msg.AppendLine($"{inviteeInfo.Item2}");
                         var invitee = $"by: {inviteeInfo.Item1.ToString() ?? "User couldn't be found"}";
                         if((msg.ToString() + invites).Length >= 1020) msg.AppendLine(invitee);
-                        embed.AddField("Invite", msg);
+                        if(!msg.ToString().IsNullOrWhiteSpace()) embed.AddField("Invite", msg.ToString().Truncate(1000));
                     }
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
