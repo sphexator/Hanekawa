@@ -81,6 +81,7 @@ namespace Hanekawa
                     {
                         MessageCache = new Optional<MessageCache>(new DefaultMessageCache(100)),
                         Logger = new Optional<ILogger>(new DiscordLogger()),
+                        DefaultMentions = new Optional<LocalMentions>(LocalMentions.NoEveryone),
                         CommandServiceConfiguration = new CommandServiceConfiguration
                         {
                             DefaultRunMode = RunMode.Parallel,
