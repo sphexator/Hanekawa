@@ -115,8 +115,13 @@ namespace Hanekawa.Bot.Services.Logging
                         Timestamp = DateTimeOffset.UtcNow
                     };
                     if (inviteeInfo != null)
-                        embed.AddField("Invite", $"{inviteeInfo.Item2}\n" +
-                                                 $"by: {inviteeInfo.Item1}");
+                    {
+                        var msg = new StringBuilder();
+                        msg.AppendLine($"{inviteeInfo.Item2}");
+                        var invitee = $"by: {inviteeInfo.Item1.ToString() ?? "User couldn't be found"}";
+                        if((msg.ToString() + invites).Length >= 1020) msg.AppendLine(invitee);
+                        embed.AddField("Invite", msg);
+                    }
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception exception)
