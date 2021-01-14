@@ -22,9 +22,10 @@ namespace Hanekawa.Bot.Services.ImageGen
 {
     public partial class ImageGenerator
     {
-        public async Task<Stream> WelcomeBuilder(CachedMember user, DbService db, bool premium)
+        public async Task<Tuple<Stream, bool>> WelcomeBuilder(CachedMember user, DbService db, bool premium)
         {
             var stream = new MemoryStream();
+            bool isGif;
             var (img, welcomeBanner) = await GetBanner(user.Guild.Id.RawValue, db, premium);
             using (img)
             {
@@ -34,6 +35,7 @@ namespace Hanekawa.Bot.Services.ImageGen
                 {
                     await AnimateBanner(img, avatar, user.DisplayName, welcomeBanner.AviPlaceX, welcomeBanner.AviPlaceY, welcomeBanner.TextSize,
                         welcomeBanner.TextPlaceX, welcomeBanner.TextPlaceY).SaveAsync(stream, new GifEncoder());
+                    isGif = true;
                 }
                 else
                 {
@@ -54,10 +56,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                     }
 
                     await img.SaveAsync(stream, new PngEncoder());
+                    isGif = false;
                 }
             }
 
-            return stream;
+            return new Tuple<Stream, bool>(stream, isGif);
         }
 
         public async Task<Stream> WelcomeBuilder(CachedMember user, string url, int aviSize, int aviX, int aviY, int textSize, int textX, int textY, bool premium)
@@ -121,11 +124,13 @@ namespace Hanekawa.Bot.Services.ImageGen
             var background = await _client.GetStreamAsync(backgroundRaw.Url);
             var response = background.ToEditable();
             response.Position = 0;
+            var file = response.GetKnownFileType();
             int width;
             int height;
-            if (premium)
+            Console.WriteLine(file.ToString());
+            if (premium && file == FileType.Gif)
             {
-                using var img = await Image.LoadAsync(response, new PngDecoder());
+                using var img = await Image.LoadAsync(response, new GifDecoder());
                 width = img.Width;
                 height = img.Height;
                 return new Tuple<Image, WelcomeBanner>(img.Clone(x => x.Resize(width, height)), backgroundRaw);
@@ -144,9 +149,10 @@ namespace Hanekawa.Bot.Services.ImageGen
             var background = await _client.GetStreamAsync(url);
             var response = background.ToEditable();
             response.Position = 0;
+            var file = response.GetKnownFileType();
             int width;
             int height;
-            if (premium)
+            if (premium && file == FileType.Gif)
             {
                 using var img = await Image.LoadAsync(response, new GifDecoder());
                 width = img.Width;

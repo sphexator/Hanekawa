@@ -97,9 +97,13 @@ namespace Hanekawa.Bot.Services.Welcome
                     if (cfg.Banner)
                     {
                         var guildCfg = await db.GetOrCreateGuildConfigAsync(user.Guild);
-                        var banner = await _img.WelcomeBuilder(user, db, guildCfg.Premium);
-                        banner.Position = 0;
-                        message = await channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.png"), msg, false, null, LocalMentions.None);
+                        var (stream, isGif) = await _img.WelcomeBuilder(user, db, guildCfg.Premium);
+                        stream.Position = 0;
+                        message = isGif
+                            ? await channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.gif"), msg, false,
+                                null, LocalMentions.None)
+                            : await channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.png"), msg, false,
+                                null, LocalMentions.None);
                     }
                     else
                     {

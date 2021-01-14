@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Modules.Settings
             var msg = await Context.Channel.SendMessageAsync(new LocalAttachment(example, "WelcomeExample.png"),
                 "Do you want to add this banner? (y/N)\n" +
                 "You can adjust placement of avatar and text by adjust these values in the command (this is the full command with default values)\n" +
-                $"**Example:** wa {url.Truncate(5)} {aviSize} {aviX} {aviY} {textSize} {textX} {textY}" +
+                $"**Example:** wa {url.Truncate(5)} {aviSize} {aviX} {aviY} {textSize} {textX} {textY}\n" +
                 $"**Explained:** wa {url.Truncate(5)} PfpSize = {aviSize} PfpX = {aviX} PfpY = {aviY} TextSize = {textSize} TextX = {textX} TextY = {textY}");
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
                 x.Message.Author == Context.Member && x.Message.Guild == Context.Guild && x.Message.Channel == Context.Channel, TimeSpan.FromMinutes(2));

@@ -6,6 +6,7 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
@@ -28,9 +29,14 @@ namespace Hanekawa.Bot.Modules.Owner
         public async Task TestAsync(string image, int aviSize = 60, int aviX = 10, int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var banner = await _welcome.WelcomeBuilder(Context.Member, image, aviSize, aviX, aviY, textSize, textX, textY, true);
-            banner.Position = 0;
-            await Context.Channel.SendMessageAsync(new LocalAttachment(banner, "Welcome.gif"), "Test message", false, null, LocalMentions.None);
+            var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            var (stream, isGif) = await _welcome.WelcomeBuilder(Context.Member, db, cfg.Premium);
+            stream.Position = 0;
+            var message = isGif
+                ? await Context.Channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.gif"), "test", false,
+                    null, LocalMentions.None)
+                : await Context.Channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.png"), "test", false,
+                    null, LocalMentions.None);
         }
 
         [Command("pfp")]
