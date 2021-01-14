@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Rest;
 
 namespace Hanekawa.Extensions
 {
@@ -61,6 +62,14 @@ namespace Hanekawa.Extensions
             if (user != null) return user;
             user = await guild.GetMemberAsync(id);
             return user;
+        }
+
+        public static async Task<IUser> GetOrFetchUserAsync(this DiscordClientBase client, Snowflake id)
+        {
+            var user = client.GetUser(id);
+            if (user != null) return user;
+            var restUser = await client.GetUserAsync(id);
+            return restUser;
         }
     }
 }
