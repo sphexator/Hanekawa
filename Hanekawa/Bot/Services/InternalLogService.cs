@@ -39,12 +39,6 @@ namespace Hanekawa.Bot.Services
 
         public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
 
-        private Task SimulCastClientLog(Exception e)
-        {
-            _logger.Log(NLog.LogLevel.Error, e, e.Message);
-            return Task.CompletedTask;
-        }
-
         private Task CommandExecuted(CommandExecutedEventArgs e)
         {
             _logger.Log(NLog.LogLevel.Info, $"Executed Command {e.Context.Command.Name}");
@@ -121,15 +115,23 @@ namespace Hanekawa.Bot.Services
                         break;
                 }
 
-                if (response.Length == 0) return;
-                await context.Channel.ReplyAsync(response.ToString(), Color.Red);
+                if (response.Length != 0) await context.Channel.ReplyAsync(response.ToString(), Color.Red);
                 var msg = new StringBuilder();
-                msg.AppendLine($"Error in guild: {context.Guild.Id.RawValue}");
+                var args = new StringBuilder();
+                foreach (var x in context.Arguments)
+                {
+                    args.Append($"{x} ");
+                }
+                msg.AppendLine($"Error in guild: {context.Guild.Name} (size: {context.Guild.MemberCount}) - {context.Guild.Id.RawValue}");
+                msg.AppendLine($"Invoked by: {context.User} ({context.User.Id.RawValue})");
                 msg.AppendLine($"Command failed: {e.Result.Command.Name}");
-                msg.AppendLine($"Invoked by: {context.User.Id.RawValue}");
+                msg.AppendLine($"Command Format: {e.Result.Command.Name} {args}");
                 msg.AppendLine($"Reason: {e.Result.Reason}");
                 msg.AppendLine($"Response: {response}");
                 msg.AppendLine(e.Result.Exception.Message);
+                msg.AppendLine(e.Result.Exception.InnerException == null
+                    ? e.Result.Exception.StackTrace
+                    : e.Result.Exception.InnerException.StackTrace);
                 await _client.GetGuild(431617676859932704).GetTextChannel(523165903219720232).SendMessageAsync(msg.ToString().Truncate(1900));
             });
             return Task.CompletedTask;

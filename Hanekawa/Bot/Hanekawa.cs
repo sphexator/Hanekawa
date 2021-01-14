@@ -32,10 +32,10 @@ namespace Hanekawa.Bot
             AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new TimeSpanTypeParser());
 
-            this.CommandExecuted += Hanekawa_CommandExecuted;
+            this.CommandExecuted += HaneCommandExecuted;
         }
 
-        private Task Hanekawa_CommandExecuted(CommandExecutedEventArgs e)
+        private Task HaneCommandExecuted(CommandExecutedEventArgs e)
         {
             (e.Context as HanekawaCommandContext)?.Scope.Dispose();
             return Task.CompletedTask;

@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Services.Welcome
         {
             var users = _cooldown.GetOrAdd(user.Guild.Id.RawValue, new MemoryCache(new MemoryCacheOptions()));
             if (users.TryGetValue(user.Id.RawValue, out _)) return true;
-            users.Set(user.Id.RawValue, 0, TimeSpan.FromSeconds(60));
+            users.Set(user.Id.RawValue, 0, TimeSpan.FromMinutes(10));
             return false;
         }
 

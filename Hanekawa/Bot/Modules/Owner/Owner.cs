@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Owner
@@ -23,6 +22,35 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Owner : HanekawaCommandModule
     {
+        private readonly ImageGenerator _welcome;
+        public Owner(ImageGenerator welcome) => _welcome = welcome;
+
+        [Command("test")]
+        public async Task TestAsync(string image, int aviSize = 60, int aviX = 10, int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            var (stream, isGif) = await _welcome.WelcomeBuilder(Context.Member, db, cfg.Premium);
+            stream.Position = 0;
+            var message = isGif
+                ? await Context.Channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.gif"), "test", false,
+                    null, LocalMentions.None)
+                : await Context.Channel.SendMessageAsync(new LocalAttachment(stream, "Welcome.png"), "test", false,
+                    null, LocalMentions.None);
+        }
+
+        [Command("pfp")]
+        public async Task PfpAsync(string test = "2342", string test2 = "test2", string test3 = "test3")
+        {
+            throw new NullReferenceException();
+            var embed = new LocalEmbedBuilder
+            {
+                Description = "test",
+                ImageUrl = Context.User.GetAvatarUrl()
+            };
+            await Context.Channel.SendMessageAsync("test avi", false, embed.Build());
+        }
+
         [Name("Re-index Server Rankings")]
         [Command("rankindex")]
         [Description("Re-indexes the ranks, puts people that's left the server as inactive if they arnt already")]

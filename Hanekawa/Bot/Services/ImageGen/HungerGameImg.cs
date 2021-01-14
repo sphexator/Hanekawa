@@ -47,11 +47,11 @@ namespace Hanekawa.Bot.Services.ImageGen
                     Image avi;
                     try
                     {
-                        avi = await GetAvatarAsync(x.AfterProfile.Avatar, new Size(80, 80));
+                        avi = await GetAvatarAsync(x.AfterProfile.Avatar, new Size(80, 80), false, false);
                     }
                     catch
                     {
-                        avi = await GetAvatarAsync(guild.GetIconUrl(ImageFormat.Png), new Size(80, 80));
+                        avi = await GetAvatarAsync(guild.GetIconUrl(ImageFormat.Png), new Size(80, 80), false, false);
                         x.AfterProfile.Avatar = guild.GetIconUrl(ImageFormat.Png);
                     }
                     if (x.AfterProfile.Health <= 0 && x.AfterProfile.Alive) x.AfterProfile.Alive = false;

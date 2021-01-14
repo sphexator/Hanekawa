@@ -11,14 +11,8 @@ namespace Hanekawa
     {
         public static void Main(string[] args)
         {
-            try
-            {
-                CreateWebHostBuilder(args).Build().Run();
-            }
-            finally
-            {
-                LogManager.Shutdown();
-            }
+            try { CreateWebHostBuilder(args).Build().Run(); }
+            finally { LogManager.Shutdown(); }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

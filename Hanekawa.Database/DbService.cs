@@ -531,6 +531,12 @@ namespace Hanekawa.Database
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Uploader).HasConversion<long>();
+                x.Property(e => e.AvatarSize).HasDefaultValue(60);
+                x.Property(e => e.AviPlaceX).HasDefaultValue(10);
+                x.Property(e => e.AviPlaceY).HasDefaultValue(10);
+                x.Property(e => e.TextSize).HasDefaultValue(33);
+                x.Property(e => e.TextPlaceX).HasDefaultValue(245);
+                x.Property(e => e.TextPlaceY).HasDefaultValue(40);
             });
             modelBuilder.Entity<LootChannel>(x =>
             {
