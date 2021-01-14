@@ -116,13 +116,15 @@ namespace Hanekawa.Bot.Services.Logging
                         Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
                         Timestamp = DateTimeOffset.UtcNow
                     };
-                    if (inviteeInfo != null)
+                    if (inviteeInfo != null &&
+                        !inviteeInfo.Item2.IsNullOrWhiteSpace())
                     {
                         var msg = new StringBuilder();
                         
                         msg.AppendLine($"{inviteeInfo.Item2}");
-                        var invitee = $"by: {inviteeInfo.Item1.ToString() ?? "User couldn't be found"}";
-                        if((msg.ToString() + invites).Length >= 1020) msg.AppendLine(invitee);
+                        msg.AppendLine(inviteeInfo.Item1 != null
+                            ? $"By: {inviteeInfo.Item1}"
+                            : "By: User couldn't be found");
                         if(!msg.ToString().IsNullOrWhiteSpace()) embed.AddField("Invite", msg.ToString().Truncate(1000));
                     }
                     await channel.SendMessageAsync(null, false, embed.Build());
