@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Services.Logging
                     };
                     if (inviteeInfo != null)
                         embed.AddField("Invite", $"{inviteeInfo.Item2}\n" +
-                                                 $"by: {e.Member}");
+                                                 $"by: {inviteeInfo.Item1}");
                     await channel.SendMessageAsync(null, false, embed.Build());
                 }
                 catch (Exception exception)
