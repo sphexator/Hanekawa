@@ -17,8 +17,8 @@ namespace Hanekawa.Bot.Services.Logging
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        private readonly ConcurrentDictionary<ulong, HashSet<Tuple<string, ulong, int>>> _invites =
-            new ConcurrentDictionary<ulong, HashSet<Tuple<string, ulong, int>>>();
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>> _invites =
+            new ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>>();
 
         public LogService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
         {
@@ -57,8 +57,10 @@ namespace Hanekawa.Bot.Services.Logging
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value.RawValue);
                 if (!cfg.LogJoin.HasValue) return;
-                var invites = _invites.GetOrAdd(e.GuildId.Value.RawValue, new HashSet<Tuple<string, ulong, int>>());
-                invites.RemoveWhere(x => x.Item1 == e.Code);
+                var invites = _invites.GetOrAdd(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<ulong, int>>());
+                invites.Remove(e.Code, out _);
+                _invites.AddOrUpdate(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<ulong, int>>(),
+                    (arg1, tuples) => invites);
             });
             return Task.CompletedTask;
         }
@@ -71,8 +73,10 @@ namespace Hanekawa.Bot.Services.Logging
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(e.Guild);
                 if (!cfg.LogJoin.HasValue) return;
-                var invites = _invites.GetOrAdd(e.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>());
-                invites.Add(new Tuple<string, ulong, int>(e.Code, e.Inviter.Id.RawValue, 0));
+                var invites = _invites.GetOrAdd(e.Guild.Id.RawValue, new ConcurrentDictionary<string, Tuple<ulong, int>>());
+                invites.TryAdd(e.Code, new Tuple<ulong, int>(e.Inviter.Id.RawValue, 0));
+                _invites.AddOrUpdate(e.Guild.Id.RawValue, new ConcurrentDictionary<string, Tuple<ulong, int>>(),
+                    (arg1, tuples) => invites);
             });
             return Task.CompletedTask;
         }
