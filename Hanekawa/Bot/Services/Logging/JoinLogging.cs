@@ -76,12 +76,7 @@ namespace Hanekawa.Bot.Services.Logging
                     var restInvites = await user.Guild.GetInvitesAsync();
                     if (!_invites.TryGetValue(user.Guild.Id.RawValue, out var invites))
                     {
-                        invites = _invites.GetOrAdd(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>());
-                        for (var i = 0; i < restInvites.Count; i++)
-                        {
-                            var x = restInvites[i];
-                            invites.Add(new Tuple<string, ulong, int>(x.Code, x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
-                        }
+                        await UpdateInvites(user, restInvites);
                     }
                     else
                     {
@@ -105,6 +100,8 @@ namespace Hanekawa.Bot.Services.Logging
                             {
                                 inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{check.Item1}");
                             }
+                            _invites.AddOrUpdate(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>(),
+                                (id, set) => invites);
                         }
                     }
 
@@ -136,6 +133,20 @@ namespace Hanekawa.Bot.Services.Logging
                 }
             });
             return Task.CompletedTask;
+        }
+
+        private async  Task UpdateInvites(CachedMember user, IReadOnlyList<RestInvite> restInvites = null)
+        {
+            if (restInvites == null) restInvites = await user.Guild.GetInvitesAsync();
+            var invites = _invites.GetOrAdd(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>());
+            for (var i = 0; i < restInvites.Count; i++)
+            {
+                var x = restInvites[i];
+                invites.Add(new Tuple<string, ulong, int>(x.Code, x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
+            }
+
+            _invites.AddOrUpdate(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>(),
+                (id, set) => invites);
         }
     }
 }
