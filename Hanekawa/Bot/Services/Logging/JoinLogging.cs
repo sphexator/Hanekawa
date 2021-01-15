@@ -7,6 +7,7 @@ using Disqord.Events;
 using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,14 +65,14 @@ namespace Hanekawa.Bot.Services.Logging
             _ = Task.Run(async () =>
             {
                 var user = e.Member;
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                if (!cfg.LogJoin.HasValue) return;
+                var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                if (channel == null) return;
                 try
                 {
-                    using var scope = _provider.CreateScope();
-                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
-                    if (!cfg.LogJoin.HasValue) return;
-                    var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                    if (channel == null) return;
                     Tuple<IUser, string> inviteeInfo = null;
                     var restInvites = await user.Guild.GetInvitesAsync();
                     if (!_invites.TryGetValue(user.Guild.Id.RawValue, out var invites))
@@ -128,6 +129,23 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
+                    try
+                    {
+                        var embed = new LocalEmbedBuilder
+                        {
+                            Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
+                                          $"Account created: {user.CreatedAt.Humanize()}",
+                            Color = Color.Green,
+                            Footer = new LocalEmbedFooterBuilder { Text = $"Username: {user}" },
+                            Timestamp = DateTimeOffset.UtcNow
+                        };
+                        await channel.SendMessageAsync(null, false, embed.Build());
+                    }
+                    catch (Exception e1)
+                    {
+                        _log.LogAction(LogLevel.Error, e1,
+                            $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {e1.Message}");
+                    }
                     _log.LogAction(LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
