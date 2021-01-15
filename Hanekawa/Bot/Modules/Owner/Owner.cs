@@ -8,7 +8,6 @@ using Disqord.Bot;
 using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.ImageGen;
 using Hanekawa.Database;
-using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
@@ -34,9 +33,19 @@ namespace Hanekawa.Bot.Modules.Owner
         [Command("mmlol")]
         public async Task ReturnRole()
         {
-            await Context.Message.DeleteAsync();
-            var role = Context.Guild.Roles.FirstOrDefault(x => x.Value.Name == "ø");
-            await Context.Member.GrantRoleAsync(role.Key);
+            try
+            {
+                await Context.Message.DeleteAsync();
+                var role = Context.Guild.GetRole(431621144517279755);
+                await Context.Member.GrantRoleAsync(role.Id);
+            }
+            catch
+            {
+                await Context.Message.DeleteAsync();
+                var roles = await Context.Guild.GetRolesAsync();
+                var role = roles.FirstOrDefault(x => x.Id.RawValue == 431621144517279755);
+                await Context.Member.GrantRoleAsync(role.Id);
+            }
         }
 
         [Name("Re-index Server Rankings")]
