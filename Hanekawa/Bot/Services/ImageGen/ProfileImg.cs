@@ -47,8 +47,15 @@ namespace Hanekawa.Bot.Services.ImageGen
                     x.Fill(Color.Gray, new EllipsePolygon(200, 59, 55).GenerateOutline(4));
                     if (progressBar.Count >= 2)
                         x.DrawLines(color, 4, progressBar.ToArray());
-                    var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(25)));
-                    x.DrawText(_centerText, username, _profileName, Color.White, new PointF(200, 120));
+                    try
+                    {
+                        x.DrawText(_centerText, user.DisplayName.Truncate(25), _profileName, Color.White, new PointF(200, 120));
+                    }
+                    catch
+                    {
+                        var username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(user.DisplayName.Truncate(25)));
+                        x.DrawText(_centerText, username, _profileName, Color.White, new PointF(200, 120));
+                    }
 
                     //Text
                     x.DrawText(_leftText, "Server", _profileText, Color.White, new PointF(72, 160));

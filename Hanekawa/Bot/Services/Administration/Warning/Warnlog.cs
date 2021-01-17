@@ -20,8 +20,6 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var roles = string.Join(", ", roleList);
             var warnings = await GetWarnings(user, db);
             var content = "**⮞ User Information**\n" +
-                          $"Status: {user.GetStatus()}\n" +
-                          $"{user.GetGame()}\n" +
                           $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
                           "\n" +
                           "**⮞ Member Information**\n" +
@@ -52,8 +50,6 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var result = new List<string>
             {
                 "**⮞ User Information**\n" +
-                $"Status: {user.GetStatus()}\n" +
-                $"{user.GetGame()}\n" +
                 $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n",
                 "**⮞ Member Information**\n" +
                 $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
