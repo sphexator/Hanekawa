@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Hanekawa.Bot.Preconditions;
 using Hanekawa.Bot.Services;
 using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,26 @@ namespace Hanekawa.Bot.Modules.Utility
                 }
             }
             await ReplyAsync($"Added emotes\n {list}");
+        }
+
+        [Name("Avatar")]
+        [Command("avatar", "pfp")]
+        [Description("Sends a embeded message containing the profile picture of user provided, if empty it'll return your own.")]
+        [RequiredChannel]
+        [RequireBotGuildPermissions(Permission.EmbedLinks, Permission.SendMessages)]
+        public async Task AvatarAsync(CachedMember user = null)
+        {
+            user ??= Context.Member;
+            var restUser = await user.Guild.GetMemberAsync(user.Id);
+            var embed = new LocalEmbedBuilder
+            {
+                Author = new LocalEmbedAuthorBuilder {Name = $"{user}"},
+                Title = "Avatar URL",
+                Url = restUser.GetAvatarUrl(),
+                ImageUrl = restUser.GetAvatarUrl(),
+                Color = Context.Colour.Get(user.Guild.Id.RawValue)
+            };
+            await ReplyAsync(embed);
         }
     }
 }
