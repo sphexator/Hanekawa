@@ -28,20 +28,15 @@ namespace Hanekawa.Extensions
                 SizeSuffixes[mag]);
         }
 
-        public static string FormatNumber(this uint num)
-        {
-            if (num >= 100000)
-                return FormatNumber(num / 1000) + "K";
-            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
-            return num.ToString("#,0");
-        }
+        public static bool IsDivisible(this int x, int n) 
+            => x != 0 && (n % x) == 0;
 
-        public static string FormatNumber(this int num)
-        {
-            if (num >= 100000)
-                return FormatNumber(num / 1000) + "K";
-            if (num >= 10000) return (num / 1000D).ToString("0.#") + "K";
-            return num.ToString("#,0");
-        }
+        public static string FormatNumber(this uint num) 
+            => num >= 100000 ? FormatNumber(num / 1000) + "K" :
+                num >= 10000 ? (num / 1000D).ToString("0.#") + "K" : num.ToString("#,0");
+
+        public static string FormatNumber(this int num) 
+            => num >= 100000 ? FormatNumber(num / 1000) + "K" :
+                num >= 10000 ? (num / 1000D).ToString("0.#") + "K" : num.ToString("#,0");
     }
 }
