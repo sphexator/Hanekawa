@@ -109,58 +109,66 @@ namespace Hanekawa.Bot.Services.ImageGen
 
         private async Task<Image> GetAvatarAsync(CachedMember user, Size size, bool premium)
         {
-            var url = user.GetAvatarUrl(user.AvatarHash.StartsWith("a_") 
-                ? ImageFormat.Gif 
-                : ImageFormat.Png);
-
+            var url = user.GetAvatarUrl();
+            var gif = user.AvatarHash != null && user.AvatarHash.StartsWith("a_");
             if (url.IsNullOrWhiteSpace())
             {
                 var restUser = await user.Guild.GetMemberAsync(user.Id);
-                url = restUser.GetAvatarUrl(restUser.AvatarHash.StartsWith("a_") 
-                    ? ImageFormat.Gif 
-                    : ImageFormat.Png);
+                gif = restUser.AvatarHash != null && restUser.AvatarHash.StartsWith("a_");
+                url = restUser.GetAvatarUrl();
             }
 
             try
             {
-                return await GetAvatarAsync(url, size, user.AvatarHash.StartsWith("a_"), premium);
+                return await GetAvatarAsync(url, size, gif, premium);
             }
             catch
             {
                 var restUser = await user.Guild.GetMemberAsync(user.Id);
-                url = restUser.GetAvatarUrl(restUser.AvatarHash.StartsWith("a_")
-                    ? ImageFormat.Gif
-                    : ImageFormat.Png);
-                return await GetAvatarAsync(url, size, user.AvatarHash.StartsWith("a_"), premium);
+                gif = restUser.AvatarHash != null && restUser.AvatarHash.StartsWith("a_");
+                url = restUser.GetAvatarUrl();
+                return await GetAvatarAsync(url, size, gif, premium);
             }
         }
 
         private async Task<Image> GetAvatarAsync(string imgUrl, Size size, bool isGif, bool premium)
         {
-            var avatar = await _client.GetStreamAsync(imgUrl);
-            var response = avatar.ToEditable();
-            response.Position = 0;
-            var radius = (int)Math.Ceiling((size.Width * Math.PI) / (2 * Math.PI));
-            if (premium && isGif)
+            try
             {
-                using var img = await Image.LoadAsync(response, new GifDecoder());
-                using var toReturn = new Image<Rgba64>(Configuration.Default, size.Width, size.Height);
-                for (var i = 0; i < img.Frames.Count; i++)
+                var avatar = await _client.GetStreamAsync(imgUrl);
+                var response = avatar.ToEditable();
+                response.Position = 0;
+                var radius = (int)Math.Ceiling((size.Width * Math.PI) / (2 * Math.PI));
+                if (premium && isGif)
                 {
-                    var x = img.Frames.CloneFrame(i);
-                    x.Mutate(z => z.ConvertToAvatar(size, radius));
-                    toReturn.Frames.InsertFrame(i, x.Frames[0]);
+                    using var img = await Image.LoadAsync(response, new GifDecoder());
+                    using var toReturn = new Image<Rgba64>(Configuration.Default, size.Width, size.Height);
+                    for (var i = 0; i < img.Frames.Count; i++)
+                    {
+                        var x = img.Frames.CloneFrame(i);
+                        x.Mutate(z => z.ConvertToAvatar(size, radius));
+                        toReturn.Frames.InsertFrame(i, x.Frames[0]);
+                    }
+                    toReturn.Frames.RemoveFrame(toReturn.Frames.Count - 1);
+                    return toReturn.Clone(x => x.Resize(size.Width, size.Height));
                 }
-                toReturn.Frames.RemoveFrame(toReturn.Frames.Count - 1);
-                return toReturn.Clone(x => x.Resize(size.Width, size.Height));
+                if (isGif)
+                {
+                    using var img = await Image.LoadAsync(response, new GifDecoder());
+                    return img.Clone(x => x.ConvertToAvatar(size, radius));
+                }
+                else
+                {
+                    using var img = await Image.LoadAsync(response, new PngDecoder());
+                    return img.Clone(x => x.ConvertToAvatar(size, radius));
+                }
             }
-            if (isGif)
+            catch
             {
-                using var img = await Image.LoadAsync(response, new GifDecoder());
-                return img.Clone(x => x.ConvertToAvatar(size, radius));
-            }
-            else
-            {
+                var avatar = await _client.GetStreamAsync("https://i.imgur.com/kI1RXQZ.png");
+                var response = avatar.ToEditable();
+                response.Position = 0;
+                var radius = (int)Math.Ceiling((size.Width * Math.PI) / (2 * Math.PI));
                 using var img = await Image.LoadAsync(response, new PngDecoder());
                 return img.Clone(x => x.ConvertToAvatar(size, radius));
             }

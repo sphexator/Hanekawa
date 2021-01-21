@@ -113,7 +113,7 @@ namespace Hanekawa.Bot.Services.Utility
 
         public async Task<List<ulong>> PostAsync(HanekawaCommandContext context, CachedTextChannel channel, DbService db)
         {
-            var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == context.Guild.Id).ToListAsync();
+            var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == context.Guild.Id.RawValue).ToListAsync();
             var toReturn = new List<ulong>();
             var nonExclusive = new List<SelfAssignAbleRole>();
             for (var i = 0; i < roles.Count;)
@@ -122,12 +122,16 @@ namespace Hanekawa.Bot.Services.Utility
                 var message = new StringBuilder();
                 for (var j = 0; j < 20;)
                 {
+                    if (i >= roles.Count)
+                    {
+                        j++;
+                        continue;
+                    } 
                     var line = new StringBuilder();
                     for (var k = 0; k < 5; k++)
                     {
                         if (i >= roles.Count)
                         {
-                            i++;
                             j++;
                             continue;
                         }
@@ -156,10 +160,13 @@ namespace Hanekawa.Bot.Services.Utility
                     Color = context.ServiceProvider.GetRequiredService<ColourService>().Get(context.Guild.Id.RawValue)
                 };
                 var msg = await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.None);
-                for (var j = 0; j < toAddReaction.Count; j++)
+                if (toAddReaction.Count > 0)
                 {
-                    var reaction = toAddReaction[j];
-                    await msg.AddReactionAsync(reaction);
+                    for (var j = 0; j < toAddReaction.Count; j++)
+                    {
+                        var reaction = toAddReaction[j];
+                        await msg.AddReactionAsync(reaction);
+                    }
                 }
                 toReturn.Add(msg.Id.RawValue);
             }
@@ -198,11 +205,13 @@ namespace Hanekawa.Bot.Services.Utility
                     Description = message.ToString(),
                     Color = context.ServiceProvider.GetRequiredService<ColourService>().Get(context.Guild.Id.RawValue)
                 }.Build(), LocalMentions.None);
-
-                for (var j = 0; j < toAddReaction.Count; j++)
+                if (toAddReaction.Count > 0)
                 {
-                    var reaction = toAddReaction[j];
-                    await msg.AddReactionAsync(reaction);
+                    for (var j = 0; j < toAddReaction.Count; j++)
+                    {
+                        var reaction = toAddReaction[j];
+                        await msg.AddReactionAsync(reaction);
+                    }
                 }
                 toReturn.Add(msg.Id.RawValue);
             }
