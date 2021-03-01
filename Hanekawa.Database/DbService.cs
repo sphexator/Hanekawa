@@ -257,6 +257,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.StatMessages).HasConversion<long>();
                 x.Property(e => e.UserId).HasConversion<long>();
+                x.Property(e => e.Decay).HasDefaultValue(0);
             });
             modelBuilder.Entity<AccountGlobal>(x =>
             {
@@ -269,6 +270,7 @@ namespace Hanekawa.Database
                 x.HasKey(e => new {e.GuildId, e.Level});
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Role).HasConversion<long>();
+                x.Property(e => e.NoDecay).HasDefaultValue(false);
             });
             modelBuilder.Entity<LevelExpEvent>(x =>
             {
@@ -481,6 +483,7 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.BoostExpMultiplier).HasDefaultValue(1);
+                x.Property(e => e.Decay).HasDefaultValue(false);
             });
             modelBuilder.Entity<LoggingConfig>(x =>
             {

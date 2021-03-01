@@ -86,7 +86,7 @@ namespace Hanekawa.Bot.Modules.Account
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Active).OrderByDescending(x => x.TotalExp).Take(toGet).ToArrayAsync();
+            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Active).OrderByDescending(x => x.TotalExp - x.Decay).Take(toGet).ToArrayAsync();
             var result = new List<string>();
             var strBuilder = new StringBuilder();
             for (var i = 0; i < users.Length; i++)

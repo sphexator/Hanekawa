@@ -55,14 +55,19 @@ namespace Hanekawa.Bot.Modules.Level
                 x.Exp = 0;
                 x.TotalExp = 0;
             }
-
-            db.Accounts.UpdateRange(users);
+            
             await db.SaveChangesAsync();
-
-            var updEmbed = msg.Embeds.First().ToEmbedBuilder();
-            updEmbed.Color = Color.Green;
-            updEmbed.Description = "Server level reset complete.";
-            await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
+            try
+            {
+                var updEmbed = msg.Embeds.First().ToEmbedBuilder();
+                updEmbed.Color = Color.Green;
+                updEmbed.Description = "Server level reset complete.";
+                await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
+            }
+            catch
+            {
+                await Context.ReplyAsync("Server level reset complete!", Color.Green);
+            }
         }
 
         [Name("Set Level")]
@@ -75,7 +80,6 @@ namespace Hanekawa.Bot.Modules.Level
             var totalExp = 0;
             for (var i = 1; i < level + 1; i++) totalExp += _exp.ExpToNextLevel(i);
 
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var userdata = await db.GetOrCreateUserData(user);
             userdata.Level = level;
@@ -85,13 +89,38 @@ namespace Hanekawa.Bot.Modules.Level
             await Context.ReplyAsync($"Set {user.Mention} level to {level}", Color.Green);
         }
 
+        [Name("Decay")]
+        [Command("decay")]
+        [Description("Toggles artificial level decay (decay starts after 14 days) No exp is lost")]
+        [RequireMemberGuildPermissions(Permission.ManageGuild)]
+        public async Task DecayAsync()
+        {
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
+            if (cfg.Decay)
+            {
+                cfg.Decay = false;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync(
+                    "Level decay has been disabled.",
+                    Color.Green);
+            }
+            else
+            {
+                cfg.Decay = true;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Level decay has been activated. Decay starts after 14 days of user being inactive (hasn't sent a message).\n" +
+                                         "No exp lost and exp returned to normal after sending a message again.",
+                    Color.Green);
+            }
+        }
+
         [Name("Level Role Stack")]
         [Command("lrs", "lvlstack")]
         [Description("Toggles between level roles stacking or keep the highest earned one")]
         [RequireMemberGuildPermissions(Permission.ManageGuild)]
         public async Task StackToggleAsync()
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
             if (cfg.StackLvlRoles)

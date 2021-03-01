@@ -19,6 +19,7 @@ namespace Hanekawa.Database.Tables.Account
         public int Level { get; set; } = 1;
         public int Exp { get; set; } = 0;
         public int TotalExp { get; set; } = 0;
+        public int Decay { get; set; } = 0;
 
         public DateTime VoiceExpTime { get; set; } = DateTime.UtcNow;
 

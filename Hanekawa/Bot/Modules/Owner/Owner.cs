@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Services;
-using Hanekawa.Bot.Services.ImageGen;
+using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Extensions.Embed;
@@ -22,11 +22,11 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireUser(111123736660324352)]
     public class Owner : HanekawaCommandModule
     {
-        private readonly ImageGenerator _welcome;
+        private readonly ExpService _exp;
         private readonly InternalLogService _log;
-        public Owner(ImageGenerator welcome, InternalLogService log)
+        public Owner(ExpService exp, InternalLogService log)
         {
-            _welcome = welcome;
+            _exp = exp;
             _log = log;
         }
 

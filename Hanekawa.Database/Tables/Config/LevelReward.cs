@@ -6,5 +6,6 @@
         public int Level { get; set; }
         public ulong Role { get; set; }
         public bool Stackable { get; set; } = false;
+        public bool NoDecay { get; set; } = false;
     }
 }

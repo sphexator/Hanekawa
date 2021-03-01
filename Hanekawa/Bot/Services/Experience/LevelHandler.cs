@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Services.Experience
 
         public int ExpToNextLevel(Account userdata) => 3 * userdata.Level * userdata.Level + 150;
 
-        private int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
+        private static int ExpToNextLevel(AccountGlobal userdata) => 50 * userdata.Level * userdata.Level + 300;
 
         public int ExpToNextLevel(int level) => 3 * level * level + 150;
 
@@ -32,6 +32,7 @@ namespace Hanekawa.Bot.Services.Experience
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                 exp = Convert.ToInt32(exp * cfg.BoostExpMultiplier);
             }
+
             if (userData.Exp + exp >= ExpToNextLevel(userData))
             {
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
@@ -54,6 +55,7 @@ namespace Hanekawa.Bot.Services.Experience
                     $"(Exp Service | Server) {userData.UserId} gained {exp} exp {credit} credit");
             }
 
+            if(userData.Decay != 0) userData.Decay = 0;
             userData.TotalExp += exp;
             userData.Credit += credit;
             if (!userData.Active) userData.Active = true;
@@ -82,15 +84,11 @@ namespace Hanekawa.Bot.Services.Experience
             await db.SaveChangesAsync();
         }
 
-        public void AdjustTextMultiplier(ulong guildId, double multiplier)
-        {
-            _textExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
-        }
+        public void AdjustTextMultiplier(ulong guildId, double multiplier) 
+            => _textExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
 
-        public void AdjustVoiceMultiplier(ulong guildId, double multiplier)
-        {
-            _voiceExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
-        }
+        public void AdjustVoiceMultiplier(ulong guildId, double multiplier) 
+            => _voiceExpMultiplier.AddOrUpdate(guildId, multiplier, (key, value) => multiplier);
 
         public double GetMultiplier(ulong guildId)
         {

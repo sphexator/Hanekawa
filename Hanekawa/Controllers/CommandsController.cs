@@ -26,6 +26,7 @@ namespace Hanekawa.Controllers
             var modules = _bot.GetAllModules().OrderBy(x => x.Name);
             foreach (var x in modules)
             {
+                if(x.Name == "Owner") continue;
                 var commands = new Dictionary<string, Command>();
                 foreach (var c in x.Commands)
                 {
@@ -90,9 +91,8 @@ namespace Hanekawa.Controllers
         {
             var output = new StringBuilder();
             if (!command.Parameters.Any()) return output.ToString();
-            for (var i = 0; i < command.Parameters.Count; i++)
+            foreach (var x in command.Parameters)
             {
-                var x = command.Parameters[i];
                 var name = PermTypeBuilder(x);
                 if (x.IsOptional)
                     output.Append($"{name} ");

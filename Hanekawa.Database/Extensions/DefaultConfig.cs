@@ -90,6 +90,7 @@ namespace Hanekawa.Database.Extensions
             cfg.VoiceExpEnabled = true;
             cfg.StackLvlRoles = true;
             cfg.ExpDisabled = false;
+            cfg.Decay = false;
             return cfg;
         }
 
