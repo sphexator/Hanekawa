@@ -24,6 +24,6 @@ namespace Hanekawa
                     x.SetMinimumLevel(LogLevel.Information);
                 })
                 .UseNLog()
-                .UseUrls("http://*:61039", "https://*:61039");
+                .UseUrls("http://*:61039");
     }
 }
