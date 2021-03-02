@@ -23,6 +23,7 @@ namespace Hanekawa
                     x.ClearProviders();
                     x.SetMinimumLevel(LogLevel.Information);
                 })
-                .UseNLog();
+                .UseNLog()
+                .UseUrls("http://*:61039", "https://*:61039");
     }
 }
