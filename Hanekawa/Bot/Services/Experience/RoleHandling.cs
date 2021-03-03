@@ -105,6 +105,7 @@ namespace Hanekawa.Bot.Services.Experience
                 if(x.Level <= userData.Level - levelDecay) continue;
                 if (user.Roles.ContainsKey(x.Role))
                 {
+                    if(x.NoDecay && userData.Level >= x.Level) continue;
                     var remove = user.Guild.GetRole(x.Role);
                     if(remove == null) continue;
                     toRemove.SetValue(remove, toRemove.Length + 1);
