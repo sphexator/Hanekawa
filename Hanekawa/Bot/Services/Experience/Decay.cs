@@ -28,7 +28,7 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 var server = _client.GetGuild(x.GuildId);
                 if(server == null) continue;
-                var levelRewards = await db.LevelRewards.Where(e => e.GuildId == x.GuildId).ToArrayAsync();
+                var levelRewards = await db.LevelRewards.Where(e => e.GuildId == x.GuildId).ToListAsync();
                 var users = await db.Accounts.Where(e =>
                     e.GuildId == x.GuildId && e.Active && e.LastMessage <= limit && e.Decay < e.TotalExp).ToArrayAsync();
                 foreach (var user in users)
