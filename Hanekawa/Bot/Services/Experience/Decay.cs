@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Services.Experience
                             continue;
                         }
                         if (member.IsBoosting) continue;
-                        var decay = Convert.ToInt32((limit - user.LastMessage).TotalDays) * 1000;
+                        var decay = Convert.ToInt32((DateTime.UtcNow - user.LastMessage).TotalDays) * 1000;
                         if (decay == user.Decay) continue;
                         if (user.TotalExp <= user.Decay + decay) user.Decay = user.TotalExp;
                         if (user.TotalExp > user.Decay + decay) user.Decay = decay;
@@ -64,16 +64,16 @@ namespace Hanekawa.Bot.Services.Experience
             var decayExp = decay;
             var decayLevel = 0;
             var currentExp = userData.Exp;
-            while (decayExp > 0)
+            while (decayExp >= 0)
             {
                 if (currentExp - decay <= 0)
                 {
                     decayExp =- currentExp;
-                    currentExp = ExpToNextLevel((userData.Level - decayLevel) - 1);
                     decayLevel++;
+                    currentExp = ExpToNextLevel(userData.Level - decayLevel);
                     continue;
-                } 
-                if (currentExp - decay > 0) decay = 0;
+                }
+                decayExp = 0;
             }
 
             return decayLevel;
