@@ -14,7 +14,7 @@ using Hanekawa.Shared.Interfaces;
 using Hanekawa.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.AutoMessage
 {
@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
         private readonly Hanekawa _client;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colour;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, Timer>> _timers = new ConcurrentDictionary<ulong, ConcurrentDictionary<string, Timer>>();
 
         public AutoMessageService(Hanekawa client, IServiceProvider provider, ColourService colour, InternalLogService log)
@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             _client = client;
             _provider = provider;
             _colour = colour;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
 
             _client.LeftGuild += ClearMessages;
 
@@ -150,7 +150,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Auto Message Service) Couldn't edit message for existing timer for {guildId}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Auto Message Service) Couldn't edit message for existing timer for {guildId}");
                 return false;
             }
         }
@@ -218,7 +218,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Auto Message Service) Couldn't save auto message to database for {user.Guild.Id.RawValue}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Auto Message Service) Couldn't save auto message to database for {user.Guild.Id.RawValue}");
                 throw;
             }
         }
@@ -235,7 +235,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Auto Message Service) Couldn't remove {name} from {guildId}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Auto Message Service) Couldn't remove {name} from {guildId}");
                 return false;
             }
         }
@@ -254,7 +254,7 @@ namespace Hanekawa.Bot.Services.AutoMessage
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Auto Message Service) Couldn't remove {name} from {guildId}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Auto Message Service) Couldn't remove {name} from {guildId}");
                 return false;
             }
         }

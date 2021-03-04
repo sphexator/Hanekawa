@@ -5,7 +5,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Achievement;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Achievement
 {
@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Services.Achievement
                 await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
 
-                _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
+                _log.Log(LogLevel.Info, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
             }
             else
             {

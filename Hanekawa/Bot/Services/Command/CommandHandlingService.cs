@@ -5,7 +5,7 @@ namespace Hanekawa.Bot.Services.Command
  {
      
      private readonly Hanekawa _client;
-     private readonly InternalLogService _log;
+     private readonly NLog.Logger _log;
      private readonly ColourService _colourService;
      private readonly ConcurrentDictionary<ulong, string> _prefixes = new ConcurrentDictionary<ulong, string>();
      private readonly IServiceProvider _provider;

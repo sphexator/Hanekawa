@@ -48,7 +48,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for UnBan Log - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for UnBan Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;

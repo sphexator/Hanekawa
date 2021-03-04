@@ -54,7 +54,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
             });
@@ -112,10 +112,10 @@ namespace Hanekawa.Bot.Services.Logging
                     }
                     catch (Exception e1)
                     {
-                        _log.LogAction(LogLevel.Error, e1,
+                        _log.Log(NLog.LogLevel.Error, e1,
                             $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {e1.Message}");
                     }
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
             });

@@ -9,20 +9,20 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Board
 {
     public partial class BoardService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _provider;
 
-        public BoardService(Hanekawa client, InternalLogService log, IServiceProvider provider)
+        public BoardService(Hanekawa client, IServiceProvider provider)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             _client.ReactionAdded += ReactionAddedAsync;
@@ -65,11 +65,11 @@ namespace Hanekawa.Bot.Services.Board
                         await db.SaveChangesAsync();
                         await SendMessageAsync(user, e.Message.Value as CachedUserMessage, cfg);
                     }
-                    _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} added a reaction in {user.Guild.Id.RawValue}");
+                    _log.Log(LogLevel.Info, $"(Board Service) {user.Id.RawValue} added a reaction in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Board Service) Error in {ch.Guild.Id.RawValue} for Reaction Added - {e.Message}");
                 }
             });
@@ -98,11 +98,11 @@ namespace Hanekawa.Bot.Services.Board
                     stat.StarAmount--;
                     await db.SaveChangesAsync();
                     DecreaseReactionAmount(user.Guild, e.Message.Value);
-                    _log.LogAction(LogLevel.Information, $"(Board Service) {user.Id.RawValue} removed a reaction in {user.Guild.Id.RawValue}");
+                    _log.Log(LogLevel.Info, $"(Board Service) {user.Id.RawValue} removed a reaction in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Board Service) Error in {ch.Guild.Id.RawValue} for Reaction Removed - {e.Message}");
                 }
             });

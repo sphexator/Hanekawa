@@ -9,25 +9,24 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.AutoModerator
 {
     public class AutoModService
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly LogService _logService;
         private readonly MuteService _muteService;
         private readonly IServiceProvider _provider;
 
-        public AutoModService(Hanekawa client, LogService logService, MuteService muteService,
-            InternalLogService log, IServiceProvider provider)
+        public AutoModService(Hanekawa client, LogService logService, MuteService muteService, IServiceProvider provider)
         {
             _client = client;
             _logService = logService;
             _muteService = muteService;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             _client.MessageReceived += MessageLength;
@@ -54,11 +53,11 @@ namespace Hanekawa.Bot.Services.AutoModerator
                     await _logService.Mute(user, user.Guild.CurrentMember, $"Invite link - {invite.Truncate(80)}",
                         db);
 
-                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Invite link ({invite})");
+                    _log.Log(LogLevel.Info, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Invite link ({invite})");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Automod) Error in {channel.Guild.Id.RawValue} for Invite link - {e.Message}");
                 }
             });
@@ -83,11 +82,11 @@ namespace Hanekawa.Bot.Services.AutoModerator
                     if (message.Content.Length < cfg.FilterMsgLength.Value) return;
                     await message.TryDeleteMessagesAsync();
 
-                    _log.LogAction(LogLevel.Information, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Message length ({message.Content.Length})");
+                    _log.Log(LogLevel.Info, $"(Automod) Deleted message from {user.Id.RawValue} in {user.Guild.Id.RawValue}. reason: Message length ({message.Content.Length})");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Automod) Error in {channel.Guild.Id.RawValue} for Message Length - {e.Message}");
                 }
             });

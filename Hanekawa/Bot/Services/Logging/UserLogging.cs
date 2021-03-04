@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for User Updated - {exception.Message}");
                 }
             });
@@ -127,7 +127,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {before.Guild.Id.RawValue} for Guild Member Log - {exception.Message}");
                 }
             });

@@ -13,15 +13,16 @@ using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Account = Hanekawa.Database.Tables.Account.Account;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa.Bot.Services.Experience
 {
     public partial class ExpService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly Logger _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
 
@@ -38,7 +39,7 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _client = client;
             _random = random;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             _ = EventHandler(new CancellationToken());
@@ -95,7 +96,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
+                    _log.Log(NLog.LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
                 }
             }
         }
@@ -117,7 +118,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Global Exp - {e.Message}");
                 }
             });
@@ -145,7 +146,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, z,
+                    _log.Log(NLog.LogLevel.Error, z,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Server Exp - {z.Message}");
                 }
             });
@@ -185,7 +186,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, z,
+                    _log.Log(NLog.LogLevel.Error, z,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Voice - {z.Message}");
                 }
             });

@@ -38,20 +38,20 @@ namespace Hanekawa.Bot.Services.Experience
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
                 userData.Level += 1;
                 await NewLevelManagerAsync(userData, user, db);
-                _log.LogAction(LogLevel.Information,
+                _log.Log(NLog.LogLevel.Info,
                     $"(Exp Service | Server) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
             }
             else if (userData.Exp + exp < 0)
             {
                 userData.Level -= 1;
                 userData.Exp = userData.Exp + ExpToNextLevel(userData.Level - 1) + exp;
-                _log.LogAction(LogLevel.Information,
+                _log.Log(NLog.LogLevel.Info,
                     $"(Exp Service | Server) {userData.UserId} de-leveled to {userData.Level} and gained {exp} exp {credit} credit");
             }
             else
             {
                 userData.Exp += exp;
-                _log.LogAction(LogLevel.Information,
+                _log.Log(NLog.LogLevel.Info,
                     $"(Exp Service | Server) {userData.UserId} gained {exp} exp {credit} credit");
             }
 
@@ -69,13 +69,13 @@ namespace Hanekawa.Bot.Services.Experience
             {
                 userData.Level += 1;
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
-                _log.LogAction(LogLevel.Information,
+                _log.Log(NLog.LogLevel.Info,
                     $"(Exp Service | Global) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
             }
             else
             {
                 userData.Exp += exp;
-                _log.LogAction(LogLevel.Information,
+                _log.Log(NLog.LogLevel.Info,
                     $"(Exp Service | Global) {userData.UserId} gained {exp} exp {credit} credit");
             }
 

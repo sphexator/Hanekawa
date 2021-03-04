@@ -35,9 +35,9 @@ namespace Hanekawa.Bot.Services
         }
 
         private void DisqordLogger(object sender, LogEventArgs e) => _logger.Log(LogSevToNLogLevel(e.Severity), e.Exception, e.Message);
-        public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(LogLvlToNLogLvl(l), e, m);
+        //public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(LogLvlToNLogLvl(l), e, m);
 
-        public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
+        //public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
 
         private Task CommandExecuted(CommandExecutedEventArgs e)
         {
@@ -166,10 +166,7 @@ namespace Hanekawa.Bot.Services
     {
         private readonly Logger _logger;
 
-        public DiscordLogger()
-        {
-            _logger = LogManager.GetCurrentClassLogger();
-        }
+        public DiscordLogger() => _logger = LogManager.GetCurrentClassLogger();
 
         public void Dispose() { }
 

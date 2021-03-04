@@ -15,7 +15,7 @@ using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Quartz;
 
 namespace Hanekawa.Bot.Services.Boost
@@ -25,16 +25,16 @@ namespace Hanekawa.Bot.Services.Boost
         private readonly Hanekawa _client;
         private readonly ExpService _exp;
         private readonly IServiceProvider _provider;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly ColourService _colour;
         private readonly CurrencyService _currency;
 
-        public BoostService(Hanekawa client, IServiceProvider provider, ExpService exp, InternalLogService log, ColourService colour, CurrencyService currency)
+        public BoostService(Hanekawa client, IServiceProvider provider, ExpService exp, ColourService colour, CurrencyService currency)
         {
             _client = client;
             _provider = provider;
             _exp = exp;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _colour = colour;
             _currency = currency;
 
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Services.Boost
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Boost Service) Error for start boosting in {user.Guild.Id.RawValue} for {user.Id.RawValue} - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Boost Service) Error for start boosting in {user.Guild.Id.RawValue} for {user.Id.RawValue} - {e.Message}");
             }
         }
 
@@ -131,7 +131,7 @@ namespace Hanekawa.Bot.Services.Boost
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Boost Service) Error for end boosting in {user.Guild.Id.RawValue} for {user.Id.RawValue} - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Boost Service) Error for end boosting in {user.Guild.Id.RawValue} for {user.Id.RawValue} - {e.Message}");
             }
         }
 
@@ -186,22 +186,22 @@ namespace Hanekawa.Bot.Services.Boost
                         }
                         catch (Exception e)
                         {
-                            _log.LogAction(LogLevel.Error, e,
+                            _log.Log(NLog.LogLevel.Error, e,
                                 $"(Boost Service) Error in {x.GuildId} when rewarding {member.Id.RawValue} - {e.Message}");
                         }
                     }
 
                     await db.SaveChangesAsync();
-                    _log.LogAction(LogLevel.Information, $"Rewarded {users.Count} boosters in {guild.Id.RawValue}");
+                    _log.Log(LogLevel.Info, $"Rewarded {users.Count} boosters in {guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Boost Service) Error in {x.GuildId} when rewarding users - {e.Message}");
                 }
             }
 
-            _log.LogAction(LogLevel.Information,
+            _log.Log(LogLevel.Info,
                 "(Boost Service) Finished rewarding users in all guilds configured for it");
         }
     }

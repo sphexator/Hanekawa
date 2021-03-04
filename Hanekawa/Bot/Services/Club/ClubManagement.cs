@@ -9,7 +9,7 @@ using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Club
 {
@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Services.Club
                 Rank = 3
             });
             await db.SaveChangesAsync();
-            _log.LogAction(LogLevel.Information, $"(Club Service) Added {user.Id.RawValue} to club {id} in {user.Guild.Id.RawValue}");
+            _log.Log(LogLevel.Info, $"(Club Service) Added {user.Id.RawValue} to club {id} in {user.Guild.Id.RawValue}");
         }
 
         public async Task<bool> RemoveUserAsync(CachedUser user, CachedGuild guild, int id, DbService db, ClubConfig cfg = null)
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Services.Club
                     var newLeader = officers.Count >= 1
                         ? officers[_random.Next(officers.Count)]
                         : clubMembers[_random.Next(clubMembers.Count)];
-                    _log.LogAction(LogLevel.Information, $"(Club Service) Replaced club leader from club id {clubInfo.Id} in {guild.Id.RawValue} from {clubUser.UserId} to {newLeader.Id}");
+                    _log.Log(LogLevel.Info, $"(Club Service) Replaced club leader from club id {clubInfo.Id} in {guild.Id.RawValue} from {clubUser.UserId} to {newLeader.Id}");
                     newLeader.Rank = 1;
                     clubInfo.LeaderId = newLeader.UserId;
                 }
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Services.Club
             await RemoveRoleOrChannelPermissions(user, guild, clubInfo, cfg);
             await Disband(user, clubInfo, db);
             await db.SaveChangesAsync();
-            _log.LogAction(LogLevel.Information, $"(Club Service) Removed {clubUser.UserId} from {clubInfo.Id} in {guild.Id.RawValue}");
+            _log.Log(LogLevel.Info, $"(Club Service) Removed {clubUser.UserId} from {clubInfo.Id} in {guild.Id.RawValue}");
             return true;
         }
 
@@ -107,7 +107,7 @@ namespace Hanekawa.Bot.Services.Club
             var club = await db.ClubPlayers.FirstOrDefaultAsync(x =>
                 x.UserId == user.Id.RawValue && x.GuildId == guild.Id.RawValue && x.ClubId == clubInfo.Id);
             if (club != null) await RemoveUserAsync(user, guild, clubInfo.Id, db);
-            _log.LogAction(LogLevel.Information, $"(Club Service) Added blacklist on user {user.Id.RawValue} in club id {clubInfo.Id} in guild {guild.Id.RawValue}");
+            _log.Log(LogLevel.Info, $"(Club Service) Added blacklist on user {user.Id.RawValue} in club id {clubInfo.Id} in guild {guild.Id.RawValue}");
             return true;
         }
 
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Services.Club
             if (clubUser == null) return false;
             db.ClubBlacklists.Remove(clubUser);
             await db.SaveChangesAsync();
-            _log.LogAction(LogLevel.Information, $"(Club Service) Removed blacklist on user {user.Id.RawValue} in club id {clubInfo.Id} in guild {guild.Id.RawValue}");
+            _log.Log(LogLevel.Info, $"(Club Service) Removed blacklist on user {user.Id.RawValue} in club id {clubInfo.Id} in guild {guild.Id.RawValue}");
             return true;
         }
 

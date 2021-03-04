@@ -13,7 +13,7 @@ using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Quartz;
 using Quartz.Util;
 
@@ -21,15 +21,15 @@ namespace Hanekawa.Bot.Services.Administration.Warning
 {
     public partial class WarnService : INService, IJob
     {
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly LogService _logService;
         private readonly ColourService _colourService;
         private readonly IServiceProvider _provider;
 
-        public WarnService(LogService logService, InternalLogService log, ColourService colourService, IServiceProvider provider)
+        public WarnService(LogService logService, ColourService colourService, IServiceProvider provider)
         {
             _logService = logService;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _colourService = colourService;
             _provider = provider;
         }
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             await db.SaveChangesAsync();
             await NotifyUser(user, staff, warnType, reason, muteTime);
             await _logService.Warn(user, staff, reason, db);
-            _log.LogAction(LogLevel.Information, $"(Warn Service) Warned {user.Id.RawValue} in {user.Guild.Id.RawValue}");
+            _log.Log(LogLevel.Info, $"(Warn Service) Warned {user.Id.RawValue} in {user.Guild.Id.RawValue}");
         }
 
         private async Task NotifyUser(CachedMember user, IMentionable staff, WarnReason type, string reason,
@@ -84,7 +84,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             }
             catch(Exception e)
             {
-                _log.LogAction(LogLevel.Warning, e, $"(Warn Service) Couldn't direct message {user.Id.RawValue}, privacy settings?");
+                _log.Log(LogLevel.Warn, e, $"(Warn Service) Couldn't direct message {user.Id.RawValue}, privacy settings?");
                 /* IGNORE, maybe I shouldn't ignore this ? handle what kind of exception is thrown, if user has dms closed, ignore else log it*/
             }
         }

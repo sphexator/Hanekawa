@@ -131,7 +131,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Voice Log - {exception.Message}");
                 }
             });

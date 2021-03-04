@@ -7,23 +7,24 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
         private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>> _invites =
             new ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>>();
 
-        public LogService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public LogService(Hanekawa client, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colourService = colourService;
 

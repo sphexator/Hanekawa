@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {exception.Message}");
                 }
             });
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {exception.Message}");
                 }
             });
@@ -168,7 +168,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {exception.Message}");
                 }
             });

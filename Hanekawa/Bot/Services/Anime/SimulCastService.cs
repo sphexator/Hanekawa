@@ -13,24 +13,24 @@ using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Anime
 {
     public class SimulCastService : BackgroundService, INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
         private const string RssFeed = "https://www.crunchyroll.com/rss/anime?lang=enGB";
         private string _lastItem;
 
-        public SimulCastService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public SimulCastService(Hanekawa client, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colourService = colourService;
         }
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Services.Anime
                         }
                         catch (Exception e)
                         {
-                            _log.LogAction(LogLevel.Error, e, $"(Anime Cast Service) Unable to post to {x.GuildId}");
+                            _log.Log(NLog.LogLevel.Error, e, $"(Anime Cast Service) Unable to post to {x.GuildId}");
                         }
                     }
 
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Services.Anime
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, "(Anime Cast Service) Error reading feed");
+                    _log.Log(NLog.LogLevel.Error, e, "(Anime Cast Service) Error reading feed");
                 }
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Services.Anime
                 if (!cfg.AnimeAirChannel.HasValue) return;
                 var guild = _client.GetGuild(cfg.GuildId);
                 if (guild == null) return;
-                _log.LogAction(LogLevel.Information, $"Posting anime event to {guild.Name}");
+                _log.Log(LogLevel.Info, $"Posting anime event to {guild.Name}");
                 var channel = guild.GetTextChannel(cfg.AnimeAirChannel.Value);
                 if (channel == null)
                 {
@@ -114,7 +114,7 @@ namespace Hanekawa.Bot.Services.Anime
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Anime Simulcast) Error for {cfg.GuildId} - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Anime Simulcast) Error for {cfg.GuildId} - {e.Message}");
             }
         }
 

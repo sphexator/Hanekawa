@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     catch (Exception e)
                     {
                         await RemoveTimerFromDbAsync(guildId, userId, db);
-                        _log.LogAction(LogLevel.Error, e,
+                        _log.Log(NLog.LogLevel.Error, e,
                             $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
                 }, null, duration, Timeout.InfiniteTimeSpan);
@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {guildId} for {userId}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {guildId} for {userId}");
             }
         }
 

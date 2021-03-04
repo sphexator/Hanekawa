@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
-using Hanekawa.Bot.Services;
 using Hanekawa.Shared.Command;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Utility
@@ -42,14 +40,14 @@ namespace Hanekawa.Bot.Modules.Utility
                     }
                     catch(Exception e)
                     {
-                        Context.ServiceProvider.GetRequiredService<InternalLogService>().LogAction(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
+                        LogManager.GetCurrentClassLogger().Log(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
                         var result = await Context.Guild.CreateEmojiAsync(stream, "ToBeRenamed");
                         list.Append($"{result} (rename)");
                     }
                 }
                 catch (Exception e)
                 {
-                    Context.ServiceProvider.GetRequiredService<InternalLogService>().LogAction(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
+                    LogManager.GetCurrentClassLogger().Log(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
                     // Ignore
                 }
             }

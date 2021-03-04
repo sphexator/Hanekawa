@@ -13,6 +13,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Owner
@@ -23,11 +24,11 @@ namespace Hanekawa.Bot.Modules.Owner
     public class Owner : HanekawaCommandModule
     {
         private readonly ExpService _exp;
-        private readonly InternalLogService _log;
-        public Owner(ExpService exp, InternalLogService log)
+        private readonly NLog.Logger _log;
+        public Owner(ExpService exp)
         {
             _exp = exp;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
         }
 
         [Command("mmlol")]

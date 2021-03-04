@@ -16,7 +16,7 @@ using Hanekawa.Shared.Game.HungerGame;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Quartz;
 using Quartz.Util;
 
@@ -25,20 +25,20 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
     public class HungerGameService : INService, IRequired, IJob
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly CurrencyService _currency;
         private readonly ImageGenerator _image;
         private readonly HungerGame _game;
         private readonly IServiceProvider _provider;
 
-        public HungerGameService(Hanekawa client, IServiceProvider provider, ImageGenerator image, HungerGame game, CurrencyService currency, InternalLogService log)
+        public HungerGameService(Hanekawa client, IServiceProvider provider, ImageGenerator image, HungerGame game, CurrencyService currency)
         {
             _client = client;
             _provider = provider;
             _image = image;
             _game = game;
             _currency = currency;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
 
             _client.ReactionAdded += AddParticipant;
             _client.ReactionRemoved += RemoveParticipant;
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when updating participant avatar or name - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Hunger Game Service) Crash when updating participant avatar or name - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when adding user - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Hunger Game Service) Crash when adding user - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -155,7 +155,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -182,7 +182,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
+                    _log.Log(NLog.LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -223,7 +223,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Hunger Game Service) Error executing Hunger Games - {e.Message}");
+                    _log.Log(NLog.LogLevel.Error, e, $"(Hunger Game Service) Error executing Hunger Games - {e.Message}");
                 }
             });
             return Task.CompletedTask;
@@ -390,7 +390,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, e.Message);
+                    _log.Log(NLog.LogLevel.Error, e, e.Message);
                 }
             }
 
@@ -453,7 +453,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Hunger Game Service) Couldn't add game history - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Hunger Game Service) Couldn't add game history - {e.Message}");
             }
             db.HungerGameProfiles.RemoveRange(participants);
             db.HungerGames.Remove(game);
@@ -483,7 +483,7 @@ namespace Hanekawa.Bot.Services.Game.HungerGames
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Hunger Game Service) Couldn't grant winner role - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Hunger Game Service) Couldn't grant winner role - {e.Message}");
                 return null;
             }
             return role;

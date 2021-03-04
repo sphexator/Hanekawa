@@ -8,20 +8,21 @@ using Hanekawa.Database.Tables.Achievement;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Services.Achievement
 {
     public partial class AchievementService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _provider;
 
-        public AchievementService(Hanekawa client, InternalLogService log, IServiceProvider provider)
+        public AchievementService(Hanekawa client, IServiceProvider provider)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             _client.MessageReceived += MessageCount;
@@ -57,13 +58,13 @@ namespace Hanekawa.Bot.Services.Achievement
                             };
                             await db.AchievementUnlocks.AddAsync(data);
                             await db.SaveChangesAsync();
-                            _log.LogAction(LogLevel.Information, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
+                            _log.Log(LogLevel.Info, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.Guild.Id.RawValue}");
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Achievement Service) Error for {user.Id.RawValue} in {user.Guild.Id.RawValue} for Message Count - {e.Message}");
                 }
             });
