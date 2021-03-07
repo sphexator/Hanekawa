@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -45,7 +47,7 @@ namespace Hanekawa.Bot.Services.Logging
                         var roles = new StringBuilder();
                         foreach (var role in gusr.Roles) roles.Append($"{role.Value.Name}, ");
                         embed.AddField("Time in server", (DateTimeOffset.UtcNow - gusr.JoinedAt).Humanize());
-                        embed.AddField("Roles", roles.ToString());
+                        embed.AddField("Roles", roles.ToString().Truncate(1000));
                     }
 
                     await channel.SendMessageAsync(null, false, embed.Build());
@@ -64,50 +66,15 @@ namespace Hanekawa.Bot.Services.Logging
             _ = Task.Run(async () =>
             {
                 var user = e.Member;
+                using var scope = _provider.CreateScope();
+                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
+                if (!cfg.LogJoin.HasValue) return;
+                var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
+                if (channel == null) return;
                 try
                 {
-                    using var scope = _provider.CreateScope();
-                    await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                    var cfg = await db.GetOrCreateLoggingConfigAsync(user.Guild);
-                    if (!cfg.LogJoin.HasValue) return;
-                    var channel = user.Guild.GetTextChannel(cfg.LogJoin.Value);
-                    if (channel == null) return;
-                    Tuple<IUser, string> inviteeInfo = null;
-                    var restInvites = await user.Guild.GetInvitesAsync();
-                    if (!_invites.TryGetValue(user.Guild.Id.RawValue, out var invites))
-                    {
-                        invites = _invites.GetOrAdd(user.Guild.Id.RawValue, new HashSet<Tuple<string, ulong, int>>());
-                        for (var i = 0; i < restInvites.Count; i++)
-                        {
-                            var x = restInvites[i];
-                            invites.Add(new Tuple<string, ulong, int>(x.Code, x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
-                        }
-                    }
-                    else
-                    {
-                        Tuple<string, ulong, int> check = null;
-                        for (var i = 0; i < restInvites.Count; i++)
-                        {
-                            if(check != null) continue;
-                            var x = restInvites[i];
-                            foreach (var y in invites)
-                            {
-                                if(check != null) continue;
-                                if (y.Item3 + 1 == x.Metadata.Uses) check = new Tuple<string, ulong, int>(y.Item1, y.Item2, y.Item3);
-                            }
-                        }
-                        if (check != null)
-                        {
-                            invites.Remove(check);
-                            invites.Add(new Tuple<string, ulong, int>(check.Item1, check.Item2, check.Item3 + 1));
-                            var invitee = await e.Client.GetOrFetchUserAsync(check.Item2);
-                            if (invitee != null)
-                            {
-                                inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{check.Item1}");
-                            }
-                        }
-                    }
-
+                    var inviteeInfo = await GetInvite(e);
                     var embed = new LocalEmbedBuilder
                     {
                         Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
@@ -131,11 +98,74 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
+                    try
+                    {
+                        var embed = new LocalEmbedBuilder
+                        {
+                            Description = $"📥 {user.Mention} has joined ( *{user.Id.RawValue}* )\n" +
+                                          $"Account created: {user.CreatedAt.Humanize()}",
+                            Color = Color.Green,
+                            Footer = new LocalEmbedFooterBuilder { Text = $"Username: {user}" },
+                            Timestamp = DateTimeOffset.UtcNow
+                        };
+                        await channel.SendMessageAsync(null, false, embed.Build());
+                    }
+                    catch (Exception e1)
+                    {
+                        _log.LogAction(LogLevel.Error, e1,
+                            $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {e1.Message}");
+                    }
                     _log.LogAction(LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Join Log - {exception.Message}");
                 }
             });
             return Task.CompletedTask;
+        }
+
+        private async Task<Tuple<IUser, string>> GetInvite(MemberJoinedEventArgs e)
+        {
+            Tuple<IUser, string> inviteeInfo = null;
+            var restInvites = await e.Member.Guild.GetInvitesAsync();
+            if (!_invites.TryGetValue(e.Member.Guild.Id.RawValue, out var invites))
+            {
+                await UpdateInvites(e.Member, restInvites);
+            }
+            else
+            {
+                var tempInvites = new ConcurrentDictionary<string, Tuple<ulong, int>>();
+                for (var i = 0; i < restInvites.Count; i++)
+                {
+                    var x = restInvites[i];
+                    tempInvites.TryAdd(x.Code, new Tuple<ulong, int>(x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
+                }
+                var change = invites.Except(tempInvites).ToList();
+                var (code, tuple) = change.FirstOrDefault();
+                if (code != null)
+                {
+                    var invitee = await e.Client.GetOrFetchUserAsync(tuple.Item1);
+                    if (invitee != null)
+                    {
+                        inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{code}");
+                    }
+
+                    await UpdateInvites(e.Member, restInvites);
+                }
+            }
+
+            return inviteeInfo;
+        }
+
+        private async Task UpdateInvites(CachedMember user, IReadOnlyList<RestInvite> restInvites = null)
+        {
+            if (restInvites == null) restInvites = await user.Guild.GetInvitesAsync();
+            var invites = new ConcurrentDictionary<string, Tuple<ulong, int>>();
+            for (var i = 0; i < restInvites.Count; i++)
+            {
+                var x = restInvites[i];
+                invites.TryAdd(x.Code, new Tuple<ulong, int>(x.Metadata.Inviter.Id.RawValue, x.Metadata.Uses));
+            }
+
+            _invites.AddOrUpdate(user.Guild.Id.RawValue, invites, (id, set) => invites);
         }
     }
 }

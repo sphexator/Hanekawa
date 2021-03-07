@@ -60,6 +60,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                     _log.LogAction(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
                 }
             }
+            db.SaveChanges();
         }
 
         private Task MuteCheck(MemberJoinedEventArgs e)

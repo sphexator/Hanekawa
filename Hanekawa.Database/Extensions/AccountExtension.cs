@@ -60,8 +60,7 @@ namespace Hanekawa.Database.Extensions
                 await context.SaveChangesAsync();
                 await Task.Delay(20);
                 var toReturn = await context.AccountGlobals.FindAsync(userId);
-                if (toReturn != null) return toReturn;
-                return data;
+                return toReturn ?? data;
             }
             catch
             {

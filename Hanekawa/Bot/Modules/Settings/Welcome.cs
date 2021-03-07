@@ -47,7 +47,9 @@ namespace Hanekawa.Bot.Modules.Settings
             await Context.Channel.TriggerTypingAsync();
             var example = await _image.WelcomeBuilder(Context.Member, url, aviSize, aviX, aviY, textSize, textX, textY, guildCfg.Premium);
             example.Position = 0;
-            var msg = await Context.Channel.SendMessageAsync(new LocalAttachment(example, "WelcomeExample.png"),
+            var fileName = "welcomeExample.png";
+            if (url.EndsWith(".gif")) fileName = "welcomeExample.gif";
+            var msg = await Context.Channel.SendMessageAsync(new LocalAttachment(example, fileName),
                 "Do you want to add this banner? (y/N)\n" +
                 "You can adjust placement of avatar and text by adjust these values in the command (this is the full command with default values)\n" +
                 $"**Example:** wa {url.Truncate(5)} {aviSize} {aviX} {aviY} {textSize} {textX} {textY}\n" +

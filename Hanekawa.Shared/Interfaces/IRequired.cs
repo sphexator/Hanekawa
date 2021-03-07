@@ -1,6 +1,4 @@
 namespace Hanekawa.Shared.Interfaces
 {
-    public interface IRequired
-    {
-    }
+    public interface IRequired { }
 }

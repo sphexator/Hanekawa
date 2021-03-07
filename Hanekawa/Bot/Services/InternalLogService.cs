@@ -130,8 +130,8 @@ namespace Hanekawa.Bot.Services
                 msg.AppendLine($"Response: {response}");
                 msg.AppendLine(e.Result.Exception.Message);
                 msg.AppendLine(e.Result.Exception.InnerException == null
-                    ? e.Result.Exception.StackTrace
-                    : e.Result.Exception.InnerException.StackTrace);
+                    ? $"```{e.Result.Exception.StackTrace}```"
+                    : $"```{e.Result.Exception.InnerException.StackTrace}```");
                 await _client.GetGuild(431617676859932704).GetTextChannel(523165903219720232).SendMessageAsync(msg.ToString().Truncate(1900));
             });
             return Task.CompletedTask;

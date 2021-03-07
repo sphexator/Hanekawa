@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
@@ -20,12 +21,10 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var roles = string.Join(", ", roleList);
             var warnings = await GetWarnings(user, db);
             var content = "**⮞ User Information**\n" +
-                          $"Status: {user.GetStatus()}\n" +
-                          $"{user.GetGame()}\n" +
-                          $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n" +
+                          $"Created: {user.CreatedAt.Humanize(DateTimeOffset.UtcNow)} ({user.CreatedAt})\n" +
                           "\n" +
                           "**⮞ Member Information**\n" +
-                          $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
+                          $"Joined: {user.JoinedAt.Humanize(DateTimeOffset.UtcNow)} ({user.JoinedAt})\n" +
                           $"Roles: {roles}\n" +
                           "\n" +
                           "**⮞ Activity**\n" +
@@ -52,11 +51,9 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             var result = new List<string>
             {
                 "**⮞ User Information**\n" +
-                $"Status: {user.GetStatus()}\n" +
-                $"{user.GetGame()}\n" +
-                $"Created: {user.CreatedAt.Humanize()} ({user.CreatedAt})\n",
+                $"Created: {user.CreatedAt.Humanize(DateTimeOffset.UtcNow)} ({user.CreatedAt})\n",
                 "**⮞ Member Information**\n" +
-                $"Joined: {user.JoinedAt.Humanize()} ({user.JoinedAt})\n" +
+                $"Joined: {user.JoinedAt.Humanize(DateTimeOffset.UtcNow)} ({user.JoinedAt})\n" +
                 $"Roles: {roles}\n"
             };
             if (userdata.FirstMessage != null)
@@ -99,7 +96,7 @@ namespace Hanekawa.Bot.Services.Administration.Warning
             for (var i = 0; i < count; i++)
             {
                 var x = list[i];
-                var input = $"Moderator: {(await user.Guild.GetOrFetchMemberAsync(x.UserId)).Mention ?? $"{x.Id}"}\n" +
+                var input = $"Moderator: {(await user.Guild.GetOrFetchMemberAsync(x.Moderator)).Mention ?? $"{x.Id}"}\n" +
                             $"Reason: {x.Reason}\n";
                 if (x.MuteTimer.HasValue)
                     input += $"Mute duration: {x.MuteTimer.Value.Humanize(2)} ({x.MuteTimer.Value})\n";

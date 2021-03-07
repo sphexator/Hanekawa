@@ -12,6 +12,7 @@ using Hanekawa.Bot.Services;
 using Hanekawa.Bot.Services.Administration.Warning;
 using Hanekawa.Bot.Services.Anime;
 using Hanekawa.Bot.Services.Boost;
+using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Bot.Services.Game.HungerGames;
 using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
@@ -63,6 +64,7 @@ namespace Hanekawa
             services.UseQuartz(typeof(MvpService));
             services.UseQuartz(typeof(BoostService));
             services.UseQuartz(typeof(HungerGameService));
+            services.UseQuartz(typeof(ExpService));
 
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
@@ -128,6 +130,7 @@ namespace Hanekawa
             QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
             QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
             QuartzExtension.StartCronJob<HungerGameService>(scheduler, "0 0 0/3 1/1 * ? *");
+            QuartzExtension.StartCronJob<ExpService>(scheduler, "0 0 0/1 1/1 * ? *");
         }
 
         private static readonly ILoggerFactory MyLoggerFactory

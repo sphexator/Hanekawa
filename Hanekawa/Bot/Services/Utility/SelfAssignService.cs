@@ -113,101 +113,70 @@ namespace Hanekawa.Bot.Services.Utility
 
         public async Task<List<ulong>> PostAsync(HanekawaCommandContext context, CachedTextChannel channel, DbService db)
         {
-            var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == context.Guild.Id).ToListAsync();
-            var toReturn = new List<ulong>();
-            var nonExclusive = new List<SelfAssignAbleRole>();
-            for (var i = 0; i < roles.Count;)
+            var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == context.Guild.Id.RawValue)
+                .OrderByDescending(x => x.Exclusive).ToListAsync();
+            if (roles.Count == 0) return null;
+            var messages = new List<ulong>();
+            var react = new List<LocalCustomEmoji>();
+            var reactExt = new List<LocalCustomEmoji>();
+            var str = new StringBuilder();
+            var strEx = new StringBuilder();
+            var counter = 0;
+            for (var i = 0; i < roles.Count; i++)
             {
-                var toAddReaction = new List<LocalCustomEmoji>();
-                var message = new StringBuilder();
-                for (var j = 0; j < 20;)
+                var x = roles[i];
+                var role = context.Guild.GetRole(x.RoleId);
+                if (role == null) continue;
+                if (!x.Exclusive) counter = 0;
+                var msg = LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result) 
+                    ? $"{result}{role.Mention}" 
+                    : $"{role.Mention}";
+                if (x.Exclusive)
                 {
-                    var line = new StringBuilder();
-                    for (var k = 0; k < 5; k++)
-                    {
-                        if (i >= roles.Count)
-                        {
-                            i++;
-                            j++;
-                            continue;
-                        }
-                        var x = roles[i];
-                        var role = context.Guild.GetRole(x.RoleId);
-                        if (role == null || !x.Exclusive)
-                        {
-                            k--;
-                            if (!x.Exclusive && role != null) nonExclusive.Add(x);
-                            continue;
-                        }
-                        if (i + 1 >= roles.Count) line.Append($"{role.Mention}");
-                        else if (k >= 0 && k < 4) line.Append($"{role.Mention} - ");
-                        else if (k == 4) line.Append($"{role.Mention}");
-                        if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result);
-                        i++;
-                        j++;
-                    }
-
-                    message.AppendLine(line.ToString());
+                    if(result != null) reactExt.Add(result);
+                    if (counter.IsDivisible(5)) str.AppendLine($"{msg}");
+                    else str.Append($" {msg}");
                 }
+                else
+                {
+                    if (result != null) react.Add(result);
+                    if (counter.IsDivisible(5)) strEx.AppendLine($"{msg}");
+                    else strEx.Append($" {msg}");
+                }
+            }
+
+            if (str.Length > 0)
+            {
                 var embed = new LocalEmbedBuilder
                 {
                     Title = "Self-assignable roles",
-                    Description = message.ToString(),
+                    Description = str.ToString(),
                     Color = context.ServiceProvider.GetRequiredService<ColourService>().Get(context.Guild.Id.RawValue)
                 };
-                var msg = await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.None);
-                for (var j = 0; j < toAddReaction.Count; j++)
-                {
-                    var reaction = toAddReaction[j];
-                    await msg.AddReactionAsync(reaction);
-                }
-                toReturn.Add(msg.Id.RawValue);
+                var rctMsg = await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.None);
+                
+                if(react.Count > 0)
+                    foreach (var x in react) 
+                        await rctMsg.AddReactionAsync(x);
+                messages.Add(rctMsg.Id.RawValue);
             }
 
-            if (nonExclusive.Count != 0)
+            if (strEx.Length <= 0) return messages;
             {
-                var message = new StringBuilder();
-                var toAddReaction = new List<LocalCustomEmoji>();
-                for (var i = 0; i < nonExclusive.Count;)
-                {
-                    var line = new StringBuilder();
-                    for (var j = 0; j < 5; j++)
-                    {
-                        if (i >= roles.Count)
-                        {
-                            i++;
-                            j++;
-                            continue;
-                        }
-                        var x = nonExclusive[i];
-                        var role = context.Guild.GetRole(x.RoleId);
-                        if (i + 1 >= nonExclusive.Count) line.Append($"{role.Mention}");
-                        else if (j >= 0 && j < 4) line.Append($"{role.Mention} - ");
-                        else if (j == 4) line.Append($"{role.Mention}");
-
-                        if (LocalCustomEmoji.TryParse(x.EmoteMessageFormat, out var result)) toAddReaction.Add(result);
-                        i++;
-                    }
-
-                    message.AppendLine(line.ToString());
-                }
-
-                var msg = await channel.SendMessageAsync(null, false, new LocalEmbedBuilder
+                var embed = new LocalEmbedBuilder
                 {
                     Title = "Self-assignable roles",
-                    Description = message.ToString(),
+                    Description = strEx.ToString(),
                     Color = context.ServiceProvider.GetRequiredService<ColourService>().Get(context.Guild.Id.RawValue)
-                }.Build(), LocalMentions.None);
-
-                for (var j = 0; j < toAddReaction.Count; j++)
-                {
-                    var reaction = toAddReaction[j];
-                    await msg.AddReactionAsync(reaction);
-                }
-                toReturn.Add(msg.Id.RawValue);
+                };
+                var rctExtMsg = await channel.SendMessageAsync(null, false, embed.Build(), LocalMentions.None);
+                
+                if(reactExt.Count > 0)
+                    foreach (var x in reactExt)
+                        await rctExtMsg.AddReactionAsync(x);
+                messages.Add(rctExtMsg.Id.RawValue);
             }
-
-            return toReturn;
+            return messages;
         }
 
         public async Task UpdatePostAsync(HanekawaCommandContext context)

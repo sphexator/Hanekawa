@@ -30,7 +30,8 @@ namespace Hanekawa.Bot.Services.Experience
                 if (userData == null || userData.Level < 2) return;
 
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
-                var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
+                var levelRewards = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
+                var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRewards);
                 await user.TryAddRolesAsync(roles);
             });
             return Task.CompletedTask;
@@ -59,17 +60,17 @@ namespace Hanekawa.Bot.Services.Experience
             return Task.CompletedTask;
         }
 
-        public async Task NewLevelManagerAsync(Account userData, CachedMember user, DbService db)
+        public async Task NewLevelManagerAsync(Account userData, CachedMember user, DbService db, int levelDecay = 0)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
             if (roles == null || roles.Count == 0) return;
 
-            var lvRole = roles.FirstOrDefault(x => x.Level == userData.Level);
+            var lvRole = roles.FirstOrDefault(x => (x.Level - levelDecay) == userData.Level);
             var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
 
             if (lvRole == null)
             {
-                await RoleCheckAsync(user, cfg, userData, db);
+                await RoleCheckAsync(user, cfg, userData, roles, db, levelDecay);
                 return;
             }
             var role = user.Guild.GetRole(lvRole.Role);
@@ -81,13 +82,15 @@ namespace Hanekawa.Bot.Services.Experience
             }
             if (!cfg.StackLvlRoles) await RemoveLevelRolesAsync(user, roles);
             await user.TryAddRoleAsync(role);
+            await RoleCheckAsync(user, cfg, userData, roles, db, levelDecay);
         }
 
-        private async Task RoleCheckAsync(CachedMember user, LevelConfig cfg, Account userData, DbService db)
+        private static async Task RoleCheckAsync(CachedMember user, LevelConfig cfg, Account userData, List<LevelReward> levelRoles, DbService db, int levelDecay)
         {
-            var roles = await GetRolesAsync(user, userData, db, cfg.StackLvlRoles);
+            var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRoles);
 
             var missingRoles = new List<CachedRole>();
+            var toRemove = new List<CachedRole>();
             var currentUser = user.Guild.CurrentMember;
             for (var i = 0; i < roles.Count; i++)
             {
@@ -96,21 +99,32 @@ namespace Hanekawa.Bot.Services.Experience
                     missingRoles.Add(x);
             }
 
-            if (missingRoles.Count == 0) return;
-            await user.TryAddRolesAsync(missingRoles);
+            for (var i = 0; i < levelRoles.Count; i++)
+            {
+                var x = levelRoles[i];
+                if(x.Level <= userData.Level - levelDecay) continue;
+                if (user.Roles.ContainsKey(x.Role))
+                {
+                    if(x.NoDecay && userData.Level >= x.Level) continue;
+                    var remove = user.Guild.GetRole(x.Role);
+                    if(remove == null) continue;
+                    toRemove.Add(remove);
+                }
+            }
+
+            if (missingRoles.Count != 0) await user.TryAddRolesAsync(missingRoles);
+            if (toRemove.Count != 0) await user.TryRemoveRolesAsync(toRemove);
         }
 
-        private async Task<List<CachedRole>> GetRolesAsync(CachedMember user, Account userData, DbService db,
-            bool stack)
+        private static List<CachedRole> GetRolesAsync(CachedMember user, Account userData, DbService db,
+            bool stack, List<LevelReward> roleList)
         {
             var roles = new List<CachedRole>();
             ulong role = 0;
             var currentUser = user.Guild.CurrentMember;
-            var roleList = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
 
-            for (var i = 0; i < roleList.Count; i++)
+            foreach (var x in roleList)
             {
-                var x = roleList[i];
                 var getRole = user.Guild.GetRole(x.Role);
                 if (getRole == null) continue;
                 if (stack)
@@ -136,7 +150,7 @@ namespace Hanekawa.Bot.Services.Experience
             return roles;
         }
 
-        private async Task RemoveLevelRolesAsync(CachedMember user, List<LevelReward> rolesRewards)
+        private static async Task RemoveLevelRolesAsync(CachedMember user, List<LevelReward> rolesRewards)
         {
             for (var i = 0; i < rolesRewards.Count; i++)
             {
