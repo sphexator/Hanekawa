@@ -247,7 +247,8 @@ namespace Hanekawa.Bot.Modules.Giveaway
                 giveaways.Add(str.ToString());
             }
 
-            await Context.PaginatedReply(giveaways, Context.Guild, $"Giveaways in {Context.Guild.Name}");
+            if (giveaways.Count == 0) await ReplyAsync("No giveaway history available");
+            else await Context.PaginatedReply(giveaways, Context.Guild, $"Giveaways in {Context.Guild.Name}");
         }
 
         private static int GetReactionAmount(IUserMessage message, LocalCustomEmoji emote)
