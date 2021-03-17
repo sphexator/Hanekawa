@@ -25,9 +25,10 @@ namespace Hanekawa.Controllers
             _db = db;
         }
 
-        [HttpGet("{id}")]
-        public async Task<Leaderboard> GetLeaderboardAsync([FromBody] ulong id)
+        [HttpGet("{rawId}")]
+        public async Task<Leaderboard> GetLeaderboardAsync([FromBody] string rawId)
         {
+            if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
             var toReturn = new Leaderboard();
@@ -50,9 +51,10 @@ namespace Hanekawa.Controllers
             return toReturn;
         }
 
-        [HttpGet("{id}/weekly")]
-        public async Task<LeaderboardWeekly> GetWeeklyLeaderboardAsync([FromBody] ulong id)
+        [HttpGet("{rawId}/weekly")]
+        public async Task<LeaderboardWeekly> GetWeeklyLeaderboardAsync([FromBody] string rawId)
         {
+            if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
             var toReturn = new LeaderboardWeekly();
@@ -69,9 +71,10 @@ namespace Hanekawa.Controllers
             return toReturn;
         }
 
-        [HttpGet("{id}/richest")]
-        public async Task<LeaderboardWeekly> GetRichestLeaderboardAsync([FromBody] ulong id)
+        [HttpGet("{rawId}/richest")]
+        public async Task<LeaderboardWeekly> GetRichestLeaderboardAsync([FromBody] string rawId)
         {
+            if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
             var toReturn = new LeaderboardWeekly();
