@@ -31,9 +31,9 @@ namespace Hanekawa.Controllers
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new Leaderboard();
-            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active).Take(100)
-                .OrderByDescending(x => x.TotalExp - x.Decay).ToListAsync();
+            var toReturn = new Leaderboard {Users = new ()};
+            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
+                .OrderByDescending(x => x.TotalExp - x.Decay).Take(100).ToListAsync();
             var exp = _provider.GetRequiredService<ExpService>();
             foreach (var x in users)
             {
@@ -44,7 +44,9 @@ namespace Hanekawa.Controllers
                     {
                         UserId = x.UserId,
                         ExpToLevel = exp.ExpToNextLevel(x.Level),
-                        Experience = x.Exp
+                        Experience = x.Exp,
+                        Level = x.Level,
+                        TotalExp = x.TotalExp
                     });
                 }
             }
@@ -57,9 +59,9 @@ namespace Hanekawa.Controllers
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new LeaderboardWeekly();
-            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active).Take(100)
-                .OrderByDescending(x => x.MvpCount).ToListAsync();
+            var toReturn = new LeaderboardWeekly {Users = new()};
+            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
+                .OrderByDescending(x => x.MvpCount).Take(100).ToListAsync();
             foreach (var x in users)
             {
                 toReturn.Users.Add(new LeaderboardWeeklyUser
@@ -77,9 +79,9 @@ namespace Hanekawa.Controllers
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new LeaderboardWeekly();
-            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active).Take(100)
-                .OrderByDescending(x => x.Credit).ToListAsync();
+            var toReturn = new LeaderboardWeekly {Users = new()};
+            var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
+                .OrderByDescending(x => x.Credit).Take(100).ToListAsync();
             foreach (var x in users)
             {
                 toReturn.Users.Add(new LeaderboardWeeklyUser
