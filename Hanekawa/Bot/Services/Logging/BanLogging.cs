@@ -8,7 +8,6 @@ using Hanekawa.Extensions;
 using Hanekawa.Shared;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {

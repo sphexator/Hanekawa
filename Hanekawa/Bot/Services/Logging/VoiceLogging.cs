@@ -5,7 +5,6 @@ using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {

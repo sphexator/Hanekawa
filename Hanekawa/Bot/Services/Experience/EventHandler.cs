@@ -15,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using Account = Hanekawa.Database.Tables.Account.Account;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa.Bot.Services.Experience
 {
@@ -139,7 +138,7 @@ namespace Hanekawa.Bot.Services.Experience
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
-                    if(!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
+                    userData.FirstMessage ??= DateTime.UtcNow;
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(0, 3), db);
                     await MvpCount(db, userData, user);
                     await GiveawayAsync(db, user);
@@ -157,11 +156,10 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _ = Task.Run(async () =>
             {
+                if (e.Member.IsBot) return;
                 var user = e.Member;
-                if (user.IsBot) return;
                 var after = e.NewVoiceState;
                 var before = e.OldVoiceState;
-                if (user.IsBot) return;
                 try
                 {
                     using var scope = _provider.CreateScope();

@@ -29,8 +29,8 @@ namespace Hanekawa.Bot.Services.AutoModerator
             _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
-            _client.MessageReceived += MessageLength;
-            _client.MessageReceived += InviteFilter;
+            //_client.MessageReceived += MessageLength;
+            //_client.MessageReceived += InviteFilter;
         }
 
         private Task InviteFilter(MessageReceivedEventArgs e)

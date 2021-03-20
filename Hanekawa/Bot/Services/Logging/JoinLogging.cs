@@ -12,7 +12,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging

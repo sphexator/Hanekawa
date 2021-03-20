@@ -32,7 +32,7 @@ namespace Hanekawa.Bot
             AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new TimeSpanTypeParser());
 
-            this.CommandExecuted += HaneCommandExecuted;
+            CommandExecuted += HaneCommandExecuted;
         }
 
         private Task HaneCommandExecuted(CommandExecutedEventArgs e)
@@ -41,8 +41,8 @@ namespace Hanekawa.Bot
             return Task.CompletedTask;
         }
 
-        protected override async ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
-            !message.Author.IsBot && !(message.Channel is IPrivateChannel);
+        protected override ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
+            new(!message.Author.IsBot && !(message.Channel is IPrivateChannel));
 
         protected override ValueTask<DiscordCommandContext> GetCommandContextAsync(CachedUserMessage message,
             IPrefix prefix)
