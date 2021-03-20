@@ -27,7 +27,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Name("Search")]
         [Command("search")]
         [Description("Searches for a monster to fight")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task SearchAsync()
         {
             
@@ -40,20 +40,20 @@ namespace Hanekawa.Bot.Modules.Game
         [Name("Attack")]
         [Command("attack")]
         [Description("Starts a fight with a monster you've found")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task AttackAsync() => await _shipGame.AttackAsync(Context);
 
         [Name("Duel")]
         [Command("duel")]
         [Description("Duels a user. Add an amount to duel for credit")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task DuelAsync(CachedMember user, int? bet = null) =>
             await _shipGame.AttackAsync(Context, user, bet);
 
         [Name("Class Info")]
         [Command("classinfo")]
         [Description("Display all classes in a paginated message")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task ClassInfoAsync()
         {
             
@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Name("Class Info")]
         [Command("classinfo")]
         [Description("Display information on a specific class providing ID")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task ClassInfoAsync(int classId)
         {
             
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Modules.Game
         [Name("Choose Class")]
         [Command("class")]
         [Description("Choose or change into a class with its ID")]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task ChooseClassAsync(int id)
         {
             

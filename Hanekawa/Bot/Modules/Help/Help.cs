@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Modules.Help
         [Description("List all modules")]
         [Priority(1)]
         [RequiredChannel]
-        [Cooldown(1, 2, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 2, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task HelpAsync()
         {
             var result = new StringBuilder();
@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Modules.Help
         [Command("help")]
         [Description("List all commands for provided module, if valid one provided")]
         [RequiredChannel]
-        [Cooldown(1, 2, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 2, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task HelpAsync([Remainder] string module)
         {
             var moduleInfo = Context.Bot.GetAllModules().FirstOrDefault(x =>
