@@ -1,26 +1,63 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using Hanekawa.Exceptions;
 
 namespace Hanekawa.Extensions
 {
     public static class StreamExtensions
     {
-        public static MemoryStream ToEditable(this Stream stream)
+        public static MemoryStream ToEditable(this Stream stream, double? MBLimit = null)
         {
             var toReturn = new MemoryStream();
-            stream.CopyTo(toReturn);
-            stream.Flush();
+            if (MBLimit == null)
+            {
+                stream.CopyTo(toReturn);
+                toReturn.Flush();
+                stream.Dispose();
+            }
+            else
+            {
+                var bufferSize = Buffer(stream);
+                var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+                int read;
+                while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    toReturn.Write(buffer, 0, read);
+                    if (MBLimit != null && (toReturn.Length / 1024f) / 1024f > MBLimit)
+                        throw new HanaCommandException($"File size is above the limit ({MBLimit} MB)");
+                }
+                toReturn.Flush();
+                stream.Dispose();
+            }
             return toReturn;
         }
 
-        private static readonly Dictionary<FileType, byte[]> KnownFileHeaders = new Dictionary<FileType, byte[]>()
+        private static int Buffer(Stream stream)
+        {
+            var bufferSize = 81920;
+
+            if (stream.CanSeek)
+            {
+                var length = stream.Length;
+                var position = stream.Position;
+                if (length <= position) bufferSize = 1;
+                else
+                {
+                    var remaining = length - position;
+                    if (remaining > 0) bufferSize = (int)Math.Min(bufferSize, remaining);
+                }
+            }
+
+            return bufferSize;
+        }
+
+        private static readonly Dictionary<FileType, byte[]> KnownFileHeaders = new Dictionary<FileType, byte[]>
         {
             { FileType.Jpeg, new byte[]{ 0xFF, 0xD8 }}, // JPEG
-            { FileType.Bmp, new byte[]{ 0x42, 0x4D }}, // BMP
             { FileType.Gif, new byte[]{ 0x47, 0x49, 0x46 }}, // GIF
             { FileType.Png, new byte[]{ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }}, // PNG
-            { FileType.Pdf, new byte[]{ 0x25, 0x50, 0x44, 0x46 }} // PDF
         };
 
         public static FileType GetKnownFileType(this MemoryStream stream)
