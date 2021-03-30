@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Rest;
@@ -70,44 +69,26 @@ namespace Hanekawa.Shared.Command.Extensions
                 Description = content
             }.Build());
 
-        public static async Task PaginatedReply(this HanekawaCommandContext ctx, List<string> content, CachedMember userIcon,
-            string authorTitle,
-            string title = null)
-        {
-            authorTitle ??= userIcon.DisplayName;
-            var pages = new List<Page>();
-            var sb = new StringBuilder();
-            var color = ctx.Colour.Get(ctx.Guild.Id.RawValue);
-            for (var i = 0; i < content.Count;)
-            {
-                for (var j = 0; j < 5; j++)
-                {
-                    if (i >= content.Count) continue;
-                    var x = content[i];
-                    sb.AppendLine(x);
-                    i++;
-                }
-
-                pages.Add(new Page(new LocalEmbedBuilder
-                {
-                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = userIcon.GetAvatarUrl()},
-                    Title = title,
-                    Description = sb.ToString(),
-                    Color = color
-                }.Build()));
-                sb.Clear();
-            }
-
-            await ctx.Bot.GetInteractivity()
-                .StartMenuAsync(ctx.Channel, new PagedMenu(ctx.User.Id.RawValue, new DefaultPageProvider(pages)));
-        }
-
-        public static async Task PaginatedReply(this HanekawaCommandContext ctx, List<string> content, CachedGuild guildIcon,
+        public static async Task PaginatedReply(this HanekawaCommandContext ctx, List<string> content,
+            IUser userIcon,
             string authorTitle,
             string title = null,
             int pageSize = 5)
+            => await PaginationBuilder(ctx, content, userIcon.GetAvatarUrl(), authorTitle ?? userIcon.Name, title, pageSize);
+
+        public static async Task PaginatedReply(this HanekawaCommandContext ctx, List<string> content, 
+            IGuild guildIcon,
+            string authorTitle,
+            string title = null,
+            int pageSize = 5) 
+            => await PaginationBuilder(ctx, content, guildIcon.GetIconUrl(), authorTitle ?? guildIcon.Name, title, pageSize);
+
+        private static async Task PaginationBuilder(HanekawaCommandContext ctx, IReadOnlyList<string> content, 
+            string icon,
+            string authorTitle, 
+            string title, 
+            int pageSize)
         {
-            authorTitle ??= guildIcon.Name;
             var pages = new List<Page>();
             var sb = new StringBuilder();
             var color = ctx.Colour.Get(ctx.Guild.Id.RawValue);
@@ -122,14 +103,14 @@ namespace Hanekawa.Shared.Command.Extensions
                 }
 
                 var page = pages.Count + 1;
-                var maxPage = Convert.ToInt32( Math.Ceiling((double)content.Count / pageSize));
+                var maxPage = Convert.ToInt32(Math.Ceiling((double) content.Count / pageSize));
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
-                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = guildIcon.GetIconUrl()},
+                    Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = icon},
                     Title = title,
                     Description = sb.ToString(),
                     Color = color,
-                    Footer = new LocalEmbedFooterBuilder{Text = $"Page: {page}/{maxPage}"}
+                    Footer = new LocalEmbedFooterBuilder {Text = $"Page: {page}/{maxPage}"}
                 }.Build()));
                 sb.Clear();
             }

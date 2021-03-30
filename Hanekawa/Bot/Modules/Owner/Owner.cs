@@ -67,14 +67,18 @@ namespace Hanekawa.Bot.Modules.Owner
             var totalMembers = 0;
             foreach (var x in Context.Bot.Guilds)
             {
-                totalMembers += x.Value.MemberCount;
-                var sb = new StringBuilder();
-                sb.AppendLine($"Server: {x.Value.Name} ({x.Value.Id.RawValue})");
-                sb.AppendLine($"Members: {x.Value.MemberCount}");
-                sb.AppendLine($"Owner: {x.Value.Owner.Mention}");
-                servers.Add(sb.ToString());
+                try
+                {
+                    totalMembers += x.Value.MemberCount;
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"Server: {x.Value.Name} ({x.Value.Id.RawValue})");
+                    sb.AppendLine($"Members: {x.Value.MemberCount}");
+                    sb.AppendLine($"Owner: {x.Value.Owner.Mention}");
+                    servers.Add(sb.ToString());
+                }
+                catch { /* IGNORE */}
             }
-            await Context.PaginatedReply(servers, Context.Guild,null, $"Total Servers: {Context.Bot.Guilds.Count}\n " +
+            await Context.PaginatedReply(servers, Context.Bot.CurrentUser ,null, $"Total Servers: {Context.Bot.Guilds.Count}\n " +
                                                                                                  $"Total Members: {totalMembers}");
         }
 
