@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
-using Hanekawa.Bot.Services;
-using Hanekawa.Bot.Services.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
+using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
 using Qmmands;
 
 namespace Hanekawa.Bot.Modules.Owner
@@ -23,15 +24,8 @@ namespace Hanekawa.Bot.Modules.Owner
     [RequireUser(111123736660324352)]
     public class Owner : HanekawaCommandModule
     {
-        private readonly ExpService _exp;
-        private readonly NLog.Logger _log;
-        public Owner(ExpService exp)
-        {
-            _exp = exp;
-            _log = LogManager.GetCurrentClassLogger();
-        }
-
         [Command("mmlol")]
+        [RequireGuild(431617676859932704)]
         public async Task ReturnRole()
         {
             try
@@ -49,15 +43,6 @@ namespace Hanekawa.Bot.Modules.Owner
             }
         }
 
-        [Name("Re-index Server Rankings")]
-        [Command("rankindex")]
-        [Description("Re-indexes the ranks, puts people that's left the server as inactive if they arnt already")]
-        [Disabled]
-        public async Task ReindexAsync()
-        {
-            // Ignore
-        }
-
         [Name("Servers")]
         [Command("servers")]
         [Description("List all servers bot is part of")]
@@ -65,15 +50,15 @@ namespace Hanekawa.Bot.Modules.Owner
         {
             var servers = new List<string>();
             var totalMembers = 0;
-            foreach (var x in Context.Bot.Guilds)
+            foreach (var (_, value) in Context.Bot.Guilds.ToList())
             {
                 try
                 {
-                    totalMembers += x.Value.MemberCount;
+                    totalMembers += value.MemberCount;
                     var sb = new StringBuilder();
-                    sb.AppendLine($"Server: {x.Value.Name} ({x.Value.Id.RawValue})");
-                    sb.AppendLine($"Members: {x.Value.MemberCount}");
-                    sb.AppendLine($"Owner: {x.Value.Owner.Mention}");
+                    sb.AppendLine($"Server: {value.Name} ({value.Id.RawValue})");
+                    sb.AppendLine($"Members: {value.MemberCount}");
+                    sb.AppendLine($"Owner: {value.Owner.Mention}");
                     servers.Add(sb.ToString());
                 }
                 catch { /* IGNORE */}
@@ -106,6 +91,42 @@ namespace Hanekawa.Bot.Modules.Owner
             blacklist.Unban = DateTimeOffset.UtcNow;
             await db.SaveChangesAsync();
             await Context.ReplyAsync(new LocalEmbedBuilder().Create($"Removed blacklist on {guildId}!", Color.Green));
+        }
+
+        [Name("Evaluate")]
+        [Command("eval")]
+        [Description("Evaluates code")]
+        public async Task EvaluateAsync([Remainder] string rawCode)
+        {
+            var code = rawCode.GetCode();
+            var sw = Stopwatch.StartNew();
+            var script = CSharpScript.Create(code, RoslynExtensions.RoslynScriptOptions, typeof(RoslynCommandContext));
+            var diagnostics = script.Compile();
+            var compilationTime = sw.ElapsedMilliseconds;
+
+            if (diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+            {
+                var builder = new LocalEmbedBuilder
+                {
+                    Title = "Compilation Failure",
+                    Color = Color.Red,
+                    Description = $"Compilation took {compilationTime}ms but failed due to..."
+                };
+                foreach (var diagnostic in diagnostics)
+                {
+                    var message = diagnostic.GetMessage();
+                    builder.AddField(diagnostic.Id,
+                        message.Substring(0, Math.Min(500, message.Length)));
+                }
+
+                await ReplyAsync(embed: builder.Build());
+                return;
+            }
+
+            var context = new RoslynCommandContext(Context);
+            var result = await script.RunAsync(context);
+            sw.Stop();
+            await ReplyAsync(result.ReturnValue.ToString());
         }
     }
 }
