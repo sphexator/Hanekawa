@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using Disqord;
 using Disqord.Bot.Prefixes;
 using Hanekawa.Shared.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Services.Caching
 {
-    public class Prefix : INService
+    public class CacheService : INService
     {
-        private readonly ConcurrentDictionary<Snowflake, HashSet<IPrefix>> _prefixCollection =
-            new ConcurrentDictionary<Snowflake, HashSet<IPrefix>>();
+        public ConcurrentDictionary<Snowflake, MemoryCache> BanCache = new();
+        private readonly ConcurrentDictionary<Snowflake, HashSet<IPrefix>> _prefixCollection = new ();
 
         public HashSet<IPrefix> GetCollection(Snowflake snowflake) => 
             _prefixCollection.TryGetValue(snowflake, out var prefixes) 

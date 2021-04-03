@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Services.Command
          {
              foreach (var x in db.GuildConfigs)
              {
-                 _prefixes.TryAdd(x.GuildId, x.Prefix);
+                 _prefixes.TryAdd(x.GuildId, x.CacheService);
                  _colourService.AddOrUpdate(x.GuildId, new Color((int)x.EmbedColor));
              }
          }
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Services.Command
      public async Task<bool> AddPrefix(ulong id, string prefix, DbService db)
      {
          var cfg = await db.GetOrCreateGuildConfigAsync(id);
-         cfg.Prefix = prefix;
+         cfg.CacheService = prefix;
          _prefixes.AddOrUpdate(id, prefix, (key, old) => prefix);
          await db.SaveChangesAsync();
          return true;
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Services.Command
              using var scope = _provider.CreateScope(); 
              using var db = scope.ServiceProvider.GetRequiredService<DbService>();
              var cfg = await db.GetOrCreateGuildConfigAsync(e.Guild);
-             _prefixes.TryAdd(e.Guild.Id.RawValue, cfg.Prefix);
+             _prefixes.TryAdd(e.Guild.Id.RawValue, cfg.CacheService);
              _colourService.AddOrUpdate(e.Guild.Id.RawValue, new Color((int)cfg.EmbedColor));
          });
          return Task.CompletedTask;

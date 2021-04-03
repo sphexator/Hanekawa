@@ -20,17 +20,17 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Settings : HanekawaCommandModule
     {
         private readonly ColourService _colourService;
-        private readonly Services.Caching.Prefix _prefix;
+        private readonly Services.Caching.CacheService _cacheService;
 
-        public Settings(ColourService colourService, Services.Caching.Prefix prefix)
+        public Settings(ColourService colourService, Services.Caching.CacheService cacheService)
         {
             _colourService = colourService;
-            _prefix = prefix;
+            _cacheService = cacheService;
         }
 
-        [Name("Add prefix")]
+        [Name("Add cacheService")]
         [Command("addprefix", "aprefix")]
-        [Description("Adds a prefix to the bot, if it doesn't already exist")]
+        [Description("Adds a cacheService to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
             
@@ -38,13 +38,13 @@ namespace Hanekawa.Bot.Modules.Settings
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
-                _prefix.AddorUpdatePrefix(Context.Guild, prefix);
+                _cacheService.AddorUpdatePrefix(Context.Guild, prefix);
                 config.Prefix = prefix;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
+                await Context.ReplyAsync($"Added {prefix} as a cacheService.", Color.Green);
                 return;
             }
-            await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
+            await Context.ReplyAsync($"{prefix} is already a cacheService on this server.", Color.Red);
         }
 
         [Name("Set embed color")]

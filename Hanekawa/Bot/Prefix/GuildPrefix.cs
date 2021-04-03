@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Prefix
         public async ValueTask<IEnumerable<IPrefix>> GetPrefixesAsync(CachedUserMessage message)
         {
             if (message.Channel is IPrivateChannel) return null;
-            var prefixService = _provider.GetRequiredService<Services.Caching.Prefix>();
+            var prefixService = _provider.GetRequiredService<Services.Caching.CacheService>();
             var prefixCollection = prefixService.GetCollection(message.Guild.Id);
             if (prefixCollection != null)
             {
