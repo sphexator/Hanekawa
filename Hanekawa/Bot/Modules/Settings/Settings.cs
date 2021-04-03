@@ -50,9 +50,9 @@ namespace Hanekawa.Bot.Modules.Settings
         [Name("Set embed color")]
         [Command("embed")]
         [Description("Changes the embed colour of the bot")]
-        public async Task SetEmbedColorAsync(uint color)
+        public async Task SetEmbedColorAsync(Color color)
         {
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color((int)color));
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color(color));
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
                 x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
             if (response == null)
@@ -61,16 +61,16 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                await using (var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>())
-                {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color((int)color));
-                    cfg.EmbedColor = color;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Changed default embed color");
-                }
+            {
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color(color));
+                cfg.EmbedColor = (uint)color.RawValue;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Changed default embed color");
+            }
             else
-                await Context.ReplyAsync("Canceled");
+                await Context.ReplyAsync("Cancelled");
         }
 
         [Name("Set embed color")]
@@ -79,35 +79,6 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task SetEmbedColorAsync(int r, int g, int b)
         {
             var color = new Color(r, g, b);
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
-            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
-                x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
-            if (response == null)
-            {
-                await Context.ReplyAsync("Timed out...", Color.Red);
-                return;
-            }
-            if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                await using (var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>())
-                {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
-                    cfg.EmbedColor = (uint)color.RawValue;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Changed default embed color");
-                }
-            else
-                await Context.ReplyAsync("Canceled");
-        }
-
-        [Name("Set embed color")]
-        [Command("embed")]
-        [Description("Changes the embed colour of the bot")]
-        public async Task SetEmbedColorAsync(string colorHex)
-        {
-            if (colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
-            colorHex = colorHex.Insert(0, "0x");
-            var color = new Color(Convert.ToInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
                 x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
