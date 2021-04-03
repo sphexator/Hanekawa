@@ -10,5 +10,8 @@
 
         public int MinValue { get; }
         public int MaxValue { get; }
+
+        public override string ToString() => $"{MinValue}-{MaxValue}";
+        
     }
 }
