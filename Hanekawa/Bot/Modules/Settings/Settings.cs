@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Prefix;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
