@@ -17,9 +17,9 @@ namespace Hanekawa.Extensions
 
         public static IReadOnlyDictionary<Type, string> ParameterExampleStrings { get; } = new Dictionary<Type, string>
         {
-            [typeof(CachedMember)] = "<@376085382913064971>",
-            [typeof(IMessage)] = "767451076084891678",
-            [typeof(LocalCustomEmoji)] = "<:espeon:491227561385525248>",
+            [typeof(CachedMember)] = "<@111123736660324352>",
+            [typeof(IMessage)] = "827809315679240202",
+            [typeof(LocalCustomEmoji)] = "<:naicu:469925413162975242>",
             [typeof(CachedTextChannel)] = "#general",
             [typeof(CachedRole)] = "@Admins"
         };
