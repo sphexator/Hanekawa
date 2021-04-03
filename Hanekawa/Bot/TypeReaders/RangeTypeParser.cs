@@ -3,7 +3,7 @@ using Qmmands;
 
 namespace Hanekawa.Bot.TypeReaders
 {
-    public class RangeTypeReader : TypeParser<Models.Range>
+    public class RangeTypeParser : TypeParser<Models.Range>
     {
         public override ValueTask<TypeParserResult<Models.Range>> ParseAsync(Parameter parameter, string value, CommandContext context)
         {
