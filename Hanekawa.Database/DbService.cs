@@ -19,6 +19,7 @@ using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Profile;
+using Hanekawa.Database.Tables.Quote;
 using Hanekawa.Database.Tables.Stores;
 using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -124,6 +125,9 @@ namespace Hanekawa.Database
         public DbSet<VoteLog> VoteLogs { get; set; }
         public DbSet<AutoMessage> AutoMessages { get; set; }
 
+        // Quote
+        public DbSet<Quote> Quotes { get; set; }
+
         // Internal
         public virtual DbSet<Log> Logs { get; set; }
 
@@ -160,6 +164,13 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion<long>();
                 x.Property(e => e.Creator).HasConversion<long>();
                 x.Property(e => e.ChannelId).HasConversion<long>();
+            });
+
+            modelBuilder.Entity<Quote>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.Key });
+                x.Property(e => e.GuildId).HasConversion<long>();
+                x.Property(e => e.Creator).HasConversion<long>();
             });
         }
 
