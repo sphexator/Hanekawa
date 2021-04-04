@@ -18,7 +18,6 @@ using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Qmmands;
 using Range = Hanekawa.Models.Range;
 
@@ -71,6 +70,7 @@ namespace Hanekawa.Bot.Modules.Administration
             }
             var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
             bans.Set(user.Id.RawValue, Context.User.Id, TimeSpan.FromMinutes(1));
+            _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
             await Context.Guild.BanMemberAsync(user.Id.RawValue, $"{Context.User.Id.RawValue} - {reason}", 7);
             await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
@@ -92,6 +92,7 @@ namespace Hanekawa.Bot.Modules.Administration
                 {
                     var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
                     bans.Set(userId, Context.User.Id, TimeSpan.FromMinutes(1));
+                    _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
                     await Context.Guild.BanMemberAsync(userId, reason, 7);
                     await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                         $"Banned **{userId}** from {Context.Guild.Name}.",

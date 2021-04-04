@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Prefix
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(message.Guild.Id);
             var prefix = new StringPrefix(cfg.Prefix);
-            prefixService.AddorUpdatePrefix(message.Guild, cfg.Prefix);
+            prefixService.AddOrUpdatePrefix(message.Guild, cfg.Prefix);
             prefixService.IsMentionPrefix(message, out _);
             var collection = prefixService.GetCollection(message.Guild.Id);
 

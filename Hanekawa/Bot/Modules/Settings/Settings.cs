@@ -26,7 +26,7 @@ namespace Hanekawa.Bot.Modules.Settings
             _cacheService = cacheService;
         }
 
-        [Name("Add cacheService")]
+        [Name("Add Prefix")]
         [Command("addprefix", "aprefix")]
         [Description("Adds a cacheService to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
@@ -36,7 +36,7 @@ namespace Hanekawa.Bot.Modules.Settings
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
-                _cacheService.AddorUpdatePrefix(Context.Guild, prefix);
+                _cacheService.AddOrUpdatePrefix(Context.Guild, prefix);
                 config.Prefix = prefix;
                 await db.SaveChangesAsync();
                 await Context.ReplyAsync($"Added {prefix} as a cacheService.", Color.Green);
