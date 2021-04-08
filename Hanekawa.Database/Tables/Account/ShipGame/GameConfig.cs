@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Database.Tables.BotGame
+﻿namespace Hanekawa.Database.Tables.Account.ShipGame
 {
     public class GameConfig
     {

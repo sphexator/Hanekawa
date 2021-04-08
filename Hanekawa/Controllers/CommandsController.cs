@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Disqord;
 using Disqord.Bot;
-using Hanekawa.Bot.Preconditions;
+using Disqord.Gateway;
+using Hanekawa.Bot.Commands.Preconditions;
 using Microsoft.AspNetCore.Mvc;
 using Qmmands;
 using Command = Hanekawa.Models.Api.Command;
@@ -23,7 +23,7 @@ namespace Hanekawa.Controllers
         public List<Module> GetCommands()
         {
             var toReturn = new List<Module>();
-            var modules = _bot.GetAllModules().OrderBy(x => x.Name);
+            var modules = _bot.Commands.GetAllModules().OrderBy(x => x.Name);
             foreach (var x in modules)
             {
                 if(x.Name == "Owner") continue;
@@ -71,16 +71,16 @@ namespace Hanekawa.Controllers
             var str = new List<string>();
             foreach (var x in cmd.Module.Checks)
             {
-                if (x is RequireMemberGuildPermissionsAttribute perm)
+                if (x is RequireAuthorGuildPermissionsAttribute perm)
                 {
-                    str.Add(perm.Permissions.FirstOrDefault().ToString());
+                    str.Add(perm.Permissions.ToString());
                 }
             }
             foreach (var x in cmd.Checks)
             {
-                if (x is RequireMemberGuildPermissionsAttribute perm)
+                if (x is RequireAuthorGuildPermissionsAttribute perm)
                 { 
-                    str.Add(perm.Permissions.FirstOrDefault().ToString());
+                    str.Add(perm.Permissions.ToString());
                 }
             }
 

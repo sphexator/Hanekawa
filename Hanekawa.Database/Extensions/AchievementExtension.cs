@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
-using Hanekawa.Database.Tables.Achievement;
+using Disqord.Gateway;
+using Hanekawa.Database.Tables.Account.Achievement;
 
 namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, CachedMember user,
+        public static async Task<AchievementTracker> GetOrCreateAchievementProgress(this DbService context, IMember user,
             int type)
         {
             var check = await context.AchievementTrackers.FindAsync(type, user.Id.RawValue).ConfigureAwait(false);

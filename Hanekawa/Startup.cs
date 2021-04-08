@@ -1,24 +1,7 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Disqord;
-using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Prefix;
-using Hanekawa.Bot.Services;
-using Hanekawa.Bot.Services.Administration.Warning;
-using Hanekawa.Bot.Services.Anime;
-using Hanekawa.Bot.Services.Boost;
-using Hanekawa.Bot.Services.Experience;
-using Hanekawa.Bot.Services.Game.HungerGames;
-using Hanekawa.Bot.Services.Mvp;
 using Hanekawa.Database;
-using Hanekawa.Extensions;
-using Hanekawa.Shared.Command;
-using Hanekawa.Shared.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +13,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using Qmmands;
 using Quartz;
-using ILogger = Disqord.Logging.ILogger;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
@@ -46,8 +27,6 @@ namespace Hanekawa
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddHostedService<RunBot>();
-            services.AddHostedService<SimulCastService>();
             services.AddSingleton(Configuration);
             services.AddLogging();
             services.AddDbContextPool<DbService>(x =>
@@ -57,15 +36,6 @@ namespace Hanekawa
                 x.EnableSensitiveDataLogging(false);
                 x.UseLoggerFactory(MyLoggerFactory);
             });
-            services.AddSingleton(new Random());
-            services.AddSingleton(new HttpClient());
-            services.AddSingleton(new ColourService());
-            services.UseQuartz(typeof(WarnService));
-            services.UseQuartz(typeof(MvpService));
-            services.UseQuartz(typeof(BoostService));
-            services.UseQuartz(typeof(HungerGameService));
-            services.UseQuartz(typeof(ExpService));
-
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
@@ -75,32 +45,6 @@ namespace Hanekawa
                 var x = serviceList[i];
                 services.AddSingleton(x);
             }
-
-            services.AddSingleton(x =>
-            {
-                var bot = new Bot.Hanekawa(TokenType.Bot, Configuration["token"], new GuildPrefix(x),
-                    new DiscordBotConfiguration
-                    {
-                        MessageCache = new Optional<MessageCache>(new DefaultMessageCache(100)),
-                        Logger = new Optional<ILogger>(new DiscordLogger()),
-                        DefaultMentions = new Optional<LocalMentions>(LocalMentions.NoEveryone),
-                        CommandServiceConfiguration = new CommandServiceConfiguration
-                        {
-                            DefaultRunMode = RunMode.Parallel,
-                            StringComparison = StringComparison.OrdinalIgnoreCase,
-                            CooldownBucketKeyGenerator = (e, context) =>
-                            {
-                                var cooldownType = (HanaCooldown)e;
-                                var ctx = (HanekawaCommandContext) context;
-                                return cooldownType == HanaCooldown.User 
-                                    ? ctx.User.Id.RawValue 
-                                    : ctx.Guild.Id.RawValue;
-                            }
-                        },
-                        ProviderFactory = _ => x
-                    });
-                return bot;
-            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -129,11 +73,6 @@ namespace Hanekawa
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
             for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
             var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
-            QuartzExtension.StartCronJob<WarnService>(scheduler, "0 0 13 1/1 * ? *");
-            QuartzExtension.StartCronJob<MvpService>(scheduler, "0 0 18 1/1 * ? *");
-            QuartzExtension.StartCronJob<BoostService>(scheduler, "0 0 12 ? * MON *");
-            QuartzExtension.StartCronJob<HungerGameService>(scheduler, "0 0 0/3 1/1 * ? *");
-            QuartzExtension.StartCronJob<ExpService>(scheduler, "0 0 0/1 1/1 * ? *");
         }
 
         private static readonly ILoggerFactory MyLoggerFactory
@@ -186,7 +125,6 @@ namespace Hanekawa
                     new DatabaseParameterInfo("@message", "${message}"),
                     new DatabaseParameterInfo("@logger", "${logger}"),
                     new DatabaseParameterInfo("@callsite", "${callsite}"),
-                    //new DatabaseParameterInfo("@exception", "${exception:format=shortType,message :separator= - }${newline}${exception:format=method}${newline}${exception:format=stackTrace:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}")
                     new DatabaseParameterInfo("@exception", "${exception:format=toString,Data}")
                 },
                 OptimizeBufferReuse = true
@@ -233,19 +171,6 @@ namespace Hanekawa
             LogManager.ThrowExceptions = Debugger.IsAttached;
             
             return config;
-        }
-    }
-
-    public class RunBot : BackgroundService
-    {
-        private readonly Bot.Hanekawa _client;
-        public RunBot(Bot.Hanekawa client) => _client = client;
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await _client.AddExtensionAsync(new InteractivityExtension());
-            await _client.RunAsync(stoppingToken);
-            await Task.Delay(-1, stoppingToken);
         }
     }
 }

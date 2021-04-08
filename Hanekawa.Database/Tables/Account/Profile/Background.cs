@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Database.Tables.Profile
+﻿namespace Hanekawa.Database.Tables.Account.Profile
 {
     public class Background
     {

@@ -1,4 +1,4 @@
-﻿using Hanekawa.Shared.Game.HungerGame;
+﻿using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {

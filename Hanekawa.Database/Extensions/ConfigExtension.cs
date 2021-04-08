@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Music;

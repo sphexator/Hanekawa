@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Models.Api;
 using Microsoft.AspNetCore.Mvc;

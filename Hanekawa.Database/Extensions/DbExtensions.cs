@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Hanekawa.Database.Tables.BoardConfig;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Moderation;
@@ -12,12 +13,12 @@ namespace Hanekawa.Database.Extensions
     {
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, CachedMember user)
         {
-            var userdata = await context.EventPayouts.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue).ConfigureAwait(false);
+            var userdata = await context.EventPayouts.FindAsync(user.GuildId.RawValue, user.Id.RawValue).ConfigureAwait(false);
             if (userdata != null) return userdata;
 
             var data = new EventPayout
             {
-                GuildId = user.Guild.Id.RawValue,
+                GuildId = user.GuildId.RawValue,
                 UserId = user.Id.RawValue,
                 Amount = 0
             };
@@ -25,7 +26,7 @@ namespace Hanekawa.Database.Extensions
             {
                 await context.EventPayouts.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.EventPayouts.FindAsync(user.Guild.Id.RawValue, user.Id.RawValue).ConfigureAwait(false);
+                return await context.EventPayouts.FindAsync(user.GuildId.RawValue, user.Id.RawValue).ConfigureAwait(false);
             }
             catch
             {

@@ -1,5 +1,5 @@
 ﻿using System;
-using Hanekawa.Shared.Game.HungerGame;
+using Hanekawa.HungerGames.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
@@ -10,7 +10,7 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public ulong? EventChannel { get; set; } = null;
         public string EmoteMessageFormat { get; set; } 
 
-        public HungerGameStage Stage { get; set; } = HungerGameStage.Closed;
+        public GameStage Stage { get; set; } = GameStage.Closed;
         public DateTimeOffset SignUpStart { get; set; }
         public string SignUpMessage { get; set; }
         public Guid? GameId { get; set; } = null;

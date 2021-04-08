@@ -20,31 +20,10 @@ namespace Hanekawa.Extensions
             {
                 var schedulerFactory = new StdSchedulerFactory();
                 var scheduler = schedulerFactory.GetScheduler().Result;
-                scheduler.JobFactory = provider.GetService<IJobFactory>();
+                scheduler.JobFactory = provider.GetService<IJobFactory>() ?? throw new InvalidOperationException("No job factory in service provider");
                 scheduler.Start();
                 return scheduler;
             });
-        }
-
-        public static void StartSimpleJob<TJob>(IScheduler scheduler, TimeSpan runInterval)
-            where TJob : IJob
-        {
-            var jobName = typeof(TJob).FullName;
-
-            var job = JobBuilder.Create<TJob>()
-                .WithIdentity(jobName)
-                .Build();
-
-            var trigger = TriggerBuilder.Create()
-                .WithIdentity($"{jobName}.trigger")
-                .StartAt(new DateTimeOffset(DateTime.Now.AddSeconds(10)))
-                .WithSimpleSchedule(scheduleBuilder =>
-                    scheduleBuilder
-                        .WithInterval(runInterval)
-                        .RepeatForever())
-                .Build();
-
-            scheduler.ScheduleJob(job, trigger);
         }
 
         public static void StartCronJob<TJob>(IScheduler scheduler, string cron)
@@ -53,7 +32,7 @@ namespace Hanekawa.Extensions
             var jobName = typeof(TJob).FullName;
 
             var job = JobBuilder.Create<TJob>()
-                .WithIdentity(jobName)
+                .WithIdentity(jobName!)
                 .Build();
 
             var trigger = TriggerBuilder.Create()

@@ -3,17 +3,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Hanekawa.Bot.Services;
-using Hanekawa.Bot.Services.Economy;
-using Hanekawa.Bot.Services.Experience;
+using Disqord.Gateway;
+using Disqord.Rest;
+using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Extensions;
 using Hanekawa.Models;
-using Hanekawa.Shared;
-using Hanekawa.Shared.Command;
 using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
@@ -29,19 +28,15 @@ namespace Hanekawa.Controllers
     {
         private readonly DbService _db;
         private readonly Bot.Hanekawa _client;
-        private readonly ExpService _exp;
-        private readonly NLog.Logger _log;
-        private readonly ColourService _colour;
-        private readonly CurrencyService _currency;
+        private readonly Logger _log;
+        private readonly CacheService _cache;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, ColourService colour, CurrencyService currency)
+        public AdvertController(DbService db, Bot.Hanekawa client, CacheService cache)
         {
             _db = db;
             _client = client;
-            _exp = exp;
             _log = LogManager.GetCurrentClassLogger();
-            _colour = colour;
-            _currency = currency;
+            _cache = cache;
         }
 
         [HttpPost("dbl")]
@@ -67,12 +62,12 @@ namespace Hanekawa.Controllers
                 // Get user data and reward from config
                 var userId = Convert.ToUInt64(model.User);
                 var userData = await _db.GetOrCreateUserData(guildId, userId);
-                var user = await guild.GetOrFetchMemberAsync(userId) as CachedMember;
+                var user = await guild.FetchMemberAsync(userId);
                 if (cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 if (user != null)
                 {
-                    await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db);
-                    if (cfg.RoleIdReward.HasValue && !user.Roles.ContainsKey(cfg.RoleIdReward.Value)) // Reward a role if its in the config and the user doesn't already have it
+                    // await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db); //TODO: Implement once exp service is added
+                    if (cfg.RoleIdReward.HasValue && !user.GetRoles().ContainsKey(cfg.RoleIdReward.Value)) // Reward a role if its in the config and the user doesn't already have it
                         await user.GrantRoleAsync(cfg.RoleIdReward.Value);
                 }
                 else
@@ -91,16 +86,26 @@ namespace Hanekawa.Controllers
                 });
 
                 var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
-                if (logCfg.LogAvi.HasValue)
+                if (logCfg.LogAvi.HasValue && guild.Channels.TryGetValue(logCfg.LogAvi.Value, out var logChannel))
                 {
                     var name = $"{user}";
                     if (name.IsNullOrWhiteSpace()) name = $"{userId}";
-                    await guild.GetTextChannel(logCfg.LogAvi.Value).SendMessageAsync(null, false, new LocalEmbedBuilder
+                    var embed = new LocalEmbedBuilder
                     {
                         Title = "Top.gg Vote!",
-                        Color = _colour.Get(guild.Id.RawValue),
+                        Color = _cache.GetColor(guild.Id.RawValue),
                         Description = $"{name} just voted for the server!",
-                        Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
+                        Footer = new LocalEmbedFooterBuilder
+                            {IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
+                    };
+                    await _client.SendMessageAsync(logChannel.Id, new LocalMessageBuilder
+                    {
+                        Embed = embed,
+                        Attachments = null,
+                        Content = null,
+                        Mentions = LocalMentionsBuilder.None,
+                        Reference = null,
+                        IsTextToSpeech = false
                     }.Build());
                 }
                 _log.Log(LogLevel.Info, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
@@ -118,7 +123,7 @@ namespace Hanekawa.Controllers
                         if(!x.Active) continue;
                         if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value <= DateTimeOffset.UtcNow) continue;
                         if (x.ServerAgeRequirement.HasValue &&
-                            user.JoinedAt.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
+                            user.JoinedAt.Value.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
                         {
                             sb.AppendLine(
                                 $"You don't qualify for {x.Name} giveaway, your account has to be in the server for at least {x.ServerAgeRequirement.Value.Humanize()}");
@@ -154,28 +159,28 @@ namespace Hanekawa.Controllers
                     var str = new StringBuilder();
                     var currencyCfg = await _db.GetOrCreateCurrencyConfigAsync(guildId);
                     if (cfg.ExpGain > 0) str.AppendLine($"{cfg.ExpGain} Exp");
-                    if (cfg.CreditGain > 0) str.AppendLine($"{currencyCfg.CurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.CreditGain)}");
-                    if (cfg.SpecialCredit > 0) str.AppendLine($"{currencyCfg.SpecialCurrencyName}: {_currency.ToCurrency(currencyCfg, cfg.SpecialCredit, true)}");
-                    if (user.DmChannel != null) // determine if dm channel is already created, else create it and send message
-                        await user.DmChannel.SendMessageAsync(
-                            $"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +
-                            "You've been rewarded:\n" +
-                            $"{str}\n{sb}", false,
-                            null,
-                            LocalMentions.None);
-                    else
+                    if (cfg.CreditGain > 0) str.AppendLine($"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.CreditGain)}");
+                    if (cfg.SpecialCredit > 0) str.AppendLine($"{currencyCfg.SpecialCurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.SpecialCredit, true)}");
+                    var dmChannel = await user.CreateDirectChannelAsync();
+                    await _client.SendMessageAsync(dmChannel.Id, new LocalMessageBuilder
                     {
-                        var channel = await user.CreateDmChannelAsync();
-                        await channel.SendMessageAsync($"{MessageUtil.FormatMessage(cfg.Message, user, user.Guild)}\n" +
-                                                       "You've been rewarded:\n" +
-                                                       $"{str}\n{sb}", false,
-                            null,
-                            LocalMentions.None);
-                    }
+                        Embed = new LocalEmbedBuilder
+                        {
+                            Description = $"{MessageUtil.FormatMessage(cfg.Message, user, guild)}\n" +
+                                          "You've been rewarded:\n" +
+                                          $"{str}\n{sb}",
+                            Color = _cache.GetColor(guild.Id)
+                        },
+                        Mentions = LocalMentionsBuilder.None,
+                        Attachments = null,
+                        Content = null,
+                        Reference = null,
+                        IsTextToSpeech = false
+                    }.Build());
                 }
                 catch
                 {
-                    // Ignore, the user likely has closed DMs
+                    // Ignore, the user likely has closed DM or blocked the bot.
                 }
                 return Accepted();
             }

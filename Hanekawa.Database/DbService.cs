@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Account.Achievement;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.Database.Tables.Achievement;
+using Hanekawa.Database.Tables.Account.Profile;
+using Hanekawa.Database.Tables.Account.ShipGame;
+using Hanekawa.Database.Tables.Account.Stores;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Database.Tables.AutoMessage;
 using Hanekawa.Database.Tables.BoardConfig;
-using Hanekawa.Database.Tables.BotGame;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -18,10 +21,7 @@ using Hanekawa.Database.Tables.Internal;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
-using Hanekawa.Database.Tables.Profile;
 using Hanekawa.Database.Tables.Quote;
-using Hanekawa.Database.Tables.Stores;
-using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database

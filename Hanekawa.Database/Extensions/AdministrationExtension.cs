@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Moderation;
-using Hanekawa.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        public static async Task<ModLog> CreateCaseId(this DbService context, CachedUser user, CachedGuild guild,
+        public static async Task<ModLog> CreateCaseId(this DbService context, IUser user, CachedGuild guild,
             DateTime time, ModAction action)
         {
             var counter = await context.ModLogs.CountAsync(x => x.GuildId == guild.Id.RawValue).ConfigureAwait(false);
@@ -27,7 +28,7 @@ namespace Hanekawa.Database.Extensions
                 x.Date == time && x.UserId == user.Id.RawValue && x.GuildId == guild.Id.RawValue).ConfigureAwait(false);
         }
 
-        public static async Task<Report> CreateReport(this DbService context, CachedUser user, CachedGuild guild,
+        public static async Task<Report> CreateReport(this DbService context, IUser user, CachedGuild guild,
             DateTime time)
         {
             var counter = await context.Reports.CountAsync(x => x.GuildId == guild.Id.RawValue).ConfigureAwait(false);

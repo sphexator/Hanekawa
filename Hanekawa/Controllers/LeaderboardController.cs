@@ -2,7 +2,8 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Hanekawa.Bot.Services.Experience;
+using Disqord.Gateway;
+using Hanekawa.Bot.Service;
 using Hanekawa.Database;
 using Hanekawa.Models.Api;
 using Microsoft.EntityFrameworkCore;
@@ -34,10 +35,10 @@ namespace Hanekawa.Controllers
             var toReturn = new Leaderboard {Users = new ()};
             var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
                 .OrderByDescending(x => x.TotalExp - x.Decay).Take(100).ToListAsync();
-            var exp = _provider.GetRequiredService<ExpService>();
+            var exp = _provider.GetRequiredService<Experience>();
             foreach (var x in users)
             {
-                var user = guild.GetMember(x.UserId);
+                var user = _bot.GetMember(id, x.UserId);
                 if (user != null)
                 {
                     toReturn.Users.Add(new LeaderboardUser
@@ -64,6 +65,8 @@ namespace Hanekawa.Controllers
                 .OrderByDescending(x => x.MvpCount).Take(100).ToListAsync();
             foreach (var x in users)
             {
+                var user = _bot.GetMember(id, x.UserId);
+                if(user == null) continue;
                 toReturn.Users.Add(new LeaderboardWeeklyUser
                 {
                     UserId = x.UserId,
@@ -82,8 +85,11 @@ namespace Hanekawa.Controllers
             var toReturn = new LeaderboardWeekly {Users = new()};
             var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
                 .OrderByDescending(x => x.Credit).Take(100).ToListAsync();
+
             foreach (var x in users)
             {
+                var user = _bot.GetMember(id, x.UserId);
+                if (user == null) continue;
                 toReturn.Users.Add(new LeaderboardWeeklyUser
                 {
                     UserId = x.UserId,

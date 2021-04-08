@@ -32,13 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Disqord" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Bot" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Extensions.Audio" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Extensions.Interactivity" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00082" />
-    <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0-nightly-00070" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.2">
       <PrivateAssets>all</PrivateAssets>
@@ -56,8 +49,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.HungerGames\Hanekawa.HungerGames.csproj" />
-    <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
+    <Reference Include="Disqord">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Bot">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Bot.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Core">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Gateway">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Gateway.Api">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Rest">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.dll</HintPath>
+    </Reference>
+    <Reference Include="Disqord.Rest.Api">
+      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.Api.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

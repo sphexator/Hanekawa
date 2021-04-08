@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Hanekawa.Database.Tables.Club;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<ClubInformation> GetClubAsync(this DbService context, CachedMember user, int id)
         {
-            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.Guild.Id.RawValue).ConfigureAwait(false);
+            var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.GuildId.RawValue).ConfigureAwait(false);
             return check;
         }
     }

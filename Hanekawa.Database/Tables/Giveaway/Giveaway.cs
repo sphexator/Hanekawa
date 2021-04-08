@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hanekawa.Shared;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Giveaway
 {

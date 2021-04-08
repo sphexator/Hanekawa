@@ -1,5 +1,4 @@
 ﻿using System;
-using Hanekawa.Shared.Interfaces;
 using Quartz;
 using Quartz.Spi;
 

@@ -1,5 +1,5 @@
 ﻿using System;
-using Hanekawa.Shared;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account
 {

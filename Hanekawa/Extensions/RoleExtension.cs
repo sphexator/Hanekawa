@@ -1,56 +1,64 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
+using Disqord.Rest;
+using Hanekawa.Exceptions;
 
 namespace Hanekawa.Extensions
 {
     public static class RoleExtension
     {
-        public static async Task<bool> TryAddRoleAsync(this CachedMember user, CachedRole role)
+        public static async Task TryAddRoleAsync(this CachedMember user, CachedRole role)
         {
-            var currentUser = user.Guild.CurrentMember;
-            if (role == null) return false;
-            if (!currentUser.Permissions.ManageRoles || !currentUser.HierarchyCheck(role)) return false;
-            await user.GrantRoleAsync(role.Id.RawValue);
-            return true;
-
+            if (!user.GetGuild().HierarchyCheck(user.GetGuild().GetCurrentUser(), role))
+                throw new HanaCommandException("Can't add a role that's placed higher than the bot");
+            await user.GrantRoleAsync(role.Id);
         }
 
-        public static async Task<bool> TryAddRolesAsync(this CachedMember user, IEnumerable<CachedRole> roles)
+        public static async Task TryAddRolesAsync(this CachedMember user, IEnumerable<CachedRole> roles)
         {
-            var currentUser = user.Guild.CurrentMember;
+            var guild = user.GetGuild();
+            var currentUser = guild.GetCurrentUser();
+            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+                throw new HanaCommandException("");
 
-            if (!currentUser.Permissions.ManageRoles) return false;
+            var finalRoles = user.GetRoles().Keys;
+            var snowflakes = new List<Snowflake>(finalRoles);
             foreach (var x in roles)
             {
                 if (x == null) continue;
-                if (currentUser.HierarchyCheck(x))
-                    await user.GrantRoleAsync(x.Id.RawValue);
+                if (guild.HierarchyCheck(currentUser, x) && !snowflakes.Contains(x.Id)) snowflakes.Add(x.Id);
             }
-            return true;
+
+            await user.ModifyAsync(x => x.RoleIds = snowflakes);
         }
 
-        public static async Task<bool> TryRemoveRoleAsync(this CachedMember user, CachedRole role)
+        public static async Task TryRemoveRoleAsync(this CachedMember user, CachedRole role)
         {
-            var currentUser = user.Guild.CurrentMember;
-            if (role == null) return false;
-            if (!currentUser.Permissions.ManageRoles || !currentUser.HierarchyCheck(role)) return false;
+            var guild = user.GetGuild();
+            var currentUser = guild.GetCurrentUser();
+            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+                throw new HanaCommandException("");
+            if (guild.HierarchyCheck(currentUser, role)) throw new HanaCommandException("Can't add a role that's placed higher than the bot");
             await user.RevokeRoleAsync(role.Id.RawValue);
-            return true;
-
         }
 
-        public static async Task<bool> TryRemoveRolesAsync(this CachedMember user, IEnumerable<CachedRole> roles)
+        public static async Task TryRemoveRolesAsync(this CachedMember user, IEnumerable<CachedRole> roles)
         {
-            var currentUser = user.Guild.CurrentMember;
-            if (!currentUser.Permissions.ManageRoles) return false;
+            var guild = user.GetGuild();
+            var currentUser = guild.GetCurrentUser();
+            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+                throw new HanaCommandException("");
+            var finalRoles = user.GetRoles().Keys;
+            var snowflakes = new List<Snowflake>(finalRoles);
             foreach (var x in roles)
             {
                 if (x == null) continue;
-                if (currentUser.HierarchyCheck(x))
-                    await user.RevokeRoleAsync(x.Id.RawValue);
+                if (guild.HierarchyCheck(currentUser, x) && snowflakes.Contains(x.Id)) snowflakes.Remove(x.Id);
             }
-            return true;
+
+            await user.ModifyAsync(x => x.RoleIds = snowflakes);
         }
     }
 }

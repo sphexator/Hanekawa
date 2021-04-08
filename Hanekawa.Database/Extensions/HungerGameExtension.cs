@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Disqord;
+using Disqord.Gateway;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.Shared.Game.HungerGame;
+using Hanekawa.HungerGames.Entities;
 
 namespace Hanekawa.Database.Extensions
 {
@@ -21,7 +21,7 @@ namespace Hanekawa.Database.Extensions
                 SignUpChannel = null,
                 EventChannel = null,
                 EmoteMessageFormat = "<:Rooree:761209568365248513>",
-                Stage = HungerGameStage.Closed,
+                Stage = GameStage.Closed,
                 SignUpStart = DateTimeOffset.UtcNow,
                 SignUpMessage = null,
                 GameId = null,
