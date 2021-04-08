@@ -13,7 +13,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<Account> GetOrCreateUserData(this DbService context, IGuild guild, IUser user) =>
             await GetOrCreateUserData(context, guild.Id.RawValue, user.Id.RawValue).ConfigureAwait(false);
         
-        private static async Task<Account> GetOrCreateUserData(DbService context, ulong guild, ulong user)
+        public static async Task<Account> GetOrCreateUserData(this DbService context, ulong guild, ulong user)
         {
             var userdata = await context.Accounts.FindAsync(guild, user).ConfigureAwait(false);
             if (userdata != null) return userdata;
@@ -39,7 +39,7 @@ namespace Hanekawa.Database.Extensions
         public static async Task<AccountGlobal> GetOrCreateGlobalUserData(this DbService context, Snowflake userId) =>
             await GetOrCreateGlobalUser(context, userId.RawValue).ConfigureAwait(false);
 
-        private static async Task<AccountGlobal> GetOrCreateGlobalUser(this DbService context, ulong userId)
+        public static async Task<AccountGlobal> GetOrCreateGlobalUser(this DbService context, ulong userId)
         {
             var userdata = await context.AccountGlobals.FindAsync(userId).ConfigureAwait(false);
             if (userdata != null) return userdata;

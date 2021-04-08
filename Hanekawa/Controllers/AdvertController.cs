@@ -5,12 +5,15 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Hanekawa.Bot.Service;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Advertise;
 using Hanekawa.Database.Tables.Giveaway;
+using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.Models;
 using Hanekawa.Utility;
@@ -30,13 +33,15 @@ namespace Hanekawa.Controllers
         private readonly Bot.Hanekawa _client;
         private readonly Logger _log;
         private readonly CacheService _cache;
+        private readonly Experience _exp;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, CacheService cache)
+        public AdvertController(DbService db, Bot.Hanekawa client, CacheService cache, Experience exp)
         {
             _db = db;
             _client = client;
             _log = LogManager.GetCurrentClassLogger();
             _cache = cache;
+            _exp = exp;
         }
 
         [HttpPost("dbl")]
@@ -46,7 +51,7 @@ namespace Hanekawa.Controllers
             {
                 // Check if header has right agent
                 if (!Request.Headers.TryGetValue("User-Agent", out var agent)) return BadRequest();
-                if (!agent.Contains("DBL")) return BadRequest(); // If not send bad request, only accepting DBL user agents
+                if (!agent.ToString().StartsWith("Top.gg")) return BadRequest(); // If not send bad request, only accepting DBL user agents
                                                                  // Check if user has a authorization in the header, else return forbidden
                                                                  // we only accept requests with an authorization in the header
                 if (!Request.Headers.TryGetValue("Authorization", out var authCode)) return Unauthorized("No authorization header");
@@ -66,7 +71,7 @@ namespace Hanekawa.Controllers
                 if (cfg.SpecialCredit > 0) userData.CreditSpecial += cfg.SpecialCredit; // Manually add as AddExp doesn't do special credit, maybe add later?
                 if (user != null)
                 {
-                    // await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db); //TODO: Implement once exp service is added
+                    await _exp.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, _db, ExpSource.Other); //TODO: Implement once exp service is added
                     if (cfg.RoleIdReward.HasValue && !user.GetRoles().ContainsKey(cfg.RoleIdReward.Value)) // Reward a role if its in the config and the user doesn't already have it
                         await user.GrantRoleAsync(cfg.RoleIdReward.Value);
                 }
@@ -84,7 +89,7 @@ namespace Hanekawa.Controllers
                     Type = model.Type,
                     Time = DateTimeOffset.UtcNow
                 });
-
+                
                 var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
                 if (logCfg.LogAvi.HasValue && guild.Channels.TryGetValue(logCfg.LogAvi.Value, out var logChannel))
                 {
@@ -117,36 +122,9 @@ namespace Hanekawa.Controllers
                 {
                     sb.AppendLine("Your entry has been registered toward the following giveaways:");
                     var length = sb.Length;
-                    for (var i = 0; i < giveaways.Count; i++)
+                    foreach (var x in giveaways)
                     {
-                        var x = giveaways[i];
-                        if(!x.Active) continue;
-                        if(x.CloseAtOffset.HasValue && x.CloseAtOffset.Value <= DateTimeOffset.UtcNow) continue;
-                        if (x.ServerAgeRequirement.HasValue &&
-                            user.JoinedAt.Value.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
-                        {
-                            sb.AppendLine(
-                                $"You don't qualify for {x.Name} giveaway, your account has to be in the server for at least {x.ServerAgeRequirement.Value.Humanize()}");
-                            continue;
-                        }
-
-                        if (userData.Level < x.LevelRequirement)
-                        {
-                            sb.AppendLine(
-                                $"You don't qualify for {x.Name} giveaway, you need to be at least of level{x.LevelRequirement} to enter.");
-                            continue;
-                        }
-
-                        await _db.GiveawayParticipants.AddAsync(new GiveawayParticipant
-                        {
-                            Id = Guid.NewGuid(),
-                            GuildId = guildId,
-                            UserId = userId,
-                            GiveawayId = x.Id,
-                            Giveaway = x,
-                            Entry = DateTimeOffset.UtcNow
-                        });
-                        sb.AppendLine($"{x.Name}");
+                        await GiveawayCheck(x, user, sb, userData, guildId, userId);
                     }
 
                     if (sb.Length == length) sb.Clear();
@@ -189,6 +167,38 @@ namespace Hanekawa.Controllers
                 _log.Log(NLog.LogLevel.Error, e, $"(Advert Endpoint) Error in awarding user for voting - {e.Message}");
                 return StatusCode(500);
             }
+        }
+
+        private async Task GiveawayCheck(Giveaway x, IMember user, StringBuilder sb, Account userData, ulong guildId,
+            ulong userId)
+        {
+            if (!x.Active) return;
+            if (x.CloseAtOffset.HasValue && x.CloseAtOffset.Value <= DateTimeOffset.UtcNow) return;
+            if (x.ServerAgeRequirement.HasValue &&
+                user.JoinedAt.Value.Add(x.ServerAgeRequirement.Value) > DateTimeOffset.UtcNow)
+            {
+                sb.AppendLine(
+                    $"You don't qualify for {x.Name} giveaway, your account has to be in the server for at least {x.ServerAgeRequirement.Value.Humanize()}");
+                return;
+            }
+
+            if (userData.Level < x.LevelRequirement)
+            {
+                sb.AppendLine(
+                    $"You don't qualify for {x.Name} giveaway, you need to be at least of level{x.LevelRequirement} to enter.");
+                return;
+            }
+
+            await _db.GiveawayParticipants.AddAsync(new GiveawayParticipant
+            {
+                Id = Guid.NewGuid(),
+                GuildId = guildId,
+                UserId = userId,
+                GiveawayId = x.Id,
+                Giveaway = x,
+                Entry = DateTimeOffset.UtcNow
+            });
+            sb.AppendLine($"{x.Name}");
         }
     }
 }
