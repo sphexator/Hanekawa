@@ -22,10 +22,7 @@ namespace Hanekawa.Bot.Service
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.GuildId.RawValue);
                 exp = Convert.ToInt32(exp * cfg.BoostExpMultiplier);
             }
-
-            exp = source == ExpSource.Voice
-                ? Convert.ToInt32(exp * _cache.GetMultiplier(Database.Entities.ChannelType.Voice, user.GuildId))
-                : Convert.ToInt32(exp * _cache.GetMultiplier(Database.Entities.ChannelType.Text, user.GuildId));
+            exp = Convert.ToInt32(exp * await GetMultiplier(source, user.GuildId, db));
             
             if (userData.Exp + exp >= ExpToNextLevel(userData.Level))
             {
@@ -74,6 +71,19 @@ namespace Hanekawa.Bot.Service
             await db.SaveChangesAsync();
             
             return exp;
+        }
+
+        private async Task<double> GetMultiplier(ExpSource source, Snowflake guildId, DbService db)
+        {
+            if(_cache.TryGetMultiplier(source, guildId, out var value)) return value;
+            var cfg = await db.GetOrCreateLevelConfigAsync(guildId.RawValue);
+            _cache.AdjustExpMultiplier(ExpSource.Text, guildId, cfg.TextExpMultiplier);
+            _cache.AdjustExpMultiplier(ExpSource.Voice, guildId, cfg.VoiceExpMultiplier);
+            _cache.AdjustExpMultiplier(ExpSource.Other, guildId, cfg.TextExpMultiplier);
+            
+            return source == ExpSource.Voice 
+                ? cfg.VoiceExpMultiplier 
+                : cfg.TextExpMultiplier;
         }
     }
 }
