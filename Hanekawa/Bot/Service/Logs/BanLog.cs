@@ -123,9 +123,9 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        private async Task<CachedMember> CheckAuditLog(CachedGuild guild, Snowflake userId, ModLog caseId)
+        private async Task<IMember> CheckAuditLog(CachedGuild guild, Snowflake userId, ModLog caseId)
         {
-            CachedMember mod = null;
+            IMember mod = null;
 
             await Task.Delay(TimeSpan.FromSeconds(2));
             var audits = await guild.GetAuditLogsAsync<RestMemberBannedAuditLog>(); //TODO: Whenever audit log is implemented

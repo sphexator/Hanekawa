@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Disqord.Gateway;
 using Hanekawa.Bot.Service.Administration;
 using Hanekawa.Bot.Service.Administration.Mute;
+using Hanekawa.Bot.Service.Board;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Logs;
 using Hanekawa.Entities;
@@ -20,8 +21,9 @@ namespace Hanekawa.Bot.Service
         private readonly LogService _logService;
         private readonly BlacklistService _blacklist;
         private readonly MuteService _mute;
+        private readonly BoardService _boardService;
 
-        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute)
+        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService)
         {
             _client = client;
             _experience = experience;
@@ -29,6 +31,7 @@ namespace Hanekawa.Bot.Service
             _logService = logService;
             _blacklist = blacklist;
             _mute = mute;
+            _boardService = boardService;
 
             _client.MessageReceived += MessageReceived;
             _client.MessageUpdated += MessageUpdated;
@@ -100,7 +103,8 @@ namespace Hanekawa.Bot.Service
 
         private Task LeftGuild(object sender, LeftGuildEventArgs e)
         {
-            throw new NotImplementedException();
+            _cache.Dispose(e.GuildId);
+            return Task.CompletedTask;
         }
 
         private Task ChannelDeleted(object sender, ChannelDeletedEventArgs e)
@@ -132,17 +136,20 @@ namespace Hanekawa.Bot.Service
 
         private Task ReactionsCleared(object sender, ReactionsClearedEventArgs e)
         {
-            throw new NotImplementedException();
+            _ = _boardService.ReactionClearedAsync(e);
+            return Task.CompletedTask;
         }
 
         private Task ReactionRemoved(object sender, ReactionRemovedEventArgs e)
         {
-            throw new NotImplementedException();
+            _ = _boardService.ReactionRemovedAsync(e);
+            return Task.CompletedTask;
         }
 
         private Task ReactionAdded(object sender, ReactionAddedEventArgs e)
         {
-            throw new NotImplementedException();
+            _ = _boardService.ReactionReceivedAsync(e);
+            return Task.CompletedTask;
         }
 
         private Task MessageReceived(object sender, MessageReceivedEventArgs e)

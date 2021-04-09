@@ -34,14 +34,14 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<Board> GetOrCreateBoard(this DbService context, CachedGuild guild, IMessage msg)
+        public static async Task<Board> GetOrCreateBoardAsync(this DbService context, Snowflake guild, IMessage msg)
         {
-            var check = await context.Boards.FindAsync(guild.Id.RawValue, msg.Id.RawValue).ConfigureAwait(false);
+            var check = await context.Boards.FindAsync(guild.RawValue, msg.Id.RawValue).ConfigureAwait(false);
             if (check != null) return check;
 
             var data = new Board
             {
-                GuildId = guild.Id.RawValue,
+                GuildId = guild.RawValue,
                 MessageId = msg.Id.RawValue,
                 StarAmount = 0,
                 Boarded = null,
@@ -51,7 +51,7 @@ namespace Hanekawa.Database.Extensions
             {
                 await context.Boards.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.Boards.FindAsync(guild.Id.RawValue, msg.Id.RawValue).ConfigureAwait(false);
+                return await context.Boards.FindAsync(guild.RawValue, msg.Id.RawValue).ConfigureAwait(false);
             }
             catch
             {

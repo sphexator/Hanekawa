@@ -43,7 +43,7 @@ namespace Hanekawa.Controllers
             _cache = cache;
             _exp = exp;
         }
-
+        
         [HttpPost("dbl")]
         public async Task<IActionResult> Dsl([FromBody] DslWebhook model)
         {
