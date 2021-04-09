@@ -21,7 +21,8 @@ namespace Hanekawa.Bot.Service.Board
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
-
+        // TODO: Change name check on emotes to IDs and only allow emotes within that guild to be used
+        // Favor the default star emote
         public BoardService(Hanekawa bot, IServiceProvider provider, CacheService cache)
         {
             _bot = bot;

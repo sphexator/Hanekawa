@@ -5,6 +5,7 @@ using Disqord.Gateway;
 using Hanekawa.Bot.Service.Administration;
 using Hanekawa.Bot.Service.Administration.Mute;
 using Hanekawa.Bot.Service.Board;
+using Hanekawa.Bot.Service.Boost;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Logs;
 using Hanekawa.Entities;
@@ -22,8 +23,9 @@ namespace Hanekawa.Bot.Service
         private readonly BlacklistService _blacklist;
         private readonly MuteService _mute;
         private readonly BoardService _boardService;
+        private readonly BoostService _boostService;
 
-        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService)
+        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService, BoostService boostService)
         {
             _client = client;
             _experience = experience;
@@ -32,6 +34,7 @@ namespace Hanekawa.Bot.Service
             _blacklist = blacklist;
             _mute = mute;
             _boardService = boardService;
+            _boostService = boostService;
 
             _client.MessageReceived += MessageReceived;
             _client.MessageUpdated += MessageUpdated;
@@ -92,6 +95,7 @@ namespace Hanekawa.Bot.Service
         private Task MemberUpdated(object sender, MemberUpdatedEventArgs e)
         {
             _ = _logService.MemberUpdatedAsync(e);
+            _ = _boostService.BoostCheckAsync(e);
             return Task.CompletedTask;
         }
 
