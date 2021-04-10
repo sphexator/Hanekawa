@@ -8,6 +8,7 @@ namespace Hanekawa.Bot.Service.Logs
     {
         public async Task VoiceLogAsync(VoiceStateUpdatedEventArgs e)
         {
+            
             // TODO: Wait till voice state is fully implemented??
         }
     }

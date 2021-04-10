@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Entities;
@@ -14,15 +13,16 @@ namespace Hanekawa.Bot.Service.Cache
     {
         public readonly MemoryCache GlobalCooldown = new(new MemoryCacheOptions());
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<CooldownType, MemoryCache>> Cooldown = new();
+        public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<ExpSource, double>> ExperienceMultipliers = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<EmoteType, IEmoji>> Emote = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake, int>>> GuildInvites = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<Snowflake, Timer>> MuteTimers = new();
-        public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<ExpSource, double>> ExperienceMultipliers = new();
         public readonly ConcurrentDictionary<Snowflake, HashSet<IPrefix>> GuildPrefix = new();
+        public readonly ConcurrentDictionary<Snowflake, Color> GuildEmbedColors = new();
         public readonly ConcurrentDictionary<Snowflake, MemoryCache> Board = new();
         public readonly ConcurrentDictionary<Snowflake, MemoryCache> BanCache = new();
         public readonly ConcurrentDictionary<Snowflake, MemoryCache> QuoteCache = new();
-        public readonly ConcurrentDictionary<Snowflake, Color> GuildEmbedColors = new();
+        public readonly ConcurrentDictionary<Snowflake, MemoryCache> Drops = new();
         
         public Color GetColor(IGuild guild) => GetColor(guild.Id);
         public Color GetColor(Snowflake guildSnowflake) => GuildEmbedColors.TryGetValue(guildSnowflake, out var color)

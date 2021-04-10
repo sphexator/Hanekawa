@@ -4,6 +4,7 @@
     {
         ServerMessage,
         Welcome,
-        Quote
+        Quote,
+        Drop
     }
 }

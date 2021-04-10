@@ -241,10 +241,10 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, IGuild guild) =>
-            await GetOrCreateDropConfig(context, guild.Id.RawValue).ConfigureAwait(false);
+        public static async Task<DropConfig> GetOrCreateDropConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateDropConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
 
-        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, ulong guildId)
+        public static async Task<DropConfig> GetOrCreateDropConfigAsync(this DbService context, ulong guildId)
         {
             var response = await context.DropConfigs.FindAsync(guildId).ConfigureAwait(false);
             if (response != null) return response;

@@ -47,9 +47,8 @@ namespace Hanekawa.Bot.Service.Boost
                         using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var configs = await db.BoostConfigs.ToListAsync();
-            foreach (var x in configs)
+            foreach (var x in configs.Where(x => x.ExpGain != 0 || x.CreditGain != 0 || x.SpecialCreditGain != 0))
             {
-                if (x.ExpGain == 0 && x.CreditGain == 0 && x.SpecialCreditGain == 0) continue;
                 try
                 {
                     var guild = _bot.GetGuild(x.GuildId);
@@ -57,7 +56,7 @@ namespace Hanekawa.Bot.Service.Boost
                     await RewardGuildAsync(guild, db, x);
                 }
                 catch (Exception e)
-                {
+                { 
                     _logger.Log(LogLevel.Error, e,
                         $"(Boost Service) Error in {x.GuildId} when rewarding users - {e.Message}");
                 }

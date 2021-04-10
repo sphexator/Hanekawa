@@ -7,6 +7,7 @@ using Hanekawa.Bot.Service.Administration.Mute;
 using Hanekawa.Bot.Service.Board;
 using Hanekawa.Bot.Service.Boost;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Drop;
 using Hanekawa.Bot.Service.Logs;
 using Hanekawa.Entities;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,8 +25,9 @@ namespace Hanekawa.Bot.Service
         private readonly MuteService _mute;
         private readonly BoardService _boardService;
         private readonly BoostService _boostService;
+        private readonly DropService _dropService;
 
-        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService, BoostService boostService)
+        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService, BoostService boostService, DropService dropService)
         {
             _client = client;
             _experience = experience;
@@ -35,6 +37,7 @@ namespace Hanekawa.Bot.Service
             _mute = mute;
             _boardService = boardService;
             _boostService = boostService;
+            _dropService = dropService;
 
             _client.MessageReceived += MessageReceived;
             _client.MessageUpdated += MessageUpdated;
@@ -152,13 +155,16 @@ namespace Hanekawa.Bot.Service
 
         private Task ReactionAdded(object sender, ReactionAddedEventArgs e)
         {
+            if (e.Member.IsBot) return Task.CompletedTask;
             _ = _boardService.ReactionReceivedAsync(e);
+            _ = _dropService.ReactionReceived(e);
             return Task.CompletedTask;
         }
 
         private Task MessageReceived(object sender, MessageReceivedEventArgs e)
         {
             if (!e.GuildId.HasValue) return Task.CompletedTask;
+            if (e.Member.IsBot) return Task.CompletedTask;
             var guildCache = _cache.Cooldown
                 .GetOrAdd(e.GuildId.Value, new ConcurrentDictionary<CooldownType, MemoryCache>());
             var msgCache = guildCache.GetOrAdd(CooldownType.ServerMessage, new MemoryCache(new MemoryCacheOptions()));
@@ -167,8 +173,9 @@ namespace Hanekawa.Bot.Service
             if (!cdCheck) msgCache.Set(e.Member.Id.RawValue, 0, TimeSpan.FromMinutes(1));
 
             guildCache.AddOrUpdate(CooldownType.ServerMessage, msgCache, (_, _) => msgCache);
-            if(!cdCheck) _ = _experience.ServerExperienceAsync(e);
-            if(!cdCheck) _ = _experience.GlobalExperienceAsync(e);
+            if (!cdCheck) _ = _experience.ServerExperienceAsync(e);
+            if (!cdCheck) _ = _dropService.MessageReceived(e);
+            _ = _experience.GlobalExperienceAsync(e);
             return Task.CompletedTask;
         }
 
