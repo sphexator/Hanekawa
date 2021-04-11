@@ -33,9 +33,9 @@ namespace Hanekawa.Bot.Commands.TypeReaders
                 out var timespan)) return TypeParserResult<TimeSpan>.Successful(timespan);
 
             return !int.TryParse(value, out var minutes)
-                ? TypeParserResult<TimeSpan>.Unsuccessful("Failed to parse timespan")
+                ? TypeParserResult<TimeSpan>.Failed("Failed to parse timespan")
                 : minutes <= 0
-                    ? TypeParserResult<TimeSpan>.Unsuccessful("Failed to parse timespan")
+                    ? TypeParserResult<TimeSpan>.Failed("Failed to parse timespan")
                     : TypeParserResult<TimeSpan>.Successful(new TimeSpan(0, minutes, 0));
         }
     }

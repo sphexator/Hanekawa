@@ -128,7 +128,7 @@ namespace Hanekawa.Bot.Service.Logs
             IMember mod = null;
 
             await Task.Delay(TimeSpan.FromSeconds(2));
-            var audits = await guild.GetAuditLogsAsync<RestMemberBannedAuditLog>(); //TODO: Whenever audit log is implemented
+            //await guild.<RestMemberBannedAuditLog>(); //TODO: Whenever audit log is implemented
             var audit = audits.FirstOrDefault(x => x.TargetId.HasValue && x.TargetId.Value == userId);
             if (audit != null)
             {

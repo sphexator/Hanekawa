@@ -10,14 +10,14 @@ namespace Hanekawa.Bot.Commands.Preconditions
     {
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            if (!(_ is HanekawaCommandContext context)) return CheckResult.Unsuccessful("wrong right context.");
-            if (context.Guild == null) return CheckResult.Unsuccessful("Needs to be executed in a guild!");
-            using var scope = context.ServiceProvider.CreateScope();
+            if (!(_ is HanekawaCommandContext context)) return CheckResult.Failed("wrong right context.");
+            if (context.Guild == null) return CheckResult.Failed("Needs to be executed in a guild!");
+            using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
             return cfg.Premium
                 ? CheckResult.Successful
-                : CheckResult.Unsuccessful("Command is only available for premium servers!");
+                : CheckResult.Failed("Command is only available for premium servers!");
         }
     }
 }

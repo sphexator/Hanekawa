@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Database.Tables.Account;
 
 namespace Hanekawa.Database.Extensions

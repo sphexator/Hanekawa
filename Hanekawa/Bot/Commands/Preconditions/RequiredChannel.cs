@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
 
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            if (!(_ is HanekawaCommandContext context)) return CheckResult.Unsuccessful("woopsie command context wrong :)");
+            if (!(_ is HanekawaCommandContext context)) return CheckResult.Failed("woopsie command context wrong :)");
             var roles = context.User.GetRoles();
             if (Discord.Permissions.CalculatePermissions(context.Guild, context.User, roles.Values).Has(Permission.ManageGuild))
                 return CheckResult.Successful;
@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
                 case true:
                     return CheckResult.Successful;
                 case false:
-                    return CheckResult.Unsuccessful("Not a eligible channel");
+                    return CheckResult.Failed("Not a eligible channel");
             }
         }
 
@@ -70,7 +70,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
 
         private static async Task<bool> UpdateIgnoreAllStatus(HanekawaCommandContext context)
         {
-            using var scope = context.ServiceProvider.CreateScope();
+            using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
             return cfg.IgnoreAllChannels;
@@ -88,7 +88,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
 
         private static bool DoubleCheckChannel(HanekawaCommandContext context)
         {
-            using var scope = context.ServiceProvider.CreateScope();
+            using var scope = context.Services.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
             if (check == null) return false;

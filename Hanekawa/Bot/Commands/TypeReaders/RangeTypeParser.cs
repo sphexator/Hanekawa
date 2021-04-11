@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Commands.TypeReaders
             int maxValue = 0;
             foreach (var x in result)
             {
-                if (!int.TryParse(x, out var val)) return TypeParserResult<Range>.Unsuccessful("Failed to parse range");
+                if (!int.TryParse(x, out var val)) return TypeParserResult<Range>.Failed("Failed to parse range");
 
                 if (val > maxValue) maxValue = val;
                 if (val < minValue) minValue = val;

@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Commands.TypeReaders
                 if (flag && uint.TryParse(s, NumberStyles.HexNumber, null, out var result))
                     return TypeParserResult<Color>.Successful((int)result);
             }
-            return TypeParserResult<Color>.Unsuccessful("Invalid color name or hex value.");
+            return TypeParserResult<Color>.Failed("Invalid color name or hex value.");
         }
     }
 }

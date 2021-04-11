@@ -32,44 +32,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.2">
+    <PackageReference Include="Disqord" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Bot" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Core" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Gateway" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Rest" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04112021-4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
 
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
-    <PackageReference Include="Qmmands" Version="3.1.3-nightly-00249" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Disqord">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Bot">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Bot.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Core">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Gateway">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Gateway.Api">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Rest">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.dll</HintPath>
-    </Reference>
-    <Reference Include="Disqord.Rest.Api">
-      <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.Api.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
   </ItemGroup>
 
 </Project>

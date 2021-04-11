@@ -10,11 +10,22 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Disqord" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Voice" Version="1.0.0-04112021-4" />
+        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-04112021-4" />
         <PackageReference Include="Humanizer" Version="2.8.26" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.9.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -22,16 +33,16 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="NLog" Version="4.7.6" />
-        <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="4.10.0" />
-        <PackageReference Include="Npgsql" Version="5.0.1.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
-        <PackageReference Include="Qmmands" Version="3.1.3-nightly-00249" />
-        <PackageReference Include="Quartz" Version="3.2.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="NLog" Version="4.7.9" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="4.12.0" />
+        <PackageReference Include="Npgsql" Version="5.0.4" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
+        <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
+        <PackageReference Include="Quartz" Version="3.3.2" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
         <PackageReference Include="System.Linq" Version="4.3.0" />
         <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
@@ -39,30 +50,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Disqord">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Bot">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Bot.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Core">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Core.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Gateway">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Gateway.Api">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Gateway.Api.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Rest">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.dll</HintPath>
-      </Reference>
-      <Reference Include="Disqord.Rest.Api">
-        <HintPath>..\..\..\..\Cloned Repositories\Disqord\src\Disqord.Bot\bin\Release\net5.0\Disqord.Rest.Api.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
     <ItemGroup>
