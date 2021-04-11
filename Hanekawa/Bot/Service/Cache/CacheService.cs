@@ -12,7 +12,14 @@ namespace Hanekawa.Bot.Service.Cache
     public class CacheService : INService
     {
         public readonly MemoryCache GlobalCooldown = new(new MemoryCacheOptions());
+        /// <summary>
+        /// Various cooldowns
+        /// </summary>
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<CooldownType, MemoryCache>> Cooldown = new();
+        /// <summary>
+        /// Various on-going games stored with channel ID as key
+        /// </summary>
+        public readonly ConcurrentDictionary<Snowflake, ShipGameType> ShipGames = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<ExpSource, double>> ExperienceMultipliers = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<EmoteType, IEmoji>> Emote = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake, int>>> GuildInvites = new();

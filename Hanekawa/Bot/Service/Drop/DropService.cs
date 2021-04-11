@@ -42,9 +42,7 @@ namespace Hanekawa.Bot.Service.Drop
             if (e.Message is not IUserMessage msg) return;
             var cooldown =
                 _cache.Cooldown.GetOrAdd(e.GuildId.Value, new ConcurrentDictionary<CooldownType, MemoryCache>());
-            var userCd = cooldown.GetOrAdd(CooldownType.ServerMessage, new MemoryCache(new MemoryCacheOptions()));
-            if (userCd.TryGetValue(e.Member.Id.RawValue, out _)) return;
-            
+
             var channelCd = cooldown.GetOrAdd(CooldownType.Drop, new MemoryCache(new MemoryCacheOptions()));
             if (channelCd.TryGetValue(e.ChannelId, out _)) return;
             

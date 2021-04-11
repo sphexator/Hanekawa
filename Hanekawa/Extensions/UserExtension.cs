@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace Hanekawa.Extensions
 {
@@ -21,6 +22,24 @@ namespace Hanekawa.Extensions
         public static CachedMember GetCurrentUser(this CachedGuild guild) 
             => guild.Client.GetMember(guild.Id, guild.Id);
 
+        public static async ValueTask<IMember> GetOrFetchMemberAsync(this IGuild guild, Snowflake userId)
+        {
+            var user = guild.GetMember(userId);
+            if (user != null) return user;
+            var restUser = await guild.FetchMemberAsync(userId);
+            return await ValueTask.FromResult(restUser);
+        }
+
+        public static async ValueTask<IMember> GetOrFetchMemberAsync(this IGatewayClient client, Snowflake guildId,
+            Snowflake userId)
+        {
+            var user = client.GetMember(guildId, userId);
+            if (user != null) return user;
+            var guild = client.GetGuild(guildId);
+            var restUser = await guild.FetchMemberAsync(userId);
+            return await ValueTask.FromResult(restUser);
+        }
+        
         /// <summary>
         /// Adds a role to the user (for multiple use modifyAsync)
         /// </summary>
