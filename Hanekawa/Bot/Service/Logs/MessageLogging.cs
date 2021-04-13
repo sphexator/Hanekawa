@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task MessageDeletedAsync(MessageDeletedEventArgs e)
+        public async ValueTask MessageDeletedAsync(MessageDeletedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             var guild = _bot.GetGuild(e.GuildId.Value);
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task MessagesDeletedAsync(MessagesDeletedEventArgs e)
+        public async ValueTask MessagesDeletedAsync(MessagesDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             try

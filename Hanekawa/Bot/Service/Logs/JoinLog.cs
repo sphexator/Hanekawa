@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Service.Logs
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task JoinLogAsync(MemberJoinedEventArgs e)
+        public async ValueTask JoinLogAsync(MemberJoinedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if(guild == null) return;
@@ -106,7 +106,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task LeaveLogAsync(MemberLeftEventArgs e)
+        public async ValueTask LeaveLogAsync(MemberLeftEventArgs e)
         {
             var guild = e.User.GetGatewayClient().GetGuild(e.GuildId);
             if(guild == null) return;
@@ -149,23 +149,24 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        private async Task<Tuple<IUser, string>> GetInvite(IGuild guild, IMember member)
+        private async ValueTask<Tuple<IUser, string>> GetInvite(IGuild guild, IMember member)
         {
             Tuple<IUser, string> inviteeInfo = null;
             var restInvites = await guild.FetchInvitesAsync();
             if (!_cache.GuildInvites.TryGetValue(guild.Id, out var invites))  UpdateInvites(member, restInvites);
             else
             {
-                var tempInvites = new ConcurrentDictionary<string, Tuple<Snowflake, int>>();
-                for (var i = 0; i < restInvites.Count; i++)
+                var tempInvites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
+                foreach (var x in restInvites)
                 {
-                    var x = restInvites[i];
-                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake, int>(x.Metadata.Inviter.Id, x.Metadata.Uses));
+                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Value.Id, x.Metadata.Uses));
                 }
+                
                 var change = invites.Except(tempInvites).ToList();
-                var (code, tuple) = change.FirstOrDefault();
+                var (code, (snowflake, _)) = change.FirstOrDefault();
                 if (code == null) return null;
-                var invitee = _bot.GetUser(new Snowflake(tuple.Item1));
+                if (!snowflake.HasValue) return null;
+                var invitee = _bot.GetUser(new Snowflake(snowflake.Value));
                 if (invitee != null)
                 {
                     inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{code}");
@@ -179,11 +180,10 @@ namespace Hanekawa.Bot.Service.Logs
         
         private void UpdateInvites(IMember user, IReadOnlyList<IInvite> restInvites)
         {
-            var invites = new ConcurrentDictionary<string, Tuple<Snowflake, int>>();
-            for (var i = 0; i < restInvites.Count; i++)
+            var invites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
+            foreach (var x in restInvites)
             {
-                var x = restInvites[i];
-                invites.TryAdd(x.Code, new Tuple<Snowflake, int>(x.Metadata.Inviter.Id, x.Metadata.Uses));
+                invites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Value.Id, x.Metadata.Uses));
             }
 
             _cache.GuildInvites.AddOrUpdate(user.GuildId, invites, (_, _) => invites);

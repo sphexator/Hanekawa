@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task MuteAsync(IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
+        public async ValueTask MuteAsync(IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
             var guild = _bot.GetGuild(target.GuildId);
             var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId.RawValue);
@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Service.Logs
             await db.SaveChangesAsync();
         }
 
-        public async Task WarnAsync(WarnReason warn, IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
+        public async ValueTask WarnAsync(WarnReason warn, IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
             var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
             if (!cfg.LogWarn.HasValue) return;
