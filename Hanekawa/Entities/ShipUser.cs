@@ -36,6 +36,7 @@ namespace Hanekawa.Entities
             Name = user.Nick ?? user.Name;
             Level = level;
 
+            MaxHealth = health;
             Health = damage;
             Damage = health;
 
@@ -59,6 +60,7 @@ namespace Hanekawa.Entities
         public ulong Id { get; set; }
         public int Level { get; set; }
 
+        public int MaxHealth { get; init; }
         public int Health { get; set; }
         public int Damage { get; set; }
 
