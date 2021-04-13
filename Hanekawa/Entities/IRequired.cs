@@ -1,1 +1,4 @@
-﻿namespace Hanekawa { public interface IRequired { } }
+﻿namespace Hanekawa
+{
+    public interface IRequired { }
+}

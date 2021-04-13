@@ -11,8 +11,7 @@ namespace Hanekawa.Bot.Commands
         public CachedGuild Guild { get; set; }
         public CachedTextChannel Channel { get; set; }
         public IServiceScope Scope { get; set; }
-        // TODO: add colour service
-        
+
         public HanekawaCommandContext(DiscordBotBase bot, IPrefix prefix, IGatewayUserMessage message, IServiceScope serviceScope) : base(bot, prefix, message, serviceScope)
         {
             if (!(message.Author is CachedMember member))

@@ -10,11 +10,11 @@ namespace Hanekawa.Bot.Service.Achievements
         private readonly Hanekawa _bot;
         private readonly Logger _logger;
 
-        public AchievementService(IServiceProvider provider, Hanekawa bot, Logger logger)
+        public AchievementService(IServiceProvider provider, Hanekawa bot)
         {
             _provider = provider;
             _bot = bot;
-            _logger = logger;
+            _logger = LogManager.GetCurrentClassLogger();
         }
 
         private const int Special = 1;
