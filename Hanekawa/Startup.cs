@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Disqord.Extensions.Interactivity;
 using Hanekawa.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,7 @@ namespace Hanekawa
                 x.EnableSensitiveDataLogging(false);
                 x.UseLoggerFactory(MyLoggerFactory);
             });
+            services.AddInteractivity();
             var assembly = Assembly.GetEntryAssembly();
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(INService))
