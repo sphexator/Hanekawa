@@ -123,7 +123,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        private async Task<IMember> CheckAuditLog(CachedGuild guild, Snowflake userId, ModLog caseId)
+        private async Task<IMember> CheckAuditLog(IGuild guild, Snowflake userId, ModLog caseId)
         {
             IMember mod = null;
 
