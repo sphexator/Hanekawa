@@ -20,10 +20,10 @@ namespace Hanekawa
 
         private static IHostBuilder CreateWebHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(x =>
+                .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    x.UseStartup<Startup>();
-                    x.UseUrls("http://*:61039");
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls("http://*:61039");
                 })
                 .ConfigureDiscordBot<Bot.Hanekawa>((context, bot) =>
                 {

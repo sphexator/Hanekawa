@@ -1,8 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Database;
+using Hanekawa.HungerGames;
+using Hanekawa.HungerGames.Entities.Configs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +26,7 @@ namespace Hanekawa
     public class Startup
     {
         public Startup(IConfiguration configuration) => Configuration = configuration;
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -37,15 +42,23 @@ namespace Hanekawa
                 x.EnableSensitiveDataLogging(false);
                 x.UseLoggerFactory(MyLoggerFactory);
             });
+            services.AddSingleton(new HungerGameClient(new Random(), new HungerGameConfig
+            {
+                LootChance = new LootChanceConfig()
+            }));
+            services.AddSingleton<Random>();
+            services.AddSingleton<HttpClient>();
             services.AddInteractivity();
             var assembly = Assembly.GetEntryAssembly();
-            var serviceList = assembly.GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(INService))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            for (var i = 0; i < serviceList.Count; i++)
+            if (assembly is not null)
             {
-                var x = serviceList[i];
-                services.AddSingleton(x);
+                var serviceList = assembly.GetTypes()
+                    .Where(x => x.GetInterfaces().Contains(typeof(INService))
+                                && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
+                foreach (var x in serviceList)
+                {
+                    services.AddSingleton(x);
+                }
             }
         }
 
@@ -73,8 +86,8 @@ namespace Hanekawa
             var serviceList = assembly.GetTypes()
                 .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
                             && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            for (var i = 0; i < serviceList.Count; i++) app.ApplicationServices.GetRequiredService(serviceList[i]);
-            var scheduler = app.ApplicationServices.GetRequiredService<IScheduler>();
+            foreach (var t in serviceList)
+                app.ApplicationServices.GetRequiredService(t);
         }
 
         private static readonly ILoggerFactory MyLoggerFactory
