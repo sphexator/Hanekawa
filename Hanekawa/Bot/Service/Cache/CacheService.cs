@@ -21,8 +21,9 @@ namespace Hanekawa.Bot.Service.Cache
         /// </summary>
         public readonly ConcurrentDictionary<Snowflake, ShipGameType> ShipGames = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<ExpSource, double>> ExperienceMultipliers = new();
+        public readonly ConcurrentDictionary<Snowflake, HashSet<Snowflake>> ExperienceReduction = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<EmoteType, IEmoji>> Emote = new();
-        public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake, int>>> GuildInvites = new();
+        public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake?, int>>> GuildInvites = new();
         public readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<Snowflake, Timer>> MuteTimers = new();
         public readonly ConcurrentDictionary<Snowflake, HashSet<IPrefix>> GuildPrefix = new();
         public readonly ConcurrentDictionary<Snowflake, Color> GuildEmbedColors = new();
@@ -32,21 +33,26 @@ namespace Hanekawa.Bot.Service.Cache
         public readonly ConcurrentDictionary<Snowflake, MemoryCache> Drops = new();
         
         public Color GetColor(IGuild guild) => GetColor(guild.Id);
+
         public Color GetColor(Snowflake guildSnowflake) => GuildEmbedColors.TryGetValue(guildSnowflake, out var color)
             ? color
             : HanaBaseColor.Default();
         
         public HashSet<IPrefix> GetPrefix(IGuild guild) => GetPrefix(guild.Id);
-        public HashSet<IPrefix> GetPrefix(Snowflake guildSnowflake) => GuildPrefix.TryGetValue(guildSnowflake, out var prefix)
-            ? prefix
-            : null;
-        
+
+        public HashSet<IPrefix> GetPrefix(Snowflake guildSnowflake) =>
+            GuildPrefix.TryGetValue(guildSnowflake, out var prefix)
+                ? prefix
+                : null;
+
         public void AdjustExpMultiplier(ExpSource type, Snowflake guildId, double multiplier)
             => ExperienceMultipliers.GetOrAdd(guildId, new ConcurrentDictionary<ExpSource, double>())
                 .AddOrUpdate(type, multiplier, (_, _) => multiplier);
+
         public bool TryGetMultiplier(ExpSource type, Snowflake guildId, out double multiplier)
             => ExperienceMultipliers.GetOrAdd(guildId, new ConcurrentDictionary<ExpSource, double>())
                 .TryGetValue(type, out multiplier);
+
         public bool TryGetEmote(EmoteType type, Snowflake guildId, out IEmoji emote)
             => Emote.GetOrAdd(guildId, new ConcurrentDictionary<EmoteType, IEmoji>()).TryGetValue(type, out emote);
         
