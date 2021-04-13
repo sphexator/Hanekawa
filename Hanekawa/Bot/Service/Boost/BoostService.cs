@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Service.Boost
             CurrencyConfig currencyCfg)
         {
             var userData = await db.GetOrCreateUserData(member);
-            await _exp.AddExpAsync(member, userData, x.ExpGain, x.CreditGain, db, ExpSource.Other);
+            var exp = await _exp.AddExpAsync(member, userData, x.ExpGain, x.CreditGain, db, ExpSource.Other);
             userData.CreditSpecial += x.SpecialCreditGain;
             var sb = new StringBuilder();
 
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Service.Boost
                     : $"Thank you for boosting {guild.Name}!");
 
             sb.AppendLine("You've been rewarded:");
-            if (x.ExpGain != 0) sb.AppendLine($"Experience: {x.ExpGain}");
+            if (x.ExpGain != 0 && exp != 0) sb.AppendLine($"Experience: {exp}");
             if (x.CreditGain != 0)
                 sb.AppendLine(
                     $"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(x.CreditGain)}");

@@ -10,6 +10,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Entities;
+using Hanekawa.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -105,10 +106,11 @@ namespace Hanekawa.Bot.Service.Drop
                 : _random.Next(150, 250);
             
             var userData = await db.GetOrCreateUserData(user);
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId.RawValue);
             var exp = await _exp.AddExpAsync(user, userData, rand, rand, db, ExpSource.Other);
             var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessageBuilder 
             {
-                Content = $"Rewarded {user.Mention} with {exp} exp & {rand} credit!",
+                Content = $"Rewarded {user.Mention} with {exp} experience & {cfg.ToCurrencyFormat(rand)} {cfg.CurrencyName}!",
                 Attachments = null,
                 Embed = null,
                 Mentions = LocalMentionsBuilder.None,
