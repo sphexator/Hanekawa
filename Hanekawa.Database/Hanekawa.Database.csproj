@@ -32,13 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Disqord" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Bot" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Gateway" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04132021-5" />
+    <PackageReference Include="Disqord" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Bot" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Core" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Gateway" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Rest" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04132021-6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
       <PrivateAssets>all</PrivateAssets>

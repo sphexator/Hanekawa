@@ -6,17 +6,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
-    <ProjectReference Include="..\Hanekawa\Hanekawa.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Disqord" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Bot" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Gateway" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0-04132021-5" />
-    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04132021-5" />
+    <PackageReference Include="Disqord" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Bot" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Core" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Gateway" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Rest" Version="1.0.0-04132021-6" />
+    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-04132021-6" />
   </ItemGroup>
 
 </Project>
