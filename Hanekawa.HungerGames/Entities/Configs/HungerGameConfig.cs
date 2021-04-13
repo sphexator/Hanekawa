@@ -3,6 +3,6 @@
     public class HungerGameConfig
     {
         public LootChanceConfig LootChance { get; set; } = new ();
-
+        
     }
 }

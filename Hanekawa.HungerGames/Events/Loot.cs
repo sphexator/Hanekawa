@@ -2,7 +2,7 @@
 
 namespace Hanekawa.HungerGames.Events
 {
-    public partial class HungerGameEvent
+    internal partial class HungerGameEvent
     {
         private const int FoodAndWater = 100;
         private const int Weapons = 15;

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.HungerGames.Entities
+﻿namespace Hanekawa.Database.Entities
 {
     public enum GameStage
     {

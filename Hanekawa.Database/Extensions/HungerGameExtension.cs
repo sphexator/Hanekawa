@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord.Gateway;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.HungerGames.Entities;
 
 namespace Hanekawa.Database.Extensions
 {

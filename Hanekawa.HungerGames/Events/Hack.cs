@@ -2,7 +2,7 @@
 
 namespace Hanekawa.HungerGames.Events
 {
-    public partial class HungerGameEvent
+    internal partial class HungerGameEvent
     {
         public string Hack(HungerGameProfile participant)
         {

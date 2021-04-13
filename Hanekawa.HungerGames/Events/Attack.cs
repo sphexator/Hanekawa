@@ -4,7 +4,7 @@ using Hanekawa.Database.Tables.Account.HungerGame;
 
 namespace Hanekawa.HungerGames.Events
 {
-    public partial class HungerGameEvent
+    internal partial class HungerGameEvent
     {
         public string Attack(HungerGameProfile participant, List<HungerGameProfile> targets)
         {

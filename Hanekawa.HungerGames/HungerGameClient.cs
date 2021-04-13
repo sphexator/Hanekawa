@@ -8,7 +8,7 @@ using Hanekawa.HungerGames.Events;
 
 namespace Hanekawa.HungerGames
 {
-    public partial class HungerGameClient : INService
+    public partial class HungerGameClient
     {
         private readonly Random _random;
         private readonly HungerGameEvent _events;

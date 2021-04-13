@@ -1,6 +1,6 @@
 ﻿namespace Hanekawa.HungerGames.Events
 {
-    public partial class HungerGameEvent
+    internal partial class HungerGameEvent
     {
         private readonly string[] _idleStrings = {
             "Climbs a tree",

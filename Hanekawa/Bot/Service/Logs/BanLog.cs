@@ -16,7 +16,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task BanAsync(BanCreatedEventArgs e)
+        public async ValueTask BanAsync(BanCreatedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if(!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
 
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
-                CachedMember mod;
+                IMember mod = null;
                 if (_cache.BanCache.TryGetValue(guild.Id.RawValue, out var cache))
                 {
                     if (cache.TryGetValue(e.User.Id.RawValue, out var result))
@@ -58,7 +58,7 @@ namespace Hanekawa.Bot.Service.Logs
                     Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id.RawValue}", IconUrl = e.User.GetAvatarUrl() },
                     Timestamp = DateTimeOffset.UtcNow
                 };
-                if (e.User is CachedMember member && member.JoinedAt.HasValue)
+                if (e.User is CachedMember {JoinedAt: {HasValue: true}} member)
                     embed.AddField("Time In Server", (DateTimeOffset.UtcNow - member.JoinedAt.Value).Humanize(5));
 
                 var msg = await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task UnbanAsync(BanDeletedEventArgs e)
+        public async ValueTask UnbanAsync(BanDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -126,7 +126,8 @@ namespace Hanekawa.Bot.Service.Logs
         private async Task<IMember> CheckAuditLog(IGuild guild, Snowflake userId, ModLog caseId)
         {
             IMember mod = null;
-
+            return mod;
+            /*
             await Task.Delay(TimeSpan.FromSeconds(2));
             //await guild.<RestMemberBannedAuditLog>(); //TODO: Whenever audit log is implemented
             var audit = audits.FirstOrDefault(x => x.TargetId.HasValue && x.TargetId.Value == userId);
@@ -147,6 +148,7 @@ namespace Hanekawa.Bot.Service.Logs
 
             caseId.ModId = mod?.Id.RawValue;
             return mod;
+            */
         }
 
         private static Snowflake? FetchId(IEnumerable<string> value)
