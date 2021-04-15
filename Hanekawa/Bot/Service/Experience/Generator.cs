@@ -7,9 +7,9 @@ using Hanekawa.Database.Tables.Account;
 using Hanekawa.Entities;
 using NLog;
 
-namespace Hanekawa.Bot.Service
+namespace Hanekawa.Bot.Service.Experience
 {
-    public partial class Experience
+    public partial class ExpService
     {
         public int ExpToNextLevel(Account userData) => ExpToNextLevel(userData.Level);
         public int ExpToNextLevel(AccountGlobal userData) => 50 * userData.Level * userData.Level + 300; 

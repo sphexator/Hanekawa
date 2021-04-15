@@ -12,9 +12,9 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hanekawa.Bot.Service
+namespace Hanekawa.Bot.Service.Experience
 {
-    public partial class Experience 
+    public partial class ExpService 
     {
         /// <summary>
         /// Check whether the user needs to have any roles added/removed
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Service
                 return;
             }
             
-            if (!_bot.GetGuild(user.GuildId).Roles.TryGetValue(role.Role, out var toAdd))
+            if (!_bot.GetGuild(user.GuildId).Roles.TryGetValue(role.Role, out var _))
             {
                 db.LevelRewards.Remove(role);
                 await db.SaveChangesAsync();
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Service
         /// <param name="level"></param>
         /// <param name="lvlRoles"></param>
         /// <returns></returns>
-        private async Task RoleCheckAsync(IMember user, LevelConfig cfg, int level, List<LevelReward> lvlRoles)
+        private async Task RoleCheckAsync(IMember user, LevelConfig cfg, int level, IReadOnlyCollection<LevelReward> lvlRoles)
         {
             var guild = _bot.GetGuild(user.GuildId);
             var currentRoles = user.GetRoles().Keys.ToList();
@@ -88,14 +88,11 @@ namespace Hanekawa.Bot.Service
         private IEnumerable<IRole> GetRoles(IGuildEntity user, IGuild guild, int level, IEnumerable<LevelReward> roleList, bool stack)
         {
             var roles = new List<IRole>();
-            ulong role = 0;
             var currentUser = _bot.GetGuild(user.GuildId).GetCurrentUser();
 
-            foreach (var x in roleList)
-            {
-                role = CreateRoleList(guild, level, stack, x, currentUser, roles, role);
-            }
-            
+            var role = roleList.Aggregate<LevelReward, ulong>(0,
+                (current, x) => CreateRoleList(guild, level, stack, x, currentUser, roles, current));
+
             if (stack) return roles;
             if (role == 0) return roles;
             if (guild.Roles.TryGetValue(role, out var getSingleRole) && guild.HierarchyCheck(currentUser, getSingleRole)) 

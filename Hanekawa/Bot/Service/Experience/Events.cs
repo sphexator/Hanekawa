@@ -1,6 +1,6 @@
-﻿namespace Hanekawa.Bot.Service
+﻿namespace Hanekawa.Bot.Service.Experience
 {
-    public partial class Experience
+    public partial class ExpService
     {
         
     }

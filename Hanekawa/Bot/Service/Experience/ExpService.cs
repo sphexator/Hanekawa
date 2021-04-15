@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,9 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using Quartz;
 
-namespace Hanekawa.Bot.Service
+namespace Hanekawa.Bot.Service.Experience
 {
-    public partial class Experience : INService, IJob
+    public partial class ExpService : INService, IJob
     {
         private readonly CacheService _cache;
         private readonly Logger _logger;
@@ -27,7 +26,7 @@ namespace Hanekawa.Bot.Service
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public Experience(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random)
+        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _cache = cache;
@@ -60,7 +59,7 @@ namespace Hanekawa.Bot.Service
                 if (before != null)
                 {
                     var guild = _bot.GetGuild(e.GuildId);
-                    if(!guild.Channels.TryGetValue(before.ChannelId.Value, out var channel)) return;
+                    if(!guild.Channels.TryGetValue(before.ChannelId!.Value, out var channel)) return;
                     var exp = GetExp((IVoiceChannel) channel, DateTime.UtcNow - userData.VoiceExpTime);
                     await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db, ExpSource.Voice);
                 }
@@ -103,10 +102,10 @@ namespace Hanekawa.Bot.Service
 
         public Task Execute(IJobExecutionContext context)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
         
-        private async Task GiveawayAsync(DbService db, IMember user)
+        private static async Task GiveawayAsync(DbService db, IMember user)
         {
             var giveaways = await db.Giveaways
                 .Where(x => x.GuildId == user.GuildId.RawValue && x.Type == GiveawayType.Activity && x.Active)
