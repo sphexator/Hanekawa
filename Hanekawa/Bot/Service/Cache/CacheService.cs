@@ -5,6 +5,7 @@ using System.Threading;
 using Disqord;
 using Disqord.Bot;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Color;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Hanekawa.Bot.Service.Cache
@@ -41,9 +42,9 @@ namespace Hanekawa.Bot.Service.Cache
         public HashSet<IPrefix> GetPrefix(IGuild guild) => GetPrefix(guild.Id);
 
         public HashSet<IPrefix> GetPrefix(Snowflake guildSnowflake) =>
-            GuildPrefix.TryGetValue(guildSnowflake, out var prefix)
+            (GuildPrefix.TryGetValue(guildSnowflake, out var prefix)
                 ? prefix
-                : null;
+                : null) ?? new HashSet<IPrefix> {new StringPrefix("h.")};
 
         public void AdjustExpMultiplier(ExpSource type, Snowflake guildId, double multiplier)
             => ExperienceMultipliers.GetOrAdd(guildId, new ConcurrentDictionary<ExpSource, double>())
@@ -54,7 +55,7 @@ namespace Hanekawa.Bot.Service.Cache
                 .TryGetValue(type, out multiplier);
 
         public bool TryGetEmote(EmoteType type, Snowflake guildId, out IEmoji emote)
-            => Emote.GetOrAdd(guildId, new ConcurrentDictionary<EmoteType, IEmoji>()).TryGetValue(type, out emote);
+            => Emote.GetOrAdd(guildId, new ConcurrentDictionary<EmoteType, IEmoji>()).TryGetValue(type, out emote!);
         
         public void Dispose(Snowflake guildId)
         {
