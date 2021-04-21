@@ -9,7 +9,9 @@ namespace Hanekawa.Bot
 {
     public class Hanekawa : DiscordBot
     {
-        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IPrefixProvider prefixes, ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) : base(options, logger, prefixes, queue, commands, services, client)
+        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IPrefixProvider prefixes, 
+            ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) 
+            : base(options, logger, prefixes, queue, commands, services, client)
         {
 
         }
