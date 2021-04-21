@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             using var img = new Image<Rgba32>(400, 400);
 
             var userData = await db.GetOrCreateUserData(user);
-            var globalData = await db.GetOrCreateGlobalUserData(user);
+            var globalData = await db.GetOrCreateGlobalUserDataAsync(user);
             var progressBar = CreateProfileProgressBar(userData);
             // TODO: Create a inventory for backgrounds
             var background = await GetProfileBackground(db);
@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             var serverRank = await GetRankAsync(userData, db);
             var globalRank = await GetRankAsync(globalData, db);
             var achievePoints = await GetAchievementPoints(user, db);
-            var color = new Color(new Rgba32(globalData.UserColor));
+            var color = new Color(new Rgba32((uint)globalData.UserColor));
             
             var profileText = new Font(_arial, 20, FontStyle.Regular);
             var profileName = new Font(_arial, 32, FontStyle.Regular);

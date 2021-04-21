@@ -18,7 +18,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService
     {
-        public async Task<Stream> GenerateEventImageAsync(CachedGuild guild, List<UserAction> profile, int alive)
+        public async Task<Stream> GenerateEventImageAsync(IGuild guild, List<UserAction> profile, int alive)
         {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             var result = new MemoryStream();
