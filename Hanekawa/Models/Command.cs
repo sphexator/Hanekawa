@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Hanekawa.Models.Api
+namespace Hanekawa.Models
 {
     public class Command
     {

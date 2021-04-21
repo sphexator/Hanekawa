@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Hanekawa.Models.Api
+namespace Hanekawa.Models
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class Leaderboard

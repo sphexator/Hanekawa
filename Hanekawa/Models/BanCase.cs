@@ -2,7 +2,7 @@
 using Disqord.Serialization.Json;
 using Hanekawa.Database.Tables.Moderation;
 
-namespace Hanekawa.Models.Api
+namespace Hanekawa.Models
 {
     public class BanCase
     {
