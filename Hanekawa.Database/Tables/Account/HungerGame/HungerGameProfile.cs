@@ -1,11 +1,12 @@
-﻿using Hanekawa.Database.Entities;
+﻿using Disqord;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class HungerGameProfile
     {
-        public ulong GuildId { get; set; }
-        public ulong UserId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake UserId { get; set; }
         public bool Bot { get; set; } = false;
         
         public string Name { get; set; } = "Test Unit";

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Disqord;
 using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Giveaway
@@ -8,8 +9,8 @@ namespace Hanekawa.Database.Tables.Giveaway
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public int IdNum { get; set; } // Number, incremented by number of giveaways in specific guilds
-        public ulong GuildId { get; set; } // Guild
-        public ulong Creator { get; set; } // Who created
+        public Snowflake GuildId { get; set; } // Guild
+        public Snowflake Creator { get; set; } // Who created
         public bool Active { get; set; } // Is giveaway active
         public bool Stack { get; set; } = true; // Entries stack?
         public int WinnerAmount { get; set; } = 1;

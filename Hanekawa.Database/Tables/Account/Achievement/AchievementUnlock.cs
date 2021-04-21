@@ -1,11 +1,17 @@
-﻿namespace Hanekawa.Database.Tables.Account.Achievement
-{
-    public class AchievementUnlock
-    {
-        public int AchievementId { get; set; }
-        public AchievementMeta Achievement { get; set; }
+﻿using System;
+using Disqord;
 
-        public int TypeId { get; set; }
-        public ulong UserId { get; set; }
+namespace Hanekawa.Database.Tables.Account.Achievement
+{
+    public class AchievementUnlocked
+    {
+        public Guid Id { get; set; }
+        public DateTimeOffset Date { get; set; }
+        
+        public Snowflake UserId { get; set; }
+        public AccountGlobal Account { get; set; }
+        
+        public Guid AchieveId { get; set; }
+        public Achievement Achievement { get; set; }
     }
 }

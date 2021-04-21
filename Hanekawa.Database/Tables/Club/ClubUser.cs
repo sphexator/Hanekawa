@@ -1,14 +1,18 @@
 ﻿using System;
+using Disqord;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Club
 {
     public class ClubUser
     {
-        public int Id { get; set; }
-        public ulong GuildId { get; set; }
-        public ulong UserId { get; set; }
-        public int ClubId { get; set; }
-        public int Rank { get; set; } = 3;
-        public DateTimeOffset JoinDate { get; set; } = DateTimeOffset.UtcNow;
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Snowflake GuildId { get; set; }
+        public Snowflake UserId { get; set; }
+        public ClubRank Rank { get; set; } = ClubRank.Member;
+        public DateTimeOffset JoinedAt { get; set; } = DateTimeOffset.UtcNow;
+
+        public Guid ClubId { get; set; }
+        public Club Club { get; set; }
     }
 }

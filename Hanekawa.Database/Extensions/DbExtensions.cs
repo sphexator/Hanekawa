@@ -13,20 +13,20 @@ namespace Hanekawa.Database.Extensions
     {
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, CachedMember user)
         {
-            var userdata = await context.EventPayouts.FindAsync(user.GuildId.RawValue, user.Id.RawValue).ConfigureAwait(false);
+            var userdata = await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
             if (userdata != null) return userdata;
 
             var data = new EventPayout
             {
-                GuildId = user.GuildId.RawValue,
-                UserId = user.Id.RawValue,
+                GuildId = user.GuildId,
+                UserId = user.Id,
                 Amount = 0
             };
             try
             {
                 await context.EventPayouts.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.EventPayouts.FindAsync(user.GuildId.RawValue, user.Id.RawValue).ConfigureAwait(false);
+                return await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
             }
             catch
             {
@@ -36,22 +36,22 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<Board> GetOrCreateBoardAsync(this DbService context, Snowflake guild, IMessage msg)
         {
-            var check = await context.Boards.FindAsync(guild.RawValue, msg.Id.RawValue).ConfigureAwait(false);
+            var check = await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);
             if (check != null) return check;
 
             var data = new Board
             {
-                GuildId = guild.RawValue,
-                MessageId = msg.Id.RawValue,
+                GuildId = guild,
+                MessageId = msg.Id,
                 StarAmount = 0,
                 Boarded = null,
-                UserId = msg.Author.Id.RawValue
+                UserId = msg.Author.Id
             };
             try
             {
                 await context.Boards.AddAsync(data).ConfigureAwait(false);
                 await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.Boards.FindAsync(guild.RawValue, msg.Id.RawValue).ConfigureAwait(false);
+                return await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);
             }
             catch
             {
@@ -62,15 +62,15 @@ namespace Hanekawa.Database.Extensions
         public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, CachedGuild guild,
             DateTime time)
         {
-            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id.RawValue).ConfigureAwait(false);
+            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
             var nr = counter == 0 ? 1 : counter + 1;
 
             var data = new Suggestion
             {
                 Id = nr,
-                GuildId = guild.Id.RawValue,
+                GuildId = guild.Id,
                 Date = time,
-                UserId = user.Id.RawValue,
+                UserId = user.Id,
                 Status = true
             };
             try

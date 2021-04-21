@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using Disqord;
 
 namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class ChannelConfig
     {
-        public ulong GuildId { get; set; }
-        public ulong? ReportChannel { get; set; } = null;
-        public ulong? EventChannel { get; set; } = null;
-        public ulong? EventSchedulerChannel { get; set; } = null;
-        public ulong? ModChannel { get; set; } = null;
-        public ulong? DesignChannel { get; set; } = null;
-        public ulong? QuestionAndAnswerChannel { get; set; } = null;
+        public Snowflake GuildId { get; set; }
+        public Snowflake? ReportChannel { get; set; } = null;
+        public Snowflake? EventChannel { get; set; } = null;
+        public Snowflake? EventSchedulerChannel { get; set; } = null;
+        public Snowflake? ModChannel { get; set; } = null;
+        public Snowflake? DesignChannel { get; set; } = null;
+        public Snowflake? QuestionAndAnswerChannel { get; set; } = null;
 
-        public ulong? SelfAssignableChannel { get; set; } = null;
-        public ulong[] SelfAssignableMessages { get; set; } = null;
+        public Snowflake? SelfAssignableChannel { get; set; } = null;
+        public Snowflake[] SelfAssignableMessages { get; set; } = null;
     }
 }

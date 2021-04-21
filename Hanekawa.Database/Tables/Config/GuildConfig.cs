@@ -1,22 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Disqord;
+using Hanekawa.Database.Tables.Config.Guild;
 
 namespace Hanekawa.Database.Tables.Config
 {
     public class GuildConfig
     {
-        public ulong GuildId { get; set; }
-        public string Prefix { get; set; } = "h.";
-        public bool Premium { get; set; } = false;
-        public uint EmbedColor { get; set; }
+        public Snowflake GuildId { get; set; }
+        public List<string> Prefix { get; set; } = new List<string> {"h."};
+        public DateTimeOffset? Premium { get; set; } = null;
+        public int EmbedColor { get; set; }
 
         // Premium
-        public ulong? AnimeAirChannel { get; set; } = null;
-        public bool AutomaticEventSchedule { get; set; } = false;
-        public ulong? MvpChannel { get; set; } = null;
-        public ulong? HungerGameChannel { get; set; } = null;
-
-        //Music Settings
-        public ulong? MusicChannel { get; set; } = null;
-        public ulong? MusicVcChannel { get; set; } = null;
+        public Snowflake? MvpChannel { get; set; } = null;
+        
+        public AdminConfig AdminConfig { get; set; }
+        public Guild.BoardConfig BoardConfig { get; set; }
+        public BoostConfig BoostConfig { get; set; }
+        public ChannelConfig ChannelConfig { get; set; }
+        public ClubConfig ClubConfig { get; set; }
+        public CurrencyConfig CurrencyConfig { get; set; }
+        public DropConfig DropConfig { get; set; }
+        public LevelConfig LevelConfig { get; set; }
+        public LoggingConfig LoggingConfig { get; set; }
+        public SuggestionConfig SuggestionConfig { get; set; }
+        public WelcomeConfig WelcomeConfig { get; set; }
     }
 }

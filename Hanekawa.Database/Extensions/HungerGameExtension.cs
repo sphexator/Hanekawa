@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Gateway;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Account.HungerGame;
@@ -9,9 +10,9 @@ namespace Hanekawa.Database.Extensions
     public static class HungerGameExtension
     {
         public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, CachedGuild guild) =>
-            await GetOrCreateHungerGameStatus(db, guild.Id.RawValue);
+            await GetOrCreateHungerGameStatus(db, guild.Id);
 
-        public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, ulong guildId)
+        public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, Snowflake guildId)
         {
             var response = await db.HungerGameStatus.FindAsync(guildId);
             if (response != null) return response;

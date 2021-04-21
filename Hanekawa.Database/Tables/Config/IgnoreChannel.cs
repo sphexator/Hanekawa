@@ -1,8 +1,10 @@
-﻿namespace Hanekawa.Database.Tables.Config
+﻿using Disqord;
+
+namespace Hanekawa.Database.Tables.Config
 {
     public class IgnoreChannel
     {
-        public ulong GuildId { get; set; }
-        public ulong ChannelId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake ChannelId { get; set; }
     }
 }

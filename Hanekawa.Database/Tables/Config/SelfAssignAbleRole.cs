@@ -1,9 +1,11 @@
-﻿namespace Hanekawa.Database.Tables.Config
+﻿using Disqord;
+
+namespace Hanekawa.Database.Tables.Config
 {
     public class SelfAssignAbleRole
     {
-        public ulong GuildId { get; set; }
-        public ulong RoleId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake RoleId { get; set; }
         public bool Exclusive { get; set; } = false;
 
         public string EmoteReactFormat { get; set; }

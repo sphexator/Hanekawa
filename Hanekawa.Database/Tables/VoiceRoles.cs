@@ -1,9 +1,11 @@
-﻿namespace Hanekawa.Database.Tables
+﻿using Disqord;
+
+namespace Hanekawa.Database.Tables
 {
     public class VoiceRoles
     {
-        public ulong GuildId { get; set; }
-        public ulong VoiceId { get; set; }
-        public ulong RoleId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake VoiceId { get; set; }
+        public Snowflake RoleId { get; set; }
     }
 }

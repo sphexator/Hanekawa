@@ -1,11 +1,12 @@
 ﻿using System;
+using Disqord;
 
 namespace Hanekawa.Database.Tables.Account
 {
     public class Account
     {
-        public ulong GuildId { get; set; }
-        public ulong UserId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake UserId { get; set; }
 
         public bool Active { get; set; } = true;
 
@@ -31,13 +32,15 @@ namespace Hanekawa.Database.Tables.Account
 
         public int GameKillAmount { get; set; } = 0;
 
+        public int GamePvPAmount { get; set; } = 0;
         // Stats
         public DateTime? FirstMessage { get; set; } = null;
         public DateTime LastMessage { get; set; } = DateTime.UtcNow;
         public TimeSpan StatVoiceTime { get; set; } = TimeSpan.Zero;
         public int Sessions { get; set; } = 0;
-        public ulong StatMessages { get; set; } = 0;
-
+        public long StatMessages { get; set; } = 0;
+        public long DropClaims { get; set; } = 0;
+        
         // Board
         public int StarGiven { get; set; } = 0;
 

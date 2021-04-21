@@ -1,13 +1,14 @@
 ﻿using System;
+using Disqord;
 using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class HungerGameStatus
     {
-        public ulong GuildId { get; set; }
-        public ulong? SignUpChannel { get; set; } = null;
-        public ulong? EventChannel { get; set; } = null;
+        public Snowflake GuildId { get; set; }
+        public Snowflake? SignUpChannel { get; set; } = null;
+        public Snowflake? EventChannel { get; set; } = null;
         public string EmoteMessageFormat { get; set; } 
 
         public GameStage Stage { get; set; } = GameStage.Closed;
@@ -19,6 +20,6 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public int ExpReward { get; set; } = 0;
         public int CreditReward { get; set; } = 0;
         public int SpecialCreditReward { get; set; } = 0;
-        public ulong? RoleReward { get; set; } = null;
+        public Snowflake? RoleReward { get; set; } = null;
     }
 }

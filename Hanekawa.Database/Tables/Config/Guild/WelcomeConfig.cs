@@ -1,11 +1,12 @@
 ﻿using System;
+using Disqord;
 
 namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class WelcomeConfig
     {
-        public ulong GuildId { get; set; }
-        public ulong? Channel { get; set; } = null;
+        public Snowflake GuildId { get; set; }
+        public Snowflake? Channel { get; set; } = null;
         public int Limit { get; set; } = 4;
         public bool Banner { get; set; } = false;
         public string Message { get; set; }

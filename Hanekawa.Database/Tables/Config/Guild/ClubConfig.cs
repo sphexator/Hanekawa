@@ -1,10 +1,13 @@
-﻿namespace Hanekawa.Database.Tables.Config.Guild
+﻿using Disqord;
+
+namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class ClubConfig
     {
-        public ulong GuildId { get; set; }
-        public ulong? ChannelCategory { get; set; } = null;
-        public ulong? AdvertisementChannel { get; set; } = null;
+        public Snowflake GuildId { get; set; }
+        public Snowflake? ChannelCategory { get; set; } = null;
+        public Snowflake? AdvertisementChannel { get; set; } = null;
+        public bool EnableTextChannel { get; set; } = false;
         public bool EnableVoiceChannel { get; set; } = false;
         public int ChannelRequiredAmount { get; set; } = 4;
         public int ChannelRequiredLevel { get; set; } = 40;

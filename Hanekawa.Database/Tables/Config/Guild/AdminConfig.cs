@@ -1,9 +1,11 @@
-﻿namespace Hanekawa.Database.Tables.Config.Guild
+﻿using Disqord;
+
+namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class AdminConfig
     {
-        public ulong GuildId { get; set; }
-        public ulong? MuteRole { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake? MuteRole { get; set; }
         public bool FilterInvites { get; set; }
         public bool IgnoreAllChannels { get; set; } 
         public int? FilterMsgLength { get; set; }

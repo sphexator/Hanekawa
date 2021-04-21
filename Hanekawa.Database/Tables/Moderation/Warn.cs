@@ -1,4 +1,5 @@
 ﻿using System;
+using Disqord;
 using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Moderation
@@ -6,8 +7,8 @@ namespace Hanekawa.Database.Tables.Moderation
     public class Warn
     {
         public int Id { get; set; }
-        public ulong GuildId { get; set; }
-        public ulong UserId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake UserId { get; set; }
         public WarnReason Type { get; set; } = WarnReason.Warned;
         public string Reason { get; set; } = "No reason provided";
         public DateTime Time { get; set; } = DateTime.UtcNow;
