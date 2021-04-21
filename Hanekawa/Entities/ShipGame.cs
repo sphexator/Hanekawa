@@ -1,4 +1,5 @@
-﻿using Disqord.Gateway;
+﻿using Disqord;
+using Disqord.Gateway;
 
 namespace Hanekawa.Entities
 {
@@ -22,6 +23,6 @@ namespace Hanekawa.Entities
         public int? Credit { get; set; }
         public int? Bet { get; set; }
         public ShipGameType Type { get; set; }
-        public CachedTextChannel Channel { get; set; }
+        public ITextChannel Channel { get; set; }
     }
 }
