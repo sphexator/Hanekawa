@@ -10,7 +10,6 @@ WORKDIR /src
 COPY ["nuget.config", ""]
 COPY ["Hanekawa/Hanekawa.csproj", "Hanekawa/"]
 COPY ["Hanekawa.Database/Hanekawa.Database.csproj", "Hanekawa.Database/"]
-COPY ["Hanekawa.Shared/Hanekawa.Shared.csproj", "Hanekawa.Shared/"]
 COPY ["Hanekawa.HungerGames/Hanekawa.HungerGames.csproj", "Hanekawa.HungerGames/"]
 RUN dotnet restore "Hanekawa/Hanekawa.csproj"
 COPY . .
