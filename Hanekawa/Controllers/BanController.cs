@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Disqord.Gateway;
 using Hanekawa.Database;
-using Hanekawa.Models.Api;
+using Hanekawa.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,13 +22,14 @@ namespace Hanekawa.Controllers
         }
 
         [HttpGet("{rawId}/{userId}")]
-        public async Task<BanCase> GetBanCaseAsync([FromRoute] string rawId, [FromRoute]string userId)
+        public async Task<BanCase> GetBanCaseAsync([FromRoute] string rawId, [FromRoute]string userId, CancellationToken token)
         {
             if (!ulong.TryParse(rawId, out var guildId)) return null;
             var guild = _bot.GetGuild(guildId);
             if (guild == null) return null;
             if (!ulong.TryParse(userId, out var id)) return null;
-            var modCase = await _db.ModLogs.FirstOrDefaultAsync(x => x.Action == "Ban" && x.GuildId == guildId && x.UserId == id);
+            var modCase = await _db.ModLogs.FirstOrDefaultAsync(
+                x => x.Action == "Ban" && x.GuildId == guildId && x.UserId == id, cancellationToken: token);
             return new BanCase(modCase);
         }
     }

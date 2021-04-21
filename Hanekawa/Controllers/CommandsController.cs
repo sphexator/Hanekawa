@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Disqord.Bot;
 using Disqord.Gateway;
 using Hanekawa.Bot.Commands.Preconditions;
 using Microsoft.AspNetCore.Mvc;
 using Qmmands;
-using Command = Hanekawa.Models.Api.Command;
-using Module = Hanekawa.Models.Api.Module;
+using Command = Hanekawa.Models.Command;
+using Module = Hanekawa.Models.Module;
 
 namespace Hanekawa.Controllers
 {
@@ -20,7 +21,7 @@ namespace Hanekawa.Controllers
         public CommandsController(Bot.Hanekawa bot) => _bot = bot;
 
         [HttpGet]
-        public List<Module> GetCommands()
+        public List<Module> GetCommands(CancellationToken token)
         {
             var toReturn = new List<Module>();
             var modules = _bot.Commands.GetAllModules().OrderBy(x => x.Name);
