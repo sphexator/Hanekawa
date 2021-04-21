@@ -10,7 +10,7 @@ namespace Hanekawa.Database.Extensions
 {
     public static class ConfigExtension
     {
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, CachedGuild guild) =>
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
             await GetOrCreateGuildConfigAsync(context, guild.Id).ConfigureAwait(false);
 
         public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, Snowflake guild)
@@ -31,7 +31,7 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, CachedGuild guild) =>
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
             GetOrCreateGuildConfig(context, guild.Id);
 
         public static GuildConfig GetOrCreateGuildConfig(this DbService context, Snowflake guild)
