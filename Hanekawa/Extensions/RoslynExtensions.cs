@@ -54,28 +54,23 @@ namespace Hanekawa.Extensions
 
         public static string GetCode(this string rawCode)
         {
-            static string GetCode(string inCode)
+            if (rawCode[0] != BackTick)
             {
-                if (inCode[0] != BackTick)
-                {
-                    return inCode;
-                }
-
-                if (inCode[1] != BackTick)
-                {
-                    return inCode.Substring(1, inCode.Length - 2);
-                }
-
-                var startIndex = inCode.IndexOf(NewLine);
-                if (startIndex == -1)
-                {
-                    throw new ArgumentException("Format your code blocks properly >:[");
-                }
-
-                return inCode.Substring(startIndex + 1, inCode.Length - startIndex - 5);
+                return rawCode;
             }
 
-            var code = GetCode(rawCode);
+            if (rawCode[1] != BackTick)
+            {
+                return rawCode.Substring(1, rawCode.Length - 2);
+            }
+
+            var startIndex = rawCode.IndexOf(NewLine);
+            if (startIndex == -1)
+            {
+                throw new ArgumentException("Code blocks not formatted correctly.");
+            }
+
+            var code = rawCode.Substring(startIndex + 1, rawCode.Length - startIndex - 5);
             return string.Concat(UsingBlock, code);
         }
     }

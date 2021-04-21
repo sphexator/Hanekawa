@@ -69,10 +69,7 @@ namespace Hanekawa.Extensions
             // Use "best" matched letter if multiple string letters match the pattern
             char? bestLetter = null;
             char? bestLower = null;
-            int? bestLetterIdx = null;
             var bestLetterScore = 0;
-
-            var matchedIndices = new List<int>();
 
             // Loop over strings
             while (strIdx != strLength)
@@ -92,10 +89,8 @@ namespace Hanekawa.Extensions
                 if (advanced || patternRepeat)
                 {
                     score += bestLetterScore;
-                    matchedIndices.Add((int) bestLetterIdx);
                     bestLetter = null;
                     bestLower = null;
-                    bestLetterIdx = null;
                     bestLetterScore = 0;
                 }
 
@@ -136,7 +131,6 @@ namespace Hanekawa.Extensions
 
                         bestLetter = strChar;
                         bestLower = char.ToLower((char) bestLetter);
-                        bestLetterIdx = strIdx;
                         bestLetterScore = newScore;
                     }
 
@@ -156,11 +150,7 @@ namespace Hanekawa.Extensions
             }
 
             // Apply score for last match
-            if (bestLetter != null)
-            {
-                score += bestLetterScore;
-                matchedIndices.Add((int) bestLetterIdx);
-            }
+            if (bestLetter != null) score += bestLetterScore;
 
             outScore = score;
             return patternIdx == patternLength;
