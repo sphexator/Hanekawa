@@ -7,9 +7,10 @@ namespace Hanekawa.Entities
     {
         public ShipUser(GameEnemy enemy, int level, GameClass gameClass, int damage, int health)
         {
-            Id = (ulong)enemy.Id;
+            Id = enemy.Id;
             Name = enemy.Name;
             Level = level;
+            Avatar = enemy.ImageUrl;
 
             Health = damage;
             Damage = health;
@@ -35,6 +36,7 @@ namespace Hanekawa.Entities
             Id = user.Id.RawValue;
             Name = user.Nick ?? user.Name;
             Level = level;
+            Avatar = user.GetAvatarUrl();
 
             MaxHealth = health;
             Health = damage;
@@ -57,8 +59,9 @@ namespace Hanekawa.Entities
         }
         
         public string Name { get; set; }
-        public ulong Id { get; set; }
+        public Snowflake Id { get; set; }
         public int Level { get; set; }
+        public string Avatar { get; set; }
 
         public int MaxHealth { get; init; }
         public int Health { get; set; }

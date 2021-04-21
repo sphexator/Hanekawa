@@ -10,6 +10,8 @@ namespace Hanekawa.Entities
             PlayerOne = playerOne;
             PlayerTwo = playerTwo;
             Bet = bet;
+            Exp = exp;
+            Credit = credit;
             Type = type;
             Channel = channel;
         }

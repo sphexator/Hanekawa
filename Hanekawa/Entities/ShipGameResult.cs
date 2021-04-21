@@ -11,6 +11,7 @@ namespace Hanekawa.Entities
             ExpGain = game.Exp;
             CreditGain = game.Credit;
             Bet = game.Bet;
+            Message = message;
         }
         
         public ShipUser Winner { get; set; }
