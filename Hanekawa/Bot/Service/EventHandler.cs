@@ -10,7 +10,9 @@ using Hanekawa.Bot.Service.Administration.Mute;
 using Hanekawa.Bot.Service.Board;
 using Hanekawa.Bot.Service.Boost;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Club;
 using Hanekawa.Bot.Service.Drop;
+using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.Game;
 using Hanekawa.Bot.Service.Logs;
 using Hanekawa.Database;
@@ -23,10 +25,9 @@ namespace Hanekawa.Bot.Service
 {
     public class EventHandler : INService, IRequired, IJob
     {
-        private readonly Hanekawa _client;
         private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
-        private readonly Experience _experience;
+        private readonly ExpService _experience;
         private readonly LogService _logService;
         private readonly BlacklistService _blacklist;
         private readonly MuteService _mute;
@@ -34,12 +35,12 @@ namespace Hanekawa.Bot.Service
         private readonly BoostService _boostService;
         private readonly DropService _dropService;
         private readonly HungerGameService _hungerGame;
+        private readonly ClubService _club;
 
-        public EventHandler(Hanekawa client, Experience experience, CacheService cache, LogService logService, 
+        public EventHandler(Hanekawa client, ExpService experience, CacheService cache, LogService logService, 
             BlacklistService blacklist, MuteService mute, BoardService boardService, BoostService boostService, 
-            DropService dropService, HungerGameService hungerGame, IServiceProvider provider)
+            DropService dropService, HungerGameService hungerGame, IServiceProvider provider, ClubService club)
         {
-            _client = client;
             _experience = experience;
             _cache = cache;
             _logService = logService;
@@ -50,36 +51,37 @@ namespace Hanekawa.Bot.Service
             _dropService = dropService;
             _hungerGame = hungerGame;
             _provider = provider;
-            
-            _client.MessageReceived += MessageReceived;
-            _client.MessageUpdated += MessageUpdated;
-            _client.MessageDeleted += MessageDeleted;
-            _client.MessagesDeleted += MessagesDeleted;
+            _club = club;
 
-            _client.MemberJoined += MemberJoined;
-            _client.MemberLeft += MemberLeft;
-            _client.MemberUpdated += MemberUpdated;
+            client.MessageReceived += MessageReceived;
+            client.MessageUpdated += MessageUpdated;
+            client.MessageDeleted += MessageDeleted;
+            client.MessagesDeleted += MessagesDeleted;
 
-            _client.ReactionAdded += ReactionAdded;
-            _client.ReactionRemoved += ReactionRemoved;
-            _client.ReactionsCleared += ReactionsCleared;
-            
-            _client.VoiceStateUpdated += VoiceStateUpdated;
-            
-            _client.BanCreated += BanCreated;
-            _client.BanDeleted += BanDeleted;
-            
-            _client.RoleDeleted += RoleDeleted;
+            client.MemberJoined += MemberJoined;
+            client.MemberLeft += MemberLeft;
+            client.MemberUpdated += MemberUpdated;
 
-            _client.ChannelDeleted += ChannelDeleted;
+            client.ReactionAdded += ReactionAdded;
+            client.ReactionRemoved += ReactionRemoved;
+            client.ReactionsCleared += ReactionsCleared;
+            
+            client.VoiceStateUpdated += VoiceStateUpdated;
+            
+            client.BanCreated += BanCreated;
+            client.BanDeleted += BanDeleted;
+            
+            client.RoleDeleted += RoleDeleted;
 
-            _client.JoinedGuild += JoinedGuild;
-            _client.LeftGuild += LeftGuild;
+            client.ChannelDeleted += ChannelDeleted;
+
+            client.JoinedGuild += JoinedGuild;
+            client.LeftGuild += LeftGuild;
             
-            _client.InviteCreated += InviteCreated;
-            _client.InviteDeleted += InviteDeleted;
+            client.InviteCreated += InviteCreated;
+            client.InviteDeleted += InviteDeleted;
             
-            _client.Ready += Ready;
+            client.Ready += Ready;
         }
 
         private Task Ready(object sender, ReadyEventArgs e)
@@ -106,7 +108,10 @@ namespace Hanekawa.Bot.Service
                 foreach (var x in db.GuildConfigs)
                 {
                     var prefixes = _cache.GuildPrefix.GetOrAdd(new Snowflake(x.GuildId), new HashSet<IPrefix>());
-                    prefixes.Add(new StringPrefix(x.Prefix));
+                    foreach (var value in x.Prefix)
+                    {
+                        prefixes.Add(new StringPrefix(value));   
+                    }
                     _cache.GuildEmbedColors.TryAdd(new Snowflake(x.GuildId), new Color((int)x.EmbedColor));
                 }
             });
@@ -145,6 +150,7 @@ namespace Hanekawa.Bot.Service
 
         private Task MemberJoined(object sender, MemberJoinedEventArgs e)
         {
+            _ = _mute.MuteCheck(e);
             _ = _logService.JoinLogAsync(e);
             return Task.CompletedTask;
         }
