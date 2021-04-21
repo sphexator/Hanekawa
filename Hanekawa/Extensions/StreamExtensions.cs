@@ -8,10 +8,10 @@ namespace Hanekawa.Extensions
 {
     public static class StreamExtensions
     {
-        public static MemoryStream ToEditable(this Stream stream, double? MBLimit = null)
+        public static MemoryStream ToEditable(this Stream stream, double? mbLimit = null)
         {
             var toReturn = new MemoryStream();
-            if (MBLimit == null)
+            if (mbLimit == null)
             {
                 stream.CopyTo(toReturn);
                 toReturn.Flush();
@@ -25,8 +25,8 @@ namespace Hanekawa.Extensions
                 while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
                 {
                     toReturn.Write(buffer, 0, read);
-                    if (MBLimit != null && (toReturn.Length / 1024f) / 1024f > MBLimit)
-                        throw new HanaCommandException($"File size is above the limit ({MBLimit} MB)");
+                    if (mbLimit != null && (toReturn.Length / 1024f) / 1024f > mbLimit)
+                        throw new HanaCommandException($"File size is above the limit ({mbLimit} MB)");
                 }
                 toReturn.Flush();
                 stream.Dispose();
