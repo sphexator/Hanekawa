@@ -1,1 +1,1 @@
-﻿namespace Hanekawa { public interface INService { } }
+﻿namespace Hanekawa.Entities { public interface INService { } }

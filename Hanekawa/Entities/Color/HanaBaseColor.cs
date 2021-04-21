@@ -1,10 +1,8 @@
-﻿using Disqord;
-
-namespace Hanekawa
+﻿namespace Hanekawa.Entities.Color
 {
     public static class HanaBaseColor
     {
-        public static Color Default() => new (155, 89, 182);
+        public static Disqord.Color Default() => new (155, 89, 182);
         public static Disqord.Color Green() => new (46, 204, 113);
         public static Disqord.Color Red() => new (255, 105, 97);
         public static Disqord.Color Blue() => new (9, 132, 227);

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Hanekawa.Entities.Color
+﻿namespace Hanekawa.Entities.Color
 {
     public enum HanaColor
     {
