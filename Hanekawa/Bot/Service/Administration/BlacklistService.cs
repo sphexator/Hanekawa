@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Database;
+using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 

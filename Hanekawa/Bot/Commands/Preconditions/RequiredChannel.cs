@@ -5,6 +5,7 @@ using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -18,7 +19,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
 
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            if (!(_ is HanekawaCommandContext context)) return CheckResult.Failed("woopsie command context wrong :)");
+            if (_ is not HanekawaCommandContext context) return CheckResult.Failed("woopsie command context wrong :)");
             var roles = context.User.GetRoles();
             if (Discord.Permissions.CalculatePermissions(context.Guild, context.User, roles.Values).Has(Permission.ManageGuild))
                 return CheckResult.Successful;
@@ -28,13 +29,11 @@ namespace Hanekawa.Bot.Commands.Preconditions
 
             var pass = status ? EligibleChannel(context, true) : EligibleChannel(context);
 
-            switch (pass)
+            return pass switch
             {
-                case true:
-                    return CheckResult.Successful;
-                case false:
-                    return CheckResult.Failed("Not a eligible channel");
-            }
+                true => CheckResult.Successful,
+                false => CheckResult.Failed("Not a eligible channel")
+            };
         }
 
         public async Task<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)
@@ -81,7 +80,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
             // True = command passes
             // False = command fails
             var ch = ChannelEnable.GetOrAdd(context.Guild.Id.RawValue, new ConcurrentDictionary<ulong, bool>());
-            var ignore = ch.TryGetValue(context.Channel.Id.RawValue, out var status);
+            var ignore = ch.TryGetValue(context.Channel.Id.RawValue, out _);
             if (!ignore) ignore = DoubleCheckChannel(context);
             return !ignoreAll ? !ignore : ignore;
         }

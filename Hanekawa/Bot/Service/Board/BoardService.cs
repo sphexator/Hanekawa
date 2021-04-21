@@ -9,6 +9,7 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
+using Hanekawa.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Service.Board
             {
                 stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                 await db.SaveChangesAsync();
-                await SendMessageAsync(_bot.GetMember(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg);
+                await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg);
             }
         }
 
@@ -125,7 +126,7 @@ namespace Hanekawa.Bot.Service.Board
                 Author = new LocalEmbedAuthorBuilder
                 {
                     Name = user.Nick ?? user.Name,
-                    IconUrl = user?.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
+                    IconUrl = user.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
                 },
                 Color = roles.Values.OrderByDescending(x => x.Position)
                     .FirstOrDefault(x => x.Color != null && x.Color.Value != 0)

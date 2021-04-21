@@ -13,6 +13,7 @@ using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities;
+using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -121,7 +122,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 var x = warnings[i];
                 var sb = new StringBuilder();
                 sb.AppendLine($"Type: {x.Type}");
-                sb.AppendLine($"Moderator: {_bot.GetMember(user.GuildId, x.Moderator)} ({x.Moderator})");
+                sb.AppendLine($"Moderator: {await _bot.GetOrFetchMemberAsync(user.GuildId, x.Moderator)} ({x.Moderator})");
                 sb.AppendLine($"Reason: {x.Reason}");
             }
 

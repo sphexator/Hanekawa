@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +11,12 @@ namespace Hanekawa.Bot.Commands.Preconditions
     {
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
-            if (!(_ is HanekawaCommandContext context)) return CheckResult.Failed("wrong right context.");
+            if (_ is not HanekawaCommandContext context) return CheckResult.Failed("wrong right context.");
             if (context.Guild == null) return CheckResult.Failed("Needs to be executed in a guild!");
             using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(context.Guild);
-            return cfg.Premium
+            return cfg.Premium.HasValue && cfg.Premium.Value >= DateTimeOffset.UtcNow
                 ? CheckResult.Successful
                 : CheckResult.Failed("Command is only available for premium servers!");
         }

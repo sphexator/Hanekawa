@@ -22,12 +22,12 @@ namespace Hanekawa.Bot.Service.Boost
     public class BoostService : INService
     {
         private readonly Hanekawa _bot;
-        private readonly Experience _exp;
+        private readonly Experience.ExpService _exp;
         private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
         private readonly Logger _logger;
 
-        public BoostService(Hanekawa bot, Experience exp, IServiceProvider provider, CacheService cache)
+        public BoostService(Hanekawa bot, Experience.ExpService exp, IServiceProvider provider, CacheService cache)
         {
             _bot = bot;
             _exp = exp;
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Service.Boost
 
         private async Task Reward()
         {
-                        using var scope = _provider.CreateScope();
+            using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var configs = await db.BoostConfigs.ToListAsync();
             foreach (var x in configs.Where(x => x.ExpGain != 0 || x.CreditGain != 0 || x.SpecialCreditGain != 0))
