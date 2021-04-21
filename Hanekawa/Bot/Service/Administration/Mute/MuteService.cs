@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
@@ -16,12 +14,11 @@ using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
+using Hanekawa.Entities;
+using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
-using Hanekawa.Extensions.Embed;
-using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
-using Quartz.Util;
 
 namespace Hanekawa.Bot.Service.Administration.Mute
 {
@@ -103,24 +100,52 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.GuildId, user.Id, duration.Value);
-            _logger.Log(NLog.LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.GuildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.GuildId.RawValue}");
         }
 
         private async Task<bool> Mute(IMember user, IRole role)
         {
             var check = await user.TryAddRoleAsync(role);
-            await user.TryMuteAsync();
+            var roles = user.GetRoles();
+            var newRoles = roles.Keys.ToList();
+            newRoles.Add(role.Id);
+            try
+            {
+                await user.ModifyAsync(x =>
+                {
+                    x.RoleIds = newRoles;
+                    x.Mute = true;
+                });
+            }
+            catch
+            {
+                await user.TryAddRoleAsync(role);
+            }
             if(check) _logger.Log(LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.GuildId.RawValue}");
             else _logger.Log(LogLevel.Warn, $"(Mute service) Failed to mute {user.Id.RawValue} in {user.GuildId.RawValue}");
             return check;
         }
         
-        public async Task<bool> UnMuteAsync(IMember user, DbService db)
+        public async Task UnMuteAsync(IMember user, DbService db)
         {
+            var role = await GetMuteRoleAsync(user.GuildId, db);
+            var roles = user.GetRoles();
+            var newRoles = roles.Keys.ToList();
+            newRoles.Remove(role.Id);
             await StopUnMuteTimerAsync(user.GuildId, user.Id, db);
-            await user.TryUnMute();
+            try
+            {
+                await user.ModifyAsync(x =>
+                {
+                    x.RoleIds = newRoles;
+                    x.Mute = false;
+                });
+            }
+            catch
+            {
+                await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.GuildId, db));
+            }
             _logger.Log(LogLevel.Info, $"(Mute service) Unmuted {user.Id.RawValue} in {user.GuildId.RawValue}");
-            return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.GuildId, db));
         }
         
         private async Task<IRole> GetMuteRoleAsync(Snowflake guildId, DbService db)
@@ -132,7 +157,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             return muteRole;
         }
         
-        private async Task<IRole> CreateRoleAsync(Snowflake guildId, AdminConfig cfg, DbService db)
+        private async ValueTask<IRole> CreateRoleAsync(Snowflake guildId, AdminConfig cfg, DbService db)
         {
             var guild = _bot.GetGuild(guildId);
             var role = guild.Roles.FirstOrDefault(x => x.Value.Name.ToLower() == "mute" && guild.HierarchyCheck(guild.GetCurrentUser(), x.Value)).Value;
@@ -187,7 +212,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                     }
                 }, null, duration, Timeout.InfiniteTimeSpan);
 
-                unMuteTimers.AddOrUpdate(userId, key => toAdd, (key, old) =>
+                unMuteTimers.AddOrUpdate(userId, _ => toAdd, (_, old) =>
                 {
                     old.Dispose();
                     return toAdd;
@@ -199,7 +224,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             }
         }
 
-        private async Task StopUnMuteTimerAsync(Snowflake guildId, Snowflake userId, DbService db)
+        private async ValueTask StopUnMuteTimerAsync(Snowflake guildId, Snowflake userId, DbService db)
         {
             await RemoveFromDatabaseAsync(guildId, userId, db);
             if (!_cache.MuteTimers.TryGetValue(guildId, out var unMuteTimers)) return;
@@ -222,12 +247,12 @@ namespace Hanekawa.Bot.Service.Administration.Mute
 
         private async Task ApplyPermissions(IGatewayGuild guild, IRole role)
         {
-            foreach (var (key, ch) in guild.Channels)
+            foreach (var (_, ch) in guild.Channels)
             {
                 await ApplyPermissions(ch, role);
             }
         }
-
+        
         private async Task ApplyPermissions(IGuildChannel ch, IRole role)
         {
             if (ch is not CachedTextChannel channel) return;
