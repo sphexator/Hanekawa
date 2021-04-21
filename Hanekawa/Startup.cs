@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using Disqord.Extensions.Interactivity;
 using Hanekawa.Database;
+using Hanekawa.Entities;
 using Hanekawa.HungerGames;
 using Hanekawa.HungerGames.Entities.Configs;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +19,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using Quartz;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
