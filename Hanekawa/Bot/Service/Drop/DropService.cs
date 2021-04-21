@@ -7,6 +7,7 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Entities;
@@ -24,10 +25,10 @@ namespace Hanekawa.Bot.Service.Drop
         private readonly CacheService _cache;
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
-        private readonly Experience _exp;
+        private readonly ExpService _exp;
         private readonly Random _random;
         
-        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, Experience exp, Random random)
+        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random)
         {
             _bot = bot;
             _cache = cache;
@@ -88,7 +89,7 @@ namespace Hanekawa.Bot.Service.Drop
                 IsTextToSpeech = false
             }.Build());
             var emotes = GetEmotes(guild);
-            foreach (var x in emotes.OrderBy(x => _random.Next()).Take(emotes.Count))
+            foreach (var x in emotes.OrderBy(_ => _random.Next()).Take(emotes.Count))
                 await ApplyReactionAsync(triggerMsg, x, claim, type);
 
             _logger.Log(LogLevel.Info, $"(Drop Service) Drop event created in {guildId.RawValue}");
