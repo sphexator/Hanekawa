@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async ValueTask MemberUpdatedAsync(MemberUpdatedEventArgs e)
+        public async Task MemberUpdatedAsync(MemberUpdatedEventArgs e)
         {
             var guild = _bot.GetGuild(e.NewMember.GuildId);
             try

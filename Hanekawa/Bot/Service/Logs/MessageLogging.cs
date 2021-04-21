@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async ValueTask MessageDeletedAsync(MessageDeletedEventArgs e)
+        public async Task MessageDeletedAsync(MessageDeletedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             var guild = _bot.GetGuild(e.GuildId.Value);
@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (!e.Message.Content.IsNullOrWhiteSpace())
                     embed.AddField("Content", e.Message.Content.Truncate(1499));
 
-                if (e.Message.Attachments.Count > 0 && !msgChannel.IsNsfw)
+                if (msgChannel != null && e.Message.Attachments.Count > 0 && !msgChannel.IsNsfw)
                 {
                     var file = e.Message.Attachments.FirstOrDefault();
                     if (file != null)
@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async ValueTask MessagesDeletedAsync(MessagesDeletedEventArgs e)
+        public async Task MessagesDeletedAsync(MessagesDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             try
@@ -86,33 +86,31 @@ namespace Hanekawa.Bot.Service.Logs
                 if (!cfg.LogMsg.HasValue) return;
                 if (!guild.Channels.TryGetValue(cfg.LogMsg.Value, out var channel) && channel is not CachedTextChannel) return;
                 if (!guild.Channels.TryGetValue(e.ChannelId, out var tempChannel) && tempChannel is not CachedTextChannel) return;
-                var msgChannel = tempChannel as CachedTextChannel;
 
                 var messageContent = new List<string>();
                 var content = new StringBuilder();
-                foreach (var x in e.Messages)
+                foreach (var (_, cachedUserMessage) in e.Messages)
                 {
-                    if (!x.Value.Author.IsBot) continue;
-                    var user = x.Value.Author;
-                    if (content.Length + x.Value.Content.Length >= 1950)
+                    if (!cachedUserMessage.Author.IsBot) continue;
+                    var user = cachedUserMessage.Author;
+                    if (content.Length + cachedUserMessage.Content.Length >= 1950)
                     {
                         messageContent.Add(content.ToString());
                         content.Clear();
                     }
 
-                    content.AppendLine($"{user}: {x.Value.Content}");
+                    content.AppendLine($"{user}: {cachedUserMessage.Content}");
                 }
 
                 if (content.Length > 0) messageContent.Add(content.ToString());
 
-                for (var i = 0; i < messageContent.Count; i++)
+                foreach (var embed in messageContent.Select(t => new LocalEmbedBuilder
                 {
-                    var embed = new LocalEmbedBuilder
-                    {
-                        Color = _cache.GetColor(guild.Id),
-                        Title = $"Bulk delete in {tempChannel.Name}",
-                        Description = messageContent[i]
-                    };
+                    Color = _cache.GetColor(guild.Id),
+                    Title = $"Bulk delete in {tempChannel.Name}",
+                    Description = t
+                }))
+                {
                     await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
                     {
                         Embed = embed,

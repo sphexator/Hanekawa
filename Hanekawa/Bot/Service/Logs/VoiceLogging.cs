@@ -12,7 +12,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async ValueTask VoiceLogAsync(VoiceStateUpdatedEventArgs e)
+        public async Task VoiceLogAsync(VoiceStateUpdatedEventArgs e)
         {
                 var user = e.Member;
                 var before = e.OldVoiceState;
@@ -34,8 +34,8 @@ namespace Hanekawa.Bot.Service.Logs
                     // User muted, deafend or streaming
                     if (before != null && after != null)
                     {
-                        var oldVc = guild.GetChannel(before.ChannelId.Value) as IVoiceChannel;
-                        var newVc = guild.GetChannel(after.ChannelId.Value) as IVoiceChannel;
+                        var oldVc = guild.GetChannel(before.ChannelId!.Value) as IVoiceChannel;
+                        var newVc = guild.GetChannel(after.ChannelId!.Value) as IVoiceChannel;
                         
                         if (before.IsDeafened && !after.IsDeafened)
                         {
@@ -61,7 +61,6 @@ namespace Hanekawa.Bot.Service.Logs
                             embed.Author = new LocalEmbedAuthorBuilder { Name = "User Server Muted" };
                             embed.Description = $"{user} muted in {oldVc.Name}";
                         }
-                        // Self deafend
                         else if (before.IsSelfDeafened && !after.IsSelfDeafened)
                         {
                             // User Self undeafend
@@ -119,19 +118,22 @@ namespace Hanekawa.Bot.Service.Logs
                         }
                         else return;
                     }
-                    else if (before == null)
+                    else if (before == null && after.ChannelId.HasValue)
                     {
+                        
                         var newVc = guild.GetChannel(after.ChannelId.Value) as IVoiceChannel;
-                        embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Joined" };
-                        embed.AddField("New Channel", newVc.Name);
+                            embed.Author = new LocalEmbedAuthorBuilder { Name = "Voice Channel Joined" };
+                            embed.AddField("New Channel", newVc.Name);
+                        
                     }
-                    else if (after == null)
+                    else if (after == null && before.ChannelId.HasValue)
                     {
                         var oldVc = guild.GetChannel(before.ChannelId.Value) as IVoiceChannel;
                         embed.Author = new LocalEmbedAuthorBuilder {Name = "Voice Channel Left"};
                         embed.AddField("Old Channel", oldVc.Name);
                     }
                     else return;
+                    
                     await (channel as ITextChannel).SendMessageAsync(new LocalMessageBuilder
                     {
                         Attachments = null,

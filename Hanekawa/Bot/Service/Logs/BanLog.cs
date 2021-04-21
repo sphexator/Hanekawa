@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.AuditLogs;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Moderation;
+using Hanekawa.Entities.Color;
+using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -16,7 +20,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async ValueTask BanAsync(BanCreatedEventArgs e)
+        public async Task BanAsync(BanCreatedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -29,25 +33,21 @@ namespace Hanekawa.Bot.Service.Logs
                 if(!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
 
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
-                IMember mod = null;
+                IMember mod;
                 if (_cache.BanCache.TryGetValue(guild.Id.RawValue, out var cache))
                 {
                     if (cache.TryGetValue(e.User.Id.RawValue, out var result))
                     {
-                        var modId = (ulong)result;
-                        mod = _bot.GetMember(e.GuildId, modId);
-                        if (mod != null)
-                        {
-                            caseId.ModId = mod.Id.RawValue;
-                        }
+                        mod = await _bot.GetOrFetchMemberAsync(e.GuildId, (Snowflake)result);
+                        if (mod != null) caseId.ModId = mod.Id.RawValue;
                     }
-                    else mod = await CheckAuditLog(guild, e.User.Id, caseId);
+                    else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
                 }
-                else mod = await CheckAuditLog(guild, e.User.Id, caseId);
+                else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
 
                 var embed = new LocalEmbedBuilder
                 {
-                    Color = Color.Red,
+                    Color = HanaBaseColor.Red(),
                     Author = new LocalEmbedAuthorBuilder { Name = $"User Banned | Case ID: {caseId.Id} | {e.User}" },
                     Fields =
                         {
@@ -79,7 +79,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async ValueTask UnbanAsync(BanDeletedEventArgs e)
+        public async Task UnbanAsync(BanDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -92,16 +92,33 @@ namespace Hanekawa.Bot.Service.Logs
                 if (!cfg.LogBan.HasValue) return;
                 if (!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Unban);
+                
+                IMember mod = null;
+                if (_cache.BanCache.TryGetValue(guild.Id.RawValue, out var cache))
+                {
+                    if (cache.TryGetValue(e.User.Id.RawValue, out var result))
+                    {
+                        var modId = (ulong)result;
+                        mod = await _bot.GetOrFetchMemberAsync(e.GuildId, modId);
+                        if (mod != null)
+                        {
+                            caseId.ModId = mod.Id.RawValue;
+                        }
+                    }
+                    else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
+                }
+                else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
+                
                 var embed = new LocalEmbedBuilder
                 {
-                    Color = Color.Green,
+                    Color = HanaBaseColor.Lime(),
                     Author = new LocalEmbedAuthorBuilder { Name = $"User Unbanned | Case ID: {caseId.Id} | {e.User}" },
                     Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id.RawValue}", IconUrl = e.User.GetAvatarUrl() },
                     Timestamp = DateTimeOffset.UtcNow,
                     Fields =
                     {
                         new LocalEmbedFieldBuilder {Name = "User", Value = $"{e.User.Mention}", IsInline = true},
-                        new LocalEmbedFieldBuilder {Name = "Moderator", Value = "N/A", IsInline = true},
+                        new LocalEmbedFieldBuilder {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = true},
                         new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
                     }
                 };
@@ -123,32 +140,45 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        private async Task<IMember> CheckAuditLog(IGuild guild, Snowflake userId, ModLog caseId)
+        private async ValueTask<IMember> CheckAuditLog(IGuild guild, Snowflake userId, ModLog caseId, AuditLogActionType type)
         {
             IMember mod = null;
-            return mod;
-            /*
             await Task.Delay(TimeSpan.FromSeconds(2));
-            //await guild.<RestMemberBannedAuditLog>(); //TODO: Whenever audit log is implemented
-            var audit = audits.FirstOrDefault(x => x.TargetId.HasValue && x.TargetId.Value == userId);
-            if (audit != null)
+            IReadOnlyList<IAuditLog> audits;
+            switch (type)
             {
-                var temp = _bot.GetMember(guild.Id, audit.ResponsibleUserId);
-                if (!temp.IsBot) mod = temp;
-
+                case AuditLogActionType.MemberBanned:
+                    audits = await guild.FetchAuditLogsAsync<IMemberBannedAuditLog>(100);
+                    break;
+                case AuditLogActionType.MemberUnbanned:
+                    audits = await guild.FetchAuditLogsAsync<IMemberUnbannedAuditLog>(100);
+                    break;
+                default:
+                    return null;
+            } 
+            var audit = audits.FirstOrDefault(x => x.TargetId.HasValue && x.TargetId.Value == userId);
+            if (audit?.ActorId != null)
+            {
+                var temp = await _bot.GetOrFetchMemberAsync(guild.Id, audit.ActorId.Value);
+                if (!temp.IsBot)
+                {
+                    caseId.ModId = temp.Id;
+                    return temp;
+                }
+                
                 var reasonSplit = audit.Reason.Replace("(", " ").Replace(")", " ").Replace("-", " ").Split(" ");
                 var modId = FetchId(reasonSplit);
                 if (modId.HasValue)
                 {
                     temp = _bot.GetMember(guild.Id, modId.Value);
-                    if (temp != null && !temp.IsBot && Discord.Permissions
+                    if (temp is {IsBot: false} && Discord.Permissions
                         .CalculatePermissions(guild, temp, temp.GetRoles().Values).BanMembers) mod = temp;
                 }
             }
 
-            caseId.ModId = mod?.Id.RawValue;
+            if (mod == null) return null;
+            caseId.ModId = mod.Id;
             return mod;
-            */
         }
 
         private static Snowflake? FetchId(IEnumerable<string> value)

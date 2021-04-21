@@ -10,6 +10,7 @@ using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Entities;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -32,7 +33,7 @@ namespace Hanekawa.Bot.Service.Logs
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async ValueTask JoinLogAsync(MemberJoinedEventArgs e)
+        public async Task JoinLogAsync(MemberJoinedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if(guild == null) return;
@@ -106,7 +107,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async ValueTask LeaveLogAsync(MemberLeftEventArgs e)
+        public async Task LeaveLogAsync(MemberLeftEventArgs e)
         {
             var guild = e.User.GetGatewayClient().GetGuild(e.GuildId);
             if(guild == null) return;

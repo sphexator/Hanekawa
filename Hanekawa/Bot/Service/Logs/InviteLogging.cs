@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async ValueTask InviteCreatedAsync(InviteCreatedEventArgs e)
+        public async Task InviteCreatedAsync(InviteCreatedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Service.Logs
                 (_, _) => invites);
         }
 
-        public async ValueTask InviteDeletedAsync(InviteDeletedEventArgs e)
+        public async Task InviteDeletedAsync(InviteDeletedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
