@@ -1,121 +1,52 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.Achievement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
     public partial class AchievementService
     {
-        public async Task PvpKill(Snowflake userId)
+        public async Task GameKill(Snowflake guildId, Snowflake userId, bool pvp)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var achievements = await db.Achievements.Where(x => x.TypeId == PvP && !x.Once).ToListAsync();
-            var progress = await db.GetOrCreateAchievementProgress(userId.RawValue, PvP);
-            if (progress == null) return;
-            if (achievements == null) return;
-
-            if (achievements.Any(x => x.Requirement == progress.Count + 1 && !x.Once))
+            var userData = await db.GetOrCreateUserData(guildId, userId);
+            if (pvp) userData.GamePvPAmount++;
+            else userData.GameKillAmount++;
+            var achievements = new List<Achievement>();
+            if(pvp) achievements = await db.Achievements
+                .Where(x => x.Category == AchievementCategory.PvP && x.Requirement <= userData.GamePvPAmount)
+                .ToListAsync();
+            else await db.Achievements
+                .Where(x => x.Category == AchievementCategory.Game && x.Requirement <= userData.GameKillAmount)
+                .ToListAsync();
+            if (achievements == null || achievements.Count == 0)
             {
-                var achieve = achievements.First(x => x.Requirement == progress.Count + 1);
-                var data = new AchievementUnlock
-                {
-                    AchievementId = achieve.AchievementId,
-                    TypeId = PvP,
-                    UserId = userId.RawValue,
-                    Achievement = achieve
-                };
-                await db.AchievementUnlocks.AddAsync(data);
                 await db.SaveChangesAsync();
-
-                _logger.Log(LogLevel.Info, $"(Achievement Service) {userId.RawValue} scored {achieve.Name}");
+                return;
             }
-            else
-            {
-                var below = achievements.Where(x => x.Requirement < progress.Count + 1).ToList();
-                if (below.Count != 0)
+            var globalUser = await db.GetOrCreateGlobalUserDataAsync(userId);
+            var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == userData.UserId).ToListAsync();
+            var toAdd = (from x in achievements
+                where unlocks.All(e => e.AchieveId != x.AchievementId)
+                select new AchievementUnlocked
                 {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == userId.RawValue).ToListAsync();
-                    foreach (var x in below)
-                    {
-                        if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
+                    Date = DateTimeOffset.UtcNow,
+                    Id = Guid.NewGuid(),
+                    UserId = new Snowflake(userData.UserId),
+                    Account = globalUser,
+                    Achievement = x,
+                    AchieveId = x.AchievementId
+                }).ToList();
 
-                        var data = new AchievementUnlock
-                        {
-                            AchievementId = x.AchievementId,
-                            TypeId = PvP,
-                            UserId = userId.RawValue,
-                            Achievement = x
-                        };
-                        await db.AchievementUnlocks.AddAsync(data);
-                    }
-
-                    await db.SaveChangesAsync();
-                }
-            }
-
-            progress.Count += 1;
-            await db.SaveChangesAsync();
-        }
-
-        public async Task PveKill(Snowflake userId)
-        {
-            using var scope = _provider.CreateScope();
-            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var achievements = await db.Achievements.Where(x => x.TypeId == PvE && !x.Once).ToListAsync();
-            var progress = await db.GetOrCreateAchievementProgress(userId.RawValue, PvE);
-            if (progress == null) return;
-            if (achievements == null) return;
-
-            var progCount = progress.Count + 1;
-
-            if (achievements.Any(x => x.Requirement == progCount))
-            {
-                var achieve = achievements.First(x => x.Requirement == progCount);
-                var data = new AchievementUnlock
-                {
-                    AchievementId = achieve.AchievementId,
-                    TypeId = PvE,
-                    UserId = userId.RawValue,
-                    Achievement = achieve
-                };
-                await db.AchievementUnlocks.AddAsync(data);
-                await db.SaveChangesAsync();
-
-                _logger.Log(LogLevel.Info, $"(Achievement Service) {userId.RawValue} scored {achieve.Name} in {userId.RawValue}");
-            }
-            else
-            {
-                var below = achievements.Where(x => x.Requirement < progCount).ToList();
-                if (below.Count != 0)
-                {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == userId.RawValue).ToListAsync();
-                    foreach (var x in below)
-                    {
-                        if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                        var data = new AchievementUnlock
-                        {
-                            AchievementId = x.AchievementId,
-                            TypeId = PvE,
-                            UserId = userId.RawValue,
-                            Achievement = x
-                        };
-                        await db.AchievementUnlocks.AddAsync(data);
-                    }
-
-                    await db.SaveChangesAsync();
-                }
-            }
-
-            progress.Count = progCount;
+            if(toAdd.Count > 0) await db.AchievementUnlocks.AddRangeAsync(toAdd);
             await db.SaveChangesAsync();
         }
     }

@@ -1,109 +1,46 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.Achievement;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using NLog;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
     public partial class AchievementService
     {
-        public async Task ServerLevel(CachedMember user, Account userData, DbService db)
+        public async Task ServerLevel(CachedMember user, Account userData)
         {
-            var achievements =
-                await db.Achievements.Where(x => x.TypeId == Level && !x.Once && !x.Global).ToListAsync();
-            if (achievements == null || achievements.Count == 0) return;
-            var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue).ToListAsync();
-            if (achievements.Any(x => x.Requirement == userData.Level))
-            {
-                var achieve = achievements.First(x => x.Requirement == userData.Level);
-                var check = unlocked.FirstOrDefault(x => x.Achievement == achieve);
-                if (check != null) return;
-                var data = new AchievementUnlock
-                {
-                    AchievementId = achieve.AchievementId,
-                    TypeId = Level,
-                    UserId = user.Id.RawValue,
-                    Achievement = achieve
-                };
-                await db.AchievementUnlocks.AddAsync(data);
-                await db.SaveChangesAsync();
-
-                _logger.Log(LogLevel.Info, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.GuildId.RawValue}");
-            }
-            else
-            {
-                var belowAchieves = achievements
-                    .Where(x => x.Requirement < userData.Level).ToList();
-                if (belowAchieves.Count > 0)
-                {
-                    foreach (var x in belowAchieves)
-                    {
-                        if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                        var data = new AchievementUnlock
-                        {
-                            AchievementId = x.AchievementId,
-                            TypeId = Level,
-                            UserId = user.Id.RawValue,
-                            Achievement = x
-                        };
-                        await db.AchievementUnlocks.AddAsync(data);
-                    }
-
-                    await db.SaveChangesAsync();
-                }
-            }
-        }
-
-        public async Task GlobalLevel(IMember user, AccountGlobal userData, DbService db)
-        {
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var achievements = await db.Achievements
-                .Where(x => x.TypeId == Level && !x.Once && x.Global).ToListAsync();
+                .Where(x => x.Category == AchievementCategory.Level && x.Requirement <= userData.Level)
+                .ToListAsync();
+            
             if (achievements == null || achievements.Count == 0) return;
-
-            if (achievements.Any(x => x.Requirement == userData.Level))
-            {
-                var achieve = achievements.First(x => x.Requirement == userData.Level);
-                var data = new AchievementUnlock
+            var globalUser = await db.GetOrCreateGlobalUserDataAsync(user);
+            var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == userData.UserId).ToListAsync();
+            var toAdd = (from x in achievements
+                where unlocks.All(e => e.AchieveId != x.AchievementId)
+                select new AchievementUnlocked
                 {
-                    AchievementId = achieve.AchievementId,
-                    TypeId = Level,
-                    UserId = user.Id.RawValue,
-                    Achievement = achieve
-                };
-                await db.AchievementUnlocks.AddAsync(data);
-                await db.SaveChangesAsync();
+                    Date = DateTimeOffset.UtcNow,
+                    Id = Guid.NewGuid(),
+                    UserId = new Snowflake(userData.UserId),
+                    Account = globalUser,
+                    Achievement = x,
+                    AchieveId = x.AchievementId
+                }).ToList();
 
-                _logger.Log(LogLevel.Info, $"(Achievement Service) {user.Id.RawValue} scored {achieve.Name} in {user.GuildId.RawValue}");
-            }
-            else
-            {
-                var belowAchieves = achievements.Where(x => x.Requirement < userData.Level).ToList();
-                if (belowAchieves.Count > 0)
-                {
-                    var unlocked = await db.AchievementUnlocks.Where(x => x.UserId == user.Id.RawValue).ToListAsync();
-                    foreach (var x in belowAchieves)
-                    {
-                        if (unlocked.Any(y => y.AchievementId == x.AchievementId)) continue;
-
-                        var data = new AchievementUnlock
-                        {
-                            AchievementId = x.AchievementId,
-                            TypeId = Level,
-                            UserId = user.Id.RawValue,
-                            Achievement = x
-                        };
-                        await db.AchievementUnlocks.AddAsync(data);
-                    }
-
-                    await db.SaveChangesAsync();
-                }
-            }
+            await db.AchievementUnlocks.AddRangeAsync(toAdd);
+            await db.SaveChangesAsync();
         }
     }
 }
