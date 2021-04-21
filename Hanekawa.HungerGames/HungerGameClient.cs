@@ -24,9 +24,8 @@ namespace Hanekawa.HungerGames
         public List<UserAction> PlayAsync(List<HungerGameProfile> participants)
         {
             var results = new List<UserAction>();
-            for (int i = 0; i < participants.Count; i++)
+            foreach (var x in participants)
             {
-                var x = participants[i];
                 var before = x;
                 var result = new UserAction
                 {
@@ -62,38 +61,19 @@ namespace Hanekawa.HungerGames
                 }
 
                 var hgEvent = DeterminationEvent(x);
-                switch (hgEvent)
+                result.Message = hgEvent switch
                 {
-                    case ActionType.Loot:
-                        result.Message = _events.Loot(x);
-                        break;
-                    case ActionType.Attack:
-                        result.Message = _events.Attack(x, participants);
-                        break;
-                    case ActionType.Idle:
-                        result.Message = _events.Idle();
-                        break;
-                    case ActionType.Meet:
-                        result.Message = _events.Idle();
-                        break;
-                    case ActionType.Hack:
-                        result.Message = _events.Hack(x);
-                        break;
-                    case ActionType.Die:
-                        result.Message = _events.Die(x);
-                        break;
-                    case ActionType.Sleep:
-                        result.Message = _events.Sleep(x);
-                        break;
-                    case ActionType.Eat:
-                        result.Message = _events.EatAndDrink(x);
-                        break;
-                    case ActionType.None:
-                        result.Message = _events.Idle();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    ActionType.Loot => _events.Loot(x),
+                    ActionType.Attack => _events.Attack(x, participants),
+                    ActionType.Idle => _events.Idle(),
+                    ActionType.Meet => _events.Idle(),
+                    ActionType.Hack => _events.Hack(x),
+                    ActionType.Die => _events.Die(x),
+                    ActionType.Sleep => _events.Sleep(x),
+                    ActionType.Eat => _events.EatAndDrink(x),
+                    ActionType.None => _events.Idle(),
+                    _ => throw new ArgumentOutOfRangeException("No matching event in event determine switch")
+                };
 
                 if (Fatigue(x, out var fatigue)) result.Message += $"\n{fatigue}";
                 result.After = x;

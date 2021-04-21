@@ -1,6 +1,5 @@
 ﻿using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.HungerGames.Entities;
 
 namespace Hanekawa.HungerGames
 {
