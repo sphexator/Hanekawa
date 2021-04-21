@@ -7,10 +7,13 @@ using Disqord.Rest;
 using Hanekawa.Bot.Commands;
 using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Experience;
+using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.ShipGame;
 using Hanekawa.Entities;
+using Hanekawa.Entities.Color;
 using Hanekawa.Exceptions;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +29,13 @@ namespace Hanekawa.Bot.Service.Game
         private readonly Logger _logger;
         private readonly Random _random;
         private readonly AchievementService _achievement;
-        private readonly Experience _exp;
+        private readonly ExpService _exp;
         private readonly CacheService _cache;
+        private readonly ImageGenerationService _image;
         private int DefaultHealth { get; } = 10;
         private int DefaultDamage { get; } = 1;
 
-        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement, Experience exp, CacheService cache)
+        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement, ExpService exp, CacheService cache, ImageGenerationService image)
         {
             _bot = bot;
             _provider = provider;
@@ -39,6 +43,7 @@ namespace Hanekawa.Bot.Service.Game
             _achievement = achievement;
             _exp = exp;
             _cache = cache;
+            _image = image;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -68,11 +73,9 @@ namespace Hanekawa.Bot.Service.Game
                     Channel = context.Channel
                 });
             if (result.Winner.IsNpc) return result;
-            
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId.Value.RawValue);
             var exp = await _exp.AddExpAsync(context.User, userData, enemy.ExpGain, enemy.CreditGain, db, ExpSource.Other);
             result.Log.AddFirst($"Rewarded: {currencyCfg.ToCurrencyFormat(enemy.CreditGain)} & {exp} experience");
-            
             var embed = LocalEmbedBuilder.FromEmbed(result.Message.Embeds[0]);
             embed.Description = UpdateCombatLog(result.Log.Reverse());
             embed.Color = HanaBaseColor.Red();
@@ -86,8 +89,8 @@ namespace Hanekawa.Bot.Service.Game
             {
                 _cache.ShipGames.TryAdd(game.Channel.Id, ShipGameType.PvE);
                 var result = await BattleAsync(game);
-                if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc) _ = _achievement.PveKill(result.Winner.Id);
-                else _ = _achievement.PvpKill(result.Winner.Id);
+                if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc) _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
+                else _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, true);
                 _cache.ShipGames.TryRemove(game.Channel.Id, out _);
                 return result;
             }
@@ -110,7 +113,7 @@ namespace Hanekawa.Bot.Service.Game
             log.AddFirst($"**{attacker.Name}** VS. **{target.Name}**");
             var msg = await _bot.SendMessageAsync(game.Channel.Id, new LocalMessageBuilder
             {
-                Attachments = new List<LocalAttachment>(), // TODO: Add whenever image gen is made
+                Attachments = new List<LocalAttachment>(new []{new LocalAttachment(await _image.ShipGameBuilder(game.PlayerOne.Avatar, game.PlayerTwo.Avatar), "Game.png") }),
                 Embed = new LocalEmbedBuilder
                 {
                     Color = HanaBaseColor.Lime(),
@@ -118,7 +121,7 @@ namespace Hanekawa.Bot.Service.Game
                     Fields = new List<LocalEmbedFieldBuilder>
                     {
                         new() {Name = attacker.Name, Value = $"{attacker.Health} / {attacker.MaxHealth}"},
-                        new() {Name = attacker.Name, Value = $"{target.Health} / {target.MaxHealth}"}
+                        new() {Name = target.Name, Value = $"{target.Health} / {target.MaxHealth}"}
                     }
                 }
             }.Build());
@@ -136,6 +139,12 @@ namespace Hanekawa.Bot.Service.Game
                 
                 var embed = LocalEmbedBuilder.FromEmbed(msg.Embeds[0]);
                 embed.Description = UpdateCombatLog(log.Reverse());
+                var attackField = embed.Fields.FirstOrDefault(x => x.Name == attacker.Name);
+                
+                if(attackField != null) attackField.Value = $"{attacker.Health} / {attacker.MaxHealth}";
+                var targetField = embed.Fields.FirstOrDefault(x => x.Name == target.Name);
+                if(targetField != null) targetField.Value = $"{target.Health} / {target.MaxHealth}";
+                
                 await msg.ModifyAsync(x => x.Embed = embed.Build());
                 await Task.Delay(2000);
             }

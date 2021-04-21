@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
-using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.HungerGame;
+using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.HungerGames;
 using Hanekawa.HungerGames.Entities;
@@ -26,17 +26,17 @@ namespace Hanekawa.Bot.Service.Game
     public class HungerGameService : INService
     {
         private readonly Hanekawa _bot;
-        private readonly CacheService _cache;
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
         private readonly HungerGameClient _client;
+        private readonly ImageGenerationService _image;
 
-        public HungerGameService(Hanekawa bot, CacheService cache, IServiceProvider provider, HungerGameClient client)
+        public HungerGameService(Hanekawa bot, IServiceProvider provider, HungerGameClient client, ImageGenerationService image)
         {
             _bot = bot;
-            _cache = cache;
             _provider = provider;
             _client = client;
+            _image = image;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -97,7 +97,7 @@ namespace Hanekawa.Bot.Service.Game
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value.RawValue);
                 if (status is not {Stage: GameStage.Signup}) return;
-                var member = _bot.GetMember(e.GuildId.Value, e.UserId);
+                var member = await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.UserId);
                 var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value.RawValue, member.Id.RawValue);
                 if (dbUser == null) return;
                 db.HungerGameProfiles.Remove(dbUser);
@@ -168,7 +168,8 @@ namespace Hanekawa.Bot.Service.Game
         {
             var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            foreach (var x in await db.GuildConfigs.Where(x => x.Premium && x.HungerGameChannel.HasValue).ToListAsync())
+            foreach (var x in await db.GuildConfigs.Where(x => x.Premium.HasValue 
+                                                               && x.Premium.Value > DateTimeOffset.UtcNow).ToListAsync())
             {
                 var cfg = await db.HungerGameStatus.FindAsync(x.GuildId);
                 if (!cfg.EventChannel.HasValue) continue;
@@ -236,7 +237,7 @@ namespace Hanekawa.Bot.Service.Game
             var guild = _bot.GetGuild(cfg.GuildId);
             cfg.Stage = GameStage.OnGoing;
             var participants = await AddDefaultsAsync(db, guild);
-            var channelId = cfg.SignUpChannel ?? cfg.EventChannel.Value;
+            var channelId = cfg.SignUpChannel ?? cfg.EventChannel!.Value;
             var messages = new List<string>();
             var sb = new StringBuilder();
             sb.AppendLine("Sign up is closed and here's the participants for current Hunger Games!");
@@ -366,7 +367,7 @@ namespace Hanekawa.Bot.Service.Game
             var channel = guild.GetChannel(cfg.EventChannel.Value) as CachedTextChannel;
 
             // Make and send images
-            await CreateAndSendImagesAsync(imgCount, tempPart, channel);
+            await CreateAndSendImagesAsync(imgCount, tempPart, channel, guild);
 
             // Send Text
             foreach (var t in messages)
@@ -467,7 +468,7 @@ namespace Hanekawa.Bot.Service.Game
             await db.SaveChangesAsync();
         }
 
-        private static async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, CachedTextChannel channel)
+        private async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, IGuildChannel channel, IGuild guild)
         {
             var attachments = new List<LocalAttachment>();
             for (var i = 0; i < imgCount; i++)
@@ -475,9 +476,8 @@ namespace Hanekawa.Bot.Service.Game
                 var toTake = tempPart.Count >= 25 ? 25 : tempPart.Count;
                 var amount = tempPart.Take(toTake).OrderByDescending(x => x.Before.Alive).ToList();
                 tempPart.RemoveRange(0, toTake);
-                Stream
-                    image = null; //await _image.GenerateEventImageAsync(guild, amount, alive); // TODO: implement image generation
-                attachments.Add(new LocalAttachment(image, "HungerGame.png", false));
+                var image = await _image.GenerateEventImageAsync(guild, tempPart, amount.Count);
+                attachments.Add(new LocalAttachment(image, "HungerGame.png"));
             }
 
             await channel.SendMessageAsync(new LocalMessageBuilder
