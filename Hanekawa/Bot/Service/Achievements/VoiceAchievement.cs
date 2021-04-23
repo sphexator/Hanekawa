@@ -12,13 +12,13 @@ namespace Hanekawa.Bot.Service.Achievements
 {
     public partial class AchievementService
     {
-        public async Task TotalTime(Account userData, TimeSpan time, DbService db)
+        
+        public async Task TotalTime(Account userData, DbService db)
         {
             var achievements = await db.Achievements.Where(x => x.Category == AchievementCategory.Voice && x.Requirement <= userData.StatVoiceTime.TotalMinutes)
                 .OrderBy(x => x.Requirement).ToListAsync();
             if (achievements == null || achievements.Count == 0) return;
             var globalUser = await db.GetOrCreateGlobalUserDataAsync(userData.UserId);
-            var totalTime = Convert.ToInt32(time.TotalMinutes);
             var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == userData.UserId).ToListAsync();
             var toAdd = (from x in achievements
                 where unlocks.All(e => e.AchieveId != x.AchievementId)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
@@ -26,15 +27,17 @@ namespace Hanekawa.Bot.Service.Drop
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
         private readonly ExpService _exp;
+        private readonly AchievementService _achievement;
         private readonly Random _random;
         
-        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random)
+        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random, AchievementService achievement)
         {
             _bot = bot;
             _cache = cache;
             _provider = provider;
             _exp = exp;
             _random = random;
+            _achievement = achievement;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -57,7 +60,7 @@ namespace Hanekawa.Bot.Service.Drop
                 catch (Exception exception)
                 {
                     _logger.Log(LogLevel.Error, exception,
-                        $"(Drop Service) Error in {e.GuildId.Value.RawValue} for drop create - {exception.Message}");
+                        $"Error in {e.GuildId.Value.RawValue} for drop create - {exception.Message}");
                 }
         }
         
@@ -92,7 +95,7 @@ namespace Hanekawa.Bot.Service.Drop
             foreach (var x in emotes.OrderBy(_ => _random.Next()).Take(emotes.Count))
                 await ApplyReactionAsync(triggerMsg, x, claim, type);
 
-            _logger.Log(LogLevel.Info, $"(Drop Service) Drop event created in {guildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"Drop event created in {guildId.RawValue}");
         }
 
         private async Task ClaimAsync(IUserMessage msg, IMember user, DropType type)
@@ -125,6 +128,8 @@ namespace Hanekawa.Bot.Service.Drop
                 await trgMsg.DeleteAsync();
             }
             catch { /* Ignore */}
+
+            await _achievement.DropAchievement(userData, db);
         }
 
         private async Task<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)

@@ -28,6 +28,7 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData.Level);
                 userData.Level += 1;
+                await _achievement.ServerLevel(user, userData, db);
                 _logger.Log(LogLevel.Info,
                     $"(Exp Service | Server) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
             }

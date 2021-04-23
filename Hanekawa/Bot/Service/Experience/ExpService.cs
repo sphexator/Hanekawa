@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
@@ -21,18 +22,20 @@ namespace Hanekawa.Bot.Service.Experience
     public partial class ExpService : INService, IJob
     {
         private readonly CacheService _cache;
+        private readonly AchievementService _achievement;
         private readonly Logger _logger;
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random)
+        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _cache = cache;
             _bot = bot;
             _provider = provider;
             _random = random;
+            _achievement = achievement;
         }
         
         public async Task VoiceExperienceAsync(VoiceStateUpdatedEventArgs e)
@@ -60,14 +63,17 @@ namespace Hanekawa.Bot.Service.Experience
                 {
                     var guild = _bot.GetGuild(e.GuildId);
                     if(!guild.Channels.TryGetValue(before.ChannelId!.Value, out var channel)) return;
-                    var exp = GetExp((IVoiceChannel) channel, DateTime.UtcNow - userData.VoiceExpTime);
+                    var time = DateTime.UtcNow - userData.VoiceExpTime;
+                    var exp = GetExp((IVoiceChannel) channel, time);
+                    userData.StatVoiceTime += time;
                     await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db, ExpSource.Voice);
+                    await _achievement.TotalTime(userData, db);
                 }
             }
             catch (Exception z)
             {
                 _logger.Log(LogLevel.Error, z,
-                    $"(Exp Service) Error in {e.GuildId.RawValue} for Voice - {z.Message}");
+                    $"Error in {e.GuildId.RawValue} for Voice - {z.Message}");
             }
         }
 
@@ -88,7 +94,7 @@ namespace Hanekawa.Bot.Service.Experience
             catch (Exception z)
             {
                 _logger.Log(LogLevel.Error, z,
-                    $"(Exp Service) Error in {e.GuildId.Value.RawValue} for Server Exp - {z.Message}");
+                    $"Error in {e.GuildId.Value.RawValue} for Server Exp - {z.Message}");
             }
         }
 
