@@ -8,7 +8,7 @@ namespace Hanekawa.Bot.Commands
 {
     public class HanekawaCommandContext : DiscordCommandContext
     {
-        public IMember User { get; set; }
+        public IMember Member { get; set; }
         public IGuild Guild { get; set; }
         public ITextChannel Channel { get; set; }
         public IServiceScope Scope { get; set; }
@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Commands
             if(!guild.Channels.TryGetValue(message.ChannelId, out var channel) || channel is not ITextChannel txtChannel) 
                 throw new InvalidOperationException("Bot does not function in dms :)");
 
-            User = member;
+            Member = member;
             Guild = bot.GetGuild(member.GuildId);
             Channel = txtChannel;
         }

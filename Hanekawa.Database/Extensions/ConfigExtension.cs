@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Premium;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database.Extensions
 {
@@ -100,7 +101,8 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, Snowflake guild)
         {
-            var response = await context.ChannelConfigs.FindAsync(guild).ConfigureAwait(false);
+            var response = await context.ChannelConfigs.Include(e => e.AssignReactionRoles)
+                .FirstOrDefaultAsync(e => e.GuildId == guild);
             if (response != null) return response;
 
             var data = new ChannelConfig().DefaultChannelConfig(guild);

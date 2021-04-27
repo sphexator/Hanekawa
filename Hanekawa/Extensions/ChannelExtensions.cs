@@ -17,9 +17,15 @@ namespace Hanekawa.Extensions
             return true;
         }
 
-        public static async Task SendMessageAsync(this IGuildChannel channel, LocalMessage message)
+        public static async ValueTask<IUserMessage> GetOrFetchMessageAsync(this ITextChannel channel, Snowflake id)
         {
-            await (channel.Client as DiscordBot).SendMessageAsync(channel.Id, message);
+            var cache = channel.GetGatewayClient().CacheProvider;
+            if(cache.TryGetMessages(channel.Id, out var messageCache))
+            {
+                if(messageCache.TryGetValue(id, out var cachedUserMessage)) return cachedUserMessage;
+            }
+
+            return await channel.FetchMessageAsync(id) as IUserMessage;
         }
     }
 }

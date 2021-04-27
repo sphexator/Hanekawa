@@ -6,6 +6,7 @@ namespace Hanekawa.Database.Tables.Config
     {
         public Snowflake GuildId { get; set; }
         public Snowflake RoleId { get; set; }
+        public Snowflake? EmoteId { get; set; }
         public bool Exclusive { get; set; } = false;
 
         public string EmoteReactFormat { get; set; }

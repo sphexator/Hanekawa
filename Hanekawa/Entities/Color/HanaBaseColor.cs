@@ -2,6 +2,8 @@
 {
     public static class HanaBaseColor
     {
+        public static Disqord.Color Ok() => new (119, 221, 119);
+        public static Disqord.Color Bad() => new (255, 105, 97);
         public static Disqord.Color Default() => new (155, 89, 182);
         public static Disqord.Color Green() => new (46, 204, 113);
         public static Disqord.Color Red() => new (255, 105, 97);

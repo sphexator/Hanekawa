@@ -94,6 +94,7 @@ namespace Hanekawa.Database
         public DbSet<Board> Boards { get; set; }
         public DbSet<LevelExpReduction> LevelExpReductions { get; set; }
         public DbSet<SelfAssignAbleRole> SelfAssignAbleRoles { get; set; }
+        public DbSet<SelfAssignReactionRole> SelfAssignReactionRoles { get; set; }
 
         //Moderation
         public DbSet<ModLog> ModLogs { get; set; }
@@ -685,7 +686,7 @@ namespace Hanekawa.Database
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.SelfAssignableChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.SelfAssignableMessages).HasConversion<long[]>();
+                x.HasMany(e => e.AssignReactionRoles).WithOne(e => e.Config).OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<ClubConfig>(x =>
             {
@@ -811,6 +812,8 @@ namespace Hanekawa.Database
                 x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.EmoteId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<BoostConfig>(x =>

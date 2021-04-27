@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Collections.Generic;
+using Disqord;
 
 namespace Hanekawa.Database.Tables.Config.Guild
 {
@@ -13,6 +14,6 @@ namespace Hanekawa.Database.Tables.Config.Guild
         public Snowflake? QuestionAndAnswerChannel { get; set; } = null;
 
         public Snowflake? SelfAssignableChannel { get; set; } = null;
-        public Snowflake[] SelfAssignableMessages { get; set; } = null;
+        public List<SelfAssignReactionRole> AssignReactionRoles { get; set; } = null;
     }
 }
