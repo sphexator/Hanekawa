@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
+using Hanekawa.Bot.Commands;
 using Hanekawa.Database;
 using Hanekawa.Entities;
 using Hanekawa.HungerGames;
@@ -19,6 +21,7 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
+using Qmmands;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa
@@ -35,6 +38,12 @@ namespace Hanekawa
             services.AddControllers();
             services.AddSingleton(Configuration);
             services.AddLogging();
+            services.AddPrefixProvider<GuildPrefixProvider>();
+            services.AddCommands(e =>
+            {
+                e.DefaultRunMode = RunMode.Parallel;
+                e.StringComparison = StringComparison.OrdinalIgnoreCase;
+            });
             services.AddDbContextPool<DbService>(x =>
             {
                 x.UseNpgsql(Configuration["connectionString"]);
@@ -50,16 +59,12 @@ namespace Hanekawa
             services.AddSingleton<HttpClient>();
             services.AddInteractivity();
             var assembly = Assembly.GetEntryAssembly();
-            if (assembly is not null)
-            {
-                var serviceList = assembly.GetTypes()
-                    .Where(x => x.GetInterfaces().Contains(typeof(INService))
-                                && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-                foreach (var x in serviceList)
-                {
-                    services.AddSingleton(x);
-                }
-            }
+            if (assembly is null) return;
+            var serviceList = assembly.GetTypes()
+                .Where(x => x.GetInterfaces().Contains(typeof(INService))
+                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList(); 
+            foreach (var x in serviceList) 
+                services.AddSingleton(x);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -81,13 +86,6 @@ namespace Hanekawa
                     "{controller}/{action=Index}/{id?}");
             });
             NLog.Web.NLogBuilder.ConfigureNLog(ConfigureNLog());
-
-            var assembly = Assembly.GetEntryAssembly();
-            var serviceList = assembly.GetTypes()
-                .Where(x => x.GetInterfaces().Contains(typeof(IRequired))
-                            && !x.GetTypeInfo().IsInterface && !x.GetTypeInfo().IsAbstract).ToList();
-            foreach (var t in serviceList)
-                app.ApplicationServices.GetRequiredService(t);
         }
 
         private static readonly ILoggerFactory MyLoggerFactory
@@ -144,7 +142,6 @@ namespace Hanekawa
                 },
                 OptimizeBufferReuse = true
             };
-
             var asyncConsoleTarget = new AsyncTargetWrapper
             {
                 Name = "Async Console Target",
