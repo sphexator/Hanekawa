@@ -103,7 +103,10 @@ namespace Hanekawa.Bot.Service.Experience
             if (e.Member == null) return;
             if (_cache.GlobalCooldown.TryGetValue(e.Member.Id, out _)) return;
             _cache.GlobalCooldown.Set(e.Member.Id, 0, TimeSpan.FromMinutes(1));
-            
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var userData = await db.GetOrCreateGlobalUserDataAsync(e.Member);
+            await AddExpAsync(userData, GetExp(e.Channel), _random.Next(1, 3), db);
         }
 
         public Task Execute(IJobExecutionContext context)
