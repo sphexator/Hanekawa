@@ -10,14 +10,28 @@ namespace Hanekawa.Extensions
     public static class UserExtension
     {
         /// <summary>
-        /// Check hierarchy between two users. Returns true if first user is below second users hierarchy.
+        /// Check hierarchy between two users. Returns true if user is below context hierarchy.
         /// </summary>
-        /// <param name="guild"></param>
         /// <param name="context"></param>
         /// <param name="target"></param>
         /// <returns></returns>
-        public static bool HierarchyCheck(this IGuild guild, IMember context, IMember target) 
-            => GetHierarchy(guild, context) > GetHierarchy(guild, target);
+        public static bool HierarchyCheck(this IMember context, IMember target)
+        {
+            var guild = context.GetGuild();
+            return GetHierarchy(guild, context) > GetHierarchy(guild, target);
+        }
+
+        /// <summary>
+        /// Check hierarchy between a user and a role. Returns true if role is below context hierarchy.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IMember context, IRole role)
+        {
+            var guild = context.GetGuild();
+            return GetHierarchy(guild, context) > role.Position;
+        }
         
         /// <summary>
         /// Check hierarchy between a user and a role. Returns true if user is below your hierarchy.
@@ -28,7 +42,17 @@ namespace Hanekawa.Extensions
         /// <returns></returns>
         public static bool HierarchyCheck(this IGuild guild, IMember context, IRole role)
             => GetHierarchy(guild, context) > role.Position;
-        
+
+        /// <summary>
+        /// Check hierarchy between the bot and a user. Returns true if user is below bot hierarchy.
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IGuild guild, IMember user)
+            => GetHierarchy(guild, guild.GetMember(guild.GetGatewayClient().CurrentUser.Id)) >
+               GetHierarchy(guild, user);
+
         /// <summary>
         /// Get guild from a cached member.
         /// </summary>
@@ -176,7 +200,6 @@ namespace Hanekawa.Extensions
             if (guild.OwnerId == member.Id)
                 return int.MaxValue;
 
-            // TODO: account for broken positions?
             var roles = member.GetRoles();
             return roles.Count != 0
                 ? roles.Values.Max(x => x.Position)

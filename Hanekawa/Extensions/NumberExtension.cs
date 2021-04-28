@@ -28,7 +28,7 @@ namespace Hanekawa.Extensions
             adjustedSize /= 1024;
             return $"{adjustedSize} {SizeSuffixes[mag]}";
         }
-
+        
         public static bool IsDivisible(this int x, int n) 
             => x != 0 && (n % x) == 0;
 

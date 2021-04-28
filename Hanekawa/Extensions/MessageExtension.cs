@@ -5,35 +5,73 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Humanizer;
 
 namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<Snowflake>> FilterMessagesAsync(this CachedTextChannel channel, int amount = 100,
-            CachedMember filterBy = null)
+        public static async Task<List<Snowflake>> FilterMessagesAsync(this ITextChannel channel, int amount = 100,
+            IMember filterBy = null)
         {
             var messages = await channel.FetchMessagesAsync(amount);
             return messages.ToList().FilterMessages(filterBy);
         }
+        
+        public static List<Snowflake> FilterMessages(this IEnumerable<IMessage> messages, IMember filterBy = null) 
+            => (from x in messages 
+                where x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow 
+                where filterBy == null || x.Author.Id.RawValue == filterBy.Id.RawValue 
+                select x.Id.RawValue).Select(dummy => (Snowflake) dummy).ToList();
 
-        public static List<Snowflake> FilterMessages(this List<IMessage> msgs, CachedMember filterBy = null)
+        public static LocalMessage Create(this LocalMessageBuilder builder, LocalEmbedBuilder embed, 
+            LocalMentionsBuilder mention = null)
         {
-            var result = new List<Snowflake>();
-            for (var i = 0; i < msgs.Count; i++)
+            builder.Attachments = null;
+            builder.Content = null;
+            builder.Embed = embed;
+            builder.Mentions = mention ?? LocalMentionsBuilder.None;
+            return builder.Build();
+        }
+        
+        public static LocalMessage Create(this LocalMessageBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null)
+        {
+            builder.Attachments = null;
+            builder.Content = null;
+            builder.Embed = new LocalEmbedBuilder
             {
-                var x = msgs[i];
-                // Checks if message can be deleted
-                // Messages that's older then 14 days or 2 weeks can't be bulk deleted
-                if (x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow)
-                {
-                    // If we're filtering, don't add if its not from the filtered user.
-                    if (filterBy != null && x.Author.Id.RawValue != filterBy.Id.RawValue) continue;
-                    result.Add(x.Id.RawValue);
-                }
-            }
+                Color = color,
+                Description = message.Truncate(2000)
+            };
+            builder.Mentions = mention ?? LocalMentionsBuilder.None;
+            return builder.Build();
+        }
 
-            return result;
+        public static async Task<bool> TryDeleteMessageAsync(this IMessage message)
+        {
+            try
+            {
+                await message.DeleteAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static async Task<bool> TryDeleteMessagesAsync(this ITextChannel channel, IEnumerable<Snowflake> messageIds)
+        {
+            try
+            {
+                await channel.DeleteMessagesAsync(messageIds);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

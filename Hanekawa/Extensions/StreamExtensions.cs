@@ -38,16 +38,14 @@ namespace Hanekawa.Extensions
         {
             var bufferSize = 81920;
 
-            if (stream.CanSeek)
+            if (!stream.CanSeek) return bufferSize;
+            var length = stream.Length;
+            var position = stream.Position;
+            if (length <= position) bufferSize = 1;
+            else
             {
-                var length = stream.Length;
-                var position = stream.Position;
-                if (length <= position) bufferSize = 1;
-                else
-                {
-                    var remaining = length - position;
-                    if (remaining > 0) bufferSize = (int)Math.Min(bufferSize, remaining);
-                }
+                var remaining = length - position;
+                if (remaining > 0) bufferSize = (int)Math.Min(bufferSize, remaining);
             }
 
             return bufferSize;
@@ -63,21 +61,20 @@ namespace Hanekawa.Extensions
         public static FileType GetKnownFileType(this MemoryStream stream)
         {
             ReadOnlySpan<byte> data = stream.ToArray().AsSpan();
-            foreach (var check in KnownFileHeaders)
+            foreach (var (fileType, bytes) in KnownFileHeaders)
             {
-                if (data.Length >= check.Value.Length)
+                if (data.Length < bytes.Length) continue;
+                var slice = data[..bytes.Length];
+                if (slice.SequenceEqual(bytes))
                 {
-                    var slice = data.Slice(0, check.Value.Length);
-                    if (slice.SequenceEqual(check.Value))
-                    {
-                        return check.Key;
-                    }
+                    return fileType;
                 }
             }
 
             return FileType.Unknown;
         }
 	}
+    
     public enum FileType
     {
         Unknown,

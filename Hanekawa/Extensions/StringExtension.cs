@@ -10,10 +10,7 @@ namespace Hanekawa.Extensions
         private static readonly Regex FilterRegex =
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        public static string SanitizeEveryone(this string str) =>
-            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
-
+        
         public static bool IsPictureUrl(this string str)
         {
             var isGif = str.EndsWith(".gif");
@@ -22,10 +19,8 @@ namespace Hanekawa.Extensions
             var isJpg = str.EndsWith(".jpg");
 
             if (isGif) return true;
-            if (isPng) return true;
-            if (isJpeg) return true;
-            if (isJpg) return true;
-            return false;
+            if (isPng) return true; 
+            return isJpeg || isJpg;
         }
 
         public static bool IsDiscordInvite(this string str, out string invite)
@@ -144,7 +139,7 @@ namespace Hanekawa.Extensions
 
                 // Includes "clever" isLetter check.
                 prevLower = strChar == strLower && strLower != strUpper;
-                prevSeparator = strChar == '_' || strChar == ' ';
+                prevSeparator = strChar is '_' or ' ';
 
                 ++strIdx;
             }
