@@ -14,7 +14,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -270,34 +269,58 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 await db.SelfAssignAbleRoles.AddAsync(data);
                 await db.SaveChangesAsync();
                 if (emote != null)
+                {
                     await Reply($"Added {role.Name} as a self-assignable role with emote {emote}!", HanaBaseColor.Ok());
+                    await UpdateOrCreateNewEmbeds(context.Guild, data, emote, db);
+                }
                 else await Reply($"Added {role.Name} as a self-assignable role!", HanaBaseColor.Ok());
             }
 
-            private async ValueTask<bool> UpdateEmbeds(IGatewayGuild guild, SelfAssignAbleRole update, IGuildEmoji emote, DbService db)
+            private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update, IEmoji emote, DbService db)
             {
                 var cfg = await db.GetOrCreateChannelConfigAsync(update.GuildId);
                 if (!cfg.SelfAssignableChannel.HasValue) return false;
-                guild.Channels.TryGetValue(cfg.SelfAssignableChannel.Value, out var channel);
-                var textChannel = channel as CachedTextChannel;
-                var reactionRoles = cfg.AssignReactionRoles.FirstOrDefault(x => x.Reactions.Count < 20 && x.Exclusive == update.Exclusive);
-                if (reactionRoles == null) return false;
-                
-                var message = await textChannel.GetOrFetchMessageAsync(reactionRoles.MessageId);
-                var embed = LocalEmbedBuilder.FromEmbed(message.Embeds[0]);
-                embed = _assignService.ReactionEmbedBuilder(
-                    embed.Description.Split("-",
-                        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id);
-                await message.ModifyAsync(x => x.Embed = embed.Build());
                 try
                 {
+                    if(!guild.Channels.TryGetValue(cfg.SelfAssignableChannel.Value, out var channel)) return false;
+                    var textChannel = channel as CachedTextChannel;
+                    var reactionRoles = cfg.AssignReactionRoles.FirstOrDefault(x => x.Reactions.Count < 20 && x.Exclusive == update.Exclusive);
+                    IUserMessage message;
+                    if (reactionRoles == null)
+                    {
+                        var strings = new List<string>();
+                        if (!guild.Roles.TryGetValue(update.RoleId, out var role)) return false;
+                        strings.Add(LocalCustomEmoji.TryParse(update.EmoteMessageFormat, out var result) 
+                            ? $"{result}{role.Mention}" 
+                            : $"{role.Mention}");
+                        message = await textChannel.SendMessageAsync(
+                        new LocalMessageBuilder().Create(_assignService.ReactionEmbedBuilder(strings, guild.Id)));
+                        cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
+                        {
+                            GuildId = guild.Id,
+                            ChannelId = channel.Id,
+                            MessageId = message.Id,
+                            Exclusive = update.Exclusive,
+                            Reactions = new List<string>{emote.GetMessageFormat()}
+                        });
+                    }
+                    else
+                    {
+                        message = await textChannel.GetOrFetchMessageAsync(reactionRoles.MessageId);
+                        var embed = LocalEmbedBuilder.FromEmbed(message.Embeds[0]);
+                        embed = _assignService.ReactionEmbedBuilder(
+                            embed.Description.Split("-", 
+                                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id); 
+                        await message.ModifyAsync(x => x.Embed = embed.Build());
+                        reactionRoles.Reactions.Add(emote.GetMessageFormat());
+                    }
+                    await db.SaveChangesAsync();
                     await message.AddReactionAsync(emote);
                 }
                 catch (Exception e)
                 {
                     return false;
-                }
-
+                }   
                 return true;
             }
         }
