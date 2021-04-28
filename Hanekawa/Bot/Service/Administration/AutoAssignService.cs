@@ -41,7 +41,9 @@ namespace Hanekawa.Bot.Service.Administration
             var roles = await db.SelfAssignAbleRoles.Where(x => x.GuildId == context.Guild.Id)
                 .OrderByDescending(x => x.Exclusive).ToListAsync();
             if (roles.Count == 0) return false;
-
+            db.SelfAssignReactionRoles.RemoveRange(cfg.AssignReactionRoles);
+            cfg.AssignReactionRoles = new List<SelfAssignReactionRole>();
+            await db.SaveChangesAsync();
             var nonExclusiveRoles = roles.Where(x => !x.Exclusive).ToList();
             var exclusiveRoles = roles.Where(x => x.Exclusive).ToList();
             for (var i = 0; i < nonExclusiveRoles.Count;)
@@ -114,7 +116,7 @@ namespace Hanekawa.Bot.Service.Administration
                 {
                     await message.AddReactionAsync(x);
                 }
-
+                
                 cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
                 {
                     Exclusive = true,
