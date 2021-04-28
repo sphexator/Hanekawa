@@ -13,7 +13,7 @@ namespace Hanekawa.Bot
             ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client) 
             : base(options, logger, prefixes, queue, commands, services, client)
         {
-
+            
         }
     }
 }

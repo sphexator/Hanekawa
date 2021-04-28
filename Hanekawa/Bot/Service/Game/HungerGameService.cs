@@ -264,11 +264,12 @@ namespace Hanekawa.Bot.Service.Game
                 sb.Clear();
             }
             if(sb.Length > 0) messages.Add(sb.ToString());
-            if (guild.Channels.TryGetValue(channelId, out var channel)) 
+            if (guild.Channels.TryGetValue(channelId, out var channel))
             {
+                var textChannel = channel as ITextChannel;
                 foreach (var x in messages)
                 { 
-                    await channel.SendMessageAsync(new LocalMessageBuilder
+                    await textChannel.SendMessageAsync(new LocalMessageBuilder
                     {
                         Content = x,
                         Attachments = null,
@@ -468,7 +469,7 @@ namespace Hanekawa.Bot.Service.Game
             await db.SaveChangesAsync();
         }
 
-        private async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, IGuildChannel channel, IGuild guild)
+        private async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, IMessageChannel channel, IGuild guild)
         {
             var attachments = new List<LocalAttachment>();
             for (var i = 0; i < imgCount; i++)

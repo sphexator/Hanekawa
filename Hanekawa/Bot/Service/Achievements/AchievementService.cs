@@ -6,7 +6,6 @@ namespace Hanekawa.Bot.Service.Achievements
 {
     public partial class AchievementService : INService
     {
-        // TODO: Redesign all of achievements
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
 

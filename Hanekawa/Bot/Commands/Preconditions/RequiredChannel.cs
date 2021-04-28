@@ -20,8 +20,8 @@ namespace Hanekawa.Bot.Commands.Preconditions
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
             if (_ is not HanekawaCommandContext context) return CheckResult.Failed("woopsie command context wrong :)");
-            var roles = context.User.GetRoles();
-            if (Discord.Permissions.CalculatePermissions(context.Guild, context.User, roles.Values).Has(Permission.ManageGuild))
+            var roles = context.Member.GetRoles();
+            if (Discord.Permissions.CalculatePermissions(context.Guild, context.Member, roles.Values).Has(Permission.ManageGuild))
                 return CheckResult.Successful;
 
             var ignoreAll = IgnoreAll.TryGetValue(context.Guild.Id.RawValue, out var status);

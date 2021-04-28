@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             }
             return toReturn;
         }
-
+        
         private async Task<List<string>> GetWarnsAsync(IMember user, WarnLogType type, int baseLength, DbService db)
         {
             var warnings = type == WarnLogType.Full
@@ -124,6 +124,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 sb.AppendLine($"Type: {x.Type}");
                 sb.AppendLine($"Moderator: {await _bot.GetOrFetchMemberAsync(user.GuildId, x.Moderator)} ({x.Moderator})");
                 sb.AppendLine($"Reason: {x.Reason}");
+                sb.AppendLine($"Time: {x.Time.Humanize()}");
             }
 
             return toReturn;

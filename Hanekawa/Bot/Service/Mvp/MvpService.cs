@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
@@ -150,7 +151,8 @@ namespace Hanekawa.Bot.Service.Mvp
                     _logger.Log(LogLevel.Error, "(MVP Service) Couldn't find announcement channel");
                     return;
                 }
-
+                
+                var textChannel = channel as ITextChannel;
                 var stringBuilder = new StringBuilder();
                 for (var j = 0; j < mvp.Count; j++)
                 {
@@ -164,8 +166,8 @@ namespace Hanekawa.Bot.Service.Mvp
 
                     stringBuilder.AppendLine($"{oldMvpUser?.Name ?? "User Left"} => {newMvpUser.Name}");
                 }
-
-                await channel.SendMessageAsync(new LocalMessageBuilder
+                
+                await textChannel.SendMessageAsync(new LocalMessageBuilder
                 {
                     Attachments = null,
                     Content = $"New Weekly MVP!\n {stringBuilder}",

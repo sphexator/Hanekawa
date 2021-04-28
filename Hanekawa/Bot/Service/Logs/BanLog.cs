@@ -70,7 +70,7 @@ namespace Hanekawa.Bot.Service.Logs
                     Attachments = null,
                     Content = null
                 }.Build());
-                caseId.MessageId = msg.Id.RawValue;
+                caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
             }
             catch (Exception exception)
