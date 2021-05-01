@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             }
 
             bool addedRole;
-            var gUser = Context.Member;
+            var gUser = Context.Author;
             if (dbRole.Exclusive)
             {
                 var roles = await db.SelfAssignAbleRoles
@@ -64,13 +64,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             if (addedRole)
             {
                 await ReplyAndDeleteAsync(
-                    $"Added {role.Name} to {Context.Member.Mention}",
+                    $"Added {role.Name} to {Context.Author.Mention}",
                     HanaBaseColor.Ok(), TimeSpan.FromSeconds(10));
             }
             else
             {
                 await ReplyAndDeleteAsync(
-                    $"Couldn't add {role.Name} to {Context.Member.Mention}, missing permission or role position?",
+                    $"Couldn't add {role.Name} to {Context.Author.Mention}, missing permission or role position?",
                     HanaBaseColor.Bad(), TimeSpan.FromSeconds(10));
             }
         }
@@ -81,7 +81,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
-            if (Context.Member.GetRoles().Values.FirstOrDefault(x => x.Id.RawValue == role.Id.RawValue) == null) return;
+            if (Context.Author.GetRoles().Values.FirstOrDefault(x => x.Id.RawValue == role.Id.RawValue) == null) return;
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
@@ -93,16 +93,16 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 return;
             }
 
-            if (await Context.Member.TryRemoveRoleAsync(role))
+            if (await Context.Author.TryRemoveRoleAsync(role))
             {
                 await ReplyAndDeleteAsync(
-                    $"Removed {role.Name} from {Context.Member.Mention}", HanaBaseColor.Ok(),
+                    $"Removed {role.Name} from {Context.Author.Mention}", HanaBaseColor.Ok(),
                     TimeSpan.FromSeconds(10));
             }
             else
             {
                 await ReplyAndDeleteAsync(
-                    $"Couldn't remove {role.Name} from {Context.Member.Mention}, missing permission or role position?",
+                    $"Couldn't remove {role.Name} from {Context.Author.Mention}, missing permission or role position?",
                     HanaBaseColor.Bad(), TimeSpan.FromSeconds(10));
             }
         }
@@ -198,7 +198,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
             public async Task RemoveSelfAssignAbleRoleAsync([Remainder] IRole role)
             {
-                if (!Context.Member.HierarchyCheck(role))
+                if (!Context.Author.HierarchyCheck(role))
                 {
                     await Reply("Can't remove a role that's higher then your highest role.",
                         HanaBaseColor.Bad());
@@ -224,7 +224,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             private async Task AddSelfAssignAbleRoleAsync(HanekawaCommandContext context, IRole role, bool exclusive,
                 ICustomEmoji emote = null)
             {
-                if (!context.Member.HierarchyCheck(role))
+                if (!context.Author.HierarchyCheck(role))
                 {
                     await Reply("Can't add a role that's higher then your highest role.", HanaBaseColor.Bad());
                     return;

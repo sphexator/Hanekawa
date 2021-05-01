@@ -48,9 +48,9 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequireAuthorGuildPermissions(Permission.BanMembers | Permission.ManageMessages)]
         public async Task BanAsync(IMember user, [Remainder] string reason = "No reason applied")
         {
-            if (user == Context.Member) return;
+            if (user == Context.Author) return;
             await Context.Message.DeleteAsync();
-            if (Context.Member == user) return;
+            if (Context.Author == user) return;
             if (!Context.Guild.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
@@ -59,19 +59,19 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 return;
             }
 
-            if (!Context.Member.HierarchyCheck(user))
+            if (!Context.Author.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(
                     new LocalMessageBuilder().Create(
-                        $"{Context.Member.Mention}, can't ban someone that's equal or more power than you.",
+                        $"{Context.Author.Mention}, can't ban someone that's equal or more power than you.",
                         HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
                 return;
             }
 
             var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            bans.Set(user.Id.RawValue, Context.Member.Id, TimeSpan.FromMinutes(1));
+            bans.Set(user.Id.RawValue, Context.Author.Id, TimeSpan.FromMinutes(1));
             _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
-            await Context.Guild.CreateBanAsync(user.Id.RawValue, $"{Context.Member.Id.RawValue} - {reason}", 1);
+            await Context.Guild.CreateBanAsync(user.Id.RawValue, $"{Context.Author.Id.RawValue} - {reason}", 1);
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 HanaBaseColor.Ok()), TimeSpan.FromSeconds(20));
@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 try
                 {
                     var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-                    bans.Set(userId, Context.Member.Id, TimeSpan.FromMinutes(1));
+                    bans.Set(userId, Context.Author.Id, TimeSpan.FromMinutes(1));
                     _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
                     await Context.Guild.CreateBanAsync(userId, reason, 1);
                     await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequireAuthorGuildPermissions(Permission.KickMembers)]
         public async Task KickAsync(IMember user, [Remainder] string reason = "No reason applied")
         {
-            if (user == Context.Member) return;
+            if (user == Context.Author) return;
             await Context.Message.TryDeleteMessageAsync();
             if (!Context.Guild.HierarchyCheck(user))
             {
@@ -125,15 +125,15 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 return;
             }
 
-            if (!Context.Member.HierarchyCheck(user))
+            if (!Context.Author.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
-                        $"{Context.Member.Mention}, can't kick someone that's equal or more power than you.",
+                        $"{Context.Author.Mention}, can't kick someone that's equal or more power than you.",
                         Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            await user.KickAsync(new DefaultRestRequestOptions{Reason = $"{Context.Member} ({Context.Member.Id}) reason: {reason}"});
+            await user.KickAsync(new DefaultRestRequestOptions{Reason = $"{Context.Author} ({Context.Author.Id}) reason: {reason}"});
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
                 $"Kicked {user.Mention} from {Context.Guild.Name}.",
                 Color.Green), TimeSpan.FromSeconds(20));
@@ -179,11 +179,11 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
         public async Task SoftBanAsync(IMember user)
         {
-            if (Context.Member == user) return;
+            if (Context.Author == user) return;
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            if (!await _mute.Mute(user, Context.Member, "No Reason Specified (Soft ban)", db))
+            if (!await _mute.Mute(user, Context.Author, "No Reason Specified (Soft ban)", db))
             {
                 await ReplyAndDeleteAsync(new LocalMessageBuilder().Create("Couldn't mute user.", Color.Red),
                     TimeSpan.FromSeconds(20));
@@ -201,12 +201,12 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         public async Task MuteAsync(IMember user, TimeSpan? duration = null,
             [Remainder] string reason = "No reason")
         {
-            if (user == Context.Member) return;
+            if (user == Context.Author) return;
             await Context.Message.TryDeleteMessageAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             duration ??= await _mute.GetMuteTime(user, db);
 
-            var muteRes = await _mute.Mute(user, Context.Member, reason, db, duration.Value);
+            var muteRes = await _mute.Mute(user, Context.Author, reason, db, duration.Value);
             if (muteRes)
             {
                 await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
@@ -229,7 +229,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
         public async Task UnMuteAsync(IMember user, [Remainder] string reason = "No reason applied")
         {
-            if (user == Context.Member) return;
+            if (user == Context.Author) return;
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -254,10 +254,10 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
         public async Task WarnAsync(IMember user, [Remainder] string reason = "No reason")
         {
-            if (user == Context.Member) return;
+            if (user == Context.Author) return;
             await Context.Message.TryDeleteMessageAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            await _warn.Warn(user, Context.Member, reason, WarnReason.Warned, true, db);
+            await _warn.Warn(user, Context.Author, reason, WarnReason.Warned, true, db);
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create($"Warned {user.Mention}", HanaBaseColor.Lime()),
                 TimeSpan.FromSeconds(20));
         }
@@ -320,7 +320,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             await UpdateMessage(modCase, db, reason);
 
             modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
-            modCase.ModId = Context.Member.Id;
+            modCase.ModId = Context.Author.Id;
             await db.SaveChangesAsync();
         }
 
@@ -363,7 +363,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             var modField = embed.Fields.FirstOrDefault(x => x.Name == "Moderator");
             var reasonField = embed.Fields.FirstOrDefault(x => x.Name == "Reason");
 
-            if (modField != null) modField.Value = Context.Member.Mention;
+            if (modField != null) modField.Value = Context.Author.Mention;
             if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
 
             await updMsg.ModifyAsync(m => m.Embed = embed.Build());
