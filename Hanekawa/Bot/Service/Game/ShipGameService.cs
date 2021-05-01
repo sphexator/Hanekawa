@@ -55,14 +55,14 @@ namespace Hanekawa.Bot.Service.Game
             if (chance < 40) return null;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(context.Member);
+            var userData = await db.GetOrCreateUserData(context.Author);
             var gameClass = await db.GameClasses.FindAsync(userData.Class);
             var enemies = await db.GameEnemies.Where(x => !x.Elite && !x.Rare).ToListAsync();
             var enemy = enemies[_random.Next(enemies.Count)];
             var enemyClass = await db.GameClasses.FindAsync(enemy.ClassId);
             var result = await InitializeBattleAsync(new ShipGame
                 {
-                    PlayerOne = new ShipUser(context.Member, userData.Level, gameClass, GetDamage(userData.Level),
+                    PlayerOne = new ShipUser(context.Author, userData.Level, gameClass, GetDamage(userData.Level),
                         GetHealth(userData.Level, gameClass)),
                     PlayerTwo = new ShipUser(enemy, userData.Level, enemyClass, GetDamage(userData.Level, enemy),
                         GetHealth(userData.Level, enemy, enemyClass)),
@@ -73,8 +73,8 @@ namespace Hanekawa.Bot.Service.Game
                     Channel = context.Channel
                 });
             if (result.Winner.IsNpc) return result;
-            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId.Value.RawValue);
-            var exp = await _exp.AddExpAsync(context.Member, userData, enemy.ExpGain, enemy.CreditGain, db, ExpSource.Other);
+            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId);
+            var exp = await _exp.AddExpAsync(context.Author, userData, enemy.ExpGain, enemy.CreditGain, db, ExpSource.Other);
             result.Log.AddFirst($"Rewarded: {currencyCfg.ToCurrencyFormat(enemy.CreditGain)} & {exp} experience");
             var embed = LocalEmbedBuilder.FromEmbed(result.Message.Embeds[0]);
             embed.Description = UpdateCombatLog(result.Log.Reverse());
