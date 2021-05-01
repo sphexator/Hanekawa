@@ -17,8 +17,8 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Hanekawa.Bot.Service.Administration
 {
@@ -27,9 +27,9 @@ namespace Hanekawa.Bot.Service.Administration
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _lock = new (1, 1);
 
-        public AutoAssignService(ILogger logger, DiscordClientBase client, IServiceProvider provider) : base(logger, client)
+        public AutoAssignService(ILogger<AutoAssignService> logger, DiscordClientBase client, IServiceProvider provider) : base(logger, client)
         {
             _provider = provider;
             _bot = client as Hanekawa;

@@ -11,7 +11,6 @@ using Hanekawa.Bot.Service.Administration.Mute;
 using Hanekawa.Bot.Service.Board;
 using Hanekawa.Bot.Service.Boost;
 using Hanekawa.Bot.Service.Cache;
-using Hanekawa.Bot.Service.Club;
 using Hanekawa.Bot.Service.Drop;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.Game;
@@ -39,10 +38,10 @@ namespace Hanekawa.Bot.Service
         private readonly IServiceProvider _provider;
         private readonly VoiceRoleService _voiceRole;
 
-        public EventHandler(ILogger logger, DiscordClientBase client, ExpService experience, CacheService cache,
+        public EventHandler(ILogger<EventHandler> logger, DiscordClientBase client, ExpService experience, CacheService cache,
             LogService logService, BlacklistService blacklist, MuteService mute, BoardService boardService,
-            BoostService boostService, DropService dropService, HungerGameService hungerGame, IServiceProvider provider,
-            ClubService club, AutoAssignService autoAssign, VoiceRoleService voiceRole) : base(logger, client)
+            BoostService boostService, DropService dropService, HungerGameService hungerGame, IServiceProvider provider, 
+            VoiceRoleService voiceRole) : base(logger, client)
         {
             _experience = experience;
             _cache = cache;
@@ -79,7 +78,7 @@ namespace Hanekawa.Bot.Service
             foreach (var x in db.GuildConfigs)
             {
                 var prefixes = _cache.GuildPrefix.GetOrAdd(new Snowflake(x.GuildId), new HashSet<IPrefix>());
-                foreach (var value in x.Prefix) prefixes.Add(new StringPrefix(value));
+                prefixes.Add(new StringPrefix(x.Prefix));
                 _cache.GuildEmbedColors.AddOrUpdate(new Snowflake(x.GuildId), new Color(x.EmbedColor),
                     (_, _) => new Color(x.EmbedColor));
             }
