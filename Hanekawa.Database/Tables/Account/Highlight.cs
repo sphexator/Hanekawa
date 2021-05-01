@@ -1,4 +1,5 @@
-﻿using Disqord;
+﻿using System.Collections.Generic;
+using Disqord;
 
 namespace Hanekawa.Database.Tables.Account
 {
@@ -6,6 +7,6 @@ namespace Hanekawa.Database.Tables.Account
     {
         public Snowflake GuildId { get; set; }
         public Snowflake UserId { get; set; }
-        public string[] Highlights { get; set; }
+        public List<string> Keywords { get; set; }
     }
 }
