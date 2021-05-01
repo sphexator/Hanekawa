@@ -29,7 +29,7 @@ namespace Hanekawa.Database.Extensions
             await context.SaveChangesAsync().ConfigureAwait(false);
             return await context.ClubInfos.FirstOrDefaultAsync(x => x.GuildId == guild.Id && x.Leader == user.Id).ConfigureAwait(false);
         }
-
+        
         public static async Task<Club> GetClubAsync(this DbService context, CachedMember user, Guid id)
         {
             var check = await context.ClubInfos.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == user.GuildId).ConfigureAwait(false);

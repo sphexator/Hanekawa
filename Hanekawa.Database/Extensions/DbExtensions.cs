@@ -15,7 +15,7 @@ namespace Hanekawa.Database.Extensions
         {
             var userdata = await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
             if (userdata != null) return userdata;
-
+        
             var data = new EventPayout
             {
                 GuildId = user.GuildId,
@@ -33,12 +33,12 @@ namespace Hanekawa.Database.Extensions
                 return data;
             }
         }
-
+        
         public static async Task<Board> GetOrCreateBoardAsync(this DbService context, Snowflake guild, IMessage msg)
         {
             var check = await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);
             if (check != null) return check;
-
+        
             var data = new Board
             {
                 GuildId = guild,
@@ -58,13 +58,13 @@ namespace Hanekawa.Database.Extensions
                 return data;
             }
         }
-
+        
         public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, CachedGuild guild,
             DateTime time)
         {
             var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
             var nr = counter == 0 ? 1 : counter + 1;
-
+        
             var data = new Suggestion
             {
                 Id = nr,

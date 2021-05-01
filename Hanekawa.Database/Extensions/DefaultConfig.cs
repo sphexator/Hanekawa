@@ -12,7 +12,7 @@ namespace Hanekawa.Database.Extensions
         internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
-            cfg.Prefix = new List<string>{ "h." };
+            cfg.Prefix = "h.";
             cfg.Premium = null;
             cfg.EmbedColor = 10181046;
             return cfg;

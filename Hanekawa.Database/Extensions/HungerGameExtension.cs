@@ -11,7 +11,7 @@ namespace Hanekawa.Database.Extensions
     {
         public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, CachedGuild guild) =>
             await GetOrCreateHungerGameStatus(db, guild.Id);
-
+        
         public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, Snowflake guildId)
         {
             var response = await db.HungerGameStatus.FindAsync(guildId);
