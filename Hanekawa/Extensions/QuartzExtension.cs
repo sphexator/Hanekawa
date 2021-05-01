@@ -16,12 +16,12 @@ namespace Hanekawa.Extensions
             services.AddSingleton<IJobFactory, QuartzJonFactory>();
             services.Add(jobs.Select(jobType => new ServiceDescriptor(jobType, jobType, ServiceLifetime.Singleton)));
 
-            services.AddSingleton(provider =>
+            services.AddSingleton(async provider =>
             {
                 var schedulerFactory = new StdSchedulerFactory();
-                var scheduler = schedulerFactory.GetScheduler().Result;
+                var scheduler = await schedulerFactory.GetScheduler();
                 scheduler.JobFactory = provider.GetService<IJobFactory>() ?? throw new InvalidOperationException("No job factory in service provider");
-                scheduler.Start();
+                await scheduler.Start();
                 return scheduler;
             });
         }
