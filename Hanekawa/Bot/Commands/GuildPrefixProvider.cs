@@ -26,11 +26,7 @@ namespace Hanekawa.Bot.Commands
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(message.GuildId.Value);
-            collection = new HashSet<IPrefix>();
-            foreach (var x in cfg.Prefix)
-            {
-                collection.Add(new StringPrefix(x));
-            }
+            collection = new HashSet<IPrefix> {new StringPrefix(cfg.Prefix)};
             cache.GuildPrefix.AddOrUpdate(message.GuildId.Value, collection, (_, _) => collection);
             return collection;
         }
