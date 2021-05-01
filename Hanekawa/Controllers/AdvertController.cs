@@ -50,10 +50,6 @@ namespace Hanekawa.Controllers
         {
             try
             {
-                // Check if header has right agent
-                if (!Request.Headers.TryGetValue("User-Agent", out var agent)) return BadRequest();
-                if (!agent.ToString().StartsWith("Top.gg"))
-                    return BadRequest(); // If not send bad request, only accepting DBL user agents
                 // Check if user has a authorization in the header, else return forbidden
                 // we only accept requests with an authorization in the header
                 if (!Request.Headers.TryGetValue("Authorization", out var authCode))

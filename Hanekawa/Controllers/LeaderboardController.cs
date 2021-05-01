@@ -5,7 +5,6 @@ using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Disqord.Gateway;
-using Hanekawa.Bot.Service;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Extensions;
