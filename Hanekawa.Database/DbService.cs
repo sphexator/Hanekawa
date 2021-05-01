@@ -27,8 +27,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Hanekawa.Database
 {
     public class DbService : DbContext
-    {
-        public DbService(DbContextOptions options) : base(options) { }
+    { 
+        public DbService(DbContextOptions<DbService> options) : base(options) { }
 
         // Account
         public DbSet<Account> Accounts { get; set; }
@@ -206,8 +206,8 @@ namespace Hanekawa.Database
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Creator).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Winner).HasConversion(c => c.Select(item => item).ToArray(),
-                    wops => wops.Select(item => item).ToArray());
+                x.Property(e => e.Winner).HasConversion(c => c.Select(item => item.RawValue).ToArray(),
+                    wops => wops.Select(item => new Snowflake(item)).ToArray());
             });
         }
 
@@ -500,7 +500,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.HasOne(e => e.Achievement).WithMany(e => e.Unlocked);
-                x.HasOne(e => e.Account).WithMany(e => e.AchievementUnlocks);
+               x.HasOne(e => e.Account).WithMany(e => e.AchievementUnlocks);
             });
         }
 
@@ -520,6 +520,8 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
+                x.Property(e => e.Id).HasConversion(snowflake => (long)snowflake.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -584,8 +586,8 @@ namespace Hanekawa.Database
                 x.Property(e => e.Uploader).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Type).HasConversion(
-                v => v.ToString(),
-                v => (ApprovalQueueType)Enum.Parse(typeof(ApprovalQueueType), v));
+                v => v.ToString(), 
+                v => (ApprovalQueueType)Enum.Parse(typeof(ApprovalQueueType), v)); 
             });
         }
 
@@ -643,7 +645,7 @@ namespace Hanekawa.Database
             modelBuilder.Entity<GuildConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.Premium).HasDefaultValue(false);
+                x.Property(e => e.Premium).HasDefaultValue(null);
                 x.Property(e => e.EmbedColor).HasConversion<int>();
                 x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
@@ -703,6 +705,10 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.CurrencySignId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.SpecialCurrencySignId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
             });
@@ -732,6 +738,8 @@ namespace Hanekawa.Database
                 x.Property(e => e.LogMsg).HasConversion(snowflake => (long)snowflake.Value.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.LogReaction).HasConversion(snowflake => (long)snowflake.Value.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.LogVoice).HasConversion(snowflake => (long)snowflake.Value.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<SuggestionConfig>(x =>
@@ -814,6 +822,18 @@ namespace Hanekawa.Database
                 x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.EmoteId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+            });
+            modelBuilder.Entity<SelfAssignReactionRole>(x =>
+            {
+                x.HasKey(e => new {e.GuildId, e.ChannelId, e.MessageId});
+                x.Property(e => e.GuildId).HasConversion(snowflake => (long) snowflake.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.ChannelId).HasConversion(snowflake => (long) snowflake.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.MessageId).HasConversion(snowflake => (long) snowflake.RawValue,
+                    snowflake => new Snowflake((ulong) snowflake));
+                x.Property(e => e.ConfigId).HasConversion(snowflake => (long) snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<BoostConfig>(x =>
