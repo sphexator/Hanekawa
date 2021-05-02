@@ -7,7 +7,7 @@ using Hanekawa.Extensions;
 
 namespace Hanekawa.Bot.Commands
 {
-    public class HanekawaCommandModule : DiscordModuleBase<HanekawaCommandContext>
+    public abstract class HanekawaCommandModule : DiscordModuleBase<HanekawaCommandContext>
     {
         protected async Task<IUserMessage> ReplyAndDeleteAsync(string message, Color color, TimeSpan? timeout = null) =>
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(message, color), timeout);
@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Commands
             try
             {
                 _ = Task.Delay(timeout.Value)
-                    .ContinueWith(_ => message.DeleteAsync().ConfigureAwait(false))
+                    .ContinueWith(async _ => await message.DeleteAsync().ConfigureAwait(false))
                     .ConfigureAwait(false);
             }
             catch
@@ -29,16 +29,7 @@ namespace Hanekawa.Bot.Commands
             return message;
         }
 
-        protected override ValueTask AfterExecutedAsync()
-        {
-            Context.Scope.Dispose();
-            return base.AfterExecutedAsync();
-        }
-
-        protected async Task Reply(LocalMessage localMessageBuilder) 
-            => await Context.Channel.SendMessageAsync(localMessageBuilder);
-
-        protected async Task Reply(string message, Color color) 
-            => await Context.Channel.SendMessageAsync(new LocalMessageBuilder().Create(message, color));
+        protected DiscordCommandResult Reply(string message, Color color)
+            => Reply(new LocalEmbedBuilder().CreateDefaultEmbed(message, color));
     }
 }
