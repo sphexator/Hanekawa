@@ -266,13 +266,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [Command("warnlog")]
         [Description("Pulls up warnlog and admin profile of a user.")]
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
-        public async Task WarnLogAsync(IMember user, WarnLogType type = WarnLogType.Simple)
+        public async Task<DiscordCommandResult> WarnLogAsync(IMember user, WarnLogType type = WarnLogType.Simple)
         {
             await Context.Message.TryDeleteMessageAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var pages = await _warn.GetWarnLogAsync(user, type, db);
-            if (pages.Count == 1) await Reply(pages[0]);
-            else await Pages(pages.Select(x => (Page) x).ToList());
+            if (pages.Count == 1) return Reply(pages[0]);
+            return Pages(pages.Select(x => (Page) x).ToList());
         }
 
         [Name("Reason")]

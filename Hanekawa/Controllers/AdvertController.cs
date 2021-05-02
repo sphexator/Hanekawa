@@ -55,8 +55,7 @@ namespace Hanekawa.Controllers
                 if (!Request.Headers.TryGetValue("Authorization", out var authCode))
                     return Unauthorized("No authorization header");
                 var guildId = Convert.ToUInt64(model.Guild);
-                var cfg = await _db.DblAuths.FindAsync(new object[] {new[] {guildId}},
-                    token); // Get the key from database
+                var cfg = await _db.DblAuths.FindAsync(new object[] {guildId}, token); // Get the key from database
                 // If there's no config, the guild doesn't have it enabled
                 if (cfg == null) return BadRequest();
                 // Make sure the key is correct

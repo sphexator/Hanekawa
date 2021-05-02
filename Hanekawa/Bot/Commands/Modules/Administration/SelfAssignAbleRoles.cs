@@ -122,16 +122,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             [Command("List", "rl")]
             [Description("Displays list of self-assignable roles")]
             [RequiredChannel]
-            public async Task ListSelfAssignAbleRolesAsync()
+            public async Task<DiscordCommandResult> ListSelfAssignAbleRolesAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue)
                     .ToListAsync();
                 if (list == null || list.Count == 0)
-                {
-                    await Reply("No self-assignable roles added", HanaBaseColor.Bad());
-                    return;
-                }
+                    return Reply("No self-assignable roles added", HanaBaseColor.Bad());
 
                 var result = new List<string>();
                 foreach (var x in list)
@@ -140,7 +137,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
-                await Pages(result.PaginationBuilder(_cache.GetColor(Context.Guild), Context.Guild.GetIconUrl(),
+                return Pages(result.PaginationBuilder(_cache.GetColor(Context.Guild), Context.Guild.GetIconUrl(),
                     $"Self-assignable roles for {Context.Guild.Name}"));
             }
 
