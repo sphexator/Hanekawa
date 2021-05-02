@@ -250,7 +250,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         
         private static async Task RemoveFromDatabaseAsync(Snowflake guildId, Snowflake userId, DbService db)
         {
-            var data = await db.MuteTimers.FindAsync(guildId.RawValue, userId.RawValue);
+            var data = await db.MuteTimers.FindAsync(guildId, userId);
             if (data == null) return;
             await RemoveFromDatabaseAsync(data, db);
         }

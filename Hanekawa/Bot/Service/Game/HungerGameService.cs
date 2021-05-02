@@ -48,19 +48,19 @@ namespace Hanekawa.Bot.Service.Game
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value.RawValue);
+                var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value);
                 if (status is not {Stage: GameStage.Signup}) return;
                     
                 if (!TryParse(status.EmoteMessageFormat, out var result)) return;
                 if (e.Emoji.Name != result.Name) return;
 
-                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value.RawValue, e.Member.Id.RawValue);
+                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value, e.Member.Id);
                 if (dbUser != null) return;
                 
                 await db.HungerGameProfiles.AddAsync(new HungerGameProfile
                 {
-                    GuildId = e.Member.GuildId.RawValue,
-                    UserId = e.Member.Id.RawValue,
+                    GuildId = e.Member.GuildId,
+                    UserId = e.Member.Id,
                     Name = e.Member.Nick ?? e.Member.Name,
                     Avatar = e.Member.GetAvatarUrl(ImageFormat.Png),
                     Bot = false,
@@ -95,10 +95,10 @@ namespace Hanekawa.Bot.Service.Game
                 if (!e.GuildId.HasValue) return;
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value.RawValue);
+                var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value);
                 if (status is not {Stage: GameStage.Signup}) return;
                 var member = await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.UserId);
-                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value.RawValue, member.Id.RawValue);
+                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value, member.Id);
                 if (dbUser == null) return;
                 db.HungerGameProfiles.Remove(dbUser);
                 await db.SaveChangesAsync();
