@@ -27,25 +27,37 @@ namespace Hanekawa.Extensions
         public static LocalMessage Create(this LocalMessageBuilder builder, LocalEmbedBuilder embed, 
             LocalMentionsBuilder mention = null)
         {
-            builder.Attachments = null;
-            builder.Content = null;
             builder.Embed = embed;
             builder.Mentions = mention ?? LocalMentionsBuilder.None;
             return builder.Build();
         }
         
         public static LocalMessage Create(this LocalMessageBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null) =>
+            builder.CreateWithoutBuild(message, color, mention).Build();
+        
+        public static LocalEmbed Create(this LocalEmbedBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null) =>
+            builder.CreateDefaultEmbed(message, color, mention).Build();
+
+        public static LocalMessageBuilder CreateWithoutBuild(this LocalMessageBuilder builder, string message, Color color, 
             LocalMentionsBuilder mention = null)
         {
-            builder.Attachments = null;
-            builder.Content = null;
             builder.Embed = new LocalEmbedBuilder
             {
                 Color = color,
                 Description = message.Truncate(2000)
             };
             builder.Mentions = mention ?? LocalMentionsBuilder.None;
-            return builder.Build();
+            return builder;
+        }
+        
+        public static LocalEmbedBuilder CreateDefaultEmbed(this LocalEmbedBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null)
+        {
+            builder.Color = color;
+            builder.Description = message.Truncate(2000);
+            return builder;
         }
 
         public static async Task<bool> TryDeleteMessageAsync(this IMessage message)
