@@ -85,8 +85,8 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             _times = _fonts.Install("Data/Fonts/TIMES.TTF");
             _arial = _fonts.Install("Data/Fonts/ARIAL.TTF");
 
-            _welcomeTemplate = Image.Load("Data/Welcome/Default.png", new PngDecoder {IgnoreMetadata = true});
-            _profileTemplate = Image.Load("Data/Profile/Template/Template.png", new PngDecoder {IgnoreMetadata = true});
+            _welcomeTemplate = Image.Load("Data/Template/WelcomeDefault.png", new PngDecoder {IgnoreMetadata = true});
+            _profileTemplate = Image.Load("Data/Template/ProfileTemplate.png", new PngDecoder {IgnoreMetadata = true});
             _defWelcomeBanner = new WelcomeBanner
             {
                 AvatarSize = 60,
