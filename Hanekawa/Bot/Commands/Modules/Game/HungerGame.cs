@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Commands.Modules.Game
             await db.SaveChangesAsync();
         }
 
-        [Name("Set event channel")]
+        [Name("Event Channel")]
         [Command("echannel", "ec")]
         [Description("Sets the event channel, where all the rounds will be outputted to")]
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
