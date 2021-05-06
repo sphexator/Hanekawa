@@ -13,10 +13,11 @@ namespace Hanekawa.Extensions
 {
     public static class CommandExtensions
     {
-        public static List<Page> PaginationBuilder(this List<string> list, Color color, string avatarUrl, string authorTitle, int inputPerPage = 5)
+        public static IEnumerable<Page> PaginationBuilder(this List<string> list, Color color, string avatarUrl, string authorTitle, int inputPerPage = 5)
         {
             var pages = new List<Page>();
             var sb = new StringBuilder();
+            var maxPage = Convert.ToInt32(Math.Ceiling((double) list.Count / inputPerPage));
             for (var i = 0; i < list.Count;)
             {
                 for (var j = 0; j < inputPerPage; j++)
@@ -28,7 +29,6 @@ namespace Hanekawa.Extensions
                 }
 
                 var page = pages.Count + 1;
-                var maxPage = Convert.ToInt32(Math.Ceiling((double) list.Count / inputPerPage));
                 pages.Add(new Page(new LocalEmbedBuilder
                 {
                     Author = new LocalEmbedAuthorBuilder {Name = authorTitle, IconUrl = avatarUrl},
