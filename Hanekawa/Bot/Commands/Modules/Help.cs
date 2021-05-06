@@ -9,9 +9,8 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Qmmands;
-using Quartz.Util;
 
-namespace Hanekawa.Bot.Commands.Modules.Help
+namespace Hanekawa.Bot.Commands.Modules
 {
     [Name("Help")]
     [Description("Displays all commands and how to execute them")]
@@ -66,7 +65,6 @@ namespace Hanekawa.Bot.Commands.Modules.Help
         [Command("help")]
         [Description("List all commands for provided module, if valid one provided")]
         [Cooldown(1, 2, CooldownMeasure.Seconds, CooldownBucketType.Member)]
-        [RunMode(RunMode.Sequential)]
         public DiscordCommandResult HelpAsync([Remainder] string module)
         {
             var moduleInfo = Context.Bot.Commands.GetAllModules().FirstOrDefault(x =>
@@ -105,7 +103,7 @@ namespace Hanekawa.Bot.Commands.Modules.Help
                         break;
                     }
                 }
-
+                
                 if (moduleInfo == null)
                 {
                     return Reply(new LocalEmbedBuilder

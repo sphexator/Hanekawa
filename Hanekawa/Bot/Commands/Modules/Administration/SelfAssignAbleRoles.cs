@@ -20,8 +20,8 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Modules.Administration
 {
-    [Name("Self Assignable Roles")]
-    [RequiredChannel]
+    [Name("Self-Assignable Roles")]
+    [Description("Self-Assignable commands")]
     [RequireBotChannelPermissions(Permission.SendMessages | Permission.EmbedLinks | Permission.ManageMessages)]
     public class SelfAssignAbleRoles : HanekawaCommandModule
     {
@@ -107,7 +107,9 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             }
         }
 
+        [Name("Self-Assignable Roles Admin")]
         [Group("Role")]
+        [Description("Commands to manage self-assignable roles")]
         public class AdminRole : SelfAssignAbleRoles
         {
             private readonly AutoAssignService _assignService;
