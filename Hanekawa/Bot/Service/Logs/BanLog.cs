@@ -30,7 +30,8 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogBan.HasValue) return;
-                if(!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
+                var channel = guild.GetChannel(cfg.LogBan.Value);
+                if(channel == null) return;
 
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
                 IMember mod;
@@ -90,7 +91,8 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogBan.HasValue) return;
-                if (!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
+                var channel = guild.GetChannel(cfg.LogBan.Value);
+                if(channel == null) return;
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Unban);
                 
                 IMember mod = null;

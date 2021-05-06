@@ -62,7 +62,7 @@ namespace Hanekawa.Bot.Service.Experience
                 if (before != null)
                 {
                     var guild = _bot.GetGuild(e.GuildId);
-                    if(!guild.Channels.TryGetValue(before.ChannelId!.Value, out var channel)) return;
+                    var channel = guild.GetChannel(before.ChannelId.Value);
                     var time = DateTime.UtcNow - userData.VoiceExpTime;
                     var exp = GetExp((IVoiceChannel) channel, time);
                     userData.StatVoiceTime += time;

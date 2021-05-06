@@ -41,7 +41,8 @@ namespace Hanekawa.Bot.Service.Logs
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
             if (!cfg.LogJoin.HasValue) return;
-            if (!guild.Channels.TryGetValue(cfg.LogJoin.Value, out var channel)) return;
+            var channel = guild.GetChannel(cfg.LogJoin.Value);
+            if (channel == null) return;
             try
             {
                 var inviteeInfo = await GetInvite(guild, e.Member);
@@ -118,7 +119,8 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogJoin.HasValue) return;
-                if (!guild.Channels.TryGetValue(cfg.LogJoin.Value, out var channel) && !(channel is CachedTextChannel)) return;
+                var channel = guild.GetChannel(cfg.LogJoin.Value);
+                if (channel == null) return;
                 var embed = new LocalEmbedBuilder
                 {
                     Description = $"📤 {user.Mention} has left ( *{user.Id.RawValue}* )",

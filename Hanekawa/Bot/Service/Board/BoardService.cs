@@ -119,8 +119,10 @@ namespace Hanekawa.Bot.Service.Board
         {
             var roles = user.GetRoles();
             var guild = _bot.GetGuild(user.GuildId);
-            guild.Channels.TryGetValue(msg.ChannelId, out var channel);
-            if (!cfg.Channel.HasValue || !guild.Channels.TryGetValue(cfg.Channel.Value, out var boardCh)) return;
+            var channel = guild.GetChannel(msg.ChannelId);
+            if (!cfg.Channel.HasValue) return;
+            var boardCh = guild.GetChannel(cfg.Channel.Value);
+            if (boardCh == null) return;
             var embed = new LocalEmbedBuilder
             {
                 Author = new LocalEmbedAuthorBuilder

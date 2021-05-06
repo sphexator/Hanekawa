@@ -264,7 +264,8 @@ namespace Hanekawa.Bot.Service.Game
                 sb.Clear();
             }
             if(sb.Length > 0) messages.Add(sb.ToString());
-            if (guild.Channels.TryGetValue(channelId, out var channel))
+            var channel = guild.GetChannel(channelId);
+            if (channel != null)
             {
                 var textChannel = channel as ITextChannel;
                 foreach (var x in messages)
@@ -281,14 +282,16 @@ namespace Hanekawa.Bot.Service.Game
                 }
             }
 
-            if(channelId != cfg.EventChannel.Value && guild.Channels.TryGetValue(cfg.EventChannel.Value, out var evtChan)) await _bot.SendMessageAsync(channelId, new LocalMessageBuilder
-            {
-                Content = $"Game starts in {(evtChan as CachedTextChannel)?.Mention}",
-                Attachments = null,
-                Embed = null,
-                Mentions = LocalMentionsBuilder.None,
-                IsTextToSpeech = false
-            }.Build());
+            var evtChan = guild.GetChannel(cfg.EventChannel.Value);
+            if (evtChan != null)
+                await _bot.SendMessageAsync(channelId, new LocalMessageBuilder
+                {
+                    Content = $"Game starts in {(evtChan as CachedTextChannel)?.Mention}",
+                    Attachments = null,
+                    Embed = null,
+                    Mentions = LocalMentionsBuilder.None,
+                    IsTextToSpeech = false
+                }.Build());
 
             await db.HungerGames.AddAsync(new Database.Tables.Account.HungerGame.HungerGame
             {

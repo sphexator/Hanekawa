@@ -17,7 +17,8 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(target.GuildId);
             var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId.RawValue);
             if (!cfg.LogBan.HasValue) return;
-            if(!guild.Channels.TryGetValue(cfg.LogBan.Value, out var channel)) return;
+            var channel = guild.GetChannel(cfg.LogBan.Value);
+            if (channel == null) return;
             var caseId = await db.CreateCaseId(target, guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new LocalEmbedBuilder
             {
@@ -54,8 +55,9 @@ namespace Hanekawa.Bot.Service.Logs
             var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
             if (!cfg.LogWarn.HasValue) return;
             var guild = _bot.GetGuild(target.GuildId);
-            if (!guild.Channels.TryGetValue(cfg.LogWarn.Value, out var channel)) return;
-
+            var channel = guild.GetChannel(cfg.LogWarn.Value);
+            if (channel == null) return;
+            
             var embed = new LocalEmbedBuilder
             {
                 Color = Color.Red,

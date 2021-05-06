@@ -27,9 +27,11 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogMsg.HasValue) return;
-                if (!guild.Channels.TryGetValue(cfg.LogMsg.Value, out var channel) && channel is not CachedTextChannel) return;
+                var channel = guild.GetChannel(cfg.LogMsg.Value);
+                if (channel == null) return;
                 if (e.Message == null || e.Message.Author.IsBot) return;
-                if (!guild.Channels.TryGetValue(e.ChannelId, out var tempChannel) && tempChannel is not CachedTextChannel) return;
+                var tempChannel = guild.GetChannel(e.ChannelId);
+                if (tempChannel == null) return;
                 var msgChannel = tempChannel as CachedTextChannel;
                 var embed = new LocalEmbedBuilder
                 {
@@ -84,8 +86,10 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id.RawValue);
                 if (!cfg.LogMsg.HasValue) return;
-                if (!guild.Channels.TryGetValue(cfg.LogMsg.Value, out var channel) && channel is not CachedTextChannel) return;
-                if (!guild.Channels.TryGetValue(e.ChannelId, out var tempChannel) && tempChannel is not CachedTextChannel) return;
+                var channel = guild.GetChannel(cfg.LogMsg.Value);
+                if (channel == null) return;
+                var tempChannel = guild.GetChannel(e.ChannelId);
+                if (tempChannel == null) return;
 
                 var messageContent = new List<string>();
                 var content = new StringBuilder();
@@ -142,7 +146,7 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value.RawValue);
                 if (!cfg.LogMsg.HasValue) return;
-                if(!guild.Channels.TryGetValue(cfg.LogMsg.Value, out var channel) && !(channel is CachedTextChannel)) return;
+                var channel = guild.GetChannel(cfg.LogMsg.Value);
                 if (channel == null) return;
                 if (before != null && before.Content == after.Content) return;
 

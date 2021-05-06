@@ -21,8 +21,8 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id.RawValue);
                 if (!cfg.LogAvi.HasValue) return;
-                if (!guild.Channels.TryGetValue(cfg.LogAvi.Value, out var channel) &&
-                    channel is not CachedTextChannel) return;
+                var channel = guild.GetChannel(cfg.LogAvi.Value);
+                if (channel == null) return;
 
                 var embed = new LocalEmbedBuilder{
                     Footer = new LocalEmbedFooterBuilder { Text = $"Username: {e.NewMember} ({e.NewMember.Id.RawValue})", IconUrl = guild.GetIconUrl() }};

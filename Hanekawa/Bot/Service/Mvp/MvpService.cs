@@ -145,8 +145,8 @@ namespace Hanekawa.Bot.Service.Mvp
             if (!guildConfig.MvpChannel.HasValue) return;
             try
             {
-                if (!guild.Channels.TryGetValue(guildConfig.MvpChannel.Value, out var channel) &&
-                    channel is not ITextChannel)
+                var channel = guild.GetChannel(guildConfig.MvpChannel.Value);
+                if (channel == null)
                 {
                     _logger.Log(LogLevel.Error, "(MVP Service) Couldn't find announcement channel");
                     return;

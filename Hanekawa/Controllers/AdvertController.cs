@@ -96,7 +96,8 @@ namespace Hanekawa.Controllers
                 }, token);
 
                 var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
-                if (logCfg.LogAvi.HasValue && guild.Channels.TryGetValue(logCfg.LogAvi.Value, out var logChannel))
+                var logChannel = guild.GetChannel(logCfg.LogAvi.Value);
+                if (logChannel != null)
                 {
                     var name = $"{user}";
                     if (name.IsNullOrWhiteSpace()) name = $"{userId}";
@@ -123,7 +124,7 @@ namespace Hanekawa.Controllers
                     $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
 
                 var giveaways = await _db.Giveaways
-                    .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync();
+                    .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(cancellationToken: token);
                 var sb = new StringBuilder();
                 if (giveaways.Count > 0 && user != null)
                 {

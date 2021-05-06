@@ -147,7 +147,8 @@ namespace Hanekawa.Bot.Service.Boost
                 var guild = _bot.GetGuild(user.GuildId);
                 if (config.ChannelId.HasValue)
                 {
-                    if(guild.Channels.TryGetValue(config.ChannelId.Value, out var channel))
+                    var channel = guild.GetChannel(config.ChannelId.Value);
+                    if (channel != null)
                     {
                         var embed = new LocalEmbedBuilder
                         {
@@ -173,7 +174,8 @@ namespace Hanekawa.Bot.Service.Boost
 
                 var logCfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
                 if (!logCfg.LogAvi.HasValue) return;
-                if (!guild.Channels.TryGetValue(logCfg.LogAvi.Value, out var logChannel)) return;
+                var logChannel = guild.GetChannel(logCfg.LogAvi.Value);
+                if (logChannel == null) return;
                 var logEmbed = new LocalEmbedBuilder
                 {
                     Title = "Started Boosting",
@@ -211,7 +213,7 @@ namespace Hanekawa.Bot.Service.Boost
                 var logCfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
                 if (!logCfg.LogAvi.HasValue) return;
                 var guild = _bot.GetGuild(user.GuildId);
-                if (!guild.Channels.TryGetValue(logCfg.LogAvi.Value, out var channel)) return;
+                var channel = guild.GetChannel(logCfg.LogAvi.Value);
                 if (channel == null) return;
                 var embed = new LocalEmbedBuilder
                 {

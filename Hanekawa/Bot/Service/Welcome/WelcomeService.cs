@@ -51,8 +51,8 @@ namespace Hanekawa.Bot.Service.Welcome
                 var guild = e.Member.GetGuild();
                 var msg = MessageUtil.FormatMessage(cfg.Message, user, guild);
                 IMessage message;
-                if (!e.Member.GetGuild().Channels.TryGetValue(cfg.Channel.Value, out var channel) &&
-                    channel is not ITextChannel) return;
+                var channel = guild.GetChannel(cfg.Channel.Value);
+                if (channel == null) return;
                 var textChannel = channel as ITextChannel;
                 if (cfg.Banner)
                 {

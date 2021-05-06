@@ -24,7 +24,8 @@ namespace Hanekawa.Bot.Service.Logs
                     var cfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
                     if (!cfg.LogVoice.HasValue) return;
                     var guild = _bot.GetGuild(e.GuildId);
-                    if (!guild.Channels.TryGetValue(cfg.LogVoice.Value, out var channel)) return;
+                    var channel = guild.GetChannel(cfg.LogVoice.Value);
+                    if (channel == null) return;
 
                     var embed = new LocalEmbedBuilder
                     {
