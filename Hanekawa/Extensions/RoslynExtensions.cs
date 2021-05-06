@@ -18,19 +18,23 @@ namespace Hanekawa.Extensions
 
         public static IReadOnlyDictionary<Type, string> ParameterExampleStrings { get; } = new Dictionary<Type, string>
         {
-            [typeof(CachedMember)] = "<@111123736660324352>",
+            [typeof(IMember)] = "<@111123736660324352>",
             [typeof(IMessage)] = "827809315679240202",
-            [typeof(LocalCustomEmoji)] = "<:naicu:469925413162975242>",
-            [typeof(CachedTextChannel)] = "#general",
-            [typeof(CachedRole)] = "@Admins"
+            [typeof(ICustomEmoji)] = "<:naicu:469925413162975242>",
+            [typeof(ITextChannel)] = "#general",
+            [typeof(IRole)] = "@Admins"
         };
 
         private static readonly string UsingBlock;
 
         static RoslynExtensions()
         {
-            var rawUsings = new[] {
+            var rawUsing = new[] {
+                "Disqord",
                 "Disqord.Bot",
+                "Disqord.Gateway",
+                "Disqord.Rest",
+                "Disqord.Rest.Default",
                 "Microsoft.Extensions.DependencyInjection",
                 "System",
                 "System.Collections.Generic",
@@ -39,7 +43,7 @@ namespace Hanekawa.Extensions
                 "System.Threading.Tasks",
                 "Qmmands"
             };
-            UsingBlock = string.Concat(rawUsings.Select(str => $"using {str}; "));
+            UsingBlock = string.Concat(rawUsing.Select(str => $"using {str}; "));
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location));

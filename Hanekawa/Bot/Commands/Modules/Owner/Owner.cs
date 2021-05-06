@@ -105,7 +105,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
         {
             var code = rawCode.GetCode();
             var sw = Stopwatch.StartNew();
-            var script = CSharpScript.Create(code, RoslynExtensions.RoslynScriptOptions, typeof(RoslynCommandContext));
+            var script = CSharpScript.Create(code, RoslynExtensions.RoslynScriptOptions, typeof(EvalCommandContext));
             var diagnostics = script.Compile();
             var compilationTime = sw.ElapsedMilliseconds;
 
@@ -114,20 +114,21 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 var builder = new LocalEmbedBuilder
                 {
                     Title = "Compilation Failure",
-                    Color = Color.Red,
+                    Color = HanaBaseColor.Bad(),
                     Description = $"Compilation took {compilationTime}ms but failed due to..."
                 };
                 foreach (var diagnostic in diagnostics)
                 {
                     var message = diagnostic.GetMessage();
                     builder.AddField(diagnostic.Id,
-                        message.Substring(0, Math.Min(500, message.Length)));
+                        message[..Math.Min(500, message.Length)]);
                 }
 
                 return Reply(builder);
             }
 
-            var context = new RoslynCommandContext(Context);
+            var context = new EvalCommandContext(Context.Bot, Context.Prefix, Context.Message, Context.Channel,
+                Context.Scope);
             var result = await script.RunAsync(context);
             sw.Stop();
             return Reply(result.ReturnValue.ToString());
