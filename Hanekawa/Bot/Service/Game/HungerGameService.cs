@@ -116,9 +116,9 @@ namespace Hanekawa.Bot.Service.Game
                 if (e.User.IsBot) return;
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.GuildId.RawValue);
+                var status = await db.HungerGameStatus.FindAsync(e.GuildId);
                 if (status == null) return;
-                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.RawValue, e.User.Id.RawValue);
+                var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId, e.User.Id);
                 if (dbUser == null) return;
                 switch (status.Stage)
                 {
@@ -151,7 +151,7 @@ namespace Hanekawa.Bot.Service.Game
                 var status = await db.HungerGameStatus.FindAsync(e.NewMember.GuildId.RawValue);
                 if (status == null) return;
                 var profile =
-                    await db.HungerGameProfiles.FindAsync(e.NewMember.GuildId.RawValue, e.NewMember.Id.RawValue);
+                    await db.HungerGameProfiles.FindAsync(e.NewMember.GuildId, e.NewMember.Id);
                 if (profile == null) return;
                 profile.Name = e.NewMember.Nick ?? e.NewMember.Name;
                 profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
@@ -160,7 +160,7 @@ namespace Hanekawa.Bot.Service.Game
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Hunger Game Service) Crash when updating participant avatar or name - {exception.Message}");
+                    $"Crash when updating participant avatar or name - {exception.Message}");
             }
         }
 
