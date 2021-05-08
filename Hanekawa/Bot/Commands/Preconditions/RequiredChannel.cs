@@ -36,7 +36,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
             };
         }
 
-        public async Task<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)
+        public async ValueTask<bool> AddOrRemoveChannel(CachedTextChannel channel, DbService db)
         {
             var check = await db.IgnoreChannels.FindAsync(channel.GuildId.RawValue, channel.Id.RawValue);
             if (check != null)
@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
             return true; 
         }
 
-        private static async Task<bool> UpdateIgnoreAllStatus(HanekawaCommandContext context)
+        private static async ValueTask<bool> UpdateIgnoreAllStatus(HanekawaCommandContext context)
         {
             using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
