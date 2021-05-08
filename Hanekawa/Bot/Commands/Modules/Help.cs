@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Commands.Modules
 
             return Reply(new LocalEmbedBuilder
             {
-                Color = _cache.GetColor(Context.Guild),
+                Color = _cache.GetColor(Context.GuildId),
                 Author = new LocalEmbedAuthorBuilder {Name = "Module list"},
                 Description = result.ToString(),
                 Footer = new LocalEmbedFooterBuilder
@@ -108,7 +108,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 {
                     return Reply(new LocalEmbedBuilder
                     {
-                        Color = _cache.GetColor(Context.Guild),
+                        Color = _cache.GetColor(Context.GuildId),
                         Author = new LocalEmbedAuthorBuilder {Name = "Module list"},
                         Title = "Couldn't find a module with that name",
                         Description = response.ToString(),
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     });
                 }
             }
-            if (moduleInfo.Name == "Owner") return null;
+            //if (moduleInfo.Name == "Owner") return null;
             var result = new List<string>();
             foreach (var cmd in moduleInfo.Commands)
                 result.FormatCommandText(cmd, Context.Prefix);
@@ -127,7 +127,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 result.FormatCommandText(x, Context.Prefix);
 
             if (result.Count > 0)
-                return Pages(result.PaginationBuilder(_cache.GetColor(Context.Guild), Context.Guild.GetIconUrl(),
+                return Pages(result.PaginationBuilder(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
                     "Command List"));
             return Reply("Couldn't find any commands in that module", HanaBaseColor.Bad());
         }
