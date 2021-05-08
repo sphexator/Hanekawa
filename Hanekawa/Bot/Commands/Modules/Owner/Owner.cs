@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Api;
 using Disqord.Bot;
 using Disqord.Gateway;
+using Disqord.Models;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
@@ -73,7 +75,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 Context.Bot.CurrentUser.GetAvatarUrl(), $"Server Count: {guilds.Count} | Member Count: {totalMembers}"));
         }
         
-                [Name("Blacklist")]
+        [Name("Blacklist")]
         [Command("blacklist")]
         [Description("Blacklists a server for the bot to join")]
         public async Task<DiscordCommandResult> BlacklistAsync(ulong guildId, string reason = null)
@@ -98,6 +100,19 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
             return Reply($"Removed blacklist on {guildId}!", HanaBaseColor.Ok());
         }
 
+        [Name("Sudo")]
+        [Command("sudo")]
+        [Description("Execute commands as a different user")]
+        public async Task SudoAsync(Snowflake userId, [Remainder] string command)
+        {
+            var author = Context.Bot.GetMember(Context.GuildId, userId) ??
+                         await Context.Bot.FetchMemberAsync(Context.GuildId, userId);
+            var message = SudoGatewayUserMessage(Context.Message, command, author);
+            Context.Bot.Queue.Post(command,
+                new HanekawaCommandContext(Context.Bot, Context.Prefix, message, Context.Channel, Context.Scope),
+                (input, context) => context.Bot.ExecuteAsync(input, context));
+        }
+        
         [Name("Evaluate")]
         [Command("eval")]
         [Description("Evaluates code")]
@@ -126,12 +141,57 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
 
                 return Reply(builder);
             }
-
+            
             var context = new EvalCommandContext(Context.Bot, Context.Prefix, Context.Message, Context.Channel,
                 Context.Scope);
             var result = await script.RunAsync(context);
             sw.Stop();
             return Reply(result.ReturnValue.ToString());
+        }
+
+        private static IGatewayUserMessage SudoGatewayUserMessage(IMessage message, string input, IMember author)
+        {
+            var roles = author.GetRoles();
+            var roleList = new HashSet<Snowflake>();
+            foreach (var xRole in roles)
+            {
+                if (!roleList.TryGetValue(xRole.Key, out _)) roleList.Add(xRole.Key);
+            }
+            var userModel = new UserJsonModel
+            {
+                Avatar = author.AvatarHash,
+                Discriminator = Convert.ToInt16(author.Discriminator),
+                Id = author.Id,
+                Username = author.Name,
+                Bot = author.IsBot,
+                PublicFlags = author.PublicFlags,
+            };
+            return new TransientGatewayUserMessage(message.Client, new MessageJsonModel
+            {
+                Id = message.Id,
+                Content = input,
+                Author = userModel,
+                Timestamp = message.CreatedAt,
+                Pinned = false,
+                Embeds = null,
+                Tts = false,
+                GuildId = author.GuildId,
+                ChannelId = message.ChannelId,
+                Member = new Disqord.Optional<MemberJsonModel>(new MemberJsonModel
+                {
+                    Nick = author.Nick,
+                    Roles = roleList.ToArray(),
+                    Permissions = new Disqord.Optional<ulong>(author.GetGuildPermissions()),
+                    JoinedAt = author.JoinedAt,
+                    Deaf = author.IsDeafened,
+                    Mute = author.IsMuted,
+                    Pending = author.IsPending,
+                    PremiumSince = author.BoostedAt,
+                    User = userModel
+                }),
+                EditedTimestamp = null,
+                Type = MessageType.Default
+            });
         }
     }
 }
