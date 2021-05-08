@@ -6,16 +6,20 @@ using Disqord.Bot;
 using Disqord.Rest;
 using Hanekawa.Bot.Services.Administration.Mute;
 using Hanekawa.Bot.Services.Administration.Warning;
+using Hanekawa.Bot.Services.Caching;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Humanizer;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
+using Range = Hanekawa.Models.Range;
 
 namespace Hanekawa.Bot.Modules.Administration
 {
@@ -26,11 +30,13 @@ namespace Hanekawa.Bot.Modules.Administration
     {
         private readonly MuteService _mute;
         private readonly WarnService _warn;
+        private readonly CacheService _cache;
 
-        public Administration(MuteService mute, WarnService warn)
+        public Administration(MuteService mute, WarnService warn, CacheService cache)
         {
             _mute = mute;
             _warn = warn;
+            _cache = cache;
         }
 
         [Name("Ban")]
@@ -62,8 +68,10 @@ namespace Hanekawa.Bot.Modules.Administration
                         Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
-
-            await Context.Guild.BanMemberAsync(user.Id.RawValue, $"{Context.User} ({Context.User.Id.RawValue}) reason: {reason}", 7);
+            var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+            bans.Set(user.Id.RawValue, Context.User.Id, TimeSpan.FromMinutes(1));
+            _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
+            await Context.Guild.BanMemberAsync(user.Id.RawValue, $"{Context.User.Id.RawValue} - {reason}", 7);
             await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 Color.Green), TimeSpan.FromSeconds(20));
@@ -82,6 +90,9 @@ namespace Hanekawa.Bot.Modules.Administration
             {
                 try
                 {
+                    var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
+                    bans.Set(userId, Context.User.Id, TimeSpan.FromMinutes(1));
+                    _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
                     await Context.Guild.BanMemberAsync(userId, reason, 7);
                     await Context.ReplyAndDeleteAsync(null, false, new LocalEmbedBuilder().Create(
                         $"Banned **{userId}** from {Context.Guild.Name}.",
@@ -295,20 +306,51 @@ namespace Hanekawa.Bot.Modules.Administration
             await Context.Message.TryDeleteMessageAsync();
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id.RawValue);
-            if (modCase == null)
-            {
-                await Context.ReplyAndDeleteAsync(null, false,
-                    new LocalEmbedBuilder()
-                        .Create("Couldn't find a case with that ID. Sure you wrote the right ID?",
-                            Color.Red), TimeSpan.FromSeconds(20));
-                return;
-            }
+            await ApplyReason(db, id, reason);
+            
+            await Context.ReplyAndDeleteAsync(null, false,
+                new LocalEmbedBuilder().Create($"Updated mod log for {id}", Color.Green),
+                TimeSpan.FromSeconds(10));
+        }
 
+        [Name("Reason")]
+        [Command("reason")]
+        [Priority(1)]
+        [Description("Adds reason to multiple moderation log entries")]
+        [RequireBotGuildPermissions(Permission.ManageMessages)]
+        [RequireMemberGuildPermissions(Permission.ManageMessages)]
+        public async Task ReasonAsync(Range range, [Remainder] string reason = "No reason applied")
+        {
+            if (range.MinValue <= 0) return;
+            await Context.Message.TryDeleteMessageAsync();
+
+            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+            for (var i = range.MinValue; i < range.MaxValue; i++)
+            {
+                await ApplyReason(db, i, reason);
+                await Task.Delay(TimeSpan.FromMilliseconds(200));
+            }
+            await Context.ReplyAndDeleteAsync(null, false,
+                new LocalEmbedBuilder().Create($"Updated mod logs for entries between {range}", Color.Green),
+                TimeSpan.FromSeconds(10));
+        }
+
+        private async Task ApplyReason(DbService db, int id, string reason)
+        {
+           var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id.RawValue);
+           await UpdateMessage(modCase, db, reason);
+
+           modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
+           modCase.ModId = Context.User.Id.RawValue; 
+           await db.SaveChangesAsync();
+        }
+
+        private async Task UpdateMessage(ModLog modCase, DbService db, string reason)
+        {
             var updMsg = await Context.Channel.GetMessageAsync(modCase.MessageId) as IUserMessage;
             if (updMsg == null)
             {
-                await Context.ReplyAndDeleteAsync("Something went wrong, retrying in 5 seconds.",
+                await Context.ReplyAndDeleteAsync("Couldn't find the message, retrying in 5 seconds...",
                     timeout: TimeSpan.FromSeconds(10));
                 var delay = Task.Delay(5000);
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
@@ -322,14 +364,14 @@ namespace Hanekawa.Bot.Modules.Administration
 
             if (updMsg == null)
             {
-                await Context.ReplyAndDeleteAsync("Something went wrong, aborting.", timeout: TimeSpan.FromSeconds(10));
+                await Context.ReplyAndDeleteAsync("Couldn't find the message. aborting...", timeout: TimeSpan.FromSeconds(10));
                 return;
             }
 
             var embed = updMsg.Embeds.FirstOrDefault().ToEmbedBuilder();
             if (embed == null)
             {
-                await Context.ReplyAndDeleteAsync("Something went wrong.", timeout: TimeSpan.FromSeconds(20));
+                await Context.ReplyAndDeleteAsync("Couldn't find a embed to update...", timeout: TimeSpan.FromSeconds(20));
                 return;
             }
 
@@ -340,12 +382,6 @@ namespace Hanekawa.Bot.Modules.Administration
             if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
 
             await updMsg.ModifyAsync(m => m.Embed = embed.Build());
-            modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";
-            modCase.ModId = Context.User.Id.RawValue;
-            await db.SaveChangesAsync();
-            await Context.ReplyAndDeleteAsync(null, false,
-                new LocalEmbedBuilder().Create($"Updated mod log for {id}", Color.Green),
-                TimeSpan.FromSeconds(10));
         }
     }
 }

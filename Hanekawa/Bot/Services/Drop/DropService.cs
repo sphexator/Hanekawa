@@ -14,8 +14,7 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Exception = System.Exception;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Drop
 {
@@ -23,17 +22,17 @@ namespace Hanekawa.Bot.Services.Drop
     {
         private readonly Hanekawa _client;
         private readonly ExpService _expService;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
 
-        public DropService(Hanekawa client, Random random, ExpService expService, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public DropService(Hanekawa client, Random random, ExpService expService, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
             _expService = expService;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colourService = colourService;
 
@@ -79,13 +78,13 @@ namespace Hanekawa.Bot.Services.Drop
                         if (x.MessageFormat != cfg.Emote) continue;
                         cfg.Emote = null;
                         await db.SaveChangesAsync();
-                        _log.LogAction(LogLevel.Information, $"Removed drop emote from {x.Guild.Id} as it was deleted");
+                        _log.Log(LogLevel.Info, $"Removed drop emote from {x.Guild.Id} as it was deleted");
                         return;
                     }
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, exception.Message);
+                    _log.Log(NLog.LogLevel.Error, exception, exception.Message);
                 }
             });
             return Task.CompletedTask;
@@ -150,11 +149,11 @@ namespace Hanekawa.Bot.Services.Drop
                             await triggerMsg.AddReactionAsync(x);
                         }
 
-                        _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event created in {user.Guild.Id.RawValue}");
+                        _log.Log(LogLevel.Info, $"(Drop Service) Drop event created in {user.Guild.Id.RawValue}");
                     }
                     catch (Exception e)
                     {
-                        _log.LogAction(LogLevel.Error, e,
+                        _log.Log(NLog.LogLevel.Error, e,
                             $"(Drop Service) Error in {user.Guild.Id.RawValue} for drop create - {e.Message}");
                     }
             });
@@ -181,11 +180,11 @@ namespace Hanekawa.Bot.Services.Drop
                     if (special) await ClaimSpecial(message, channel, user, db);
                     else await ClaimNormal(message, channel, user, db);
 
-                    _log.LogAction(LogLevel.Information, $"(Drop Service) Drop event claimed by {user.Id.RawValue} in {user.Guild.Id.RawValue}");
+                    _log.Log(LogLevel.Info, $"(Drop Service) Drop event claimed by {user.Id.RawValue} in {user.Guild.Id.RawValue}");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Drop Service) Error in {user.Guild.Id.RawValue} for drop claim - {e.Message}");
                 }
             });

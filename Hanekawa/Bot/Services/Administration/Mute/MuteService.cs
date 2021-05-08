@@ -18,7 +18,7 @@ using Hanekawa.Shared.Interfaces;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Administration.Mute
 {
@@ -28,16 +28,16 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         
         private readonly OverwritePermissions _denyOverwrite 
             = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(34880));
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly ColourService _colour;
         private readonly LogService _logService;
         private readonly IServiceProvider _provider;
 
-        public MuteService(Hanekawa client, LogService logService, InternalLogService log, IServiceProvider provider, ColourService colour)
+        public MuteService(Hanekawa client, LogService logService, IServiceProvider provider, ColourService colour)
         {
             _client = client;
             _logService = logService;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colour = colour;
 
@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 catch (Exception e)
                 {
                     db.Remove(x);
-                    _log.LogAction(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
+                    _log.Log(NLog.LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
                 }
             }
             db.SaveChanges();
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             if (!check) return false;
             _ = ApplyPermissions(user.Guild, role);
             await user.TryMute();
-            _log.LogAction(LogLevel.Information, $"(Mute service) Muted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
+            _log.Log(NLog.LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
             return true;
         }
 
@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
         {
             await StopUnMuteTimerAsync(user.Guild.Id.RawValue, user.Id.RawValue, db);
             await user.TryUnMute();
-            _log.LogAction(LogLevel.Information, $"(Mute service) Unmuted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
+            _log.Log(NLog.LogLevel.Info, $"(Mute service) Unmuted {user.Id.RawValue} in {user.Guild.Id.RawValue}");
             return await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.Guild, db) as CachedRole);
         }
 
@@ -125,7 +125,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             StartUnMuteTimer(user.Guild.Id.RawValue, user.Id.RawValue, after);
             await _logService.Mute(user, staff, reason, after, db);
             await NotifyUser(user, after);
-            _log.LogAction(LogLevel.Information, $"(Mute service) {staff.Id.RawValue} muted {user.Id.RawValue} in {user.Guild.Id.RawValue} for {after.Humanize(2)}");
+            _log.Log(NLog.LogLevel.Info, $"(Mute service) {staff.Id.RawValue} muted {user.Id.RawValue} in {user.Guild.Id.RawValue} for {after.Humanize(2)}");
             return true;
         }
 
@@ -150,7 +150,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, "Couldn't DM user");
+                _log.Log(NLog.LogLevel.Error, e, "Couldn't DM user");
             }
         }
 
@@ -196,7 +196,7 @@ namespace Hanekawa.Bot.Services.Administration.Mute
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Value.Guild.Id.RawValue} in channel {x.Key}");
+                    _log.Log(NLog.LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {x.Value.Guild.Id.RawValue} in channel {x.Key}");
                 }
 
                 await Task.Delay(200).ConfigureAwait(false);

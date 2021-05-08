@@ -199,7 +199,6 @@ namespace Hanekawa.Bot.Modules.Administration
                 return;
             }
 
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var roleCheck =
                 await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>

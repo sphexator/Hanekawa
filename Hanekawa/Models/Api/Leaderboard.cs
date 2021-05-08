@@ -6,8 +6,7 @@ namespace Hanekawa.Models.Api
     [JsonObject(MemberSerialization.OptIn)]
     public class Leaderboard
     {
-        [JsonProperty("users")]
-        public List<LeaderboardUser> Users { get; set; }
+        [JsonProperty("users")] public List<LeaderboardUser> Users { get; set; } = new();
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -16,18 +15,24 @@ namespace Hanekawa.Models.Api
         [JsonProperty("userId")]
         public ulong UserId { get; set; }
 
+        [JsonProperty("level")]
+        public int Level { get; set; }
+
         [JsonProperty("experience")]
         public int Experience { get; set; }
 
         [JsonProperty("expToLevel")]
         public int ExpToLevel { get; set; }
+
+        [JsonProperty("totalExp")]
+        public int TotalExp { get; set; }
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     public class LeaderboardWeekly
     {
         [JsonProperty("users")]
-        public List<LeaderboardWeeklyUser> Users { get; set; }
+        public List<LeaderboardWeeklyUser> Users { get; set; } = new();
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -35,9 +40,6 @@ namespace Hanekawa.Models.Api
     {
         [JsonProperty("userId")]
         public ulong UserId { get; set; }
-
-        [JsonProperty("avatarUrl")]
-        public string AvatarUrl { get; set; }
 
         [JsonProperty("points")]
         public int Points { get; set; }
@@ -47,7 +49,7 @@ namespace Hanekawa.Models.Api
     public class LeaderboardRichest
     {
         [JsonProperty("users")]
-        public List<LeaderboardRichestUser> Users { get; set; }
+        public List<LeaderboardRichestUser> Users { get; set; } = new();
     }
 
     [JsonObject(MemberSerialization.OptIn)]

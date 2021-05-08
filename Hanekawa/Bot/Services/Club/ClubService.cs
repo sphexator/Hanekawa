@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -10,14 +9,14 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Club
 {
     public partial class ClubService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
@@ -25,11 +24,11 @@ namespace Hanekawa.Bot.Services.Club
         private readonly OverwritePermissions _denyOverwrite = new OverwritePermissions(ChannelPermissions.None, new ChannelPermissions(19520));
         private readonly OverwritePermissions _allowOverwrite = new OverwritePermissions(new ChannelPermissions(19520), ChannelPermissions.None);
 
-        public ClubService(Hanekawa client, Random random, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public ClubService(Hanekawa client, Random random, IServiceProvider provider, ColourService colourService)
         {
             _client = client;
             _random = random;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colourService = colourService;
 
@@ -53,11 +52,11 @@ namespace Hanekawa.Bot.Services.Club
                     if (clubs.Count == 0) return;
                     var cfg = await db.GetOrCreateClubConfigAsync(guild);
                     foreach (var x in clubs) await RemoveUserAsync(user, guild, x.Id, db, cfg);
-                    _log.LogAction(LogLevel.Information, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left {clubs.Count} clubs");
+                    _log.Log(LogLevel.Info, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left {clubs.Count} clubs");
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Club Service) Error in {guild.Id.RawValue} for User Left- {e.Message}");
                 }
             });
@@ -100,7 +99,7 @@ namespace Hanekawa.Bot.Services.Club
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Club Service) Error in {channel.Guild.Id.RawValue} for Reaction added or removed - {e.Message}");
                 }
             });

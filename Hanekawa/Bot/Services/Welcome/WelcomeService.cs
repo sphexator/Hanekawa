@@ -15,7 +15,7 @@ using Hanekawa.Shared.Interfaces;
 using Hanekawa.Utility;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Welcome
 {
@@ -24,14 +24,14 @@ namespace Hanekawa.Bot.Services.Welcome
         private readonly Hanekawa _client;
         private readonly ExpService _exp;
         private readonly ImageGenerator _img;
-        private readonly InternalLogService _log;
+        private readonly Logger _log;
         private readonly IServiceProvider _provider;
 
         public WelcomeService(Hanekawa client, ImageGenerator img, InternalLogService log, ExpService exp, IServiceProvider provider)
         {
             _client = client;
             _img = img;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _exp = exp;
             _provider = provider;
 
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Services.Welcome
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Welcome Service) Error in {e.Guild.Id.RawValue} for User Left (Banner Cleanup) - {exception.Message}");
                 }
             });
@@ -117,11 +117,11 @@ namespace Hanekawa.Bot.Services.Welcome
                         userCooldown.Set(user.Id.RawValue,
                             new ValueTuple<ulong, ulong, Task>(channel.Id.RawValue, message.Id.RawValue, del));
                     await Task.WhenAny(del, exp);
-                    _log.LogAction(LogLevel.Information,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
+                    _log.Log(LogLevel.Info,$"(Welcome Service) User joined {user.Guild.Id.RawValue}");
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Welcome Service) Error in {user.Guild.Id.RawValue} for User Joined - {exception.Message}");
                 }
             });
@@ -158,7 +158,7 @@ namespace Hanekawa.Bot.Services.Welcome
                         }
                         catch (Exception e)
                         {
-                            _log.LogAction(LogLevel.Error, e, e.Message);
+                            _log.Log(NLog.LogLevel.Error, e, e.Message);
                         }
                     });
                 }
@@ -173,7 +173,7 @@ namespace Hanekawa.Bot.Services.Welcome
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, e.Message);
+                _log.Log(NLog.LogLevel.Error, e, e.Message);
             }
         }
 
@@ -187,7 +187,7 @@ namespace Hanekawa.Bot.Services.Welcome
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Welcome Service) Couldn't delete banner in {cfg.GuildId}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Welcome Service) Couldn't delete banner in {cfg.GuildId}");
             }
         }
 
@@ -205,11 +205,11 @@ namespace Hanekawa.Bot.Services.Welcome
                         db.WelcomeBanners.RemoveRange(banners);
                         await db.SaveChangesAsync();
                     }
-                    _log.LogAction(LogLevel.Information, $"(Welcome Service) Cleaned up banners in {guild.Id.RawValue} as bot left server");
+                    _log.Log(LogLevel.Info, $"(Welcome Service) Cleaned up banners in {guild.Id.RawValue} as bot left server");
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Welcome Service) Error in {guild.Id.RawValue} for Bot Left Guild - {exception.Message}");
                 }
             });

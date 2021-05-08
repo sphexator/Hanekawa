@@ -5,7 +5,6 @@ using Disqord.Events;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Services.Logging
 {
@@ -131,7 +130,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Voice Log - {exception.Message}");
                 }
             });

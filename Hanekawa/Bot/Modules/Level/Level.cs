@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Modules.Level
         [Command("lr", "lvlreset")]
         [Description("Reset the server level/exp back to 0")]
         [RequireMemberGuildPermissions(Permission.Administrator)]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         public async Task ResetAsync()
         {
             await Context.ReplyAsync(

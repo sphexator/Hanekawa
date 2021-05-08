@@ -30,14 +30,14 @@ namespace Hanekawa.Bot.Modules.Advertise
                 await ReplyAsync("You've already made a config!, sending new key in dms");
                 try
                 {
-                    await channel.SendMessageAsync("Your top.gg Webhook URL is: <ADD THIS LATER\n" + //TODO: Add URL later, its /api/advert/dbl
-                                                   $"Key: {check.AuthKey}");
+                    await channel.SendMessageAsync("Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl \n" +
+                                                   $"Auth Key: {check.AuthKey}");
                 }
                 catch
                 {
                     await ReplyAsync("Could not DM, sending here. Please delete this message afterwards.\n" +
-                                     "Webhook URL: <ADD THIS LATER>\n" +
-                                     $"Key: {check.AuthKey}", Color.Green);
+                                     "Webhook URL: https://hanekawa.bot/api/advert/dbl \n" +
+                                     $"Auth Key: {check.AuthKey}", Color.Green);
                 }
                 return;
             }
@@ -57,14 +57,14 @@ namespace Hanekawa.Bot.Modules.Advertise
             await ReplyAsync("Authentication Created! DMing the credentials.");
             try
             {
-                await channel.SendMessageAsync("Your top.gg Webhook URL is: <ADD THIS LATER\n" + //TODO: Add URL later, its /api/advert/dbl
-                                               $"Key: {cfg.AuthKey}");
+                await channel.SendMessageAsync("Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl\n" +
+                                               $"Auth Key: {cfg.AuthKey}");
             }
             catch
             {
                 await ReplyAsync("Could not DM, sending here. Please delete this message afterwards.\n" +
-                                 "Webhook URL: <ADD THIS LATER>\n" +
-                                 $"Key: {cfg.AuthKey}", Color.Green);
+                                 "Webhook URL: https://hanekawa.bot/api/advert/dbl \n" +
+                                 $"Auth Key: {cfg.AuthKey}", Color.Green);
             }
         }
 

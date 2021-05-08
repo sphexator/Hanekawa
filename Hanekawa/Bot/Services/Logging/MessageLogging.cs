@@ -10,7 +10,6 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Extensions.Embed;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Services.Logging
@@ -60,7 +59,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {user.Guild.Id.RawValue} for Message Updated - {exception.Message}");
                 }
             });
@@ -115,7 +114,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {chx.Guild.Id.RawValue} for Message Deleted - {exception.Message}");
                 }
             });
@@ -168,7 +167,7 @@ namespace Hanekawa.Bot.Services.Logging
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception,
+                    _log.Log(NLog.LogLevel.Error, exception,
                         $"(Log Service) Error in {ch.Guild.Id.RawValue} for Bulk Message Deleted - {exception.Message}");
                 }
             });

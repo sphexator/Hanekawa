@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Services.Experience
 
                 var cfg = await db.GetOrCreateLevelConfigAsync(user.Guild);
                 var levelRewards = await db.LevelRewards.Where(x => x.GuildId == user.Guild.Id.RawValue).ToListAsync();
-                var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRewards);
+                var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRewards, 0);
                 await user.TryAddRolesAsync(roles);
             });
             return Task.CompletedTask;
@@ -50,11 +50,11 @@ namespace Hanekawa.Bot.Services.Experience
                     if (role == null) return;
                     db.LevelRewards.Remove(role);
                     await db.SaveChangesAsync();
-                    _log.LogAction(LogLevel.Information, $"Removed Level Reward from guild {e.Role.Guild.Id.RawValue} for level {role.Level} - role id: {e.Role.Id.RawValue}");
+                    _log.Log(NLog.LogLevel.Info, $"Removed Level Reward from guild {e.Role.Guild.Id.RawValue} for level {role.Level} - role id: {e.Role.Id.RawValue}");
                 }
                 catch (Exception exception)
                 {
-                    _log.LogAction(LogLevel.Error, exception, exception.Message);
+                    _log.Log(NLog.LogLevel.Error, exception, exception.Message);
                 }
             });
             return Task.CompletedTask;
@@ -87,7 +87,7 @@ namespace Hanekawa.Bot.Services.Experience
 
         private static async Task RoleCheckAsync(CachedMember user, LevelConfig cfg, Account userData, List<LevelReward> levelRoles, DbService db, int levelDecay)
         {
-            var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRoles);
+            var roles = GetRolesAsync(user, userData, db, cfg.StackLvlRoles, levelRoles, levelDecay);
 
             var missingRoles = new List<CachedRole>();
             var toRemove = new List<CachedRole>();
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Services.Experience
         }
 
         private static List<CachedRole> GetRolesAsync(CachedMember user, Account userData, DbService db,
-            bool stack, List<LevelReward> roleList)
+            bool stack, List<LevelReward> roleList, int levelDecay)
         {
             var roles = new List<CachedRole>();
             ulong role = 0;
@@ -129,17 +129,17 @@ namespace Hanekawa.Bot.Services.Experience
                 if (getRole == null) continue;
                 if (stack)
                 {
-                    if (userData.Level < x.Level) continue;
+                    if ((userData.Level - levelDecay) < x.Level) continue;
                     if (currentUser.HierarchyCheck(getRole)) roles.Add(getRole);
                 }
                 else
                 {
-                    if (userData.Level >= x.Level && x.Stackable && currentUser.HierarchyCheck(getRole))
+                    if ((userData.Level - levelDecay) >= x.Level && x.Stackable && currentUser.HierarchyCheck(getRole))
                     {
                         roles.Add(getRole);
                     }
 
-                    if (userData.Level >= x.Level) role = x.Role;
+                    if ((userData.Level - levelDecay) >= x.Level) role = x.Role;
                 }
             }
 

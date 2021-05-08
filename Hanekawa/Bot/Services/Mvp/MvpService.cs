@@ -13,7 +13,7 @@ using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Quartz;
 
 namespace Hanekawa.Bot.Services.Mvp
@@ -21,13 +21,13 @@ namespace Hanekawa.Bot.Services.Mvp
     public class MvpService : INService, IRequired, IJob
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _service;
 
-        public MvpService(Hanekawa client, InternalLogService log, IServiceProvider service)
+        public MvpService(Hanekawa client, IServiceProvider service)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _service = service;
 
             _client.RoleDeleted += MvpRoleCheckDeletion;
@@ -44,7 +44,7 @@ namespace Hanekawa.Bot.Services.Mvp
                 if (e.Role.Id.RawValue != mvpConfig.RoleId.Value) return;
                 mvpConfig.RoleId = null;
                 await db.SaveChangesAsync();
-                _log.LogAction(LogLevel.Information, "(MVP Service) Removed MVP role as it was deleted.");
+                _log.Log(LogLevel.Info, "(MVP Service) Removed MVP role as it was deleted.");
             });
             return Task.CompletedTask;
         }
@@ -99,7 +99,7 @@ namespace Hanekawa.Bot.Services.Mvp
                                 }
                                 catch (Exception e)
                                 {
-                                    _log.LogAction(LogLevel.Error, e, $"(MVP Service) Couldn't remove role from {toAdd[j].Key}");
+                                    _log.Log(NLog.LogLevel.Error, e, $"(MVP Service) Couldn't remove role from {toAdd[j].Key}");
                                 }
                             }
                         }
@@ -123,18 +123,18 @@ namespace Hanekawa.Bot.Services.Mvp
                             }
                             catch (Exception exception)
                             {
-                                _log.LogAction(LogLevel.Error, exception, $"(MVP Service) Couldn't add role to {e.UserId}");
+                                _log.Log(NLog.LogLevel.Error, exception, $"(MVP Service) Couldn't add role to {e.UserId}");
                             }
                         }
 
-                        _log.LogAction(LogLevel.Information,
+                        _log.Log(LogLevel.Info,
                             $"(MVP Service) Rewarded {mvpConfig.Count} users with MVP role in {guild.Id.RawValue}");
                     }
                     else
                     {
                         mvpConfig.RoleId = null;
                         await db.SaveChangesAsync();
-                        _log.LogAction(LogLevel.Information,
+                        _log.Log(LogLevel.Info,
                             $"(MVP Service) Reset MVP role as it was null in {guild.Id.RawValue}");
                     }
                 }
@@ -147,10 +147,10 @@ namespace Hanekawa.Bot.Services.Mvp
                 catch (Exception e)
                 {
                     await db.Accounts.ForEachAsync(z => z.MvpCount = 0);
-                    _log.LogAction(LogLevel.Error, e, $"(MVP Service) Failed to execute raw SQL in {x.GuildId}");
+                    _log.Log(NLog.LogLevel.Error, e, $"(MVP Service) Failed to execute raw SQL in {x.GuildId}");
                 }
                 await db.SaveChangesAsync();
-                _log.LogAction(LogLevel.Information, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
+                _log.Log(LogLevel.Info, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
 
                 var guildConfig = await db.GetOrCreateGuildConfigAsync(guild);
                 if (guildConfig.MvpChannel.HasValue)
@@ -160,7 +160,7 @@ namespace Hanekawa.Bot.Services.Mvp
                         var channel = guild.GetTextChannel(guildConfig.MvpChannel.Value);
                         if (channel == null)
                         {
-                            _log.LogAction(LogLevel.Warning, "(MVP Service) Couldn't find announcement channel");
+                            _log.Log(LogLevel.Error, "(MVP Service) Couldn't find announcement channel");
                             return;
                         }
 
@@ -183,14 +183,14 @@ namespace Hanekawa.Bot.Services.Mvp
                     }
                     catch (Exception e)
                     {
-                        _log.LogAction(LogLevel.Error, e,
+                        _log.Log(NLog.LogLevel.Error, e,
                             $"(MVP Service) Couldn't send message for guild {guildConfig.GuildId} in channel {guildConfig.MvpChannel.Value}");
                     }
                 }
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(MVP Service) Error when assigning MVP rewards\n{e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(MVP Service) Error when assigning MVP rewards\n{e.Message}");
             }
         }
     }

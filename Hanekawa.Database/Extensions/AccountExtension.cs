@@ -39,8 +39,7 @@ namespace Hanekawa.Database.Extensions
                 await context.SaveChangesAsync();
                 await Task.Delay(20);
                 var toReturn = await context.Accounts.FindAsync(user, guild);
-                if (toReturn != null) return toReturn;
-                return data;
+                return toReturn ?? data;
             }
             catch
             {

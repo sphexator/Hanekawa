@@ -3,6 +3,7 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Bot.Preconditions;
 using Hanekawa.Database;
+using Hanekawa.Shared.Command;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -14,6 +15,7 @@ namespace Hanekawa.Bot.Modules.Account
         [Command("profile")]
         [Description("Showcase yours or another persons profile")]
         [RequireBotGuildPermissions(Permission.AttachFiles, Permission.SendMessages)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         [RequiredChannel]
         public async Task ProfileAsync(CachedMember user = null)
         {

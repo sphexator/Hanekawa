@@ -13,7 +13,7 @@ using Hanekawa.Shared;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Account = Hanekawa.Database.Tables.Account.Account;
 
 namespace Hanekawa.Bot.Services.Experience
@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Services.Experience
     public partial class ExpService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly Logger _log;
         private readonly Random _random;
         private readonly IServiceProvider _provider;
 
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _client = client;
             _random = random;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             _ = EventHandler(new CancellationToken());
@@ -95,7 +95,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
+                    _log.Log(NLog.LogLevel.Error, e, $"Couldn't load {x.GuildId} reward plugin for {x.ChannelId}, remove?");
                 }
             }
         }
@@ -117,7 +117,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception e)
                 {
-                    _log.LogAction(LogLevel.Error, e,
+                    _log.Log(NLog.LogLevel.Error, e,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Global Exp - {e.Message}");
                 }
             });
@@ -138,14 +138,14 @@ namespace Hanekawa.Bot.Services.Experience
                     await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                     var userData = await db.GetOrCreateUserData(user);
                     userData.LastMessage = DateTime.UtcNow;
-                    if(!userData.FirstMessage.HasValue) userData.FirstMessage = DateTime.UtcNow;
+                    userData.FirstMessage ??= DateTime.UtcNow;
                     await AddExpAsync(user, userData, GetExp(channel), _random.Next(0, 3), db);
                     await MvpCount(db, userData, user);
                     await GiveawayAsync(db, user);
                 }
                 catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, z,
+                    _log.Log(NLog.LogLevel.Error, z,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Server Exp - {z.Message}");
                 }
             });
@@ -156,11 +156,10 @@ namespace Hanekawa.Bot.Services.Experience
         {
             _ = Task.Run(async () =>
             {
+                if (e.Member.IsBot) return;
                 var user = e.Member;
-                if (user.IsBot) return;
                 var after = e.NewVoiceState;
                 var before = e.OldVoiceState;
-                if (user.IsBot) return;
                 try
                 {
                     using var scope = _provider.CreateScope();
@@ -185,7 +184,7 @@ namespace Hanekawa.Bot.Services.Experience
                 }
                 catch (Exception z)
                 {
-                    _log.LogAction(LogLevel.Error, z,
+                    _log.Log(NLog.LogLevel.Error, z,
                         $"(Exp Service) Error in {user.Guild.Id.RawValue} for Voice - {z.Message}");
                 }
             });

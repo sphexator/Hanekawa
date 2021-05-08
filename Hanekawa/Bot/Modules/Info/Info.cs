@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Modules.Info
         [Command("about", "info", "bot", "botinfo")]
         [Description("General information about the bot and links")]
         [RequireBotGuildPermissions(Permission.EmbedLinks)]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         [RequiredChannel]
         public async Task AboutAsync()
         {
@@ -43,7 +43,7 @@ namespace Hanekawa.Bot.Modules.Info
         [Command("uptime")]
         [Description("Show bots up time")]
         [RequireBotGuildPermissions(Permission.EmbedLinks)]
-        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.Whatever)]
+        [Cooldown(1, 5, CooldownMeasure.Seconds, HanaCooldown.User)]
         [RequiredChannel]
         public async Task UptimeAsync() 
             => await Context.ReplyAsync($"Current up time: {(DateTime.Now - Process.GetCurrentProcess().StartTime).Humanize()}");

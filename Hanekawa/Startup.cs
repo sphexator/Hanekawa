@@ -53,7 +53,7 @@ namespace Hanekawa
             services.AddDbContextPool<DbService>(x =>
             {
                 x.UseNpgsql(Configuration["connectionString"]);
-                x.EnableDetailedErrors(true);
+                x.EnableDetailedErrors();
                 x.EnableSensitiveDataLogging(false);
                 x.UseLoggerFactory(MyLoggerFactory);
             });
@@ -90,8 +90,11 @@ namespace Hanekawa
                             StringComparison = StringComparison.OrdinalIgnoreCase,
                             CooldownBucketKeyGenerator = (e, context) =>
                             {
+                                var cooldownType = (HanaCooldown)e;
                                 var ctx = (HanekawaCommandContext) context;
-                                return ctx.User.Id.RawValue;
+                                return cooldownType == HanaCooldown.User 
+                                    ? ctx.User.Id.RawValue 
+                                    : ctx.Guild.Id.RawValue;
                             }
                         },
                         ProviderFactory = _ => x

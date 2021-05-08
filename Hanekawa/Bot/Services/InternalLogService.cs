@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Logging;
+using Hanekawa.Exceptions;
 using Hanekawa.Extensions;
 using Hanekawa.Extensions.Embed;
 using Hanekawa.Shared.Interfaces;
@@ -14,8 +15,6 @@ using Humanizer;
 using NLog;
 using Qmmands;
 using ILogger = Disqord.Logging.ILogger;
-using Logger = NLog.Logger;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa.Bot.Services
 {
@@ -35,19 +34,19 @@ namespace Hanekawa.Bot.Services
         }
 
         private void DisqordLogger(object sender, LogEventArgs e) => _logger.Log(LogSevToNLogLevel(e.Severity), e.Exception, e.Message);
-        public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(LogLvlToNLogLvl(l), e, m);
+        //public void LogAction(LogLevel l, Exception e, string m) => _logger.Log(LogLvlToNLogLvl(l), e, m);
 
-        public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
+        //public void LogAction(LogLevel l, string m) => _logger.Log(LogLvlToNLogLvl(l), m);
 
         private Task CommandExecuted(CommandExecutedEventArgs e)
         {
-            _logger.Log(NLog.LogLevel.Info, $"Executed Command {e.Context.Command.Name}");
+            _logger.Log(LogLevel.Info, $"Executed Command {e.Context.Command.Name}");
             return Task.CompletedTask;
         }
 
         private Task CommandErrorLog(CommandExecutionFailedEventArgs e)
         {
-            _logger.Log(NLog.LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
+            _logger.Log(LogLevel.Error, e.Result.Exception, $"{e.Result.Reason} - {e.Result.CommandExecutionStep}");
             _ = Task.Run(async () =>
             {
                 if (!(e.Context is DiscordCommandContext context)) return;
@@ -88,14 +87,16 @@ namespace Hanekawa.Bot.Services
                             case HttpRequestException _:
                                 response.AppendLine("I am missing the required permissions to perform this action");
                                 break;
+                            case HanaCommandException exception:
+                                response.AppendLine(exception.CommandErrorMessage);
+                                break;
                             default:
                                 response.AppendLine("Something went wrong...");
                                 break;
                         }
-
                         break;
                     case CommandNotFoundResult _:
-                        var list = new List<Tuple<Qmmands.Command, int>>();
+                        var list = new List<Tuple<Command, int>>();
                         var commands = _client.GetAllCommands();
                         foreach (var x in commands)
                             for (var i = 0; i < x.Aliases.Count; i++)
@@ -125,7 +126,7 @@ namespace Hanekawa.Bot.Services
                 msg.AppendLine($"Error in guild: {context.Guild.Name} (size: {context.Guild.MemberCount}) - {context.Guild.Id.RawValue}");
                 msg.AppendLine($"Invoked by: {context.User} ({context.User.Id.RawValue})");
                 msg.AppendLine($"Command failed: {e.Result.Command.Name}");
-                msg.AppendLine($"Command Format: {e.Result.Command.Name} {args}");
+                msg.AppendLine($"Command Format: {e.Result.Command.Name} {args} {e.Context.RawArguments}");
                 msg.AppendLine($"Reason: {e.Result.Reason}");
                 msg.AppendLine($"Response: {response}");
                 msg.AppendLine(e.Result.Exception.Message);
@@ -137,28 +138,16 @@ namespace Hanekawa.Bot.Services
             return Task.CompletedTask;
         }
 
-        private NLog.LogLevel LogSevToNLogLevel(LogSeverity log) =>
+        private static LogLevel LogSevToNLogLevel(LogSeverity log) =>
             log switch
             {
-                LogSeverity.Critical => NLog.LogLevel.Fatal,
-                LogSeverity.Error => NLog.LogLevel.Error,
-                LogSeverity.Warning => NLog.LogLevel.Warn,
-                LogSeverity.Information => NLog.LogLevel.Info,
-                LogSeverity.Trace => NLog.LogLevel.Trace,
-                LogSeverity.Debug => NLog.LogLevel.Debug,
-                _ => NLog.LogLevel.Off
-            };
-
-        private NLog.LogLevel LogLvlToNLogLvl(LogLevel log) =>
-            log switch
-            {
-                LogLevel.Critical => NLog.LogLevel.Fatal,
-                LogLevel.Error => NLog.LogLevel.Error,
-                LogLevel.Warning => NLog.LogLevel.Warn,
-                LogLevel.Information => NLog.LogLevel.Info,
-                LogLevel.Trace => NLog.LogLevel.Trace,
-                LogLevel.Debug => NLog.LogLevel.Debug,
-                _ => NLog.LogLevel.Off
+                LogSeverity.Critical => LogLevel.Fatal,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warn,
+                LogSeverity.Information => LogLevel.Info,
+                LogSeverity.Trace => LogLevel.Trace,
+                LogSeverity.Debug => LogLevel.Debug,
+                _ => LogLevel.Off
             };
     }
 
@@ -166,10 +155,7 @@ namespace Hanekawa.Bot.Services
     {
         private readonly Logger _logger;
 
-        public DiscordLogger()
-        {
-            _logger = LogManager.GetCurrentClassLogger();
-        }
+        public DiscordLogger() => _logger = LogManager.GetCurrentClassLogger();
 
         public void Dispose() { }
 
@@ -177,16 +163,16 @@ namespace Hanekawa.Bot.Services
 
         public event EventHandler<LogEventArgs> Logged;
 
-        private static NLog.LogLevel SevToLogLevel(LogSeverity log) =>
+        private static LogLevel SevToLogLevel(LogSeverity log) =>
             log switch
             {
-                LogSeverity.Critical => NLog.LogLevel.Fatal,
-                LogSeverity.Error => NLog.LogLevel.Error,
-                LogSeverity.Warning => NLog.LogLevel.Warn,
-                LogSeverity.Information => NLog.LogLevel.Info,
-                LogSeverity.Trace => NLog.LogLevel.Trace,
-                LogSeverity.Debug => NLog.LogLevel.Debug,
-                _ => NLog.LogLevel.Off
+                LogSeverity.Critical => LogLevel.Fatal,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warn,
+                LogSeverity.Information => LogLevel.Info,
+                LogSeverity.Trace => LogLevel.Trace,
+                LogSeverity.Debug => LogLevel.Debug,
+                _ => LogLevel.Off
             };
     }
 }

@@ -18,11 +18,10 @@ using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Command.Extensions;
 using Hanekawa.Shared.Game;
 using Hanekawa.Shared.Interfaces;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Game.Ship
 {
@@ -33,17 +32,17 @@ namespace Hanekawa.Bot.Services.Game.Ship
         private readonly ImageGenerator _img;
         private readonly Random _random;
         private readonly AchievementService _achievement;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly IServiceProvider _provider;
 
-        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, InternalLogService log, IServiceProvider provider)
+        public ShipGameService(Random random, ImageGenerator img, ExpService exp, ColourService colourService, AchievementService achievement, IServiceProvider provider)
         {
             _random = random;
             _img = img;
             _exp = exp;
             _colourService = colourService;
             _achievement = achievement;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
 
             using var scope = _provider.CreateScope();
@@ -275,7 +274,7 @@ namespace Hanekawa.Bot.Services.Game.Ship
             }
 
             RemoveBattle(context);
-            _log.LogAction(LogLevel.Information, "(Ship Game) Completed game");
+            _log.Log(LogLevel.Info, "(Ship Game) Completed game");
         }
 
         public async Task AttackAsync(HanekawaCommandContext context, CachedMember playerTwoUser, int? bet = 0)
@@ -464,12 +463,12 @@ namespace Hanekawa.Bot.Services.Game.Ship
                 }
 
                 RemoveDuel(context, playerTwoUser);
-                _log.LogAction(LogLevel.Information, "(Ship Game) Completed duel");
+                _log.Log(LogLevel.Info, "(Ship Game) Completed duel");
             }
             catch(Exception e)
             {
                 RemoveDuel(context, playerTwoUser);
-                _log.LogAction(LogLevel.Error, e, "(Ship Game) Duel failed");
+                _log.Log(NLog.LogLevel.Error, e, "(Ship Game) Duel failed");
             }
         }
 

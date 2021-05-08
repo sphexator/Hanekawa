@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
-using Hanekawa.Bot.Prefix;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
@@ -20,17 +18,17 @@ namespace Hanekawa.Bot.Modules.Settings
     public class Settings : HanekawaCommandModule
     {
         private readonly ColourService _colourService;
-        private readonly Services.Caching.Prefix _prefix;
+        private readonly Services.Caching.CacheService _cacheService;
 
-        public Settings(ColourService colourService, Services.Caching.Prefix prefix)
+        public Settings(ColourService colourService, Services.Caching.CacheService cacheService)
         {
             _colourService = colourService;
-            _prefix = prefix;
+            _cacheService = cacheService;
         }
 
-        [Name("Add prefix")]
+        [Name("Add Prefix")]
         [Command("addprefix", "aprefix")]
-        [Description("Adds a prefix to the bot, if it doesn't already exist")]
+        [Description("Adds a cacheService to the bot, if it doesn't already exist")]
         public async Task AddPrefixAsync([Remainder] string prefix)
         {
             
@@ -38,21 +36,21 @@ namespace Hanekawa.Bot.Modules.Settings
             var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             if (config.Prefix != prefix)
             {
-                _prefix.AddorUpdatePrefix(Context.Guild, prefix);
+                _cacheService.AddOrUpdatePrefix(Context.Guild, prefix);
                 config.Prefix = prefix;
                 await db.SaveChangesAsync();
-                await Context.ReplyAsync($"Added {prefix} as a prefix.", Color.Green);
+                await Context.ReplyAsync($"Added {prefix} as a cacheService.", Color.Green);
                 return;
             }
-            await Context.ReplyAsync($"{prefix} is already a prefix on this server.", Color.Red);
+            await Context.ReplyAsync($"{prefix} is already a cacheService on this server.", Color.Red);
         }
 
         [Name("Set embed color")]
         [Command("embed")]
         [Description("Changes the embed colour of the bot")]
-        public async Task SetEmbedColorAsync(uint color)
+        public async Task SetEmbedColorAsync(Color color)
         {
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color((int)color));
+            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", new Color(color));
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
                 x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
             if (response == null)
@@ -61,16 +59,16 @@ namespace Hanekawa.Bot.Modules.Settings
                 return;
             }
             if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                await using (var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>())
-                {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color((int)color));
-                    cfg.EmbedColor = color;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Changed default embed color");
-                }
+            {
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                _colourService.AddOrUpdate(Context.Guild.Id.RawValue, new Color(color));
+                cfg.EmbedColor = (uint)color.RawValue;
+                await db.SaveChangesAsync();
+                await Context.ReplyAsync("Changed default embed color");
+            }
             else
-                await Context.ReplyAsync("Canceled");
+                await Context.ReplyAsync("Cancelled");
         }
 
         [Name("Set embed color")]
@@ -79,35 +77,6 @@ namespace Hanekawa.Bot.Modules.Settings
         public async Task SetEmbedColorAsync(int r, int g, int b)
         {
             var color = new Color(r, g, b);
-            await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
-            var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
-                x.Message.Guild == Context.Guild && x.Message.Author == Context.User);
-            if (response == null)
-            {
-                await Context.ReplyAsync("Timed out...", Color.Red);
-                return;
-            }
-            if (response.Message.Content.ToLower() == "y" || response.Message.Content.ToLower() == "yes")
-                await using (var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>())
-                {
-                    var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-                    _colourService.AddOrUpdate(Context.Guild.Id.RawValue, color);
-                    cfg.EmbedColor = (uint)color.RawValue;
-                    await db.SaveChangesAsync();
-                    await Context.ReplyAsync("Changed default embed color");
-                }
-            else
-                await Context.ReplyAsync("Canceled");
-        }
-
-        [Name("Set embed color")]
-        [Command("embed")]
-        [Description("Changes the embed colour of the bot")]
-        public async Task SetEmbedColorAsync(string colorHex)
-        {
-            if (colorHex.Contains("#")) colorHex = colorHex.Replace("#", "");
-            colorHex = colorHex.Insert(0, "0x");
-            var color = new Color(Convert.ToInt32(colorHex, 16)); // _colors.GetColor(colorHex).RawValue;
             await Context.ReplyAsync("Would you like to change embed color to this ? (y/n)", color);
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(x =>
                 x.Message.Guild == Context.Guild && x.Message.Author == Context.User);

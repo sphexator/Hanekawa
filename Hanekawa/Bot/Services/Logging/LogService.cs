@@ -2,30 +2,33 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hanekawa.Bot.Services.Caching;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Shared.Command;
 using Hanekawa.Shared.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 
 namespace Hanekawa.Bot.Services.Logging
 {
     public partial class LogService : INService, IRequired
     {
         private readonly Hanekawa _client;
-        private readonly InternalLogService _log;
+        private readonly Logger _log;
         private readonly IServiceProvider _provider;
         private readonly ColourService _colourService;
+        private readonly CacheService _cache;
 
-        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>> _invites =
-            new ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>>();
+        private readonly ConcurrentDictionary<ulong, ConcurrentDictionary<string, Tuple<ulong, int>>> _invites = new();
 
-        public LogService(Hanekawa client, InternalLogService log, IServiceProvider provider, ColourService colourService)
+        public LogService(Hanekawa client, IServiceProvider provider, ColourService colourService, CacheService cache)
         {
             _client = client;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _provider = provider;
             _colourService = colourService;
+            _cache = cache;
 
             _client.MemberBanned += UserBanned;
             _client.MemberUnbanned += UserUnbanned;

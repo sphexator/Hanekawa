@@ -23,6 +23,7 @@ namespace Hanekawa.Bot
             RemoveTypeParser(GetSpecificTypeParser<CachedTextChannel, CachedGuildChannelTypeParser<CachedTextChannel>>());
             RemoveTypeParser(GetSpecificTypeParser<CachedVoiceChannel, CachedGuildChannelTypeParser<CachedVoiceChannel>>());
             RemoveTypeParser(GetSpecificTypeParser<CachedCategoryChannel, CachedGuildChannelTypeParser<CachedCategoryChannel>>());
+            RemoveTypeParser(GetSpecificTypeParser<Color, ColorTypeParser>());
 
             AddTypeParser(new CachedRoleTypeParser(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedUserTypeParser(StringComparison.OrdinalIgnoreCase));
@@ -31,8 +32,10 @@ namespace Hanekawa.Bot
             AddTypeParser(new CachedGuildChannelTypeParser<CachedVoiceChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new CachedGuildChannelTypeParser<CachedCategoryChannel>(StringComparison.OrdinalIgnoreCase));
             AddTypeParser(new TimeSpanTypeParser());
+            AddTypeParser(new ColourTypeParser());
+            AddTypeParser(new RangeTypeParser());
 
-            this.CommandExecuted += HaneCommandExecuted;
+            CommandExecuted += HaneCommandExecuted;
         }
 
         private Task HaneCommandExecuted(CommandExecutedEventArgs e)
@@ -41,8 +44,8 @@ namespace Hanekawa.Bot
             return Task.CompletedTask;
         }
 
-        protected override async ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
-            !message.Author.IsBot && !(message.Channel is IPrivateChannel);
+        protected override ValueTask<bool> CheckMessageAsync(CachedUserMessage message) =>
+            new(!message.Author.IsBot && !(message.Channel is IPrivateChannel));
 
         protected override ValueTask<DiscordCommandContext> GetCommandContextAsync(CachedUserMessage message,
             IPrefix prefix)

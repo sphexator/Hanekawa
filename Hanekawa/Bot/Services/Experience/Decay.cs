@@ -27,6 +27,7 @@ namespace Hanekawa.Bot.Services.Experience
                 var limit = DateTime.UtcNow.AddDays(-14);
                 var servers = await db.LevelConfigs.Where(x => x.Decay).ToArrayAsync();
                 if (servers.Length <= 0) return;
+                _log.Log(NLog.LogLevel.Info, $"(Exp Service: Decay) Executing decay in {servers.Length} servers");
                 foreach (var x in servers)
                 {
                     var server = _client.GetGuild(x.GuildId);
@@ -34,6 +35,7 @@ namespace Hanekawa.Bot.Services.Experience
                     var levelRewards = await db.LevelRewards.Where(e => e.GuildId == x.GuildId).ToListAsync();
                     var users = await db.Accounts.Where(e =>
                         e.GuildId == x.GuildId && e.Active && e.LastMessage <= limit && e.Decay < e.TotalExp).ToArrayAsync();
+                    _log.Log(NLog.LogLevel.Info, $"(Exp Service: Decay) Executing decay for server {server.Name} ({x.GuildId})");
                     foreach (var user in users)
                     {
                         if (user.TotalExp == user.Decay) continue;
@@ -44,18 +46,28 @@ namespace Hanekawa.Bot.Services.Experience
                             continue;
                         }
                         if (member.IsBoosting) continue;
-                        var decay = Convert.ToInt32((DateTime.UtcNow - user.LastMessage).TotalDays) * 1000;
-                        if (decay == user.Decay) continue;
-                        if (user.TotalExp <= user.Decay + decay) user.Decay = user.TotalExp;
-                        if (user.TotalExp > user.Decay + decay) user.Decay = decay;
-                        await RoleCheckAsync(member, x, user, levelRewards, db, LevelDecay(user, decay));
+                        try
+                        {
+                            var decay = Convert.ToInt32((DateTime.UtcNow - user.LastMessage).TotalDays) * 1000;
+                            if (decay == user.Decay) continue;
+                            if (user.TotalExp <= user.Decay + decay) user.Decay = user.TotalExp;
+                            if (user.TotalExp > user.Decay + decay) user.Decay = decay;
+                            var decayLevels = LevelDecay(user, decay);
+                            if (decayLevels == 0) continue;
+                            _log.Log(NLog.LogLevel.Info, $"(Exp Service: Decay) Executing role check on {member} ({member.Id.RawValue}) in {server.Name} ({x.GuildId})");
+                            await RoleCheckAsync(member, x, user, levelRewards, db, decayLevels);
+                        }
+                        catch (Exception e)
+                        {
+                            _log.Log(NLog.LogLevel.Error, e, $"(Exp Service: Decay) Couldn't executing role check on {member} ({member.Id.RawValue}) in {server.Name} ({x.GuildId})\n{e.Message}");
+                        }
                     }
                     await db.SaveChangesAsync();
                 }
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Exp Service: Decay) Error occured during decay - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Exp Service: Decay) Error occured during decay - {e.Message}");
             }
         }
 

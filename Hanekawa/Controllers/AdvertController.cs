@@ -18,7 +18,7 @@ using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using NLog;
 using Quartz.Util;
 
 namespace Hanekawa.Controllers
@@ -30,16 +30,16 @@ namespace Hanekawa.Controllers
         private readonly DbService _db;
         private readonly Bot.Hanekawa _client;
         private readonly ExpService _exp;
-        private readonly InternalLogService _log;
+        private readonly NLog.Logger _log;
         private readonly ColourService _colour;
         private readonly CurrencyService _currency;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, InternalLogService log, ColourService colour, CurrencyService currency)
+        public AdvertController(DbService db, Bot.Hanekawa client, ExpService exp, ColourService colour, CurrencyService currency)
         {
             _db = db;
             _client = client;
             _exp = exp;
-            _log = log;
+            _log = LogManager.GetCurrentClassLogger();
             _colour = colour;
             _currency = currency;
         }
@@ -103,7 +103,7 @@ namespace Hanekawa.Controllers
                         Footer = new LocalEmbedFooterBuilder{ IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
                     }.Build());
                 }
-                _log.LogAction(LogLevel.Information, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
+                _log.Log(LogLevel.Info, $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
 
                 var giveaways = await _db.Giveaways
                     .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync();
@@ -181,7 +181,7 @@ namespace Hanekawa.Controllers
             }
             catch (Exception e)
             {
-                _log.LogAction(LogLevel.Error, e, $"(Advert Endpoint) Error in awarding user for voting - {e.Message}");
+                _log.Log(NLog.LogLevel.Error, e, $"(Advert Endpoint) Error in awarding user for voting - {e.Message}");
                 return StatusCode(500);
             }
         }

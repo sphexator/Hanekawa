@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Prefix
         public async ValueTask<IEnumerable<IPrefix>> GetPrefixesAsync(CachedUserMessage message)
         {
             if (message.Channel is IPrivateChannel) return null;
-            var prefixService = _provider.GetRequiredService<Services.Caching.Prefix>();
+            var prefixService = _provider.GetRequiredService<Services.Caching.CacheService>();
             var prefixCollection = prefixService.GetCollection(message.Guild.Id);
             if (prefixCollection != null)
             {
@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Prefix
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(message.Guild.Id);
             var prefix = new StringPrefix(cfg.Prefix);
-            prefixService.AddorUpdatePrefix(message.Guild, cfg.Prefix);
+            prefixService.AddOrUpdatePrefix(message.Guild, cfg.Prefix);
             prefixService.IsMentionPrefix(message, out _);
             var collection = prefixService.GetCollection(message.Guild.Id);
 
