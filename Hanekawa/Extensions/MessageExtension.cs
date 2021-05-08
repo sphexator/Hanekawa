@@ -3,77 +3,87 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Disqord.Rest;
+using Humanizer;
 
 namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<Snowflake>> FilterMessagesAsync(this ICachedMessageChannel channel, int amount = 100,
-            CachedMember filterBy = null)
+        public static async Task<List<Snowflake>> FilterMessagesAsync(this ITextChannel channel, int amount = 100,
+            IMember filterBy = null)
         {
-            var messages = await channel.GetMessagesAsync(amount);
+            var messages = await channel.FetchMessagesAsync(amount);
             return messages.ToList().FilterMessages(filterBy);
         }
+        
+        public static List<Snowflake> FilterMessages(this IEnumerable<IMessage> messages, IMember filterBy = null) 
+            => (from x in messages 
+                where x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow 
+                where filterBy == null || x.Author.Id.RawValue == filterBy.Id.RawValue 
+                select x.Id.RawValue).Select(dummy => (Snowflake) dummy).ToList();
 
-        public static List<Snowflake> FilterMessages(this List<RestMessage> msgs, CachedMember filterBy = null)
+        public static LocalMessage Create(this LocalMessageBuilder builder, LocalEmbedBuilder embed, 
+            LocalMentionsBuilder mention = null)
         {
-            var result = new List<Snowflake>();
-            for (var i = 0; i < msgs.Count; i++)
+            builder.Embed = embed;
+            builder.Mentions = mention ?? LocalMentionsBuilder.None;
+            return builder.Build();
+        }
+        
+        public static LocalMessage Create(this LocalMessageBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null) =>
+            builder.CreateWithoutBuild(message, color, mention).Build();
+        
+        public static LocalEmbed Create(this LocalEmbedBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null) =>
+            builder.CreateDefaultEmbed(message, color, mention).Build();
+
+        public static LocalMessageBuilder CreateWithoutBuild(this LocalMessageBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null)
+        {
+            builder.Embed = new LocalEmbedBuilder
             {
-                var x = msgs[i];
-                // Checks if message can be deleted
-                // Messages that's older then 14 days or 2 weeks can't be bulk deleted
-                if (x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow)
-                {
-                    // If we're filtering, don't add if its not from the filtered user.
-                    if (filterBy != null && x.Author.Id.RawValue != filterBy.Id.RawValue) continue;
-                    result.Add(x.Id.RawValue);
-                }
-            }
-
-            return result;
+                Color = color,
+                Description = message.Truncate(2000)
+            };
+            builder.Mentions = mention ?? LocalMentionsBuilder.None;
+            return builder;
+        }
+        
+        public static LocalEmbedBuilder CreateDefaultEmbed(this LocalEmbedBuilder builder, string message, Color color, 
+            LocalMentionsBuilder mention = null)
+        {
+            builder.Color = color;
+            builder.Description = message.Truncate(2000);
+            return builder;
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this ICachedMessageChannel channel,
-            IEnumerable<Snowflake> messageIds)
+        public static async Task<bool> TryDeleteMessageAsync(this IMessage message)
         {
-            if (!(channel is CachedTextChannel gChannel)) return true;
-            var currentUser = gChannel.Guild.CurrentMember;
-            if (!currentUser.Permissions.ManageMessages) return false;
-            await gChannel.DeleteMessagesAsync(messageIds);
-            return true;
-        }
-
-        public static async Task<bool> TryDeleteMessageAsync(this ICachedMessageChannel channel, Snowflake messageId)
-        {
-            if (!(channel is CachedTextChannel gChannel)) return true;
-            var currentUser = gChannel.Guild.CurrentMember;
-            if (!currentUser.Permissions.ManageMessages) return false;
-            if (messageId.CreatedAt.AddDays(14) <= DateTimeOffset.UtcNow) return false;
-            await channel.DeleteMessageAsync(messageId);
-            return true;
-        }
-
-        public static async Task<bool> TryDeleteMessagesAsync(this CachedMessage msg)
-        {
-            if (!(msg.Channel is CachedTextChannel chn)) return false;
-            if (!chn.Guild.CurrentMember.Permissions.ManageMessages) return false;
-            if (msg.CreatedAt.AddDays(14) <= DateTimeOffset.UtcNow) return false;
-            await msg.DeleteAsync();
-            return true;
-        }
-
-        public static async Task<bool> TryDeleteMessageAsync(this CachedMessage msg)
-        {
-            if (!(msg.Channel is CachedTextChannel chn)) return false;
-            if (!chn.Guild.CurrentMember.Permissions.ManageMessages) return false;
             try
             {
-                await msg.DeleteAsync();
+                await message.DeleteAsync();
+                return true;
             }
-            catch { /* Ignore ? */ }
-            return true;
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static async Task<bool> TryDeleteMessagesAsync(this ITextChannel channel, IEnumerable<Snowflake> messageIds)
+        {
+            try
+            {
+                await channel.DeleteMessagesAsync(messageIds);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

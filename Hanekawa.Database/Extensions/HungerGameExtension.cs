@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.Shared.Game.HungerGame;
 
 namespace Hanekawa.Database.Extensions
 {
     public static class HungerGameExtension
     {
         public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, CachedGuild guild) =>
-            await GetOrCreateHungerGameStatus(db, guild.Id.RawValue);
-
-        public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, ulong guildId)
+            await GetOrCreateHungerGameStatus(db, guild.Id);
+        
+        public static async Task<HungerGameStatus> GetOrCreateHungerGameStatus(this DbService db, Snowflake guildId)
         {
             var response = await db.HungerGameStatus.FindAsync(guildId);
             if (response != null) return response;
@@ -21,7 +22,7 @@ namespace Hanekawa.Database.Extensions
                 SignUpChannel = null,
                 EventChannel = null,
                 EmoteMessageFormat = "<:Rooree:761209568365248513>",
-                Stage = HungerGameStage.Closed,
+                Stage = GameStage.Closed,
                 SignUpStart = DateTimeOffset.UtcNow,
                 SignUpMessage = null,
                 GameId = null,

@@ -1,9 +1,11 @@
+using Disqord;
+
 namespace Hanekawa.Database.Tables.Config
 {
     public class EventPayout
     {
-        public ulong GuildId { get; set; }
-        public ulong UserId { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake UserId { get; set; }
         public int Amount { get; set; } = 100;
     }
 }

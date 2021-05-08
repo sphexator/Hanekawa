@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Disqord;
-using Disqord.Bot;
-using Hanekawa.Bot.Preconditions;
+using System.Threading;
+using Hanekawa.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Qmmands;
-using Command = Hanekawa.Models.Api.Command;
-using Module = Hanekawa.Models.Api.Module;
+using Command = Hanekawa.Models.Command;
+using Module = Hanekawa.Models.Module;
 
 namespace Hanekawa.Controllers
 {
@@ -20,10 +17,10 @@ namespace Hanekawa.Controllers
         public CommandsController(Bot.Hanekawa bot) => _bot = bot;
 
         [HttpGet]
-        public List<Module> GetCommands()
+        public List<Module> GetCommands(CancellationToken token)
         {
             var toReturn = new List<Module>();
-            var modules = _bot.GetAllModules().OrderBy(x => x.Name);
+            var modules = _bot.Commands.GetAllModules().OrderBy(x => x.Name);
             foreach (var x in modules)
             {
                 if(x.Name == "Owner") continue;
@@ -32,7 +29,7 @@ namespace Hanekawa.Controllers
                 {
                     if (commands.TryGetValue(c.Name, out var command))
                     {
-                        command.Example.Add($"{c.FullAliases.FirstOrDefault()} {ExampleParamBuilder(c)}");
+                        command.Example.Add($"{c.FullAliases.FirstOrDefault()} {c.ExampleParamBuilder()}");
                     }
                     else
                     {
@@ -42,9 +39,9 @@ namespace Hanekawa.Controllers
                             Commands = c.FullAliases.ToList(),
                             Description = c.Description,
                             Example = new List<string>
-                                {$"{c.FullAliases.FirstOrDefault()} {ExampleParamBuilder(c)}"},
-                            Premium = PremiumCheck(c),
-                            Permissions = PermBuilder(c)
+                                {$"{c.FullAliases.FirstOrDefault()} {c.ExampleParamBuilder()}"},
+                            Premium = c.PremiumCheck(out _),
+                            Permissions = c.PermBuilder()
                         });
                     }
                 }
@@ -58,65 +55,5 @@ namespace Hanekawa.Controllers
 
             return toReturn;
         }
-
-        private static bool PremiumCheck(Qmmands.Command cmd)
-        {
-            var premium = cmd.Checks.FirstOrDefault(x => x is RequirePremium) 
-                          ?? cmd.Module.Checks.FirstOrDefault(x => x is RequirePremium);
-            return premium != null;
-        }
-
-        private static List<string> PermBuilder(Qmmands.Command cmd)
-        {
-            var str = new List<string>();
-            foreach (var x in cmd.Module.Checks)
-            {
-                if (x is RequireMemberGuildPermissionsAttribute perm)
-                {
-                    str.Add(perm.Permissions.FirstOrDefault().ToString());
-                }
-            }
-            foreach (var x in cmd.Checks)
-            {
-                if (x is RequireMemberGuildPermissionsAttribute perm)
-                { 
-                    str.Add(perm.Permissions.FirstOrDefault().ToString());
-                }
-            }
-
-            return str;
-        }
-
-        private string ExampleParamBuilder(Qmmands.Command command)
-        {
-            var output = new StringBuilder();
-            if (!command.Parameters.Any()) return output.ToString();
-            foreach (var x in command.Parameters)
-            {
-                var name = PermTypeBuilder(x);
-                if (x.IsOptional)
-                    output.Append($"{name} ");
-                else if (x.IsRemainder)
-                    output.Append($"{name} ");
-                else if (x.IsMultiple)
-                    output.Append($"{name} ");
-                else
-                    output.Append($"{name} ");
-            }
-
-            return output.ToString();
-        }
-
-        private static string PermTypeBuilder(Parameter parameter) =>
-            parameter.Type == typeof(CachedMember) ? "@bob#0000" :
-            parameter.Type == typeof(CachedRole) ? "role" :
-            parameter.Type == typeof(CachedTextChannel) ? "#General" :
-            parameter.Type == typeof(CachedVoiceChannel) ? "VoiceChannel" :
-            parameter.Type == typeof(CachedCategoryChannel) ? "Category" :
-            parameter.Type == typeof(TimeSpan?) ? "1h2m" :
-            parameter.Type == typeof(TimeSpan) ? "1h2m" :
-            parameter.Type == typeof(int) ? "5" :
-            parameter.Type == typeof(string) ? "Example text" :
-            parameter.Type == typeof(ulong) ? "431610594290827267" : parameter.Name;
     }
 }

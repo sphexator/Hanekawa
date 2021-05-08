@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Hanekawa.Bot.Services.Experience;
+using Disqord.Gateway;
+using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
-using Hanekawa.Models.Api;
+using Hanekawa.Extensions;
+using Hanekawa.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,18 +30,18 @@ namespace Hanekawa.Controllers
         }
 
         [HttpGet("{rawId}")]
-        public async Task<Leaderboard> GetLeaderboardAsync([FromRoute] string rawId)
+        public async Task<Leaderboard> GetLeaderboardAsync([FromRoute] string rawId, CancellationToken token)
         {
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new Leaderboard {Users = new ()};
+            var toReturn = new Leaderboard {Users = new List<LeaderboardUser>()};
             var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
-                .OrderByDescending(x => x.TotalExp - x.Decay).Take(100).ToListAsync();
+                .OrderByDescending(x => x.TotalExp - x.Decay).Take(100).ToListAsync(cancellationToken: token);
             var exp = _provider.GetRequiredService<ExpService>();
             foreach (var x in users)
             {
-                var user = guild.GetMember(x.UserId);
+                var user = await _bot.GetOrFetchMemberAsync(id, x.UserId);
                 if (user != null)
                 {
                     toReturn.Users.Add(new LeaderboardUser
@@ -54,15 +58,15 @@ namespace Hanekawa.Controllers
         }
 
         [HttpGet("{rawId}/weekly")]
-        public async Task<LeaderboardWeekly> GetWeeklyLeaderboardAsync([FromRoute] string rawId)
+        public async Task<LeaderboardWeekly> GetWeeklyLeaderboardAsync([FromRoute] string rawId, CancellationToken token)
         {
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new LeaderboardWeekly {Users = new()};
+            var toReturn = new LeaderboardWeekly {Users = new List<LeaderboardWeeklyUser>()};
             var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
-                .OrderByDescending(x => x.MvpCount).Take(100).ToListAsync();
-            foreach (var x in users)
+                .OrderByDescending(x => x.MvpCount).Take(100).ToListAsync(cancellationToken: token);
+            foreach (var x in from x in users let user = _bot.GetMember(id, x.UserId) where user != null select x)
             {
                 toReturn.Users.Add(new LeaderboardWeeklyUser
                 {
@@ -74,15 +78,16 @@ namespace Hanekawa.Controllers
         }
 
         [HttpGet("{rawId}/richest")]
-        public async Task<LeaderboardWeekly> GetRichestLeaderboardAsync([FromRoute] string rawId)
+        public async Task<LeaderboardWeekly> GetRichestLeaderboardAsync([FromRoute] string rawId, CancellationToken token)
         {
             if (!ulong.TryParse(rawId, out var id)) return null;
             var guild = _bot.GetGuild(id);
             if (guild == null) return null;
-            var toReturn = new LeaderboardWeekly {Users = new()};
+            var toReturn = new LeaderboardWeekly {Users = new List<LeaderboardWeeklyUser>()};
             var users = await _db.Accounts.Where(x => x.GuildId == id && x.Active)
-                .OrderByDescending(x => x.Credit).Take(100).ToListAsync();
-            foreach (var x in users)
+                .OrderByDescending(x => x.Credit).Take(100).ToListAsync(cancellationToken: token);
+
+            foreach (var x in from x in users let user = _bot.GetMember(id, x.UserId) where user != null select x)
             {
                 toReturn.Users.Add(new LeaderboardWeeklyUser
                 {

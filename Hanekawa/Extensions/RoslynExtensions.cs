@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Disqord;
+using Disqord.Gateway;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -17,19 +18,23 @@ namespace Hanekawa.Extensions
 
         public static IReadOnlyDictionary<Type, string> ParameterExampleStrings { get; } = new Dictionary<Type, string>
         {
-            [typeof(CachedMember)] = "<@111123736660324352>",
+            [typeof(IMember)] = "<@111123736660324352>",
             [typeof(IMessage)] = "827809315679240202",
-            [typeof(LocalCustomEmoji)] = "<:naicu:469925413162975242>",
-            [typeof(CachedTextChannel)] = "#general",
-            [typeof(CachedRole)] = "@Admins"
+            [typeof(ICustomEmoji)] = "<:naicu:469925413162975242>",
+            [typeof(ITextChannel)] = "#general",
+            [typeof(IRole)] = "@Admins"
         };
 
         private static readonly string UsingBlock;
 
         static RoslynExtensions()
         {
-            var rawUsings = new[] {
+            var rawUsing = new[] {
+                "Disqord",
                 "Disqord.Bot",
+                "Disqord.Gateway",
+                "Disqord.Rest",
+                "Disqord.Rest.Default",
                 "Microsoft.Extensions.DependencyInjection",
                 "System",
                 "System.Collections.Generic",
@@ -38,7 +43,7 @@ namespace Hanekawa.Extensions
                 "System.Threading.Tasks",
                 "Qmmands"
             };
-            UsingBlock = string.Concat(rawUsings.Select(str => $"using {str}; "));
+            UsingBlock = string.Concat(rawUsing.Select(str => $"using {str}; "));
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location));
@@ -53,28 +58,23 @@ namespace Hanekawa.Extensions
 
         public static string GetCode(this string rawCode)
         {
-            static string GetCode(string inCode)
+            if (rawCode[0] != BackTick)
             {
-                if (inCode[0] != BackTick)
-                {
-                    return inCode;
-                }
-
-                if (inCode[1] != BackTick)
-                {
-                    return inCode.Substring(1, inCode.Length - 2);
-                }
-
-                var startIndex = inCode.IndexOf(NewLine);
-                if (startIndex == -1)
-                {
-                    throw new ArgumentException("Format your code blocks properly >:[");
-                }
-
-                return inCode.Substring(startIndex + 1, inCode.Length - startIndex - 5);
+                return rawCode;
             }
 
-            var code = GetCode(rawCode);
+            if (rawCode[1] != BackTick)
+            {
+                return rawCode.Substring(1, rawCode.Length - 2);
+            }
+
+            var startIndex = rawCode.IndexOf(NewLine);
+            if (startIndex == -1)
+            {
+                throw new ArgumentException("Code blocks not formatted correctly.");
+            }
+
+            var code = rawCode.Substring(startIndex + 1, rawCode.Length - startIndex - 5);
             return string.Concat(UsingBlock, code);
         }
     }

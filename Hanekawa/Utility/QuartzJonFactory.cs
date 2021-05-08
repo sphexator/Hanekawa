@@ -1,5 +1,5 @@
 ﻿using System;
-using Hanekawa.Shared.Interfaces;
+using Hanekawa.Entities;
 using Quartz;
 using Quartz.Spi;
 
@@ -15,7 +15,7 @@ namespace Hanekawa.Utility
         {
             var jobDetail = bundle.JobDetail;
 
-            var job = (IJob) _services.GetService(jobDetail.JobType);
+            var job = (IJob) _services.GetService(jobDetail.JobType)!;
             return job;
         }
 

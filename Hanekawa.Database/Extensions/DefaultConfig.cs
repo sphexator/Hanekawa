@@ -9,20 +9,16 @@ namespace Hanekawa.Database.Extensions
 {
     internal static class DefaultConfig
     {
-        internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, ulong guild)
+        internal static GuildConfig DefaultGuildConfig(this GuildConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.Prefix = "h.";
-            cfg.MusicVcChannel = null;
-            cfg.MusicChannel = null;
-            cfg.Premium = false;
-            cfg.AnimeAirChannel = null;
-            cfg.AutomaticEventSchedule = false;
+            cfg.Premium = null;
             cfg.EmbedColor = 10181046;
             return cfg;
         }
 
-        internal static AdminConfig DefaultAdminConfig(this AdminConfig cfg, ulong guild)
+        internal static AdminConfig DefaultAdminConfig(this AdminConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.FilterAllInv = true;
@@ -36,7 +32,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static BoardConfig DefaultBoardConfig(this BoardConfig cfg, ulong guild)
+        internal static BoardConfig DefaultBoardConfig(this BoardConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.Channel = null;
@@ -44,7 +40,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static ChannelConfig DefaultChannelConfig(this ChannelConfig cfg, ulong guild)
+        internal static ChannelConfig DefaultChannelConfig(this ChannelConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.DesignChannel = null;
@@ -56,7 +52,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static ClubConfig DefaultClubConfig(this ClubConfig cfg, ulong guild)
+        internal static ClubConfig DefaultClubConfig(this ClubConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.AdvertisementChannel = null;
@@ -69,7 +65,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static CurrencyConfig DefaultCurrencyConfig(this CurrencyConfig cfg, ulong guild)
+        internal static CurrencyConfig DefaultCurrencyConfig(this CurrencyConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.CurrencyName = "Credit";
@@ -81,7 +77,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static LevelConfig DefaultLevelConfig(this LevelConfig cfg, ulong guild)
+        internal static LevelConfig DefaultLevelConfig(this LevelConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.TextExpMultiplier = 1;
@@ -94,7 +90,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static LoggingConfig DefaultLoggingConfig(this LoggingConfig cfg, ulong guild)
+        internal static LoggingConfig DefaultLoggingConfig(this LoggingConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.LogMsg = null;
@@ -107,7 +103,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static SuggestionConfig DefaultSuggestionConfig(this SuggestionConfig cfg, ulong guild)
+        internal static SuggestionConfig DefaultSuggestionConfig(this SuggestionConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.Channel = null;
@@ -116,7 +112,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static WelcomeConfig DefaultWelcomeConfig(this WelcomeConfig cfg, ulong guild)
+        internal static WelcomeConfig DefaultWelcomeConfig(this WelcomeConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
             cfg.Channel = null;
@@ -130,7 +126,7 @@ namespace Hanekawa.Database.Extensions
             return cfg;
         }
 
-        internal static Account DefaultAccount(this Account account, ulong guild, ulong user)
+        internal static Account DefaultAccount(this Account account, Snowflake guild, Snowflake user)
         {
             account.UserId = user;
             account.GuildId = guild;
@@ -156,7 +152,7 @@ namespace Hanekawa.Database.Extensions
             return account;
         }
 
-        internal static AccountGlobal DefaultAccountGlobal(this AccountGlobal account, ulong userId)
+        internal static AccountGlobal DefaultAccountGlobal(this AccountGlobal account, Snowflake userId)
         {
             account.UserId = userId;
             account.Exp = 0;
@@ -166,11 +162,11 @@ namespace Hanekawa.Database.Extensions
             account.StarGive = 0;
             account.StarReceive = 0;
             account.Credit = 0;
-            account.UserColor = (uint)Color.Purple.RawValue;
+            account.UserColor = Color.Purple.RawValue;
             return account;
         }
-
-        internal static DropConfig DefaultDropConfig(this DropConfig cfg, ulong guildId)
+        
+        internal static DropConfig DefaultDropConfig(this DropConfig cfg, Snowflake guildId)
         {
             cfg.GuildId = guildId;
             cfg.Emote = "<:realsip:429809346222882836>";

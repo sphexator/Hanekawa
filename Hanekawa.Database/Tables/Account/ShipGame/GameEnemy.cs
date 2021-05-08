@@ -1,8 +1,11 @@
-﻿namespace Hanekawa.Database.Tables.BotGame
+﻿using System;
+using Disqord;
+
+namespace Hanekawa.Database.Tables.Account.ShipGame
 {
     public class GameEnemy
     {
-        public int Id { get; set; }
+        public Snowflake Id { get; set; }
         public string Name { get; set; } = "test";
 
         public bool Elite { get; set; } = false;

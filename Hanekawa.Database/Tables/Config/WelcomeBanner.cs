@@ -1,13 +1,14 @@
 ﻿using System;
+using Disqord;
 
 namespace Hanekawa.Database.Tables.Config
 {
     public class WelcomeBanner
     {
-        public ulong GuildId { get; set; }
+        public Snowflake GuildId { get; set; }
         public int Id { get; set; }
         public string Url { get; set; }
-        public ulong Uploader { get; set; }
+        public Snowflake Uploader { get; set; }
         public bool IsNsfw { get; set; } = false;
         // Avatar configurations
         public int AvatarSize { get; set; } = 60;

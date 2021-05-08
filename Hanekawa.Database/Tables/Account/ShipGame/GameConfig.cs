@@ -1,8 +1,10 @@
-﻿namespace Hanekawa.Database.Tables.BotGame
+﻿using System;
+
+namespace Hanekawa.Database.Tables.Account.ShipGame
 {
     public class GameConfig
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public int DefaultHealth { get; set; } = 10;
         public int DefaultDamage { get; set; } = 1;
     }

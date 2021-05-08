@@ -10,44 +10,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Bot\Modules\Drop\**" />
-      <Compile Remove="Bot\Modules\Event\**" />
-      <Compile Remove="Bot\Modules\Permission\**" />
-      <Compile Remove="Bot\Modules\QA\**" />
-      <Compile Remove="Bot\Modules\Welcome\**" />
-      <Compile Remove="Entities\**" />
-      <Content Remove="Bot\Modules\Drop\**" />
-      <Content Remove="Bot\Modules\Event\**" />
-      <Content Remove="Bot\Modules\Permission\**" />
-      <Content Remove="Bot\Modules\QA\**" />
-      <Content Remove="Bot\Modules\Welcome\**" />
-      <Content Remove="Entities\**" />
-      <EmbeddedResource Remove="Bot\Modules\Drop\**" />
-      <EmbeddedResource Remove="Bot\Modules\Event\**" />
-      <EmbeddedResource Remove="Bot\Modules\Permission\**" />
-      <EmbeddedResource Remove="Bot\Modules\QA\**" />
-      <EmbeddedResource Remove="Bot\Modules\Welcome\**" />
-      <EmbeddedResource Remove="Entities\**" />
-      <None Remove="Bot\Modules\Drop\**" />
-      <None Remove="Bot\Modules\Event\**" />
-      <None Remove="Bot\Modules\Permission\**" />
-      <None Remove="Bot\Modules\QA\**" />
-      <None Remove="Bot\Modules\Welcome\**" />
-      <None Remove="Entities\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Disqord" Version="1.0.0-nightly-00082" />
-        <PackageReference Include="Disqord.Bot" Version="1.0.0-nightly-00082" />
-        <PackageReference Include="Disqord.Core" Version="1.0.0-nightly-00082" />
-        <PackageReference Include="Disqord.Extensions.Interactivity" Version="1.0.0-nightly-00082" />
-        <PackageReference Include="Disqord.Rest" Version="1.0.0-nightly-00082" />
-        <PackageReference Include="Disqord.Serialization.Json.Newtonsoft" Version="1.0.0-nightly-00070" />
-        <PackageReference Include="Humanizer" Version="2.8.26" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
+        <PackageReference Include="Disqord" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Voice" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Humanizer" Version="2.9.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.9.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -55,33 +33,24 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="NLog" Version="4.7.6" />
-        <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
-        <PackageReference Include="NLog.Web.AspNetCore" Version="4.10.0" />
-        <PackageReference Include="Npgsql" Version="5.0.1.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.1" />
-        <PackageReference Include="Qmmands" Version="3.1.3-nightly-00249" />
-        <PackageReference Include="Quartz" Version="3.2.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="NLog" Version="4.7.9" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
+        <PackageReference Include="NLog.Web.AspNetCore" Version="4.12.0" />
+        <PackageReference Include="Npgsql" Version="5.0.4" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
+        <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
+        <PackageReference Include="Quartz" Version="3.3.2" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
         <PackageReference Include="System.Linq" Version="4.3.0" />
         <PackageReference Include="System.ServiceModel.Syndication" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Bot\Services\Music\" />
-      <Folder Include="Data\Fonts\" />
-      <Folder Include="Data\Game\Border\" />
-      <Folder Include="Data\Game\Enemy\" />
-      <Folder Include="Data\Profile\Default\" />
-      <Folder Include="Data\Welcome\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
-      <ProjectReference Include="..\Hanekawa.Shared\Hanekawa.Shared.csproj" />
+      <ProjectReference Include="..\Hanekawa.HungerGames\Hanekawa.HungerGames.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -94,163 +63,30 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Bot\Service\Administration\Automod\" />
+      <Folder Include="Bot\Service\Administration\Warning\" />
+      <Folder Include="Bot\Service\AutoMessage\" />
+      <Folder Include="Bot\Service\Board\" />
+      <Folder Include="Bot\Service\Boost\" />
+      <Folder Include="Bot\Service\Club\" />
+      <Folder Include="Bot\Service\Drop\" />
+      <Folder Include="Bot\Service\Game\" />
+      <Folder Include="Bot\Service\Mvp\" />
+      <Folder Include="Bot\Service\ImageGeneration\" />
+      <Folder Include="Bot\Service\Welcome\" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Update="Data\Fonts\ARIAL.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALBD.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALBI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALN.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALNB.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALNBI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIALNI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\ARIBLK.TTF">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="Data\Fonts\TIMES.TTF">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Data\Fonts\TIMESBD.TTF">
+      <None Update="Data\Template\ProfileTemplate.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Data\Fonts\TIMESBI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Fonts\TIMESI.TTF">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\background.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Border\Red-border.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\BattleshipReClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\BattleshipRuClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\BattleshipTaClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\DestroyerHaClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\DestroyerIClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\DestroyerNiClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\DestroyerRoClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\HeavyCruiserNeClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\HeavyCruiserRiClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\LightCarrierNuClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\LightCruiserHeClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\LightCruiserHoClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\LightCruiserToClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\LightCruiserTsuClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\StandardCarrierWoClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\SubmarineKaClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\SubmarineSoClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\SubmarineYoClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\TorpedoCruiserChiClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Game\Enemy\TransportShipWaClass.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\1.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\10.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\11.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\12.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\13.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\2.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\3.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\4.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\5.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\6.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\7.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\8.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Default\9.jpg">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Template\AchievementCircle.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Template\Circle.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Profile\Template\Template.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Welcome\Default.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Data\Welcome\WelcomeTemplate.psd">
+      <None Update="Data\Template\WelcomeDefault.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

@@ -1,75 +1,209 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Disqord.Rest;
 
 namespace Hanekawa.Extensions
 {
     public static class UserExtension
     {
-        public static bool HierarchyCheck(this CachedMember mainUser, CachedMember comparer) 
-            => mainUser.Hierarchy > comparer.Hierarchy;
-
-        public static bool HierarchyCheck(this CachedMember mainUser, CachedRole role) 
-            => mainUser.Hierarchy > role.Position;
-
-        public static async Task<bool> TryMute(this CachedMember user)
+        /// <summary>
+        /// Check hierarchy between two users. Returns true if user is below context hierarchy.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IMember context, IMember target)
         {
-            if (user.VoiceState == null) return false;
-            await user.ModifyAsync(x => x.Mute = true);
-            return true;
+            var guild = context.GetGuild();
+            return GetHierarchy(guild, context) > GetHierarchy(guild, target);
         }
 
-        public static async Task<bool> TryUnMute(this CachedMember user)
+        /// <summary>
+        /// Check hierarchy between a user and a role. Returns true if role is below context hierarchy.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IMember context, IRole role)
         {
-            if (user.VoiceState == null) return false;
-            await user.ModifyAsync(x => x.Mute = false);
-            return true;
+            var guild = context.GetGuild();
+            return GetHierarchy(guild, context) > role.Position;
         }
+        
+        /// <summary>
+        /// Check hierarchy between a user and a role. Returns true if user is below your hierarchy.
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="context"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IGuild guild, IMember context, IRole role)
+            => GetHierarchy(guild, context) > role.Position;
 
-        public static string GetGame(this CachedUser user)
+        /// <summary>
+        /// Check hierarchy between the bot and a user. Returns true if user is below bot hierarchy.
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static bool HierarchyCheck(this IGuild guild, IMember user)
+            => GetHierarchy(guild, guild.GetMember(guild.GetGatewayClient().CurrentUser.Id)) >
+               GetHierarchy(guild, user);
+
+        /// <summary>
+        /// Get guild from a cached member.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static CachedGuild GetGuild(this CachedMember context) 
+            => context.Client.GetGuild(context.GuildId);
+        
+        /// <summary>
+        /// Get current bot user from a guild.
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <returns></returns>
+        public static CachedMember GetCurrentUser(this CachedGuild guild) 
+            => guild.Client.GetMember(guild.Id, guild.Id);
+        /// <summary>
+        /// Tries to get user from cache, else retrieves from rest
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public static async ValueTask<IMember> GetOrFetchMemberAsync(this IGuild guild, Snowflake userId)
         {
-            if (user.Presence.Activity == null) return "Currently not playing";
-            var result = user.Presence.Activity.Type switch
-            {
-                ActivityType.Listening => $"Listening: {user.Presence.Activity.Name}",
-                ActivityType.Playing => $"Playing: {user.Presence.Activity.Name}",
-                ActivityType.Streaming => $"Streaming: {user.Presence.Activity.Name}",
-                ActivityType.Watching => $"Watching: {user.Presence.Activity.Name}",
-                _ => "Currently not playing"
-            };
-
-            return result;
-        }
-
-        public static string GetStatus(this CachedUser user)
-        {
-            if (user.Presence == null || user.Presence.Status == null) return "N/A";
-            var result = user.Presence.Status switch
-            {
-                UserStatus.Online => "Online",
-                UserStatus.Idle => "Idle",
-                UserStatus.DoNotDisturb => "DND",
-                UserStatus.Invisible => "Invisible",
-                UserStatus.Offline => "Offline",
-                _ => "N/A"
-            };
-            return result;
-        }
-
-        public static async Task<IMember> GetOrFetchMemberAsync(this CachedGuild guild, Snowflake id)
-        {
-            IMember user = guild.GetMember(id);
+            var user = guild.GetMember(userId);
             if (user != null) return user;
-            user = await guild.GetMemberAsync(id);
-            return user;
+            return await guild.FetchMemberAsync(userId);
+        }
+        
+        /// <summary>
+        /// Tries to get user from cache, else retrieves from rest
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="guildId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public static async ValueTask<IMember> GetOrFetchMemberAsync(this IGatewayClient client, Snowflake guildId,
+            Snowflake userId)
+        {
+            var user = client.GetMember(guildId, userId);
+            if (user != null) return user;
+            var guild = client.GetGuild(guildId);
+            return await guild.FetchMemberAsync(userId);
+        }
+        
+        /// <summary>
+        /// Gets as many people as possible from cache, rest from rest
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="guildId"></param>
+        /// <param name="userIds"></param>
+        /// <returns></returns>
+        public static async ValueTask<List<IMember>> GetOrFetchMembersAsync(this IGatewayClient client,
+            Snowflake guildId, IEnumerable<Snowflake> userIds)
+        {
+            var toRetrieve = new List<Snowflake>();
+            var users = new List<IMember>();
+            foreach (var x in userIds)
+            {
+                var user = client.GetMember(guildId, x);
+                if (user == null) toRetrieve.Add(x);
+                else users.Add(user);
+            }
+
+            if (toRetrieve.Count == 0) return users;
+            var guild = client.GetGuild(guildId);
+            users.AddRange(await FetchMembersAsync(guild, toRetrieve));
+
+            return users;
+        }
+        
+        /// <summary>
+        /// Gets as many people as possible from cache, rest from rest
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="userIds"></param>
+        /// <returns></returns>
+        public static async ValueTask<List<IMember>> GetOrFetchMembersAsync(this IGuild guild, IEnumerable<Snowflake> userIds)
+        {
+            var toRetrieve = new List<Snowflake>();
+            var users = new List<IMember>();
+            foreach (var x in userIds)
+            {
+                var user = guild.GetMember(x);
+                if (user == null) toRetrieve.Add(x);
+                else users.Add(user);
+            }
+
+            if (toRetrieve.Count == 0) return users;
+            users.AddRange(await FetchMembersAsync(guild, toRetrieve));
+            return users;
         }
 
-        public static async Task<IUser> GetOrFetchUserAsync(this DiscordClientBase client, Snowflake id)
+        private static async Task<List<IMember>> FetchMembersAsync(IGuild guild, IEnumerable<Snowflake> userIds)
         {
-            var user = client.GetUser(id);
-            if (user != null) return user;
-            var restUser = await client.GetUserAsync(id);
-            return restUser;
+            var users = new List<IMember>();
+            foreach (var x in userIds)
+            {
+                var user = await guild.FetchMemberAsync(x);
+                if (user != null) users.Add(user);
+            }
+
+            return users;
+        }
+
+        /// <summary>
+        /// Adds a role to the user (for multiple use modifyAsync)
+        /// </summary>
+        /// <param name="member"></param>
+        /// <param name="role"></param>
+        /// <returns>Returns true if success, else false</returns>
+        public static async Task<bool> TryAddRoleAsync(this IMember member, IRole role)
+        {
+            try
+            {
+                await member.GrantRoleAsync(role.Id);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// Removes a role from the user.
+        /// </summary>
+        /// <param name="member"></param>
+        /// <param name="role"></param>
+        /// <returns>True if success, else false</returns>
+        public static async Task<bool> TryRemoveRoleAsync(this IMember member, IRole role)
+        {
+            try
+            {
+                await member.RevokeRoleAsync(role.Id);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static int GetHierarchy(IGuild guild, IMember member)
+        {
+            if (guild.OwnerId == member.Id)
+                return int.MaxValue;
+
+            var roles = member.GetRoles();
+            return roles.Count != 0
+                ? roles.Values.Max(x => x.Position)
+                : 0;
         }
     }
 }

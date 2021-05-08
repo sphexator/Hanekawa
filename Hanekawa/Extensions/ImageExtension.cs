@@ -1,3 +1,4 @@
+using System.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -17,8 +18,8 @@ namespace Hanekawa.Extensions
 
         private static IImageProcessingContext ApplyRoundedCorners(this IImageProcessingContext ctx, float cornerRadius)
         {
-            var size = ctx.GetCurrentSize();
-            var corners = BuildCorners(size.Width, size.Height, cornerRadius);
+            var (width, height) = ctx.GetCurrentSize();
+            var corners = BuildCorners(width, height, cornerRadius);
 
             ctx.SetGraphicsOptions(new GraphicsOptions()
             {
@@ -26,11 +27,7 @@ namespace Hanekawa.Extensions
                 AlphaCompositionMode = PixelAlphaCompositionMode.DestOut
             });
 
-            foreach (var c in corners)
-            {
-                ctx = ctx.Fill(Color.Red, c);
-            }
-            return ctx;
+            return corners.Aggregate(ctx, (current, c) => current.Fill(Color.Red, c));
         }
 
         private static IPathCollection BuildCorners(int imageWidth, int imageHeight, float cornerRadius)

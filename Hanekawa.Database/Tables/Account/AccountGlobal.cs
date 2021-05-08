@@ -1,10 +1,12 @@
-﻿using Disqord;
+﻿using System.Collections.Generic;
+using Disqord;
+using Hanekawa.Database.Tables.Account.Achievement;
 
 namespace Hanekawa.Database.Tables.Account
 {
     public class AccountGlobal
     {
-        public ulong UserId { get; set; }
+        public Snowflake UserId { get; set; }
         public int Level { get; set; } = 1;
         public int Exp { get; set; } = 0;
         public int TotalExp { get; set; } = 0;
@@ -12,6 +14,8 @@ namespace Hanekawa.Database.Tables.Account
         public int Credit { get; set; } = 0;
         public int StarReceive { get; set; } = 0;
         public int StarGive { get; set; } = 0;
-        public uint UserColor { get; set; } = (uint)Color.Purple.RawValue;
+        public int UserColor { get; set; } = Color.Purple.RawValue;
+        
+        public List<AchievementUnlocked> AchievementUnlocks { get; set; }
     }
 }

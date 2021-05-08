@@ -1,5 +1,6 @@
 ﻿using System;
-using Hanekawa.Shared;
+using Disqord;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Giveaway
 {
@@ -7,9 +8,9 @@ namespace Hanekawa.Database.Tables.Giveaway
     {
         public Guid Id { get; set; }
         public int IdNum { get; set; }
-        public ulong GuildId { get; set; }
-        public ulong Creator { get; set; } // Who created
-        public ulong[] Winner { get; set; }
+        public Snowflake GuildId { get; set; }
+        public Snowflake Creator { get; set; } // Who created
+        public Snowflake[] Winner { get; set; }
 
         public string Name { get; set; } = "Giveaway";
         public string Description { get; set; } = "Giveaway for this server";

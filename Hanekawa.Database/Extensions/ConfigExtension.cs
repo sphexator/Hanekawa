@@ -1,19 +1,20 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
-using Hanekawa.Database.Tables.Music;
 using Hanekawa.Database.Tables.Premium;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database.Extensions
 {
     public static class ConfigExtension
     {
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, CachedGuild guild) =>
-            await GetOrCreateGuildConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateGuildConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, ulong guild)
+        public static async Task<GuildConfig> GetOrCreateGuildConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.GuildConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -31,10 +32,10 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, CachedGuild guild) =>
-            GetOrCreateGuildConfig(context, guild.Id.RawValue);
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, IGuild guild) =>
+            GetOrCreateGuildConfig(context, guild.Id);
 
-        public static GuildConfig GetOrCreateGuildConfig(this DbService context, ulong guild)
+        public static GuildConfig GetOrCreateGuildConfig(this DbService context, Snowflake guild)
         {
             var response = context.GuildConfigs.Find(guild);
             if (response != null) return response;
@@ -54,9 +55,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateAdminConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateAdminConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, ulong guild)
+        public static async Task<AdminConfig> GetOrCreateAdminConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.AdminConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -75,9 +76,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateBoardConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateBoardConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, ulong guild)
+        public static async Task<BoardConfig> GetOrCreateBoardConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.BoardConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -96,11 +97,12 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateChannelConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateChannelConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, ulong guild)
+        public static async Task<ChannelConfig> GetOrCreateChannelConfigAsync(this DbService context, Snowflake guild)
         {
-            var response = await context.ChannelConfigs.FindAsync(guild).ConfigureAwait(false);
+            var response = await context.ChannelConfigs.Include(e => e.AssignReactionRoles)
+                .FirstOrDefaultAsync(e => e.GuildId == guild);
             if (response != null) return response;
 
             var data = new ChannelConfig().DefaultChannelConfig(guild);
@@ -117,9 +119,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateClubConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateClubConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, ulong guild)
+        public static async Task<ClubConfig> GetOrCreateClubConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.ClubConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -137,9 +139,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateCurrencyConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateCurrencyConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, ulong guild)
+        public static async Task<CurrencyConfig> GetOrCreateCurrencyConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.CurrencyConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -157,9 +159,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateLevelConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateLevelConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, ulong guild)
+        public static async Task<LevelConfig> GetOrCreateLevelConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.LevelConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -177,9 +179,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateLoggingConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateLoggingConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, ulong guild)
+        public static async Task<LoggingConfig> GetOrCreateLoggingConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.LoggingConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -199,9 +201,9 @@ namespace Hanekawa.Database.Extensions
 
         public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context,
             IGuild guild) =>
-            await GetOrCreateSuggestionConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateSuggestionConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context, ulong guild)
+        public static async Task<SuggestionConfig> GetOrCreateSuggestionConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.SuggestionConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -220,9 +222,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateWelcomeConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateWelcomeConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, ulong guild)
+        public static async Task<WelcomeConfig> GetOrCreateWelcomeConfigAsync(this DbService context, Snowflake guild)
         {
             var response = await context.WelcomeConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
@@ -240,10 +242,10 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, IGuild guild) =>
-            await GetOrCreateDropConfig(context, guild.Id.RawValue).ConfigureAwait(false);
+        public static async Task<DropConfig> GetOrCreateDropConfigAsync(this DbService context, IGuild guild) =>
+            await GetOrCreateDropConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<DropConfig> GetOrCreateDropConfig(this DbService context, ulong guildId)
+        public static async Task<DropConfig> GetOrCreateDropConfigAsync(this DbService context, Snowflake guildId)
         {
             var response = await context.DropConfigs.FindAsync(guildId).ConfigureAwait(false);
             if (response != null) return response;
@@ -260,30 +262,10 @@ namespace Hanekawa.Database.Extensions
             }
         }
 
-        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, CachedGuild guild) =>
-            await GetOrCreateMusicConfig(context, guild.Id.RawValue).ConfigureAwait(false);
-
-        public static async Task<MusicConfig> GetOrCreateMusicConfig(this DbService context, ulong guildId)
-        {
-            var response = await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
-            if (response != null) return response;
-            var data = new MusicConfig { GuildId = guildId };
-            try
-            {
-                await context.MusicConfigs.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.MusicConfigs.FindAsync(guildId).ConfigureAwait(false);
-            }
-            catch
-            {
-                return data;
-            }
-        }
-
         public static async Task<MvpConfig> GetOrCreateMvpConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateMvpConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateMvpConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<MvpConfig> GetOrCreateMvpConfigAsync(this DbService context, ulong guildId)
+        public static async Task<MvpConfig> GetOrCreateMvpConfigAsync(this DbService context, Snowflake guildId)
         {
             var response = await context.MvpConfigs.FindAsync(guildId).ConfigureAwait(false);
             if (response != null) return response;
@@ -307,9 +289,9 @@ namespace Hanekawa.Database.Extensions
         }
 
         public static async Task<BoostConfig> GetOrCreateBoostConfigAsync(this DbService context, IGuild guild) =>
-            await GetOrCreateBoostConfigAsync(context, guild.Id.RawValue).ConfigureAwait(false);
+            await GetOrCreateBoostConfigAsync(context, guild.Id).ConfigureAwait(false);
 
-        public static async Task<BoostConfig> GetOrCreateBoostConfigAsync(this DbService context, ulong guildId)
+        public static async Task<BoostConfig> GetOrCreateBoostConfigAsync(this DbService context, Snowflake guildId)
         {
             var response = await context.BoostConfigs.FindAsync(guildId).ConfigureAwait(false);
             if (response != null) return response;

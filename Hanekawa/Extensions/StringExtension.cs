@@ -10,10 +10,7 @@ namespace Hanekawa.Extensions
         private static readonly Regex FilterRegex =
             new Regex(@"(?:discord(?:\.gg|.me|app\.com\/invite)\/(([\w]{16}|(?:[\w]+-?){3})))",
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        public static string SanitizeEveryone(this string str) =>
-            str.Replace("@everyone", "@everyοne").Replace("@here", "@һere");
-
+        
         public static bool IsPictureUrl(this string str)
         {
             var isGif = str.EndsWith(".gif");
@@ -22,10 +19,8 @@ namespace Hanekawa.Extensions
             var isJpg = str.EndsWith(".jpg");
 
             if (isGif) return true;
-            if (isPng) return true;
-            if (isJpeg) return true;
-            if (isJpg) return true;
-            return false;
+            if (isPng) return true; 
+            return isJpeg || isJpg;
         }
 
         public static bool IsDiscordInvite(this string str, out string invite)
@@ -69,10 +64,7 @@ namespace Hanekawa.Extensions
             // Use "best" matched letter if multiple string letters match the pattern
             char? bestLetter = null;
             char? bestLower = null;
-            int? bestLetterIdx = null;
             var bestLetterScore = 0;
-
-            var matchedIndices = new List<int>();
 
             // Loop over strings
             while (strIdx != strLength)
@@ -92,10 +84,8 @@ namespace Hanekawa.Extensions
                 if (advanced || patternRepeat)
                 {
                     score += bestLetterScore;
-                    matchedIndices.Add((int) bestLetterIdx);
                     bestLetter = null;
                     bestLower = null;
-                    bestLetterIdx = null;
                     bestLetterScore = 0;
                 }
 
@@ -136,7 +126,6 @@ namespace Hanekawa.Extensions
 
                         bestLetter = strChar;
                         bestLower = char.ToLower((char) bestLetter);
-                        bestLetterIdx = strIdx;
                         bestLetterScore = newScore;
                     }
 
@@ -150,17 +139,13 @@ namespace Hanekawa.Extensions
 
                 // Includes "clever" isLetter check.
                 prevLower = strChar == strLower && strLower != strUpper;
-                prevSeparator = strChar == '_' || strChar == ' ';
+                prevSeparator = strChar is '_' or ' ';
 
                 ++strIdx;
             }
 
             // Apply score for last match
-            if (bestLetter != null)
-            {
-                score += bestLetterScore;
-                matchedIndices.Add((int) bestLetterIdx);
-            }
+            if (bestLetter != null) score += bestLetterScore;
 
             outScore = score;
             return patternIdx == patternLength;
