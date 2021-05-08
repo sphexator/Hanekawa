@@ -12,6 +12,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -110,7 +111,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [Name("Self-Assignable Roles Admin")]
         [Group("Role")]
         [Description("Commands to manage self-assignable roles")]
-        public class AdminRole : SelfAssignAbleRoles
+        public class AdminRole : SelfAssignAbleRoles, IModuleSetting
         {
             private readonly AutoAssignService _assignService;
             private readonly CacheService _cache;
@@ -139,7 +140,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
-                return Pages(result.PaginationBuilder(_cache.GetColor(Context.Guild), Context.Guild.GetIconUrl(),
+                return Pages(result.PaginationBuilder(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
                     $"Self-assignable roles for {Context.Guild.Name}"));
             }
 

@@ -18,7 +18,6 @@ using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Humanizer;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using Range = Hanekawa.Bot.Commands.TypeReaders.Range;
@@ -67,10 +66,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
                 return;
             }
-
-            var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-            bans.Set(user.Id.RawValue, Context.Author.Id, TimeSpan.FromMinutes(1));
-            _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
+            _cache.AddBanCache(Context.GuildId, Context.Author.Id, user.Id);
             await Context.Guild.CreateBanAsync(user.Id.RawValue, $"{Context.Author.Id.RawValue} - {reason}", 1);
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
@@ -82,7 +78,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [Description("Bans a user by their ID, doesn't require to be in the server")]
         [RequireBotGuildPermissions(Permission.BanMembers | Permission.ManageMessages)]
         [RequireAuthorGuildPermissions(Permission.BanMembers)]
-        public async Task BanAsync(ulong userId, [Remainder] string reason = "No reason applied")
+        public async Task BanAsync(Snowflake userId, [Remainder] string reason = "No reason applied")
         {
             await Context.Message.TryDeleteMessageAsync();
             var user = await Context.Guild.GetOrFetchMemberAsync(userId);
@@ -90,9 +86,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             {
                 try
                 {
-                    var bans = _cache.BanCache.GetOrAdd(Context.Guild.Id, new MemoryCache(new MemoryCacheOptions()));
-                    bans.Set(userId, Context.Author.Id, TimeSpan.FromMinutes(1));
-                    _cache.BanCache.AddOrUpdate(Context.Guild.Id, bans, (_, _) => bans);
+                    _cache.AddBanCache(Context.GuildId, Context.Author.Id, userId);
                     await Context.Guild.CreateBanAsync(userId, reason, 1);
                     await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
                         $"Banned **{userId}** from {Context.Guild.Name}.",
@@ -204,7 +198,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             if (user == Context.Author) return;
             await Context.Message.TryDeleteMessageAsync();
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            duration ??= await _mute.GetMuteTime(user, db);
+            duration ??= await _mute.GetMuteTimeAsync(user, db);
 
             var muteRes = await _mute.Mute(user, Context.Author, reason, db, duration.Value);
             if (muteRes)
