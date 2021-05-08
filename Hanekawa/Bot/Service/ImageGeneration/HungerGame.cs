@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Extensions;
 using Hanekawa.HungerGames.Entities;
 using SixLabors.Fonts;
@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 
         private async Task CreateDeathIcon(Image avi)
         {
-            var deathIcon = await _http.GetStreamAsync("https://i.imgur.com/eONxWtN.png");
+            var deathIcon = await _http.CreateClient().GetStreamAsync("https://i.imgur.com/eONxWtN.png");
             var response = deathIcon.ToEditable();
             response.Position = 0;
             var death = await Image.LoadAsync(response, new PngDecoder());

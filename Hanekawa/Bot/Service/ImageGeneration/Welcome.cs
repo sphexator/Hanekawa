@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -123,7 +124,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             var list = await db.WelcomeBanners.Where(x => x.GuildId == guildId).ToListAsync();
             if (list.Count == 0) return new Tuple<Image, WelcomeBanner>(_welcomeTemplate, _defWelcomeBanner);
             var backgroundRaw = list[_random.Next(list.Count)];
-            var background = await _http.GetStreamAsync(backgroundRaw.Url);
+            var background = await _http.CreateClient().GetStreamAsync(backgroundRaw.Url);
             var response = background.ToEditable(10);
             response.Position = 0;
             var file = response.GetKnownFileType();
@@ -147,7 +148,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 
         private async Task<Image> GetBannerAsync(string url, bool premium)
         {
-            var background = await _http.GetStreamAsync(url);
+            var background = await _http.CreateClient().GetStreamAsync(url);
             var response = background.ToEditable(10);
             response.Position = 0;
             var file = response.GetKnownFileType();

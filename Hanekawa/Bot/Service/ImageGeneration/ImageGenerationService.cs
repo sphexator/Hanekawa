@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         private readonly IServiceProvider _provider;
         private readonly Hanekawa _bot;
         private readonly ExpService _experience;
-        private readonly HttpClient _http;
+        private readonly IHttpClientFactory _http;
         private readonly Random _random;
 
         private readonly FontCollection _fonts;
@@ -73,7 +73,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             }
         };
 
-        public ImageGenerationService(ExpService experience, Hanekawa bot, IServiceProvider provider, HttpClient http, Random random)
+        public ImageGenerationService(ExpService experience, Hanekawa bot, IServiceProvider provider, IHttpClientFactory http, Random random)
         {
             _experience = experience;
             _bot = bot;
@@ -124,9 +124,10 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 
         private async Task<Image> GetAvatarAsync(string imgUrl, Size size, bool isGif, bool premium)
         {
+            var client = _http.CreateClient();
             try
             {
-                var avatar = await _http.GetStreamAsync(imgUrl);
+                var avatar = await client.GetStreamAsync(imgUrl);
                 var response = avatar.ToEditable(10);
                 response.Position = 0;
                 var radius = (int)Math.Ceiling((size.Width * Math.PI) / (2 * Math.PI));
@@ -149,7 +150,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             }
             catch
             {
-                var avatar = await _http.GetStreamAsync("https://i.imgur.com/kI1RXQZ.png");
+                var avatar = await client.GetStreamAsync("https://i.imgur.com/kI1RXQZ.png");
                 var response = avatar.ToEditable();
                 response.Position = 0;
                 var radius = (int)Math.Ceiling((size.Width * Math.PI) / (2 * Math.PI));

@@ -50,7 +50,7 @@ namespace Hanekawa
                 LootChance = new LootChanceConfig()
             }));
             services.AddSingleton<Random>();
-            services.AddSingleton<HttpClient>();
+            services.AddHttpClient();
             services.AddInteractivity();
             var assembly = Assembly.GetEntryAssembly();
             if (assembly is null) return;

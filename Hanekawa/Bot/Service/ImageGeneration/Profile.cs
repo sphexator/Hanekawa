@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
@@ -114,7 +115,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             else
             {
                 var background =
-                    await _http.GetStreamAsync(backgroundList[_random.Next(backgroundList.Count)].BackgroundUrl);
+                    await _http.CreateClient().GetStreamAsync(backgroundList[_random.Next(backgroundList.Count)].BackgroundUrl);
                 var response = background.ToEditable();
                 response.Position = 0;
                 using var img = await Image.LoadAsync(response, new PngDecoder());
