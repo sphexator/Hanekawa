@@ -10,17 +10,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Disqord" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Bot" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Core" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Gateway" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Rest" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Voice" Version="1.0.0-05052021-26" />
-        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-05052021-26" />
+        <PackageReference Include="Disqord" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Voice" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-05062021-27" />
         <PackageReference Include="Humanizer" Version="2.9.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
@@ -74,6 +74,21 @@
       <Folder Include="Bot\Service\Mvp\" />
       <Folder Include="Bot\Service\ImageGeneration\" />
       <Folder Include="Bot\Service\Welcome\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\Fonts\ARIAL.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Fonts\TIMES.TTF">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Template\ProfileTemplate.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Data\Template\WelcomeDefault.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
