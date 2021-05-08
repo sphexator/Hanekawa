@@ -60,27 +60,19 @@ namespace Hanekawa.Bot.Service
         {
             var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-
             foreach (var x in db.LevelConfigs)
             {
-                var expMult = _cache.ExperienceMultipliers.GetOrAdd(new Snowflake(x.GuildId),
-                    new ConcurrentDictionary<ExpSource, double>());
-                expMult.TryAdd(ExpSource.Text, x.TextExpMultiplier);
-                expMult.TryAdd(ExpSource.Voice, x.VoiceExpMultiplier);
+                _cache.AdjustExpMultiplier(ExpSource.Text, x.GuildId, x.TextExpMultiplier);
+                _cache.AdjustExpMultiplier(ExpSource.Voice, x.GuildId, x.VoiceExpMultiplier);
             }
 
             foreach (var x in db.LevelExpReductions)
-            {
-                var cache = _cache.ExperienceReduction.GetOrAdd(new Snowflake(x.GuildId), new HashSet<Snowflake>());
-                cache.Add(x.ChannelId);
-            }
+                _cache.TryAddExpChannelReduction(x.ChannelId);
 
             foreach (var x in db.GuildConfigs)
             {
-                var prefixes = _cache.GuildPrefix.GetOrAdd(new Snowflake(x.GuildId), new HashSet<IPrefix>());
-                prefixes.Add(new StringPrefix(x.Prefix));
-                _cache.GuildEmbedColors.AddOrUpdate(new Snowflake(x.GuildId), new Color(x.EmbedColor),
-                    (_, _) => new Color(x.EmbedColor));
+                _cache.AddOrUpdatePrefix(x.GuildId, new StringPrefix(x.Prefix));
+                _cache.AddOrUpdateColor(x.GuildId, new Color(x.EmbedColor));
             }
         }
 
@@ -183,22 +175,15 @@ namespace Hanekawa.Bot.Service
             await _hungerGame.ReactionReceivedAsync(e).ConfigureAwait(false);
         }
 
-        protected override ValueTask OnMessageReceived(MessageReceivedEventArgs e)
+        protected override async ValueTask OnMessageReceived(MessageReceivedEventArgs e)
         {
-            if (!e.GuildId.HasValue) return ValueTask.CompletedTask;
-            if (e.Member.IsBot) return ValueTask.CompletedTask;
-            var guildCache = _cache.Cooldown
-                .GetOrAdd(e.GuildId.Value, new ConcurrentDictionary<CooldownType, MemoryCache>());
-            var msgCache = guildCache.GetOrAdd(CooldownType.ServerMessage, new MemoryCache(new MemoryCacheOptions()));
-            var cdCheck = msgCache.TryGetValue(e.Member.Id.RawValue, out _);
-
-            if (!cdCheck) msgCache.Set(e.Member.Id.RawValue, 0, TimeSpan.FromMinutes(1));
-
-            guildCache.AddOrUpdate(CooldownType.ServerMessage, msgCache, (_, _) => msgCache);
-            if (!cdCheck) _ = _experience.ServerExperienceAsync(e).ConfigureAwait(false);
-            if (!cdCheck) _ = _dropService.MessageReceived(e).ConfigureAwait(false);
-            _ = _experience.GlobalExperienceAsync(e).ConfigureAwait(false);
-            return ValueTask.CompletedTask;
+            if (!e.GuildId.HasValue) return;
+            if (e.Member.IsBot) return;
+            var cdCheck = _cache.TryGetCooldown(e.GuildId.Value, e.Member.Id, CooldownType.ServerMessage);
+            if (!cdCheck) _cache.AddCooldown(e.GuildId.Value, e.Member.Id, CooldownType.ServerMessage);
+            if (!cdCheck) await _experience.ServerExperienceAsync(e);
+            if (!cdCheck) await _dropService.MessageReceived(e);
+            await _experience.GlobalExperienceAsync(e);
         }
 
         protected override ValueTask OnChannelDeleted(ChannelDeletedEventArgs e)

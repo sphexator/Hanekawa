@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Service.Logs
             if (channel == null) return;
             try
             {
-                var inviteeInfo = await GetInvite(guild, e.Member);
+                var inviteeInfo = await GetInvite(guild);
                 var embed = new LocalEmbedBuilder
                 {
                     Description = $"📥 {e.Member.Mention} has joined ( *{e.Member.Id.RawValue}* )\n" +
@@ -152,19 +152,17 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        private async ValueTask<Tuple<IUser, string>> GetInvite(IGuild guild, IMember member)
+        private async ValueTask<Tuple<IUser, string>> GetInvite(IGuild guild)
         {
             Tuple<IUser, string> inviteeInfo = null;
             var restInvites = await guild.FetchInvitesAsync();
-            if (!_cache.GuildInvites.TryGetValue(guild.Id, out var invites))  UpdateInvites(member, restInvites);
+            if (!_cache.TryGetInvite(guild.Id, out var invites))  _cache.UpdateInvites(guild.Id, restInvites);
             else
             {
                 var tempInvites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
-                foreach (var x in restInvites)
-                {
+                foreach (var x in restInvites) 
                     tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Value.Id, x.Metadata.Uses));
-                }
-                
+
                 var change = invites.Except(tempInvites).ToList();
                 var (code, (snowflake, _)) = change.FirstOrDefault();
                 if (code == null) return null;
@@ -175,21 +173,10 @@ namespace Hanekawa.Bot.Service.Logs
                     inviteeInfo = new Tuple<IUser, string>(invitee, $"discord.gg/{code}");
                 }
 
-                UpdateInvites(member, restInvites);
+                _cache.UpdateInvites(guild.Id, restInvites);
             }
 
             return inviteeInfo;
-        }
-        
-        private void UpdateInvites(IMember user, IReadOnlyList<IInvite> restInvites)
-        {
-            var invites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
-            foreach (var x in restInvites)
-            {
-                invites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Value.Id, x.Metadata.Uses));
-            }
-
-            _cache.GuildInvites.AddOrUpdate(user.GuildId, invites, (_, _) => invites);
         }
     }
 }

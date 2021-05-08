@@ -101,8 +101,8 @@ namespace Hanekawa.Bot.Service.Experience
         public async Task GlobalExperienceAsync(MessageReceivedEventArgs e)
         {
             if (e.Member == null) return;
-            if (_cache.GlobalCooldown.TryGetValue(e.Member.Id, out _)) return;
-            _cache.GlobalCooldown.Set(e.Member.Id, 0, TimeSpan.FromMinutes(1));
+            if (_cache.TryGetGlobalCooldown(e.Member.Id)) return;
+            _cache.AddGlobalCooldown(e.Member.Id);
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var userData = await db.GetOrCreateGlobalUserDataAsync(e.Member);
@@ -147,22 +147,21 @@ namespace Hanekawa.Bot.Service.Experience
         private int GetExp(INestableChannel channel)
         {
             var xp = _random.Next(10, 20);
-            if (IsReducedExp(channel.GuildId, channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);
+            if (IsReducedExp(channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);
             return xp;
         }
         
         private int GetExp(INestableChannel channel, TimeSpan period)
         {
             var xp = Convert.ToInt32(period.TotalMinutes * 2);
-            if (IsReducedExp(channel.GuildId, channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);
+            if (IsReducedExp(channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);
             return xp;
         }
 
-        private bool IsReducedExp(Snowflake guildId, Snowflake channelId, Snowflake? categoryId)
+        private bool IsReducedExp(Snowflake channelId, Snowflake? categoryId)
         {
-            var cache = _cache.ExperienceReduction.GetOrAdd(guildId, new HashSet<Snowflake>());
-            if (categoryId.HasValue && cache.TryGetValue(categoryId.Value, out _)) return true;
-            return cache.TryGetValue(channelId, out _);
+            if (categoryId.HasValue && _cache.IsExpReduced(categoryId.Value)) return true;
+            return _cache.IsExpReduced(channelId);
         }
     }
 }

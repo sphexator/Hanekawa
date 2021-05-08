@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Service.Game
 
         public async Task<ShipGameResult> SearchAsync(HanekawaCommandContext context)
         {
-            if (_cache.ShipGames.TryGetValue(context.ChannelId, out _))
+            if (_cache.TryGetShipGame(context.ChannelId))
                 throw new HanaCommandException("Game already in progress in this channel");
             var chance = _random.Next(100);
             if (chance < 40) return null;
@@ -87,16 +87,16 @@ namespace Hanekawa.Bot.Service.Game
         {
             try
             {
-                _cache.ShipGames.TryAdd(game.Channel.Id, ShipGameType.PvE);
+                _cache.AddGame(game.Channel.Id, ShipGameType.PvE);
                 var result = await BattleAsync(game);
                 if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc) _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
                 else _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, true);
-                _cache.ShipGames.TryRemove(game.Channel.Id, out _);
+                _cache.RemoveGame(game.Channel.Id);
                 return result;
             }
             catch (Exception e)
             {
-                _cache.ShipGames.TryRemove(game.Channel.Id, out _);
+                _cache.RemoveGame(game.Channel.Id);
                 _logger.Log(LogLevel.Error, e, $"(ShipGame Service) Error while executing a PvE game - {e.Message}");
                 throw new HanaCommandException("Couldn't finish the game...");
             }

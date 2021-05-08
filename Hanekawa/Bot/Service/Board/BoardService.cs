@@ -53,12 +53,6 @@ namespace Hanekawa.Bot.Service.Board
             stat.StarAmount++;
             await db.SaveChangesAsync();
 
-            var cache = _cache.Board.GetOrAdd(e.GuildId.Value, new MemoryCache(new MemoryCacheOptions()));
-            if (cache.TryGetValue(e.MessageId, out var value)) 
-                cache.Set(e.MessageId, (int) value + 1, TimeSpan.FromMinutes(10));
-            else 
-                cache.Set(e.MessageId, stat.StarAmount, TimeSpan.FromMinutes(10));
-            
             if (stat.StarAmount >= 4 && !stat.Boarded.HasValue)
             {
                 stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
@@ -86,24 +80,15 @@ namespace Hanekawa.Bot.Service.Board
             giver.StarGiven--;
             stat.StarAmount--;
             await db.SaveChangesAsync();
-
-            var cache = _cache.Board.GetOrAdd(e.GuildId.Value, new MemoryCache(new MemoryCacheOptions()));
-            if (cache.TryGetValue(e.MessageId, out var value)) 
-                cache.Set(e.MessageId, (int) value + 1, TimeSpan.FromMinutes(10));
-            else 
-                cache.Set(e.MessageId, stat.StarAmount, TimeSpan.FromMinutes(10));
         }
 
         public async Task ReactionClearedAsync(ReactionsClearedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
-            var messages = _cache.Board.GetOrAdd(e.GuildId.Value, new MemoryCache(new MemoryCacheOptions()));
-            
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
-            stat.StarAmount = 0;
-            messages.Remove(e.MessageId);
+            db.Remove(stat);
             await db.SaveChangesAsync();
         }
 

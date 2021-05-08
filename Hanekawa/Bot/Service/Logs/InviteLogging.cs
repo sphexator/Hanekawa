@@ -18,10 +18,7 @@ namespace Hanekawa.Bot.Service.Logs
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
             if (!cfg.LogJoin.HasValue) return;
-            var invites = _cache.GuildInvites.GetOrAdd(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>());
-            invites.TryAdd(e.Code, new Tuple<Snowflake?, int>(e.Invite.Inviter.Value.Id.RawValue, 0));
-            _cache.GuildInvites.AddOrUpdate(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>(),
-                (_, _) => invites);
+            _cache.AddInvite(e.GuildId.Value, e.Invite);
         }
 
         public async Task InviteDeletedAsync(InviteDeletedEventArgs e)
@@ -31,10 +28,7 @@ namespace Hanekawa.Bot.Service.Logs
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value.RawValue);
             if (!cfg.LogJoin.HasValue) return;
-            var invites = _cache.GuildInvites.GetOrAdd(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>());
-            invites.TryRemove(e.Code, out _);
-            _cache.GuildInvites.AddOrUpdate(e.GuildId.Value.RawValue, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>(),
-                (_, _) => invites);
+            _cache.RemoveInvite(e.GuildId.Value, e.Code);
         }
     }
 }

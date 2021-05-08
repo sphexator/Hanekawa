@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using static Disqord.LocalCustomEmoji;
@@ -45,12 +43,8 @@ namespace Hanekawa.Bot.Service.Drop
         {
             if (!e.GuildId.HasValue) return;
             if (e.Message is not IUserMessage msg) return;
-            var cooldown =
-                _cache.Cooldown.GetOrAdd(e.GuildId.Value, new ConcurrentDictionary<CooldownType, MemoryCache>());
-
-            var channelCd = cooldown.GetOrAdd(CooldownType.Drop, new MemoryCache(new MemoryCacheOptions()));
-            if (channelCd.TryGetValue(e.ChannelId, out _)) return;
-            
+            if (!_cache.TryGetDropChannel(e.GuildId.Value, e.ChannelId)) return;
+            if (_cache.TryGetCooldown(e.GuildId.Value, e.Member.Id, CooldownType.Drop)) return;
             var rand = _random.Next(0, 10000);
             if (rand < 200)
                 try
@@ -67,15 +61,12 @@ namespace Hanekawa.Bot.Service.Drop
         public async Task ReactionReceived(ReactionAddedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
-            
-            var cache = _cache.Drops.GetOrAdd(e.GuildId.Value, new MemoryCache(new MemoryCacheOptions()));
-            if (cache.TryGetValue(e.MessageId, out var dropObject)) return;
-            if (dropObject is not DropType dropType) return;
-            cache.Remove(e.MessageId);
-            await ClaimAsync(e.Message, e.Member, dropType);
+            if (!_cache.GetDrop(e.ChannelId, e.MessageId, out var type)) return;
+            _cache.RemoveDrop(e.ChannelId, e.MessageId);
+            await ClaimAsync(e.Message, e.Member, type);
         }
         
-        private async Task SpawnAsync(Snowflake guildId, IMessageChannel channel, IMessage msg, DropType type)
+        public async Task SpawnAsync(Snowflake guildId, IMessageChannel channel, IMessage msg, DropType type)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -97,7 +88,7 @@ namespace Hanekawa.Bot.Service.Drop
 
             _logger.Log(LogLevel.Info, $"Drop event created in {guildId.RawValue}");
         }
-
+        
         private async Task ClaimAsync(IUserMessage msg, IMember user, DropType type)
         {
             try { await msg.DeleteAsync(); }
@@ -131,20 +122,19 @@ namespace Hanekawa.Bot.Service.Drop
 
             await _achievement.DropAchievement(userData, db);
         }
-
-        private async Task<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)
+        
+        private async ValueTask<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)
         {
-            var cache = _cache.Emote.GetOrAdd(guild.Id, new ConcurrentDictionary<EmoteType, IEmoji>());
-            if (cache.TryGetValue(EmoteType.Drop, out var emote)) return emote;
+            if (_cache.TryGetEmote(EmoteType.Drop, guild.Id, out var emote)) return emote;
             var cfg = await db.GetOrCreateDropConfigAsync(guild);
             if (TryParse(cfg.Emote, out var sEmote))
             {
-                cache.AddOrUpdate(EmoteType.Drop, sEmote, (_, _) => sEmote);
+                _cache.AddOrUpdateEmote(EmoteType.Drop, guild.Id, sEmote);
                 return sEmote;
             }
 
-            var defaultEmote = new LocalCustomEmoji(456747197854384158);
-            cache.AddOrUpdate(EmoteType.Drop, defaultEmote, (_, _) => defaultEmote); 
+            var defaultEmote = new LocalEmoji("U+1F381");
+            _cache.AddOrUpdateEmote(EmoteType.Drop, guild.Id, defaultEmote); 
             return defaultEmote;
         }
 
@@ -155,9 +145,7 @@ namespace Hanekawa.Bot.Service.Drop
 
         private async Task ApplyReactionAsync(IMessage message, IGuildEmoji emote, IEmoji claim, DropType type)
         {
-            if (emote.Name == claim.Name)
-                _cache.Drops.GetOrAdd(emote.GuildId, new MemoryCache(new MemoryCacheOptions()))
-                    .Set(message.Id, type, TimeSpan.FromHours(1));
+            if (emote.Name == claim.Name) _cache.AddDrop(message.ChannelId, message.Id, type);
             await message.AddReactionAsync(emote);
         }
     }

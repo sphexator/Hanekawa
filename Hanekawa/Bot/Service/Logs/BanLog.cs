@@ -35,14 +35,12 @@ namespace Hanekawa.Bot.Service.Logs
 
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
                 IMember mod;
-                if (_cache.BanCache.TryGetValue(guild.Id.RawValue, out var cache))
+                var banCacheUser = _cache.TryGetBanCache(guild.Id, e.UserId);
+                if (banCacheUser != null)
                 {
-                    if (cache.TryGetValue(e.User.Id.RawValue, out var result))
-                    {
-                        mod = await _bot.GetOrFetchMemberAsync(e.GuildId, (Snowflake)result);
-                        if (mod != null) caseId.ModId = mod.Id.RawValue;
-                    }
-                    else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
+                    mod = await _bot.GetOrFetchMemberAsync(e.GuildId, banCacheUser.Value) ??
+                          await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
+                    if (mod != null) caseId.ModId = mod.Id.RawValue;
                 }
                 else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
 
@@ -96,21 +94,15 @@ namespace Hanekawa.Bot.Service.Logs
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Unban);
                 
                 IMember mod = null;
-                if (_cache.BanCache.TryGetValue(guild.Id.RawValue, out var cache))
+                var banCacheUser = _cache.TryGetBanCache(guild.Id, e.UserId);
+                if (banCacheUser != null)
                 {
-                    if (cache.TryGetValue(e.User.Id.RawValue, out var result))
-                    {
-                        var modId = (ulong)result;
-                        mod = await _bot.GetOrFetchMemberAsync(e.GuildId, modId);
-                        if (mod != null)
-                        {
-                            caseId.ModId = mod.Id.RawValue;
-                        }
-                    }
-                    else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
+                    mod = await _bot.GetOrFetchMemberAsync(e.GuildId, banCacheUser.Value) ??
+                          await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberUnbanned);
+                    if (mod != null) caseId.ModId = mod.Id;
                 }
-                else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
-                
+                else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberUnbanned);
+
                 var embed = new LocalEmbedBuilder
                 {
                     Color = HanaBaseColor.Lime(),
@@ -157,7 +149,7 @@ namespace Hanekawa.Bot.Service.Logs
                     break;
                 default:
                     return null;
-            } 
+            }
             var audit = audits.FirstOrDefault(x => x.TargetId.HasValue && x.TargetId.Value == userId);
             if (audit?.ActorId != null)
             {
@@ -167,12 +159,15 @@ namespace Hanekawa.Bot.Service.Logs
                     caseId.ModId = temp.Id;
                     return temp;
                 }
-                
-                var reasonSplit = audit.Reason.Replace("(", " ").Replace(")", " ").Replace("-", " ").Split(" ");
+
+                var reasonSplit = audit.Reason.Replace("(", " ")
+                    .Replace(")", " ")
+                    .Replace("-", " ")
+                    .Split(" ");
                 var modId = FetchId(reasonSplit);
                 if (modId.HasValue)
                 {
-                    temp = _bot.GetMember(guild.Id, modId.Value);
+                    temp = await _bot.GetOrFetchMemberAsync(guild.Id, modId.Value);
                     if (temp is {IsBot: false} && Discord.Permissions
                         .CalculatePermissions(guild, temp, temp.GetRoles().Values).BanMembers) mod = temp;
                 }

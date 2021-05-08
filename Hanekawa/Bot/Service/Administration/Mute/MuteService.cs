@@ -70,9 +70,6 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             var check = await db.MuteTimers.FindAsync(e.Member.Id.RawValue, e.GuildId.RawValue);
             if (check == null) return;
             if(!await Mute(e.Member, await GetMuteRoleAsync(e.GuildId, db))) return;
-            var muteTimers =
-                _cache.MuteTimers.GetOrAdd(e.GuildId.RawValue, new ConcurrentDictionary<Snowflake, Timer>());
-            if (muteTimers.TryGetValue(e.Member.Id, out _)) return;
             var after = check.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
                 ? TimeSpan.FromMinutes(2)
                 : check.Time - DateTime.UtcNow;
@@ -152,7 +149,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             return true;
         }
         
-        public async Task<TimeSpan> GetMuteTime(IMember user, DbService db)
+        public async Task<TimeSpan> GetMuteTimeAsync(IMember user, DbService db)
         {
             var warns = await db.Warns.Where(x =>
                 x.GuildId == user.GuildId && 
@@ -199,7 +196,6 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         {
             try
             {
-                var unMuteTimers = _cache.MuteTimers.GetOrAdd(guildId, new ConcurrentDictionary<Snowflake, Timer>());
                 var toAdd = new Timer(async _ =>
                 {
                     using var scope = _provider.CreateScope();
@@ -227,12 +223,8 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                             $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
                 }, null, duration, Timeout.InfiniteTimeSpan);
-
-                unMuteTimers.AddOrUpdate(userId, _ => toAdd, (_, old) =>
-                {
-                    old.Dispose();
-                    return toAdd;
-                });
+                
+                _cache.AddOrUpdateMuteTimer(guildId, userId, toAdd);
             }
             catch (Exception e)
             {
@@ -243,19 +235,17 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         private async ValueTask StopUnMuteTimerAsync(Snowflake guildId, Snowflake userId, DbService db)
         {
             await RemoveFromDatabaseAsync(guildId, userId, db);
-            if (!_cache.MuteTimers.TryGetValue(guildId, out var unMuteTimers)) return;
-            if (!unMuteTimers.TryRemove(userId, out var removed)) return;
-            await removed.DisposeAsync();
+            _cache.RemoveMuteTimer(guildId, userId);
         }
         
-        private static async Task RemoveFromDatabaseAsync(Snowflake guildId, Snowflake userId, DbService db)
+        private static async ValueTask RemoveFromDatabaseAsync(Snowflake guildId, Snowflake userId, DbService db)
         {
             var data = await db.MuteTimers.FindAsync(guildId, userId);
             if (data == null) return;
             await RemoveFromDatabaseAsync(data, db);
         }
         
-        private static async Task RemoveFromDatabaseAsync(MuteTimer timer, DbService db)
+        private static async ValueTask RemoveFromDatabaseAsync(MuteTimer timer, DbService db)
         {
             db.MuteTimers.Remove(timer);
             await db.SaveChangesAsync();
