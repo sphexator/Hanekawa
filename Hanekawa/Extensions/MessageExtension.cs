@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
 
@@ -15,14 +13,22 @@ namespace Hanekawa.Extensions
             IMember filterBy = null)
         {
             var messages = await channel.FetchMessagesAsync(amount);
-            return messages.ToList().FilterMessages(filterBy);
+            return messages.FilterMessages(filterBy);
         }
-        
-        public static List<Snowflake> FilterMessages(this IEnumerable<IMessage> messages, IMember filterBy = null) 
-            => (from x in messages 
-                where x.CreatedAt.AddDays(14) >= DateTimeOffset.UtcNow 
-                where filterBy == null || x.Author.Id.RawValue == filterBy.Id.RawValue 
-                select x.Id.RawValue).Select(dummy => (Snowflake) dummy).ToList();
+
+        public static List<Snowflake> FilterMessages(this IEnumerable<IMessage> messages, IMember filterBy = null)
+        {
+            var list = new List<Snowflake>();
+            foreach (var x in messages)
+            {
+                if (x.CreatedAt.AddDays(14) < DateTimeOffset.UtcNow) continue;
+                if (filterBy != null && x.Author.Id.RawValue != filterBy.Id.RawValue) continue;
+                var dummy = x.Id.RawValue;
+                list.Add((Snowflake) dummy);
+            }
+
+            return list;
+        }
 
         public static LocalMessage Create(this LocalMessageBuilder builder, LocalEmbedBuilder embed, 
             LocalMentionsBuilder mention = null)
