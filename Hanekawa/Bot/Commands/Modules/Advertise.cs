@@ -5,6 +5,7 @@ using Disqord.Bot;
 using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Advertise;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Hanekawa.Utility;
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Commands.Modules
     [Name("Advertisement")]
     [Description("Commands for advertisement")]
     [Group("Advertise", "ad")]
-    public class Advertise : HanekawaCommandModule
+    public class Advertise : HanekawaCommandModule, IModuleSetting
     {
         [Name("Create")]
         [Description("Creates a config and key in-order to take in Top.gg requests to reward users for voting!")]

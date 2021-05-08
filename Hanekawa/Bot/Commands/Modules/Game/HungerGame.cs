@@ -5,6 +5,7 @@ using Disqord.Gateway;
 using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -16,7 +17,7 @@ namespace Hanekawa.Bot.Commands.Modules.Game
     [Group("HungerGame", "hg")]
     [Description("Commands to setup hunger games")]
     [RequirePremium]
-    public class HungerGame : HanekawaCommandModule
+    public class HungerGame : HanekawaCommandModule, IModuleSetting
     {
         [Name("Emote")]
         [Command("emote")]
