@@ -53,6 +53,8 @@ namespace Hanekawa.Extensions
             => GetHierarchy(guild, guild.GetMember(guild.GetGatewayClient().CurrentUser.Id)) >
                GetHierarchy(guild, user);
 
+        public static string DisplayName(this IMember user) => user.Nick ?? user.Name;
+        
         /// <summary>
         /// Get guild from a cached member.
         /// </summary>

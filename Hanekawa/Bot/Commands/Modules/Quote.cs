@@ -6,6 +6,6 @@ namespace Hanekawa.Bot.Commands.Modules
     [Description("Commands for quotes")]
     public class Quote : HanekawaCommandModule
     {
-        
+        // TODO: Add quote commands
     }
 }

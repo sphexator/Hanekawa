@@ -41,7 +41,7 @@ namespace Hanekawa.Bot.Service.Mvp
             foreach (var x in premium) await RewardAsync(x, db);
         }
 
-        private async Task RewardAsync(GuildConfig x, DbService db, bool bypass = false)
+        public async Task RewardAsync(GuildConfig x, DbService db, bool bypass = false)
         { 
             var mvp = new List<IMember>();
             var oldMvp = new List<IMember>();

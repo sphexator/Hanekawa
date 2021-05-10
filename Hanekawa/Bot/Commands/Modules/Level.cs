@@ -7,6 +7,6 @@ namespace Hanekawa.Bot.Commands.Modules
     [Description("Commands for levels")]
     public class Level : HanekawaCommandModule
     {
-        
+        // TODO: Add level commands
     }
 }

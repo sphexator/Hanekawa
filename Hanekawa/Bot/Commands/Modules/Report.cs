@@ -6,7 +6,7 @@ namespace Hanekawa.Bot.Commands.Modules
     [Description("Commands to report a issue to the moderation team")]
     public class Report : HanekawaCommandModule
     {
-        
+        // TODO: Add report commands
     }
 
     [Name("Report Admin")]

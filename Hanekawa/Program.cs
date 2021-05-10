@@ -63,23 +63,10 @@ namespace Hanekawa
             var consoleTarget = new ConsoleTarget
             {
                 Name = "Console",
-                Layout = @"${longdate} | ${level} | ${CallSite} | ${message} | ${exception}",
+                Layout = @"$[{longdate} | ${level}] [${CallSite}] [${message} ${exception}]",
                 DetectConsoleAvailable = true,
                 OptimizeBufferReuse = true,
                 AutoFlush = true
-            };
-            var fileTarget = new FileTarget
-            {
-                Name = "File",
-                FileName = "${basedir}/logs/${shortdate}-log.txt",
-                Layout = "${longdate} | ${level} | ${message} | ${exception}",
-                OptimizeBufferReuse = true,
-                AutoFlush = true,
-                ConcurrentWriteAttempts = -1,
-                ArchiveEvery = FileArchivePeriod.Day,
-                ArchiveOldFileOnStartup = true,
-                ConcurrentWrites = true,
-                CreateDirs = true
             };
             var dbTarget = new DatabaseTarget
             {
@@ -112,16 +99,6 @@ namespace Hanekawa
                 QueueLimit = 25
             };
 
-            var asyncFileTarget = new AsyncTargetWrapper
-            {
-                Name = "Async File Target",
-                OptimizeBufferReuse = true,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = fileTarget,
-                TimeToSleepBetweenBatches = 1,
-                QueueLimit = 25
-            };
-
             var asyncDatabaseTarget = new AsyncTargetWrapper
             {
                 Name = "Async Database Target",
@@ -134,7 +111,6 @@ namespace Hanekawa
 
             var config = new LoggingConfiguration();
             config.AddTarget(asyncConsoleTarget);
-            config.AddTarget(asyncFileTarget);
             config.AddTarget(asyncDatabaseTarget);
 
             config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, asyncConsoleTarget);

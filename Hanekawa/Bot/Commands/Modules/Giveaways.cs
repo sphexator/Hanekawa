@@ -6,6 +6,6 @@ namespace Hanekawa.Bot.Commands.Modules
     [Description("Commands for managing giveaways")]
     public class Giveaways : HanekawaCommandModule
     {
-        
+        // TODO: Add giveaway commands
     }
 }

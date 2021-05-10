@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService
     {
-        public async Task<Stream> ProfileBuilder(CachedMember user, DbService db)
+        public async Task<Stream> ProfileBuilder(IMember user, DbService db)
         {
             var stream = new MemoryStream();
             using var img = new Image<Rgba32>(400, 400);
@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         {
             var total = await db.Accounts.CountAsync(x => x.GuildId == userData.GuildId);
             var rank = await db.Accounts.CountAsync(x =>
-                x.TotalExp >= userData.TotalExp && x.GuildId == userData.GuildId);
+                x.TotalExp >= userData.TotalExp && x.GuildId == userData.GuildId && x.Active);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 

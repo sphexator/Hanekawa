@@ -29,7 +29,7 @@ namespace Hanekawa.Controllers
             if (guild == null) return null;
             if (!ulong.TryParse(userId, out var id)) return null;
             var modCase = await _db.ModLogs.FirstOrDefaultAsync(
-                x => x.Action == "Ban" && x.GuildId == guildId && x.UserId == id, cancellationToken: token);
+                x => x.Action == "Ban" && x.GuildId == guildId && x.UserId == id, token);
             return new BanCase(modCase);
         }
     }

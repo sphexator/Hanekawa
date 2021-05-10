@@ -281,7 +281,6 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await ApplyReason(db, id, reason);
-
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create($"Updated mod log for {id}", HanaBaseColor.Lime()),
                 TimeSpan.FromSeconds(10));
         }

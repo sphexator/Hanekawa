@@ -3,6 +3,7 @@ using Disqord;
 using Disqord.Bot;
 using Disqord.Gateway;
 using Hanekawa.Bot.Commands;
+using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,7 +31,9 @@ namespace Hanekawa.Bot
 
         protected override LocalMessageBuilder FormatFailureMessage(DiscordCommandContext context, FailedResult result)
         {
-            return base.FormatFailureMessage(context, result);
+            var builder = base.FormatFailureMessage(context, result);
+            builder.Embed.Color = HanaBaseColor.Bad();
+            return builder;
         }
     }
 }
