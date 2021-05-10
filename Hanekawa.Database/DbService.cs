@@ -674,16 +674,6 @@ namespace Hanekawa.Database
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.DesignChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.EventChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.EventSchedulerChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ModChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.QuestionAndAnswerChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.ReportChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
                     snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.SelfAssignableChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
