@@ -43,11 +43,6 @@ namespace Hanekawa.Database.Extensions
         internal static ChannelConfig DefaultChannelConfig(this ChannelConfig cfg, Snowflake guild)
         {
             cfg.GuildId = guild;
-            cfg.DesignChannel = null;
-            cfg.EventChannel = null;
-            cfg.EventSchedulerChannel = null;
-            cfg.ModChannel = null;
-            cfg.QuestionAndAnswerChannel = null;
             cfg.ReportChannel = null;
             return cfg;
         }
