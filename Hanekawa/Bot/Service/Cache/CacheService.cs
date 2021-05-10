@@ -5,14 +5,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Gateway;
+using Disqord.Hosting;
+using Hanekawa.Bot.Commands;
+using Hanekawa.Database;
+using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Cache
 {
-    public class CacheService : INService
+    public class CacheService : DiscordClientService
     {
         // Guild Settings
         private readonly ConcurrentDictionary<Snowflake, HashSet<IPrefix>> _guildPrefix = new();
@@ -37,7 +45,14 @@ namespace Hanekawa.Bot.Service.Cache
         // Drops
         private readonly ConcurrentDictionary<Snowflake, MemoryCache> _activeDrops = new();
         private readonly ConcurrentDictionary<Snowflake, HashSet<Snowflake>> _dropChannels = new();
+        // Command whitelists
+        private static ConcurrentDictionary<Snowflake, bool> IgnoreAll { get; } = new();
+        private static ConcurrentDictionary<Snowflake, bool> ChannelEnable { get; } = new();
+
+        private readonly IServiceProvider _provider;
         
+        public CacheService(ILogger logger, Hanekawa client, IServiceProvider provider) : base(logger, client) => _provider = provider;
+
         // ----- Guild Settings -----
         public Color GetColor(Snowflake guildSnowflake) =>
             _guildEmbedColors.TryGetValue(guildSnowflake, out var color) 
@@ -220,18 +235,94 @@ namespace Hanekawa.Bot.Service.Cache
             var dropChannel = _dropChannels.GetOrAdd(guildId, new HashSet<Snowflake>());
             return dropChannel.TryGetValue(channelId, out _);
         }
-
-        public void Dispose(Snowflake guildId)
+        
+        // Command blacklist / whitelists
+        public bool TryGetIgnoreChannel(Snowflake guildId, out bool status) =>
+            IgnoreAll.TryGetValue(guildId, out status);
+        public async ValueTask<bool> AddOrRemoveChannel(ITextChannel channel, DbService db)
         {
-            _cooldown.TryRemove(guildId, out _);
-            _guildInvites.TryRemove(guildId, out _);
-            _muteTimers.TryRemove(guildId, out _);
-            _experienceMultipliers.TryRemove(guildId, out _);
-            _guildPrefix.TryRemove(guildId, out _);
-            _banCache.TryRemove(guildId, out _);
-            _quoteCache.TryRemove(guildId, out _);
-            _guildEmbedColors.TryRemove(guildId, out _);
-            _emote.TryRemove(guildId, out _);
+            var check = await db.IgnoreChannels.FindAsync(channel.GuildId.RawValue, channel.Id.RawValue);
+            if (check != null)
+            {
+                ChannelEnable.TryRemove(channel.Id, out _);
+                var result =
+                    await db.IgnoreChannels.FirstOrDefaultAsync(x =>
+                        x.GuildId == channel.GuildId.RawValue && x.ChannelId == channel.Id.RawValue);
+                db.IgnoreChannels.Remove(result);
+                await db.SaveChangesAsync();
+                return false;
+            }
+            ChannelEnable.GetOrAdd(channel.Id, true);
+            var data = new IgnoreChannel 
+            {
+                GuildId = channel.GuildId.RawValue, 
+                ChannelId = channel.Id.RawValue
+                
+            }; 
+            await db.IgnoreChannels.AddAsync(data); 
+            await db.SaveChangesAsync(); 
+            return true; 
+        }
+
+        public async ValueTask<bool> UpdateIgnoreAllStatus(HanekawaCommandContext context)
+        {
+            using var scope = context.Services.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
+            return cfg.IgnoreAllChannels;
+        }
+
+        public bool EligibleChannel(HanekawaCommandContext context, bool ignoreAll = false)
+        {
+            // True = command passes
+            // False = command fails
+            var ignore = ChannelEnable.TryGetValue(context.Channel.Id.RawValue, out _);
+            if (!ignore) ignore = DoubleCheckChannel(context);
+            return !ignoreAll ? !ignore : ignore;
+        }
+
+        public bool DoubleCheckChannel(HanekawaCommandContext context)
+        {
+            using var scope = context.Services.CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
+            if (check == null) return false;
+            ChannelEnable.TryAdd(context.Channel.Id.RawValue, true);
+            return true;
+        }
+
+        protected override ValueTask OnLeftGuild(LeftGuildEventArgs e)
+        {
+            _cooldown.TryRemove(e.GuildId, out _);
+            _guildInvites.TryRemove(e.GuildId, out _);
+            _muteTimers.TryRemove(e.GuildId, out _);
+            _experienceMultipliers.TryRemove(e.GuildId, out _);
+            _guildPrefix.TryRemove(e.GuildId, out _);
+            _banCache.TryRemove(e.GuildId, out _);
+            _quoteCache.TryRemove(e.GuildId, out _);
+            _guildEmbedColors.TryRemove(e.GuildId, out _);
+            _emote.TryRemove(e.GuildId, out _);
+            return ValueTask.CompletedTask;
+        }
+
+        protected override async ValueTask OnReady(ReadyEventArgs e)
+        {
+            var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            foreach (var x in db.LevelConfigs)
+            {
+                AdjustExpMultiplier(ExpSource.Text, x.GuildId, x.TextExpMultiplier);
+                AdjustExpMultiplier(ExpSource.Voice, x.GuildId, x.VoiceExpMultiplier);
+            }
+
+            foreach (var x in db.LevelExpReductions)
+                TryAddExpChannelReduction(x.ChannelId);
+
+            foreach (var x in db.GuildConfigs)
+            {
+                AddOrUpdatePrefix(x.GuildId, new StringPrefix(x.Prefix));
+                AddOrUpdateColor(x.GuildId, new Color(x.EmbedColor));
+            }
         }
     }
 }
