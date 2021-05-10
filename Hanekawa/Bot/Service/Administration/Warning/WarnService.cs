@@ -21,20 +21,16 @@ using Quartz.Util;
 
 namespace Hanekawa.Bot.Service.Administration.Warning
 {
-    public class WarnService : INService
+    public abstract class WarnService : INService
     {
         private readonly Logger _logger;
-        private readonly LogService _logService;
-        private readonly IServiceProvider _provider;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
 
-        public WarnService(IServiceProvider provider, Hanekawa bot, CacheService cache, LogService logService)
+        protected WarnService(Hanekawa bot, CacheService cache)
         {
-            _provider = provider;
             _bot = bot;
             _cache = cache;
-            _logService = logService;
             _logger = LogManager.GetCurrentClassLogger();
         }
 

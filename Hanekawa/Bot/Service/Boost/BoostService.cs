@@ -4,8 +4,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
@@ -15,19 +17,22 @@ using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Boost
 {
-    public class BoostService : INService
+    public class BoostService : DiscordClientService
     {
         private readonly Hanekawa _bot;
-        private readonly Experience.ExpService _exp;
+        private readonly ExpService _exp;
         private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
         private readonly Logger _logger;
 
-        public BoostService(Hanekawa bot, Experience.ExpService exp, IServiceProvider provider, CacheService cache)
+        public BoostService(ILogger<BoostService> logger, Hanekawa bot, ExpService exp, 
+            IServiceProvider provider, CacheService cache) : base(logger, bot)
         {
             _bot = bot;
             _exp = exp;
@@ -36,10 +41,13 @@ namespace Hanekawa.Bot.Service.Boost
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task BoostCheckAsync(MemberUpdatedEventArgs e)
+        protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs e)
         {
-            if (!e.OldMember.BoostedAt.HasValue && e.NewMember.BoostedAt.HasValue) await StartedBoostingAsync(e.NewMember);
-            if (e.OldMember.BoostedAt.HasValue && !e.NewMember.BoostedAt.HasValue) await EndedBoostingAsync(e.NewMember);
+            if (e.NewMember.IsBot) return;
+            if (!e.OldMember.BoostedAt.HasValue && e.NewMember.BoostedAt.HasValue)
+                await StartedBoostingAsync(e.NewMember);
+            if (e.OldMember.BoostedAt.HasValue && !e.NewMember.BoostedAt.HasValue)
+                await EndedBoostingAsync(e.NewMember);
         }
 
         private async Task Reward()

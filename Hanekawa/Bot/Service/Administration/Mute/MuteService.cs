@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Administration.Warning;
 using Hanekawa.Bot.Service.Cache;
@@ -14,16 +14,17 @@ using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
-using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Administration.Mute
 {
-    public class MuteService : INService
+    public class MuteService : DiscordClientService
     {
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
@@ -33,7 +34,8 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         private readonly Hanekawa _bot;
         private readonly OverwritePermissions _deny = new(ChannelPermissions.None, new ChannelPermissions(34880));
 
-        public MuteService(IServiceProvider provider, LogService logService, CacheService cache, Hanekawa bot, WarnService warn)
+        public MuteService(IServiceProvider provider, LogService logService, CacheService cache, Hanekawa bot, 
+            WarnService warn, ILogger<MuteService> logger) : base(logger, bot)
         {
             _provider = provider;
             _logService = logService;
@@ -63,7 +65,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             db.SaveChanges();
         }
 
-        public async Task MuteCheck(MemberJoinedEventArgs e)
+        protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -75,7 +77,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 : check.Time - DateTime.UtcNow;
             StartUnMuteTimer(e.GuildId.RawValue, e.Member.Id.RawValue, after);
         }
-        
+
         public async Task<bool> Mute(IMember user, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
             var role = await GetMuteRoleAsync(user.GuildId, db);

@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Database;
-using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Administration
 {
-    public class BlacklistService : INService
+    public class BlacklistService : DiscordClientService
     {
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
-        public BlacklistService(IServiceProvider provider)
+        public BlacklistService(IServiceProvider provider, Hanekawa bot, ILogger<BlacklistService> logger) : base(logger, bot)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _provider = provider;
         }
 
-        public async Task BlackListAsync(JoinedGuildEventArgs e)
+        protected override async ValueTask OnJoinedGuild(JoinedGuildEventArgs e)
         {
             try
             {

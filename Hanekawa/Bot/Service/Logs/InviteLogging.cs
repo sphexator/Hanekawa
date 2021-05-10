@@ -11,7 +11,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task InviteCreatedAsync(InviteCreatedEventArgs e)
+        protected override async ValueTask OnInviteCreated(InviteCreatedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Service.Logs
             _cache.AddInvite(e.GuildId.Value, e.Invite);
         }
 
-        public async Task InviteDeletedAsync(InviteDeletedEventArgs e)
+        protected override async ValueTask OnInviteDeleted(InviteDeletedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();

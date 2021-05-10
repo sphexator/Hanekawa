@@ -17,7 +17,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task MessageDeletedAsync(MessageDeletedEventArgs e)
+        protected override async ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             var guild = _bot.GetGuild(e.GuildId.Value);
@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task MessagesDeletedAsync(MessagesDeletedEventArgs e)
+        protected override async ValueTask OnMessagesDeleted(MessagesDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             try
@@ -134,7 +134,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task MessageUpdatedAsync(MessageUpdatedEventArgs e)
+        protected override async ValueTask OnMessageUpdated(MessageUpdatedEventArgs e)
         {
             if(!e.GuildId.HasValue) return;
             var guild = _bot.GetGuild(e.GuildId.Value);

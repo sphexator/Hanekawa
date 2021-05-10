@@ -1,31 +1,32 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Entities;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 using Quartz.Util;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Logs
 {
-    public partial class LogService : INService
+    public partial class LogService : DiscordClientService
     {
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
-        
-        public LogService(Hanekawa bot, IServiceProvider provider, CacheService cache)
+
+        public LogService(ILogger<LogService> logger, DiscordClientBase client, Hanekawa bot, IServiceProvider provider, CacheService cache) : base(logger, client)
         {
             _bot = bot;
             _provider = provider;
@@ -33,7 +34,7 @@ namespace Hanekawa.Bot.Service.Logs
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task JoinLogAsync(MemberJoinedEventArgs e)
+        protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if(guild == null) return;
@@ -108,7 +109,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task LeaveLogAsync(MemberLeftEventArgs e)
+        protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e)
         {
             var guild = e.User.GetGatewayClient().GetGuild(e.GuildId);
             if(guild == null) return;

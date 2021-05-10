@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Database;
-using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 
 namespace Hanekawa.Bot.Service.Administration
 {
-    public class VoiceRoleService : INService
+    public abstract class VoiceRoleService : DiscordClientService
     {
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
         private readonly Logger _logger;
 
-        public VoiceRoleService(Hanekawa bot, IServiceProvider provider)
+        protected VoiceRoleService(ILogger<VoiceRoleService> logger, Hanekawa bot, IServiceProvider provider) : base(logger, bot)
         {
             _bot = bot;
             _provider = provider;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async ValueTask VoiceStateUpdateAsync(VoiceStateUpdatedEventArgs e)
+        protected override async ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
         {
             if (e.NewVoiceState == null) await DisconnectedAsync(e);
             else if (e.OldVoiceState == null) await JoinedAsync(e);
@@ -35,12 +37,14 @@ namespace Hanekawa.Bot.Service.Administration
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            // TODO: Implement Voice role add
         }
 
         private async ValueTask DisconnectedAsync(VoiceStateUpdatedEventArgs e)
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            // TODO: Implement Voice role remove
         }
 
         private async ValueTask ChangedChannelAsync(VoiceStateUpdatedEventArgs e)

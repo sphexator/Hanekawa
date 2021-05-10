@@ -5,25 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.HungerGame;
-using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Hanekawa.HungerGames;
 using Hanekawa.HungerGames.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 using Quartz.Util;
 using static Disqord.LocalCustomEmoji;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Game
 {
-    public class HungerGameService : INService
+    public class HungerGameService : DiscordClientService
     {
         private readonly Hanekawa _bot;
         private readonly Logger _logger;
@@ -31,7 +33,7 @@ namespace Hanekawa.Bot.Service.Game
         private readonly HungerGameClient _client;
         private readonly ImageGenerationService _image;
 
-        public HungerGameService(Hanekawa bot, IServiceProvider provider, HungerGameClient client, ImageGenerationService image)
+        public HungerGameService(DiscordClientBase clientBase, ILogger<HungerGameService> logger, Hanekawa bot, IServiceProvider provider, HungerGameClient client, ImageGenerationService image) : base(logger, clientBase)
         {
             _bot = bot;
             _provider = provider;
@@ -40,7 +42,7 @@ namespace Hanekawa.Bot.Service.Game
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task ReactionReceivedAsync(ReactionAddedEventArgs e)
+        protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             if (e.Member.IsBot) return;
@@ -50,7 +52,7 @@ namespace Hanekawa.Bot.Service.Game
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value);
                 if (status is not {Stage: GameStage.Signup}) return;
-                    
+                
                 if (!TryParse(status.EmoteMessageFormat, out var result)) return;
                 if (e.Emoji.Name != result.Name) return;
 
@@ -88,7 +90,7 @@ namespace Hanekawa.Bot.Service.Game
             }
         }
 
-        public async Task ReactionRemovedAsync(ReactionRemovedEventArgs e)
+        protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
         {
             try
             {
@@ -109,7 +111,7 @@ namespace Hanekawa.Bot.Service.Game
             }
         }
 
-        public async Task UserLeftAsync(MemberLeftEventArgs e)
+        protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e)
         {
             try
             {
@@ -142,7 +144,7 @@ namespace Hanekawa.Bot.Service.Game
             }
         }
 
-        public async Task UpdateUserAsync(MemberUpdatedEventArgs e)
+        protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs e)
         {
             try
             {
@@ -522,7 +524,7 @@ namespace Hanekawa.Bot.Service.Game
             return role;
         }
         
-        private static async Task<List<HungerGameProfile>> AddBoostersAsync(DbService db, List<HungerGameProfile> participants, CachedGuild guild)
+        private static async Task<List<HungerGameProfile>> AddBoostersAsync(DbService db, CachedGuild guild)
         {
             var toReturn = new List<HungerGameProfile>();
             foreach (var (key, user) in guild.Members.Where(x => x.Value.BoostedAt.HasValue).ToList())
@@ -561,7 +563,7 @@ namespace Hanekawa.Bot.Service.Game
         {
             var toAddNumber = 0;
             var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guild.Id.RawValue).ToListAsync();
-            var boosters = await AddBoostersAsync(db, profiles, guild);
+            var boosters = await AddBoostersAsync(db, guild);
             profiles.AddRange(boosters);
             await db.HungerGameProfiles.AddRangeAsync(boosters);
             switch (profiles.Count)

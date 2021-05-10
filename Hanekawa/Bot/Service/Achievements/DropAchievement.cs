@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
-    public partial class AchievementService
+    public abstract partial class AchievementService
     {
         public async Task DropAchievement(Account userData, DbService db)
         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
@@ -13,12 +14,14 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 using static Disqord.LocalCustomEmoji;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Drop
 {
-    public class DropService : INService
+    public class DropService : DiscordClientService
     {
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
@@ -28,7 +31,7 @@ namespace Hanekawa.Bot.Service.Drop
         private readonly AchievementService _achievement;
         private readonly Random _random;
         
-        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random, AchievementService achievement)
+        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random, AchievementService achievement, ILogger<DropService> logger) : base(logger, bot)
         {
             _bot = bot;
             _cache = cache;
@@ -57,15 +60,15 @@ namespace Hanekawa.Bot.Service.Drop
                         $"Error in {e.GuildId.Value.RawValue} for drop create - {exception.Message}");
                 }
         }
-        
-        public async Task ReactionReceived(ReactionAddedEventArgs e)
+
+        protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             if (!_cache.GetDrop(e.ChannelId, e.MessageId, out var type)) return;
             _cache.RemoveDrop(e.ChannelId, e.MessageId);
             await ClaimAsync(e.Message, e.Member, type);
         }
-        
+
         public async Task SpawnAsync(Snowflake guildId, IMessageChannel channel, IMessage msg, DropType type)
         {
             using var scope = _provider.CreateScope();

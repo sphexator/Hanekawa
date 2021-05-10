@@ -1,25 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
+using Hanekawa.Bot.Service.Drop;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 using Quartz;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Experience
 {
-    public partial class ExpService : INService, IJob
+    public partial class ExpService : DiscordClientService, IJob
     {
         private readonly CacheService _cache;
         private readonly AchievementService _achievement;
@@ -28,7 +30,7 @@ namespace Hanekawa.Bot.Service.Experience
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement)
+        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement, ILogger<ExpService> logger) : base(logger, bot)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _cache = cache;
@@ -37,8 +39,8 @@ namespace Hanekawa.Bot.Service.Experience
             _random = random;
             _achievement = achievement;
         }
-        
-        public async Task VoiceExperienceAsync(VoiceStateUpdatedEventArgs e)
+
+        protected override async ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
         {
             if (e.Member.IsBot) return;
             var user = e.Member;
@@ -77,10 +79,24 @@ namespace Hanekawa.Bot.Service.Experience
             }
         }
 
-        public async Task ServerExperienceAsync(MessageReceivedEventArgs e)
+        protected override async ValueTask OnMessageReceived(MessageReceivedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             if (e.Member.IsBot) return;
+            
+            var cdCheck = _cache.TryGetCooldown(e.GuildId.Value, e.Member.Id, CooldownType.ServerMessage);
+            if (!cdCheck)
+            {
+                _cache.AddCooldown(e.GuildId.Value, e.Member.Id, CooldownType.ServerMessage);
+                _ = ServerExperienceAsync(e);
+                _ = _provider.GetRequiredService<DropService>().MessageReceived(e);
+            }
+
+            await GlobalExperienceAsync(e);
+        }
+
+        private async Task ServerExperienceAsync(MessageReceivedEventArgs e)
+        {
             try
             {
                 using var scope = _provider.CreateScope();
@@ -97,7 +113,7 @@ namespace Hanekawa.Bot.Service.Experience
                     $"Error in {e.GuildId.Value.RawValue} for Server Exp - {z.Message}");
             }
         }
-
+        
         public async Task GlobalExperienceAsync(MessageReceivedEventArgs e)
         {
             if (e.Member == null) return;

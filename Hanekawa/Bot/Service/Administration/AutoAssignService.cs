@@ -29,10 +29,10 @@ namespace Hanekawa.Bot.Service.Administration
         private readonly Logger _logger;
         private readonly SemaphoreSlim _lock = new (1, 1);
 
-        public AutoAssignService(ILogger<AutoAssignService> logger, DiscordClientBase client, IServiceProvider provider) : base(logger, client)
+        public AutoAssignService(ILogger<AutoAssignService> logger, Hanekawa client, IServiceProvider provider) : base(logger, client)
         {
             _provider = provider;
-            _bot = client as Hanekawa;
+            _bot = client;
             _logger = LogManager.GetCurrentClassLogger();
         }
 

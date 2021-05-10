@@ -20,7 +20,7 @@ namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService
     {
-        public async Task BanAsync(BanCreatedEventArgs e)
+        protected override async ValueTask OnBanCreated(BanCreatedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
         }
 
-        public async Task UnbanAsync(BanDeletedEventArgs e)
+        protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e)
         {
             var guild = _bot.GetGuild(e.GuildId);
             if (guild == null) return;
@@ -133,7 +133,7 @@ namespace Hanekawa.Bot.Service.Logs
                 _logger.Log(LogLevel.Error, exception, $"(Log Service) Error in {e.GuildId.RawValue} for UnBan Log - {exception.Message}");
             }
         }
-
+        
         private async ValueTask<IMember> CheckAuditLog(IGuild guild, Snowflake userId, ModLog caseId, AuditLogActionType type)
         {
             IMember mod = null;

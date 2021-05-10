@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
@@ -10,13 +11,13 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 
 namespace Hanekawa.Bot.Service.Board
 {
-    public class BoardService : INService
+    public class BoardService : DiscordClientService
     {
         private readonly Hanekawa _bot;
         private readonly Logger _logger;
@@ -24,7 +25,7 @@ namespace Hanekawa.Bot.Service.Board
         private readonly CacheService _cache;
         // TODO: Change name check on emotes to IDs and only allow emotes within that guild to be used
         // Favor the default star emote
-        public BoardService(Hanekawa bot, IServiceProvider provider, CacheService cache)
+        public BoardService(Hanekawa bot, IServiceProvider provider, CacheService cache, ILogger<BoardService> logger) : base(logger, bot)
         {
             _bot = bot;
             _provider = provider;
@@ -32,10 +33,11 @@ namespace Hanekawa.Bot.Service.Board
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task ReactionReceivedAsync(ReactionAddedEventArgs e)
+        protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
-            if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) && e.Emoji.Name != emote.Name) return;
+            if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) && (e.Emoji.Name != emote.Name ||
+                (e.Emoji.GetId().HasValue && e.Emoji.GetId() != emote.GetId()))) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             if (emote == null)
@@ -61,7 +63,7 @@ namespace Hanekawa.Bot.Service.Board
             }
         }
 
-        public async Task ReactionRemovedAsync(ReactionRemovedEventArgs e)
+        protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) && e.Emoji.Name != emote.Name) return;
@@ -82,7 +84,7 @@ namespace Hanekawa.Bot.Service.Board
             await db.SaveChangesAsync();
         }
 
-        public async Task ReactionClearedAsync(ReactionsClearedEventArgs e)
+        protected override async ValueTask OnReactionsCleared(ReactionsClearedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();

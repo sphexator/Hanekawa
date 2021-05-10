@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
-    public partial class AchievementService
+    public abstract partial class AchievementService
     {
         public async Task GameKill(Snowflake guildId, Snowflake userId, bool pvp)
         {
