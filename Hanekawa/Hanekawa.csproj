@@ -21,11 +21,12 @@
         <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05062021-27" />
         <PackageReference Include="Disqord.Voice" Version="1.0.0-05062021-27" />
         <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-05062021-27" />
-        <PackageReference Include="Humanizer" Version="2.9.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
+        <PackageReference Include="Disqord.Webhook" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Humanizer" Version="2.10.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.9.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.6">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -37,8 +38,9 @@
         <PackageReference Include="NLog" Version="4.7.9" />
         <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="4.12.0" />
-        <PackageReference Include="Npgsql" Version="5.0.4" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
+        <PackageReference Include="Npgsql" Version="5.0.5" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
+        <PackageReference Include="Npgsql.Json.NET" Version="5.0.5" />
         <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
         <PackageReference Include="Quartz" Version="3.3.2" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta0013" />

@@ -244,24 +244,15 @@ namespace Hanekawa.Database
 
         private static void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
         {
-            x.HasKey(e => new {e.GuildId, e.UserId, e.ItemId});
-            x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-            x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
+            x.HasKey(e => new {e.UserId});
+            x.HasMany(e => e.Items).WithMany(e => e.Users);
         });
-
+    
         private static void ItemBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Item>(x =>
         {
             x.HasKey(e => e.Id);
             x.Property(e => e.Id).ValueGeneratedOnAdd();
-            x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-            x.Property(e => e.Role).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-            x.Property(e => e.Type).HasConversion(
-                v => v.ToString(),
-                v => (ItemType) Enum.Parse(typeof(ItemType), v));
+            x.Property(e => e.ItemJson).HasColumnType("jsonb");
         });
 
         private static void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>

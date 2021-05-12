@@ -32,27 +32,30 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Disqord" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Bot" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Core" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Gateway" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Rest" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05052021-27" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
+        <PackageReference Include="Disqord" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Disqord.Webhook" Version="1.0.0-05062021-27" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Npgsql" Version="5.0.4" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
+        <PackageReference Include="Npgsql" Version="5.0.5" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.6" />
 
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
+
+        <PackageReference Include="Npgsql.Json.NET" Version="5.0.5" />
         <PackageReference Include="Qmmands" Version="4.0.1-nightly-00256" />
     </ItemGroup>
 

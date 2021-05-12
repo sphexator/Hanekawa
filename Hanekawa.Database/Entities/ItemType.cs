@@ -9,7 +9,7 @@
         Flask,
         Armor,
         Weapon,
-        ProfBackground,
+        Background,
         Trash
     }
 }
