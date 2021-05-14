@@ -47,14 +47,14 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             stream.Position = 0;
             var fileName = "welcomeExample.png";
             if (url.EndsWith(".gif")) fileName = "welcomeExample.gif";
-            var msg = await Response(new LocalMessageBuilder
+            var msg = await Reply(new LocalMessageBuilder
             {
                 Content = "Do you want to add this banner? (y/N)\n" +
                           "You can adjust placement of avatar and text by adjust these values in the command (this is the full command with default values)\n" +
                           $"**Example:** wa {url.Truncate(5)} {aviSize} {aviX} {aviY} {textSize} {textX} {textY}\n" +
                           $"**Explained:** wa {url.Truncate(5)} PfpSize = {aviSize} PfpX = {aviX} PfpY = {aviY} TextSize = {textSize} TextX = {textX} TextY = {textY}",
                 Attachments = {new LocalAttachment(stream, fileName, false)}
-            }.Build());
+            });
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(Context.ChannelId, x =>
                 x.Message.Author == Context.Author, TimeSpan.FromMinutes(2));
             if (response == null || response.Message.Content.ToLower() != "y")
@@ -192,7 +192,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
         public DiscordResponseCommandResult WelcomeTemplate() =>
-            Response(new LocalMessageBuilder
+            Reply(new LocalMessageBuilder
             {
                 Embed = new LocalEmbedBuilder
                 {
@@ -205,7 +205,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                     ImageUrl = "https://i.imgur.com/rk5BBmf.png"
                 },
                 Attachments = {new LocalAttachment("Data/Welcome/WelcomeTemplate.psd", "WelcomeTemplate.psd")}
-            }.Build());
+            });
 
         [Name("Banner Toggle")]
         [Command("bannertoggle", "toggle")]

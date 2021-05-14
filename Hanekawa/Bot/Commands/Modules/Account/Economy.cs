@@ -35,17 +35,16 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             user ??= Context.Author;
             var userData = await db.GetOrCreateUserData(user);
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            var embed = new LocalMessageBuilder
+
+            var embed = new LocalEmbedBuilder
             {
-                Embed = new LocalEmbedBuilder
-                {
-                    Author = new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName()},
-                    Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                    Description = $"{cfg.CurrencyName}: {cfg.ToCurrencyFormat(userData.Credit)}\n" +
-                                  $" {cfg.SpecialCurrencyName}: {cfg.ToCurrencyFormat(userData.CreditSpecial, true)}"
-                }
+                Author = new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName()},
+                Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
+                Description = $"{cfg.CurrencyName}: {cfg.ToCurrencyFormat(userData.Credit)}\n" +
+                              $" {cfg.SpecialCurrencyName}: {cfg.ToCurrencyFormat(userData.CreditSpecial, true)}"
             };
-            return Response(embed.Build());
+            
+            return Reply(embed);
         }
         
         [Name("Give")]

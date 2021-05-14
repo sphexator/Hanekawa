@@ -85,14 +85,13 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         [Description("Showcase yours or another persons profile")]
         [Cooldown(1, 5, CooldownMeasure.Seconds, CooldownBucketType.Member)]
         [RequiredChannel]
-        public async Task<DiscordResponseCommandResult> ProfileAsync(IMember user = null)
+        public async Task<DiscordCommandResult> ProfileAsync(IMember user = null)
         {
             // TODO: Look into
             user ??= Context.Author;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var image = await _image.ProfileBuilder(user, db);
-            return Response(new LocalMessageBuilder {Attachments = {new LocalAttachment(image, "profile.png", false)}}
-                .Build());
+            return Reply(new LocalMessageBuilder {Attachments = {new LocalAttachment(image, "profile.png")}});
         }
 
         [Name("Level Leaderboard")]

@@ -31,5 +31,11 @@ namespace Hanekawa.Bot.Commands
 
         protected DiscordCommandResult Reply(string message, Color color)
             => Reply(new LocalEmbedBuilder().CreateDefaultEmbed(message, color));
+
+        protected DiscordResponseCommandResult Reply(LocalMessageBuilder builder)
+        {
+            var result = Response(builder.WithReply(Context.Message.Id, Context.ChannelId, Context.GuildId).Build());
+            return result;
+        }
     }
 }
