@@ -28,6 +28,17 @@ namespace Hanekawa.Bot.Commands
             }
             return message;
         }
+        
+        protected DiscordCommandResult Response(string content, Color color, LocalMentionsBuilder mentions = null) =>
+            Response(new LocalMessageBuilder
+            {
+                Embed = new LocalEmbedBuilder
+                {
+                    Color = color,
+                    Description = content
+                },
+                Mentions = mentions
+            }.Build());
 
         protected DiscordCommandResult Reply(string message, Color color)
             => Reply(new LocalEmbedBuilder().CreateDefaultEmbed(message, color));

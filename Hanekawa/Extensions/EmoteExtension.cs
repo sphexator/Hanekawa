@@ -20,5 +20,9 @@ namespace Hanekawa.Extensions
                 out var snowflake)) return snowflake;
             return null;
         }
+
+        public static string GetEmoteUrl(this ICustomEmoji emoji) => emoji.IsAnimated
+            ? $"https://cdn.discordapp.com/emojis/{emoji.Id}.gif"
+            : $"https://cdn.discordapp.com/emojis/{emoji.Id}.png";
     }
 }
