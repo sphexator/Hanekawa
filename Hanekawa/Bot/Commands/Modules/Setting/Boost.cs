@@ -17,12 +17,12 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
     [Name("Boost")]
     [Description("Configure boost rewards")]
     [Group("Boost")]
+    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
     public class Boost : HanekawaCommandModule
     {
         [Name("Set Exp Reward")]
         [Command("exp")]
         [Description("Rewards the user a certain amount of exp for boosting the server")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetBoostExpAsync(int exp = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -35,7 +35,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Set Credit Reward")]
         [Command("credit")]
         [Description("Rewards the user a certain amount of credit for boosting the server")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetBoostCreditAsync(int credit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -48,7 +47,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Set Special Credit Reward")]
         [Command("scredit")]
         [Description("Rewards the user a certain amount of special credit for boosting the server")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetBoostSpecialCreditAsync(int specialCredit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -61,7 +59,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Set Exp Multiplier")]
         [Command("expmulti")]
         [Description("Sets a experience multiplier for everyone boosting to get rewarded a little extra experience every time they earn exp")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetBoostExpMultiplier(double multiplier = 1)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -74,7 +71,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Announcement Channel")]
         [Command("channel")]
         [Description("Sets a channel to announce people that boosted the server")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetAnnouncementChannelAsync(CachedTextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();

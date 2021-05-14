@@ -50,7 +50,7 @@ namespace Hanekawa.Extensions
             content.AppendLine(!cmd.Name.IsNullOrWhiteSpace()
                 ? $"**{cmd.Name}**"
                 : $"**{cmd.FullAliases.FirstOrDefault()}**");
-            if (perms.Count > 0) content.AppendLine($"**Require {string.Join(" - ", perms)}** ");
+            if (perms == null || perms.Count > 0) content.AppendLine($"**Require {string.Join(" - ", perms)}** ");
             if (PremiumCheck(cmd, out var prem)) content.AppendLine(prem);
             content.AppendLine(
                 $"Alias: **{cmd.FullAliases.Aggregate("", (current, cmdName) => current + $"{cmdName}, ")}**");
@@ -112,25 +112,23 @@ namespace Hanekawa.Extensions
             parameter.Type == typeof(TimeSpan) ? "1h2m1s" :
             parameter.Type == typeof(int) ? "5" :
             parameter.Type == typeof(string) ? "Example text" :
-            parameter.Type == typeof(ulong) ? "431610594290827267" : parameter.Name;
+            parameter.Type == typeof(Snowflake) ? "431610594290827267" : parameter.Name;
 
         // Appends permission requirements
         public static List<string> PermBuilder(this Command cmd)
         {
-            var result = new List<string>();
+            List<string> result = null;
             foreach (var x in cmd.Module.Checks)
             {
-                if (x is RequireAuthorGuildPermissionsAttribute perm)
-                { 
-                    result.Add(perm.Permissions.ToString());
-                }
+                if (x is not RequireAuthorGuildPermissionsAttribute perm) continue;
+                result ??= new List<string>();
+                result.Add(perm.Permissions.ToString());
             }
             foreach (var x in cmd.Checks)
             {
-                if (x is RequireAuthorGuildPermissionsAttribute perm)
-                { 
-                    result.Add(perm.Permissions.ToString());
-                }
+                if (x is not RequireAuthorGuildPermissionsAttribute perm) continue;
+                result ??= new List<string>();
+                result.Add(perm.Permissions.ToString());
             }
             return result;
         }

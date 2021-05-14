@@ -24,8 +24,8 @@ namespace Hanekawa.Bot.Commands.Modules
     public class Suggestion : HanekawaCommandModule
     {
         [Name("Suggest")]
-        [Command("suggest")]
         [Description("Sends a suggestion to the server, if they have it enabled")]
+        [Command("suggest", "suggestion")]
         [RequiredChannel]
         public async Task SuggestAsync([Remainder] string suggestion)
         {
@@ -72,8 +72,8 @@ namespace Hanekawa.Bot.Commands.Modules
         }
 
         [Name("Approve Suggestion")]
-        [Command("approve", "ar")]
         [Description("Approves a suggestion by its Id with a optional reason")]
+        [Command("approve", "ar")]
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
@@ -96,8 +96,8 @@ namespace Hanekawa.Bot.Commands.Modules
         }
 
         [Name("Decline Suggestion")]
-        [Command("decline", "dr")]
         [Description("Decline a suggestion by its ID with a optional reason")]
+        [Command("decline", "dr")]
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
@@ -120,8 +120,8 @@ namespace Hanekawa.Bot.Commands.Modules
         }
 
         [Name("Comment Suggestion")]
-        [Command("Comment", "rr")]
         [Description("Adds a comment onto a suggestion, usable by user suggesting and server admin")]
+        [Command("Comment", "rr")]
         [RequiredChannel]
         public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
@@ -222,13 +222,13 @@ namespace Hanekawa.Bot.Commands.Modules
 
     [Name("Suggestion Admin")]
     [Group("Suggest")]
+    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
     public class SuggestionAdmin : Suggestion
     { 
         [Name("Suggestion Channel")]
-        [Command("channel")]
         [Description(
             "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+        [Command("channel")]
         public async Task<DiscordCommandResult> SetSuggestionChannelAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -249,9 +249,8 @@ namespace Hanekawa.Bot.Commands.Modules
         }
 
         [Name("Suggest Up Vote Emote")]
-        [Command("upvote")]
         [Description("Set custom yes emote for suggestions")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+        [Command("upvote")]
         public async Task<DiscordCommandResult> SetSuggestEmoteYesAsync(IGuildEmoji emote = null)
         {
             
@@ -270,9 +269,8 @@ namespace Hanekawa.Bot.Commands.Modules
         }
 
         [Name("Suggest Down Vote Emote")]
-        [Command("downvote")]
         [Description("Set custom no emote for suggestions")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+        [Command("downvote")]
         public async Task<DiscordCommandResult> SetSuggestEmoteNoAsync(IGuildEmoji emote = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();

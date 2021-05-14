@@ -26,21 +26,21 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task CreateTopWebhookAsync()
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var check = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var check = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (check != null)
             {
                 await Reply("You've already made a config!, sending new key in dms");
                 try
                 {
                     await Context.Author.SendMessageAsync(new LocalMessageBuilder().Create(
-                        "Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl \n" +
-                        $"Auth Key: {check.AuthKey}", HanaBaseColor.Ok()));
+                        $"Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl \nAuth Key: {check.AuthKey}",
+                        HanaBaseColor.Ok()));
                 }
                 catch
                 {
-                    await Reply("Could not DM, sending here. Please delete this message afterwards.\n" +
-                                     "Webhook URL: https://hanekawa.bot/api/advert/dbl \n" +
-                                     $"Auth Key: {check.AuthKey}", Color.Green);
+                    await Reply(
+                        $"Could not DM, sending here. Please delete this message afterwards.\nWebhook URL: https://hanekawa.bot/api/advert/dbl \nAuth Key: {check.AuthKey}",
+                        HanaBaseColor.Ok());
                 }
                 return;
             }
@@ -56,7 +56,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 AuthKey = Guid.NewGuid()
             });
             await db.SaveChangesAsync();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             await Reply("Authentication Created! DMing the credentials.");
             try
             {

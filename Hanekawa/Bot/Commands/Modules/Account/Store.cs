@@ -29,18 +29,20 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            var store = await db.ServerStores.Where(x => x.GuildId == Context.GuildId).ToListAsync();
-            if (store.Count == 0)
+            var store = await db.ServerStores.Where(x => x.GuildId == Context.GuildId).ToArrayAsync();
+            if (store.Length == 0)
                 return Reply("Store is empty",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
 
-            var result = new List<string>();
+            List<string> result = null;
             foreach (var x in store)
             {
-                if(Context.Guild.Roles.TryGetValue(x.RoleId, out var role)) result.Add(role.Name);
+                if (!Context.Guild.Roles.TryGetValue(x.RoleId, out var role)) continue;
+                result ??= new List<string>();
+                result.Add(role.Name);
             }
 
-            if (result.Count == 0)
+            if (result == null || result.Count == 0)
                 return Reply("Store is empty, or couldn't find roles within the store",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
             return Pages(result.PaginationBuilder(
@@ -60,18 +62,23 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                 return Reply("Your inventory is empty",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
 
-            var result = new List<string>();
+            List<string> result = null;
             foreach (var x in inventory.Items)
             {
                 if (x.ItemJson is RoleItem roleItem)
                 {
                     if(!Context.Guild.Roles.TryGetValue(roleItem.RoleId, out var role)) continue;
+                    result ??= new List<string>();
                     result.Add($"{role.Name} [Role]");
                 }
-                else result.Add($"{x.ItemJson.Name} [{x.GetType()}]");
+                else
+                {
+                    result ??= new List<string>();
+                    result.Add($"{x.ItemJson.Name} [{x.GetType()}]");
+                }
             }
 
-            return result.Count == 0
+            return result == null || result.Count == 0
                 ? Reply("Your inventory is empty",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId))
                 : Pages(result.PaginationBuilder(
@@ -85,7 +92,6 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         [RequiredChannel]
         public async Task<DiscordCommandResult> EquipRoleAsync([Remainder] IRole role)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var inventory = await db.Inventories.FindAsync(Context.Author.Id);
             if (inventory.Items.FirstOrDefault(x => ((RoleItem) x.ItemJson).RoleId == role.Id) == null)

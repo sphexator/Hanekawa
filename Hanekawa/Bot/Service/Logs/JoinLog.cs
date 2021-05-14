@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Service.Logs
                 var inviteeInfo = await GetInvite(guild);
                 var embed = new LocalEmbedBuilder
                 {
-                    Description = $"📥 {e.Member.Mention} has joined ( *{e.Member.Id.RawValue}* )\n" +
+                    Description = $"📥 {e.Member.Mention} has joined ( *{e.Member.Id}* )\n" +
                                   $"Account created: {e.Member.CreatedAt.Humanize()}",
                     Color = Color.Green,
                     Footer = new LocalEmbedFooterBuilder { Text = $"Username: {e.Member}" },
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for Join Log - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id} for Join Log - {exception.Message}");
             }
         }
 
@@ -162,7 +162,7 @@ namespace Hanekawa.Bot.Service.Logs
             {
                 var tempInvites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
                 foreach (var x in restInvites) 
-                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Value.Id, x.Metadata.Uses));
+                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Id, x.Metadata.Uses));
 
                 var change = invites.Except(tempInvites).ToList();
                 var (code, (snowflake, _)) = change.FirstOrDefault();

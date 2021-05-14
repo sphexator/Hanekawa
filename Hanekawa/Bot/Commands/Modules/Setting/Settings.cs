@@ -14,6 +14,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
     [Name("Settings")]
     [Description("Bot settings for all services and commands")]
     [RequireBotGuildPermissions(Permission.SendMessages | Permission.EmbedLinks)]
+    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
     public class Settings : HanekawaCommandModule
     {
         private readonly CacheService _cache;

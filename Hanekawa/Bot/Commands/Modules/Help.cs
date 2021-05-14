@@ -29,6 +29,7 @@ namespace Hanekawa.Bot.Commands.Modules
         {
             var result = new StringBuilder();
             var modules = Context.Bot.Commands.GetAllModules();
+            modules.Where(x => x.Checks.Contains<>(typeof(RequirePremium))).ToList();
             for (var i = 0; i < modules.Count;)
             {
                 var strBuilder = new StringBuilder();
@@ -117,7 +118,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     });
                 }
             }
-            //if (moduleInfo.Name == "Owner") return null;
+            if (moduleInfo.Name == "Owner") return null;
             var result = new List<string>();
             foreach (var cmd in moduleInfo.Commands)
                 result.FormatCommandText(cmd, Context.Prefix);

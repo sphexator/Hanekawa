@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
-using Disqord.Rest;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Entities.Color;
@@ -10,7 +9,11 @@ using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Modules.Setting
 {
+    [Name("Logging")]
+    [Description("Configure various logging to channel(s)")]
     [Group("Log", "Logging")]
+    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+    [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.SendMessages | Permission.ManageWebhooks)]
     public class Logging : HanekawaCommandModule
     { 
         [Name("Join/Leave")]
@@ -18,7 +21,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs users joining and leaving server, leave empty to disable")]
         public async Task<DiscordCommandResult> JoinLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -54,7 +56,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         }
 
         [Name("Messages")]
-        [Command("msgs")]
+        [Command("message", "msg", "msgs")]
         [Description("Logs deleted and updated messages, leave empty to disable")]
         public async Task<DiscordCommandResult> MessageLogAsync(ITextChannel channel = null)
         {

@@ -1,19 +1,13 @@
-﻿using System.Collections.Concurrent;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Hanekawa.Bot.Service.Cache;
-using Hanekawa.Database;
-using Hanekawa.Database.Extensions;
-using Hanekawa.Database.Tables.Config;
-using Hanekawa.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Preconditions
 {
-    public class RequiredChannel : CheckAttribute, INService
+    public class RequiredChannel : CheckAttribute
     {
         public override async ValueTask<CheckResult> CheckAsync(CommandContext _)
         {

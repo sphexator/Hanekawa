@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Extensions.Interactivity;
-using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Bot.Service.Cache;

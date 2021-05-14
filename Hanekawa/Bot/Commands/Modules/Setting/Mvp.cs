@@ -38,13 +38,15 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         }
     }
     
+    [Name("MVP Settings")]
+    [Description("Configure the MVP module")]
     [Group("Mvp")]
+    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
     public class MvpAdmin : Mvp
     { 
         [Name("Set Channel")]
         [Command("channel")]
         [Description("Sets the channel new users gets announced")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetAnnouncementChannelAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -63,7 +65,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Set Role")]
         [Command("role")]
         [Description("Sets the role that's rewarded to MVP users")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetMvpRoleAsync(IRole role = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -82,7 +83,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Exp Reward")]
         [Command("exp")]
         [Description("Reward MVP users with experience")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetMvpExpRewardAsync(int exp = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -94,7 +94,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Credit Reward")]
         [Command("credit")]
         [Description("Reward MVP users with credit")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetMvpCreditRewardAsync(int credit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -107,7 +106,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Special Credit Reward")]
         [Command("scredit")]
         [Description("Reward MVP users with special credit")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetMvpSpecialCreditRewardAsync(int specialCredit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -122,7 +120,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("MVP Reward Day")]
         [Command("day")]
         [Description("Sets which day the MVP rewards is gonna be handed out")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> SetMvpDayAsync(DayOfWeek? day = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();

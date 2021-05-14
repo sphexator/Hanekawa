@@ -9,7 +9,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Entities.Color;
-using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
