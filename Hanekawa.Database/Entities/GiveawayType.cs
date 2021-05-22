@@ -4,6 +4,10 @@
     {
         Vote,
         Reaction,
-        Activity
+        Activity,
+        VoteAndReact,
+        VoteAndActivity,
+        ReactAndActivity,
+        All
     }
 }

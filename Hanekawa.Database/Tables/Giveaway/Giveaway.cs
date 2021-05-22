@@ -14,6 +14,7 @@ namespace Hanekawa.Database.Tables.Giveaway
         public bool Active { get; set; } // Is giveaway active
         public bool Stack { get; set; } = true; // Entries stack?
         public int WinnerAmount { get; set; } = 1;
+        public Snowflake? ReactionMessage { get; set; } = null;
 
         // Requirements
         public int? LevelRequirement { get; set; } = null;
