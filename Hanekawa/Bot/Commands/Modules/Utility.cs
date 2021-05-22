@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -88,7 +89,6 @@ namespace Hanekawa.Bot.Commands.Modules
                 return Reply($"Added {emote}",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
             }
-
         }
 
         [Name("Move")]
@@ -109,7 +109,10 @@ namespace Hanekawa.Bot.Commands.Modules
             
             if (voiceStates.Length == 0)
             {
-                await user.ModifyAsync(x => x.VoiceChannelId = vcState.ChannelId.Value);
+                await user.ModifyAsync(x =>
+                {
+                    if (vcState.ChannelId != null) x.VoiceChannelId = vcState.ChannelId.Value;
+                });
                 return Reply($"Moved {user.DisplayName()} to {Context.Guild.GetChannel(vcState.ChannelId.Value).Name} !",
                     HanaBaseColor.Ok());
             }
@@ -156,6 +159,37 @@ namespace Hanekawa.Bot.Commands.Modules
                 Color = Context.Services.GetRequiredService<CacheService>().GetColor(user.GuildId)
             };
             return Reply(embed);
+        }
+
+        [Name("Server Info")]
+        [Command("serverinfo")]
+        [Description("Obtain information about the server")]
+        [RequiredChannel]
+        public DiscordCommandResult ServerInfo()
+        {
+            var sb = new StringBuilder();
+            var channels = Context.Guild.GetChannels();
+            sb.AppendLine($"Category: {channels.Count(x => x.Value is ICategoryChannel)}");
+            sb.AppendLine($"Voice: {channels.Count(x => x.Value is IVoiceChannel)}");
+            sb.AppendLine($"Text: {channels.Count(x => x.Value is ITextChannel)}");
+            return Reply(new LocalEmbedBuilder
+            {
+                Author = new LocalEmbedAuthorBuilder{ Name = Context.Guild.Name, IconUrl = Context.Guild.GetIconUrl() },
+                Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
+                ThumbnailUrl = Context.Guild.GetIconUrl(),
+                Title = $"ID: {Context.GuildId}",
+                Fields = new List<LocalEmbedFieldBuilder>
+                {
+                    new () { Name = $"Verification Level", Value = Context.Guild.VerificationLevel.ToString(), IsInline = false},
+                    new () { Name = "Region", Value = Context.Guild.VoiceRegion, IsInline = true},
+                    new () { Name = "Members", Value = $"{Context.Guild.MemberCount}"},
+                    new () { Name = "Channels", Value = sb.ToString()},
+                    new () { Name = "Server Owner", Value = $"{Context.Guild.GetMember(Context.Guild.OwnerId)} ({Context.Guild.OwnerId})"},
+                    new () { Name = "Created On", Value = $"{Context.Guild.CreatedAt.DayOfWeek}, {Context.Guild.CreatedAt.MonthOfYear()} {Context.Guild.CreatedAt.Day} @ {Context.Guild.CreatedAt.TimeOfDay}"},
+                    new () { Name = "Roles", Value = $"{Context.Guild.Roles.Count}"},
+                    new () { Name = "Server Boosts", Value = $"Level: {Context.Guild.BoostTier}\nAmount of boosts: {Context.Guild.BoostingMemberCount ?? 0}"}
+                }
+            });
         }
     }
 }
