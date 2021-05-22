@@ -6,6 +6,7 @@ using Disqord;
 using Disqord.AuditLogs;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
@@ -30,8 +31,7 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogBan.HasValue) return;
-                var channel = guild.GetChannel(cfg.LogBan.Value);
-                if(channel == null) return;
+                if(guild.GetChannel(cfg.LogBan.Value) is not ITextChannel channel) return;
 
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
                 IMember mod;
@@ -40,41 +40,57 @@ namespace Hanekawa.Bot.Service.Logs
                 {
                     mod = await _bot.GetOrFetchMemberAsync(e.GuildId, banCacheUser.Value) ??
                           await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
-                    if (mod != null) caseId.ModId = mod.Id.RawValue;
+                    if (mod != null) caseId.ModId = mod.Id;
                 }
                 else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
-
+                
                 var embed = new LocalEmbedBuilder
                 {
                     Color = HanaBaseColor.Red(),
                     Author = new LocalEmbedAuthorBuilder { Name = $"User Banned | Case ID: {caseId.Id} | {e.User}" },
                     Fields =
-                        {
-                            new LocalEmbedFieldBuilder {Name = "User", Value = e.User.Mention, IsInline = false},
-                            new LocalEmbedFieldBuilder {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = false},
-                            new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
-                        },
-                    Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id.RawValue}", IconUrl = e.User.GetAvatarUrl() },
+                    {
+                        new LocalEmbedFieldBuilder {Name = "User", Value = e.User.Mention, IsInline = false},
+                        new LocalEmbedFieldBuilder {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = false},
+                        new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                    },
+                    Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id}", IconUrl = e.User.GetAvatarUrl() },
                     Timestamp = DateTimeOffset.UtcNow
                 };
                 if (e.User is CachedMember {JoinedAt: {HasValue: true}} member)
                     embed.AddField("Time In Server", (DateTimeOffset.UtcNow - member.JoinedAt.Value).Humanize(5));
-
-                var msg = await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
+                
+                var builder = new LocalWebhookMessageBuilder
                 {
-                    Embed = embed,
+                    Embeds = new List<LocalEmbedBuilder> { embed },
                     IsTextToSpeech = false,
                     Mentions = LocalMentionsBuilder.None,
-                    Reference = null,
-                    Attachments = null,
-                    Content = null
-                }.Build());
-                caseId.MessageId = msg.Id;
-                await db.SaveChangesAsync();
+                    Name = guild.GetCurrentUser().DisplayName(),
+                    AvatarUrl = _bot.CurrentUser.GetAvatarUrl()
+                };
+                try
+                {
+                    var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
+                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    caseId.MessageId = msg.Id;
+                }
+                catch (Exception exception)
+                {
+                    _logger.Log(LogLevel.Warn, exception, $"No valid webhook for ban, re-creating");
+                    var webhook = await channel.GetOrCreateWebhookClient();
+                    cfg.WebhookBan = webhook.Token;
+                    cfg.WebhookBanId = webhook.Id;
+                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    caseId.MessageId = msg.Id;
+                }
+                finally
+                {
+                    await db.SaveChangesAsync();
+                }
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Log Service) Error in {guild.Id.RawValue} for Ban Log - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception, $"Error in {guild.Id} for Ban Log - {exception.Message}");
             }
         }
 
@@ -89,11 +105,10 @@ namespace Hanekawa.Bot.Service.Logs
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
                 if (!cfg.LogBan.HasValue) return;
-                var channel = guild.GetChannel(cfg.LogBan.Value);
-                if(channel == null) return;
+                if(guild.GetChannel(cfg.LogBan.Value) is not CachedTextChannel channel) return;
                 var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Unban);
                 
-                IMember mod = null;
+                IMember mod;
                 var banCacheUser = _cache.TryGetBanCache(guild.Id, e.UserId);
                 if (banCacheUser != null)
                 {
@@ -103,34 +118,56 @@ namespace Hanekawa.Bot.Service.Logs
                 }
                 else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberUnbanned);
 
-                var embed = new LocalEmbedBuilder
+                var builder = new LocalWebhookMessageBuilder
                 {
-                    Color = HanaBaseColor.Lime(),
-                    Author = new LocalEmbedAuthorBuilder { Name = $"User Unbanned | Case ID: {caseId.Id} | {e.User}" },
-                    Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id.RawValue}", IconUrl = e.User.GetAvatarUrl() },
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Fields =
+                    Embeds = new List<LocalEmbedBuilder>
                     {
-                        new LocalEmbedFieldBuilder {Name = "User", Value = $"{e.User.Mention}", IsInline = true},
-                        new LocalEmbedFieldBuilder {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = true},
-                        new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = true}
-                    }
-                };
-                var msg = await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
-                {
-                    Embed = embed,
+                        new()
+                        {
+                            Color = HanaBaseColor.Ok(),
+                            Author = new ()
+                                {Name = $"User Unbanned | Case ID: {caseId.Id} | {e.User}"},
+                            Footer = new()
+                                {Text = $"User ID: {e.User.Id}", IconUrl = e.User.GetAvatarUrl()},
+                            Timestamp = DateTimeOffset.UtcNow,
+                            Fields =
+                            {
+                                new ()
+                                    {Name = "User", Value = $"{e.User.Mention}", IsInline = true},
+                                new()
+                                    {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = true},
+                                new()  {Name = "Reason", Value = "N/A", IsInline = true}
+                            }
+                        }
+                    },
                     IsTextToSpeech = false,
                     Mentions = LocalMentionsBuilder.None,
-                    Reference = null,
-                    Attachments = null,
-                    Content = null
-                }.Build());
-                caseId.MessageId = msg.Id.RawValue;
-                await db.SaveChangesAsync();
+                    Name = guild.GetCurrentUser().DisplayName(),
+                    AvatarUrl = _bot.CurrentUser.GetAvatarUrl()
+                };
+                try
+                {
+                    var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
+                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    caseId.MessageId = msg.Id;
+                }
+                catch (Exception exception)
+                {
+                    _logger.Log(LogLevel.Warn, exception, $"No valid webhook for unban, re-creating");
+                    var webhook = await channel.GetOrCreateWebhookClient();
+                    cfg.WebhookBan = webhook.Token;
+                    cfg.WebhookBanId = webhook.Id;
+                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    caseId.MessageId = msg.Id;
+                }
+                finally
+                {
+                    await db.SaveChangesAsync();   
+                }
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Log Service) Error in {e.GuildId.RawValue} for UnBan Log - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception, $"Error in {e.GuildId} for UnBan Log - {exception.Message}");
             }
         }
         
@@ -142,10 +179,10 @@ namespace Hanekawa.Bot.Service.Logs
             switch (type)
             {
                 case AuditLogActionType.MemberBanned:
-                    audits = await guild.FetchAuditLogsAsync<IMemberBannedAuditLog>(100);
+                    audits = await guild.FetchAuditLogsAsync<IMemberBannedAuditLog>();
                     break;
                 case AuditLogActionType.MemberUnbanned:
-                    audits = await guild.FetchAuditLogsAsync<IMemberUnbannedAuditLog>(100);
+                    audits = await guild.FetchAuditLogsAsync<IMemberUnbannedAuditLog>();
                     break;
                 default:
                     return null;

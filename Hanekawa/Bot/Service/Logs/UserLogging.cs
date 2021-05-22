@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 
@@ -15,56 +18,64 @@ namespace Hanekawa.Bot.Service.Logs
         protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs e)
         {
             var guild = _bot.GetGuild(e.NewMember.GuildId);
+            using var scope = _provider.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id);
+            if (!cfg.LogAvi.HasValue) return;
+            if (guild.GetChannel(cfg.LogAvi.Value) is not ITextChannel channel) return;
+
+            var embed = new LocalEmbedBuilder
+            {
+                Footer = new LocalEmbedFooterBuilder
+                    {Text = $"Username: {e.NewMember} ({e.NewMember.Id})", IconUrl = guild.GetIconUrl()}
+            };
+            if (e.OldMember.Nick != e.NewMember.Nick)
+            {
+                embed.Author = new LocalEmbedAuthorBuilder
+                    {Name = "Nickname Change", IconUrl = e.NewMember.GetAvatarUrl()};
+                embed.AddField("Old Nick", e.OldMember.Nick ?? e.NewMember.Name);
+                embed.AddField("New Nick", e.NewMember.Nick ?? e.NewMember.Name);
+            }
+
+            if (e.OldMember.Name != e.NewMember.Name)
+            {
+                embed.Author = new LocalEmbedAuthorBuilder
+                    {Name = "Name Change", IconUrl = e.NewMember.GetAvatarUrl()};
+                embed.AddField("Old Name", e.OldMember.Nick ?? e.NewMember.Name);
+                embed.AddField("New Name", e.NewMember.Nick ?? e.NewMember.Name);
+            }
+
+            if (e.OldMember.AvatarHash != e.NewMember.AvatarHash)
+            {
+                embed.Author = new LocalEmbedAuthorBuilder
+                    {Name = "Avatar Change", IconUrl = e.NewMember.GetAvatarUrl()};
+                embed.ThumbnailUrl = e.OldMember.GetAvatarUrl();
+                embed.ImageUrl = e.NewMember.GetAvatarUrl();
+            }
+
+            if (embed.Author == null) return;
+            var builder = new LocalWebhookMessageBuilder
+            {
+                Embeds = new List<LocalEmbedBuilder> {embed},
+                Mentions = LocalMentionsBuilder.None,
+                IsTextToSpeech = false,
+                Name = guild.GetCurrentUser().DisplayName(),
+                AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
+            };
             try
             {
-                using var scope = _provider.CreateScope();
-                await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id.RawValue);
-                if (!cfg.LogAvi.HasValue) return;
-                var channel = guild.GetChannel(cfg.LogAvi.Value);
-                if (channel == null) return;
-
-                var embed = new LocalEmbedBuilder{
-                    Footer = new LocalEmbedFooterBuilder { Text = $"Username: {e.NewMember} ({e.NewMember.Id.RawValue})", IconUrl = guild.GetIconUrl() }};
-                if (e.OldMember.Nick != e.NewMember.Nick)
-                {
-                    embed.Author = new LocalEmbedAuthorBuilder
-                        { Name = "Nickname Change", IconUrl = e.NewMember.GetAvatarUrl() };
-                    embed.AddField("Old Nick", e.OldMember.Nick ?? e.NewMember.Name);
-                    embed.AddField("New Nick", e.NewMember.Nick ?? e.NewMember.Name);
-                }
-
-                if (e.OldMember.Name != e.NewMember.Name)
-                {
-                    embed.Author = new LocalEmbedAuthorBuilder
-                        { Name = "Name Change", IconUrl = e.NewMember.GetAvatarUrl() };
-                    embed.AddField("Old Name", e.OldMember.Nick ?? e.NewMember.Name);
-                    embed.AddField("New Name", e.NewMember.Nick ?? e.NewMember.Name);
-                }
-
-                if (e.OldMember.AvatarHash != e.NewMember.AvatarHash)
-                {
-                    embed.Author = new LocalEmbedAuthorBuilder
-                        { Name = "Avatar Change", IconUrl = e.NewMember.GetAvatarUrl() };
-                    embed.ThumbnailUrl = e.OldMember.GetAvatarUrl();
-                    embed.ImageUrl = e.NewMember.GetAvatarUrl();
-                }
-
-                if(embed.Author == null) return;
-                await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
-                {
-                    Embed = embed,
-                    IsTextToSpeech = false,
-                    Mentions = LocalMentionsBuilder.None,
-                    Reference = null,
-                    Attachments = null,
-                    Content = null
-                }.Build());
+                var webhook = _webhookClientFactory.CreateClient(cfg.WebhookAviId.Value, cfg.WebhookAvi);
+                await webhook.ExecuteAsync(builder.Build());
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Log Service) Error in {guild.Id.RawValue} for Guild Member Log - {exception.Message}");
+                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for user log, re-creating");
+                var webhook = await channel.GetOrCreateWebhookClient();
+                if (cfg.WebhookAvi != webhook.Token) cfg.WebhookAvi = webhook.Token;
+                if (!cfg.WebhookAviId.HasValue || cfg.WebhookAviId.Value != webhook.Id)
+                    cfg.WebhookAviId = webhook.Id;
+                await webhook.ExecuteAsync(builder.Build());
+                await db.SaveChangesAsync();
             }
         }
     }

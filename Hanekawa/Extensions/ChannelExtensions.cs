@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Disqord;
-using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Rest;
 
@@ -26,6 +26,16 @@ namespace Hanekawa.Extensions
             }
 
             return await channel.FetchMessageAsync(id) as IUserMessage;
+        }
+
+        public static async Task<IWebhook> GetOrCreateWebhookClient(this ITextChannel channel)
+        {
+            var currentUser = channel.GetGatewayClient().CurrentUser;
+            var webhooks = await channel.FetchWebhooksAsync();
+            var webhook = webhooks.FirstOrDefault(x => x.Creator.Id == currentUser.Id);
+            
+            if (webhook != null) return webhook;
+            return await channel.CreateWebhookAsync(currentUser.Name);
         }
     }
 }

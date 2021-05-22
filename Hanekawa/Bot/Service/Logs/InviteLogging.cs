@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using Disqord;
+﻿using System.Threading.Tasks;
 using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
@@ -26,7 +23,7 @@ namespace Hanekawa.Bot.Service.Logs
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value.RawValue);
+            var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
             if (!cfg.LogJoin.HasValue) return;
             _cache.RemoveInvite(e.GuildId.Value, e.Code);
         }

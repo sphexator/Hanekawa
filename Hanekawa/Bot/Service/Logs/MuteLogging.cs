@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Extensions;
 using Humanizer;
+using NLog;
 
 namespace Hanekawa.Bot.Service.Logs
 {
@@ -15,10 +19,9 @@ namespace Hanekawa.Bot.Service.Logs
         public async ValueTask MuteAsync(IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
             var guild = _bot.GetGuild(target.GuildId);
-            var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId.RawValue);
+            var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
             if (!cfg.LogBan.HasValue) return;
-            var channel = guild.GetChannel(cfg.LogBan.Value);
-            if (channel == null) return;
+            if (guild.GetChannel(cfg.LogBan.Value) is not ITextChannel channel) return;
             var caseId = await db.CreateCaseId(target, guild, DateTime.UtcNow, ModAction.Mute);
             var embed = new LocalEmbedBuilder
             {
@@ -31,23 +34,37 @@ namespace Hanekawa.Bot.Service.Logs
                     new LocalEmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
                     new LocalEmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false}
                 },
-                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id.RawValue})", IconUrl = target.GetAvatarUrl() }
+                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id})", IconUrl = target.GetAvatarUrl() }
             };
             if (duration.HasValue)
                 embed.Fields.Add(new LocalEmbedFieldBuilder
                     {Name = "Duration", Value = $"{duration.Value.Humanize(2)}", IsInline = false});
-
-            var msg = await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
+            var builder = new LocalWebhookMessageBuilder
             {
-                Embed = embed,
-                IsTextToSpeech = false,
+                Embeds = new List<LocalEmbedBuilder>{embed},
                 Mentions = LocalMentionsBuilder.None,
-                Reference = null,
-                Attachments = null,
-                Content = null
-            }.Build());
-            caseId.MessageId = msg.Id.RawValue;
-            await db.SaveChangesAsync();
+                IsTextToSpeech = false,
+                Name = guild.GetCurrentUser().DisplayName(),
+                AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
+            };
+            try
+            {
+                var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
+                var msg = await webhook.ExecuteAsync(builder.Build());
+                caseId.MessageId = msg.Id;
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for mute log, re-creating");
+                var webhook = await channel.GetOrCreateWebhookClient();
+                if (cfg.WebhookBan != webhook.Token) cfg.WebhookBan = webhook.Token;
+                if (!cfg.WebhookBanId.HasValue || cfg.WebhookBanId.Value != webhook.Id)
+                    cfg.WebhookBanId = webhook.Id;
+                var msg = await webhook.ExecuteAsync(builder.Build());
+                caseId.MessageId = msg.Id;
+                await db.SaveChangesAsync();
+            }
         }
 
         public async ValueTask WarnAsync(WarnReason warn, IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
@@ -55,15 +72,14 @@ namespace Hanekawa.Bot.Service.Logs
             var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
             if (!cfg.LogWarn.HasValue) return;
             var guild = _bot.GetGuild(target.GuildId);
-            var channel = guild.GetChannel(cfg.LogWarn.Value);
-            if (channel == null) return;
+            if (guild.GetChannel(cfg.LogWarn.Value) is not ITextChannel channel) return;
             
             var embed = new LocalEmbedBuilder
             {
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Author = new LocalEmbedAuthorBuilder { Name = $"User {warn}" },
-                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id.RawValue})" },
+                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id})" },
                 Fields =
                 {
                     new LocalEmbedFieldBuilder {Name = "User", Value = target.Mention, IsInline = false},
@@ -74,16 +90,29 @@ namespace Hanekawa.Bot.Service.Logs
             if (duration.HasValue)
                 embed.Fields.Add(new LocalEmbedFieldBuilder
                     { Name = "Duration", Value = $"{duration.Value.Humanize(2)}", IsInline = false });
-
-            await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
+            var builder = new LocalWebhookMessageBuilder
             {
-                Embed = embed,
-                IsTextToSpeech = false,
+                Embeds = new List<LocalEmbedBuilder>{embed},
                 Mentions = LocalMentionsBuilder.None,
-                Reference = null,
-                Attachments = null,
-                Content = null
-            }.Build());
+                IsTextToSpeech = false,
+                Name = guild.GetCurrentUser().DisplayName(),
+                AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
+            };
+            try
+            {
+                var webhook = _webhookClientFactory.CreateClient(cfg.WebhookWarnId.Value, cfg.WebhookWarn);
+                await webhook.ExecuteAsync(builder.Build());
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for warn log, re-creating");
+                var webhook = await channel.GetOrCreateWebhookClient();
+                if (cfg.WebhookWarn != webhook.Token) cfg.WebhookWarn = webhook.Token;
+                if (!cfg.WebhookWarnId.HasValue || cfg.WebhookWarnId.Value != webhook.Id)
+                    cfg.WebhookWarnId = webhook.Id;
+                await webhook.ExecuteAsync(builder.Build());
+                await db.SaveChangesAsync();
+            }
         }
     }
 }
