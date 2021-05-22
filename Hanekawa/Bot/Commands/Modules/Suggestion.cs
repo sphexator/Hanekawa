@@ -30,14 +30,14 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task SuggestAsync([Remainder] string suggestion)
         {
             await Context.Message.TryDeleteMessageAsync();
-            
+
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var caseId = await db.CreateSuggestion(Context.Author, Context.Guild, DateTime.UtcNow);
             var builder = new LocalMessageBuilder
             {
-                Content = $"New Suggestion from {Context.Author.ToString()}",
+                Content = $"New Suggestion from {Context.Author}",
                 Embed = new LocalEmbedBuilder
                 {
                     Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
@@ -59,6 +59,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     {
                         attachments.Add(new LocalAttachment(x.Url, x.Filename));
                     }
+
                     builder.Attachments = attachments;
                 }
             }
@@ -78,11 +79,11 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task ApproveSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            
+
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
-            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
+            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (suggestion?.MessageId == null)
             {
                 await Reply("Couldn't find a suggestion with that id.", HanaBaseColor.Bad());
@@ -102,11 +103,11 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task DeclineSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            
+
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
-            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
+            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (suggestion?.MessageId == null)
             {
                 await Reply("Couldn't find a suggestion with that id.", Color.Red);
@@ -126,11 +127,11 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task CommentSuggestionAsync(int id, [Remainder] string reason = null)
         {
             await Context.Message.TryDeleteMessageAsync();
-            
+
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
-            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id.RawValue);
+            var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (!Context.Author.GetGuildPermissions().Has(Permission.ManageGuild) &&
                 Context.Author.Id != suggestion.UserId) return;
 
@@ -172,7 +173,7 @@ namespace Hanekawa.Bot.Commands.Modules
             }
 
             var result = new List<LocalCustomEmoji> {iYes, iNo};
-            foreach (var x in result) 
+            foreach (var x in result)
                 await msg.AddReactionAsync(x);
         }
 
@@ -186,7 +187,8 @@ namespace Hanekawa.Bot.Commands.Modules
             return embed.Description;
         }
 
-        private async Task RespondUser(Database.Tables.Moderation.Suggestion suggestion, string suggest, string response)
+        private async Task RespondUser(Database.Tables.Moderation.Suggestion suggestion, string suggest,
+            string response)
         {
             try
             {
@@ -218,73 +220,72 @@ namespace Hanekawa.Bot.Commands.Modules
                 /*IGNORE*/
             }
         }
-    }
 
-    [Name("Suggestion Admin")]
-    [Group("Suggest")]
-    [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-    public class SuggestionAdmin : Suggestion
-    { 
-        [Name("Suggestion Channel")]
-        [Description(
-            "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
-        [Command("channel")]
-        public async Task<DiscordCommandResult> SetSuggestionChannelAsync(ITextChannel channel = null)
+        [Name("Suggestion Admin")]
+        [Group("Suggest")]
+        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+        public class SuggestionAdmin : Suggestion
         {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-            if (cfg.Channel.HasValue && channel == null)
+            [Name("Suggestion Channel")]
+            [Description(
+                "Sets a channel as channel to receive suggestions. don't mention a channel to disable suggestions.")]
+            [Command("channel")]
+            public async Task<DiscordCommandResult> SetSuggestionChannelAsync(ITextChannel channel = null)
             {
-                cfg.Channel = null;
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (cfg.Channel.HasValue && channel == null)
+                {
+                    cfg.Channel = null;
+                    await db.SaveChangesAsync();
+                    return Reply("Disabled suggestion channel", HanaBaseColor.Ok());
+                }
+
+                channel ??= Context.Channel;
+                if (channel == null) return null;
+                cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();
-                return Reply("Disabled suggestion channel", HanaBaseColor.Ok());
+                return Reply($"All suggestions will now be sent to {channel.Mention} !",
+                    HanaBaseColor.Ok());
             }
 
-            channel ??= Context.Channel;
-            if (channel == null) return null;
-            cfg.Channel = channel.Id.RawValue;
-            await db.SaveChangesAsync();
-            return Reply($"All suggestions will now be sent to {channel.Mention} !",
-                HanaBaseColor.Ok());
-        }
-
-        [Name("Suggest Up Vote Emote")]
-        [Description("Set custom yes emote for suggestions")]
-        [Command("upvote")]
-        public async Task<DiscordCommandResult> SetSuggestEmoteYesAsync(IGuildEmoji emote = null)
-        {
-            
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-            if (emote == null)
+            [Name("Suggest Up Vote Emote")]
+            [Description("Set custom yes emote for suggestions")]
+            [Command("upvote")]
+            public async Task<DiscordCommandResult> SetSuggestEmoteYesAsync(IGuildEmoji emote = null)
             {
-                cfg.EmoteYes = null;
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (emote == null)
+                {
+                    cfg.EmoteYes = null;
+                    await db.SaveChangesAsync();
+                    return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
+                }
+
+                cfg.EmoteYes = emote.GetMessageFormat();
                 await db.SaveChangesAsync();
-                return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
+                return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
             }
 
-            cfg.EmoteYes = emote.GetMessageFormat();
-            await db.SaveChangesAsync();
-            return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
-        }
-
-        [Name("Suggest Down Vote Emote")]
-        [Description("Set custom no emote for suggestions")]
-        [Command("downvote")]
-        public async Task<DiscordCommandResult> SetSuggestEmoteNoAsync(IGuildEmoji emote = null)
-        {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
-            if (emote == null)
+            [Name("Suggest Down Vote Emote")]
+            [Description("Set custom no emote for suggestions")]
+            [Command("downvote")]
+            public async Task<DiscordCommandResult> SetSuggestEmoteNoAsync(IGuildEmoji emote = null)
             {
-                cfg.EmoteNo = null;
-                await db.SaveChangesAsync();
-                return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
-            }
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                if (emote == null)
+                {
+                    cfg.EmoteNo = null;
+                    await db.SaveChangesAsync();
+                    return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
+                }
 
-            cfg.EmoteNo = emote.GetMessageFormat();
-            await db.SaveChangesAsync();
-            return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
+                cfg.EmoteNo = emote.GetMessageFormat();
+                await db.SaveChangesAsync();
+                return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
+            }
         }
     }
 }

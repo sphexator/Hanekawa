@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 }
             };
             var msg = await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).SendMessageAsync(builder.Build());
-            report.MessageId = msg.Id.RawValue;
+            report.MessageId = msg.Id;
             await db.SaveChangesAsync();
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create("Report sent!", HanaBaseColor.Ok()));
         }
@@ -68,7 +68,7 @@ namespace Hanekawa.Bot.Commands.Modules
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
-            var report = await db.Reports.FindAsync(id, Context.Guild.Id.RawValue);
+            var report = await db.Reports.FindAsync(id, Context.Guild.Id);
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
 
             if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
@@ -99,35 +99,35 @@ namespace Hanekawa.Bot.Commands.Modules
 
             await msg.ModifyAsync(x => x.Embed = embed.Build());
         }
-    }
-
-    [Name("Report Admin")]
-    [Description("Commands to configure the report module")]
-    [Group("Report")]
-    public class ReportAdmin : Report
-    {
-        [Name("Channel")]
-        [Command("channel")]
-        [Description("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
-        [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-        public async Task SetReportChannelAsync(ITextChannel channel = null)
+        
+        [Name("Report Admin")]
+        [Description("Commands to configure the report module")]
+        [Group("Report")]
+        public class ReportAdmin : Report
         {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
-            if (cfg.ReportChannel.HasValue && channel == null)
+            [Name("Channel")]
+            [Command("channel")]
+            [Description("Sets a channel as channel to receive reports. don't mention a channel to disable reports.")]
+            [RequireAuthorGuildPermissions(Permission.ManageGuild)]
+            public async Task SetReportChannelAsync(ITextChannel channel = null)
             {
-                cfg.ReportChannel = null;
-                await db.SaveChangesAsync();
-                await Reply("Disabled report channel", HanaBaseColor.Ok());
-                return;
-            }
+                await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+                if (cfg.ReportChannel.HasValue && channel == null)
+                {
+                    cfg.ReportChannel = null;
+                    await db.SaveChangesAsync();
+                    await Reply("Disabled report channel", HanaBaseColor.Ok());
+                    return;
+                }
 
-            channel ??= Context.Channel as CachedTextChannel;
-            if (channel == null) return;
-            cfg.ReportChannel = channel.Id.RawValue;
-            await db.SaveChangesAsync();
-            await Reply($"All reports will now be sent to {channel.Mention} !",
-                HanaBaseColor.Ok());
+                channel ??= Context.Channel;
+                if (channel == null) return;
+                cfg.ReportChannel = channel.Id;
+                await db.SaveChangesAsync();
+                await Reply($"All reports will now be sent to {channel.Mention} !",
+                    HanaBaseColor.Ok());
+            }
         }
     }
 }
