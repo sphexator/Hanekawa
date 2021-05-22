@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
@@ -159,7 +158,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 
         private static async Task<string> GetAchievementPoints(ISnowflakeEntity user, DbService db)
         {
-            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id.RawValue);
+            var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
             return $"{points * 10}";
         }
     }

@@ -83,6 +83,7 @@ namespace Hanekawa.Bot.Service.Administration
                     GuildId = context.Guild.Id,
                     MessageId = message.Id,
                     Reactions = emoteStrings,
+                    ConfigId = cfg.GuildId,
                     Config = cfg
                 });
             }
@@ -124,6 +125,7 @@ namespace Hanekawa.Bot.Service.Administration
                     GuildId = context.Guild.Id,
                     MessageId = message.Id,
                     Reactions = emoteStrings,
+                    ConfigId = cfg.GuildId,
                     Config = cfg
                 });
             }

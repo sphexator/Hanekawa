@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                           "You can adjust placement of avatar and text by adjust these values in the command (this is the full command with default values)\n" +
                           $"**Example:** wa {url.Truncate(5)} {aviSize} {aviX} {aviY} {textSize} {textX} {textY}\n" +
                           $"**Explained:** wa {url.Truncate(5)} PfpSize = {aviSize} PfpX = {aviX} PfpY = {aviY} TextSize = {textSize} TextX = {textX} TextY = {textY}",
-                Attachments = {new LocalAttachment(stream, fileName, false)}
+                Attachments = {new LocalAttachment(stream, fileName)}
             });
             var response = await Context.Bot.GetInteractivity().WaitForMessageAsync(Context.ChannelId, x =>
                 x.Message.Author == Context.Author, TimeSpan.FromMinutes(2));
@@ -85,7 +85,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var banner =
-                await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id.RawValue);
+                await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
             if (banner == null) return Reply("Couldn\'t remove a banner with that ID.", HanaBaseColor.Bad());
 
             db.WelcomeBanners.Remove(banner);
@@ -154,12 +154,12 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 {
                     channel = Context.Channel;
                     if (channel == null) return null;
-                    cfg.Channel = channel.Id.RawValue;
+                    cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();
                     return Reply($"Set welcome channel to {channel.Mention}", Color.Green);
                 }
                 default:
-                    cfg.Channel = channel.Id.RawValue;
+                    cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();
                     return Reply($"Enabled or changed welcome channel to {channel.Mention}", Color.Green);
             }
@@ -247,7 +247,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         }
 
         [Name("Welcome Reward")]
-        [Command("reward", "reward")]
+        [Command("reward")]
         [Description("Rewards users for welcoming a new member")]
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         [RequirePremium]

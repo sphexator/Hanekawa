@@ -26,14 +26,14 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             {
                 var width = 0;
                 var height = 0;
-                var seat = 0;
                 var row = 0;
+                var seat = 0;
                 for (var i = 0; i < iterate; i++)
                 {
                     var x = profile[i];
                     var points = GetBorderPointers(width, height);
-                    var afterHpBar = GetHeathBar(width, height, x.After.Health);
-                    var beforeHpBar = GetHeathBar(width, height, x.Before.Health);
+                    var afterHpBar = GetHeathBar(seat, row, x.After.Health);
+                    var beforeHpBar = GetHeathBar(seat, row, x.Before.Health);
                     var avi = await GetAvatarAsync(guild, x);
                     if (x.After.Health <= 0 && x.After.Alive) x.After.Alive = false;
 

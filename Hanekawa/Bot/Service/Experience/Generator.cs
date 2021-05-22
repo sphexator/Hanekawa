@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Service.Experience
         {
             if (user.BoostedAt.HasValue)
             {
-                var cfg = await db.GetOrCreateLevelConfigAsync(user.GuildId.RawValue);
+                var cfg = await db.GetOrCreateLevelConfigAsync(user.GuildId);
                 exp = Convert.ToInt32(exp * cfg.BoostExpMultiplier);
             }
             exp = Convert.ToInt32(exp * await GetMultiplier(source, user.GuildId, db));
@@ -28,6 +28,7 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData.Level);
                 userData.Level += 1;
+                await LevelUpCheckAsync(user, userData, db, userData.Decay);
                 await _achievement.ServerLevel(user, userData, db);
                 _logger.Log(LogLevel.Info,
                     $"(Exp Service | Server) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
@@ -77,7 +78,7 @@ namespace Hanekawa.Bot.Service.Experience
         private async Task<double> GetMultiplier(ExpSource source, Snowflake guildId, DbService db)
         {
             if(_cache.TryGetMultiplier(source, guildId, out var value)) return value;
-            var cfg = await db.GetOrCreateLevelConfigAsync(guildId.RawValue);
+            var cfg = await db.GetOrCreateLevelConfigAsync(guildId);
             _cache.AdjustExpMultiplier(ExpSource.Text, guildId, cfg.TextExpMultiplier);
             _cache.AdjustExpMultiplier(ExpSource.Voice, guildId, cfg.VoiceExpMultiplier);
             _cache.AdjustExpMultiplier(ExpSource.Other, guildId, cfg.TextExpMultiplier);

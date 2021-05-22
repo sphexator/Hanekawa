@@ -13,18 +13,16 @@ namespace Hanekawa.Bot
 {
     public class Hanekawa : DiscordBot
     {
-        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IPrefixProvider prefixes,
-            ICommandQueue queue, CommandService commands, IServiceProvider services, DiscordClient client)
-            : base(options, logger, prefixes, queue, commands, services, client)
-        { }
-
-        public override DiscordCommandContext CreateCommandContext(IPrefix prefix, IGatewayUserMessage message,
-            CachedTextChannel channel)
+        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IServiceProvider services, 
+            DiscordClient client) : base(options, logger, services, client) { }
+        
+        public override DiscordCommandContext CreateCommandContext(IPrefix prefix, string input,
+            IGatewayUserMessage message, CachedTextChannel channel)
         {
             var scope = Services.CreateScope();
             var context = message.GuildId != null
-                ? new HanekawaCommandContext(this, prefix, message, channel, scope)
-                : new DiscordCommandContext(this, prefix, message, scope);
+                ? new HanekawaCommandContext(this, prefix, input, message, channel, scope)
+                : new DiscordCommandContext(this, prefix, input, message, scope);
             context.Services.GetRequiredService<ICommandContextAccessor>().Context = context;
             return context;
         }

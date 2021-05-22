@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Extensions;
@@ -28,7 +27,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         {
             var stream = new MemoryStream();
             bool isGif;
-            var (img, welcomeBanner) = await GetBannerAsync(user.GuildId.RawValue, db, premium);
+            var (img, welcomeBanner) = await GetBannerAsync(user.GuildId, db, premium);
             using (img)
             {
                 var avatar = await GetAvatarAsync(user, new Size(welcomeBanner.AvatarSize, welcomeBanner.AvatarSize), premium);

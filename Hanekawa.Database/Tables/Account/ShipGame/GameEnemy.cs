@@ -1,5 +1,4 @@
-﻿using System;
-using Disqord;
+﻿using Disqord;
 
 namespace Hanekawa.Database.Tables.Account.ShipGame
 {

@@ -99,12 +99,12 @@ namespace Hanekawa.Bot.Service.Welcome
                 var exp = RewardAsync(channel, cfg, db, source.Token);
                 await Task.WhenAny(del, exp);
                 source.Cancel();
-                _logger.Log(LogLevel.Info, $"(Welcome Service) User joined {e.GuildId.RawValue}");
+                _logger.Log(LogLevel.Info, $"(Welcome Service) User joined {e.GuildId}");
             }
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Welcome Service) Error in {e.GuildId.RawValue} for User Joined - {exception.Message}");
+                    $"(Welcome Service) Error in {e.GuildId} for User Joined - {exception.Message}");
             }
         }
 
@@ -121,12 +121,12 @@ namespace Hanekawa.Bot.Service.Welcome
                 }
 
                 _logger.Log(LogLevel.Info,
-                    $"(Welcome Service) Cleaned up banners in {e.Guild.Id.RawValue} as bot left server");
+                    $"(Welcome Service) Cleaned up banners in {e.Guild.Id} as bot left server");
             }
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Welcome Service) Error in {e.GuildId.RawValue} for Bot Left Guild - {exception.Message}");
+                    $"(Welcome Service) Error in {e.GuildId} for Bot Left Guild - {exception.Message}");
             }
         }
 

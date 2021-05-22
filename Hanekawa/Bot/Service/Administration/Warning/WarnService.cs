@@ -7,7 +7,6 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
-using Hanekawa.Bot.Service.Logs;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
@@ -17,21 +16,27 @@ using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using NLog;
+using Quartz;
 using Quartz.Util;
 
 namespace Hanekawa.Bot.Service.Administration.Warning
 {
-    public abstract class WarnService : INService
+    public class WarnService : INService, IJob
     {
         private readonly Logger _logger;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
 
-        protected WarnService(Hanekawa bot, CacheService cache)
+        public WarnService(Hanekawa bot, CacheService cache)
         {
             _bot = bot;
             _cache = cache;
             _logger = LogManager.GetCurrentClassLogger();
+        }
+        
+        public Task Execute(IJobExecutionContext context)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task Warn(IMember user, IMember staff, string reason, WarnReason type, bool notify, DbService db,
@@ -42,8 +47,8 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             {
                 Id = number + 1,
                 GuildId = user.GuildId,
-                UserId = user.Id.RawValue,
-                Moderator = staff.Id.RawValue,
+                UserId = user.Id,
+                Moderator = staff.Id,
                 Reason = reason,
                 Time = DateTime.UtcNow,
                 Type = type,
@@ -51,7 +56,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             });
             await db.SaveChangesAsync();
             if(notify) await NotifyUserAsync(user, staff, muteTime, reason, type);
-            _logger.Log(LogLevel.Info, $"(Warn Service) Warned {user.Id.RawValue} in {user.GuildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"Warned {user.Id} in {user.GuildId}");
         }
 
         public async Task<List<LocalEmbedBuilder>> GetWarnLogAsync(IMember user, WarnLogType type, DbService db)
@@ -85,7 +90,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                     {
                         Author = new LocalEmbedAuthorBuilder
                         {
-                            Name = $"{user.Name}#{user.Discriminator} ({user.Id.RawValue})",
+                            Name = $"{user.Name}#{user.Discriminator} ({user.Id})",
                             IconUrl = user.GetAvatarUrl()
                         },
                         Color = _cache.GetColor(user.GuildId),
@@ -103,10 +108,10 @@ namespace Hanekawa.Bot.Service.Administration.Warning
         private async Task<List<string>> GetWarnsAsync(IMember user, WarnLogType type, int baseLength, DbService db)
         {
             var warnings = type == WarnLogType.Full
-                ? await db.Warns.Where(x => x.GuildId == user.GuildId.RawValue && x.UserId == user.Id.RawValue)
+                ? await db.Warns.Where(x => x.GuildId == user.GuildId && x.UserId == user.Id)
                     .OrderByDescending(x => x.Time).ToListAsync()
                 : await db.Warns.Where(x =>
-                        x.GuildId == user.GuildId.RawValue && x.UserId == user.Id.RawValue && x.Valid)
+                        x.GuildId == user.GuildId && x.UserId == user.Id && x.Valid)
                     .OrderByDescending(x => x.Time).ToListAsync();
             var count = type == WarnLogType.Full && warnings.Count > 5 
                 ? warnings.Count 
@@ -138,7 +143,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 if (!reason.IsNullOrWhiteSpace()) sb.AppendLine($"Reason: {reason}");
                 if (duration.HasValue) sb.AppendLine($"Duration: {duration.Value}");
                 
-                sb.AppendLine($"By: {staff.Name}#{staff.Discriminator} ({staff.Id.RawValue})");
+                sb.AppendLine($"By: {staff.Name}#{staff.Discriminator} ({staff.Id})");
                 
                 await user.SendMessageAsync(new LocalMessageBuilder
                 {
@@ -152,7 +157,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Warn, e, "(Mute Service) Couldn't DM user. DMs possibly closed.");
+                _logger.Log(LogLevel.Warn, e, "Couldn't DM user. DMs possibly closed.");
             }
         }
     }

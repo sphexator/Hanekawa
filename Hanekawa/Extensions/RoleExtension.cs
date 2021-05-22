@@ -41,7 +41,7 @@ namespace Hanekawa.Extensions
             if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
                 throw new HanaCommandException("");
             if (guild.HierarchyCheck(currentUser, role)) throw new HanaCommandException("Can't add a role that's placed higher than the bot");
-            await user.RevokeRoleAsync(role.Id.RawValue);
+            await user.RevokeRoleAsync(role.Id);
         }
 
         public static async Task TryRemoveRolesAsync(this CachedMember user, IEnumerable<CachedRole> roles)

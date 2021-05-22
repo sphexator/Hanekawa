@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.Achievement
 {

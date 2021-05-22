@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 catch (Exception e)
                 {
                     db.Remove(x);
-                    _logger.Log(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
+                    _logger.Log(LogLevel.Error, e, $"Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
                 }
             }
             db.SaveChanges();
@@ -69,13 +69,13 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         {
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var check = await db.MuteTimers.FindAsync(e.Member.Id.RawValue, e.GuildId.RawValue);
+            var check = await db.MuteTimers.FindAsync(e.Member.Id, e.GuildId);
             if (check == null) return;
             if(!await Mute(e.Member, await GetMuteRoleAsync(e.GuildId, db))) return;
             var after = check.Time - TimeSpan.FromMinutes(2) <= DateTime.UtcNow
                 ? TimeSpan.FromMinutes(2)
                 : check.Time - DateTime.UtcNow;
-            StartUnMuteTimer(e.GuildId.RawValue, e.Member.Id.RawValue, after);
+            StartUnMuteTimer(e.GuildId, e.Member.Id, after);
         }
 
         public async Task<bool> Mute(IMember user, IMember staff, string reason, DbService db, TimeSpan? duration = null)
@@ -86,21 +86,21 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             await _warn.Warn(user, staff, reason, WarnReason.Muted, true, db, duration);
             if (!duration.HasValue) return true;
             var date = DateTime.UtcNow + duration.Value;
-            var muteCheck = await db.MuteTimers.FindAsync(user.Id.RawValue, user.GuildId.RawValue);
+            var muteCheck = await db.MuteTimers.FindAsync(user.Id, user.GuildId);
             if (muteCheck != null) muteCheck.Time = date;
             else
             {
                 await db.MuteTimers.AddAsync(new MuteTimer
                 {
-                    UserId = user.Id.RawValue,
-                    GuildId = user.GuildId.RawValue,
+                    UserId = user.Id,
+                    GuildId = user.GuildId,
                     Time = date
                 });
             } 
             
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.GuildId, user.Id, duration.Value);
-            _logger.Log(LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.GuildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"Muted {user.Id} in {user.GuildId}");
             return true;
         }
 
@@ -122,8 +122,13 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             {
                 await user.TryAddRoleAsync(role);
             }
-            if(check) _logger.Log(LogLevel.Info, $"(Mute service) Muted {user.Id.RawValue} in {user.GuildId.RawValue}");
-            else _logger.Log(LogLevel.Warn, $"(Mute service) Failed to mute {user.Id.RawValue} in {user.GuildId.RawValue}");
+
+            if (check)
+            {
+                _ = ApplyPermissions(user.GetGuild(), role);
+                _logger.Log(LogLevel.Info, $"Muted {user.Id} in {user.GuildId}");
+            }
+            else _logger.Log(LogLevel.Warn, $"Failed to mute {user.Id} in {user.GuildId}");
             return check;
         }
         
@@ -147,7 +152,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 var check = await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.GuildId, db));
                 if (!check) return false;
             }
-            _logger.Log(LogLevel.Info, $"(Mute service) Unmuted {user.Id.RawValue} in {user.GuildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"Unmuted {user.Id} in {user.GuildId}");
             return true;
         }
         
@@ -155,7 +160,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         {
             var warns = await db.Warns.Where(x =>
                 x.GuildId == user.GuildId && 
-                x.UserId == user.Id.RawValue &&
+                x.UserId == user.Id &&
                 x.Type == WarnReason.Muted &&
                 x.Time >= DateTime.UtcNow.AddDays(-30)).ToListAsync();
             return warns == null || warns.Count == 0 
@@ -189,7 +194,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 });
                 role = cRole;
             }
-            cfg.MuteRole = role.Id.RawValue;
+            cfg.MuteRole = role.Id;
             await db.SaveChangesAsync();
             return role;
         }
@@ -222,7 +227,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                     {
                         await RemoveFromDatabaseAsync(guildId, userId, db);
                         _logger.Log(LogLevel.Error, e,
-                            $"(Mute Service) Error for {userId} in {guildId} for UnMute - {e.Message}");
+                            $"Error for {userId} in {guildId} for UnMute - {e.Message}");
                     }
                 }, null, duration, Timeout.InfiniteTimeSpan);
                 
@@ -230,7 +235,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Mute Service) Couldn't create unmute timer in {guildId} for {userId}");
+                _logger.Log(LogLevel.Error, e, $"Couldn't create unmute timer in {guildId} for {userId}");
             }
         }
 
@@ -272,7 +277,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Mute service) Couldn't apply permission overwrite in {ch.GuildId.RawValue} in channel {ch.Id.RawValue}");
+                _logger.Log(LogLevel.Error, e, $"Couldn't apply permission overwrite in {ch.GuildId} in channel {ch.Id}");
             }
 
             await Task.Delay(200).ConfigureAwait(false);

@@ -1,4 +1,4 @@
-﻿namespace Hanekawa.Database.Tables.Account.Achievement
+﻿namespace Hanekawa.Database.Entities
 {
     public enum AchievementDifficulty
     {

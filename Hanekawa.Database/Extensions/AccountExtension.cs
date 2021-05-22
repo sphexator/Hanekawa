@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Disqord;
-using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Account;
-using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Database.Extensions
 {

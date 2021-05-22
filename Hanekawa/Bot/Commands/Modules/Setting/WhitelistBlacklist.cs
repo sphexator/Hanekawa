@@ -36,18 +36,18 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             var result = await _cache.AddOrRemoveChannel(channel, db);
             if (!result)
                 return cfg.IgnoreAllChannels
-                    ? Reply($"Removed {channel?.Mention} from the ignore list.\n" +
-                            $"Commands are now disabled in {channel?.Mention}",
+                    ? Reply($"Removed {channel.Mention} from the ignore list.\n" +
+                            $"Commands are now disabled in {channel.Mention}",
                         HanaBaseColor.Ok())
-                    : Reply($"Removed {channel?.Mention} from the ignore list.\n" +
-                            $"Commands are now enabled in {channel?.Mention}",
+                    : Reply($"Removed {channel.Mention} from the ignore list.\n" +
+                            $"Commands are now enabled in {channel.Mention}",
                         HanaBaseColor.Ok());
             if (cfg.IgnoreAllChannels)
-                return Reply($"Added {channel?.Mention} to the ignore list.\n" +
-                             $"Commands are now enabled in {channel?.Mention}",
+                return Reply($"Added {channel.Mention} to the ignore list.\n" +
+                             $"Commands are now enabled in {channel.Mention}",
                     HanaBaseColor.Ok());
-            return Reply($"Added {channel?.Mention} to the ignore list.\n" +
-                         $"Commands are now disabled in {channel?.Mention}",
+            return Reply($"Added {channel.Mention} to the ignore list.\n" +
+                         $"Commands are now disabled in {channel.Mention}",
                 HanaBaseColor.Ok());
 
         }
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
-            var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id.RawValue).ToListAsync();
+            var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
             string content;
             if (list.Count != 0)
             {

@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Commands.Modules
         {
             var result = new StringBuilder();
             var modules = Context.Bot.Commands.GetAllModules();
-            modules.Where(x => x.Checks.Contains<>(typeof(RequirePremium))).ToList();
+            //var settingModules = modules.Where(x => x.Checks.Contains<>(typeof(RequirePremium))).ToList();
             for (var i = 0; i < modules.Count;)
             {
                 var strBuilder = new StringBuilder();
@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Commands.Modules
                         response.AppendLine("No module matches that search");
                         break;
                     case 1:
-                        moduleInfo = orderedList.First().Item1;
+                        moduleInfo = orderedList[0].Item1;
                         break;
                     default:
                     {

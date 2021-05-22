@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Service.Experience
         /// <param name="db"></param>
         /// <param name="levelDecay"></param>
         /// <returns></returns>
-        private async Task LevelUpCheckAsync(IMember user, Account userData, DbService db, int levelDecay = 0)
+        public async Task LevelUpCheckAsync(IMember user, Account userData, DbService db, int levelDecay = 0)
         {
             var roles = await db.LevelRewards.Where(x => x.GuildId == userData.GuildId).ToListAsync();
             if (roles == null || roles.Count == 0) return;

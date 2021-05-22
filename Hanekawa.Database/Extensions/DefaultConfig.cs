@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Disqord;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config;

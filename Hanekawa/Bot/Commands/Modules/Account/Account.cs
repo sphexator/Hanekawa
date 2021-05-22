@@ -47,19 +47,19 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             var globalData = await db.GetOrCreateGlobalUserDataAsync(user);
             var embed = new LocalEmbedBuilder
             {
-                Author = new LocalEmbedAuthorBuilder {Name = user.DisplayName()},
+                Author = new () {Name = user.DisplayName()},
                 ThumbnailUrl = user.GetAvatarUrl(),
                 Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Fields =
                 {
-                    new LocalEmbedFieldBuilder {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
-                    new LocalEmbedFieldBuilder
+                    new () {Name = "Level", Value = $"{serverData.Level}", IsInline = true},
+                    new ()
                     {
                         Name = "Exp",
                         Value = $"{serverData.Exp}/{_exp.ExpToNextLevel(serverData)}",
                         IsInline = true
                     },
-                    new LocalEmbedFieldBuilder
+                    new ()
                     {
                         Name = "Rank",
                         Value =
@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                             $"/{await db.Accounts.CountAsync(x => x.GuildId == Context.Guild.Id)}",
                         IsInline = false
                     },
-                    new LocalEmbedFieldBuilder
+                    new ()
                     {
                         Name = "Global Rank",
                         Value =
@@ -87,7 +87,6 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         [RequiredChannel]
         public async Task<DiscordCommandResult> ProfileAsync(IMember user = null)
         {
-            // TODO: Look into
             user ??= Context.Author;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var image = await _image.ProfileBuilder(user, db);
@@ -103,7 +102,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var toGet = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
-            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Active)
+            var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
                 .OrderByDescending(x => x.TotalExp - x.Decay).Take(toGet).ToArrayAsync();
             var result = new List<string>();
             var strBuilder = new StringBuilder();

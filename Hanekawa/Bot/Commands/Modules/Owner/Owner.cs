@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +14,6 @@ using Hanekawa.Database;
 using Hanekawa.Database.Tables.Administration;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 
@@ -35,14 +32,14 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
             {
                 await Context.Message.DeleteAsync();
                 Context.Guild.Roles.TryGetValue(431621144517279755, out var role);
-                await Context.Author.GrantRoleAsync(role.Id);
+                if (role != null) await Context.Author.GrantRoleAsync(role.Id);
             }
             catch
             {
                 await Context.Message.DeleteAsync();
                 var roles = await Context.Guild.FetchRolesAsync();
                 var role = roles.FirstOrDefault(x => x.Id == 431621144517279755);
-                await Context.Author.GrantRoleAsync(role.Id);
+                if (role != null) await Context.Author.GrantRoleAsync(role.Id);
             }
         }
         
@@ -60,7 +57,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 {
                     totalMembers += value.MemberCount;
                     var sb = new StringBuilder();
-                    sb.AppendLine($"Server: {value.Name} ({value.Id.RawValue})");
+                    sb.AppendLine($"Server: {value.Name} ({value.Id})");
                     sb.AppendLine(value.MaxMemberCount != null
                         ? $"Members: {value.MaxMemberCount.Value}"
                         : $"Members: {value.MemberCount}");
@@ -78,7 +75,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
         [Name("Blacklist")]
         [Command("blacklist")]
         [Description("Blacklists a server for the bot to join")]
-        public async Task<DiscordCommandResult> BlacklistAsync(ulong guildId, string reason = null)
+        public async Task<DiscordCommandResult> BlacklistAsync(Snowflake guildId, string reason = null)
         {
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
@@ -88,7 +85,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 await db.Blacklists.AddAsync(new Blacklist
                 {
                     GuildId = guildId,
-                    ResponsibleUser = Context.Author.Id.RawValue,
+                    ResponsibleUser = Context.Author.Id,
                     Reason = reason
                 });
                 await db.SaveChangesAsync();
@@ -108,45 +105,9 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
             var author = Context.Bot.GetMember(Context.GuildId, userId) ??
                          await Context.Bot.FetchMemberAsync(Context.GuildId, userId);
             var message = SudoGatewayUserMessage(Context.Message, command, author);
-            Context.Bot.Queue.Post(command,
-                new HanekawaCommandContext(Context.Bot, Context.Prefix, message, Context.Channel, Context.Scope),
-                (input, context) => context.Bot.ExecuteAsync(input, context));
-        }
-        
-        [Name("Evaluate")]
-        [Command("eval")]
-        [Description("Evaluates code")]
-        public async Task<DiscordResponseCommandResult> EvaluateAsync([Remainder] string rawCode)
-        {
-            var code = rawCode.GetCode();
-            var sw = Stopwatch.StartNew();
-            var script = CSharpScript.Create(code, RoslynExtensions.RoslynScriptOptions, typeof(EvalCommandContext));
-            var diagnostics = script.Compile();
-            var compilationTime = sw.ElapsedMilliseconds;
-
-            if (diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
-            {
-                var builder = new LocalEmbedBuilder
-                {
-                    Title = "Compilation Failure",
-                    Color = HanaBaseColor.Bad(),
-                    Description = $"Compilation took {compilationTime}ms but failed due to..."
-                };
-                foreach (var diagnostic in diagnostics)
-                {
-                    var message = diagnostic.GetMessage();
-                    builder.AddField(diagnostic.Id,
-                        message[..Math.Min(500, message.Length)]);
-                }
-
-                return Reply(builder);
-            }
-            
-            var context = new EvalCommandContext(Context.Bot, Context.Prefix, Context.Message, Context.Channel,
-                Context.Scope);
-            var result = await script.RunAsync(context);
-            sw.Stop();
-            return Reply(result.ReturnValue.ToString());
+            Context.Bot.Queue.Post(
+                new HanekawaCommandContext(Context.Bot, Context.Prefix, command, message, Context.Channel,
+                    Context.Scope), async e => await e.ContinueAsync());
         }
 
         private static IGatewayUserMessage SudoGatewayUserMessage(IMessage message, string input, IMember author)
@@ -177,11 +138,11 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 Tts = false,
                 GuildId = author.GuildId,
                 ChannelId = message.ChannelId,
-                Member = new Disqord.Optional<MemberJsonModel>(new MemberJsonModel
+                Member = new Optional<MemberJsonModel>(new MemberJsonModel
                 {
                     Nick = author.Nick,
                     Roles = roleList.ToArray(),
-                    Permissions = new Disqord.Optional<ulong>(author.GetGuildPermissions()),
+                    Permissions = new Optional<ulong>(author.GetGuildPermissions()),
                     JoinedAt = author.JoinedAt,
                     Deaf = author.IsDeafened,
                     Mute = author.IsMuted,

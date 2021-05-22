@@ -51,8 +51,8 @@ namespace Hanekawa.Bot.Commands.Modules.Game
             var cfg = await db.GetOrCreateHungerGameStatus(Context.Guild);
             if (channel != null)
             {
-                cfg.SignUpChannel = channel.Id.RawValue;
-                cfg.EventChannel ??= channel.Id.RawValue;
+                cfg.SignUpChannel = channel.Id;
+                cfg.EventChannel ??= channel.Id;
                 await Reply($"Set Hunger Game sign-up channel to {channel.Mention}! This starts the game on schedule (every 6hrs)", HanaBaseColor.Ok());
             }
             else
@@ -74,7 +74,7 @@ namespace Hanekawa.Bot.Commands.Modules.Game
             var cfg = await db.GetOrCreateHungerGameStatus(Context.Guild);
             if (channel != null)
             {
-                cfg.EventChannel = channel.Id.RawValue;
+                cfg.EventChannel = channel.Id;
                 await Reply($"Set Hunger Game event channel to {channel.Mention}!", HanaBaseColor.Ok());
             }
             else
@@ -185,7 +185,7 @@ namespace Hanekawa.Bot.Commands.Modules.Game
             var cfg = await db.GetOrCreateHungerGameStatus(Context.Guild);
             if (role != null)
             {
-                cfg.RoleReward = role.Id.RawValue;
+                cfg.RoleReward = role.Id;
                 await Reply($"Set Hunger Game winning role reward to {role.Mention}!", HanaBaseColor.Ok());
             }
             else

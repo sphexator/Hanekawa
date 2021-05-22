@@ -104,7 +104,7 @@ namespace Hanekawa.Controllers
                     var embed = new LocalEmbedBuilder
                     {
                         Title = "Top.gg Vote!",
-                        Color = _cache.GetColor(guild.Id.RawValue),
+                        Color = _cache.GetColor(guild.Id),
                         Description = $"{name} just voted for the server!",
                         Footer = new LocalEmbedFooterBuilder
                             {IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
@@ -121,7 +121,7 @@ namespace Hanekawa.Controllers
                 }
 
                 _log.Log(LogLevel.Info,
-                    $"(Advert Endpoint) Rewarded {userId} in {guild.Id.RawValue} for voting on the server!");
+                    $"(Advert Endpoint) Rewarded {userId} in {guild.Id} for voting on the server!");
 
                 var giveaways = await _db.Giveaways
                     .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(cancellationToken: token);

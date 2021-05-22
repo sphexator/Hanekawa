@@ -1,6 +1,6 @@
 ﻿using Disqord;
 using Hanekawa.Database.Tables.Account.ShipGame;
-
+#nullable enable
 namespace Hanekawa.Entities
 {
     public record ShipUser
@@ -33,7 +33,7 @@ namespace Hanekawa.Entities
 
         public ShipUser(IMember user, int level, GameClass gameClass, int damage, int health)
         {
-            Id = user.Id.RawValue;
+            Id = user.Id;
             Name = user.Nick ?? user.Name;
             Level = level;
             Avatar = user.GetAvatarUrl();

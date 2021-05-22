@@ -34,7 +34,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
-            var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.GuildId.RawValue, role.Id.RawValue);
+            var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.GuildId, role.Id);
             if (dbRole == null)
             {
                 await ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name", HanaBaseColor.Bad(),
@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             if (dbRole.Exclusive)
             {
                 var roles = await db.SelfAssignAbleRoles
-                    .Where(x => x.GuildId == Context.Guild.Id.RawValue && x.Exclusive)
+                    .Where(x => x.GuildId == Context.Guild.Id && x.Exclusive)
                     .ToListAsync();
                 foreach (var x in roles)
                 {
@@ -82,11 +82,11 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         [RequiredChannel]
         public async Task RemoveSelfRoleAsync([Remainder] IRole role)
         {
-            if (Context.Author.GetRoles().Values.FirstOrDefault(x => x.Id.RawValue == role.Id.RawValue) == null) return;
+            if (Context.Author.GetRoles().Values.FirstOrDefault(x => x.Id == role.Id) == null) return;
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             await Context.Message.TryDeleteMessageAsync();
-            var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.GuildId.RawValue, role.Id.RawValue);
+            var dbRole = await db.SelfAssignAbleRoles.FindAsync(role.GuildId, role.Id);
             if (dbRole == null)
             {
                 await ReplyAndDeleteAsync("Couldn't find a self-assignable role with that name",
@@ -128,7 +128,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             public async Task<DiscordCommandResult> ListSelfAssignAbleRolesAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id.RawValue)
+                var list = await db.SelfAssignAbleRoles.Where(x => x.GuildId == Context.Guild.Id)
                     .ToListAsync();
                 if (list == null || list.Count == 0)
                     return Reply("No self-assignable roles added", HanaBaseColor.Bad());
@@ -208,7 +208,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var roleCheck =
                     await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
-                        x.GuildId == Context.Guild.Id.RawValue && x.RoleId == role.Id.RawValue);
+                        x.GuildId == Context.Guild.Id && x.RoleId == role.Id);
                 if (roleCheck == null)
                 {
                     await Reply($"There is no self-assignable role by the name {role.Name}",
@@ -231,7 +231,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 }
 
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id.RawValue, role.Id.RawValue);
+                var roleCheck = await db.SelfAssignAbleRoles.FindAsync(context.Guild.Id, role.Id);
                 if (roleCheck != null)
                 {
                     switch (exclusive)
@@ -317,7 +317,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     await db.SaveChangesAsync();
                     await message.AddReactionAsync(emote);
                 }
-                catch (Exception e)
+                catch
                 {
                     return false;
                 }   

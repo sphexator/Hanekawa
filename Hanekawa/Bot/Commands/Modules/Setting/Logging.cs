@@ -31,8 +31,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             }
 
             cfg.LogJoin = channel.Id;
-            return Reply($"Set join/leave logging channel to {channel.Mention}!", HanaBaseColor.Ok());
             await db.SaveChangesAsync();
+            return Reply($"Set join/leave logging channel to {channel.Mention}!", HanaBaseColor.Ok());
         }
 
         [Name("Warnings")]
@@ -40,7 +40,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs warnings given out from the bot, leave empty to disable")]
         public async Task<DiscordCommandResult> WarnLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -51,8 +50,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             }
 
             cfg.LogWarn = channel.Id;
-            return Reply($"Set warn logging channel to {channel.Mention}!", HanaBaseColor.Ok());
             await db.SaveChangesAsync();
+            return Reply($"Set warn logging channel to {channel.Mention}!", HanaBaseColor.Ok());
         }
 
         [Name("Messages")]
@@ -60,7 +59,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs deleted and updated messages, leave empty to disable")]
         public async Task<DiscordCommandResult> MessageLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -80,7 +78,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs users getting banned and muted, leave empty to disable")]
         public async Task<DiscordCommandResult> BanLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -100,7 +97,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs user updates, roles/username/nickname, leave empty to disable")]
         public async Task<DiscordCommandResult> UserLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -121,7 +117,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             "Logs activities auto moderator does. Defaults to ban log if this is disabled. Meant if automod entries should be in a different channel.\nLeave empty to disable")]
         public async Task<DiscordCommandResult> AutoModeratorLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -142,7 +137,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Logs voice activities, join/leave/mute/deafen, leave empty to disable")]
         public async Task<DiscordCommandResult> VoiceLogAsync(ITextChannel channel = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
             if (channel == null)
@@ -151,7 +145,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 await db.SaveChangesAsync();
                 return Reply("Disabled logging of voice activity!", HanaBaseColor.Ok());
             }
-
+            
             cfg.LogVoice = channel.Id;
             await db.SaveChangesAsync();
             return Reply($"Set voice activity logging channel to {channel.Mention}!",

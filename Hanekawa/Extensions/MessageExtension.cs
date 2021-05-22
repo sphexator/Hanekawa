@@ -22,9 +22,9 @@ namespace Hanekawa.Extensions
             foreach (var x in messages)
             {
                 if (x.CreatedAt.AddDays(14) < DateTimeOffset.UtcNow) continue;
-                if (filterBy != null && x.Author.Id.RawValue != filterBy.Id.RawValue) continue;
-                var dummy = x.Id.RawValue;
-                list.Add((Snowflake) dummy);
+                if (filterBy != null && x.Author.Id != filterBy.Id) continue;
+                var dummy = x.Id;
+                list.Add(dummy);
             }
 
             return list;

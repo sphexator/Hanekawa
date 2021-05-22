@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Disqord;
-using Hanekawa.Database.Tables.Config.Guild;
 
 namespace Hanekawa.Database.Tables.Config
 {

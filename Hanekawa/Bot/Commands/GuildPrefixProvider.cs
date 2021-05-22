@@ -6,12 +6,11 @@ using Disqord.Gateway;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Commands
 {
-    public class GuildPrefixProvider : IPrefixProvider, INService
+    public class GuildPrefixProvider : IPrefixProvider
     {
         private readonly IServiceProvider _provider;
 

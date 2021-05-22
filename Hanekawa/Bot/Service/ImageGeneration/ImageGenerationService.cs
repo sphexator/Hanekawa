@@ -19,13 +19,11 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService : INService
     {
-        private readonly IServiceProvider _provider;
         private readonly Hanekawa _bot;
         private readonly ExpService _experience;
         private readonly IHttpClientFactory _http;
         private readonly Random _random;
 
-        private readonly FontCollection _fonts;
         private readonly FontFamily _arial;
         private readonly FontFamily _times;
         
@@ -73,17 +71,16 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             }
         };
 
-        public ImageGenerationService(ExpService experience, Hanekawa bot, IServiceProvider provider, IHttpClientFactory http, Random random)
+        public ImageGenerationService(ExpService experience, Hanekawa bot, IHttpClientFactory http, Random random)
         {
             _experience = experience;
             _bot = bot;
-            _provider = provider;
             _http = http;
             _random = random;
-            _fonts = new FontCollection();
+            var fonts = new FontCollection();
 
-            _times = _fonts.Install("Data/Fonts/TIMES.TTF");
-            _arial = _fonts.Install("Data/Fonts/ARIAL.TTF");
+            _times = fonts.Install("Data/Fonts/TIMES.TTF");
+            _arial = fonts.Install("Data/Fonts/ARIAL.TTF");
 
             _welcomeTemplate = Image.Load("Data/Template/WelcomeDefault.png", new PngDecoder {IgnoreMetadata = true});
             _profileTemplate = Image.Load("Data/Template/ProfileTemplate.png", new PngDecoder {IgnoreMetadata = true});

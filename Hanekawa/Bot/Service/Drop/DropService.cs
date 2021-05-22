@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Service.Drop
                 catch (Exception exception)
                 {
                     _logger.Log(LogLevel.Error, exception,
-                        $"Error in {e.GuildId.Value.RawValue} for drop create - {exception.Message}");
+                        $"Error in {e.GuildId.Value} for drop create - {exception.Message}");
                 }
         }
 
@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Service.Drop
             foreach (var x in emotes.OrderBy(_ => _random.Next()).Take(emotes.Count))
                 await ApplyReactionAsync(triggerMsg, x, claim, type);
 
-            _logger.Log(LogLevel.Info, $"Drop event created in {guildId.RawValue}");
+            _logger.Log(LogLevel.Info, $"Drop event created in {guildId}");
         }
         
         private async Task ClaimAsync(IUserMessage msg, IMember user, DropType type)
@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Service.Drop
                 : _random.Next(150, 250);
             
             var userData = await db.GetOrCreateUserData(user);
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId.RawValue);
+            var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId);
             var exp = await _exp.AddExpAsync(user, userData, rand, rand, db, ExpSource.Other);
             var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessageBuilder 
             {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Hanekawa.Database;
+using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.Achievement;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
-    public abstract partial class AchievementService
+    public partial class AchievementService
     {
         public async Task GameKill(Snowflake guildId, Snowflake userId, bool pvp)
         {

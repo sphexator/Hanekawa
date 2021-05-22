@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
-using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Club;
-using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
-using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -63,7 +59,7 @@ namespace Hanekawa.Bot.Service.Club
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id.RawValue} for reaction added - {exception.Message}");
+                    $"(Club Service) Error in {guild.Id} for reaction added - {exception.Message}");
             }
         }
 
@@ -83,12 +79,12 @@ namespace Hanekawa.Bot.Service.Club
                 if (clubUser.Rank == ClubRank.Owner) return;
                 db.ClubPlayers.Remove(clubUser);
                 await db.SaveChangesAsync();
-                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id.RawValue} left their club with reaction removed");
+                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id} left their club with reaction removed");
             }
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id.RawValue} for reaction removed- {exception.Message}");
+                    $"(Club Service) Error in {guild.Id} for reaction removed- {exception.Message}");
             }
         }
         
@@ -105,12 +101,12 @@ namespace Hanekawa.Bot.Service.Club
                 if (clubUser == null) return;
                 db.ClubPlayers.Remove(clubUser);
                 await db.SaveChangesAsync();
-                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id.RawValue} left {guild.Id.RawValue} and left their club");
+                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id} left {guild.Id} and left their club");
             }
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id.RawValue} for User Left- {exception.Message}");
+                    $"(Club Service) Error in {guild.Id} for User Left- {exception.Message}");
             }
         }
         // TODO: Finish clubs

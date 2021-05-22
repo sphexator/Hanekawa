@@ -28,14 +28,14 @@ namespace Hanekawa.Bot.Service.Administration
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var check = await db.Blacklists.FindAsync(e.GuildId.RawValue);
+                var check = await db.Blacklists.FindAsync(e.GuildId);
                 if (check == null) return;
                 await e.Guild.LeaveAsync();
-                _logger.Log(LogLevel.Info, $"Left {e.GuildId.RawValue} as the server is blacklisted");
+                _logger.Log(LogLevel.Info, $"Left {e.GuildId} as the server is blacklisted");
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Blacklist Service) Error for {e.GuildId.RawValue} - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception, $"(Blacklist Service) Error for {e.GuildId} - {exception.Message}");
             }
         }
     }

@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task AddExpReward(int exp = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (cfg == null)
             {
                 await Reply("Please create a webhook & config first before using these commands!", Color.Red);
@@ -103,7 +103,7 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task AddCreditReward(int credit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (cfg == null)
             {
                 await Reply("Please create a webhook & config first before using these commands!", Color.Red);
@@ -128,7 +128,7 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task AddSpecialReward(int specialCredit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (cfg == null)
             {
                 await Reply("Please create a webhook & config first before using these commands!", Color.Red);
@@ -153,13 +153,13 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task AddRoleReward(IRole role = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (cfg == null)
             {
                 await Reply("Please create a webhook & config first before using these commands!", Color.Red);
                 return;
             }
-            cfg.RoleIdReward = role?.Id.RawValue;
+            cfg.RoleIdReward = role?.Id;
             await db.SaveChangesAsync();
             if (role == null)
             {
@@ -178,7 +178,7 @@ namespace Hanekawa.Bot.Commands.Modules
         public async Task AddMessage(string message = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id.RawValue);
+            var cfg = await db.DblAuths.FindAsync(Context.Guild.Id);
             if (cfg == null)
             {
                 await Reply("Please create a webhook & config first before using these commands!", Color.Red);

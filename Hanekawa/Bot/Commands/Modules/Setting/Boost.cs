@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 return Reply($"Disabled boost announcements!", HanaBaseColor.Ok());
             }
 
-            cfg.ChannelId = channel.Id.RawValue;
+            cfg.ChannelId = channel.Id;
             await db.SaveChangesAsync();
             return Reply($"Set boost announcement channel to {channel.Mention}!", HanaBaseColor.Ok());
         }

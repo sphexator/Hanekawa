@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 return;
             }
             _cache.AddBanCache(Context.GuildId, Context.Author.Id, user.Id);
-            await Context.Guild.CreateBanAsync(user.Id.RawValue, $"{Context.Author.Id.RawValue} - {reason}", 1);
+            await Context.Guild.CreateBanAsync(user.Id, $"{Context.Author.Id} - {reason}", 1);
             await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 HanaBaseColor.Ok()), TimeSpan.FromSeconds(20));
@@ -100,6 +100,36 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 }
             }
             else await BanAsync(user, reason);
+        }
+
+        [Name("massban")]
+        [Command("massban", "mban", "mb")]
+        [Description("Bans multiple users by their ID")]
+        [RequireBotGuildPermissions(Permission.BanMembers | Permission.ManageMessages)]
+        [RequireAuthorGuildPermissions(Permission.BanMembers)]
+        public async Task BanAsync(params Snowflake[] ids)
+        {
+            await Context.Message.TryDeleteMessageAsync();
+            await Response($"Attempting to ban {ids.Length} ids...", HanaBaseColor.Orange());
+            var banned = 0;
+            foreach (var x in ids)
+            {
+                try
+                {
+                    _cache.AddBanCache(Context.GuildId, Context.Author.Id, x);
+                    await Context.Guild.CreateBanAsync(x, $"Mass ban by {Context.Author} ({Context.Author.Id})", 1);
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    banned++;
+                }
+                catch
+                {
+                    banned--;
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+
+            await ReplyAndDeleteAsync(new LocalMessageBuilder().Create($"Successfully banned {banned} accounts!", HanaBaseColor.Ok()),
+                TimeSpan.FromSeconds(20));
         }
 
         [Name("Kick")]
@@ -309,7 +339,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
         private async Task ApplyReason(DbService db, int id, string reason)
         {
-            var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id.RawValue);
+            var modCase = await db.ModLogs.FindAsync(id, Context.Guild.Id);
             await UpdateMessage(modCase, db, reason);
 
             modCase.Response = reason != null ? $"{reason}" : "No Reason Provided";

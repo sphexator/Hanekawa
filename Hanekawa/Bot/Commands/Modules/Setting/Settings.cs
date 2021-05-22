@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Name("Set embed color")]
         [Command("embed")]
         [Description("Changes the embed colour of the bot")]
-        public async Task<DiscordCommandResult> SetEmbedColorAsync(Color color)
+        public async Task<DiscordCommandResult> SetEmbedColorAsync([Remainder] Color color)
         {
             await Reply("Would you like to change embed color to this ? (y/n)", new Color(color));
             var response = await Context.Bot.GetInteractivity()
@@ -51,27 +51,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             _cache.AddOrUpdateColor(Context.Guild.Id, new Color(color));
-            cfg.EmbedColor = color.RawValue;
-            await db.SaveChangesAsync();
-            return Reply("Changed default embed color", HanaBaseColor.Ok());
-        }
-
-        [Name("Set embed color")]
-        [Command("embed")]
-        [Description("Changes the embed colour of the bot")]
-        public async Task<DiscordCommandResult> SetEmbedColorAsync(int r, int g, int b)
-        {
-            var color = new Color(r, g, b);
-            await Reply("Would you like to change embed color to this ? (y/n)", color);
-            var response =
-                await Context.Bot.WaitForMessageAsync(Context.ChannelId, e => e.Member.Id == Context.Author.Id);
-            if (response == null) return Reply("Timed out...", HanaBaseColor.Bad());
-            if (response.Message.Content.ToLower() != "y" && response.Message.Content.ToLower() != "yes")
-                return Reply("Canceled", HanaBaseColor.Bad());
-            
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
-            _cache.AddOrUpdateColor(Context.Guild.Id, color);
             cfg.EmbedColor = color.RawValue;
             await db.SaveChangesAsync();
             return Reply("Changed default embed color", HanaBaseColor.Ok());

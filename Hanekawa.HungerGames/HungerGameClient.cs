@@ -26,7 +26,6 @@ namespace Hanekawa.HungerGames
             var results = new List<UserAction>();
             foreach (var x in participants)
             {
-                var before = x;
                 var result = new UserAction
                 {
                     Before = new HungerGameProfile
@@ -72,7 +71,7 @@ namespace Hanekawa.HungerGames
                     ActionType.Sleep => _events.Sleep(x),
                     ActionType.Eat => _events.EatAndDrink(x),
                     ActionType.None => _events.Idle(),
-                    _ => throw new ArgumentOutOfRangeException("No matching event in event determine switch")
+                    _ => throw new ArgumentOutOfRangeException("No matching event in event determine switch", (Exception) null)
                 };
 
                 if (Fatigue(x, out var fatigue)) result.Message += $"\n{fatigue}";
