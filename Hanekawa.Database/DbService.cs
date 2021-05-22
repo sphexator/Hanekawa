@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Disqord;
 using Hanekawa.Database.Entities;
+using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.Achievement;
@@ -23,6 +24,7 @@ using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Database.Tables.Quote;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hanekawa.Database
 {
@@ -127,6 +129,12 @@ namespace Hanekawa.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.UseValueConverterForType<Snowflake>(
+                new ValueConverter<Snowflake, ulong>(snowflake => snowflake.RawValue, 
+                    @ulong => new Snowflake(@ulong)));
+            modelBuilder.UseValueConverterForType<Snowflake?>(
+                new ValueConverter<Snowflake?, ulong>(snowflake => snowflake.Value.RawValue, 
+                    @ulong => new Snowflake(@ulong)));
             InventoryBuilder(modelBuilder);
             ItemBuilder(modelBuilder);
             StoreBuilder(modelBuilder);
@@ -147,31 +155,15 @@ namespace Hanekawa.Database
             modelBuilder.Entity<VoiceRoles>(x =>
             {
                 x.HasKey(e => new { e.GuildId, e.VoiceId });
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.VoiceId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<AutoMessage>(x =>
             {
                 x.HasKey(e => new { e.GuildId, e.Name });
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Creator).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
 
             modelBuilder.Entity<Quote>(x =>
             {
                 x.HasKey(e => new { e.GuildId, e.Key });
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Creator).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -181,10 +173,6 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Creator).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.HasMany(e => e.Participants)
                     .WithOne(e => e.Giveaway)
                     .HasForeignKey(e => e.GiveawayId)
@@ -194,18 +182,10 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => new { e.Id });
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<GiveawayHistory>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Creator).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Winner).HasConversion(c => c.Select(item => item.RawValue).ToArray(),
                     wops => wops.Select(item => new Snowflake(item)).ToArray());
             });
@@ -216,30 +196,18 @@ namespace Hanekawa.Database
             modelBuilder.Entity<DblAuth>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.RoleIdReward).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.AuthKey).ValueGeneratedOnAdd();
             });
             modelBuilder.Entity<VoteLog>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
         private static void OwnerBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Blacklist>(x =>
         {
             x.HasKey(e => e.GuildId);
-            x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-            x.Property(e => e.ResponsibleUser).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
         });
 
         private static void InventoryBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<Inventory>(x =>
@@ -258,10 +226,6 @@ namespace Hanekawa.Database
         private static void StoreBuilder(ModelBuilder modelBuilder) => modelBuilder.Entity<ServerStore>(x =>
         {
             x.HasKey(e => new {e.GuildId, e.RoleId});
-            x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-            x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
         });
 
         private static void AccountBuilder(ModelBuilder modelBuilder)
@@ -269,53 +233,28 @@ namespace Hanekawa.Database
             modelBuilder.Entity<Account>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.UserId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Decay).HasDefaultValue(0);
             });
             modelBuilder.Entity<AccountGlobal>(x =>
             {
                 x.HasKey(e => e.UserId);
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserColor).HasConversion<int>();
             });
             modelBuilder.Entity<LevelReward>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.Level});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Role).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.NoDecay).HasDefaultValue(false);
             });
             modelBuilder.Entity<LevelExpEvent>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<EventPayout>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.UserId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<Highlight>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.UserId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -480,16 +419,13 @@ namespace Hanekawa.Database
                         Category = AchievementCategory.Level,
                         Difficulty = AchievementDifficulty.Legendary,
                         Unlocked = null
-                    },
-                    
+                    }
                 });
             });
             modelBuilder.Entity<AchievementUnlocked>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.HasOne(e => e.Achievement).WithMany(e => e.Unlocked);
                x.HasOne(e => e.Account).WithMany(e => e.AchievementUnlocks);
             });
@@ -511,8 +447,6 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.Id).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -521,61 +455,27 @@ namespace Hanekawa.Database
             modelBuilder.Entity<ModLog>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ModId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<MuteTimer>(x =>
             {
                 x.HasKey(e => new {e.UserId, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<Suggestion>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ResponseUser).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<Report>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<Warn>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<ApprovalQueue>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Uploader).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Type).HasConversion(
                 v => v.ToString(), 
                 v => (ApprovalQueueType)Enum.Parse(typeof(ApprovalQueueType), v)); 
@@ -588,16 +488,6 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Leader).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.AdMessage).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Channel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Role).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
 
                 x.HasMany(e => e.Users)
                     .WithOne(e => e.Club)
@@ -613,21 +503,11 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => new {e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
 
             modelBuilder.Entity<ClubBlacklist>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.User});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.User).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Issuer).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -637,141 +517,65 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.GuildId);
                 x.Property(e => e.Premium).HasDefaultValue(null);
-                x.Property(e => e.EmbedColor).HasConversion<int>();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.EmbedColor).HasConversion<int>();
-                x.Property(e => e.MvpChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<AdminConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MuteRole).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<BoardConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Channel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<ChannelConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ReportChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.SelfAssignableChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.HasMany(e => e.AssignReactionRoles).WithOne(e => e.Config).OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<ClubConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.AdvertisementChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelCategory).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<CurrencyConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.CurrencySignId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.SpecialCurrencySignId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
             });
             modelBuilder.Entity<LevelConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.BoostExpMultiplier).HasDefaultValue(1);
                 x.Property(e => e.Decay).HasDefaultValue(false);
             });
             modelBuilder.Entity<LoggingConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogAutoMod).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogAvi).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogBan).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogJoin).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogWarn).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogMsg).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogReaction).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.LogVoice).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<SuggestionConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Channel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<WelcomeConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Channel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<DropConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
 
             modelBuilder.Entity<IgnoreChannel>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<Board>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.MessageId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<WelcomeBanner>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.Id});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Uploader).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.AvatarSize).HasDefaultValue(60);
                 x.Property(e => e.AviPlaceX).HasDefaultValue(10);
                 x.Property(e => e.AviPlaceY).HasDefaultValue(10);
@@ -782,48 +586,22 @@ namespace Hanekawa.Database
             modelBuilder.Entity<LootChannel>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<LevelExpReduction>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.ChannelId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<SelfAssignAbleRole>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.RoleId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.EmoteId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<SelfAssignReactionRole>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.ChannelId, e.MessageId});
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long) snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long) snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.MessageId).HasConversion(snowflake => (long) snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ConfigId).HasConversion(snowflake => (long) snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<BoostConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.ChannelId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
         }
 
@@ -871,10 +649,6 @@ namespace Hanekawa.Database
             modelBuilder.Entity<MvpConfig>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.RoleId).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Day).HasConversion(
                     v => v.ToString(),
                     v => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), v));
@@ -888,51 +662,27 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<HungerGameHistory>(x =>
             {
                 x.HasKey(e => e.GameId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.Winner).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<HungerGameProfile>(x =>
             {
                 x.HasKey(e => new { e.GuildId, e.UserId });
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.UserId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<HungerGameStatus>(x =>
             {
                 x.HasKey(e => e.GuildId);
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.EventChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.SignUpChannel).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.RoleReward).HasConversion(snowflake => (long)snowflake.Value.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<HungerGameCustomChar>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.Id).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
-                x.Property(e => e.GuildId).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
             });
             modelBuilder.Entity<HungerGameDefault>(x =>
             {
                 x.HasKey(e => e.Id);
-                x.Property(e => e.Id).HasConversion(snowflake => (long)snowflake.RawValue,
-                    snowflake => new Snowflake((ulong) snowflake));
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
                 x.HasData(new List<HungerGameDefault>
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
@@ -6,11 +7,32 @@ using Hanekawa.Database.Tables.BoardConfig;
 using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
+        internal static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter)
+        {
+            return modelBuilder.UseValueConverterForType(typeof(T), converter);
+        }
+
+        internal static ModelBuilder UseValueConverterForType(this ModelBuilder modelBuilder, Type type, ValueConverter converter)
+        {
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var properties = entityType.ClrType.GetProperties().Where(p => p.PropertyType == type);
+                foreach (var property in properties)
+                {
+                    modelBuilder.Entity(entityType.Name).Property(property.Name)
+                        .HasConversion(converter);
+                }
+            }
+
+            return modelBuilder;
+        }
+        
         public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, CachedMember user)
         {
             var userdata = await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
