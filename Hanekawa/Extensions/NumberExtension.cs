@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Hanekawa.Extensions
 {
@@ -27,6 +28,21 @@ namespace Hanekawa.Extensions
             mag += 1;
             adjustedSize /= 1024;
             return $"{adjustedSize} {SizeSuffixes[mag]}";
+        }
+
+        /// <summary>
+        /// Formats the number into currency format, 1.000.000
+        /// </summary>
+        /// <param name="currency"></param>
+        /// <returns>Currency formatted string</returns>
+        public static string FormatCurrency(this int currency)
+        {
+            var nfi = new CultureInfo("en-US", false).NumberFormat;
+
+            nfi.CurrencyDecimalSeparator = ",";
+            nfi.CurrencyGroupSeparator = ".";
+            nfi.CurrencySymbol = "";
+            return Convert.ToDecimal(currency).ToString("C", nfi);
         }
         
         public static bool IsDivisible(this int x, int n) 

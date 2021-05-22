@@ -19,12 +19,12 @@ namespace Hanekawa.Extensions
             return cfg.EmoteCurrency ? ParseEmote(cfg.CurrencySign, amount) : ParseString(cfg.CurrencySign, amount);
         }
 
-        private static string ParseEmote(string sign, int amount) => $"{amount} {CurrencySignEmote(sign)}";
+        private static string ParseEmote(string sign, int amount) => $"{amount.FormatCurrency()} {CurrencySignEmote(sign)}";
 
         private static string ParseString(string sign, int amount) =>
             CurrencySigns.Contains(sign)
-                ? $"{sign}{amount}"
-                : $"{amount} {sign}";
+                ? $"{sign}{amount.FormatCurrency()}"
+                : $"{amount.FormatCurrency()} {sign}";
 
         private static IEmoji CurrencySignEmote(string emoteString)
         {
