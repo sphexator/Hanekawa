@@ -19,13 +19,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
+using Quartz;
 using Quartz.Util;
 using static Disqord.LocalCustomEmoji;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Game
 {
-    public class HungerGameService : DiscordClientService
+    public class HungerGameService : DiscordClientService, IJob
     {
         private readonly Hanekawa _bot;
         private readonly Logger _logger;
@@ -150,7 +151,7 @@ namespace Hanekawa.Bot.Service.Game
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var status = await db.HungerGameStatus.FindAsync(e.NewMember.GuildId.RawValue);
+                var status = await db.HungerGameStatus.FindAsync(e.NewMember.GuildId);
                 if (status == null) return;
                 var profile =
                     await db.HungerGameProfiles.FindAsync(e.NewMember.GuildId, e.NewMember.Id);
@@ -165,13 +166,19 @@ namespace Hanekawa.Bot.Service.Game
                     $"Crash when updating participant avatar or name - {exception.Message}");
             }
         }
+        
+        public Task Execute(IJobExecutionContext context)
+        {
+            _ = ExecuteAsync();
+            return Task.CompletedTask;
+        }
 
         public async Task ExecuteAsync()
         {
             var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             foreach (var x in await db.GuildConfigs.Where(x => x.Premium.HasValue 
-                                                               && x.Premium.Value > DateTimeOffset.UtcNow).ToListAsync())
+                                                               && x.Premium.Value > DateTimeOffset.UtcNow).ToArrayAsync())
             {
                 var cfg = await db.HungerGameStatus.FindAsync(x.GuildId);
                 if (!cfg.EventChannel.HasValue) continue;
@@ -295,7 +302,7 @@ namespace Hanekawa.Bot.Service.Game
                     IsTextToSpeech = false
                 }.Build());
 
-            await db.HungerGames.AddAsync(new Database.Tables.Account.HungerGame.HungerGame
+            await db.HungerGames.AddAsync(new HungerGame
             {
                 Id = Guid.NewGuid(),
                 GuildId = cfg.GuildId,
@@ -432,7 +439,7 @@ namespace Hanekawa.Bot.Service.Game
                 var role = await RewardRoleAsync(cfg, user as CachedMember);
                 stringBuilder.AppendLine($"{user.Mention} is the new Hunger Game Champion!");
                 stringBuilder.AppendLine("They have been rewarded with the following:");
-                var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild.Id.RawValue);
+                var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild.Id);
                 if (cfg.ExpReward > 0) stringBuilder.AppendLine($"{cfg.ExpReward} exp");
                 if (cfg.CreditReward > 0)
                     stringBuilder.AppendLine($"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.CreditReward)}");
@@ -527,14 +534,14 @@ namespace Hanekawa.Bot.Service.Game
         private static async Task<List<HungerGameProfile>> AddBoostersAsync(DbService db, CachedGuild guild)
         {
             var toReturn = new List<HungerGameProfile>();
-            foreach (var (key, user) in guild.Members.Where(x => x.Value.BoostedAt.HasValue).ToList())
+            foreach (var (_, user) in guild.Members.Where(x => x.Value.BoostedAt.HasValue).ToList())
             {
-                var check = await db.HungerGameProfiles.FindAsync(guild.Id.RawValue, user.Id.RawValue);
+                var check = await db.HungerGameProfiles.FindAsync(guild.Id, user.Id);
                 if(check != null) continue;
                 toReturn.Add(new HungerGameProfile
                 {
-                    GuildId = user.GuildId.RawValue,
-                    UserId = user.Id.RawValue,
+                    GuildId = user.GuildId,
+                    UserId = user.Id,
                     Name = user.Name,
                     Avatar = user.GetAvatarUrl(ImageFormat.Png),
                     Bot = false,
@@ -561,8 +568,8 @@ namespace Hanekawa.Bot.Service.Game
 
         private static async Task<List<HungerGameProfile>> AddDefaultsAsync(DbService db, CachedGuild guild)
         {
-            var toAddNumber = 0;
-            var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guild.Id.RawValue).ToListAsync();
+            int toAddNumber;
+            var profiles = await db.HungerGameProfiles.Where(x => x.GuildId == guild.Id).ToListAsync();
             var boosters = await AddBoostersAsync(db, guild);
             profiles.AddRange(boosters);
             await db.HungerGameProfiles.AddRangeAsync(boosters);
@@ -586,7 +593,7 @@ namespace Hanekawa.Bot.Service.Game
             var defaults = await db.HungerGameDefaults.Take(toAddNumber).ToListAsync();
             var toAdd = defaults.Select(x => new HungerGameProfile
                 {
-                    GuildId = guild.Id.RawValue,
+                    GuildId = guild.Id,
                     UserId = x.Id,
                     Name = x.Name,
                     Avatar = x.Avatar,

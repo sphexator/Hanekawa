@@ -15,10 +15,11 @@ using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using Quartz;
 
 namespace Hanekawa.Bot.Service.Mvp
 {
-    public class MvpService : INService
+    public class MvpService : INService, IJob
     {
         private readonly Hanekawa _bot;
         private readonly Logger _logger;
@@ -29,6 +30,12 @@ namespace Hanekawa.Bot.Service.Mvp
             _bot = bot;
             _logger = LogManager.GetCurrentClassLogger();
             _provider = provider;
+        }
+        
+        public Task Execute(IJobExecutionContext context)
+        {
+            _ = MvpReward();
+            return Task.CompletedTask;
         }
         
         public async Task MvpReward()
@@ -68,16 +75,16 @@ namespace Hanekawa.Bot.Service.Mvp
                 catch (Exception e)
                 {
                     await db.Accounts.ForEachAsync(z => z.MvpCount = 0);
-                    _logger.Log(NLog.LogLevel.Error, e, $"(MVP Service) Failed to execute raw SQL in {x.GuildId}");
+                    _logger.Log(LogLevel.Error, e, $"Failed to execute raw SQL in {x.GuildId}");
                 }
                 await db.SaveChangesAsync();
-                _logger.Log(LogLevel.Info, $"(MVP Service) Reset every ones MVP counter to 0 in {x.GuildId}");
+                _logger.Log(LogLevel.Info, $"Reset every ones MVP counter to 0 in {x.GuildId}");
 
                 await PostAsync(db, guild, mvp, oldMvp);
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(MVP Service) Error when assigning MVP rewards\n{e.Message}");
+                _logger.Log(LogLevel.Error, e, $"Error when assigning MVP rewards\n{e.Message}");
             }
         }
 
@@ -89,7 +96,7 @@ namespace Hanekawa.Bot.Service.Mvp
                 mvpConfig.RoleId = null;
                 await db.SaveChangesAsync();
                 _logger.Log(LogLevel.Info,
-                    $"(MVP Service) Reset MVP role as it was null in {guild.Id.RawValue}");
+                    $"Reset MVP role as it was null in {guild.Id}");
                 return false;
             }
 
@@ -105,7 +112,7 @@ namespace Hanekawa.Bot.Service.Mvp
                     }
                     catch (Exception e)
                     {
-                        _logger.Log(LogLevel.Error, e, $"(MVP Service) Couldn't remove role from {key}");
+                        _logger.Log(LogLevel.Error, e, $"Couldn't remove role from {key}");
                     }
                 }
             }
@@ -130,12 +137,12 @@ namespace Hanekawa.Bot.Service.Mvp
                 }
                 catch (Exception exception)
                 {
-                    _logger.Log(LogLevel.Error, exception, $"(MVP Service) Couldn't add role to {e.UserId}");
+                    _logger.Log(LogLevel.Error, exception, $"Couldn't add role to {e.UserId}");
                 }
             }
 
             _logger.Log(LogLevel.Info,
-                $"(MVP Service) Rewarded {mvpConfig.Count} users with MVP role in {guild.Id.RawValue}");
+                $"Rewarded {mvpConfig.Count} users with MVP role in {guild.Id}");
             return true;
         }
         
@@ -180,7 +187,7 @@ namespace Hanekawa.Bot.Service.Mvp
             catch (Exception e)
             {
                 _logger.Log(LogLevel.Error, e,
-                    $"(MVP Service) Couldn't send message for guild {guildConfig.GuildId} in channel {guildConfig.MvpChannel.Value}");
+                    $"Couldn't send message for guild {guildConfig.GuildId} in channel {guildConfig.MvpChannel.Value}");
             }
         }
     }

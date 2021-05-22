@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Service.Board
             var cfg = await db.GetOrCreateBoardConfigAsync(e.GuildId.Value);
             var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
             var giver = await db.GetOrCreateUserData(e.Member);
-            var receiver = await db.GetOrCreateUserData(e.GuildId.Value.RawValue, e.Message.Author.Id.RawValue);
+            var receiver = await db.GetOrCreateUserData(e.GuildId.Value, e.Message.Author.Id);
             receiver.StarReceived++;
             giver.StarGiven++;
             stat.StarAmount++;
@@ -60,6 +60,7 @@ namespace Hanekawa.Bot.Service.Board
                 stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                 await db.SaveChangesAsync();
                 await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg);
+                _logger.Info($"Sent board message in {cfg.GuildId} by user {receiver.UserId}");
             }
         }
 
@@ -77,7 +78,7 @@ namespace Hanekawa.Bot.Service.Board
             
             var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
             var giver = await db.GetOrCreateUserData(e.GuildId.Value, e.UserId);
-            var receiver = await db.GetOrCreateUserData(e.GuildId.Value.RawValue, e.Message.Author.Id.RawValue);
+            var receiver = await db.GetOrCreateUserData(e.GuildId.Value, e.Message.Author.Id);
             if(receiver.StarReceived != 0) receiver.StarReceived--;
             giver.StarGiven--;
             stat.StarAmount--;
@@ -96,7 +97,7 @@ namespace Hanekawa.Bot.Service.Board
 
         private static async Task<IEmoji> UpdateEmoteAsync(Snowflake guildId, DbService db)
         {
-            var cfg = await db.GetOrCreateBoardConfigAsync(guildId.RawValue);
+            var cfg = await db.GetOrCreateBoardConfigAsync(guildId);
             return LocalCustomEmoji.TryParse(cfg.Emote, out var emoji) 
                 ? emoji 
                 : new LocalEmoji("U+2B50");
@@ -114,7 +115,7 @@ namespace Hanekawa.Bot.Service.Board
             {
                 Author = new LocalEmbedAuthorBuilder
                 {
-                    Name = user.Nick ?? user.Name,
+                    Name = user.DisplayName(),
                     IconUrl = user.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
                 },
                 Color = roles.Values.OrderByDescending(x => x.Position)

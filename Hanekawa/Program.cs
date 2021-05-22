@@ -63,7 +63,7 @@ namespace Hanekawa
             var consoleTarget = new ConsoleTarget
             {
                 Name = "Console",
-                Layout = @"$[{longdate} | ${level}] [${CallSite}] [${message} ${exception}]",
+                Layout = @"[${longdate} | ${level}] [${CallSite}] [${message} ${exception}]",
                 DetectConsoleAvailable = true,
                 OptimizeBufferReuse = true,
                 AutoFlush = true

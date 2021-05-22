@@ -19,11 +19,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
+using Quartz;
 using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Boost
 {
-    public class BoostService : DiscordClientService
+    public class BoostService : DiscordClientService, IJob
     {
         private readonly Hanekawa _bot;
         private readonly ExpService _exp;
@@ -39,6 +40,12 @@ namespace Hanekawa.Bot.Service.Boost
             _provider = provider;
             _cache = cache;
             _logger = LogManager.GetCurrentClassLogger();
+        }
+        
+        public Task Execute(IJobExecutionContext context)
+        {
+            _ = Reward();
+            return Task.CompletedTask;
         }
 
         protected override async ValueTask OnMemberUpdated(MemberUpdatedEventArgs e)
@@ -69,7 +76,6 @@ namespace Hanekawa.Bot.Service.Boost
                         $"(Boost Service) Error in {x.GuildId} when rewarding users - {e.Message}");
                 }
             }
-
             _logger.Log(LogLevel.Info,
                 "(Boost Service) Finished rewarding users in all guilds configured for it");
         }
@@ -87,12 +93,12 @@ namespace Hanekawa.Bot.Service.Boost
                 catch (Exception e)
                 {
                     _logger.Log(LogLevel.Error, e,
-                        $"(Boost Service) Error in {x.GuildId} when rewarding {member.Id.RawValue} - {e.Message}");
+                        $"(Boost Service) Error in {x.GuildId} when rewarding {member.Id} - {e.Message}");
                 }
             }
 
             await db.SaveChangesAsync();
-            _logger.Log(LogLevel.Info, $"Rewarded {users.Count} boosters in {guild.Id.RawValue}");
+            _logger.Log(LogLevel.Info, $"Rewarded {users.Count} boosters in {guild.Id}");
         }
 
         private async Task RewardUserAsync(DbService db, IMember member, BoostConfig x, IGuild guild,
@@ -128,7 +134,7 @@ namespace Hanekawa.Bot.Service.Boost
                             IconUrl = guild.GetIconUrl()
 
                         },
-                        Color = _cache.GetColor(guild.Id.RawValue),
+                        Color = _cache.GetColor(guild.Id),
                         Description = sb.ToString()
                     },
                     Attachments = null,
@@ -208,7 +214,7 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for start boosting in {user.GuildId.RawValue} for {user.Id.RawValue} - {e.Message}");
+                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for start boosting in {user.GuildId} for {user.Id} - {e.Message}");
             }
         }
         
@@ -247,7 +253,7 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for end boosting in {user.GuildId.RawValue} for {user.Id.RawValue} - {e.Message}");
+                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for end boosting in {user.GuildId} for {user.Id} - {e.Message}");
             }
         }
     }
