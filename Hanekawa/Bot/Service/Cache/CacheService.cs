@@ -33,13 +33,12 @@ namespace Hanekawa.Bot.Service.Cache
         private readonly ConcurrentDictionary<Snowflake, ShipGameType> _shipGames = new();
         // Level
         private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<ExpSource, double>> _experienceMultipliers = new();
+        private readonly ConcurrentDictionary<Snowflake, Timer> _expEvents = new();
         private readonly HashSet<Snowflake> _experienceReduction = new();
         // Administration
         private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<Snowflake, Timer>> _muteTimers = new();
         private readonly ConcurrentDictionary<Snowflake, MemoryCache> _banCache = new();
         private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake?, int>>> _guildInvites = new();
-        // Board
-        private readonly ConcurrentDictionary<Snowflake, MemoryCache> _board = new();
         // Quotes
         private readonly ConcurrentDictionary<Snowflake, MemoryCache> _quoteCache = new();
         // Drops
@@ -51,7 +50,7 @@ namespace Hanekawa.Bot.Service.Cache
 
         private readonly IServiceProvider _provider;
         
-        public CacheService(ILogger logger, Hanekawa client, IServiceProvider provider) : base(logger, client) => _provider = provider;
+        public CacheService(ILogger<CacheService> logger, Hanekawa client, IServiceProvider provider) : base(logger, client) => _provider = provider;
 
         // ----- Guild Settings -----
         public Color GetColor(Snowflake guildSnowflake) =>
@@ -112,13 +111,31 @@ namespace Hanekawa.Bot.Service.Cache
             _experienceReduction.Add(channelId);
             return true;
         }
-        
         public bool TryRemoveExpReduction(Snowflake channelId)
         {
             if (!_experienceReduction.TryGetValue(channelId, out _)) return false;
             _experienceReduction.Remove(channelId);
             return true;
         }
+
+        public bool TryAddExpEvent(Snowflake guildId, Timer timer)
+        {
+            if (!_expEvents.TryGetValue(guildId, out var value)) return _expEvents.TryAdd(guildId, timer);
+            try { value.Dispose(); }
+            catch { /* IGNORE */ }
+            _expEvents.TryRemove(guildId, out _);
+            return _expEvents.TryAdd(guildId, timer);
+        }
+
+        public bool TryRemoveExpEvent(Snowflake guildId)
+        {
+            if (!_expEvents.TryRemove(guildId, out var timer)) return false;
+            try { timer.Dispose(); }
+            catch { /* IGNORE */ }
+            return true;
+        }
+
+        public bool TryGetExpEvent(Snowflake guildId) => _expEvents.TryGetValue(guildId, out _);
 
         // ----- Administration -----
         public bool TryGetMute(Snowflake guildId, Snowflake userId)
@@ -167,10 +184,12 @@ namespace Hanekawa.Bot.Service.Cache
 
         public void AddInvite(Snowflake guildId, IInvite code)
         {
-            var channelCodes = _guildInvites.GetOrAdd(guildId, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>());
+            var channelCodes =
+                _guildInvites.GetOrAdd(guildId, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>());
             var toAdd = new Tuple<Snowflake?, int>(code.Inviter.Id, code.Metadata.Uses);
-            var codes = channelCodes.AddOrUpdate(code.Code,
-                new Tuple<Snowflake?, int>(code.Inviter.Id, code.Metadata.Uses), (_, _) => toAdd);
+            
+            channelCodes.AddOrUpdate(code.Code, new Tuple<Snowflake?, int>(code.Inviter.Id, code.Metadata.Uses),
+                (_, _) => toAdd);
             _guildInvites.AddOrUpdate(guildId, channelCodes, (_, _) => channelCodes);
         }
 
@@ -181,14 +200,14 @@ namespace Hanekawa.Bot.Service.Cache
             _guildInvites.AddOrUpdate(guildId, channelCodes, (_, _) => channelCodes);
         }
 
-        public void UpdateInvite(Snowflake guildId, string code, Snowflake? invitee, int inviteUses)
+        private void UpdateInvite(Snowflake guildId, string code, Snowflake? invitee, int inviteUses)
         {
             _guildInvites.AddOrUpdate(guildId,
                 _guildInvites.GetOrAdd(guildId, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>()),
                 (_, invites) =>
                 {
                     invites.AddOrUpdate(code, new Tuple<Snowflake?, int>(invitee, inviteUses),
-                        (s, tuple) => new Tuple<Snowflake?, int>(invitee, inviteUses));
+                        (_, _) => new Tuple<Snowflake?, int>(invitee, inviteUses));
                     return invites;
                 });
         }
@@ -239,15 +258,23 @@ namespace Hanekawa.Bot.Service.Cache
         // Command blacklist / whitelists
         public bool TryGetIgnoreChannel(Snowflake guildId, out bool status) =>
             IgnoreAll.TryGetValue(guildId, out status);
+
+        public void UpdateIgnoreAllChannel(Snowflake guildId, bool status)
+        {
+            if (IgnoreAll.TryAdd(guildId, status)) return;
+            IgnoreAll.TryGetValue(guildId, out var oldValue);
+            IgnoreAll.TryUpdate(guildId, status, oldValue);
+        }
+        
         public async ValueTask<bool> AddOrRemoveChannel(ITextChannel channel, DbService db)
         {
-            var check = await db.IgnoreChannels.FindAsync(channel.GuildId.RawValue, channel.Id.RawValue);
+            var check = await db.IgnoreChannels.FindAsync(channel.GuildId, channel.Id);
             if (check != null)
             {
                 ChannelEnable.TryRemove(channel.Id, out _);
                 var result =
                     await db.IgnoreChannels.FirstOrDefaultAsync(x =>
-                        x.GuildId == channel.GuildId.RawValue && x.ChannelId == channel.Id.RawValue);
+                        x.GuildId == channel.GuildId && x.ChannelId == channel.Id);
                 db.IgnoreChannels.Remove(result);
                 await db.SaveChangesAsync();
                 return false;
@@ -255,8 +282,8 @@ namespace Hanekawa.Bot.Service.Cache
             ChannelEnable.GetOrAdd(channel.Id, true);
             var data = new IgnoreChannel 
             {
-                GuildId = channel.GuildId.RawValue, 
-                ChannelId = channel.Id.RawValue
+                GuildId = channel.GuildId, 
+                ChannelId = channel.Id
                 
             }; 
             await db.IgnoreChannels.AddAsync(data); 
@@ -269,6 +296,7 @@ namespace Hanekawa.Bot.Service.Cache
             using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
+            UpdateIgnoreAllChannel(cfg.GuildId, cfg.IgnoreAllChannels);
             return cfg.IgnoreAllChannels;
         }
 
@@ -276,7 +304,7 @@ namespace Hanekawa.Bot.Service.Cache
         {
             // True = command passes
             // False = command fails
-            var ignore = ChannelEnable.TryGetValue(context.Channel.Id.RawValue, out _);
+            var ignore = ChannelEnable.TryGetValue(context.Channel.Id, out _);
             if (!ignore) ignore = DoubleCheckChannel(context);
             return !ignoreAll ? !ignore : ignore;
         }
@@ -285,9 +313,9 @@ namespace Hanekawa.Bot.Service.Cache
         {
             using var scope = context.Services.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var check = db.IgnoreChannels.Find(context.Guild.Id.RawValue, context.Channel.Id.RawValue);
+            var check = db.IgnoreChannels.Find(context.Guild.Id, context.Channel.Id);
             if (check == null) return false;
-            ChannelEnable.TryAdd(context.Channel.Id.RawValue, true);
+            ChannelEnable.TryAdd(context.Channel.Id, true);
             return true;
         }
 
@@ -313,6 +341,7 @@ namespace Hanekawa.Bot.Service.Cache
             {
                 AdjustExpMultiplier(ExpSource.Text, x.GuildId, x.TextExpMultiplier);
                 AdjustExpMultiplier(ExpSource.Voice, x.GuildId, x.VoiceExpMultiplier);
+                AdjustExpMultiplier(ExpSource.Other, x.GuildId, 1);
             }
 
             foreach (var x in db.LevelExpReductions)
