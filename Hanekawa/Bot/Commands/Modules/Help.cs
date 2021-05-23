@@ -42,7 +42,7 @@ namespace Hanekawa.Bot.Commands.Modules
                         i++;
                         continue;
                     }
-                    strBuilder.Append(j < 4 ? $"`{x.Name}` - " : $"`{x.Name}`");
+                    strBuilder.Append((j < 4 || i < modules.Count - 1) ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }
 
