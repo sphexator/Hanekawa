@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Extensions.Interactivity;
 using Disqord.Gateway;
+using Disqord.Hosting;
 using Disqord.Rest;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.ImageGeneration;
@@ -14,13 +15,17 @@ using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
+using Hanekawa.Extensions;
 using Hanekawa.Utility;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Welcome
 {
-    public class WelcomeService : INService
+    public class WelcomeService : DiscordClientService
     {
         private readonly Hanekawa _bot;
         private readonly ExpService _exp;
@@ -28,16 +33,17 @@ namespace Hanekawa.Bot.Service.Welcome
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
-        public WelcomeService(Hanekawa bot, IServiceProvider provider, ExpService exp, ImageGenerationService image)
+        public WelcomeService(IServiceProvider provider, ExpService exp, ImageGenerationService image, 
+            ILogger<WelcomeService> logger, DiscordClientBase client) : base(logger, client)
         {
-            _bot = bot;
+            _bot = (Hanekawa)client;
             _provider = provider;
             _exp = exp;
             _image = image;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task MemberJoinedAsync(MemberJoinedEventArgs e)
+        protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
         {
             var user = e.Member;
             if (user.IsBot) return;
@@ -54,6 +60,13 @@ namespace Hanekawa.Bot.Service.Welcome
                 var channel = guild.GetChannel(cfg.Channel.Value);
                 if (channel == null) return;
                 var textChannel = channel as ITextChannel;
+                var client = await textChannel.GetOrCreateWebhookClientAsync();
+                if (!cfg.WebhookId.HasValue || (cfg.WebhookId.Value != client.Id))
+                {
+                    cfg.WebhookId = client.Id;
+                    cfg.Webhook = client.Token;
+                    await db.SaveChangesAsync();
+                }
                 if (cfg.Banner)
                 {
                     var guildCfg = await db.GetOrCreateGuildConfigAsync(guild);
@@ -61,35 +74,38 @@ namespace Hanekawa.Bot.Service.Welcome
                         guildCfg.Premium.HasValue && guildCfg.Premium.Value >= DateTimeOffset.UtcNow);
                     stream.Position = 0;
                     message = isGif
-                        ? await textChannel.SendMessageAsync(new LocalMessageBuilder
+                        ? await client.ExecuteAsync(new LocalWebhookMessageBuilder
                         {
-                            Attachments = new List<LocalAttachment> {new(stream, "Welcome.gif")},
+                            Name = guild.Name,
+                            AvatarUrl = guild.GetIconUrl(),
+                            Attachment = new (stream, "Welcome.gif"),
                             Content = msg,
-                            Embed = null,
+                            Embeds = null,
                             Mentions = LocalMentionsBuilder.None,
-                            Reference = null,
                             IsTextToSpeech = false
                         }.Build())
-                        : await textChannel.SendMessageAsync(new LocalMessageBuilder
+                        : await client.ExecuteAsync(new LocalWebhookMessageBuilder
                         {
-                            Attachments = new List<LocalAttachment> {new(stream, "Welcome.png")},
+                            Name = guild.Name,
+                            AvatarUrl = guild.GetIconUrl(),
+                            Attachment = new (stream, "Welcome.png"),
                             Content = msg,
-                            Embed = null,
+                            Embeds = null,
                             Mentions = LocalMentionsBuilder.None,
-                            Reference = null,
                             IsTextToSpeech = false
                         }.Build());
                 }
                 else
                 {
                     if (msg == null) return;
-                    message = await textChannel.SendMessageAsync(new LocalMessageBuilder
+                    message = await client.ExecuteAsync(new LocalWebhookMessageBuilder
                     {
+                        Name = guild.Name,
+                        AvatarUrl = guild.GetIconUrl(),
                         Content = msg,
-                        Attachments = null,
-                        Embed = null,
+                        Attachment = null,
+                        Embeds = null,
                         Mentions = LocalMentionsBuilder.None,
-                        Reference = null,
                         IsTextToSpeech = false
                     }.Build());
                 }
@@ -108,14 +124,14 @@ namespace Hanekawa.Bot.Service.Welcome
             }
         }
 
-        public async Task LeftGuildAsync(LeftGuildEventArgs e)
+        protected override async ValueTask OnLeftGuild(LeftGuildEventArgs e)
         {
             try
             {
                 using (var scope = _provider.CreateScope())
                 await using (var db = scope.ServiceProvider.GetRequiredService<DbService>())
                 {
-                    var banners = db.WelcomeBanners.Where(x => x.GuildId == e.GuildId);
+                    var banners = await db.WelcomeBanners.Where(x => x.GuildId == e.GuildId).ToArrayAsync();
                     db.WelcomeBanners.RemoveRange(banners);
                     await db.SaveChangesAsync();
                 }
@@ -129,7 +145,7 @@ namespace Hanekawa.Bot.Service.Welcome
                     $"(Welcome Service) Error in {e.GuildId} for Bot Left Guild - {exception.Message}");
             }
         }
-
+        
         private async Task RewardAsync(ISnowflakeEntity channel, WelcomeConfig cfg, DbService db,
             CancellationToken token)
         {
