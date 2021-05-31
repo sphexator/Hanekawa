@@ -57,7 +57,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for mute log, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookBan != webhook.Token) cfg.WebhookBan = webhook.Token;
                 if (!cfg.WebhookBanId.HasValue || cfg.WebhookBanId.Value != webhook.Id)
                     cfg.WebhookBanId = webhook.Id;
@@ -106,7 +106,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for warn log, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookWarn != webhook.Token) cfg.WebhookWarn = webhook.Token;
                 if (!cfg.WebhookWarnId.HasValue || cfg.WebhookWarnId.Value != webhook.Id)
                     cfg.WebhookWarnId = webhook.Id;

@@ -150,7 +150,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for voice log, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookVoice != webhook.Token) cfg.WebhookVoice = webhook.Token;
                 if (!cfg.WebhookVoiceId.HasValue || cfg.WebhookVoiceId.Value != webhook.Id)
                     cfg.WebhookVoiceId = webhook.Id;

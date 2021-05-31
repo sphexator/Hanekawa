@@ -70,7 +70,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for user log, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookAvi != webhook.Token) cfg.WebhookAvi = webhook.Token;
                 if (!cfg.WebhookAviId.HasValue || cfg.WebhookAviId.Value != webhook.Id)
                     cfg.WebhookAviId = webhook.Id;

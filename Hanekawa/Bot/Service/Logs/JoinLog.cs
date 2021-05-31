@@ -94,7 +94,7 @@ namespace Hanekawa.Bot.Service.Logs
                     Name = guild.GetCurrentUser().DisplayName(),
                     AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
                 };
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookJoin != webhook.Token) cfg.WebhookJoin = webhook.Token;
                 if (!cfg.WebhookJoinId.HasValue || cfg.WebhookJoinId.Value != webhook.Id)
                     cfg.WebhookJoinId = webhook.Id;
@@ -145,7 +145,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for member left, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookJoin != webhook.Token) cfg.WebhookJoin = webhook.Token;
                 if (!cfg.WebhookJoinId.HasValue || cfg.WebhookJoinId.Value != webhook.Id)
                     cfg.WebhookJoinId = webhook.Id;

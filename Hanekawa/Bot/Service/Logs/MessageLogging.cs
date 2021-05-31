@@ -75,7 +75,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for message deleted, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;
@@ -138,7 +138,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for member left, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;
@@ -192,7 +192,7 @@ namespace Hanekawa.Bot.Service.Logs
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warn, ex, $"No valid webhook for message updated, re-creating");
-                var webhook = await channel.GetOrCreateWebhookClient();
+                var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;

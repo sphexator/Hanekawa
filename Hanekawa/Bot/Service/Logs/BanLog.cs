@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Service.Logs
                 catch (Exception exception)
                 {
                     _logger.Log(LogLevel.Warn, exception, $"No valid webhook for ban, re-creating");
-                    var webhook = await channel.GetOrCreateWebhookClient();
+                    var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
                     var msg = await webhook.ExecuteAsync(builder.Build());
@@ -154,7 +154,7 @@ namespace Hanekawa.Bot.Service.Logs
                 catch (Exception exception)
                 {
                     _logger.Log(LogLevel.Warn, exception, $"No valid webhook for unban, re-creating");
-                    var webhook = await channel.GetOrCreateWebhookClient();
+                    var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
                     var msg = await webhook.ExecuteAsync(builder.Build());
