@@ -72,10 +72,15 @@ namespace Hanekawa.Bot.Commands.Modules
         [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
         public async Task<DiscordCommandResult> EmoteAsync(string url, string name)
         {
+            if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) |
+                  url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)))
+                return Reply("First parameter needs to be a link", HanaBaseColor.Bad());
+            
             var client = Context.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
             var stream = await client.GetStreamAsync(url);
             var result = stream.ToEditable(1);
             result.Position = 0;
+            if (result.GetKnownFileType() == FileType.Unknown) return Reply("Unknown file type", HanaBaseColor.Bad());
             try
             {
                 var emote = await Context.Guild.CreateEmojiAsync(name, result);

@@ -23,7 +23,6 @@ using Qmmands;
 namespace Hanekawa.Bot.Commands.Modules
 {
     [Name("Level")]
-    [Group("Level")]
     [Description("Commands for levels")]
     public class Level : HanekawaCommandModule
     {
@@ -36,21 +35,16 @@ namespace Hanekawa.Bot.Commands.Modules
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var levels = await db.LevelRewards.Where(x => x.GuildId == Context.Guild.Id.RawValue).OrderBy(x => x.Level)
                 .ToListAsync();
-            if (levels == null || levels.Count == 0)
-            {
-                return Reply("No level roles added.");
-            }
+            if (levels == null || levels.Count == 0) return Reply("No level roles added.");
 
             var pages = new List<string>();
             foreach (var x in levels)
             {
                 try
                 {
-                    if(Context.Guild.Roles.TryGetValue(x.Role, out var role)) pages.Add("Role not found");
-                    else
-                        pages.Add($"Name: {role.Name ?? "Role not found"}\n" +
-                                  $"Level: {x.Level}\n" +
-                                  $"Stack: {x.Stackable}");
+                    pages.Add(!Context.Guild.Roles.TryGetValue(x.Role, out var role)
+                        ? "Role not found"
+                        : $"Name: {role.Name ?? "Role not found"}\nLevel: {x.Level}\nStack: {x.Stackable}");
                 }
                 catch
                 {

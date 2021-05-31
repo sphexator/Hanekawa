@@ -80,12 +80,12 @@ namespace Hanekawa
                 KeepConnection = true,
                 Parameters =
                 {
-                    new DatabaseParameterInfo("@datetime", "${longdate}"),
-                    new DatabaseParameterInfo("@level", "${level}"),
-                    new DatabaseParameterInfo("@message", "${message}"),
-                    new DatabaseParameterInfo("@logger", "${logger}"),
-                    new DatabaseParameterInfo("@callsite", "${callsite}"),
-                    new DatabaseParameterInfo("@exception", "${exception:format=toString,Data}")
+                    new ("@datetime", "${longdate}"),
+                    new ("@level", "${level}"),
+                    new ("@message", "${message}"),
+                    new ("@logger", "${logger}"),
+                    new ("@callsite", "${callsite}"),
+                    new ("@exception", "${exception:format=toString,Data}")
                 },
                 OptimizeBufferReuse = true
             };
