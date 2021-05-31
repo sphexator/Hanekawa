@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Webhook;
 
 namespace Hanekawa.Extensions
 {
@@ -28,14 +30,24 @@ namespace Hanekawa.Extensions
             return await channel.FetchMessageAsync(id) as IUserMessage;
         }
 
-        public static async Task<IWebhook> GetOrCreateWebhookClient(this ITextChannel channel)
+        public static async Task<IWebhook> GetOrCreateWebhookClientAsync(this ITextChannel channel)
         {
             var currentUser = channel.GetGatewayClient().CurrentUser;
             var webhooks = await channel.FetchWebhooksAsync();
-            var webhook = webhooks.FirstOrDefault(x => x.Creator.Id == currentUser.Id);
+            var client = GetClient(webhooks, currentUser.Id);
             
-            if (webhook != null) return webhook;
+            if (client != null) return client;
             return await channel.CreateWebhookAsync(currentUser.Name);
+        }
+
+        private static IWebhook GetClient(IReadOnlyList<IWebhook> list, Snowflake id)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i].Creator.Id == id) return list[i];
+            }
+
+            return null;
         }
     }
 }

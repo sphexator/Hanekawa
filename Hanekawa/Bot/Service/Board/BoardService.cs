@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
@@ -11,6 +12,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -59,7 +61,7 @@ namespace Hanekawa.Bot.Service.Board
             {
                 stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                 await db.SaveChangesAsync();
-                await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg);
+                await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg, db);
                 _logger.Info($"Sent board message in {cfg.GuildId} by user {receiver.UserId}");
             }
         }
@@ -103,46 +105,58 @@ namespace Hanekawa.Bot.Service.Board
                 : new LocalEmoji("U+2B50");
         }
 
-        private async Task SendMessageAsync(IMember user, IUserMessage msg, BoardConfig cfg)
+        private async Task SendMessageAsync(IMember user, IUserMessage msg, BoardConfig cfg, DbContext db)
         {
             var roles = user.GetRoles();
             var guild = _bot.GetGuild(user.GuildId);
-            var channel = guild.GetChannel(msg.ChannelId);
+            var channel = guild.GetChannel(msg.ChannelId) as ITextChannel;
             if (!cfg.Channel.HasValue) return;
-            var boardCh = guild.GetChannel(cfg.Channel.Value);
-            if (boardCh == null) return;
-            var embed = new LocalEmbedBuilder
+            if (guild.GetChannel(cfg.Channel.Value) is not ITextChannel boardCh) return;
+            var client = await boardCh.GetOrCreateWebhookClientAsync();
+            if (!cfg.WebhookId.HasValue || cfg.WebhookId.Value != client.Id)
             {
-                Author = new LocalEmbedAuthorBuilder
-                {
-                    Name = user.DisplayName(),
-                    IconUrl = user.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
-                },
-                Color = roles.Values.OrderByDescending(x => x.Position)
-                    .FirstOrDefault(x => x.Color != null && x.Color.Value != 0)
-                    ?.Color,
-                Description = msg.Content,
-                Footer = new LocalEmbedFooterBuilder {Text = channel?.Name},
-                Timestamp = msg.CreatedAt
-            };
-            if (msg.Attachments.Count > 0) embed.ImageUrl = msg.Attachments[0].Url;
-            embed.AddField("Original", $"[Jump!]({Discord.MessageJumpLink(user.GuildId, msg.ChannelId, msg.Id)})");
-            
-            await _bot.SendMessageAsync(boardCh.Id, new LocalMessageBuilder
+                cfg.WebhookId = client.Id;
+                cfg.Webhook = client.Token;
+                await db.SaveChangesAsync();
+            }
+
+            await client.ExecuteAsync(new LocalWebhookMessageBuilder
             {
-                Attachments = null,
-                Content = null,
-                Embed = embed,
+                Name = user.DisplayName(),
                 Mentions = LocalMentionsBuilder.None,
-                Reference = new LocalReferenceBuilder
+                AvatarUrl = user.GetAvatarUrl(),
+                IsTextToSpeech = false,
+                Attachment = null,
+                Content = null,
+                Embeds = new LocalEmbedBuilder[]
                 {
-                    ChannelId = msg.ChannelId,
-                    GuildId = user.GuildId,
-                    MessageId = msg.Id,
-                    FailOnInvalid = false
-                },
-                IsTextToSpeech = false
+                    new()
+                    {
+                        Author = new LocalEmbedAuthorBuilder
+                        {
+                            Name = user.DisplayName(),
+                            IconUrl = user.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
+                        },
+                        Color = roles.Values.OrderByDescending(x => x.Position)
+                            .FirstOrDefault(x => x.Color != null && x.Color.Value != 0)
+                            ?.Color,
+                        Description = msg.Content,
+                        Footer = new LocalEmbedFooterBuilder {Text = channel?.Name},
+                        Timestamp = msg.CreatedAt,
+                        ImageUrl = GetAttachmentAsync(msg, channel, boardCh)
+                    }
+                }
             }.Build());
+        }
+
+        private static string GetAttachmentAsync(IUserMessage message, ITextChannel source, ITextChannel destination)
+        {
+            if (source.IsNsfw && !destination.IsNsfw) return null;
+            var attachment = message.Attachments[0];
+            if (attachment == null) return null;
+            return !attachment.Url.IsPictureUrl()
+                ? null
+                : attachment.Url;
         }
     }
 }
