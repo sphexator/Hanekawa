@@ -39,6 +39,7 @@ namespace Hanekawa.Bot.Service.Cache
         private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<Snowflake, Timer>> _muteTimers = new();
         private readonly ConcurrentDictionary<Snowflake, MemoryCache> _banCache = new();
         private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Tuple<Snowflake?, int>>> _guildInvites = new();
+        private readonly ConcurrentDictionary<Snowflake, ConcurrentDictionary<string, Timer>> _autoMessages = new();
         // Quotes
         private readonly ConcurrentDictionary<Snowflake, MemoryCache> _quoteCache = new();
         // Drops
@@ -159,6 +160,36 @@ namespace Hanekawa.Bot.Service.Cache
         {
             var mutes = _muteTimers.GetOrAdd(guildId, new ConcurrentDictionary<Snowflake, Timer>());
             if (!mutes.TryRemove(userId, out var timer)) return;
+            timer.Dispose();
+        }
+        
+        public bool TryGetAutoMessage(Snowflake guildId, string name)
+        {
+            var autoMessages = _autoMessages.GetOrAdd(guildId, new ConcurrentDictionary<string, Timer>());
+            return autoMessages.TryGetValue(name, out _);
+        }
+        
+        public void AddOrUpdateAutoMessageTimer(Snowflake guildId, string name, Timer timer)
+        {
+            if(!_autoMessages.TryGetValue(guildId, out var autoMessages))
+            {
+                _autoMessages.TryAdd(guildId, new ConcurrentDictionary<string, Timer>());
+                _autoMessages.TryGetValue(guildId, out autoMessages);
+            }
+            
+            if (autoMessages != null && !autoMessages.TryAdd(name, timer))
+            {
+                if(autoMessages.TryRemove(name, out var toDispose)) toDispose.Dispose();
+                autoMessages.TryAdd(name, timer);
+            }
+
+            _autoMessages.TryUpdate(guildId, autoMessages, null);
+        }
+
+        public void RemoveAutoMessageTimer(Snowflake guildId, string name)
+        {
+            var mutes = _autoMessages.GetOrAdd(guildId, new ConcurrentDictionary<string, Timer>());
+            if (!mutes.TryRemove(name, out var timer)) return;
             timer.Dispose();
         }
         
