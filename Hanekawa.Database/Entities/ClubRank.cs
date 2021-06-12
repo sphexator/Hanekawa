@@ -2,8 +2,8 @@
 {
     public enum ClubRank
     {
-        Owner,
+        Member,
         Admin,
-        Member
+        Owner
     }
 }
