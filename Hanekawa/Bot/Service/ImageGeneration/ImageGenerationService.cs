@@ -24,8 +24,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         private readonly IHttpClientFactory _http;
         private readonly Random _random;
 
-        private readonly FontFamily _arial;
-        private readonly FontFamily _times;
+        private readonly FontCollection _fonts;
         
         private readonly Image _profileTemplate;
         private readonly Image _welcomeTemplate;
@@ -77,10 +76,10 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             _bot = bot;
             _http = http;
             _random = random;
-            var fonts = new FontCollection();
+            _fonts = new FontCollection();
 
-            _times = fonts.Install("Data/Fonts/TIMES.TTF");
-            _arial = fonts.Install("Data/Fonts/ARIAL.TTF");
+            _fonts.Install("Data/Fonts/TIMES.TTF");
+            _fonts.Install("Data/Fonts/ARIAL.TTF");
 
             _welcomeTemplate = Image.Load("Data/Template/WelcomeDefault.png", new PngDecoder {IgnoreMetadata = true});
             _profileTemplate = Image.Load("Data/Template/ProfileTemplate.png", new PngDecoder {IgnoreMetadata = true});

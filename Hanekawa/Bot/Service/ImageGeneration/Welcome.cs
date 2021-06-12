@@ -45,14 +45,14 @@ namespace Hanekawa.Bot.Service.ImageGeneration
                     try
                     {
                         img.Mutate(
-                            x => x.DrawText(_centerText, username, new Font(_times, welcomeBanner.TextSize, FontStyle.Regular), Color.White,
+                            x => x.DrawText(_centerText, username, new Font(_fonts.Find("times"), welcomeBanner.TextSize, FontStyle.Regular), Color.White,
                                 new Point(welcomeBanner.TextPlaceX, welcomeBanner.TextPlaceY)));
                     }
                     catch
                     {
                         username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(username));
                         img.Mutate(
-                            x => x.DrawText(_centerText, username, new Font(_times, welcomeBanner.TextSize, FontStyle.Regular), Color.White,
+                            x => x.DrawText(_centerText, username, new Font(_fonts.Find("times"), welcomeBanner.TextSize, FontStyle.Regular), Color.White,
                                 new Point(welcomeBanner.TextPlaceX, welcomeBanner.TextPlaceY)));
                     }
 
@@ -82,14 +82,14 @@ namespace Hanekawa.Bot.Service.ImageGeneration
                 try
                 {
                     img.Mutate(
-                        x => x.DrawText(_centerText, username, new Font(_times, textSize, FontStyle.Regular), Color.White,
+                        x => x.DrawText(_centerText, username, new Font(_fonts.Find("times"), textSize, FontStyle.Regular), Color.White,
                             new Point(textX, textY)));
                 }
                 catch
                 {
                     username = Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(username));
                     img.Mutate(
-                        x => x.DrawText(_centerText, username, new Font(_times, textSize, FontStyle.Regular), Color.White,
+                        x => x.DrawText(_centerText, username, new Font(_fonts.Find("times"), textSize, FontStyle.Regular), Color.White,
                             new Point(textX, textY)));
                 }
 
@@ -109,7 +109,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             {
                 using var img = banner.Frames.CloneFrame(i);
                 img.Mutate(x => x.DrawImage(avatar.Frames.CloneFrame(aviIterate), new Point(aviX, aviY), 1)); 
-                img.Mutate(x => x.DrawText(_centerText, name, new Font(_times, textSize, FontStyle.Regular), color, new Point(textX, textY)));
+                img.Mutate(x => x.DrawText(_centerText, name, new Font(_fonts.Find("times"), textSize, FontStyle.Regular), color, new Point(textX, textY)));
                 gif.Frames.InsertFrame(i, img.Frames[0]);
                 if (avatar.Frames.Count > aviIterate + 1) aviIterate++;
             }

@@ -41,8 +41,8 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             var achievePoints = await GetAchievementPoints(user, db);
             var color = new Color(new Rgba32((uint)globalData.UserColor));
             
-            var profileText = new Font(_arial, 20, FontStyle.Regular);
-            var profileName = new Font(_arial, 32, FontStyle.Regular);
+            var profileText = new Font(_fonts.Find("arial"), 20, FontStyle.Regular);
+            var profileName = new Font(_fonts.Find("arial"), 32, FontStyle.Regular);
             
             img.Mutate(x =>
             {
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             return stream;
         }
 
-        private async Task<Image> GetProfileBackground(DbService db)
+        private async ValueTask<Image> GetProfileBackground(DbService db)
         {
             var backgroundList = await db.Backgrounds.ToListAsync();
             if (backgroundList == null || backgroundList.Count == 0)
@@ -141,7 +141,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             return points;
         }
 
-        private static async Task<string> GetRankAsync(Account userData, DbService db)
+        private static async ValueTask<string> GetRankAsync(Account userData, DbService db)
         {
             var total = await db.Accounts.CountAsync(x => x.GuildId == userData.GuildId);
             var rank = await db.Accounts.CountAsync(x =>
@@ -149,14 +149,14 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private static async Task<string> GetRankAsync(AccountGlobal userData, DbService db)
+        private static async ValueTask<string> GetRankAsync(AccountGlobal userData, DbService db)
         {
             var total = await db.AccountGlobals.CountAsync();
             var rank = await db.AccountGlobals.CountAsync(x => x.TotalExp >= userData.TotalExp);
             return $"{rank.FormatNumber()}/{total.FormatNumber()}";
         }
 
-        private static async Task<string> GetAchievementPoints(ISnowflakeEntity user, DbService db)
+        private static async ValueTask<string> GetAchievementPoints(ISnowflakeEntity user, DbService db)
         {
             var points = await db.AchievementUnlocks.CountAsync(x => x.UserId == user.Id);
             return $"{points * 10}";

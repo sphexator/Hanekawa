@@ -92,7 +92,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         {
             var healthTextLocation = GetHealthTextLocation(width, height);
             var hp = $"       {x.After.Health} / 100";
-            img.Mutate(a => a.DrawText(hp, new Font(_times, 15, FontStyle.Regular), Color.White, healthTextLocation));
+            img.Mutate(a => a.DrawText(hp, new Font(_fonts.Find("times"), 15, FontStyle.Regular), Color.White, healthTextLocation));
         }
 
         private static void DrawHealthBar(Image<Rgba32> img, Image avi, int width, int height, PointF[] points, UserAction x,
