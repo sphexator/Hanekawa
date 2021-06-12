@@ -34,28 +34,28 @@ namespace Hanekawa.Bot.Commands.Modules
             var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
             if (!cfg.ReportChannel.HasValue) return;
 
-            var builder = new LocalMessageBuilder
+            var builder = new LocalMessage
             {
-                Embed = new LocalEmbedBuilder
+                Embed = new LocalEmbed
                 {
-                    Author = new LocalEmbedAuthorBuilder()
+                    Author = new LocalEmbedAuthor()
                     {
                         IconUrl = Context.Author.GetAvatarUrl(),
                         Name = Context.Author.DisplayName()
                     },
                     Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                     Description = text,
-                    Footer = new LocalEmbedFooterBuilder
+                    Footer = new LocalEmbedFooter
                     {
                         Text = $"Report ID: {report.Id} - UserId: {Context.Author.Id}"
                     },
                     Timestamp = DateTimeOffset.UtcNow
                 }
             };
-            var msg = await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).SendMessageAsync(builder.Build());
+            var msg = await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).SendMessageAsync(builder);
             report.MessageId = msg.Id;
             await db.SaveChangesAsync();
-            await ReplyAndDeleteAsync(new LocalMessageBuilder().Create("Report sent!", HanaBaseColor.Ok()));
+            await ReplyAndDeleteAsync(new LocalMessage().Create("Report sent!", HanaBaseColor.Ok()));
         }
 
         [Name("Respond")]
@@ -76,28 +76,28 @@ namespace Hanekawa.Bot.Commands.Modules
             var msg =
                 await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).GetOrFetchMessageAsync(
                     report.MessageId.Value);
-            var embed = LocalEmbedBuilder.FromEmbed(msg.Embeds[0]);
+            var embed = LocalEmbed.FromEmbed(msg.Embeds[0]);
             embed.Color = HanaBaseColor.Orange();
             embed.AddField(Context.Author.DisplayName(), text);
             try
             {
                 var reporter = await Context.Guild.GetOrFetchMemberAsync(report.UserId);
-                await reporter.SendMessageAsync(new LocalMessageBuilder
+                await reporter.SendMessageAsync(new LocalMessage
                 {
-                    Embed = new LocalEmbedBuilder
+                    Embed = new LocalEmbed
                     {
                         Description =
                             $"Your report got a response!\nReport:\n{embed.Description.Truncate(300)}\nAnswer from {Context.Author.Mention}:\n{text.Truncate(1500)}",
                         Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId)
                     }
-                }.Build());
+                });
             }
             catch
             {
                 /*IGNORE*/
             }
 
-            await msg.ModifyAsync(x => x.Embed = embed.Build());
+            await msg.ModifyAsync(x => x.Embed = embed);
         }
         
         [Name("Report Admin")]

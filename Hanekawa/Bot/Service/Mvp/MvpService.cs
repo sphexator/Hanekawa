@@ -174,15 +174,15 @@ namespace Hanekawa.Bot.Service.Mvp
                     stringBuilder.AppendLine($"{oldMvpUser?.Name ?? "User Left"} => {newMvpUser.Name}");
                 }
                 
-                await textChannel.SendMessageAsync(new LocalMessageBuilder
+                await textChannel.SendMessageAsync(new LocalMessage
                 {
                     Attachments = null,
                     Content = $"New Weekly MVP!\n {stringBuilder}",
                     Embed = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false,
                     Reference = null
-                }.Build());
+                });
             }
             catch (Exception e)
             {

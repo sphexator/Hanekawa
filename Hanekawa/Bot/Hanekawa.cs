@@ -27,7 +27,7 @@ namespace Hanekawa.Bot
             return context;
         }
 
-        protected override LocalMessageBuilder FormatFailureMessage(DiscordCommandContext context, FailedResult result)
+        protected override LocalMessage FormatFailureMessage(DiscordCommandContext context, FailedResult result)
         {
             var builder = base.FormatFailureMessage(context, result);
             builder.Embed.Color = HanaBaseColor.Bad();

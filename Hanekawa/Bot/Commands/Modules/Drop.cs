@@ -116,7 +116,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task ListDropChannelsAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var embed = new LocalEmbedBuilder().WithAuthor(new LocalEmbedAuthorBuilder
+                var embed = new LocalEmbed().WithAuthor(new LocalEmbedAuthor
                     {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.GetIconUrl()});
                 var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)

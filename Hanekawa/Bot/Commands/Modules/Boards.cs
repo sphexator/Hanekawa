@@ -48,18 +48,18 @@ namespace Hanekawa.Bot.Commands.Modules
                 topStar += $"No {emote} messages";
             }
 
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.Name},
+                Author = new LocalEmbedAuthor {IconUrl = user.GetAvatarUrl(), Name = user.Name},
                 Fields =
                 {
-                    new LocalEmbedFieldBuilder
+                    new LocalEmbedField
                         {Name = "Boarded Messages", Value = $"{boardData.Count}", IsInline = true},
-                    new LocalEmbedFieldBuilder
+                    new LocalEmbedField
                         {Name = $"{emote} Received", Value = $"{userData.StarReceived}", IsInline = true},
-                    new LocalEmbedFieldBuilder
+                    new LocalEmbedField
                         {Name = $"{emote} Given", Value = $"{userData.StarGiven}", IsInline = true},
-                    new LocalEmbedFieldBuilder {Name = $"Top {emote} Posts", Value = $"{topStar ?? "N/A"}"}
+                    new LocalEmbedField {Name = $"Top {emote} Posts", Value = $"{topStar ?? "N/A"}"}
                 }
             };
             await Reply(embed);

@@ -24,14 +24,14 @@ namespace Hanekawa.Bot.Service.Logs
             if (!cfg.LogAvi.HasValue) return;
             if (guild.GetChannel(cfg.LogAvi.Value) is not ITextChannel channel) return;
 
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Footer = new LocalEmbedFooterBuilder
+                Footer = new LocalEmbedFooter
                     {Text = $"Username: {e.NewMember} ({e.NewMember.Id})", IconUrl = guild.GetIconUrl()}
             };
             if (e.OldMember.Nick != e.NewMember.Nick)
             {
-                embed.Author = new LocalEmbedAuthorBuilder
+                embed.Author = new LocalEmbedAuthor
                     {Name = "Nickname Change", IconUrl = e.NewMember.GetAvatarUrl()};
                 embed.AddField("Old Nick", e.OldMember.Nick ?? e.NewMember.Name);
                 embed.AddField("New Nick", e.NewMember.Nick ?? e.NewMember.Name);
@@ -39,7 +39,7 @@ namespace Hanekawa.Bot.Service.Logs
 
             if (e.OldMember.Name != e.NewMember.Name)
             {
-                embed.Author = new LocalEmbedAuthorBuilder
+                embed.Author = new LocalEmbedAuthor
                     {Name = "Name Change", IconUrl = e.NewMember.GetAvatarUrl()};
                 embed.AddField("Old Name", e.OldMember.Nick ?? e.NewMember.Name);
                 embed.AddField("New Name", e.NewMember.Nick ?? e.NewMember.Name);
@@ -47,17 +47,17 @@ namespace Hanekawa.Bot.Service.Logs
 
             if (e.OldMember.AvatarHash != e.NewMember.AvatarHash)
             {
-                embed.Author = new LocalEmbedAuthorBuilder
+                embed.Author = new LocalEmbedAuthor
                     {Name = "Avatar Change", IconUrl = e.NewMember.GetAvatarUrl()};
                 embed.ThumbnailUrl = e.OldMember.GetAvatarUrl();
                 embed.ImageUrl = e.NewMember.GetAvatarUrl();
             }
 
             if (embed.Author == null) return;
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder> {embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed> {embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -65,7 +65,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookAviId.Value, cfg.WebhookAvi);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -74,7 +74,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookAvi != webhook.Token) cfg.WebhookAvi = webhook.Token;
                 if (!cfg.WebhookAviId.HasValue || cfg.WebhookAviId.Value != webhook.Id)
                     cfg.WebhookAviId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }

@@ -49,12 +49,12 @@ namespace Hanekawa.Bot.Service.Logs
             var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
             if (!cfg.LogJoin.HasValue) return;
             if (guild.GetChannel(cfg.LogJoin.Value) is not ITextChannel channel) return;
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Description = $"📥 {e.Member.Mention} has joined ( *{e.Member.Id}* )\n" +
-                              $"Account created: {e.Member.CreatedAt.Humanize()}",
+                              $"Account created: {e.Member.CreatedAt().Humanize()}",
                 Color = Color.Green,
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {e.Member}"},
+                Footer = new LocalEmbedFooter {Text = $"Username: {e.Member}"},
                 Timestamp = DateTimeOffset.UtcNow
             };
             try
@@ -72,24 +72,24 @@ namespace Hanekawa.Bot.Service.Logs
                     if (!msg.ToString().IsNullOrWhiteSpace()) embed.AddField("Invite", msg.ToString().Truncate(1000));
                 }
 
-                var builder = new LocalWebhookMessageBuilder
+                var builder = new LocalWebhookMessage
                 {
-                    Embeds = new List<LocalEmbedBuilder> {embed},
-                    Mentions = LocalMentionsBuilder.None,
+                    Embeds = new List<LocalEmbed> {embed},
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false,
                     Name = guild.Name,
                     AvatarUrl = guild.GetIconUrl()
                 };
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookJoinId.Value, cfg.WebhookJoin);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception exception)
             {
                 _logger.Log(LogLevel.Warn, exception, $"No valid webhook for member joined, re-creating");
-                var builder = new LocalWebhookMessageBuilder 
+                var builder = new LocalWebhookMessage
                 {
-                    Embeds = new List<LocalEmbedBuilder> {embed},
-                    Mentions = LocalMentionsBuilder.None,
+                    Embeds = new List<LocalEmbed> {embed},
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false,
                     Name = guild.GetCurrentUser().DisplayName(),
                     AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
@@ -98,7 +98,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookJoin != webhook.Token) cfg.WebhookJoin = webhook.Token;
                 if (!cfg.WebhookJoinId.HasValue || cfg.WebhookJoinId.Value != webhook.Id)
                     cfg.WebhookJoinId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }
@@ -113,11 +113,11 @@ namespace Hanekawa.Bot.Service.Logs
             var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
             if (!cfg.LogJoin.HasValue) return;
             if (guild.GetChannel(cfg.LogJoin.Value) is not ITextChannel channel) return;
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Description = $"📤 {user.Mention} has left ( *{user.Id}* )",
                 Color = Color.Red,
-                Footer = new LocalEmbedFooterBuilder {Text = $"Username: {user}"},
+                Footer = new LocalEmbedFooter {Text = $"Username: {user}"},
                 Timestamp = DateTimeOffset.UtcNow
             };
             if (user is CachedMember gUser)
@@ -129,10 +129,10 @@ namespace Hanekawa.Bot.Service.Logs
                 if (roles.Length > 0) embed.AddField("Roles", roles.ToString().Truncate(1000));
             }
 
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder> {embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed> {embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookJoinId.Value, cfg.WebhookJoin);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookJoin != webhook.Token) cfg.WebhookJoin = webhook.Token;
                 if (!cfg.WebhookJoinId.HasValue || cfg.WebhookJoinId.Value != webhook.Id)
                     cfg.WebhookJoinId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }

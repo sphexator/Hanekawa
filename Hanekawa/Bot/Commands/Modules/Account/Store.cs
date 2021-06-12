@@ -46,7 +46,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             if (result == null || result.Count == 0)
                 return Reply("Store is empty, or couldn't find roles within the store",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
-            return Pages(result.PaginationBuilder(
+            return Pages(result.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Store for {Context.Guild.Name}"));
         }
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             return result == null || result.Count == 0
                 ? Reply("Your inventory is empty",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId))
-                : Pages(result.PaginationBuilder(
+                : Pages(result.Pagination(
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                     Context.Author.GetAvatarUrl(), $"Inventory for {Context.Author}"));
         }

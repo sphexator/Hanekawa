@@ -24,7 +24,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService
     {
-        public async Task<Stream> ProfileBuilder(IMember user, DbService db)
+        public async Task<Stream> Profile(IMember user, DbService db)
         {
             var stream = new MemoryStream();
             using var img = new Image<Rgba32>(400, 400);

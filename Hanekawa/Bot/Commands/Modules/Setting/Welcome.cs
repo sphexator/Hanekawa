@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,12 +43,12 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             var guildCfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             await Context.Channel.TriggerTypingAsync();
             var (stream, _) = await Context.Services.GetRequiredService<ImageGenerationService>()
-                .WelcomeBuilderAsync(Context.Author, url, aviSize, aviX, aviY, textSize, textX, textY,
+                .WelcomeAsync(Context.Author, url, aviSize, aviX, aviY, textSize, textX, textY,
                     guildCfg.Premium >= DateTimeOffset.UtcNow);
             stream.Position = 0;
             var fileName = "welcomeExample.png";
             if (url.EndsWith(".gif")) fileName = "welcomeExample.gif";
-            var msg = await Reply(new LocalMessageBuilder
+            var msg = await Reply(new LocalMessage
             {
                 Content = "Do you want to add this banner? (y/N)\n" +
                           "You can adjust placement of avatar and text by adjust these values in the command (this is the full command with default values)\n" +
@@ -61,7 +62,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             {
                 await msg.DeleteAsync();
                 await ReplyAndDeleteAsync(
-                    new LocalMessageBuilder().Create("Aborting...", HanaBaseColor.Bad()),TimeSpan.FromSeconds(20));
+                    new LocalMessage().Create("Aborting...", HanaBaseColor.Bad()),TimeSpan.FromSeconds(20));
                 return null;
             }
             await db.WelcomeBanners.AddAsync(new WelcomeBanner
@@ -108,16 +109,16 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             var pages = new List<string>();
             foreach (var index in list)
             {
-                var strBuilder = new StringBuilder();
-                strBuilder.AppendLine($"ID: {index.Id}");
-                strBuilder.AppendLine($"URL: {index.Url}");
-                strBuilder.AppendLine(
+                var str = new StringBuilder();
+                str.AppendLine($"ID: {index.Id}");
+                str.AppendLine($"URL: {index.Url}");
+                str.AppendLine(
                     $"Uploader: {(await Context.Guild.GetOrFetchMemberAsync(index.Uploader)).Mention ?? $"User left server ({index.Uploader})"}");
-                strBuilder.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
-                pages.Add(strBuilder.ToString());
+                str.AppendLine($"Added: {index.UploadTimeOffset.DateTime}");
+                pages.Add(str.ToString());
             }
 
-            return Pages(pages.PaginationBuilder(
+            return Pages(pages.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Welcome banners for {Context.Guild.Name}"));
         }
@@ -192,9 +193,9 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
         public DiscordResponseCommandResult WelcomeTemplate() =>
-            Reply(new LocalMessageBuilder
+            Reply(new LocalMessage
             {
-                Embed = new LocalEmbedBuilder
+                Embed = new LocalEmbed
                 {
                     Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                     Description =
@@ -204,7 +205,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                     Title = "Welcome template",
                     ImageUrl = "https://i.imgur.com/rk5BBmf.png"
                 },
-                Attachments = {new LocalAttachment("Data/Welcome/WelcomeTemplate.psd", "WelcomeTemplate.psd")}
+                Attachments = { new LocalAttachment(new FileStream("Data/Welcome/WelcomeTemplate.psd", FileMode.Open),"WelcomeTemplate.psd") }
             });
 
         [Name("Banner Toggle")]

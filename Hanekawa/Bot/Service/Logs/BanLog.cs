@@ -44,34 +44,34 @@ namespace Hanekawa.Bot.Service.Logs
                 }
                 else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberBanned);
                 
-                var embed = new LocalEmbedBuilder
+                var embed = new LocalEmbed
                 {
                     Color = HanaBaseColor.Red(),
-                    Author = new LocalEmbedAuthorBuilder { Name = $"User Banned | Case ID: {caseId.Id} | {e.User}" },
+                    Author = new LocalEmbedAuthor { Name = $"User Banned | Case ID: {caseId.Id} | {e.User}" },
                     Fields =
                     {
-                        new LocalEmbedFieldBuilder {Name = "User", Value = e.User.Mention, IsInline = false},
-                        new LocalEmbedFieldBuilder {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = false},
-                        new LocalEmbedFieldBuilder {Name = "Reason", Value = "N/A", IsInline = false}
+                        new LocalEmbedField {Name = "User", Value = e.User.Mention, IsInline = false},
+                        new LocalEmbedField {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = false},
+                        new LocalEmbedField {Name = "Reason", Value = "N/A", IsInline = false}
                     },
-                    Footer = new LocalEmbedFooterBuilder { Text = $"User ID: {e.User.Id}", IconUrl = e.User.GetAvatarUrl() },
+                    Footer = new LocalEmbedFooter { Text = $"User ID: {e.User.Id}", IconUrl = e.User.GetAvatarUrl() },
                     Timestamp = DateTimeOffset.UtcNow
                 };
                 if (e.User is CachedMember {JoinedAt: {HasValue: true}} member)
                     embed.AddField("Time In Server", (DateTimeOffset.UtcNow - member.JoinedAt.Value).Humanize(5));
                 
-                var builder = new LocalWebhookMessageBuilder
+                var builder = new LocalWebhookMessage
                 {
-                    Embeds = new List<LocalEmbedBuilder> { embed },
+                    Embeds = new List<LocalEmbed> { embed },
                     IsTextToSpeech = false,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Name = guild.Name,
                     AvatarUrl = guild.GetIconUrl()
                 };
                 try
                 {
                     var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
-                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    var msg = await webhook.ExecuteAsync(builder);
                     caseId.MessageId = msg.Id;
                 }
                 catch (Exception exception)
@@ -80,7 +80,7 @@ namespace Hanekawa.Bot.Service.Logs
                     var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
-                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    var msg = await webhook.ExecuteAsync(builder);
                     caseId.MessageId = msg.Id;
                 }
                 finally
@@ -118,9 +118,9 @@ namespace Hanekawa.Bot.Service.Logs
                 }
                 else mod = await CheckAuditLog(guild, e.User.Id, caseId, AuditLogActionType.MemberUnbanned);
 
-                var builder = new LocalWebhookMessageBuilder
+                var builder = new LocalWebhookMessage
                 {
-                    Embeds = new List<LocalEmbedBuilder>
+                    Embeds = new List<LocalEmbed>
                     {
                         new()
                         {
@@ -141,14 +141,14 @@ namespace Hanekawa.Bot.Service.Logs
                         }
                     },
                     IsTextToSpeech = false,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Name = guild.Name,
                     AvatarUrl = guild.GetIconUrl()
                 };
                 try
                 {
                     var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
-                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    var msg = await webhook.ExecuteAsync(builder);
                     caseId.MessageId = msg.Id;
                 }
                 catch (Exception exception)
@@ -157,7 +157,7 @@ namespace Hanekawa.Bot.Service.Logs
                     var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
-                    var msg = await webhook.ExecuteAsync(builder.Build());
+                    var msg = await webhook.ExecuteAsync(builder);
                     caseId.MessageId = msg.Id;
                 }
                 finally

@@ -45,7 +45,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             user ??= Context.Author;
             var serverData = await db.GetOrCreateUserData(user);
             var globalData = await db.GetOrCreateGlobalUserDataAsync(user);
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Author = new () {Name = user.DisplayName()},
                 ThumbnailUrl = user.GetAvatarUrl(),
@@ -89,8 +89,8 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             user ??= Context.Author;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var image = await _image.ProfileBuilder(user, db);
-            return Reply(new LocalMessageBuilder {Attachments = {new LocalAttachment(image, "profile.png")}});
+            var image = await _image.Profile(user, db);
+            return Reply(new LocalMessage {Attachments = {new LocalAttachment(image, "profile.png")}});
         }
 
         [Name("Level Leaderboard")]
@@ -105,7 +105,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             var users = await db.Accounts.Where(x => x.GuildId == Context.Guild.Id && x.Active)
                 .OrderByDescending(x => x.TotalExp - x.Decay).Take(toGet).ToArrayAsync();
             var result = new List<string>();
-            var strBuilder = new StringBuilder();
+            var str = new StringBuilder();
             for (var i = 0; i < users.Length; i++)
             {
                 var user = users[i];
@@ -115,14 +115,14 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                     user.Active = false;
                     continue;
                 }
-                strBuilder.AppendLine($"**Rank: {i + 1}** - {username.Mention}");
-                strBuilder.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
-                result.Add(strBuilder.ToString());
-                strBuilder.Clear();
+                str.AppendLine($"**Rank: {i + 1}** - {username.Mention}");
+                str.Append($"-> Level:{user.Level} - Total Exp: {user.TotalExp}");
+                result.Add(str.ToString());
+                str.Clear();
             }
 
             await db.SaveChangesAsync();
-            return Pages(result.PaginationBuilder(
+            return Pages(result.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Leaderboard for {Context.Guild.Name}", 10));
         }

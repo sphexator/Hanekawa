@@ -36,9 +36,9 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             var userData = await db.GetOrCreateUserData(user);
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
 
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName()},
+                Author = new LocalEmbedAuthor {IconUrl = user.GetAvatarUrl(), Name = user.DisplayName()},
                 Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Description = $"{cfg.CurrencyName}: {cfg.ToCurrencyFormat(userData.Credit)}\n" +
                               $" {cfg.SpecialCurrencyName}: {cfg.ToCurrencyFormat(userData.CreditSpecial, true)}"
@@ -63,7 +63,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                     HanaBaseColor.Bad());
             }
 
-            var strBuilder = new StringBuilder();
+            var str = new StringBuilder();
             foreach (var user in users)
             {
                 if (user == Context.Author) continue;
@@ -71,12 +71,12 @@ namespace Hanekawa.Bot.Commands.Modules.Account
 
                 userData.Credit -= amount;
                 receiverData.Credit += amount;
-                strBuilder.AppendLine($"{user.Mention}");
+                str.AppendLine($"{user.Mention}");
             }
 
             await db.SaveChangesAsync();
             return Reply(
-                $"{Context.Author.Mention} transferred {currencyCfg.ToCurrencyFormat(amount)} to:\n{strBuilder}",
+                $"{Context.Author.Mention} transferred {currencyCfg.ToCurrencyFormat(amount)} to:\n{str}",
                 HanaBaseColor.Ok());
         }
 
@@ -134,7 +134,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
                 .OrderByDescending(account => account.Credit).Take(amount).ToListAsync();
             var pages = new List<string>();
-            var strBuilder = new StringBuilder();
+            var str = new StringBuilder();
             for (var i = 0; i < users.Count; i++)
             {
                 var x = users[i];
@@ -145,14 +145,14 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                     continue;
                 }
 
-                strBuilder.AppendLine($"**Rank: {i + 1}** - {user.Mention}");
-                strBuilder.Append($"-> {cfg.CurrencyName}: {cfg.ToCurrencyFormat(x.Credit)}");
-                pages.Add(strBuilder.ToString());
-                strBuilder.Clear();
+                str.AppendLine($"**Rank: {i + 1}** - {user.Mention}");
+                str.Append($"-> {cfg.CurrencyName}: {cfg.ToCurrencyFormat(x.Credit)}");
+                pages.Add(str.ToString());
+                str.Clear();
             }
 
             await db.SaveChangesAsync();
-            return Pages(pages.PaginationBuilder(
+            return Pages(pages.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Money leaderboard for {Context.Guild.Name}", 10));
         }
@@ -165,18 +165,18 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             if (amount <= 0) return null;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var strBuilder = new StringBuilder();
+            var str = new StringBuilder();
             var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
             foreach (var user in users)
             {
                 var userData = await db.GetOrCreateUserData(user);
                 userData.CreditSpecial += amount;
-                strBuilder.AppendLine($"{user.Mention}");
+                str.AppendLine($"{user.Mention}");
             }
 
             await db.SaveChangesAsync();
             return Reply(
-                $"Rewarded {cfg.ToCurrencyFormat(amount, true)} to:\n {strBuilder}", HanaBaseColor.Ok());
+                $"Rewarded {cfg.ToCurrencyFormat(amount, true)} to:\n {str}", HanaBaseColor.Ok());
         }
 
         [Group("Currency")]

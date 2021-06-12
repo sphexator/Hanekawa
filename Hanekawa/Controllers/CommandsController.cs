@@ -28,7 +28,7 @@ namespace Hanekawa.Controllers
                 {
                     if (commands.TryGetValue(c.Name, out var command))
                     {
-                        command.Example.Add($"{c.FullAliases.FirstOrDefault()} {c.ExampleParamBuilder()}");
+                        command.Example.Add($"{c.FullAliases.FirstOrDefault()} {c.ExampleParam()}");
                     }
                     else
                     {
@@ -38,9 +38,9 @@ namespace Hanekawa.Controllers
                             Commands = c.FullAliases.ToList(),
                             Description = c.Description,
                             Example = new List<string>
-                                {$"{c.FullAliases.FirstOrDefault()} {c.ExampleParamBuilder()}"},
+                                {$"{c.FullAliases.FirstOrDefault()} {c.ExampleParam()}"},
                             Premium = c.PremiumCheck(out _),
-                            Permissions = c.PermBuilder()
+                            Permissions = c.Perm()
                         });
                     }
                 }

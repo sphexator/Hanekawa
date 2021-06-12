@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
@@ -120,19 +119,19 @@ namespace Hanekawa.Bot.Service.Board
                 await db.SaveChangesAsync();
             }
 
-            await client.ExecuteAsync(new LocalWebhookMessageBuilder
+            await client.ExecuteAsync(new LocalWebhookMessage
             {
                 Name = user.DisplayName(),
-                Mentions = LocalMentionsBuilder.None,
+                AllowedMentions = LocalAllowedMentions.None,
                 AvatarUrl = user.GetAvatarUrl(),
                 IsTextToSpeech = false,
                 Attachment = null,
                 Content = null,
-                Embeds = new LocalEmbedBuilder[]
+                Embeds = new LocalEmbed[]
                 {
                     new()
                     {
-                        Author = new LocalEmbedAuthorBuilder
+                        Author = new LocalEmbedAuthor
                         {
                             Name = user.DisplayName(),
                             IconUrl = user.GetAvatarUrl() ?? msg.Author.GetAvatarUrl()
@@ -141,12 +140,12 @@ namespace Hanekawa.Bot.Service.Board
                             .FirstOrDefault(x => x.Color != null && x.Color.Value != 0)
                             ?.Color,
                         Description = msg.Content,
-                        Footer = new LocalEmbedFooterBuilder {Text = channel?.Name},
-                        Timestamp = msg.CreatedAt,
+                        Footer = new LocalEmbedFooter {Text = channel?.Name},
+                        Timestamp = msg.CreatedAt(),
                         ImageUrl = GetAttachmentAsync(msg, channel, boardCh)
                     }
                 }
-            }.Build());
+            });
         }
 
         private static string GetAttachmentAsync(IUserMessage message, ITextChannel source, ITextChannel destination)

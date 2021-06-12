@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 await Reply("You've already made a config!, sending new key in dms");
                 try
                 {
-                    await Context.Author.SendMessageAsync(new LocalMessageBuilder().Create(
+                    await Context.Author.SendMessageAsync(new LocalMessage().Create(
                         $"Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl \nAuth Key: {check.AuthKey}",
                         HanaBaseColor.Ok()));
                 }
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Commands.Modules
             await Reply("Authentication Created! DMing the credentials.");
             try
             {
-                await Context.Author.SendMessageAsync(new LocalMessageBuilder().Create("Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl\n" +
+                await Context.Author.SendMessageAsync(new LocalMessage().Create("Your top.gg Webhook URL is: https://hanekawa.bot/api/advert/dbl\n" +
                                                $"Auth Key: {cfg.AuthKey}", HanaBaseColor.Ok()));
             }
             catch

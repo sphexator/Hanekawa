@@ -32,7 +32,7 @@ namespace Hanekawa.Bot.Commands.Modules
             //var settingModules = modules.Where(x => x.Checks.Contains<>(typeof(RequirePremium))).ToList();
             for (var i = 0; i < modules.Count;)
             {
-                var strBuilder = new StringBuilder();
+                var str = new StringBuilder();
                 for (var j = 0; j < 5; j++)
                 {
                     if (i >= modules.Count) continue;
@@ -42,19 +42,19 @@ namespace Hanekawa.Bot.Commands.Modules
                         i++;
                         continue;
                     }
-                    strBuilder.Append((j < 4 || i < modules.Count - 1) ? $"`{x.Name}` - " : $"`{x.Name}`");
+                    str.Append((j < 4 || i < modules.Count - 1) ? $"`{x.Name}` - " : $"`{x.Name}`");
                     i++;
                 }
 
-                result.AppendLine($"{strBuilder}");
+                result.AppendLine($"{str}");
             }
 
-            return Reply(new LocalEmbedBuilder
+            return Reply(new LocalEmbed
             {
                 Color = _cache.GetColor(Context.GuildId),
-                Author = new LocalEmbedAuthorBuilder {Name = "Module list"},
+                Author = new LocalEmbedAuthor {Name = "Module list"},
                 Description = result.ToString(),
-                Footer = new LocalEmbedFooterBuilder
+                Footer = new LocalEmbedFooter
                 {
                     Text =
                         $"Use `{Context.Prefix}help <module>` to get help with a module"
@@ -107,13 +107,13 @@ namespace Hanekawa.Bot.Commands.Modules
                 
                 if (moduleInfo == null)
                 {
-                    return Reply(new LocalEmbedBuilder
+                    return Reply(new LocalEmbed
                     {
                         Color = _cache.GetColor(Context.GuildId),
-                        Author = new LocalEmbedAuthorBuilder {Name = "Module list"},
+                        Author = new LocalEmbedAuthor {Name = "Module list"},
                         Title = "Couldn't find a module with that name",
                         Description = response.ToString(),
-                        Footer = new LocalEmbedFooterBuilder
+                        Footer = new LocalEmbedFooter
                             {Text = $"Use `{Context.Prefix}help <module>` to get help with a module"}
                     });
                 }
@@ -128,7 +128,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 result.FormatCommandText(x, Context.Prefix);
 
             if (result.Count > 0)
-                return Pages(result.PaginationBuilder(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
+                return Pages(result.Pagination(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
                     "Command List"));
             return Reply("Couldn't find any commands in that module", HanaBaseColor.Bad());
         }

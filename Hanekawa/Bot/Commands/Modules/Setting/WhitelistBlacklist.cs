@@ -115,10 +115,10 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             var title = cfg.IgnoreAllChannels
                 ? "Channel commands are enabled in:"
                 : "Channel commands are ignored in:";
-            return Reply(new LocalEmbedBuilder
+            return Reply(new LocalEmbed
             {
                 Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                Author = new LocalEmbedAuthorBuilder {IconUrl = Context.Guild.GetIconUrl(), Name = title},
+                Author = new LocalEmbedAuthor {IconUrl = Context.Guild.GetIconUrl(), Name = title},
                 Description = content
             });
         }

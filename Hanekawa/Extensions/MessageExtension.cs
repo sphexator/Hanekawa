@@ -21,7 +21,7 @@ namespace Hanekawa.Extensions
             var list = new List<Snowflake>();
             foreach (var x in messages)
             {
-                if (x.CreatedAt.AddDays(14) < DateTimeOffset.UtcNow) continue;
+                if (x.CreatedAt().AddDays(14) < DateTimeOffset.UtcNow) continue;
                 if (filterBy != null && x.Author.Id != filterBy.Id) continue;
                 var dummy = x.Id;
                 list.Add(dummy);
@@ -30,36 +30,36 @@ namespace Hanekawa.Extensions
             return list;
         }
 
-        public static LocalMessage Create(this LocalMessageBuilder builder, LocalEmbedBuilder embed, 
-            LocalMentionsBuilder mention = null)
+        public static LocalMessage Create(this LocalMessage builder, LocalEmbed embed, 
+            LocalAllowedMentions mention = null)
         {
             builder.Embed = embed;
-            builder.Mentions = mention ?? LocalMentionsBuilder.None;
-            return builder.Build();
+            builder.AllowedMentions = mention ?? LocalAllowedMentions.None;
+            return builder;
         }
         
-        public static LocalMessage Create(this LocalMessageBuilder builder, string message, Color color, 
-            LocalMentionsBuilder mention = null) =>
-            builder.CreateWithoutBuild(message, color, mention).Build();
+        public static LocalMessage Create(this LocalMessage builder, string message, Color color, 
+            LocalAllowedMentions mention = null) =>
+            builder.CreateWithoutBuild(message, color, mention);
         
-        public static LocalEmbed Create(this LocalEmbedBuilder builder, string message, Color color, 
-            LocalMentionsBuilder mention = null) =>
-            builder.CreateDefaultEmbed(message, color, mention).Build();
+        public static LocalEmbed Create(this LocalEmbed builder, string message, Color color, 
+            LocalAllowedMentions mention = null) =>
+            builder.CreateDefaultEmbed(message, color, mention);
 
-        public static LocalMessageBuilder CreateWithoutBuild(this LocalMessageBuilder builder, string message, Color color, 
-            LocalMentionsBuilder mention = null)
+        public static LocalMessage CreateWithoutBuild(this LocalMessage builder, string message, Color color, 
+            LocalAllowedMentions mention = null)
         {
-            builder.Embed = new LocalEmbedBuilder
+            builder.Embed = new LocalEmbed
             {
                 Color = color,
                 Description = message.Truncate(2000)
             };
-            builder.Mentions = mention ?? LocalMentionsBuilder.None;
+            builder.AllowedMentions = mention ?? LocalAllowedMentions.None;
             return builder;
         }
         
-        public static LocalEmbedBuilder CreateDefaultEmbed(this LocalEmbedBuilder builder, string message, Color color, 
-            LocalMentionsBuilder mention = null)
+        public static LocalEmbed CreateDefaultEmbed(this LocalEmbed builder, string message, Color color, 
+            LocalAllowedMentions mention = null)
         {
             builder.Color = color;
             builder.Description = message.Truncate(2000);

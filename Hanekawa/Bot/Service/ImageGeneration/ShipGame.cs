@@ -8,7 +8,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService
     {
-        public async Task<Stream> ShipGameBuilder(string pOneAviUrl, string pTwoAviUrl)
+        public async Task<Stream> ShipGame(string pOneAviUrl, string pTwoAviUrl)
         {
             var stream = new MemoryStream();
             using var img = await Image.LoadAsync("Data/Game/background.png");

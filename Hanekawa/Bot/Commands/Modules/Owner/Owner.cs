@@ -67,7 +67,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 catch { /* IGNORE */}
             }
 
-            return Pages(servers.PaginationBuilder(
+            return Pages(servers.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Bot.CurrentUser.GetAvatarUrl(), $"Server Count: {guilds.Count} | Member Count: {totalMembers}"));
         }
@@ -132,7 +132,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 Id = message.Id,
                 Content = input,
                 Author = userModel,
-                Timestamp = message.CreatedAt,
+                Timestamp = message.CreatedAt(),
                 Pinned = false,
                 Embeds = null,
                 Tts = false,

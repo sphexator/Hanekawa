@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 e.Channel.Id == Context.ChannelId && e.Member.Id == user.Id &&
                 (e.Message.Content.ToLower() == "y" || e.Message.Content.ToLower() == "yes" ||
                  e.Message.Content.ToLower() == "n" || e.Message.Content.ToLower() == "no"));
-            if (response == null) return Response($"Timed out...", HanaBaseColor.Bad(), LocalMentionsBuilder.None);
+            if (response == null) return Response($"Timed out...", HanaBaseColor.Bad(), LocalAllowedMentions.None);
             await user.ModifyAsync(x => x.VoiceChannelId = vcState.ChannelId.Value);
             return Reply($"Moved {user.DisplayName()} to {Context.Guild.GetChannel(vcState.ChannelId.Value).Name} !",
                 HanaBaseColor.Ok());
@@ -155,9 +155,9 @@ namespace Hanekawa.Bot.Commands.Modules
         {
             user ??= Context.Author;
             var restUser = await user.GetGuild().GetOrFetchMemberAsync(user.Id);
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder {Name = $"{user}"},
+                Author = new LocalEmbedAuthor {Name = $"{user}"},
                 Title = "Avatar URL",
                 Url = restUser.GetAvatarUrl(),
                 ImageUrl = restUser.GetAvatarUrl(),
@@ -177,20 +177,20 @@ namespace Hanekawa.Bot.Commands.Modules
             sb.AppendLine($"Category: {channels.Count(x => x.Value is ICategoryChannel)}");
             sb.AppendLine($"Voice: {channels.Count(x => x.Value is IVoiceChannel)}");
             sb.AppendLine($"Text: {channels.Count(x => x.Value is ITextChannel)}");
-            return Reply(new LocalEmbedBuilder
+            return Reply(new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder{ Name = Context.Guild.Name, IconUrl = Context.Guild.GetIconUrl() },
+                Author = new LocalEmbedAuthor{ Name = Context.Guild.Name, IconUrl = Context.Guild.GetIconUrl() },
                 Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 ThumbnailUrl = Context.Guild.GetIconUrl(),
                 Title = $"ID: {Context.GuildId}",
-                Fields = new List<LocalEmbedFieldBuilder>
+                Fields = new List<LocalEmbedField>
                 {
                     new () { Name = $"Verification Level", Value = Context.Guild.VerificationLevel.ToString(), IsInline = false},
                     new () { Name = "Region", Value = Context.Guild.VoiceRegion, IsInline = true},
                     new () { Name = "Members", Value = $"{Context.Guild.MemberCount}"},
                     new () { Name = "Channels", Value = sb.ToString()},
                     new () { Name = "Server Owner", Value = $"{Context.Guild.GetMember(Context.Guild.OwnerId)} ({Context.Guild.OwnerId})"},
-                    new () { Name = "Created On", Value = $"{Context.Guild.CreatedAt.DayOfWeek}, {Context.Guild.CreatedAt.MonthOfYear()} {Context.Guild.CreatedAt.Day} @ {Context.Guild.CreatedAt.TimeOfDay}"},
+                    new () { Name = "Created On", Value = $"{Context.Guild.CreatedAt().DayOfWeek}, {Context.Guild.CreatedAt().MonthOfYear()} {Context.Guild.CreatedAt().Day} @ {Context.Guild.CreatedAt().TimeOfDay}"},
                     new () { Name = "Roles", Value = $"{Context.Guild.Roles.Count}"},
                     new () { Name = "Server Boosts", Value = $"Level: {Context.Guild.BoostTier}\nAmount of boosts: {Context.Guild.BoostingMemberCount ?? 0}"}
                 }

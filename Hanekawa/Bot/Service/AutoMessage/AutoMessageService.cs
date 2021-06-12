@@ -95,11 +95,11 @@ namespace Hanekawa.Bot.Service.AutoMessage
             return new Timer(async _ =>
             {
                 var client = await textChannel.GetOrCreateWebhookClientAsync();
-                var builder = new LocalWebhookMessageBuilder
+                var builder = new LocalWebhookMessage
                 {
                     Name = guild.Name,
                     AvatarUrl = guild.GetIconUrl(),
-                    Embeds = new LocalEmbedBuilder[]
+                    Embeds = new LocalEmbed[]
                     {
                         new()
                         {
@@ -108,7 +108,7 @@ namespace Hanekawa.Bot.Service.AutoMessage
                         }
                     }
                 };
-                await client.ExecuteAsync(builder.Build());
+                await client.ExecuteAsync(builder);
             }, null, interval.Value, config.Interval);
         }
     }

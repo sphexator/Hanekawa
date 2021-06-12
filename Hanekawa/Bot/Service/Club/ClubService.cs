@@ -11,7 +11,6 @@ using Hanekawa.Database.Entities;
 using Hanekawa.Database.Tables.Club;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
-using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -39,7 +38,7 @@ namespace Hanekawa.Bot.Service.Club
         public async Task CreateChannelAsync(IGuild guild, ClubConfig cfg, Database.Tables.Club.Club club, DbService db)
         {
             if (!cfg.ChannelCategory.HasValue) return;
-            if (guild.GetChannel(cfg.ChannelCategory.Value) is not ICategoryChannel channel)
+            if (guild.GetChannel(cfg.ChannelCategory.Value) is not ICategoryChannel)
             {
                 cfg.ChannelCategory = null;
                 await db.SaveChangesAsync();

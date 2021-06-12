@@ -10,7 +10,7 @@ namespace Hanekawa.Bot.Commands
     public abstract class HanekawaCommandModule : DiscordModuleBase<HanekawaCommandContext>
     {
         protected async Task<IUserMessage> ReplyAndDeleteAsync(string message, Color color, TimeSpan? timeout = null) =>
-            await ReplyAndDeleteAsync(new LocalMessageBuilder().Create(message, color), timeout);
+            await ReplyAndDeleteAsync(new LocalMessage().Create(message, color), timeout);
 
         protected async Task<IUserMessage> ReplyAndDeleteAsync(LocalMessage localMessage, TimeSpan? timeout = null)
         {
@@ -29,23 +29,23 @@ namespace Hanekawa.Bot.Commands
             return message;
         }
         
-        protected DiscordCommandResult Response(string content, Color color, LocalMentionsBuilder mentions = null) =>
-            Response(new LocalMessageBuilder
+        protected DiscordCommandResult Response(string content, Color color, LocalAllowedMentions mentions = null) =>
+            Response(new LocalMessage
             {
-                Embed = new LocalEmbedBuilder
+                Embed = new LocalEmbed
                 {
                     Color = color,
                     Description = content
                 },
-                Mentions = mentions
-            }.Build());
+                AllowedMentions = mentions
+            });
 
         protected DiscordCommandResult Reply(string message, Color color)
-            => Reply(new LocalEmbedBuilder().CreateDefaultEmbed(message, color));
+            => Reply(new LocalEmbed().CreateDefaultEmbed(message, color));
 
-        protected DiscordResponseCommandResult Reply(LocalMessageBuilder builder)
+        protected DiscordResponseCommandResult Reply(LocalMessage builder)
         {
-            var result = Response(builder.WithReply(Context.Message.Id, Context.ChannelId, Context.GuildId).Build());
+            var result = Response(builder.WithReply(Context.Message.Id, Context.ChannelId, Context.GuildId));
             return result;
         }
     }

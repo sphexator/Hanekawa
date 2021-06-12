@@ -47,7 +47,7 @@ namespace Hanekawa.Bot.Service.Welcome
         {
             var user = e.Member;
             if (user.IsBot) return;
-            if (user.CreatedAt >= DateTimeOffset.UtcNow.AddMinutes(10)) return;
+            if (user.CreatedAt() >= DateTimeOffset.UtcNow.AddMinutes(10)) return;
             try
             {
                 using var scope = _provider.CreateScope();
@@ -70,44 +70,44 @@ namespace Hanekawa.Bot.Service.Welcome
                 if (cfg.Banner)
                 {
                     var guildCfg = await db.GetOrCreateGuildConfigAsync(guild);
-                    var (stream, isGif) = await _image.WelcomeBuilderAsync(user, db,
+                    var (stream, isGif) = await _image.WelcomeAsync(user, db,
                         guildCfg.Premium.HasValue && guildCfg.Premium.Value >= DateTimeOffset.UtcNow);
                     stream.Position = 0;
                     message = isGif
-                        ? await client.ExecuteAsync(new LocalWebhookMessageBuilder
+                        ? await client.ExecuteAsync(new LocalWebhookMessage
                         {
                             Name = guild.Name,
                             AvatarUrl = guild.GetIconUrl(),
                             Attachment = new (stream, "Welcome.gif"),
                             Content = msg,
                             Embeds = null,
-                            Mentions = LocalMentionsBuilder.None,
+                            AllowedMentions = LocalAllowedMentions.None,
                             IsTextToSpeech = false
-                        }.Build())
-                        : await client.ExecuteAsync(new LocalWebhookMessageBuilder
+                        })
+                        : await client.ExecuteAsync(new LocalWebhookMessage
                         {
                             Name = guild.Name,
                             AvatarUrl = guild.GetIconUrl(),
                             Attachment = new (stream, "Welcome.png"),
                             Content = msg,
                             Embeds = null,
-                            Mentions = LocalMentionsBuilder.None,
+                            AllowedMentions = LocalAllowedMentions.None,
                             IsTextToSpeech = false
-                        }.Build());
+                        });
                 }
                 else
                 {
                     if (msg == null) return;
-                    message = await client.ExecuteAsync(new LocalWebhookMessageBuilder
+                    message = await client.ExecuteAsync(new LocalWebhookMessage
                     {
                         Name = guild.Name,
                         AvatarUrl = guild.GetIconUrl(),
                         Content = msg,
                         Attachment = null,
                         Embeds = null,
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
-                    }.Build());
+                    });
                 }
 
                 var source = new CancellationTokenSource();

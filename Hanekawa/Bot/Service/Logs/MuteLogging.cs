@@ -23,26 +23,26 @@ namespace Hanekawa.Bot.Service.Logs
             if (!cfg.LogBan.HasValue) return;
             if (guild.GetChannel(cfg.LogBan.Value) is not ITextChannel channel) return;
             var caseId = await db.CreateCaseId(target, guild, DateTime.UtcNow, ModAction.Mute);
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder { Name = $"Case ID: {caseId.Id} - User Muted | {target}" },
+                Author = new LocalEmbedAuthor { Name = $"Case ID: {caseId.Id} - User Muted | {target}" },
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
                 Fields =
                 {
-                    new LocalEmbedFieldBuilder {Name = "User", Value = target.Mention, IsInline = false},
-                    new LocalEmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
-                    new LocalEmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false}
+                    new LocalEmbedField {Name = "User", Value = target.Mention, IsInline = false},
+                    new LocalEmbedField {Name = "Moderator", Value = staff.Mention, IsInline = false},
+                    new LocalEmbedField {Name = "Reason", Value = reason, IsInline = false}
                 },
-                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id})", IconUrl = target.GetAvatarUrl() }
+                Footer = new LocalEmbedFooter { Text = $"Username: {target} ({target.Id})", IconUrl = target.GetAvatarUrl() }
             };
             if (duration.HasValue)
-                embed.Fields.Add(new LocalEmbedFieldBuilder
+                embed.Fields.Add(new LocalEmbedField
                     {Name = "Duration", Value = $"{duration.Value.Humanize(2)}", IsInline = false});
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder>{embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed>{embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -50,7 +50,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookBanId.Value, cfg.WebhookBan);
-                var msg = await webhook.ExecuteAsync(builder.Build());
+                var msg = await webhook.ExecuteAsync(builder);
                 caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
             }
@@ -61,7 +61,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookBan != webhook.Token) cfg.WebhookBan = webhook.Token;
                 if (!cfg.WebhookBanId.HasValue || cfg.WebhookBanId.Value != webhook.Id)
                     cfg.WebhookBanId = webhook.Id;
-                var msg = await webhook.ExecuteAsync(builder.Build());
+                var msg = await webhook.ExecuteAsync(builder);
                 caseId.MessageId = msg.Id;
                 await db.SaveChangesAsync();
             }
@@ -74,26 +74,26 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(target.GuildId);
             if (guild.GetChannel(cfg.LogWarn.Value) is not ITextChannel channel) return;
             
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Color = Color.Red,
                 Timestamp = DateTimeOffset.UtcNow,
-                Author = new LocalEmbedAuthorBuilder { Name = $"User {warn}" },
-                Footer = new LocalEmbedFooterBuilder { Text = $"Username: {target} ({target.Id})" },
+                Author = new LocalEmbedAuthor { Name = $"User {warn}" },
+                Footer = new LocalEmbedFooter { Text = $"Username: {target} ({target.Id})" },
                 Fields =
                 {
-                    new LocalEmbedFieldBuilder {Name = "User", Value = target.Mention, IsInline = false},
-                    new LocalEmbedFieldBuilder {Name = "Moderator", Value = staff.Mention, IsInline = false},
-                    new LocalEmbedFieldBuilder {Name = "Reason", Value = reason, IsInline = false}
+                    new LocalEmbedField {Name = "User", Value = target.Mention, IsInline = false},
+                    new LocalEmbedField {Name = "Moderator", Value = staff.Mention, IsInline = false},
+                    new LocalEmbedField {Name = "Reason", Value = reason, IsInline = false}
                 }
             };
             if (duration.HasValue)
-                embed.Fields.Add(new LocalEmbedFieldBuilder
+                embed.Fields.Add(new LocalEmbedField
                     { Name = "Duration", Value = $"{duration.Value.Humanize(2)}", IsInline = false });
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder>{embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed>{embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -101,7 +101,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookWarnId.Value, cfg.WebhookWarn);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -110,7 +110,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookWarn != webhook.Token) cfg.WebhookWarn = webhook.Token;
                 if (!cfg.WebhookWarnId.HasValue || cfg.WebhookWarnId.Value != webhook.Id)
                     cfg.WebhookWarnId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }

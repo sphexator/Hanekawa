@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
@@ -15,6 +16,7 @@ using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
+using IHttpClientFactory = System.Net.Http.IHttpClientFactory;
 
 namespace Hanekawa.Bot.Commands.Modules
 {
@@ -35,16 +37,16 @@ namespace Hanekawa.Bot.Commands.Modules
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var caseId = await db.CreateSuggestion(Context.Author, Context.Guild, DateTime.UtcNow);
-            var builder = new LocalMessageBuilder
+            var builder = new LocalMessage
             {
                 Content = $"New Suggestion from {Context.Author}",
-                Embed = new LocalEmbedBuilder
+                Embed = new LocalEmbed
                 {
                     Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                    Author = new LocalEmbedAuthorBuilder
+                    Author = new LocalEmbedAuthor
                         {IconUrl = Context.Author.GetAvatarUrl(), Name = Context.Author.DisplayName()},
                     Description = suggestion,
-                    Footer = new LocalEmbedFooterBuilder {Text = $"Suggestion ID: {caseId.Id}"},
+                    Footer = new LocalEmbedFooter {Text = $"Suggestion ID: {caseId.Id}"},
                     Timestamp = DateTimeOffset.UtcNow
                 }
             };
@@ -57,18 +59,21 @@ namespace Hanekawa.Bot.Commands.Modules
                     var attachments = new List<LocalAttachment>();
                     foreach (var x in Context.Message.Attachments)
                     {
-                        attachments.Add(new LocalAttachment(x.Url, x.Filename));
+                        var client = Context.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
+                        var response = await client.GetStreamAsync(x.Url);
+                        var result = response.ToEditable();
+                        response.Position = 0;
+                        attachments.Add(new LocalAttachment(result.ToEditable(), x.FileName));
                     }
-
                     builder.Attachments = attachments;
                 }
             }
 
             var msg =
-                await (Context.Guild.GetChannel(cfg.Channel.Value) as ITextChannel).SendMessageAsync(builder.Build());
+                await (Context.Guild.GetChannel(cfg.Channel.Value) as ITextChannel).SendMessageAsync(builder);
             caseId.MessageId = msg.Id;
             await db.SaveChangesAsync();
-            await ReplyAndDeleteAsync(new LocalMessageBuilder().Create("Suggestion Sent!", HanaBaseColor.Ok()));
+            await ReplyAndDeleteAsync(new LocalMessage().Create("Suggestion Sent!", HanaBaseColor.Ok()));
             await ApplyEmotesAsync(msg, cfg);
         }
 
@@ -180,10 +185,10 @@ namespace Hanekawa.Bot.Commands.Modules
         private static async Task<string> CommentSuggestion(IMember user, IUserMessage msg, string message,
             Color? color = null)
         {
-            var embed = LocalEmbedBuilder.FromEmbed(msg.Embeds[0]);
+            var embed = LocalEmbed.FromEmbed(msg.Embeds[0]);
             if (color.HasValue) embed.Color = color;
             embed.AddField(user.ToString(), message);
-            await msg.ModifyAsync(x => x.Embed = embed.Build());
+            await msg.ModifyAsync(x => x.Embed = embed);
             return embed.Description;
         }
 
@@ -194,9 +199,9 @@ namespace Hanekawa.Bot.Commands.Modules
             {
                 var suggestUser = await Context.Guild.GetOrFetchMemberAsync(suggestion.UserId);
                 if (suggestUser == null) return;
-                var builder = new LocalMessageBuilder
+                var builder = new LocalMessage
                 {
-                    Embed = new LocalEmbedBuilder
+                    Embed = new LocalEmbed
                     {
                         Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                         Description = $"Your suggestion got a response in {Context.Guild.Name}!\n" +
@@ -208,7 +213,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 };
                 try
                 {
-                    await suggestUser.SendMessageAsync(builder.Build());
+                    await suggestUser.SendMessageAsync(builder);
                 }
                 catch
                 {

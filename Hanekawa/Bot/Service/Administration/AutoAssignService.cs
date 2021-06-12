@@ -70,10 +70,10 @@ namespace Hanekawa.Bot.Service.Administration
 
                 var message =
                     await channel.SendMessageAsync(
-                        new LocalMessageBuilder().Create(ReactionEmbedBuilder(strings, context.Guild.Id)));
+                        new LocalMessage().Create(ReactionEmbed(strings, context.Guild.Id)));
                 foreach (var x in emotes)
                 {
-                    await message.AddReactionAsync(x);
+                    await message.AddReactionAsync(LocalEmoji.FromEmoji(x));
                 }
 
                 cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
@@ -112,10 +112,10 @@ namespace Hanekawa.Bot.Service.Administration
 
                 var message =
                     await channel.SendMessageAsync(
-                        new LocalMessageBuilder().Create(ReactionEmbedBuilder(strings, context.Guild.Id)));
+                        new LocalMessage().Create(ReactionEmbed(strings, context.Guild.Id)));
                 foreach (var x in emotes)
                 {
-                    await message.AddReactionAsync(x);
+                    await message.AddReactionAsync(LocalEmoji.FromEmoji(x));
                 }
                 
                 cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
@@ -134,29 +134,29 @@ namespace Hanekawa.Bot.Service.Administration
             return true;
         }
 
-        public LocalEmbedBuilder ReactionEmbedBuilder(IEnumerable<string> strings, Snowflake guildId)
+        public LocalEmbed ReactionEmbed(IEnumerable<string> strings, Snowflake guildId)
         {
-            var strBuilder = new StringBuilder();
+            var str = new StringBuilder();
             var counter = 0;
             foreach (var x in strings)
             {
-                counter = StringBuilder(counter, strBuilder, x);
+                counter = String(counter, str, x);
             }
             
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Title = "Self-assignable roles",
-                Description = strBuilder.ToString(),
+                Description = str.ToString(),
                 Color = _provider.GetRequiredService<CacheService>().GetColor(guildId)
             };
             return embed;
         }
 
-        private static int StringBuilder(int counter, StringBuilder strBuilder, string x)
+        private static int String(int counter, StringBuilder str, string x)
         {
-            if (counter == 0) strBuilder.AppendLine($"{x}");
-            if (counter.IsDivisible(5)) strBuilder.AppendLine($"{x}");
-            else strBuilder.Append($"- {x}");
+            if (counter == 0) str.AppendLine($"{x}");
+            if (counter.IsDivisible(5)) str.AppendLine($"{x}");
+            else str.Append($"- {x}");
 
             if (counter == 5) counter = 0;
             else counter++;

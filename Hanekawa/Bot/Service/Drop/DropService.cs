@@ -75,16 +75,16 @@ namespace Hanekawa.Bot.Service.Drop
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var guild = _bot.GetGuild(guildId);
             var claim = await GetClaimEmoteAsync(guild, db);
-            var triggerMsg = await channel.SendMessageAsync(new LocalMessageBuilder
+            var triggerMsg = await channel.SendMessageAsync(new LocalMessage
             {
                 Content = $"A {type.ToString().ToLower()} drop event has been triggered \nClick the {claim} reaction on this message to claim it!",
                 Attachments = null,
                 Embed = null,
-                Mentions = LocalMentionsBuilder.None,
-                Reference = new LocalReferenceBuilder
+                AllowedMentions = LocalAllowedMentions.None,
+                Reference = new ()
                     {GuildId = guild.Id, ChannelId = msg.ChannelId, MessageId = msg.Id, FailOnInvalid = false},
                 IsTextToSpeech = false
-            }.Build());
+            });
             var emotes = GetEmotes(guild);
             foreach (var x in emotes.OrderBy(_ => _random.Next()).Take(emotes.Count))
                 await ApplyReactionAsync(triggerMsg, x, claim, type);
@@ -106,15 +106,15 @@ namespace Hanekawa.Bot.Service.Drop
             var userData = await db.GetOrCreateUserData(user);
             var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId);
             var exp = await _exp.AddExpAsync(user, userData, rand, rand, db, ExpSource.Other);
-            var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessageBuilder 
+            var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessage 
             {
                 Content = $"Rewarded {user.Mention} with {exp} experience & {cfg.ToCurrencyFormat(rand)} {cfg.CurrencyName}!",
                 Attachments = null,
                 Embed = null,
-                Mentions = LocalMentionsBuilder.None,
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Reference = null
-            }.Build());
+            });
             
             try
             {
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Service.Drop
         private async Task ApplyReactionAsync(IMessage message, IGuildEmoji emote, IEmoji claim, DropType type)
         {
             if (emote.Name == claim.Name) _cache.AddDrop(message.ChannelId, message.Id, type);
-            await message.AddReactionAsync(emote);
+            await message.AddReactionAsync(LocalEmoji.FromEmoji(emote));
         }
     }
 }

@@ -101,23 +101,23 @@ namespace Hanekawa.Controllers
                 {
                     var name = $"{user}";
                     if (name.IsNullOrWhiteSpace()) name = $"{userId}";
-                    var embed = new LocalEmbedBuilder
+                    var embed = new LocalEmbed
                     {
                         Title = "Top.gg Vote!",
                         Color = _cache.GetColor(guild.Id),
                         Description = $"{name} just voted for the server!",
-                        Footer = new LocalEmbedFooterBuilder
+                        Footer = new LocalEmbedFooter
                             {IconUrl = user?.GetAvatarUrl(), Text = $"Username: {name} ({userId})"}
                     };
-                    await _client.SendMessageAsync(logChannel.Id, new LocalMessageBuilder
+                    await _client.SendMessageAsync(logChannel.Id, new LocalMessage
                     {
                         Embed = embed,
                         Attachments = null,
                         Content = null,
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         Reference = null,
                         IsTextToSpeech = false
-                    }.Build());
+                    });
                 }
 
                 _log.Log(LogLevel.Info,
@@ -149,21 +149,21 @@ namespace Hanekawa.Controllers
                         str.AppendLine(
                             $"{currencyCfg.SpecialCurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.SpecialCredit, true)}");
                     var dmChannel = await user.CreateDirectChannelAsync();
-                    await _client.SendMessageAsync(dmChannel.Id, new LocalMessageBuilder
+                    await _client.SendMessageAsync(dmChannel.Id, new LocalMessage
                     {
-                        Embed = new LocalEmbedBuilder
+                        Embed = new LocalEmbed
                         {
                             Description = $"{MessageUtil.FormatMessage(cfg.Message, user, guild)}\n" +
                                           "You've been rewarded:\n" +
                                           $"{str}\n{sb}",
                             Color = _cache.GetColor(guild.Id)
                         },
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         Attachments = null,
                         Content = null,
                         Reference = null,
                         IsTextToSpeech = false
-                    }.Build());
+                    });
                 }
                 catch
                 {

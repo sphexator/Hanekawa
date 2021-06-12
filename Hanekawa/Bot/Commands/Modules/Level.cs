@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 }
             }
             
-            return Pages(pages.PaginationBuilder(
+            return Pages(pages.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Level Roles for {Context.Guild.Name}"));
         }
@@ -82,7 +82,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 if (response == null || (response.Message.Content.ToLower() != "y" ||
                                          response.Message.Content.ToLower() != "yes")) return Reply("Aborting...");
 
-                var msg = await Context.Channel.SendMessageAsync(new LocalMessageBuilder().Create(
+                var msg = await Context.Channel.SendMessageAsync(new LocalMessage().Create(
                     "Server level reset in progress...",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId)));
 
@@ -98,10 +98,10 @@ namespace Hanekawa.Bot.Commands.Modules
                 await db.SaveChangesAsync();
                 try
                 {
-                    var updEmbed = LocalEmbedBuilder.FromEmbed(msg.Embeds[0]);
+                    var updEmbed = LocalEmbed.FromEmbed(msg.Embeds[0]);
                     updEmbed.Color = HanaBaseColor.Ok();
                     updEmbed.Description = "Server level reset complete.";
-                    await msg.ModifyAsync(x => x.Embed = updEmbed.Build());
+                    await msg.ModifyAsync(x => x.Embed = updEmbed);
                 }
                 catch
                 {
@@ -175,9 +175,9 @@ namespace Hanekawa.Bot.Commands.Modules
                 cache.TryGetMultiplier(ExpSource.Text, Context.GuildId, out var textMulti);
                 cache.TryGetMultiplier(ExpSource.Voice, Context.GuildId, out var voiceMulti);
                 cache.TryGetMultiplier(ExpSource.Other, Context.GuildId, out var otherMulti);
-                return Reply(new LocalEmbedBuilder
+                return Reply(new LocalEmbed
                 {
-                    Author = new LocalEmbedAuthorBuilder
+                    Author = new LocalEmbedAuthor
                         {Name = $"{Context.Guild.Name} Experience Multipliers", IconUrl = Context.Guild.GetIconUrl()},
                     Color = cache.GetColor(Context.GuildId),
                     Description = $"Text: {textMulti}x (default: {cfg.TextExpMultiplier}x)\n" +

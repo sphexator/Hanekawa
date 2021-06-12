@@ -124,11 +124,11 @@ namespace Hanekawa.Bot.Service.Boost
                     $"{currencyCfg.SpecialCurrencyName}: {currencyCfg.ToCurrencyFormat(x.SpecialCreditGain, true)}");
             try
             {
-                await member.SendMessageAsync(new LocalMessageBuilder
+                await member.SendMessageAsync(new LocalMessage
                 {
-                    Embed = new LocalEmbedBuilder
+                    Embed = new LocalEmbed
                     {
-                        Author = new LocalEmbedAuthorBuilder
+                        Author = new LocalEmbedAuthor
                         {
                             Name = $"{guild.Name} Boost Rewards",
                             IconUrl = guild.GetIconUrl()
@@ -139,10 +139,10 @@ namespace Hanekawa.Bot.Service.Boost
                     },
                     Attachments = null,
                     Content = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Reference = null,
                     IsTextToSpeech = false
-                }.Build());
+                });
             }
             catch { /* User likely has DMs blocked */ }
         }
@@ -164,9 +164,9 @@ namespace Hanekawa.Bot.Service.Boost
                     var channel = guild.GetChannel(config.ChannelId.Value);
                     if (channel != null)
                     {
-                        var embed = new LocalEmbedBuilder
+                        var embed = new LocalEmbed
                         {
-                            Author = new LocalEmbedAuthorBuilder
+                            Author = new LocalEmbedAuthor
                             {
                                 Name = $"{user} Boosted the server!",
                                 IconUrl = user.GetAvatarUrl()
@@ -174,15 +174,15 @@ namespace Hanekawa.Bot.Service.Boost
                             Description = MessageUtil.FormatMessage(config.Message, user, guild),
                             ThumbnailUrl = user.GetAvatarUrl()
                         };
-                        await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
+                        await _bot.SendMessageAsync(channel.Id, new LocalMessage
                         {
                             Embed = embed,
                             Attachments = null,
                             Content = null,
-                            Mentions = LocalMentionsBuilder.None,
+                            AllowedMentions = LocalAllowedMentions.None,
                             Reference = null,
                             IsTextToSpeech = false
-                        }.Build());
+                        });
                     }
                 }
 
@@ -190,27 +190,27 @@ namespace Hanekawa.Bot.Service.Boost
                 if (!logCfg.LogAvi.HasValue) return;
                 var logChannel = guild.GetChannel(logCfg.LogAvi.Value);
                 if (logChannel == null) return;
-                var logEmbed = new LocalEmbedBuilder
+                var logEmbed = new LocalEmbed
                 {
                     Title = "Started Boosting",
                     Description = $"{user.Mention} has started boosting the server!",
                     Color = _cache.GetColor(user.GuildId),
                     Timestamp = DateTimeOffset.UtcNow,
-                    Footer = new LocalEmbedFooterBuilder
+                    Footer = new LocalEmbedFooter
                     {
                         Text = $"Username: {user} ({user.Id})",
                         IconUrl = user.GetAvatarUrl()
                     }
                 };
-                await _bot.SendMessageAsync(logChannel.Id, new LocalMessageBuilder
+                await _bot.SendMessageAsync(logChannel.Id, new LocalMessage
                 {
                     Embed = logEmbed,
                     Attachments = null,
                     Content = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Reference = null,
                     IsTextToSpeech = false
-                }.Build());
+                });
             }
             catch (Exception e)
             {
@@ -229,27 +229,27 @@ namespace Hanekawa.Bot.Service.Boost
                 var guild = _bot.GetGuild(user.GuildId);
                 var channel = guild.GetChannel(logCfg.LogAvi.Value);
                 if (channel == null) return;
-                var embed = new LocalEmbedBuilder
+                var embed = new LocalEmbed
                 {
                     Title = "Stopped Boosting",
                     Description = $"{user.Mention} has stopped boosting the server!",
                     Color = _cache.GetColor(user.GuildId),
                     Timestamp = DateTimeOffset.UtcNow,
-                    Footer = new LocalEmbedFooterBuilder
+                    Footer = new LocalEmbedFooter
                     {
                         Text = $"User: {user} ({user.Id})",
                         IconUrl = user.GetAvatarUrl()
                     }
                 };
-                await _bot.SendMessageAsync(channel.Id, new LocalMessageBuilder
+                await _bot.SendMessageAsync(channel.Id, new LocalMessage
                 {
                     Embed = embed,
                     Attachments = null,
                     Content = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Reference = null,
                     IsTextToSpeech = false
-                }.Build());
+                });
             }
             catch (Exception e)
             {

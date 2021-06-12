@@ -212,28 +212,28 @@ namespace Hanekawa.Bot.Service.Game
             IUserMessage msg;
             try
             {
-                msg = await _bot.SendMessageAsync(channelId, new LocalMessageBuilder
+                msg = await _bot.SendMessageAsync(channelId, new LocalMessage
                 {
                     Content = msgContent,
                     Attachments = null,
                     Embed = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
-                }.Build());
+                });
                 await msg.AddReactionAsync(result);
             }
             catch
             {
                 cfg.EmoteMessageFormat = "<:Rooree:761209568365248513>";
                 TryParse("<:Rooree:761209568365248513>", out result);
-                msg = await _bot.SendMessageAsync(channelId, new LocalMessageBuilder
+                msg = await _bot.SendMessageAsync(channelId, new LocalMessage
                 {
                     Content = msgContent,
                     Attachments = null,
                     Embed = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
-                }.Build());
+                });
                 await msg.AddReactionAsync(result);
             }
             await db.SaveChangesAsync();
@@ -279,28 +279,28 @@ namespace Hanekawa.Bot.Service.Game
                 var textChannel = channel as ITextChannel;
                 foreach (var x in messages)
                 { 
-                    await textChannel.SendMessageAsync(new LocalMessageBuilder
+                    await textChannel.SendMessageAsync(new LocalMessage
                     {
                         Content = x,
                         Attachments = null,
                         Embed = null,
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
                         
-                    }.Build());
+                    });
                 }
             }
 
             var evtChan = guild.GetChannel(cfg.EventChannel.Value);
             if (evtChan != null)
-                await _bot.SendMessageAsync(channelId, new LocalMessageBuilder
+                await _bot.SendMessageAsync(channelId, new LocalMessage
                 {
                     Content = $"Game starts in {(evtChan as CachedTextChannel)?.Mention}",
                     Attachments = null,
                     Embed = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
-                }.Build());
+                });
 
             await db.HungerGames.AddAsync(new HungerGame
             {
@@ -387,14 +387,14 @@ namespace Hanekawa.Bot.Service.Game
             {
                 try
                 {
-                    await channel.SendMessageAsync(new LocalMessageBuilder
+                    await channel.SendMessageAsync(new LocalMessage
                     {
                         Content = t,
                         Attachments = null,
                         Embed = null,
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
-                    }.Build());
+                    });
                 }
                 catch (Exception e)
                 {
@@ -424,39 +424,39 @@ namespace Hanekawa.Bot.Service.Game
             }
 
             var announce = guild.GetChannel(cfg.SignUpChannel.Value) as CachedTextChannel;
-            var stringBuilder = new StringBuilder();
+            var sb = new StringBuilder();
             if (user == null && !winner.After.Bot)
             {
-                stringBuilder.AppendLine("Couldn't find the winner soooo... new Hunger Game soon !");
+                sb.AppendLine("Couldn't find the winner soooo... new Hunger Game soon !");
             }
             else if (winner.After.Bot)
             {
-                stringBuilder.AppendLine(
+                sb.AppendLine(
                     $"{winner.After.Name} is the new Hunger Game Champion, unfortently its a bot so no rewards!");
             }
             else
             {
                 var role = await RewardRoleAsync(cfg, user as CachedMember);
-                stringBuilder.AppendLine($"{user.Mention} is the new Hunger Game Champion!");
-                stringBuilder.AppendLine("They have been rewarded with the following:");
+                sb.AppendLine($"{user.Mention} is the new Hunger Game Champion!");
+                sb.AppendLine("They have been rewarded with the following:");
                 var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild.Id);
-                if (cfg.ExpReward > 0) stringBuilder.AppendLine($"{cfg.ExpReward} exp");
+                if (cfg.ExpReward > 0) sb.AppendLine($"{cfg.ExpReward} exp");
                 if (cfg.CreditReward > 0)
-                    stringBuilder.AppendLine($"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.CreditReward)}");
+                    sb.AppendLine($"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.CreditReward)}");
                 if (cfg.SpecialCreditReward > 0)
-                    stringBuilder.AppendLine(
+                    sb.AppendLine(
                         $"{currencyCfg.SpecialCurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.SpecialCreditReward, true)}");
-                if (role != null) stringBuilder.AppendLine($"{role.Mention} role");
+                if (role != null) sb.AppendLine($"{role.Mention} role");
             }
 
-            await announce.SendMessageAsync(new LocalMessageBuilder
+            await announce.SendMessageAsync(new LocalMessage
             {
-                Content = stringBuilder.ToString(),
+                Content = sb.ToString(),
                 Attachments = null,
                 Embed = null,
-                Mentions = LocalMentionsBuilder.None,
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false
-            }.Build());
+            });
             try
             {
                 await db.HungerGameHistories.AddAsync(new HungerGameHistory
@@ -493,15 +493,15 @@ namespace Hanekawa.Bot.Service.Game
                 attachments.Add(new LocalAttachment(image, "HungerGame.png"));
             }
 
-            await channel.SendMessageAsync(new LocalMessageBuilder
+            await channel.SendMessageAsync(new LocalMessage
             {
                 Attachments = attachments,
                 Content = null,
                 Embed = null,
-                Mentions = LocalMentionsBuilder.None,
+                AllowedMentions = LocalAllowedMentions.None,
                 Reference = null,
                 IsTextToSpeech = false
-            }.Build());
+            });
         }
 
         private async Task<IRole> RewardRoleAsync(HungerGameStatus cfg, IMember winner)

@@ -76,10 +76,10 @@ namespace Hanekawa.Bot.Service.Game
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId);
             var exp = await _exp.AddExpAsync(context.Author, userData, enemy.ExpGain, enemy.CreditGain, db, ExpSource.Other);
             result.Log.AddFirst($"Rewarded: {currencyCfg.ToCurrencyFormat(enemy.CreditGain)} & {exp} experience");
-            var embed = LocalEmbedBuilder.FromEmbed(result.Message.Embeds[0]);
+            var embed = LocalEmbed.FromEmbed(result.Message.Embeds[0]);
             embed.Description = UpdateCombatLog(result.Log.Reverse());
             embed.Color = HanaBaseColor.Red();
-            await result.Message.ModifyAsync(x => x.Embed = embed.Build());
+            await result.Message.ModifyAsync(x => x.Embed = embed);
             return result;
         }
         
@@ -111,20 +111,20 @@ namespace Hanekawa.Bot.Service.Game
             var attacker = first == 1 ? game.PlayerOne : game.PlayerTwo;
             var target = first == 1 ? game.PlayerTwo : game.PlayerOne;
             log.AddFirst($"**{attacker.Name}** VS. **{target.Name}**");
-            var msg = await _bot.SendMessageAsync(game.Channel.Id, new LocalMessageBuilder
+            var msg = await _bot.SendMessageAsync(game.Channel.Id, new LocalMessage
             {
-                Attachments = new List<LocalAttachment>(new []{new LocalAttachment(await _image.ShipGameBuilder(game.PlayerOne.Avatar, game.PlayerTwo.Avatar), "Game.png") }),
-                Embed = new LocalEmbedBuilder
+                Attachments = new List<LocalAttachment>(new []{new LocalAttachment(await _image.ShipGame(game.PlayerOne.Avatar, game.PlayerTwo.Avatar), "Game.png") }),
+                Embed = new LocalEmbed
                 {
                     Color = HanaBaseColor.Lime(),
                     Description = UpdateCombatLog(log.Reverse()),
-                    Fields = new List<LocalEmbedFieldBuilder>
+                    Fields = new List<LocalEmbedField>
                     {
                         new() {Name = attacker.Name, Value = $"{attacker.Health} / {attacker.MaxHealth}"},
                         new() {Name = target.Name, Value = $"{target.Health} / {target.MaxHealth}"}
                     }
                 }
-            }.Build());
+            });
             while (winner == null)
             {
                 var result = Round(attacker, target, game.Type, log);
@@ -137,7 +137,7 @@ namespace Hanekawa.Bot.Service.Game
                 attacker = target;
                 target = temp;
                 
-                var embed = LocalEmbedBuilder.FromEmbed(msg.Embeds[0]);
+                var embed = LocalEmbed.FromEmbed(msg.Embeds[0]);
                 embed.Description = UpdateCombatLog(log.Reverse());
                 var attackField = embed.Fields.FirstOrDefault(x => x.Name == attacker.Name);
                 
@@ -145,7 +145,7 @@ namespace Hanekawa.Bot.Service.Game
                 var targetField = embed.Fields.FirstOrDefault(x => x.Name == target.Name);
                 if(targetField != null) targetField.Value = $"{target.Health} / {target.MaxHealth}";
                 
-                await msg.ModifyAsync(x => x.Embed = embed.Build());
+                await msg.ModifyAsync(x => x.Embed = embed);
                 await Task.Delay(2000);
             }
 

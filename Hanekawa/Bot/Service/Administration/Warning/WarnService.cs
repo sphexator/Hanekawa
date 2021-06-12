@@ -59,14 +59,14 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             _logger.Log(LogLevel.Info, $"Warned {user.Id} in {user.GuildId}");
         }
 
-        public async Task<List<LocalEmbedBuilder>> GetWarnLogAsync(IMember user, WarnLogType type, DbService db)
+        public async Task<List<LocalEmbed>> GetWarnLogAsync(IMember user, WarnLogType type, DbService db)
         {
             var userData = await db.GetOrCreateUserData(user);
-            var toReturn = new List<LocalEmbedBuilder>();
+            var toReturn = new List<LocalEmbed>();
             var sb = new StringBuilder();
-            var warnBuilder = new StringBuilder();
+            var warn = new StringBuilder();
             sb.AppendLine("**⮞ User Information**");
-            sb.AppendLine($"Created: {user.CreatedAt.Humanize(DateTimeOffset.UtcNow)}");
+            sb.AppendLine($"Created: {user.CreatedAt().Humanize(DateTimeOffset.UtcNow)}");
             
             sb.AppendLine("**⮞ Member Information**");
             sb.AppendLine(user.JoinedAt.HasValue
@@ -83,12 +83,12 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             sb.AppendLine("**⮞ Warnings**");
             foreach (var x in await GetWarnsAsync(user, type, sb.Length, db))
             {
-                if (sb.Length + warnBuilder.Length + x.Length > 2000 && type != WarnLogType.Full)
+                if (sb.Length + warn.Length + x.Length > 2000 && type != WarnLogType.Full)
                 {
-                    sb.AppendLine(warnBuilder.ToString());
-                    toReturn.Add(new LocalEmbedBuilder
+                    sb.AppendLine(warn.ToString());
+                    toReturn.Add(new LocalEmbed
                     {
-                        Author = new LocalEmbedAuthorBuilder
+                        Author = new LocalEmbedAuthor
                         {
                             Name = $"{user.Name}#{user.Discriminator} ({user.Id})",
                             IconUrl = user.GetAvatarUrl()
@@ -99,8 +99,8 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                     if(type == WarnLogType.Simple) return toReturn;
                 }
 
-                warnBuilder.AppendLine(x);
-                warnBuilder.AppendLine();
+                warn.AppendLine(x);
+                warn.AppendLine();
             }
             return toReturn;
         }
@@ -145,15 +145,15 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 
                 sb.AppendLine($"By: {staff.Name}#{staff.Discriminator} ({staff.Id})");
                 
-                await user.SendMessageAsync(new LocalMessageBuilder
+                await user.SendMessageAsync(new LocalMessage
                 {
                     Content = sb.ToString(),
                     Attachments = null,
                     Embed = null,
-                    Mentions = LocalMentionsBuilder.None,
+                    AllowedMentions = LocalAllowedMentions.None,
                     Reference = null,
                     IsTextToSpeech = false
-                }.Build());
+                });
             }
             catch (Exception e)
             {

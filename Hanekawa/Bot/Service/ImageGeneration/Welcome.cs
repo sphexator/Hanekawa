@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
 {
     public partial class ImageGenerationService
     { 
-        public async Task<Tuple<Stream, bool>> WelcomeBuilderAsync(IMember user, DbService db, bool premium)
+        public async Task<Tuple<Stream, bool>> WelcomeAsync(IMember user, DbService db, bool premium)
         {
             var stream = new MemoryStream();
             bool isGif;
@@ -64,7 +64,7 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             return new Tuple<Stream, bool>(stream, isGif);
         }
 
-        public async Task<Tuple<Stream, bool>> WelcomeBuilderAsync(IMember user, string url, int aviSize, int aviX, int aviY, int textSize, int textX, int textY, bool premium)
+        public async Task<Tuple<Stream, bool>> WelcomeAsync(IMember user, string url, int aviSize, int aviX, int aviY, int textSize, int textX, int textY, bool premium)
         {
             var stream = new MemoryStream();
             bool isGif;

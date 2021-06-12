@@ -32,13 +32,13 @@ namespace Hanekawa.Bot.Service.Logs
             var tempChannel = guild.GetChannel(e.ChannelId);
             if (tempChannel == null) return;
             var msgChannel = tempChannel as CachedTextChannel;
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder {Name = "Message Deleted"},
+                Author = new LocalEmbedAuthor {Name = "Message Deleted"},
                 Color = _cache.GetColor(guild.Id),
-                Timestamp = e.Message.CreatedAt,
+                Timestamp = e.Message.CreatedAt(),
                 Description = $"{e.Message.Author.Mention} deleted a message in {tempChannel.Name}",
-                Footer = new LocalEmbedFooterBuilder
+                Footer = new LocalEmbedFooter
                 {
                     Text = $"User: {e.Message.Author.Id} | Message ID: {e.MessageId}",
                     IconUrl = e.Message.Author.GetAvatarUrl()
@@ -50,19 +50,13 @@ namespace Hanekawa.Bot.Service.Logs
             if (msgChannel != null && e.Message.Attachments.Count > 0 && !msgChannel.IsNsfw)
             {
                 var file = e.Message.Attachments.FirstOrDefault();
-                if (file != null)
-                    embed.AddField(x =>
-                    {
-                        x.Name = "File";
-                        x.IsInline = false;
-                        x.Value = file.ProxyUrl;
-                    });
+                if (file != null) embed.AddField("file", file.ProxyUrl);
             }
 
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder> {embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed> {embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -70,7 +64,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookMessageId.Value, cfg.WebhookMessage);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -79,7 +73,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }
@@ -111,21 +105,21 @@ namespace Hanekawa.Bot.Service.Logs
             }
 
             if (content.Length > 0) messageContent.Add(content.ToString());
-            var embeds = new List<LocalEmbedBuilder>();
+            var embeds = new List<LocalEmbed>();
             foreach (var text in messageContent)
             {
-                embeds.Add(new LocalEmbedBuilder
+                embeds.Add(new LocalEmbed
                 {
                     Color = _cache.GetColor(guild.Id),
-                    Author = new LocalEmbedAuthorBuilder {Name = $"Bulk delete in {tempChannel.Name}"},
+                    Author = new LocalEmbedAuthor {Name = $"Bulk delete in {tempChannel.Name}"},
                     Description = text
                 });
             }
 
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
                 Embeds = embeds,
-                Mentions = LocalMentionsBuilder.None,
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -133,7 +127,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookMessageId.Value, cfg.WebhookMessage);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -142,7 +136,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }
@@ -160,14 +154,14 @@ namespace Hanekawa.Bot.Service.Logs
             if (guild.GetChannel(cfg.LogMsg.Value) is not ITextChannel channel) return;
             if (before != null && before.Content == after.Content) return;
 
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
-                Author = new LocalEmbedAuthorBuilder {Name = "Message Updated"},
+                Author = new LocalEmbedAuthor {Name = "Message Updated"},
                 Color = _cache.GetColor(e.GuildId.Value),
-                Timestamp = after.EditedAt ?? after.CreatedAt,
+                Timestamp = after.EditedAt ?? after.CreatedAt(),
                 Description =
                     $"{after.Author.Mention} updated a message in {_bot.GetChannel(guild.Id, e.ChannelId).Name}",
-                Footer = new LocalEmbedFooterBuilder
+                Footer = new LocalEmbedFooter
                 {
                     Text = $"User: {after.Author.Id} | {after.Id}",
                     IconUrl = after.Author.GetAvatarUrl()
@@ -176,10 +170,10 @@ namespace Hanekawa.Bot.Service.Logs
             embed.AddField("Updated Message", after.Content.Truncate(980));
             embed.AddField("Old Message",
                 before != null ? before.Content.Truncate(980) : "Unknown - Message not in cache");
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder> {embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed> {embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -187,7 +181,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookMessageId.Value, cfg.WebhookMessage);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -196,7 +190,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookMessage != webhook.Token) cfg.WebhookMessage = webhook.Token;
                 if (!cfg.WebhookMessageId.HasValue || cfg.WebhookMessageId.Value != webhook.Id)
                     cfg.WebhookMessageId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }

@@ -89,13 +89,13 @@ namespace Hanekawa.Bot.Commands.Modules
                 if (type is GiveawayType.Reaction or GiveawayType.ReactAndActivity or GiveawayType.VoteAndReact or
                     GiveawayType.All) toPost = await CreateWithReactionEventAsync(color);
                 
-                var embed = new LocalEmbedBuilder
+                var embed = new LocalEmbed
                 {
                     Title = giveaway.Name,
                     Description = giveaway.Description,
                     Timestamp = giveaway.CloseAtOffset,
                     Color = color,
-                    Footer = new LocalEmbedFooterBuilder {Text = "Giveaway ends in:"}
+                    Footer = new LocalEmbedFooter {Text = "Giveaway ends in:"}
                 };
                 embed.AddField("Amount of winners", $"{giveaway.WinnerAmount}");
                 embed.AddField("Stack Entries", $"{giveaway.Stack}");
@@ -104,7 +104,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 if (giveaway.ServerAgeRequirement.HasValue)
                     embed.AddField("Server Age Restriction", $"{giveaway.ServerAgeRequirement.Value.Humanize()}");
                 
-                await Reply("Does this look good? (y/n)", embed, LocalMentionsBuilder.None);
+                await Reply("Does this look good? (y/n)", embed, LocalAllowedMentions.None);
                 var confirm = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));
@@ -114,12 +114,12 @@ namespace Hanekawa.Bot.Commands.Modules
                 
                 if (toPost.HasValue)
                 {
-                    var msg = await (Context.Guild.GetChannel(toPost.Value) as ITextChannel).SendMessageAsync(new LocalMessageBuilder
+                    var msg = await (Context.Guild.GetChannel(toPost.Value) as ITextChannel).SendMessageAsync(new LocalMessage
                     {
                         Embed = embed,
-                        Mentions = LocalMentionsBuilder.None,
+                        AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
-                    }.Build());
+                    });
                     giveaway.ReactionMessage = msg.Id;
                 }
                 

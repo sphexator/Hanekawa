@@ -27,10 +27,10 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(e.GuildId);
             if (guild.GetChannel(cfg.LogVoice.Value) is not ITextChannel channel) return;
 
-            var embed = new LocalEmbedBuilder
+            var embed = new LocalEmbed
             {
                 Color = _cache.GetColor(user.GuildId),
-                Footer = new LocalEmbedFooterBuilder
+                Footer = new LocalEmbedFooter
                     {Text = $"Username: {user} ({user.Id})", IconUrl = user.GetAvatarUrl()}
             };
             // User muted, deafend or streaming
@@ -42,79 +42,79 @@ namespace Hanekawa.Bot.Service.Logs
                 if (before.IsDeafened && !after.IsDeafened)
                 {
                     // User undeafend
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Server Undeafend"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Server Undeafend"};
                     embed.Description = $"{user} got server Undeafend in {oldVc.Name}";
                 }
                 else if (!before.IsDeafened && after.IsDeafened)
                 {
                     // User deafend
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Server Deafend"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Server Deafend"};
                     embed.Description = $"{user} got server deafend in {oldVc.Name}";
                 }
                 else if (before.IsMuted && !after.IsMuted)
                 {
                     // User unmuted
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Server Unmuted"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Server Unmuted"};
                     embed.Description = $"{user} Unmuted in {oldVc.Name}";
                 }
                 else if (!before.IsMuted && after.IsMuted)
                 {
                     // User muted
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Server Muted"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Server Muted"};
                     embed.Description = $"{user} muted in {oldVc.Name}";
                 }
                 else if (before.IsSelfDeafened && !after.IsSelfDeafened)
                 {
                     // User Self undeafend
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Self Undeafened"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Self Undeafened"};
                     embed.Description = $"{user} Undeafened in {oldVc.Name}";
                 }
                 else if (!before.IsSelfDeafened && after.IsSelfDeafened)
                 {
                     // User Self deafend
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Self Deafened"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Self Deafened"};
                     embed.Description = $"{user} deafened in {oldVc.Name}";
                 }
                 else if (before.IsSelfMuted && !after.IsSelfMuted)
                 {
                     // User Self unmuted
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Self Unmuted"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Self Unmuted"};
                     embed.Description = $"{user} Unmuted in {oldVc.Name}";
                 }
                 else if (!before.IsSelfMuted && after.IsSelfMuted)
                 {
                     // User Self muted
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Self Muted"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Self Muted"};
                     embed.Description = $"{user} muted in {oldVc.Name}";
                 }
                 else if (!before.IsStreaming && after.IsStreaming)
                 {
                     // User Started (game) Streaming
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Started Streaming(game)"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Started Streaming(game)"};
                     embed.Description = $"{user} started streaming in {oldVc.Name}";
                 }
                 else if (before.IsStreaming && !after.IsStreaming)
                 {
                     // User Stopped (game) Streaming
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Stopped Streaming(game)"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Stopped Streaming(game)"};
                     embed.Description = $"{user} stopped streaming in {oldVc.Name}";
                 }
                 else if (!before.IsTransmittingVideo && after.IsTransmittingVideo)
                 {
                     // User Started video (cam) streaming
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Started Streaming(cam)"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Started Streaming(cam)"};
                     embed.Description = $"{user} started streaming in {oldVc.Name}";
                 }
                 else if (before.IsTransmittingVideo && !after.IsTransmittingVideo)
                 {
                     // User Started video (cam) streaming
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "User Stopped Streaming(cam)"};
+                    embed.Author = new LocalEmbedAuthor {Name = "User Stopped Streaming(cam)"};
                     embed.Description = $"{user} Stopped streaming in {oldVc.Name}";
                 }
                 else if (before.ChannelId.Value != after.ChannelId.Value)
                 {
                     // User changed VC
-                    embed.Author = new LocalEmbedAuthorBuilder {Name = "Voice Channel Change"};
+                    embed.Author = new LocalEmbedAuthor {Name = "Voice Channel Change"};
                     embed.AddField("Old Channel", oldVc.Name);
                     embed.AddField("New Channel", newVc.Name);
                 }
@@ -123,21 +123,21 @@ namespace Hanekawa.Bot.Service.Logs
             else if (before == null && after.ChannelId.HasValue)
             {
                 var newVc = guild.GetChannel(after.ChannelId.Value) as IVoiceChannel;
-                embed.Author = new LocalEmbedAuthorBuilder {Name = "Voice Channel Joined"};
+                embed.Author = new LocalEmbedAuthor {Name = "Voice Channel Joined"};
                 embed.AddField("New Channel", newVc.Name);
             }
             else if (after == null && before.ChannelId.HasValue)
             {
                 var oldVc = guild.GetChannel(before.ChannelId.Value) as IVoiceChannel;
-                embed.Author = new LocalEmbedAuthorBuilder {Name = "Voice Channel Left"};
+                embed.Author = new LocalEmbedAuthor {Name = "Voice Channel Left"};
                 embed.AddField("Old Channel", oldVc.Name);
             }
             else return;
 
-            var builder = new LocalWebhookMessageBuilder
+            var builder = new LocalWebhookMessage
             {
-                Embeds = new List<LocalEmbedBuilder> {embed},
-                Mentions = LocalMentionsBuilder.None,
+                Embeds = new List<LocalEmbed> {embed},
+                AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Name = guild.Name,
                 AvatarUrl = guild.GetIconUrl()
@@ -145,7 +145,7 @@ namespace Hanekawa.Bot.Service.Logs
             try
             {
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookVoiceId.Value, cfg.WebhookVoice);
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
             }
             catch (Exception ex)
             {
@@ -154,7 +154,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (cfg.WebhookVoice != webhook.Token) cfg.WebhookVoice = webhook.Token;
                 if (!cfg.WebhookVoiceId.HasValue || cfg.WebhookVoiceId.Value != webhook.Id)
                     cfg.WebhookVoiceId = webhook.Id;
-                await webhook.ExecuteAsync(builder.Build());
+                await webhook.ExecuteAsync(builder);
                 await db.SaveChangesAsync();
             }
         }

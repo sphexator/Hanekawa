@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 sb.AppendLine($"Author: {creator}");
             }
 
-            return Pages(pages.PaginationBuilder(
+            return Pages(pages.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"{Context.Guild.Name} Quotes"));
         }

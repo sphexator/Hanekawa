@@ -140,7 +140,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
                 }
 
-                return Pages(result.PaginationBuilder(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
+                return Pages(result.Pagination(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
                     $"Self-assignable roles for {Context.Guild.Name}"));
             }
 
@@ -222,7 +222,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             }
 
             private async Task AddSelfAssignAbleRoleAsync(HanekawaCommandContext context, IRole role, bool exclusive,
-                ICustomEmoji emote = null)
+                LocalEmoji emote = null)
             {
                 if (!context.Author.HierarchyCheck(role))
                 {
@@ -261,7 +261,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 {
                     GuildId = context.Guild.Id,
                     RoleId = role.Id,
-                    EmoteId = emote?.Id,
+                    EmoteId = emote?.GetId(),
                     Exclusive = exclusive,
                     EmoteMessageFormat = emote?.GetMessageFormat(),
                     EmoteReactFormat = emote?.GetReactionFormat()
@@ -276,7 +276,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 else await Reply($"Added {role.Name} as a self-assignable role!", HanaBaseColor.Ok());
             }
 
-            private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update, IEmoji emote, DbService db)
+            private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update, LocalEmoji emote, DbService db)
             {
                 var cfg = await db.GetOrCreateChannelConfigAsync(update.GuildId);
                 if (!cfg.SelfAssignableChannel.HasValue) return false;
@@ -294,7 +294,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                             ? $"{result}{role.Mention}" 
                             : $"{role.Mention}");
                         message = await textChannel.SendMessageAsync(
-                        new LocalMessageBuilder().Create(_assignService.ReactionEmbedBuilder(strings, guild.Id)));
+                        new LocalMessage().Create(_assignService.ReactionEmbed(strings, guild.Id)));
                         cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
                         {
                             GuildId = guild.Id,
@@ -307,11 +307,11 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     else
                     {
                         message = await textChannel.GetOrFetchMessageAsync(reactionRoles.MessageId);
-                        var embed = LocalEmbedBuilder.FromEmbed(message.Embeds[0]);
-                        embed = _assignService.ReactionEmbedBuilder(
+                        var embed = LocalEmbed.FromEmbed(message.Embeds[0]);
+                        embed = _assignService.ReactionEmbed(
                             embed.Description.Split("-", 
                                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id); 
-                        await message.ModifyAsync(x => x.Embed = embed.Build());
+                        await message.ModifyAsync(x => x.Embed = embed);
                         reactionRoles.Reactions.Add(emote.GetMessageFormat());
                     }
                     await db.SaveChangesAsync();
