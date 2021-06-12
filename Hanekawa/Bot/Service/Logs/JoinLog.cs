@@ -77,8 +77,8 @@ namespace Hanekawa.Bot.Service.Logs
                     Embeds = new List<LocalEmbedBuilder> {embed},
                     Mentions = LocalMentionsBuilder.None,
                     IsTextToSpeech = false,
-                    Name = guild.GetCurrentUser().DisplayName(),
-                    AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
+                    Name = guild.Name,
+                    AvatarUrl = guild.GetIconUrl()
                 };
                 var webhook = _webhookClientFactory.CreateClient(cfg.WebhookJoinId.Value, cfg.WebhookJoin);
                 await webhook.ExecuteAsync(builder.Build());
@@ -134,8 +134,8 @@ namespace Hanekawa.Bot.Service.Logs
                 Embeds = new List<LocalEmbedBuilder> {embed},
                 Mentions = LocalMentionsBuilder.None,
                 IsTextToSpeech = false,
-                Name = guild.GetCurrentUser().DisplayName(),
-                AvatarUrl = guild.GetCurrentUser().GetAvatarUrl()
+                Name = guild.Name,
+                AvatarUrl = guild.GetIconUrl()
             };
             try
             {

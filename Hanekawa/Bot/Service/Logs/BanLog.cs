@@ -65,8 +65,8 @@ namespace Hanekawa.Bot.Service.Logs
                     Embeds = new List<LocalEmbedBuilder> { embed },
                     IsTextToSpeech = false,
                     Mentions = LocalMentionsBuilder.None,
-                    Name = guild.GetCurrentUser().DisplayName(),
-                    AvatarUrl = _bot.CurrentUser.GetAvatarUrl()
+                    Name = guild.Name,
+                    AvatarUrl = guild.GetIconUrl()
                 };
                 try
                 {
@@ -142,8 +142,8 @@ namespace Hanekawa.Bot.Service.Logs
                     },
                     IsTextToSpeech = false,
                     Mentions = LocalMentionsBuilder.None,
-                    Name = guild.GetCurrentUser().DisplayName(),
-                    AvatarUrl = _bot.CurrentUser.GetAvatarUrl()
+                    Name = guild.Name,
+                    AvatarUrl = guild.GetIconUrl()
                 };
                 try
                 {
