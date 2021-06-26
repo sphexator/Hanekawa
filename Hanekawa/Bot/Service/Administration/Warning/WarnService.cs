@@ -81,7 +81,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             sb.AppendLine($"Amount: {userData.Sessions}"); 
             sb.AppendLine($"Time: {userData.StatVoiceTime.Humanize(2)} ({userData.StatVoiceTime})");
             sb.AppendLine("**⮞ Warnings**");
-            foreach (var x in await GetWarnsAsync(user, type, sb.Length, db))
+            foreach (var x in await GetWarnsAsync(user, type, db))
             {
                 if (sb.Length + warn.Length + x.Length > 2000 && type != WarnLogType.Full)
                 {
@@ -105,7 +105,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             return toReturn;
         }
         
-        private async Task<List<string>> GetWarnsAsync(IMember user, WarnLogType type, int baseLength, DbService db)
+        private async Task<List<string>> GetWarnsAsync(IMember user, WarnLogType type, DbService db)
         {
             var warnings = type == WarnLogType.Full
                 ? await db.Warns.Where(x => x.GuildId == user.GuildId && x.UserId == user.Id)
@@ -126,8 +126,9 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 sb.AppendLine($"Moderator: {await _bot.GetOrFetchMemberAsync(user.GuildId, x.Moderator)} ({x.Moderator})");
                 sb.AppendLine($"Reason: {x.Reason}");
                 sb.AppendLine($"Time: {x.Time.Humanize()}");
+                toReturn.Add(sb.ToString());
             }
-
+            
             return toReturn;
         }
 

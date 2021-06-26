@@ -8,10 +8,11 @@ namespace Hanekawa.Database.Tables.Account
     public class Item
     {
         public Guid Id { get; set; }
+        
         [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
         public IItem ItemJson { get; set; }
         public DateTimeOffset DateAdded { get; set; } = DateTimeOffset.UtcNow;
 
-        public List<Inventory> Users = null;
+        public readonly List<Inventory> Users = null;
     }
 }

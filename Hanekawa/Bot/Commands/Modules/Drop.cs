@@ -58,14 +58,14 @@ namespace Hanekawa.Bot.Commands.Modules
                 try
                 {
                     await Context.Message.TryDeleteMessageAsync();
-                    var dbChannel = await db.LootChannels.FindAsync(Context.GuildId, channel.Id);
+                    var dbChannel = await db.DropChannels.FindAsync(Context.GuildId, channel.Id);
                     if (dbChannel != null)
                     {
                         await Reply($"{channel.Mention} is already added as a drop channel!", HanaBaseColor.Bad());
                         return;
                     }
 
-                    await db.LootChannels.AddAsync(new LootChannel {GuildId = Context.GuildId, ChannelId = channel.Id});
+                    await db.DropChannels.AddAsync(new DropChannel {GuildId = Context.GuildId, ChannelId = channel.Id});
                     await db.SaveChangesAsync();
                     cache.AddDropChannel(Context.GuildId, channel.Id);
                     await Reply($"Added {channel.Mention} to loot eligible drop channels.",
@@ -90,7 +90,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 try
                 {
                     await Context.Message.TryDeleteMessageAsync();
-                    var dbChannel = await db.LootChannels.FindAsync(Context.GuildId, channel.Id);
+                    var dbChannel = await db.DropChannels.FindAsync(Context.GuildId, channel.Id);
                     if (dbChannel == null)
                     {
                         await Reply($"{channel.Mention} is not a drop eligible drop channel!", HanaBaseColor.Bad());
@@ -118,7 +118,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var embed = new LocalEmbed().WithAuthor(new LocalEmbedAuthor
                     {Name = $"{Context.Guild.Name} Loot channels:", IconUrl = Context.Guild.GetIconUrl()});
-                var list = await db.LootChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
+                var list = await db.DropChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
                 if (list.Count == 0)
                 {
                     embed.Description = "No channels has been added for drops.";

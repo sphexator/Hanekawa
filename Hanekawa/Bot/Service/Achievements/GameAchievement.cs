@@ -42,7 +42,6 @@ namespace Hanekawa.Bot.Service.Achievements
                     Date = DateTimeOffset.UtcNow,
                     Id = Guid.NewGuid(),
                     UserId = new Snowflake(userData.UserId),
-                    Account = globalUser,
                     Achievement = x,
                     AchieveId = x.AchievementId
                 }).ToList();

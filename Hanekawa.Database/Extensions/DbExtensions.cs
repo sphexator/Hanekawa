@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Hanekawa.Database.Tables.BoardConfig;
-using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -13,12 +12,10 @@ namespace Hanekawa.Database.Extensions
 {
     public static partial class DbExtensions
     {
-        internal static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter)
-        {
-            return modelBuilder.UseValueConverterForType(typeof(T), converter);
-        }
+        internal static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter) 
+            => modelBuilder.UseValueConverterForType(typeof(T), converter);
 
-        internal static ModelBuilder UseValueConverterForType(this ModelBuilder modelBuilder, Type type, ValueConverter converter)
+        private static ModelBuilder UseValueConverterForType(this ModelBuilder modelBuilder, Type type, ValueConverter converter)
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
@@ -32,30 +29,7 @@ namespace Hanekawa.Database.Extensions
 
             return modelBuilder;
         }
-        
-        public static async Task<EventPayout> GetOrCreateEventParticipant(this DbService context, CachedMember user)
-        {
-            var userdata = await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
-            if (userdata != null) return userdata;
-        
-            var data = new EventPayout
-            {
-                GuildId = user.GuildId,
-                UserId = user.Id,
-                Amount = 0
-            };
-            try
-            {
-                await context.EventPayouts.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.EventPayouts.FindAsync(user.GuildId, user.Id).ConfigureAwait(false);
-            }
-            catch
-            {
-                return data;
-            }
-        }
-        
+
         public static async Task<Board> GetOrCreateBoardAsync(this DbService context, Snowflake guild, IMessage msg)
         {
             var check = await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);

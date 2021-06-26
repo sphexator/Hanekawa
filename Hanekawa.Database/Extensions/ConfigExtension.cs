@@ -18,7 +18,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.GuildConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new GuildConfig().DefaultGuildConfig(guild);
+            var data = new GuildConfig {GuildId = guild};
             try
             {
                 await context.GuildConfigs.AddAsync(data).ConfigureAwait(false);
@@ -39,7 +39,7 @@ namespace Hanekawa.Database.Extensions
             var response = context.GuildConfigs.Find(guild);
             if (response != null) return response;
 
-            var data = new GuildConfig().DefaultGuildConfig(guild);
+            var data = new GuildConfig {GuildId = guild};
             try
             {
                 context.GuildConfigs.Add(data);
@@ -61,7 +61,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.AdminConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new AdminConfig().DefaultAdminConfig(guild);
+            var data = new AdminConfig {GuildId = guild};
             try
             {
                 await context.AdminConfigs.AddAsync(data).ConfigureAwait(false);
@@ -82,7 +82,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.BoardConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new BoardConfig().DefaultBoardConfig(guild);
+            var data = new BoardConfig {GuildId = guild};
             try
             {
                 await context.BoardConfigs.AddAsync(data).ConfigureAwait(false);
@@ -104,7 +104,7 @@ namespace Hanekawa.Database.Extensions
                 .FirstOrDefaultAsync(e => e.GuildId == guild);
             if (response != null) return response;
 
-            var data = new ChannelConfig().DefaultChannelConfig(guild);
+            var data = new ChannelConfig {GuildId = guild};
             try
             {
                 await context.ChannelConfigs.AddAsync(data).ConfigureAwait(false);
@@ -124,7 +124,7 @@ namespace Hanekawa.Database.Extensions
         {
             var response = await context.ClubConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
-            var data = new ClubConfig().DefaultClubConfig(guild);
+            var data = new ClubConfig {GuildId = guild};
             try
             {
                 await context.ClubConfigs.AddAsync(data).ConfigureAwait(false);
@@ -144,7 +144,7 @@ namespace Hanekawa.Database.Extensions
         {
             var response = await context.CurrencyConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
-            var data = new CurrencyConfig().DefaultCurrencyConfig(guild);
+            var data = new CurrencyConfig {GuildId = guild};
             try
             {
                 await context.CurrencyConfigs.AddAsync(data).ConfigureAwait(false);
@@ -164,7 +164,7 @@ namespace Hanekawa.Database.Extensions
         {
             var response = await context.LevelConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
-            var data = new LevelConfig().DefaultLevelConfig(guild);
+            var data = new LevelConfig {GuildId = guild};
             try
             {
                 await context.LevelConfigs.AddAsync(data).ConfigureAwait(false);
@@ -185,7 +185,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.LoggingConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new LoggingConfig().DefaultLoggingConfig(guild);
+            var data = new LoggingConfig {GuildId = guild};
             try
             {
                 await context.LoggingConfigs.AddAsync(data).ConfigureAwait(false);
@@ -207,7 +207,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.SuggestionConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new SuggestionConfig().DefaultSuggestionConfig(guild);
+            var data = new SuggestionConfig {GuildId = guild};
             try
             {
                 await context.SuggestionConfigs.AddAsync(data).ConfigureAwait(false);
@@ -228,7 +228,7 @@ namespace Hanekawa.Database.Extensions
             var response = await context.WelcomeConfigs.FindAsync(guild).ConfigureAwait(false);
             if (response != null) return response;
 
-            var data = new WelcomeConfig().DefaultWelcomeConfig(guild);
+            var data = new WelcomeConfig {GuildId = guild};
             try
             {
                 await context.WelcomeConfigs.AddAsync(data).ConfigureAwait(false);
@@ -248,7 +248,7 @@ namespace Hanekawa.Database.Extensions
         {
             var response = await context.DropConfigs.FindAsync(guildId).ConfigureAwait(false);
             if (response != null) return response;
-            var data = new DropConfig().DefaultDropConfig(guildId);
+            var data = new DropConfig {GuildId = guildId};
             try
             {
                 await context.DropConfigs.AddAsync(data).ConfigureAwait(false);

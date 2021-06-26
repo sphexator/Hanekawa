@@ -17,7 +17,9 @@ namespace Hanekawa.Database.Extensions
             var userdata = await context.Accounts.FindAsync(guild, user).ConfigureAwait(false);
             if (userdata != null) return userdata;
 
-            var data = new Account().DefaultAccount(guild, user);
+            var data = new Account();
+            data.GuildId = guild;
+            data.UserId = user;
             try
             {
                 await context.Accounts.AddAsync(data);
@@ -40,7 +42,8 @@ namespace Hanekawa.Database.Extensions
             var userdata = await context.AccountGlobals.FindAsync(userId).ConfigureAwait(false);
             if (userdata != null) return userdata;
 
-            var data = new AccountGlobal().DefaultAccountGlobal(userId);
+            var data = new AccountGlobal();
+            data.UserId = userId;
             try
             {
                 await context.AccountGlobals.AddAsync(data);

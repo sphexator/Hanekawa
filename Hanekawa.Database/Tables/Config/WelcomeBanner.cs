@@ -10,6 +10,7 @@ namespace Hanekawa.Database.Tables.Config
         public string Url { get; set; }
         public Snowflake Uploader { get; set; }
         public bool IsNsfw { get; set; } = false;
+        
         // Avatar configurations
         public int AvatarSize { get; set; } = 60;
         public int AviPlaceX { get; set; } = 10;
