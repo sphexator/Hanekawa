@@ -31,13 +31,13 @@ namespace Hanekawa.Bot.Service.Mvp
             _logger = LogManager.GetCurrentClassLogger();
             _provider = provider;
         }
-        
+
         public Task Execute(IJobExecutionContext context)
         {
             _ = MvpReward();
             return Task.CompletedTask;
         }
-        
+
         public async Task MvpReward()
         {
             using var scope = _provider.CreateScope();
@@ -49,7 +49,7 @@ namespace Hanekawa.Bot.Service.Mvp
         }
 
         public async Task RewardAsync(GuildConfig x, DbService db, bool bypass = false)
-        { 
+        {
             var mvp = new List<IMember>();
             var oldMvp = new List<IMember>();
 
@@ -63,9 +63,8 @@ namespace Hanekawa.Bot.Service.Mvp
             try
             {
                 if (mvpConfig.RoleId.HasValue)
-                {
-                    if (!(await RoleHandlingAsync(db, guild, mvpConfig, oldMvp, mvp))) return;
-                }
+                    if (!await RoleHandlingAsync(db, guild, mvpConfig, oldMvp, mvp))
+                        return;
                 try
                 {
                     await db.Database.ExecuteSqlRawAsync("UPDATE Accounts " +
@@ -77,6 +76,7 @@ namespace Hanekawa.Bot.Service.Mvp
                     await db.Accounts.ForEachAsync(z => z.MvpCount = 0);
                     _logger.Log(LogLevel.Error, e, $"Failed to execute raw SQL in {x.GuildId}");
                 }
+
                 await db.SaveChangesAsync();
                 _logger.Log(LogLevel.Info, $"Reset every ones MVP counter to 0 in {x.GuildId}");
 
@@ -88,7 +88,8 @@ namespace Hanekawa.Bot.Service.Mvp
             }
         }
 
-        private async Task<bool> RoleHandlingAsync(DbService db, IGatewayGuild guild, MvpConfig mvpConfig, ICollection<IMember> oldMvp, ICollection<IMember> mvp)
+        private async Task<bool> RoleHandlingAsync(DbService db, IGatewayGuild guild, MvpConfig mvpConfig,
+            ICollection<IMember> oldMvp, ICollection<IMember> mvp)
         {
             if (!mvpConfig.RoleId.HasValue) return false;
             if (!guild.Roles.TryGetValue(mvpConfig.RoleId.Value, out var role))
@@ -102,9 +103,7 @@ namespace Hanekawa.Bot.Service.Mvp
 
             var toAdd = guild.Members.Where(e => e.Value.GetRoles().ContainsKey(role.Id)).ToList();
             if (toAdd.Count > 0)
-            {
                 foreach (var (key, member) in toAdd)
-                {
                     try
                     {
                         await member.TryRemoveRoleAsync(role);
@@ -114,8 +113,6 @@ namespace Hanekawa.Bot.Service.Mvp
                     {
                         _logger.Log(LogLevel.Error, e, $"Couldn't remove role from {key}");
                     }
-                }
-            }
 
             var users = await db.Accounts.Where(e => e.GuildId == mvpConfig.GuildId && e.Active && !e.MvpOptOut)
                 .OrderByDescending(e => e.MvpCount).Take(mvpConfig.Count * 2).ToListAsync();
@@ -145,8 +142,9 @@ namespace Hanekawa.Bot.Service.Mvp
                 $"Rewarded {mvpConfig.Count} users with MVP role in {guild.Id}");
             return true;
         }
-        
-        private async Task PostAsync(DbService db, CachedGuild guild, IReadOnlyList<IMember> mvp, IReadOnlyList<IMember> oldMvp)
+
+        private async Task PostAsync(DbService db, CachedGuild guild, IReadOnlyList<IMember> mvp,
+            IReadOnlyList<IMember> oldMvp)
         {
             var guildConfig = await db.GetOrCreateGuildConfigAsync(guild);
             if (!guildConfig.MvpChannel.HasValue) return;
@@ -158,7 +156,7 @@ namespace Hanekawa.Bot.Service.Mvp
                     _logger.Log(LogLevel.Error, "(MVP Service) Couldn't find announcement channel");
                     return;
                 }
-                
+
                 var textChannel = channel as ITextChannel;
                 var stringBuilder = new StringBuilder();
                 for (var j = 0; j < mvp.Count; j++)
@@ -166,19 +164,16 @@ namespace Hanekawa.Bot.Service.Mvp
                     IMember oldMvpUser = null;
                     IMember newMvpUser = null;
                     newMvpUser = mvp[j];
-                    if (j < oldMvp.Count)
-                    {
-                        oldMvpUser = oldMvp[j];
-                    }
+                    if (j < oldMvp.Count) oldMvpUser = oldMvp[j];
 
                     stringBuilder.AppendLine($"{oldMvpUser?.Name ?? "User Left"} => {newMvpUser.Name}");
                 }
-                
+
                 await textChannel.SendMessageAsync(new LocalMessage
                 {
                     Attachments = null,
                     Content = $"New Weekly MVP!\n {stringBuilder}",
-                    Embed = null,
+                    Embeds = null,
                     AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false,
                     Reference = null

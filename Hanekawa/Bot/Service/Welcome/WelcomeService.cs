@@ -33,10 +33,10 @@ namespace Hanekawa.Bot.Service.Welcome
         private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
-        public WelcomeService(IServiceProvider provider, ExpService exp, ImageGenerationService image, 
+        public WelcomeService(IServiceProvider provider, ExpService exp, ImageGenerationService image,
             ILogger<WelcomeService> logger, DiscordClientBase client) : base(logger, client)
         {
-            _bot = (Hanekawa)client;
+            _bot = (Hanekawa) client;
             _provider = provider;
             _exp = exp;
             _image = image;
@@ -61,12 +61,13 @@ namespace Hanekawa.Bot.Service.Welcome
                 if (channel == null) return;
                 var textChannel = channel as ITextChannel;
                 var client = await textChannel.GetOrCreateWebhookClientAsync();
-                if (!cfg.WebhookId.HasValue || (cfg.WebhookId.Value != client.Id))
+                if (!cfg.WebhookId.HasValue || cfg.WebhookId.Value != client.Id)
                 {
                     cfg.WebhookId = client.Id;
                     cfg.Webhook = client.Token;
                     await db.SaveChangesAsync();
                 }
+
                 if (cfg.Banner)
                 {
                     var guildCfg = await db.GetOrCreateGuildConfigAsync(guild);
@@ -78,7 +79,7 @@ namespace Hanekawa.Bot.Service.Welcome
                         {
                             Name = guild.Name,
                             AvatarUrl = guild.GetIconUrl(),
-                            Attachment = new (stream, "Welcome.gif"),
+                            Attachments = new[] {new LocalAttachment(stream, "Welcome.gif")},
                             Content = msg,
                             Embeds = null,
                             AllowedMentions = LocalAllowedMentions.None,
@@ -88,7 +89,7 @@ namespace Hanekawa.Bot.Service.Welcome
                         {
                             Name = guild.Name,
                             AvatarUrl = guild.GetIconUrl(),
-                            Attachment = new (stream, "Welcome.png"),
+                            Attachments = new[] {new LocalAttachment(stream, "Welcome.png")},
                             Content = msg,
                             Embeds = null,
                             AllowedMentions = LocalAllowedMentions.None,
@@ -103,7 +104,7 @@ namespace Hanekawa.Bot.Service.Welcome
                         Name = guild.Name,
                         AvatarUrl = guild.GetIconUrl(),
                         Content = msg,
-                        Attachment = null,
+                        Attachments = null,
                         Embeds = null,
                         AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
@@ -145,7 +146,7 @@ namespace Hanekawa.Bot.Service.Welcome
                     $"(Welcome Service) Error in {e.GuildId} for Bot Left Guild - {exception.Message}");
             }
         }
-        
+
         private async Task RewardAsync(ISnowflakeEntity channel, WelcomeConfig cfg, DbService db,
             CancellationToken token)
         {

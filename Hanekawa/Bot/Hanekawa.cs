@@ -13,9 +13,12 @@ namespace Hanekawa.Bot
 {
     public class Hanekawa : DiscordBot
     {
-        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger, IServiceProvider services, 
-            DiscordClient client) : base(options, logger, services, client) { }
-        
+        public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger,
+            IServiceProvider services,
+            DiscordClient client) : base(options, logger, services, client)
+        {
+        }
+
         public override DiscordCommandContext CreateCommandContext(IPrefix prefix, string input,
             IGatewayUserMessage message, CachedTextChannel channel)
         {
@@ -30,7 +33,9 @@ namespace Hanekawa.Bot
         protected override LocalMessage FormatFailureMessage(DiscordCommandContext context, FailedResult result)
         {
             var builder = base.FormatFailureMessage(context, result);
-            builder.Embed.Color = HanaBaseColor.Bad();
+            foreach (var x in builder.Embeds)
+                x.Color = HanaBaseColor.Bad();
+
             return builder;
         }
     }

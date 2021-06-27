@@ -9,8 +9,10 @@ namespace Hanekawa.Bot.Commands
 {
     public abstract class HanekawaCommandModule : DiscordModuleBase<HanekawaCommandContext>
     {
-        protected async Task<IUserMessage> ReplyAndDeleteAsync(string message, Color color, TimeSpan? timeout = null) =>
-            await ReplyAndDeleteAsync(new LocalMessage().Create(message, color), timeout);
+        protected async Task<IUserMessage> ReplyAndDeleteAsync(string message, Color color, TimeSpan? timeout = null)
+        {
+            return await ReplyAndDeleteAsync(new LocalMessage().Create(message, color), timeout);
+        }
 
         protected async Task<IUserMessage> ReplyAndDeleteAsync(LocalMessage localMessage, TimeSpan? timeout = null)
         {
@@ -26,24 +28,32 @@ namespace Hanekawa.Bot.Commands
             {
                 // Ignore
             }
+
             return message;
         }
-        
-        protected DiscordCommandResult Response(string content, Color color, LocalAllowedMentions mentions = null) =>
-            Response(new LocalMessage
+
+        protected DiscordCommandResult Response(string content, Color color, LocalAllowedMentions mentions = null)
+        {
+            return Response(new LocalMessage
             {
-                Embed = new LocalEmbed
+                Embeds = new[]
                 {
-                    Color = color,
-                    Description = content
+                    new LocalEmbed
+                    {
+                        Color = color,
+                        Description = content
+                    }
                 },
                 AllowedMentions = mentions
             });
+        }
 
         protected DiscordCommandResult Reply(string message, Color color)
-            => Reply(new LocalEmbed().CreateDefaultEmbed(message, color));
+        {
+            return Reply(new LocalEmbed().CreateDefaultEmbed(message, color));
+        }
 
-        protected DiscordResponseCommandResult Reply(LocalMessage builder)
+        protected override DiscordResponseCommandResult Reply(LocalMessage builder)
         {
             var result = Response(builder.WithReply(Context.Message.Id, Context.ChannelId, Context.GuildId));
             return result;

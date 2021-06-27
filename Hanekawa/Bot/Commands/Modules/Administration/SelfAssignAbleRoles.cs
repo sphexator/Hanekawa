@@ -63,17 +63,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             }
 
             if (addedRole)
-            {
                 await ReplyAndDeleteAsync(
                     $"Added {role.Name} to {Context.Author.Mention}",
                     HanaBaseColor.Ok(), TimeSpan.FromSeconds(10));
-            }
             else
-            {
                 await ReplyAndDeleteAsync(
                     $"Couldn't add {role.Name} to {Context.Author.Mention}, missing permission or role position?",
                     HanaBaseColor.Bad(), TimeSpan.FromSeconds(10));
-            }
         }
 
         [Name("I am not")]
@@ -95,17 +91,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             }
 
             if (await Context.Author.TryRemoveRoleAsync(role))
-            {
                 await ReplyAndDeleteAsync(
                     $"Removed {role.Name} from {Context.Author.Mention}", HanaBaseColor.Ok(),
                     TimeSpan.FromSeconds(10));
-            }
             else
-            {
                 await ReplyAndDeleteAsync(
                     $"Couldn't remove {role.Name} from {Context.Author.Mention}, missing permission or role position?",
                     HanaBaseColor.Bad(), TimeSpan.FromSeconds(10));
-            }
         }
 
         [Name("Self-Assignable Roles Admin")]
@@ -115,6 +107,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
         {
             private readonly AutoAssignService _assignService;
             private readonly CacheService _cache;
+
             public AdminRole(AutoAssignService assignService, CacheService cache)
             {
                 _assignService = assignService;
@@ -135,10 +128,8 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
                 var result = new List<string>();
                 foreach (var x in list)
-                {
                     if (Context.Guild.Roles.TryGetValue(x.RoleId, out var role))
                         result.Add(x.Exclusive ? $"**{role.Name}** (exclusive)" : $"**{role.Name}**");
-                }
 
                 return Pages(result.Pagination(_cache.GetColor(Context.GuildId), Context.Guild.GetIconUrl(),
                     $"Self-assignable roles for {Context.Guild.Name}"));
@@ -156,9 +147,10 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!await _assignService.PostAsync(Context, channel, cfg, db))
                 {
-                    await Reply($"There's no self-assignable roles to post!", HanaBaseColor.Bad());
+                    await Reply("There's no self-assignable roles to post!", HanaBaseColor.Bad());
                     return;
                 }
+
                 await Reply($"Sent Self-Assignable React Roles to {channel.Mention}!", HanaBaseColor.Ok());
             }
 
@@ -166,31 +158,39 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             [Command("era")]
             [Description("Adds a role to the list of self-assignable roles")]
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-            public async Task ExclusiveRole([Remainder] IRole role) =>
+            public async Task ExclusiveRole([Remainder] IRole role)
+            {
                 await AddSelfAssignAbleRoleAsync(Context, role, true);
+            }
 
             [Name("Exclusive add")]
             [Command("era")]
             [Description("Adds a role to the list of self-assignable roles")]
             [Priority(1)]
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-            public async Task ExclusiveRole(IRole role, LocalCustomEmoji emote) =>
+            public async Task ExclusiveRole(IRole role, LocalCustomEmoji emote)
+            {
                 await AddSelfAssignAbleRoleAsync(Context, role, true, emote);
+            }
 
             [Name("Add")]
             [Command("add", "ra")]
             [Description("Adds a role to the list of self-assignable roles")]
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-            public async Task NonExclusiveRole([Remainder] IRole role) =>
+            public async Task NonExclusiveRole([Remainder] IRole role)
+            {
                 await AddSelfAssignAbleRoleAsync(Context, role, false);
+            }
 
             [Name("Add")]
             [Command("add", "ra")]
             [Priority(1)]
             [Description("Adds a role to the list of self-assignable roles")]
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-            public async Task NonExclusiveRole(IRole role, LocalCustomEmoji emote) =>
+            public async Task NonExclusiveRole(IRole role, LocalCustomEmoji emote)
+            {
                 await AddSelfAssignAbleRoleAsync(Context, role, false, emote);
+            }
 
             [Name("Remove")]
             [Command("Remove", "rr")]
@@ -273,35 +273,40 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     await Reply($"Added {role.Name} as a self-assignable role with emote {emote}!", HanaBaseColor.Ok());
                     await UpdateOrCreateNewEmbeds(context.Guild, data, emote, db);
                 }
-                else await Reply($"Added {role.Name} as a self-assignable role!", HanaBaseColor.Ok());
+                else
+                {
+                    await Reply($"Added {role.Name} as a self-assignable role!", HanaBaseColor.Ok());
+                }
             }
 
-            private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update, LocalEmoji emote, DbService db)
+            private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update,
+                LocalEmoji emote, DbService db)
             {
                 var cfg = await db.GetOrCreateChannelConfigAsync(update.GuildId);
                 if (!cfg.SelfAssignableChannel.HasValue) return false;
                 try
                 {
-                    if(!guild.Channels.TryGetValue(cfg.SelfAssignableChannel.Value, out var channel)) return false;
+                    if (!guild.Channels.TryGetValue(cfg.SelfAssignableChannel.Value, out var channel)) return false;
                     var textChannel = channel as CachedTextChannel;
-                    var reactionRoles = cfg.AssignReactionRoles.FirstOrDefault(x => x.Reactions.Count < 20 && x.Exclusive == update.Exclusive);
+                    var reactionRoles = cfg.AssignReactionRoles.FirstOrDefault(x =>
+                        x.Reactions.Count < 20 && x.Exclusive == update.Exclusive);
                     IUserMessage message;
                     if (reactionRoles == null)
                     {
                         var strings = new List<string>();
                         if (!guild.Roles.TryGetValue(update.RoleId, out var role)) return false;
-                        strings.Add(LocalCustomEmoji.TryParse(update.EmoteMessageFormat, out var result) 
-                            ? $"{result}{role.Mention}" 
+                        strings.Add(LocalCustomEmoji.TryParse(update.EmoteMessageFormat, out var result)
+                            ? $"{result}{role.Mention}"
                             : $"{role.Mention}");
                         message = await textChannel.SendMessageAsync(
-                        new LocalMessage().Create(_assignService.ReactionEmbed(strings, guild.Id)));
+                            new LocalMessage().Create(_assignService.ReactionEmbed(strings, guild.Id)));
                         cfg.AssignReactionRoles.Add(new SelfAssignReactionRole
                         {
                             GuildId = guild.Id,
                             ChannelId = channel.Id,
                             MessageId = message.Id,
                             Exclusive = update.Exclusive,
-                            Reactions = new List<string>{emote.GetMessageFormat()}
+                            Reactions = new List<string> {emote.GetMessageFormat()}
                         });
                     }
                     else
@@ -309,18 +314,20 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         message = await textChannel.GetOrFetchMessageAsync(reactionRoles.MessageId);
                         var embed = LocalEmbed.FromEmbed(message.Embeds[0]);
                         embed = _assignService.ReactionEmbed(
-                            embed.Description.Split("-", 
-                                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id); 
-                        await message.ModifyAsync(x => x.Embed = embed);
+                            embed.Description.Split("-",
+                                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id);
+                        await message.ModifyAsync(x => x.Embeds = new[] {embed});
                         reactionRoles.Reactions.Add(emote.GetMessageFormat());
                     }
+
                     await db.SaveChangesAsync();
                     await message.AddReactionAsync(emote);
                 }
                 catch
                 {
                     return false;
-                }   
+                }
+
                 return true;
             }
         }

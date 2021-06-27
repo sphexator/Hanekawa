@@ -111,7 +111,7 @@ namespace Hanekawa.Controllers
                     };
                     await _client.SendMessageAsync(logChannel.Id, new LocalMessage
                     {
-                        Embed = embed,
+                        Embeds = new[] {embed},
                         Attachments = null,
                         Content = null,
                         AllowedMentions = LocalAllowedMentions.None,
@@ -124,7 +124,7 @@ namespace Hanekawa.Controllers
                     $"(Advert Endpoint) Rewarded {userId} in {guild.Id} for voting on the server!");
 
                 var giveaways = await _db.Giveaways
-                    .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(cancellationToken: token);
+                    .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(token);
                 var sb = new StringBuilder();
                 if (giveaways.Count > 0 && user != null)
                 {
@@ -151,12 +151,15 @@ namespace Hanekawa.Controllers
                     var dmChannel = await user.CreateDirectChannelAsync();
                     await _client.SendMessageAsync(dmChannel.Id, new LocalMessage
                     {
-                        Embed = new LocalEmbed
+                        Embeds = new[]
                         {
-                            Description = $"{MessageUtil.FormatMessage(cfg.Message, user, guild)}\n" +
-                                          "You've been rewarded:\n" +
-                                          $"{str}\n{sb}",
-                            Color = _cache.GetColor(guild.Id)
+                            new LocalEmbed
+                            {
+                                Description = $"{MessageUtil.FormatMessage(cfg.Message, user, guild)}\n" +
+                                              "You've been rewarded:\n" +
+                                              $"{str}\n{sb}",
+                                Color = _cache.GetColor(guild.Id)
+                            }
                         },
                         AllowedMentions = LocalAllowedMentions.None,
                         Attachments = null,

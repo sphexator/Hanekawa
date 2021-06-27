@@ -39,7 +39,6 @@ namespace Hanekawa.Bot.Commands.Modules
 
             var pages = new List<string>();
             foreach (var x in levels)
-            {
                 try
                 {
                     pages.Add(!Context.Guild.Roles.TryGetValue(x.Role, out var role)
@@ -51,13 +50,12 @@ namespace Hanekawa.Bot.Commands.Modules
                     pages.Add("Role not found");
                     //todo: Handle this better in the future
                 }
-            }
-            
+
             return Pages(pages.Pagination(
                 Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
                 Context.Guild.GetIconUrl(), $"Level Roles for {Context.Guild.Name}"));
         }
-        
+
         [Name("Level Admin")]
         [Description("Commands to manage level module")]
         [Group("level")]
@@ -79,8 +77,8 @@ namespace Hanekawa.Bot.Commands.Modules
                     x => x.Message.Author.Id == Context.Author.Id &&
                          x.Message.GuildId == Context.Guild.Id,
                     TimeSpan.FromMinutes(1));
-                if (response == null || (response.Message.Content.ToLower() != "y" ||
-                                         response.Message.Content.ToLower() != "yes")) return Reply("Aborting...");
+                if (response == null || response.Message.Content.ToLower() != "y" ||
+                    response.Message.Content.ToLower() != "yes") return Reply("Aborting...");
 
                 var msg = await Context.Channel.SendMessageAsync(new LocalMessage().Create(
                     "Server level reset in progress...",
@@ -101,7 +99,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     var updEmbed = LocalEmbed.FromEmbed(msg.Embeds[0]);
                     updEmbed.Color = HanaBaseColor.Ok();
                     updEmbed.Description = "Server level reset complete.";
-                    await msg.ModifyAsync(x => x.Embed = updEmbed);
+                    await msg.ModifyAsync(x => x.Embeds = new[] {updEmbed});
                 }
                 catch
                 {
@@ -144,6 +142,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     await db.SaveChangesAsync();
                     return Reply("Level decay has been disabled.", HanaBaseColor.Ok());
                 }
+
                 cfg.Decay = true;
                 await db.SaveChangesAsync();
                 return Reply(
@@ -161,7 +160,8 @@ namespace Hanekawa.Bot.Commands.Modules
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var exp = Context.Services.GetRequiredService<ExpService>();
                 await exp.StartEventAsync(db, Context, multiplier, duration);
-                return Reply($"A experience event of {multiplier}x has been initiated for {duration.Humanize()}", HanaBaseColor.Ok());
+                return Reply($"A experience event of {multiplier}x has been initiated for {duration.Humanize()}",
+                    HanaBaseColor.Ok());
             }
 
             [Name("Multiplier Check")]
@@ -185,7 +185,7 @@ namespace Hanekawa.Bot.Commands.Modules
                                   $"Other: {otherMulti}x (default: 1x)"
                 });
             }
-            
+
             [Name("Level Role Stack")]
             [Command("stack")]
             [Description("Toggles between level roles stacking or keep the highest earned one")]
@@ -205,18 +205,22 @@ namespace Hanekawa.Bot.Commands.Modules
                 return Reply("Level roles does now stack.",
                     HanaBaseColor.Ok());
             }
-            
+
             [Name("Level Role Add")]
             [Command("add")]
             [Description("Adds a role reward")]
-            public async Task<DiscordCommandResult> AddAsync(int level, [Remainder] IRole role) =>
-                await AddLevelRole(Context, level, role, false);
+            public async Task<DiscordCommandResult> AddAsync(int level, [Remainder] IRole role)
+            {
+                return await AddLevelRole(Context, level, role, false);
+            }
 
             [Name("Level Stack Role Add")]
             [Command("stackadd")]
             [Description("Adds a role reward which will stack regardless of setting (useful for permission role)")]
-            public async Task<DiscordCommandResult> StackAddAsync(int level, [Remainder] IRole role) =>
-                await AddLevelRole(Context, level, role, true);
+            public async Task<DiscordCommandResult> StackAddAsync(int level, [Remainder] IRole role)
+            {
+                return await AddLevelRole(Context, level, role, true);
+            }
 
             [Name("Level Role Remove")]
             [Command("remove")]
@@ -243,18 +247,16 @@ namespace Hanekawa.Bot.Commands.Modules
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var check = await db.LevelRewards.FindAsync(context.Guild.Id, level);
                 if (check != null)
-                {
                     if (context.Guild.Roles.TryGetValue(check.Role, out var gRole))
                     {
                         await Reply($"Do you wish to replace {gRole.Name} for level {check.Level}? (y/n)");
                         var response = await Context.WaitForMessageAsync(
                             x => x.Message.Author.Id == Context.Author.Id && x.Message.GuildId == Context.Guild.Id,
                             TimeSpan.FromMinutes(1));
-                        if (response == null || (response.Message.Content.ToLower() != "y" ||
-                                                 response.Message.Content.ToLower() != "yes"))
+                        if (response == null || response.Message.Content.ToLower() != "y" ||
+                            response.Message.Content.ToLower() != "yes")
                             return Reply("Cancelling.", HanaBaseColor.Bad());
                     }
-                }
 
                 var data = new LevelReward
                 {

@@ -23,15 +23,16 @@ namespace Hanekawa.Bot.Service.Drop
 {
     public class DropService : DiscordClientService
     {
+        private readonly AchievementService _achievement;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
-        private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
         private readonly ExpService _exp;
-        private readonly AchievementService _achievement;
+        private readonly Logger _logger;
+        private readonly IServiceProvider _provider;
         private readonly Random _random;
-        
-        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random, AchievementService achievement, ILogger<DropService> logger) : base(logger, bot)
+
+        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random,
+            AchievementService achievement, ILogger<DropService> logger) : base(logger, bot)
         {
             _bot = bot;
             _cache = cache;
@@ -77,11 +78,12 @@ namespace Hanekawa.Bot.Service.Drop
             var claim = await GetClaimEmoteAsync(guild, db);
             var triggerMsg = await channel.SendMessageAsync(new LocalMessage
             {
-                Content = $"A {type.ToString().ToLower()} drop event has been triggered \nClick the {claim} reaction on this message to claim it!",
+                Content =
+                    $"A {type.ToString().ToLower()} drop event has been triggered \nClick the {claim} reaction on this message to claim it!",
                 Attachments = null,
-                Embed = null,
+                Embeds = null,
                 AllowedMentions = LocalAllowedMentions.None,
-                Reference = new ()
+                Reference = new LocalMessageReference()
                     {GuildId = guild.Id, ChannelId = msg.ChannelId, MessageId = msg.Id, FailOnInvalid = false},
                 IsTextToSpeech = false
             });
@@ -91,41 +93,51 @@ namespace Hanekawa.Bot.Service.Drop
 
             _logger.Log(LogLevel.Info, $"Drop event created in {guildId}");
         }
-        
+
         private async Task ClaimAsync(IUserMessage msg, IMember user, DropType type)
         {
-            try { await msg.DeleteAsync(); }
-            catch { /* Ignore */}
-            
+            try
+            {
+                await msg.DeleteAsync();
+            }
+            catch
+            {
+                /* Ignore */
+            }
+
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var rand = type == DropType.Regular 
-                ? _random.Next(15, 150) 
+            var rand = type == DropType.Regular
+                ? _random.Next(15, 150)
                 : _random.Next(150, 250);
-            
+
             var userData = await db.GetOrCreateUserData(user);
             var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId);
             var exp = await _exp.AddExpAsync(user, userData, rand, rand, db, ExpSource.Other);
-            var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessage 
+            var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessage
             {
-                Content = $"Rewarded {user.Mention} with {exp} experience & {cfg.ToCurrencyFormat(rand)} {cfg.CurrencyName}!",
+                Content =
+                    $"Rewarded {user.Mention} with {exp} experience & {cfg.ToCurrencyFormat(rand)} {cfg.CurrencyName}!",
                 Attachments = null,
-                Embed = null,
+                Embeds = null,
                 AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false,
                 Reference = null
             });
-            
+
             try
             {
                 await Task.Delay(5000);
                 await trgMsg.DeleteAsync();
             }
-            catch { /* Ignore */}
+            catch
+            {
+                /* Ignore */
+            }
 
             await _achievement.DropAchievement(userData, db);
         }
-        
+
         private async ValueTask<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)
         {
             if (_cache.TryGetEmote(EmoteType.Drop, guild.Id, out var emote)) return emote;
@@ -137,14 +149,16 @@ namespace Hanekawa.Bot.Service.Drop
             }
 
             var defaultEmote = new LocalEmoji("U+1F381");
-            _cache.AddOrUpdateEmote(EmoteType.Drop, guild.Id, defaultEmote); 
+            _cache.AddOrUpdateEmote(EmoteType.Drop, guild.Id, defaultEmote);
             return defaultEmote;
         }
 
-        private List<IGuildEmoji> GetEmotes(IGuild guild) =>
-            guild.Emojis.Count >= 4 
-                ? guild.Emojis.Values.ToList() 
+        private List<IGuildEmoji> GetEmotes(IGuild guild)
+        {
+            return guild.Emojis.Count >= 4
+                ? guild.Emojis.Values.ToList()
                 : _bot.GetGuild(431617676859932704).Emojis.Values.ToList();
+        }
 
         private async Task ApplyReactionAsync(IMessage message, IGuildEmoji emote, IEmoji claim, DropType type)
         {

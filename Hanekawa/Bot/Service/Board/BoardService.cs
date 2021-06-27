@@ -21,12 +21,15 @@ namespace Hanekawa.Bot.Service.Board
     public class BoardService : DiscordClientService
     {
         private readonly Hanekawa _bot;
-        private readonly Logger _logger;
-        private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
+        private readonly Logger _logger;
+
+        private readonly IServiceProvider _provider;
+
         // TODO: Change name check on emotes to IDs and only allow emotes within that guild to be used
         // Favor the default star emote
-        public BoardService(Hanekawa bot, IServiceProvider provider, CacheService cache, ILogger<BoardService> logger) : base(logger, bot)
+        public BoardService(Hanekawa bot, IServiceProvider provider, CacheService cache, ILogger<BoardService> logger) :
+            base(logger, bot)
         {
             _bot = bot;
             _provider = provider;
@@ -38,7 +41,7 @@ namespace Hanekawa.Bot.Service.Board
         {
             if (!e.GuildId.HasValue) return;
             if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) && (e.Emoji.Name != emote.Name ||
-                (e.Emoji.GetId().HasValue && e.Emoji.GetId() != emote.GetId()))) return;
+                e.Emoji.GetId().HasValue && e.Emoji.GetId() != emote.GetId())) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             if (emote == null)
@@ -60,7 +63,8 @@ namespace Hanekawa.Bot.Service.Board
             {
                 stat.Boarded = new DateTimeOffset(DateTime.UtcNow);
                 await db.SaveChangesAsync();
-                await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id), e.Message, cfg, db);
+                await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id),
+                    e.Message, cfg, db);
                 _logger.Info($"Sent board message in {cfg.GuildId} by user {receiver.UserId}");
             }
         }
@@ -68,7 +72,8 @@ namespace Hanekawa.Bot.Service.Board
         protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
-            if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) && e.Emoji.Name != emote.Name) return;
+            if (_cache.TryGetEmote(EmoteType.Board, e.GuildId.Value, out var emote) &&
+                e.Emoji.Name != emote.Name) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             if (emote == null)
@@ -76,11 +81,11 @@ namespace Hanekawa.Bot.Service.Board
                 emote = await UpdateEmoteAsync(e.GuildId.Value, db);
                 if (e.Emoji.Name != emote.Name) return;
             }
-            
+
             var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
             var giver = await db.GetOrCreateUserData(e.GuildId.Value, e.UserId);
             var receiver = await db.GetOrCreateUserData(e.GuildId.Value, e.Message.Author.Id);
-            if(receiver.StarReceived != 0) receiver.StarReceived--;
+            if (receiver.StarReceived != 0) receiver.StarReceived--;
             giver.StarGiven--;
             stat.StarAmount--;
             await db.SaveChangesAsync();
@@ -99,8 +104,8 @@ namespace Hanekawa.Bot.Service.Board
         private static async Task<IEmoji> UpdateEmoteAsync(Snowflake guildId, DbService db)
         {
             var cfg = await db.GetOrCreateBoardConfigAsync(guildId);
-            return LocalCustomEmoji.TryParse(cfg.Emote, out var emoji) 
-                ? emoji 
+            return LocalCustomEmoji.TryParse(cfg.Emote, out var emoji)
+                ? emoji
                 : new LocalEmoji("U+2B50");
         }
 
@@ -125,7 +130,7 @@ namespace Hanekawa.Bot.Service.Board
                 AllowedMentions = LocalAllowedMentions.None,
                 AvatarUrl = user.GetAvatarUrl(),
                 IsTextToSpeech = false,
-                Attachment = null,
+                Attachments = null,
                 Content = null,
                 Embeds = new LocalEmbed[]
                 {

@@ -1,5 +1,4 @@
 ﻿using Hanekawa.Database.Tables.Account;
-using Hanekawa.Database.Tables.Config;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable once CheckNamespace
@@ -17,10 +16,7 @@ namespace Hanekawa.Database
                 x.HasKey(e => new {e.GuildId, e.UserId});
                 x.Property(e => e.Decay).HasDefaultValue(0);
             });
-            modelBuilder.Entity<AccountGlobal>(x =>
-            {
-                x.HasKey(e => e.UserId);
-            });
+            modelBuilder.Entity<AccountGlobal>(x => { x.HasKey(e => e.UserId); });
         }
     }
 }

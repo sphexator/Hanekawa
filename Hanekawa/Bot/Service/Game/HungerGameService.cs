@@ -29,12 +29,13 @@ namespace Hanekawa.Bot.Service.Game
     public class HungerGameService : DiscordClientService, IJob
     {
         private readonly Hanekawa _bot;
-        private readonly Logger _logger;
-        private readonly IServiceProvider _provider;
         private readonly HungerGameClient _client;
         private readonly ImageGenerationService _image;
+        private readonly Logger _logger;
+        private readonly IServiceProvider _provider;
 
-        public HungerGameService(DiscordClientBase clientBase, ILogger<HungerGameService> logger, Hanekawa bot, IServiceProvider provider, HungerGameClient client, ImageGenerationService image) : base(logger, clientBase)
+        public HungerGameService(DiscordClientBase clientBase, ILogger<HungerGameService> logger, Hanekawa bot,
+            IServiceProvider provider, HungerGameClient client, ImageGenerationService image) : base(logger, clientBase)
         {
             _bot = bot;
             _provider = provider;
@@ -43,29 +44,35 @@ namespace Hanekawa.Bot.Service.Game
             _logger = LogManager.GetCurrentClassLogger();
         }
 
+        public Task Execute(IJobExecutionContext context)
+        {
+            _ = ExecuteAsync();
+            return Task.CompletedTask;
+        }
+
         protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
         {
             if (!e.GuildId.HasValue) return;
             if (e.Member.IsBot) return;
-            try 
+            try
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
                 var status = await db.HungerGameStatus.FindAsync(e.GuildId.Value);
                 if (status is not {Stage: GameStage.Signup}) return;
-                
+
                 if (!TryParse(status.EmoteMessageFormat, out var result)) return;
                 if (e.Emoji.Name != result.Name) return;
 
                 var dbUser = await db.HungerGameProfiles.FindAsync(e.GuildId.Value, e.Member.Id);
                 if (dbUser != null) return;
-                
+
                 await db.HungerGameProfiles.AddAsync(new HungerGameProfile
                 {
                     GuildId = e.Member.GuildId,
                     UserId = e.Member.Id,
                     Name = e.Member.Nick ?? e.Member.Name,
-                    Avatar = e.Member.GetAvatarUrl(ImageFormat.Png),
+                    Avatar = e.Member.GetAvatarUrl(CdnAssetFormat.Png),
                     Bot = false,
                     Alive = true,
                     Health = 100,
@@ -87,7 +94,8 @@ namespace Hanekawa.Bot.Service.Game
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Hunger Game Service) Crash when adding user - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception,
+                    $"(Hunger Game Service) Crash when adding user - {exception.Message}");
             }
         }
 
@@ -108,7 +116,8 @@ namespace Hanekawa.Bot.Service.Game
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Hunger Game Service) Crash when removing user - {exception.Message}");
+                _logger.Log(LogLevel.Error, exception,
+                    $"(Hunger Game Service) Crash when removing user - {exception.Message}");
             }
         }
 
@@ -128,7 +137,7 @@ namespace Hanekawa.Bot.Service.Game
                     case GameStage.OnGoing:
                         dbUser.Health = 0;
                         dbUser.Alive = false;
-                        dbUser.Avatar = _bot.GetGuild(e.GuildId).GetIconUrl(ImageFormat.Png);
+                        dbUser.Avatar = _bot.GetGuild(e.GuildId).GetIconUrl(CdnAssetFormat.Png);
                         break;
                     case GameStage.Signup:
                         db.HungerGameProfiles.Remove(dbUser);
@@ -136,6 +145,7 @@ namespace Hanekawa.Bot.Service.Game
                     case GameStage.Closed:
                         return;
                 }
+
                 await db.SaveChangesAsync();
             }
             catch (Exception exception)
@@ -157,7 +167,7 @@ namespace Hanekawa.Bot.Service.Game
                     await db.HungerGameProfiles.FindAsync(e.NewMember.GuildId, e.NewMember.Id);
                 if (profile == null) return;
                 profile.Name = e.NewMember.Nick ?? e.NewMember.Name;
-                profile.Avatar = e.NewMember.GetAvatarUrl(ImageFormat.Png);
+                profile.Avatar = e.NewMember.GetAvatarUrl(CdnAssetFormat.Png);
                 await db.SaveChangesAsync();
             }
             catch (Exception exception)
@@ -166,19 +176,14 @@ namespace Hanekawa.Bot.Service.Game
                     $"Crash when updating participant avatar or name - {exception.Message}");
             }
         }
-        
-        public Task Execute(IJobExecutionContext context)
-        {
-            _ = ExecuteAsync();
-            return Task.CompletedTask;
-        }
 
         public async Task ExecuteAsync()
         {
             var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            foreach (var x in await db.GuildConfigs.Where(x => x.Premium.HasValue 
-                                                               && x.Premium.Value > DateTimeOffset.UtcNow).ToArrayAsync())
+            foreach (var x in await db.GuildConfigs.Where(x => x.Premium.HasValue
+                                                               && x.Premium.Value > DateTimeOffset.UtcNow)
+                .ToArrayAsync())
             {
                 var cfg = await db.HungerGameStatus.FindAsync(x.GuildId);
                 if (!cfg.EventChannel.HasValue) continue;
@@ -196,6 +201,7 @@ namespace Hanekawa.Bot.Service.Game
                     default:
                         continue;
                 }
+
                 await db.SaveChangesAsync();
             }
         }
@@ -216,7 +222,7 @@ namespace Hanekawa.Bot.Service.Game
                 {
                     Content = msgContent,
                     Attachments = null,
-                    Embed = null,
+                    Embeds = null,
                     AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
                 });
@@ -230,17 +236,18 @@ namespace Hanekawa.Bot.Service.Game
                 {
                     Content = msgContent,
                     Attachments = null,
-                    Embed = null,
+                    Embeds = null,
                     AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
                 });
                 await msg.AddReactionAsync(result);
             }
+
             await db.SaveChangesAsync();
         }
 
         private async Task<bool> StartGameAsync(HungerGameStatus cfg, DbService db, bool test = false)
-        { 
+        {
             var cd = cfg.SignUpStart.AddHours(-3);
             if (!test && cd.AddHours(23) >= DateTimeOffset.UtcNow) return false;
             var guild = _bot.GetGuild(cfg.GuildId);
@@ -264,6 +271,7 @@ namespace Hanekawa.Bot.Service.Game
                             sb.Append($"**{x.Name}** - ");
                             break;
                     }
+
                     i++;
                 }
 
@@ -272,23 +280,21 @@ namespace Hanekawa.Bot.Service.Game
                 messages.Add(sb.ToString());
                 sb.Clear();
             }
-            if(sb.Length > 0) messages.Add(sb.ToString());
+
+            if (sb.Length > 0) messages.Add(sb.ToString());
             var channel = guild.GetChannel(channelId);
             if (channel != null)
             {
                 var textChannel = channel as ITextChannel;
                 foreach (var x in messages)
-                { 
                     await textChannel.SendMessageAsync(new LocalMessage
                     {
                         Content = x,
                         Attachments = null,
-                        Embed = null,
+                        Embeds = null,
                         AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
-                        
                     });
-                }
             }
 
             var evtChan = guild.GetChannel(cfg.EventChannel.Value);
@@ -297,7 +303,7 @@ namespace Hanekawa.Bot.Service.Game
                 {
                     Content = $"Game starts in {(evtChan as CachedTextChannel)?.Mention}",
                     Attachments = null,
-                    Embed = null,
+                    Embeds = null,
                     AllowedMentions = LocalAllowedMentions.None,
                     IsTextToSpeech = false
                 });
@@ -332,7 +338,7 @@ namespace Hanekawa.Bot.Service.Game
             var game = await db.HungerGames.FirstOrDefaultAsync(x => x.GuildId == cfg.GuildId);
             var alive = participants.Count(x => x.Alive);
             cfg.GameId ??= game.Id;
-            
+
             // Determine each participant event (alive)
             var result = _client.PlayAsync(participants);
             await SendResultsAsync(cfg, game, result, alive, guild);
@@ -346,7 +352,8 @@ namespace Hanekawa.Bot.Service.Game
             await RewardWinnerAsync(cfg, db, result, guild, participants, game);
         }
 
-        private async Task SendResultsAsync(HungerGameStatus cfg, HungerGame game, List<UserAction> result, int alive, CachedGuild guild)
+        private async Task SendResultsAsync(HungerGameStatus cfg, HungerGame game, List<UserAction> result, int alive,
+            CachedGuild guild)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"**Hunger Game Round {game.Round + 1}!**");
@@ -354,10 +361,9 @@ namespace Hanekawa.Bot.Service.Game
 
             // Create text messages
             foreach (var msg in from x in result
-                where x.Before.Alive
-                where !x.Message.IsNullOrWhiteSpace()
-                select $"**{x.After.Name}**: {x.Message}")
-            {
+                    where x.Before.Alive
+                    where !x.Message.IsNullOrWhiteSpace()
+                    select $"**{x.After.Name}**: {x.Message}")
                 // var msg = !x.AfterProfile.Bot 
                 //     ? $"**{guild.GetMember(x.AfterProfile.UserId).DisplayName ?? "User Left Server"}**: {x.Message}" 
                 // : $"**{x.AfterProfile.Name}**: {x.Message}";
@@ -367,8 +373,10 @@ namespace Hanekawa.Bot.Service.Game
                     sb.Clear();
                     sb.AppendLine(msg);
                 }
-                else sb.AppendLine(msg);
-            }
+                else
+                {
+                    sb.AppendLine(msg);
+                }
 
             if (sb.Length > 0) messages.Add(sb.ToString());
 
@@ -384,14 +392,13 @@ namespace Hanekawa.Bot.Service.Game
 
             // Send Text
             foreach (var t in messages)
-            {
                 try
                 {
                     await channel.SendMessageAsync(new LocalMessage
                     {
                         Content = t,
                         Attachments = null,
-                        Embed = null,
+                        Embeds = null,
                         AllowedMentions = LocalAllowedMentions.None,
                         IsTextToSpeech = false
                     });
@@ -400,10 +407,10 @@ namespace Hanekawa.Bot.Service.Game
                 {
                     _logger.Log(LogLevel.Error, e, e.Message);
                 }
-            }
         }
 
-        private async Task RewardWinnerAsync(HungerGameStatus cfg, DbService db, List<UserAction> result, CachedGuild guild, List<HungerGameProfile> participants,
+        private async Task RewardWinnerAsync(HungerGameStatus cfg, DbService db, List<UserAction> result,
+            CachedGuild guild, List<HungerGameProfile> participants,
             HungerGame game)
         {
             IMember user = null;
@@ -453,7 +460,7 @@ namespace Hanekawa.Bot.Service.Game
             {
                 Content = sb.ToString(),
                 Attachments = null,
-                Embed = null,
+                Embeds = null,
                 AllowedMentions = LocalAllowedMentions.None,
                 IsTextToSpeech = false
             });
@@ -481,7 +488,8 @@ namespace Hanekawa.Bot.Service.Game
             await db.SaveChangesAsync();
         }
 
-        private async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, IMessageChannel channel, IGuild guild)
+        private async Task CreateAndSendImagesAsync(double imgCount, List<UserAction> tempPart, IMessageChannel channel,
+            IGuild guild)
         {
             var attachments = new List<LocalAttachment>();
             for (var i = 0; i < imgCount; i++)
@@ -497,7 +505,7 @@ namespace Hanekawa.Bot.Service.Game
             {
                 Attachments = attachments,
                 Content = null,
-                Embed = null,
+                Embeds = null,
                 AllowedMentions = LocalAllowedMentions.None,
                 Reference = null,
                 IsTextToSpeech = false
@@ -511,13 +519,14 @@ namespace Hanekawa.Bot.Service.Game
             if (!guild.Roles.TryGetValue(cfg.RoleReward.Value, out var role)) return null;
             var toRemove = guild.Members.Where(x => x.Value.GetRoles().ContainsKey(role.Id)).ToList();
             foreach (var x in toRemove)
-            {
                 try
                 {
                     await x.Value.RevokeRoleAsync(role.Id);
                 }
-                catch { /* IGNORE */}
-            }
+                catch
+                {
+                    /* IGNORE */
+                }
 
             try
             {
@@ -528,22 +537,23 @@ namespace Hanekawa.Bot.Service.Game
                 _logger.Log(LogLevel.Error, e, $"(Hunger Game Service) Couldn't grant winner role - {e.Message}");
                 return null;
             }
+
             return role;
         }
-        
+
         private static async Task<List<HungerGameProfile>> AddBoostersAsync(DbService db, CachedGuild guild)
         {
             var toReturn = new List<HungerGameProfile>();
             foreach (var (_, user) in guild.Members.Where(x => x.Value.BoostedAt.HasValue).ToList())
             {
                 var check = await db.HungerGameProfiles.FindAsync(guild.Id, user.Id);
-                if(check != null) continue;
+                if (check != null) continue;
                 toReturn.Add(new HungerGameProfile
                 {
                     GuildId = user.GuildId,
                     UserId = user.Id,
                     Name = user.Name,
-                    Avatar = user.GetAvatarUrl(ImageFormat.Png),
+                    Avatar = user.GetAvatarUrl(CdnAssetFormat.Png),
                     Bot = false,
                     Alive = true,
                     Health = 100,
@@ -583,9 +593,11 @@ namespace Hanekawa.Bot.Service.Game
                     break;
                 default:
                 {
-                    toAddNumber = (Convert.ToInt32(25 * Math.Ceiling(Convert.ToDouble(profiles.Count / 25))) - profiles.Count);
+                    toAddNumber = Convert.ToInt32(25 * Math.Ceiling(Convert.ToDouble(profiles.Count / 25))) -
+                                  profiles.Count;
                     if (toAddNumber < 0)
-                        toAddNumber = Convert.ToInt32(25 * Math.Ceiling(Convert.ToDouble((profiles.Count + 13) / 25))) - profiles.Count;
+                        toAddNumber = Convert.ToInt32(25 * Math.Ceiling(Convert.ToDouble((profiles.Count + 13) / 25))) -
+                                      profiles.Count;
                     break;
                 }
             }

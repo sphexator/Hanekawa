@@ -36,23 +36,28 @@ namespace Hanekawa.Bot.Commands.Modules
 
             var builder = new LocalMessage
             {
-                Embed = new LocalEmbed
+                Embeds = new[]
                 {
-                    Author = new LocalEmbedAuthor()
+                    new LocalEmbed
                     {
-                        IconUrl = Context.Author.GetAvatarUrl(),
-                        Name = Context.Author.DisplayName()
-                    },
-                    Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                    Description = text,
-                    Footer = new LocalEmbedFooter
-                    {
-                        Text = $"Report ID: {report.Id} - UserId: {Context.Author.Id}"
-                    },
-                    Timestamp = DateTimeOffset.UtcNow
+                        Author = new LocalEmbedAuthor
+                        {
+                            IconUrl = Context.Author.GetAvatarUrl(),
+                            Name = Context.Author.DisplayName()
+                        },
+                        Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
+                        Description = text,
+                        Footer = new LocalEmbedFooter()
+                        {
+                            Text = $"Report ID: {report.Id} - UserId: {Context.Author.Id}"
+                        },
+                        Timestamp = DateTimeOffset.UtcNow
+                    }
                 }
             };
-            var msg = await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).SendMessageAsync(builder);
+
+            var msg =
+                await (Context.Guild.GetChannel(cfg.ReportChannel.Value) as ITextChannel).SendMessageAsync(builder);
             report.MessageId = msg.Id;
             await db.SaveChangesAsync();
             await ReplyAndDeleteAsync(new LocalMessage().Create("Report sent!", HanaBaseColor.Ok()));
@@ -84,11 +89,14 @@ namespace Hanekawa.Bot.Commands.Modules
                 var reporter = await Context.Guild.GetOrFetchMemberAsync(report.UserId);
                 await reporter.SendMessageAsync(new LocalMessage
                 {
-                    Embed = new LocalEmbed
+                    Embeds = new[]
                     {
-                        Description =
-                            $"Your report got a response!\nReport:\n{embed.Description.Truncate(300)}\nAnswer from {Context.Author.Mention}:\n{text.Truncate(1500)}",
-                        Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId)
+                        new LocalEmbed
+                        {
+                            Description =
+                                $"Your report got a response!\nReport:\n{embed.Description.Truncate(300)}\nAnswer from {Context.Author.Mention}:\n{text.Truncate(1500)}",
+                            Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId)
+                        }
                     }
                 });
             }
@@ -97,9 +105,9 @@ namespace Hanekawa.Bot.Commands.Modules
                 /*IGNORE*/
             }
 
-            await msg.ModifyAsync(x => x.Embed = embed);
+            await msg.ModifyAsync(x => x.Embeds = new[] {embed});
         }
-        
+
         [Name("Report Admin")]
         [Description("Commands to configure the report module")]
         [Group("Report")]

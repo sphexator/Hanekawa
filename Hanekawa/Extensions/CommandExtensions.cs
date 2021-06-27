@@ -13,7 +13,8 @@ namespace Hanekawa.Extensions
 {
     public static class CommandExtensions
     {
-        public static IEnumerable<Page> Pagination(this List<string> list, Color color, string avatarUrl, string authorTitle, int inputPerPage = 5)
+        public static IEnumerable<Page> Pagination(this List<string> list, Color color, string avatarUrl,
+            string authorTitle, int inputPerPage = 5)
         {
             var pages = new List<Page>();
             var sb = new StringBuilder();
@@ -29,7 +30,7 @@ namespace Hanekawa.Extensions
                 }
 
                 var page = pages.Count + 1;
-                pages.Add(new Page(new LocalEmbed
+                pages.Add(new Page().AddEmbed(new LocalEmbed
                 {
                     Author = new LocalEmbedAuthor {Name = authorTitle, IconUrl = avatarUrl},
                     Description = sb.ToString(),
@@ -60,7 +61,7 @@ namespace Hanekawa.Extensions
             content.AppendLine($"Example: {prefix}{command} {ExampleParam(cmd)}");
             list.Add(content.ToString());
         }
-        
+
         // Showcases the params
         public static string Param(this Command command)
         {
@@ -103,16 +104,18 @@ namespace Hanekawa.Extensions
             return output.ToString();
         }
 
-        public static string PermType(this Parameter parameter) =>
-            parameter.Type == typeof(IMember) ? "@Hanekawa#6683" :
-            parameter.Type == typeof(IRole) ? "@everyone" :
-            parameter.Type == typeof(ITextChannel) ? "#General" :
-            parameter.Type == typeof(IVoiceChannel) ? "VoiceChannel" :
-            parameter.Type == typeof(ICategoryChannel) ? "Category" :
-            parameter.Type == typeof(TimeSpan) ? "1h2m1s" :
-            parameter.Type == typeof(int) ? "5" :
-            parameter.Type == typeof(string) ? "Example text" :
-            parameter.Type == typeof(Snowflake) ? "431610594290827267" : parameter.Name;
+        public static string PermType(this Parameter parameter)
+        {
+            return parameter.Type == typeof(IMember) ? "@Hanekawa#6683" :
+                parameter.Type == typeof(IRole) ? "@everyone" :
+                parameter.Type == typeof(ITextChannel) ? "#General" :
+                parameter.Type == typeof(IVoiceChannel) ? "VoiceChannel" :
+                parameter.Type == typeof(ICategoryChannel) ? "Category" :
+                parameter.Type == typeof(TimeSpan) ? "1h2m1s" :
+                parameter.Type == typeof(int) ? "5" :
+                parameter.Type == typeof(string) ? "Example text" :
+                parameter.Type == typeof(Snowflake) ? "431610594290827267" : parameter.Name;
+        }
 
         // Appends permission requirements
         public static List<string> Perm(this Command cmd)
@@ -124,12 +127,14 @@ namespace Hanekawa.Extensions
                 result ??= new List<string>();
                 result.Add(perm.Permissions.ToString());
             }
+
             foreach (var x in cmd.Checks)
             {
                 if (x is not RequireAuthorGuildPermissionsAttribute perm) continue;
                 result ??= new List<string>();
                 result.Add(perm.Permissions.ToString());
             }
+
             return result;
         }
 

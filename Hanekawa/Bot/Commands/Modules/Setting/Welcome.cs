@@ -34,11 +34,14 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Command("add")]
         [Description("Adds a welcome banner to the bot")]
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-        public async Task<DiscordCommandResult> AddWelcomeBannerAsync(string url, int aviSize = 60, int aviX = 10, int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
+        public async Task<DiscordCommandResult> AddWelcomeBannerAsync(string url, int aviSize = 60, int aviX = 10,
+            int aviY = 10, int textSize = 33, int textX = 245, int textY = 40)
         {
-            if (!url.IsPictureUrl()) return Reply("Please use direct image urls when adding pictures!\n" +
-                                         "Example: <https://hanekawa.moe/images/67531066_p2.png>", HanaBaseColor.Bad()); // TODO: Use own images
-            
+            if (!url.IsPictureUrl())
+                return Reply("Please use direct image urls when adding pictures!\n" +
+                             "Example: <https://hanekawa.moe/images/67531066_p2.png>",
+                    HanaBaseColor.Bad()); // TODO: Use own images
+
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var guildCfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
             await Context.Channel.TriggerTypingAsync();
@@ -62,9 +65,10 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             {
                 await msg.DeleteAsync();
                 await ReplyAndDeleteAsync(
-                    new LocalMessage().Create("Aborting...", HanaBaseColor.Bad()),TimeSpan.FromSeconds(20));
+                    new LocalMessage().Create("Aborting...", HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
                 return null;
             }
+
             await db.WelcomeBanners.AddAsync(new WelcomeBanner
             {
                 GuildId = Context.Guild.Id,
@@ -83,7 +87,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> RemoveWelcomeBannerAsync(int id)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var banner =
                 await db.WelcomeBanners.FirstOrDefaultAsync(x => x.Id == id && x.GuildId == Context.Guild.Id);
@@ -134,7 +137,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
             await db.SaveChangesAsync();
             return Reply("Updated welcome message!\n" +
-                         $"Example: {MessageUtil.FormatMessage(message, Context.Author, Context.Guild)}", HanaBaseColor.Ok());
+                         $"Example: {MessageUtil.FormatMessage(message, Context.Author, Context.Guild)}",
+                HanaBaseColor.Ok());
         }
 
         [Name("Channel")]
@@ -172,7 +176,6 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [RequireAuthorGuildPermissions(Permission.ManageGuild)]
         public async Task<DiscordCommandResult> WelcomeTimeout(TimeSpan? timeout = null)
         {
-            
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
             if (!cfg.TimeToDelete.HasValue && timeout == null) return null;
@@ -182,6 +185,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 await db.SaveChangesAsync();
                 return Reply("Disabled auto-deletion of welcome messages!", HanaBaseColor.Ok());
             }
+
             cfg.TimeToDelete = timeout.Value;
             await db.SaveChangesAsync();
             return Reply("Enabled auto-deletion of welcome messages!\n" +
@@ -192,21 +196,30 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         [Command("template")]
         [Description("Posts the welcome template to create welcome banners from. PSD and regular png file.")]
         [RequireAuthorGuildPermissions(Permission.ManageMessages)]
-        public DiscordResponseCommandResult WelcomeTemplate() =>
-            Reply(new LocalMessage
+        public DiscordResponseCommandResult WelcomeTemplate()
+        {
+            return Reply(new LocalMessage
             {
-                Embed = new LocalEmbed
+                Embeds = new[]
                 {
-                    Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                    Description =
-                        "The PSD file contains everything that's needed to get started creating your own banners.\n" +
-                        "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
-                        "The dimension or resolution for a banner is 600px wide and 78px height (600x78)",
-                    Title = "Welcome template",
-                    ImageUrl = "https://i.imgur.com/rk5BBmf.png"
+                    new LocalEmbed
+                    {
+                        Color = Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
+                        Description =
+                            "The PSD file contains everything that's needed to get started creating your own banners.\n" +
+                            "Below you see a preview of how the template looks like in plain PNG format, which you can use in case you're unable to open PSD files.\n" +
+                            "The dimension or resolution for a banner is 600px wide and 78px height (600x78)",
+                        Title = "Welcome template",
+                        ImageUrl = "https://i.imgur.com/rk5BBmf.png"
+                    }
                 },
-                Attachments = { new LocalAttachment(new FileStream("Data/Welcome/WelcomeTemplate.psd", FileMode.Open),"WelcomeTemplate.psd") }
+                Attachments =
+                {
+                    new LocalAttachment(new FileStream("Data/Welcome/WelcomeTemplate.psd", FileMode.Open),
+                        "WelcomeTemplate.psd")
+                }
             });
+        }
 
         [Name("Banner Toggle")]
         [Command("bannertoggle", "toggle")]
@@ -222,6 +235,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 await db.SaveChangesAsync();
                 return Reply("Disabled welcome banners!", HanaBaseColor.Ok());
             }
+
             cfg.Banner = true;
             await db.SaveChangesAsync();
             return Reply("Enabled welcome banners!", HanaBaseColor.Ok());
@@ -241,6 +255,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 await db.SaveChangesAsync();
                 return Reply("No longer ignoring new accounts on welcome", HanaBaseColor.Ok());
             }
+
             cfg.IgnoreNew = time.Value;
             await db.SaveChangesAsync();
             return Reply($"Now ignoring accounts that's younger than {time.Value.Humanize()}",
@@ -262,6 +277,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 await db.SaveChangesAsync();
                 return Reply("Disabled welcome rewards!", HanaBaseColor.Ok());
             }
+
             cfg.Reward = reward;
             await db.SaveChangesAsync();
             return Reply($"Enabled or set welcome rewards to {reward}!", HanaBaseColor.Ok());

@@ -30,35 +30,42 @@ namespace Hanekawa.Extensions
             return list;
         }
 
-        public static LocalMessage Create(this LocalMessage builder, LocalEmbed embed, 
+        public static LocalMessage Create(this LocalMessage builder, LocalEmbed embed,
             LocalAllowedMentions mention = null)
         {
-            builder.Embed = embed;
+            builder.Embeds = new[] {embed};
             builder.AllowedMentions = mention ?? LocalAllowedMentions.None;
             return builder;
         }
-        
-        public static LocalMessage Create(this LocalMessage builder, string message, Color color, 
-            LocalAllowedMentions mention = null) =>
-            builder.CreateWithoutBuild(message, color, mention);
-        
-        public static LocalEmbed Create(this LocalEmbed builder, string message, Color color, 
-            LocalAllowedMentions mention = null) =>
-            builder.CreateDefaultEmbed(message, color, mention);
 
-        public static LocalMessage CreateWithoutBuild(this LocalMessage builder, string message, Color color, 
+        public static LocalMessage Create(this LocalMessage builder, string message, Color color,
             LocalAllowedMentions mention = null)
         {
-            builder.Embed = new LocalEmbed
+            return builder.CreateWithoutBuild(message, color, mention);
+        }
+
+        public static LocalEmbed Create(this LocalEmbed builder, string message, Color color,
+            LocalAllowedMentions mention = null)
+        {
+            return builder.CreateDefaultEmbed(message, color, mention);
+        }
+
+        public static LocalMessage CreateWithoutBuild(this LocalMessage builder, string message, Color color,
+            LocalAllowedMentions mention = null)
+        {
+            builder.Embeds = new[]
             {
-                Color = color,
-                Description = message.Truncate(2000)
+                new LocalEmbed
+                {
+                    Color = color,
+                    Description = message.Truncate(2000)
+                }
             };
             builder.AllowedMentions = mention ?? LocalAllowedMentions.None;
             return builder;
         }
-        
-        public static LocalEmbed CreateDefaultEmbed(this LocalEmbed builder, string message, Color color, 
+
+        public static LocalEmbed CreateDefaultEmbed(this LocalEmbed builder, string message, Color color,
             LocalAllowedMentions mention = null)
         {
             builder.Color = color;
@@ -79,7 +86,8 @@ namespace Hanekawa.Extensions
             }
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this ITextChannel channel, IEnumerable<Snowflake> messageIds)
+        public static async Task<bool> TryDeleteMessagesAsync(this ITextChannel channel,
+            IEnumerable<Snowflake> messageIds)
         {
             try
             {

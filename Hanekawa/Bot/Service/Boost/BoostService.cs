@@ -27,12 +27,12 @@ namespace Hanekawa.Bot.Service.Boost
     public class BoostService : DiscordClientService, IJob
     {
         private readonly Hanekawa _bot;
-        private readonly ExpService _exp;
-        private readonly IServiceProvider _provider;
         private readonly CacheService _cache;
+        private readonly ExpService _exp;
         private readonly Logger _logger;
+        private readonly IServiceProvider _provider;
 
-        public BoostService(ILogger<BoostService> logger, Hanekawa bot, ExpService exp, 
+        public BoostService(ILogger<BoostService> logger, Hanekawa bot, ExpService exp,
             IServiceProvider provider, CacheService cache) : base(logger, bot)
         {
             _bot = bot;
@@ -41,7 +41,7 @@ namespace Hanekawa.Bot.Service.Boost
             _cache = cache;
             _logger = LogManager.GetCurrentClassLogger();
         }
-        
+
         public Task Execute(IJobExecutionContext context)
         {
             _ = Reward();
@@ -63,7 +63,6 @@ namespace Hanekawa.Bot.Service.Boost
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var configs = await db.BoostConfigs.ToListAsync();
             foreach (var x in configs.Where(x => x.ExpGain != 0 || x.CreditGain != 0 || x.SpecialCreditGain != 0))
-            {
                 try
                 {
                     var guild = _bot.GetGuild(x.GuildId);
@@ -71,11 +70,11 @@ namespace Hanekawa.Bot.Service.Boost
                     await RewardGuildAsync(guild, db, x);
                 }
                 catch (Exception e)
-                { 
+                {
                     _logger.Log(LogLevel.Error, e,
                         $"(Boost Service) Error in {x.GuildId} when rewarding users - {e.Message}");
                 }
-            }
+
             _logger.Log(LogLevel.Info,
                 "(Boost Service) Finished rewarding users in all guilds configured for it");
         }
@@ -85,7 +84,6 @@ namespace Hanekawa.Bot.Service.Boost
             var users = guild.Members.Where(u => u.Value.BoostedAt.HasValue).ToList();
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild);
             foreach (var (_, member) in users)
-            {
                 try
                 {
                     await RewardUserAsync(db, member, x, guild, currencyCfg);
@@ -95,7 +93,6 @@ namespace Hanekawa.Bot.Service.Boost
                     _logger.Log(LogLevel.Error, e,
                         $"(Boost Service) Error in {x.GuildId} when rewarding {member.Id} - {e.Message}");
                 }
-            }
 
             await db.SaveChangesAsync();
             _logger.Log(LogLevel.Info, $"Rewarded {users.Count} boosters in {guild.Id}");
@@ -126,16 +123,18 @@ namespace Hanekawa.Bot.Service.Boost
             {
                 await member.SendMessageAsync(new LocalMessage
                 {
-                    Embed = new LocalEmbed
+                    Embeds = new[]
                     {
-                        Author = new LocalEmbedAuthor
+                        new LocalEmbed
                         {
-                            Name = $"{guild.Name} Boost Rewards",
-                            IconUrl = guild.GetIconUrl()
-
-                        },
-                        Color = _cache.GetColor(guild.Id),
-                        Description = sb.ToString()
+                            Author = new LocalEmbedAuthor
+                            {
+                                Name = $"{guild.Name} Boost Rewards",
+                                IconUrl = guild.GetIconUrl()
+                            },
+                            Color = _cache.GetColor(guild.Id),
+                            Description = sb.ToString()
+                        }
                     },
                     Attachments = null,
                     Content = null,
@@ -144,7 +143,10 @@ namespace Hanekawa.Bot.Service.Boost
                     IsTextToSpeech = false
                 });
             }
-            catch { /* User likely has DMs blocked */ }
+            catch
+            {
+                /* User likely has DMs blocked */
+            }
         }
 
         private async Task StartedBoostingAsync(IMember user)
@@ -176,7 +178,7 @@ namespace Hanekawa.Bot.Service.Boost
                         };
                         await _bot.SendMessageAsync(channel.Id, new LocalMessage
                         {
-                            Embed = embed,
+                            Embeds = new[] {embed},
                             Attachments = null,
                             Content = null,
                             AllowedMentions = LocalAllowedMentions.None,
@@ -204,7 +206,7 @@ namespace Hanekawa.Bot.Service.Boost
                 };
                 await _bot.SendMessageAsync(logChannel.Id, new LocalMessage
                 {
-                    Embed = logEmbed,
+                    Embeds = new[] {logEmbed},
                     Attachments = null,
                     Content = null,
                     AllowedMentions = LocalAllowedMentions.None,
@@ -214,10 +216,11 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for start boosting in {user.GuildId} for {user.Id} - {e.Message}");
+                _logger.Log(LogLevel.Error, e,
+                    $"(Boost Service) Error for start boosting in {user.GuildId} for {user.Id} - {e.Message}");
             }
         }
-        
+
         private async Task EndedBoostingAsync(IMember user)
         {
             try
@@ -243,7 +246,7 @@ namespace Hanekawa.Bot.Service.Boost
                 };
                 await _bot.SendMessageAsync(channel.Id, new LocalMessage
                 {
-                    Embed = embed,
+                    Embeds = new[] {embed},
                     Attachments = null,
                     Content = null,
                     AllowedMentions = LocalAllowedMentions.None,
@@ -253,7 +256,8 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Boost Service) Error for end boosting in {user.GuildId} for {user.Id} - {e.Message}");
+                _logger.Log(LogLevel.Error, e,
+                    $"(Boost Service) Error for end boosting in {user.GuildId} for {user.Id} - {e.Message}");
             }
         }
     }

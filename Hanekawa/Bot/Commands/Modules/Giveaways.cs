@@ -40,7 +40,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 {
                     GuildId = Context.Guild.Id,
                     Creator = Context.Author.Id,
-                    CreatedAtOffset = DateTimeOffset.UtcNow,
+                    CreatedAtOffset = DateTimeOffset.UtcNow
                 };
                 var cache = Context.Services.GetRequiredService<CacheService>();
                 var color = cache.GetColor(Context.GuildId);
@@ -60,7 +60,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));
                 var isIntW = int.TryParse(winnerString.Message.Content, out var winnerAmount);
                 if (isIntW) giveaway.WinnerAmount = winnerAmount;
-                
+
                 await Reply("Does entries stack? (y/n) (vote multiple times for multiple entries)");
                 var stackResponse = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
@@ -68,18 +68,20 @@ namespace Hanekawa.Bot.Commands.Modules
                 if (stackResponse.Message.Content.ToLower() == "y" || stackResponse.Message.Content.ToLower() == "yes")
                     giveaway.Stack = true;
                 else giveaway.Stack = false;
-                
+
                 var timeParse = new TimeSpanTypeParser();
-            
-                await Reply("When does the giveaway end? \n(1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Continue with 'no'");
+
+                await Reply(
+                    "When does the giveaway end? \n(1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Continue with 'no'");
                 var timespanStr = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));
                 var timespan = await timeParse.ParseAsync(null, timespanStr.Message.Content, Context);
                 if (timespan.IsSuccessful && timespan.HasValue)
                     giveaway.CloseAtOffset = DateTimeOffset.UtcNow.Add(timespan.Value);
-            
-                await Reply("Restrict participant to server age? Respond like above to define account age \n1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Continue with 'no'");
+
+                await Reply(
+                    "Restrict participant to server age? Respond like above to define account age \n1d = 1 day, 2h = 2 hours, 4m = 4minutes, 1d2d4m = 1 day, 2hours and 4min. Continue with 'no'");
                 var serverAge = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));
@@ -88,7 +90,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 Snowflake? toPost = null;
                 if (type is GiveawayType.Reaction or GiveawayType.ReactAndActivity or GiveawayType.VoteAndReact or
                     GiveawayType.All) toPost = await CreateWithReactionEventAsync(color);
-                
+
                 var embed = new LocalEmbed
                 {
                     Title = giveaway.Name,
@@ -103,26 +105,27 @@ namespace Hanekawa.Bot.Commands.Modules
                     embed.AddField("Level Requirement", $"{giveaway.LevelRequirement.Value}");
                 if (giveaway.ServerAgeRequirement.HasValue)
                     embed.AddField("Server Age Restriction", $"{giveaway.ServerAgeRequirement.Value.Humanize()}");
-                
-                await Reply("Does this look good? (y/n)", embed, LocalAllowedMentions.None);
+
+                await Reply("Does this look good? (y/n)", embed);
                 var confirm = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));
-                if (confirm == null || (confirm.Message.Content.ToLower() != "y" ||
-                                        confirm.Message.Content.ToLower() != "yes")) 
+                if (confirm == null || confirm.Message.Content.ToLower() != "y" ||
+                    confirm.Message.Content.ToLower() != "yes")
                     return Reply("Aborting...", HanaBaseColor.Bad());
-                
+
                 if (toPost.HasValue)
                 {
-                    var msg = await (Context.Guild.GetChannel(toPost.Value) as ITextChannel).SendMessageAsync(new LocalMessage
-                    {
-                        Embed = embed,
-                        AllowedMentions = LocalAllowedMentions.None,
-                        IsTextToSpeech = false
-                    });
+                    var msg = await (Context.Guild.GetChannel(toPost.Value) as ITextChannel).SendMessageAsync(
+                        new LocalMessage
+                        {
+                            Embeds = {embed},
+                            AllowedMentions = LocalAllowedMentions.None,
+                            IsTextToSpeech = false
+                        });
                     giveaway.ReactionMessage = msg.Id;
                 }
-                
+
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var idHistory = await db.GiveawayHistories.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue);
                 var idActive = await db.Giveaways.CountAsync(x => x.GuildId == Context.Guild.Id.RawValue);
@@ -134,7 +137,9 @@ namespace Hanekawa.Bot.Commands.Modules
 
             private async Task<Snowflake?> CreateWithReactionEventAsync(Color color)
             {
-                await Reply($"Which channel should the message be sent?\nNo to skip and post yourself (make sure to assign add the message later with 'giveaway msgadd giveawayId msgId')", color);
+                await Reply(
+                    "Which channel should the message be sent?\nNo to skip and post yourself (make sure to assign add the message later with 'giveaway msgadd giveawayId msgId')",
+                    color);
                 var response = await Context.WaitForMessageAsync(e =>
                     e.GuildId == Context.GuildId && e.ChannelId == Context.ChannelId &&
                     e.Member.Id == Context.Author.Id, TimeSpan.FromMinutes(1));

@@ -22,18 +22,20 @@ namespace Hanekawa.Bot.Service.Achievements
             if (pvp) userData.GamePvPAmount++;
             else userData.GameKillAmount++;
             var achievements = new List<Achievement>();
-            if(pvp) achievements = await db.Achievements
-                .Where(x => x.Category == AchievementCategory.PvP && x.Requirement <= userData.GamePvPAmount)
-                .ToListAsync();
-            else await db.Achievements
-                .Where(x => x.Category == AchievementCategory.Game && x.Requirement <= userData.GameKillAmount)
-                .ToListAsync();
+            if (pvp)
+                achievements = await db.Achievements
+                    .Where(x => x.Category == AchievementCategory.PvP && x.Requirement <= userData.GamePvPAmount)
+                    .ToListAsync();
+            else
+                await db.Achievements
+                    .Where(x => x.Category == AchievementCategory.Game && x.Requirement <= userData.GameKillAmount)
+                    .ToListAsync();
             if (achievements == null || achievements.Count == 0)
             {
                 await db.SaveChangesAsync();
                 return;
             }
-            var globalUser = await db.GetOrCreateGlobalUserDataAsync(userId);
+
             var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == userData.UserId).ToListAsync();
             var toAdd = (from x in achievements
                 where unlocks.All(e => e.AchieveId != x.AchievementId)
@@ -46,7 +48,7 @@ namespace Hanekawa.Bot.Service.Achievements
                     AchieveId = x.AchievementId
                 }).ToList();
 
-            if(toAdd.Count > 0) await db.AchievementUnlocks.AddRangeAsync(toAdd);
+            if (toAdd.Count > 0) await db.AchievementUnlocks.AddRangeAsync(toAdd);
             await db.SaveChangesAsync();
         }
     }

@@ -9,14 +9,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Disqord" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Bot" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Gateway" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-06082021-36" />
-    <PackageReference Include="Disqord.Webhook" Version="1.0.0-06082021-36" />
+    <PackageReference Include="Disqord" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Bot" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Core" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Gateway" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Rest" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-06272021-41" />
+    <PackageReference Include="Disqord.Webhook" Version="1.0.0-06272021-41" />
   </ItemGroup>
 
 </Project>

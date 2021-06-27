@@ -23,9 +23,9 @@ namespace Hanekawa.Bot.Service.Administration.Warning
 {
     public class WarnService : INService, IJob
     {
-        private readonly Logger _logger;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
+        private readonly Logger _logger;
 
         public WarnService(Hanekawa bot, CacheService cache)
         {
@@ -33,7 +33,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             _cache = cache;
             _logger = LogManager.GetCurrentClassLogger();
         }
-        
+
         public Task Execute(IJobExecutionContext context)
         {
             throw new NotImplementedException();
@@ -55,7 +55,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 Valid = true
             });
             await db.SaveChangesAsync();
-            if(notify) await NotifyUserAsync(user, staff, muteTime, reason, type);
+            if (notify) await NotifyUserAsync(user, staff, muteTime, reason, type);
             _logger.Log(LogLevel.Info, $"Warned {user.Id} in {user.GuildId}");
         }
 
@@ -67,18 +67,18 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             var warn = new StringBuilder();
             sb.AppendLine("**⮞ User Information**");
             sb.AppendLine($"Created: {user.CreatedAt().Humanize(DateTimeOffset.UtcNow)}");
-            
+
             sb.AppendLine("**⮞ Member Information**");
             sb.AppendLine(user.JoinedAt.HasValue
                 ? $"Joined: {user.JoinedAt.Value.Humanize(DateTimeOffset.UtcNow)}"
-                : $"Joined: Not Available");
+                : "Joined: Not Available");
 
             sb.AppendLine("**⮞ Activity**");
             sb.AppendLine($"Last Message: {userData.LastMessage.Humanize(true, DateTime.UtcNow)}");
             sb.AppendLine($"First Message: {userData.FirstMessage.Humanize(true, DateTime.UtcNow)}");
-            
+
             sb.AppendLine("**⮞ Session**");
-            sb.AppendLine($"Amount: {userData.Sessions}"); 
+            sb.AppendLine($"Amount: {userData.Sessions}");
             sb.AppendLine($"Time: {userData.StatVoiceTime.Humanize(2)} ({userData.StatVoiceTime})");
             sb.AppendLine("**⮞ Warnings**");
             foreach (var x in await GetWarnsAsync(user, type, db))
@@ -96,15 +96,16 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                         Color = _cache.GetColor(user.GuildId),
                         Description = sb.ToString()
                     });
-                    if(type == WarnLogType.Simple) return toReturn;
+                    if (type == WarnLogType.Simple) return toReturn;
                 }
 
                 warn.AppendLine(x);
                 warn.AppendLine();
             }
+
             return toReturn;
         }
-        
+
         private async Task<List<string>> GetWarnsAsync(IMember user, WarnLogType type, DbService db)
         {
             var warnings = type == WarnLogType.Full
@@ -113,8 +114,8 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 : await db.Warns.Where(x =>
                         x.GuildId == user.GuildId && x.UserId == user.Id && x.Valid)
                     .OrderByDescending(x => x.Time).ToListAsync();
-            var count = type == WarnLogType.Full && warnings.Count > 5 
-                ? warnings.Count 
+            var count = type == WarnLogType.Full && warnings.Count > 5
+                ? warnings.Count
                 : 5;
             if (count > warnings.Count) count = warnings.Count;
             var toReturn = new List<string>();
@@ -123,16 +124,18 @@ namespace Hanekawa.Bot.Service.Administration.Warning
                 var x = warnings[i];
                 var sb = new StringBuilder();
                 sb.AppendLine($"Type: {x.Type}");
-                sb.AppendLine($"Moderator: {await _bot.GetOrFetchMemberAsync(user.GuildId, x.Moderator)} ({x.Moderator})");
+                sb.AppendLine(
+                    $"Moderator: {await _bot.GetOrFetchMemberAsync(user.GuildId, x.Moderator)} ({x.Moderator})");
                 sb.AppendLine($"Reason: {x.Reason}");
                 sb.AppendLine($"Time: {x.Time.Humanize()}");
                 toReturn.Add(sb.ToString());
             }
-            
+
             return toReturn;
         }
 
-        private async Task NotifyUserAsync(IMember user, IUser staff, TimeSpan? duration, string reason, WarnReason type)
+        private async Task NotifyUserAsync(IMember user, IUser staff, TimeSpan? duration, string reason,
+            WarnReason type)
         {
             try
             {
@@ -143,14 +146,14 @@ namespace Hanekawa.Bot.Service.Administration.Warning
 
                 if (!reason.IsNullOrWhiteSpace()) sb.AppendLine($"Reason: {reason}");
                 if (duration.HasValue) sb.AppendLine($"Duration: {duration.Value}");
-                
+
                 sb.AppendLine($"By: {staff.Name}#{staff.Discriminator} ({staff.Id})");
-                
+
                 await user.SendMessageAsync(new LocalMessage
                 {
                     Content = sb.ToString(),
                     Attachments = null,
-                    Embed = null,
+                    Embeds = null,
                     AllowedMentions = LocalAllowedMentions.None,
                     Reference = null,
                     IsTextToSpeech = false

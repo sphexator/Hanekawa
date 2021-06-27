@@ -11,18 +11,18 @@
 
     <ItemGroup>
         <PackageReference Include="AspNet.Security.OAuth.Discord" Version="5.0.6" />
-        <PackageReference Include="Disqord" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Bot" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Core" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Gateway" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Rest" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Voice" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-06082021-36" />
-        <PackageReference Include="Disqord.Webhook" Version="1.0.0-06082021-36" />
+        <PackageReference Include="Disqord" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Core" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Extensions.Slash" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Extensions.Voice" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Voice" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Voice.Api" Version="1.0.0-06272021-41" />
+        <PackageReference Include="Disqord.Webhook" Version="1.0.0-06272021-41" />
         <PackageReference Include="Humanizer" Version="2.11.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />

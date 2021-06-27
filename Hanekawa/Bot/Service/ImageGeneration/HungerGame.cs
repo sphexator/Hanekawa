@@ -69,8 +69,8 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             }
             catch
             {
-                avi = await GetAvatarAsync(guild.GetIconUrl(ImageFormat.Png), new Size(80, 80), false, false);
-                x.After.Avatar = guild.GetIconUrl(ImageFormat.Png);
+                avi = await GetAvatarAsync(guild.GetIconUrl(CdnAssetFormat.Png), new Size(80, 80), false, false);
+                x.After.Avatar = guild.GetIconUrl(CdnAssetFormat.Png);
             }
 
             return avi;
@@ -92,10 +92,12 @@ namespace Hanekawa.Bot.Service.ImageGeneration
         {
             var healthTextLocation = GetHealthTextLocation(width, height);
             var hp = $"       {x.After.Health} / 100";
-            img.Mutate(a => a.DrawText(hp, new Font(_fonts.Find("times"), 15, FontStyle.Regular), Color.White, healthTextLocation));
+            img.Mutate(a => a.DrawText(hp, new Font(_fonts.Find("times"), 15, FontStyle.Regular), Color.White,
+                healthTextLocation));
         }
 
-        private static void DrawHealthBar(Image<Rgba32> img, Image avi, int width, int height, PointF[] points, UserAction x,
+        private static void DrawHealthBar(Image<Rgba32> img, Image avi, int width, int height, PointF[] points,
+            UserAction x,
             PointF[] beforeHpBar, PointF[] afterHpBar)
         {
             img.Mutate(a => a
@@ -124,10 +126,10 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             var point3 = new PointF(w2 + seat * 108, h2 + row * 111);
             var point4 = new PointF(w1 + seat * 108, h2 + row * 111);
 
-            var result = new[] { point1, point2, point3, point4 };
+            var result = new[] {point1, point2, point3, point4};
             return result;
         }
-        
+
         private static PointF[] GetHeathBar(int seat, int row, double health)
         {
             //Size of box
@@ -141,9 +143,9 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             if (health >= 100) health = 100;
 
             var point1 = new PointF(w1 + seat * 108, h1 + row * 111);
-            var point2 = new PointF((float)(w2 + seat * 108 - health), h1 + row * 111);
+            var point2 = new PointF((float) (w2 + seat * 108 - health), h1 + row * 111);
 
-            var point3 = new PointF((float)(w2 + seat * 108 - health), h2 + row * 111);
+            var point3 = new PointF((float) (w2 + seat * 108 - health), h2 + row * 111);
             var point4 = new PointF(w1 + seat * 108, h2 + row * 111);
 
             var result = new[] {point1, point2, point3, point4};

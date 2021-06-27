@@ -24,18 +24,17 @@ namespace Hanekawa.Bot.Service.Game
 {
     public class ShipGameService : INService
     {
-        private readonly Hanekawa _bot;
-        private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
-        private readonly Random _random;
         private readonly AchievementService _achievement;
-        private readonly ExpService _exp;
+        private readonly Hanekawa _bot;
         private readonly CacheService _cache;
+        private readonly ExpService _exp;
         private readonly ImageGenerationService _image;
-        private int DefaultHealth { get; } = 10;
-        private int DefaultDamage { get; } = 1;
+        private readonly Logger _logger;
+        private readonly IServiceProvider _provider;
+        private readonly Random _random;
 
-        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement, ExpService exp, CacheService cache, ImageGenerationService image)
+        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement,
+            ExpService exp, CacheService cache, ImageGenerationService image)
         {
             _bot = bot;
             _provider = provider;
@@ -46,6 +45,9 @@ namespace Hanekawa.Bot.Service.Game
             _image = image;
             _logger = LogManager.GetCurrentClassLogger();
         }
+
+        private int DefaultHealth { get; } = 10;
+        private int DefaultDamage { get; } = 1;
 
         public async Task<ShipGameResult> SearchAsync(HanekawaCommandContext context)
         {
@@ -61,35 +63,37 @@ namespace Hanekawa.Bot.Service.Game
             var enemy = enemies[_random.Next(enemies.Count)];
             var enemyClass = await db.GameClasses.FindAsync(enemy.ClassId);
             var result = await InitializeBattleAsync(new ShipGame
-                {
-                    PlayerOne = new ShipUser(context.Author, userData.Level, gameClass, GetDamage(userData.Level),
-                        GetHealth(userData.Level, gameClass)),
-                    PlayerTwo = new ShipUser(enemy, userData.Level, enemyClass, GetDamage(userData.Level, enemy),
-                        GetHealth(userData.Level, enemy, enemyClass)),
-                    Exp = enemy.ExpGain,
-                    Credit = enemy.CreditGain,
-                    Bet = null,
-                    Type = ShipGameType.PvE,
-                    Channel = context.Channel
-                });
+            {
+                PlayerOne = new ShipUser(context.Author, userData.Level, gameClass, GetDamage(userData.Level),
+                    GetHealth(userData.Level, gameClass)),
+                PlayerTwo = new ShipUser(enemy, userData.Level, enemyClass, GetDamage(userData.Level, enemy),
+                    GetHealth(userData.Level, enemy, enemyClass)),
+                Exp = enemy.ExpGain,
+                Credit = enemy.CreditGain,
+                Bet = null,
+                Type = ShipGameType.PvE,
+                Channel = context.Channel
+            });
             if (result.Winner.IsNpc) return result;
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId);
-            var exp = await _exp.AddExpAsync(context.Author, userData, enemy.ExpGain, enemy.CreditGain, db, ExpSource.Other);
+            var exp = await _exp.AddExpAsync(context.Author, userData, enemy.ExpGain, enemy.CreditGain, db,
+                ExpSource.Other);
             result.Log.AddFirst($"Rewarded: {currencyCfg.ToCurrencyFormat(enemy.CreditGain)} & {exp} experience");
             var embed = LocalEmbed.FromEmbed(result.Message.Embeds[0]);
             embed.Description = UpdateCombatLog(result.Log.Reverse());
             embed.Color = HanaBaseColor.Red();
-            await result.Message.ModifyAsync(x => x.Embed = embed);
+            await result.Message.ModifyAsync(x => x.Embeds = new[] {embed});
             return result;
         }
-        
+
         public async Task<ShipGameResult> InitializeBattleAsync(ShipGame game)
         {
             try
             {
                 _cache.AddGame(game.Channel.Id, ShipGameType.PvE);
                 var result = await BattleAsync(game);
-                if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc) _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
+                if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc)
+                    _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
                 else _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, true);
                 _cache.RemoveGame(game.Channel.Id);
                 return result;
@@ -101,7 +105,7 @@ namespace Hanekawa.Bot.Service.Game
                 throw new HanaCommandException("Couldn't finish the game...");
             }
         }
-        
+
         private async Task<ShipGameResult> BattleAsync(ShipGame game)
         {
             var first = _random.Next(1, 3);
@@ -113,15 +117,21 @@ namespace Hanekawa.Bot.Service.Game
             log.AddFirst($"**{attacker.Name}** VS. **{target.Name}**");
             var msg = await _bot.SendMessageAsync(game.Channel.Id, new LocalMessage
             {
-                Attachments = new List<LocalAttachment>(new []{new LocalAttachment(await _image.ShipGame(game.PlayerOne.Avatar, game.PlayerTwo.Avatar), "Game.png") }),
-                Embed = new LocalEmbed
+                Attachments = new List<LocalAttachment>(new[]
                 {
-                    Color = HanaBaseColor.Lime(),
-                    Description = UpdateCombatLog(log.Reverse()),
-                    Fields = new List<LocalEmbedField>
+                    new LocalAttachment(await _image.ShipGame(game.PlayerOne.Avatar, game.PlayerTwo.Avatar), "Game.png")
+                }),
+                Embeds = new[]
+                {
+                    new LocalEmbed
                     {
-                        new() {Name = attacker.Name, Value = $"{attacker.Health} / {attacker.MaxHealth}"},
-                        new() {Name = target.Name, Value = $"{target.Health} / {target.MaxHealth}"}
+                        Color = HanaBaseColor.Lime(),
+                        Description = UpdateCombatLog(log.Reverse()),
+                        Fields = new List<LocalEmbedField>
+                        {
+                            new() {Name = attacker.Name, Value = $"{attacker.Health} / {attacker.MaxHealth}"},
+                            new() {Name = target.Name, Value = $"{target.Health} / {target.MaxHealth}"}
+                        }
                     }
                 }
             });
@@ -133,19 +143,20 @@ namespace Hanekawa.Bot.Service.Game
                     winner = result;
                     continue;
                 }
+
                 var temp = attacker;
                 attacker = target;
                 target = temp;
-                
+
                 var embed = LocalEmbed.FromEmbed(msg.Embeds[0]);
                 embed.Description = UpdateCombatLog(log.Reverse());
                 var attackField = embed.Fields.FirstOrDefault(x => x.Name == attacker.Name);
-                
-                if(attackField != null) attackField.Value = $"{attacker.Health} / {attacker.MaxHealth}";
+
+                if (attackField != null) attackField.Value = $"{attacker.Health} / {attacker.MaxHealth}";
                 var targetField = embed.Fields.FirstOrDefault(x => x.Name == target.Name);
-                if(targetField != null) targetField.Value = $"{target.Health} / {target.MaxHealth}";
-                
-                await msg.ModifyAsync(x => x.Embed = embed);
+                if (targetField != null) targetField.Value = $"{target.Health} / {target.MaxHealth}";
+
+                await msg.ModifyAsync(x => x.Embeds = new[] {embed});
                 await Task.Delay(2000);
             }
 
@@ -157,13 +168,13 @@ namespace Hanekawa.Bot.Service.Game
         {
             var dmg = CalculateDamage(player.Damage, player.Class, target.Class, gameType);
             target.Health -= dmg;
-            
-            if(msgLog.Count == 5) msgLog.RemoveLast();
+
+            if (msgLog.Count == 5) msgLog.RemoveLast();
             msgLog.AddFirst($"**{player.Name}** hit **{target.Name}** for **{dmg}**");
-            
+
             return target.Health >= 0 ? player : null;
         }
-        
+
         private int CalculateDamage(int damage, GameClass attackerClass, GameClass enemyClass, ShipGameType type)
         {
             var avoidance = _random.Next(100);
@@ -179,16 +190,31 @@ namespace Hanekawa.Bot.Service.Game
             if (lowDmg >= highDmg) highDmg = lowDmg + 10;
             return _random.Next(lowDmg, highDmg);
         }
-        
-        private int GetDamage(int level) => DefaultDamage * level;
-        private int GetDamage(int level, GameEnemy enemy) => (DefaultDamage + enemy.Damage) * level;
-        private int GetHealth(int level, GameClass ass) =>
-            Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
-        
-        private int GetHealth(int level, GameEnemy enemyData, GameClass enemyClass) =>
-            Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
-                                       enemyClass.ModifierHealth));
-        
-        private static string UpdateCombatLog(IEnumerable<string> log) => string.Join("\n", log);
+
+        private int GetDamage(int level)
+        {
+            return DefaultDamage * level;
+        }
+
+        private int GetDamage(int level, GameEnemy enemy)
+        {
+            return (DefaultDamage + enemy.Damage) * level;
+        }
+
+        private int GetHealth(int level, GameClass ass)
+        {
+            return Convert.ToInt32(Math.Round(DefaultHealth * level * ass.ModifierHealth));
+        }
+
+        private int GetHealth(int level, GameEnemy enemyData, GameClass enemyClass)
+        {
+            return Convert.ToInt32(Math.Round((DefaultHealth + enemyData.Health) * level *
+                                              enemyClass.ModifierHealth));
+        }
+
+        private static string UpdateCombatLog(IEnumerable<string> log)
+        {
+            return string.Join("\n", log);
+        }
     }
 }

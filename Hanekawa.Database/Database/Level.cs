@@ -2,6 +2,7 @@
 using Hanekawa.Database.Tables.Config.Guild;
 using Microsoft.EntityFrameworkCore;
 
+// ReSharper disable once CheckNamespace
 namespace Hanekawa.Database
 {
     public partial class DbService
@@ -19,19 +20,13 @@ namespace Hanekawa.Database
                 x.Property(e => e.BoostExpMultiplier).HasDefaultValue(1);
                 x.Property(e => e.Decay).HasDefaultValue(false);
             });
-            modelBuilder.Entity<LevelExpReduction>(x =>
-            {
-                x.HasKey(e => new {e.GuildId, e.ChannelId});
-            });
+            modelBuilder.Entity<LevelExpReduction>(x => { x.HasKey(e => new {e.GuildId, e.ChannelId}); });
             modelBuilder.Entity<LevelReward>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.Level});
                 x.Property(e => e.NoDecay).HasDefaultValue(false);
             });
-            modelBuilder.Entity<LevelExpEvent>(x =>
-            {
-                x.HasKey(e => e.GuildId);
-            });
+            modelBuilder.Entity<LevelExpEvent>(x => { x.HasKey(e => e.GuildId); });
         }
     }
 }

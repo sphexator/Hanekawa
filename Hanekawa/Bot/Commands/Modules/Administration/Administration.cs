@@ -28,9 +28,9 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
     [RequireBotGuildPermissions(Permission.EmbedLinks)]
     public class Administration : HanekawaCommandModule
     {
+        private readonly CacheService _cache;
         private readonly MuteService _mute;
         private readonly WarnService _warn;
-        private readonly CacheService _cache;
 
         public Administration(MuteService mute, WarnService warn, CacheService cache)
         {
@@ -38,7 +38,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             _warn = warn;
             _cache = cache;
         }
-        
+
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user")]
@@ -53,7 +53,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             {
                 await ReplyAndDeleteAsync(
                     new LocalMessage().Create("Cannot ban someone that's higher than me in hierarchy.",
-                            HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
+                        HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
                 return;
             }
 
@@ -65,13 +65,14 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
                 return;
             }
+
             _cache.AddBanCache(Context.GuildId, Context.Author.Id, user.Id);
             await Context.Guild.CreateBanAsync(user.Id, $"{Context.Author.Id} - {reason}", 1);
             await ReplyAndDeleteAsync(new LocalMessage().Create(
                 $"Banned {user.Mention} from {Context.Guild.Name}.",
                 HanaBaseColor.Ok()), TimeSpan.FromSeconds(20));
         }
-        
+
         [Name("Ban")]
         [Command("ban")]
         [Description("Bans a user by their ID, doesn't require to be in the server")]
@@ -82,7 +83,6 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             await Context.Message.TryDeleteMessageAsync();
             var user = await Context.Guild.GetOrFetchMemberAsync(userId);
             if (user == null)
-            {
                 try
                 {
                     _cache.AddBanCache(Context.GuildId, Context.Author.Id, userId);
@@ -97,7 +97,6 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                         "Couldn't fetch a user by that ID.",
                         Color.Green), TimeSpan.FromSeconds(20));
                 }
-            }
             else await BanAsync(user, reason);
         }
 
@@ -112,7 +111,6 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             await Response($"Attempting to ban {ids.Length} ids...", HanaBaseColor.Orange());
             var banned = 0;
             foreach (var x in ids)
-            {
                 try
                 {
                     _cache.AddBanCache(Context.GuildId, Context.Author.Id, x);
@@ -125,9 +123,9 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     banned--;
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
-            }
 
-            await ReplyAndDeleteAsync(new LocalMessage().Create($"Successfully banned {banned} accounts!", HanaBaseColor.Ok()),
+            await ReplyAndDeleteAsync(
+                new LocalMessage().Create($"Successfully banned {banned} accounts!", HanaBaseColor.Ok()),
                 TimeSpan.FromSeconds(20));
         }
 
@@ -151,12 +149,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             if (!Context.Author.HierarchyCheck(user))
             {
                 await ReplyAndDeleteAsync(new LocalMessage().Create(
-                        $"{Context.Author.Mention}, can't kick someone that's equal or more power than you.",
-                        Color.Red), TimeSpan.FromSeconds(20));
+                    $"{Context.Author.Mention}, can't kick someone that's equal or more power than you.",
+                    Color.Red), TimeSpan.FromSeconds(20));
                 return;
             }
 
-            await user.KickAsync(new DefaultRestRequestOptions{Reason = $"{Context.Author} ({Context.Author.Id}) reason: {reason}"});
+            await user.KickAsync(new DefaultRestRequestOptions
+                {Reason = $"{Context.Author} ({Context.Author.Id}) reason: {reason}"});
             await ReplyAndDeleteAsync(new LocalMessage().Create(
                 $"Kicked {user.Mention} from {Context.Guild.Name}.",
                 Color.Green), TimeSpan.FromSeconds(20));
@@ -175,17 +174,13 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             try
             {
                 if (await Context.Channel.TryDeleteMessagesAsync(messages))
-                {
                     await ReplyAndDeleteAsync(
                         new LocalMessage().Create($"Deleted {amount} messages", Color.Green),
                         TimeSpan.FromSeconds(20));
-                }
                 else
-                {
                     await ReplyAndDeleteAsync(new LocalMessage().Create(
                         $"Couldn't delete {amount} messages, missing permission?",
                         Color.Red), TimeSpan.FromSeconds(20));
-                }
             }
             catch
             {
@@ -207,10 +202,8 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             if (!await _mute.Mute(user, Context.Author, "No Reason Specified (Soft ban)", db))
-            {
                 await ReplyAndDeleteAsync(new LocalMessage().Create("Couldn't mute user.", Color.Red),
                     TimeSpan.FromSeconds(20));
-            }
 
             var messages = await Context.Channel.FilterMessagesAsync(50, user);
             await Context.Channel.TryDeleteMessagesAsync(messages);
@@ -231,18 +224,14 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
             var muteRes = await _mute.Mute(user, Context.Author, reason, db, duration.Value);
             if (muteRes)
-            {
                 await ReplyAndDeleteAsync(new LocalMessage().Create(
                     $"Muted {user.Mention} for {duration.Value.Humanize(2)}",
                     Color.Green), TimeSpan.FromSeconds(20));
-            }
             else
-            {
                 await ReplyAndDeleteAsync(new LocalMessage().Create(
                         $"Couldn't mute {user.Mention}, missing permission or role not accessible ?",
                         Color.Red),
                     TimeSpan.FromSeconds(20));
-            }
         }
 
         [Name("UnMute")]
@@ -257,16 +246,12 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             if (await _mute.UnMuteAsync(user, db))
-            {
                 await ReplyAndDeleteAsync(new LocalMessage().Create($"Unmuted {user.Mention}", Color.Green),
                     TimeSpan.FromSeconds(20));
-            }
             else
-            {
                 await ReplyAndDeleteAsync(new LocalMessage().Create(
                     $"Couldn't unmute {user.Mention}, missing permissions or role not accessible ?",
                     HanaBaseColor.Bad()), TimeSpan.FromSeconds(20));
-            }
         }
 
         [Name("Warn")]
@@ -295,7 +280,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var pages = await _warn.GetWarnLogAsync(user, type, db);
             if (pages.Count == 1) return Reply(pages[0]);
-            return Pages(pages.Select(x => (Page) x).ToList());
+            return Pages(pages.Select(x => new Page().AddEmbed(x)).ToList());
         }
 
         [Name("Reason")]
@@ -332,7 +317,8 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 await Task.Delay(TimeSpan.FromMilliseconds(200));
             }
 
-            await ReplyAndDeleteAsync(new LocalMessage().Create($"Updated mod logs for entries between {range}", HanaBaseColor.Lime()),
+            await ReplyAndDeleteAsync(
+                new LocalMessage().Create($"Updated mod logs for entries between {range}", HanaBaseColor.Lime()),
                 TimeSpan.FromSeconds(10));
         }
 
@@ -358,11 +344,9 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                 var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
                 await Task.WhenAll(delay);
                 if (cfg.LogBan.HasValue)
-                {
                     updMsg =
                         await (Context.Guild.GetChannel(cfg.LogBan.Value) as ITextChannel).FetchMessageAsync(
                             modCase.MessageId) as IUserMessage;
-                }
             }
 
             if (updMsg == null)
@@ -388,7 +372,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             if (modField != null) modField.Value = Context.Author.Mention;
             if (reasonField != null) reasonField.Value = reason != null ? $"{reason}" : "No Reason Provided";
 
-            await updMsg.ModifyAsync(m => m.Embed = embed);
+            await updMsg.ModifyAsync(m => m.Embeds = new[] {embed});
         }
     }
 }
