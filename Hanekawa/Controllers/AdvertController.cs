@@ -119,10 +119,10 @@ namespace Hanekawa.Controllers
                         IsTextToSpeech = false
                     });
                 }
-
+                
                 _log.Log(LogLevel.Info,
                     $"(Advert Endpoint) Rewarded {userId} in {guild.Id} for voting on the server!");
-
+                
                 var giveaways = await _db.Giveaways
                     .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(token);
                 var sb = new StringBuilder();

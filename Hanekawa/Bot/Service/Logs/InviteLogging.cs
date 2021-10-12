@@ -15,7 +15,7 @@ namespace Hanekawa.Bot.Service.Logs
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
             if (!cfg.LogJoin.HasValue) return;
-            _cache.AddInvite(e.GuildId.Value, e.Invite);
+            _cache.AddInvite(e.GuildId.Value, e.Inviter.Id, e.Code, e.Uses);
         }
 
         protected override async ValueTask OnInviteDeleted(InviteDeletedEventArgs e)

@@ -16,7 +16,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
 {
     [Name("Gamble")]
     [Description("Commands for gambling")]
-    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds)]
     public class Gamble : HanekawaCommandModule
     {
         [Name("Bet")]

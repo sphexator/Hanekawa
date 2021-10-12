@@ -25,7 +25,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 {
     [Name("Administration")]
     [Description("Moderation commands")]
-    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds)]
     public class Administration : HanekawaCommandModule
     {
         private readonly CacheService _cache;

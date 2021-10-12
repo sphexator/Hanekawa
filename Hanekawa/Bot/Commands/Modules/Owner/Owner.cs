@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                 {
                     Nick = author.Nick,
                     Roles = roleList.ToArray(),
-                    Permissions = new Optional<ulong>(author.GetGuildPermissions()),
+                    Permissions = new Optional<ulong>(author.GetPermissions()),
                     JoinedAt = author.JoinedAt,
                     Deaf = author.IsDeafened,
                     Mute = author.IsMuted,

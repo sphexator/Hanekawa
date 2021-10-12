@@ -12,9 +12,7 @@ namespace Hanekawa.Database
 {
     public partial class DbService : DbContext
     {
-        public DbService(DbContextOptions<DbService> options) : base(options)
-        {
-        }
+        public DbService(DbContextOptions<DbService> options) : base(options) { }
 
         // Voice Role
         public DbSet<VoiceRoles> VoiceRoles { get; set; }

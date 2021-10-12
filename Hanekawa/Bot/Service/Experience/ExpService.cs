@@ -42,9 +42,10 @@ namespace Hanekawa.Bot.Service.Experience
 
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
+            // TODO: Re-create Exp event
             foreach (var x in db.LevelExpEvents.ToArray())
             {
-                if (x.Time <= DateTime.UtcNow)
+                if (x.End <= DateTimeOffset.UtcNow)
                 {
                     db.LevelExpEvents.Remove(x);
                     continue;
@@ -58,7 +59,7 @@ namespace Hanekawa.Bot.Service.Experience
                     _cache.AdjustExpMultiplier(ExpSource.Voice, x.GuildId, config.VoiceExpMultiplier);
                     _cache.AdjustExpMultiplier(ExpSource.Other, x.GuildId, 1);
                     _cache.TryRemoveExpEvent(x.GuildId);
-                }, null, x.Time - DateTime.UtcNow, Timeout.InfiniteTimeSpan);
+                }, null, x.End - DateTime.UtcNow, Timeout.InfiniteTimeSpan);
                 _cache.TryAddExpEvent(x.GuildId, timer);
                 _cache.AdjustExpMultiplier(ExpSource.Text, x.GuildId, x.Multiplier);
                 _cache.AdjustExpMultiplier(ExpSource.Voice, x.GuildId, x.Multiplier);
@@ -196,14 +197,14 @@ namespace Hanekawa.Bot.Service.Experience
             await db.SaveChangesAsync();
         }
         
-        private int GetExp(INestableChannel channel)
+        private int GetExp(ICategorizableGuildChannel channel)
         {
             var xp = _random.Next(10, 20);
             if (IsReducedExp(channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);
             return xp;
         }
         
-        private int GetExp(INestableChannel channel, TimeSpan period)
+        private int GetExp(ICategorizableGuildChannel channel, TimeSpan period)
         {
             var xp = Convert.ToInt32(period.TotalMinutes * 2);
             if (IsReducedExp(channel.Id, channel.CategoryId)) xp = Convert.ToInt32(xp / 10);

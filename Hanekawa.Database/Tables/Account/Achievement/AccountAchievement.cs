@@ -3,14 +3,14 @@ using Disqord;
 
 namespace Hanekawa.Database.Tables.Account.Achievement
 {
-    public class AchievementUnlocked
+    public class AccountAchievement
     {
-        public Guid Id { get; set; }
-        public DateTimeOffset Date { get; set; }
+        public DateTimeOffset DateAchieved { get; set; }
         
         public Snowflake UserId { get; set; }
+        public AccountGlobal User { get; set; }
         
-        public Guid AchieveId { get; set; }
+        public Guid AchievementId { get; set; }
         public Achievement Achievement { get; set; }
     }
 }

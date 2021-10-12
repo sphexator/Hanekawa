@@ -163,7 +163,7 @@ namespace Hanekawa.Bot.Service.Logs
             {
                 var tempInvites = new ConcurrentDictionary<string, Tuple<Snowflake?, int>>();
                 foreach (var x in restInvites) 
-                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Id, x.Metadata.Uses));
+                    tempInvites.TryAdd(x.Code, new Tuple<Snowflake?, int>(x.Inviter.Id, x.ApproximateMemberCount ?? 0));
 
                 var change = invites.Except(tempInvites).ToList();
                 var (code, (snowflake, _)) = change.FirstOrDefault();

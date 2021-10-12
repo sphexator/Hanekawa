@@ -84,7 +84,7 @@ namespace Hanekawa.Bot.Service.Drop
                 Embeds = null,
                 AllowedMentions = LocalAllowedMentions.None,
                 Reference = new LocalMessageReference()
-                    {GuildId = guild.Id, ChannelId = msg.ChannelId, MessageId = msg.Id, FailOnInvalid = false},
+                    {GuildId = guild.Id, ChannelId = msg.ChannelId, MessageId = msg.Id, FailOnUnknownMessage = false},
                 IsTextToSpeech = false
             });
             var emotes = GetEmotes(guild);

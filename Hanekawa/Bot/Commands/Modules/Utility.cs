@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Commands.Modules
         [Name("Emote")]
         [Description("Uploads the given emote(s) to the server")]
         [Command("emote")]
-        [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
+        [RequireAuthorGuildPermissions(Permission.ManageEmojisAndStickers)]
         public async Task<DiscordCommandResult> EmoteAsync(params ICustomEmoji[] emojis)
         {
             var list = new StringBuilder();
@@ -69,7 +69,7 @@ namespace Hanekawa.Bot.Commands.Modules
         [Name("Emote")]
         [Description("Uploads the given URL to the server with the given name")]
         [Command("emote")]
-        [RequireAuthorGuildPermissions(Permission.ManageEmojis)]
+        [RequireAuthorGuildPermissions(Permission.ManageEmojisAndStickers)]
         public async Task<DiscordCommandResult> EmoteAsync(string url, string name)
         {
             if (!(url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) |
@@ -149,7 +149,7 @@ namespace Hanekawa.Bot.Commands.Modules
         [Name("Avatar")]
         [Command("avatar", "pfp")]
         [Description("Sends a embeded message containing the profile picture of user provided, if empty it'll return your own.")]
-        [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.SendMessages)]
+        [RequireBotGuildPermissions(Permission.SendEmbeds | Permission.SendMessages)]
         [RequiredChannel]
         public async ValueTask<DiscordResponseCommandResult> AvatarAsync(IMember user = null)
         {
@@ -186,7 +186,6 @@ namespace Hanekawa.Bot.Commands.Modules
                 Fields = new List<LocalEmbedField>
                 {
                     new () { Name = $"Verification Level", Value = Context.Guild.VerificationLevel.ToString(), IsInline = false},
-                    new () { Name = "Region", Value = Context.Guild.VoiceRegion, IsInline = true},
                     new () { Name = "Members", Value = $"{Context.Guild.MemberCount}"},
                     new () { Name = "Channels", Value = sb.ToString()},
                     new () { Name = "Server Owner", Value = $"{Context.Guild.GetMember(Context.Guild.OwnerId)} ({Context.Guild.OwnerId})"},

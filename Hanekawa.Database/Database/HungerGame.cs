@@ -7,8 +7,8 @@ namespace Hanekawa.Database
 {
     public partial class DbService
     {
-        public DbSet<HungerGame> HungerGames { get; set; }
-        public DbSet<HungerGameCustomChar> HungerGameCustomChars { get; set; }
+        public DbSet<Game> HungerGames { get; set; }
+        public DbSet<HungerGameCustomCharacter> HungerGameCustomChars { get; set; }
         public DbSet<HungerGameDefault> HungerGameDefaults { get; set; }
         public DbSet<HungerGameHistory> HungerGameHistories { get; set; }
         public DbSet<HungerGameProfile> HungerGameProfiles { get; set; }
@@ -16,7 +16,7 @@ namespace Hanekawa.Database
         
         private static void HungerGameBuilder(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<HungerGame>(x =>
+            modelBuilder.Entity<Game>(x =>
             {
                 x.HasKey(e => e.Id);
                 x.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -33,7 +33,7 @@ namespace Hanekawa.Database
             {
                 x.HasKey(e => e.GuildId);
             });
-            modelBuilder.Entity<HungerGameCustomChar>(x =>
+            modelBuilder.Entity<HungerGameCustomCharacter>(x =>
             {
                 x.HasKey(e => new {e.Id, e.GuildId});
                 x.Property(e => e.Id).ValueGeneratedOnAdd();

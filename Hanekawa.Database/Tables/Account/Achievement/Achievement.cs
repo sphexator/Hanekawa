@@ -19,6 +19,6 @@ namespace Hanekawa.Database.Tables.Account.Achievement
         public AchievementCategory Category { get; set; }
         public AchievementDifficulty Difficulty { get; set; }
         
-        public List<AchievementUnlocked> Unlocked { get; set; }
+        public List<AccountAchievement> Unlocked { get; set; }
     }
 }

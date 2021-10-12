@@ -72,7 +72,7 @@ namespace Hanekawa.Bot.Service.Game
                 Credit = enemy.CreditGain,
                 Bet = null,
                 Type = ShipGameType.PvE,
-                Channel = context.Channel
+                Channel = context.Channel as ITextChannel
             });
             if (result.Winner.IsNpc) return result;
             var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId);

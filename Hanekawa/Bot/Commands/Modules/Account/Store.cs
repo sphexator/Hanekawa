@@ -19,7 +19,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
 {
     [Name("Store")]
     [Description("Commands for server store")]
-    [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.SendMessages)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds | Permission.SendMessages)]
     public class Store : HanekawaCommandModule
     {
         [Name("Store")]
@@ -51,80 +51,80 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                 Context.Guild.GetIconUrl(), $"Store for {Context.Guild.Name}"));
         }
 
-        [Name("Inventory")]
-        [Description("Display your inventory")]
-        [Command("inventory", "inv")]
-        [RequiredChannel]
-        public async Task<DiscordCommandResult> InventoryAsync()
-        {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var inventory = await db.Inventories.FindAsync(Context.Author.Id);
-            if (inventory.Items.Count == 0)
-                return Reply("Your inventory is empty",
-                    Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
+        // [Name("Inventory")]
+        // [Description("Display your inventory")]
+        // [Command("inventory", "inv")]
+        // [RequiredChannel]
+        // public async Task<DiscordCommandResult> InventoryAsync()
+        // {
+        //     await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+        //     var inventory = await db.Inventories.FindAsync(Context.Author.Id);
+        //     if (inventory.Items.Count == 0)
+        //         return Reply("Your inventory is empty",
+        //             Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
+        //
+        //     List<string> result = null;
+        //     foreach (var x in inventory.Items)
+        //     {
+        //         if (x.ItemJson is RoleItem roleItem)
+        //         {
+        //             if (!Context.Guild.Roles.TryGetValue(roleItem.RoleId, out var role)) continue;
+        //             result ??= new List<string>();
+        //             result.Add($"{role.Name} [Role]");
+        //         }
+        //         else
+        //         {
+        //             result ??= new List<string>();
+        //             result.Add($"{x.ItemJson.Name} [{x.GetType()}]");
+        //         }
+        //     }
+        //
+        //     return result == null || result.Count == 0
+        //         ? Reply("Your inventory is empty",
+        //             Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId))
+        //         : Pages(result.Pagination(
+        //             Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
+        //             Context.Author.GetAvatarUrl(), $"Inventory for {Context.Author}"));
+        // }
 
-            List<string> result = null;
-            foreach (var x in inventory.Items)
-            {
-                if (x.ItemJson is RoleItem roleItem)
-                {
-                    if (!Context.Guild.Roles.TryGetValue(roleItem.RoleId, out var role)) continue;
-                    result ??= new List<string>();
-                    result.Add($"{role.Name} [Role]");
-                }
-                else
-                {
-                    result ??= new List<string>();
-                    result.Add($"{x.ItemJson.Name} [{x.GetType()}]");
-                }
-            }
-
-            return result == null || result.Count == 0
-                ? Reply("Your inventory is empty",
-                    Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId))
-                : Pages(result.Pagination(
-                    Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId),
-                    Context.Author.GetAvatarUrl(), $"Inventory for {Context.Author}"));
-        }
-
-        [Name("Equip")]
-        [Command("equip", "use")]
-        [Description("Equips a role you have in your inventory")]
-        [RequiredChannel]
-        public async Task<DiscordCommandResult> EquipRoleAsync([Remainder] IRole role)
-        {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var inventory = await db.Inventories.FindAsync(Context.Author.Id);
-            if (inventory.Items.FirstOrDefault(x => ((RoleItem) x.ItemJson).RoleId == role.Id) == null)
-                return Reply($"You currently do not own this role, or it's not available!", HanaBaseColor.Bad());
-            if (Context.Author.RoleIds.Contains(role.Id)) return Reply("You already have this role added");
-
-            var result = await Context.Author.TryAddRoleAsync(role);
-            if (result)
-                return Reply($"{Context.Author.Mention} equipped {role.Name}",
-                    Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
-            return Reply(
-                $"Couldn't add role {role.Name}. I require Manage Roles permission, or be above the role in the role hierarchy",
-                HanaBaseColor.Bad());
-        }
-
-        [Name("Unequip")]
-        [Command("unequip", "unuse")]
-        [Description("Equips a role you have in your inventory")]
-        [RequiredChannel]
-        public async Task<DiscordCommandResult> UnEquipRoleAsync([Remainder] IRole role)
-        {
-            await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var inventory = await db.Inventories.FindAsync(Context.Author.Id);
-            if (inventory.Items.FirstOrDefault(x => ((RoleItem) x.ItemJson).RoleId == role.Id) == null)
-                return Reply("You can't remove a role you do not own or have.", HanaBaseColor.Bad());
-
-            if (!Context.Author.RoleIds.Contains(role.Id))
-                return Reply("You don't have this role added", HanaBaseColor.Bad());
-
-            await Context.Author.TryRemoveRoleAsync(role);
-            return Reply($"{Context.Author.Mention} unequipped {role.Name}", HanaBaseColor.Ok());
-        }
+        // [Name("Equip")]
+        // [Command("equip", "use")]
+        // [Description("Equips a role you have in your inventory")]
+        // [RequiredChannel]
+        // public async Task<DiscordCommandResult> EquipRoleAsync([Remainder] IRole role)
+        // {
+        //     await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+        //     var inventory = await db.Inventories.FindAsync(Context.Author.Id);
+        //     if (inventory.Items.FirstOrDefault(x => ((RoleItem) x.ItemJson).RoleId == role.Id) == null)
+        //         return Reply($"You currently do not own this role, or it's not available!", HanaBaseColor.Bad());
+        //     if (Context.Author.RoleIds.Contains(role.Id)) return Reply("You already have this role added");
+        //
+        //     var result = await Context.Author.TryAddRoleAsync(role);
+        //     if (result)
+        //         return Reply($"{Context.Author.Mention} equipped {role.Name}",
+        //             Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));
+        //     return Reply(
+        //         $"Couldn't add role {role.Name}. I require Manage Roles permission, or be above the role in the role hierarchy",
+        //         HanaBaseColor.Bad());
+        // }
+        //
+        // [Name("Unequip")]
+        // [Command("unequip", "unuse")]
+        // [Description("Equips a role you have in your inventory")]
+        // [RequiredChannel]
+        // public async Task<DiscordCommandResult> UnEquipRoleAsync([Remainder] IRole role)
+        // {
+        //     await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
+        //     var inventory = await db.Inventories.FindAsync(Context.Author.Id);
+        //     if (inventory.Items.FirstOrDefault(x => ((RoleItem) x.ItemJson).RoleId == role.Id) == null)
+        //         return Reply("You can't remove a role you do not own or have.", HanaBaseColor.Bad());
+        //
+        //     if (!Context.Author.RoleIds.Contains(role.Id))
+        //         return Reply("You don't have this role added", HanaBaseColor.Bad());
+        //
+        //     await Context.Author.TryRemoveRoleAsync(role);
+        //     return Reply($"{Context.Author.Mention} unequipped {role.Name}", HanaBaseColor.Ok());
+        // }
 
         [Group("Store")]
         [Name("Store Admin")]

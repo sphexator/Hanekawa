@@ -212,14 +212,14 @@ namespace Hanekawa.Bot.Service.Cache
             inviteTuple = null;
             return _guildInvites.TryGetValue(guildId, out inviteTuple);
         }
-
-        public void AddInvite(Snowflake guildId, IInvite code)
+        
+        public void AddInvite(Snowflake guildId, Snowflake userId, string code, int usage)
         {
             var channelCodes =
                 _guildInvites.GetOrAdd(guildId, new ConcurrentDictionary<string, Tuple<Snowflake?, int>>());
-            var toAdd = new Tuple<Snowflake?, int>(code.Inviter.Id, code.Metadata.Uses);
+            var toAdd = new Tuple<Snowflake?, int>(userId, usage);
             
-            channelCodes.AddOrUpdate(code.Code, new Tuple<Snowflake?, int>(code.Inviter.Id, code.Metadata.Uses),
+            channelCodes.AddOrUpdate(code, new Tuple<Snowflake?, int>(userId, usage),
                 (_, _) => toAdd);
             _guildInvites.AddOrUpdate(guildId, channelCodes, (_, _) => channelCodes);
         }
@@ -246,7 +246,7 @@ namespace Hanekawa.Bot.Service.Cache
         public void UpdateInvites(Snowflake guildId, IEnumerable<IInvite> restInvites)
         {
             foreach (var x in restInvites) 
-                UpdateInvite(guildId, x.Code, x.Inviter.Id, x.Metadata.Uses);
+                UpdateInvite(guildId, x.Code, x.Inviter.Id, x.ApproximateMemberCount ?? 0);
         }
         
         // ----- DROP -----

@@ -23,7 +23,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
 {
     [Name("Self-Assignable Roles")]
     [Description("Self-Assignable commands")]
-    [RequireBotChannelPermissions(Permission.SendMessages | Permission.EmbedLinks | Permission.ManageMessages)]
+    [RequireBotChannelPermissions(Permission.SendMessages | Permission.SendEmbeds | Permission.ManageMessages)]
     public class SelfAssignAbleRoles : HanekawaCommandModule
     {
         [Name("I am")]
@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             [RequireAuthorGuildPermissions(Permission.ManageGuild)]
             public async Task PostMessageAsync(ITextChannel channel = null)
             {
-                channel ??= Context.Channel;
+                channel ??= Context.Channel as ITextChannel;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
                 if (!await _assignService.PostAsync(Context, channel, cfg, db))

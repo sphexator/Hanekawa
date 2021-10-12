@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Commands.Modules
     [Description("Commands for drop module")]
     [Group("Drop")]
     [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-    [RequireBotGuildPermissions(Permission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds)]
     public class Drop : HanekawaCommandModule
     {
         [Name("Drop")]
@@ -51,7 +51,7 @@ namespace Hanekawa.Bot.Commands.Modules
             [Description("Adds a channel to be eligible for drops")]
             public async Task AddDropChannel(ITextChannel channel = null)
             {
-                channel ??= Context.Channel;
+                channel ??= Context.Channel as ITextChannel;
                 if (channel == null) return;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cache = Context.Services.GetRequiredService<CacheService>();
@@ -83,7 +83,7 @@ namespace Hanekawa.Bot.Commands.Modules
             [Description("Removes a channel from being eligible for drops")]
             public async Task RemoveDropChannel(ITextChannel channel = null)
             {
-                channel ??= Context.Channel;
+                channel ??= Context.Channel as ITextChannel;
                 if (channel == null) return;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cache = Context.Services.GetRequiredService<CacheService>();

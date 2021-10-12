@@ -14,12 +14,7 @@ namespace Hanekawa.Database
         public DbSet<CurrencyConfig> CurrencyConfigs { get; set; }
         // Stores
         public DbSet<ServerStore> ServerStores { get; set; }
-
-        // Inventory
-        public DbSet<Inventory> Inventories { get; set; }
-
-        // Items
-        public DbSet<Item> Items { get; set; }
+        
         public DbSet<Background> Backgrounds { get; set; }
 
         private static void InventoryStoreBuilder(ModelBuilder modelBuilder)
@@ -30,19 +25,7 @@ namespace Hanekawa.Database
                 x.Property(e => e.EmoteCurrency).HasDefaultValue(false);
                 x.Property(e => e.SpecialEmoteCurrency).HasDefaultValue(false);
             });
-            modelBuilder.Entity<Inventory>(x =>
-            {
-                x.HasKey(e => new {e.UserId});
-                x.HasMany(e => e.Items).WithMany(e => e.Users);
-            });
-            
-            modelBuilder.Entity<Item>(x =>
-            {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.Property(e => e.ItemJson).HasColumnType("jsonb");
-            });
-            
+
             modelBuilder.Entity<ServerStore>(x =>
             {
                 x.HasKey(e => new {e.GuildId, e.RoleId});

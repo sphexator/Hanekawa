@@ -157,7 +157,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                     return Reply("Disabled welcome messages!", Color.Green);
                 case null:
                 {
-                    channel = Context.Channel;
+                    channel = Context.Channel as ITextChannel;
                     if (channel == null) return null;
                     cfg.Channel = channel.Id;
                     await db.SaveChangesAsync();

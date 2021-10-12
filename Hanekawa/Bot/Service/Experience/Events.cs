@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hanekawa.Bot.Commands;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
-using Hanekawa.Database.Tables.Config;
 using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +21,7 @@ namespace Hanekawa.Bot.Service.Experience
         public async Task StartEventAsync(DbService db, HanekawaCommandContext context, double multiplier,
             TimeSpan duration)
         {
+            // TODO: Recreate Exp Event
             var check = await db.LevelExpEvents.FindAsync(context.GuildId);
             var timer = new Timer(async _ =>
             {
@@ -37,16 +37,18 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 if (check != null)
                 {
-                    check.Time = DateTime.UtcNow + duration;
+                    check.Start = DateTimeOffset.UtcNow;
+                    check.End = DateTimeOffset.UtcNow.Add(duration);
                     check.Multiplier = multiplier;
                 }
                 else
                 {
-                    await db.LevelExpEvents.AddAsync(new LevelExpEvent
+                    await db.LevelExpEvents.AddAsync(new()
                     {
                         GuildId = context.Guild.Id,
                         Multiplier = multiplier,
-                        Time = DateTime.UtcNow + duration
+                        Start = DateTimeOffset.UtcNow,
+                        End = DateTimeOffset.UtcNow.Add(duration)
                     });
                 }
                 await db.SaveChangesAsync();

@@ -13,7 +13,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
     [Description("Configure various logging to channel(s)")]
     [Group("Log", "Logging")]
     [RequireAuthorGuildPermissions(Permission.ManageGuild)]
-    [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.SendMessages | Permission.ManageWebhooks)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds | Permission.SendMessages | Permission.ManageWebhooks)]
     public class Logging : HanekawaCommandModule
     { 
         [Name("Join/Leave")]

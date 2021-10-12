@@ -16,6 +16,6 @@ namespace Hanekawa.Database.Tables.Account
         public int StarGive { get; set; } = 0;
         public int UserColor { get; set; } = Color.Purple.RawValue;
         
-        public List<AchievementUnlocked> AchievementUnlocks { get; set; }
+        public List<AccountAchievement> AchievementUnlocks { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
-    public class HungerGameCustomChar
+    public class HungerGameCustomCharacter
     {
         public Snowflake Id { get; set; }
         public Snowflake GuildId { get; set; }

@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Commands.Modules
 {
     [Name("Suggestion")]
     [Description("Commands for suggestions")]
-    [RequireBotGuildPermissions(Permission.SendMessages | Permission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.SendMessages | Permission.SendEmbeds)]
     public class Suggestion : HanekawaCommandModule
     {
         [Name("Suggest")]
@@ -142,7 +142,7 @@ namespace Hanekawa.Bot.Commands.Modules
             var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
-            if (!Context.Author.GetGuildPermissions().Has(Permission.ManageGuild) &&
+            if (!Context.Author.GetPermissions().Has(Permission.ManageGuild) &&
                 Context.Author.Id != suggestion.UserId) return;
 
             if (suggestion?.MessageId == null)
@@ -254,7 +254,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     return Reply("Disabled suggestion channel", HanaBaseColor.Ok());
                 }
 
-                channel ??= Context.Channel;
+                channel ??= Context.Channel as ITextChannel;
                 if (channel == null) return null;
                 cfg.Channel = channel.Id;
                 await db.SaveChangesAsync();

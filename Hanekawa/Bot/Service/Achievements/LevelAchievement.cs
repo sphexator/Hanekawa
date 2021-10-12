@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Service.Achievements
             var unlocks = await db.AchievementUnlocks.Where(x => x.UserId == userData.UserId).ToListAsync();
             var toAdd = (from x in achievements
                 where unlocks.All(e => e.AchieveId != x.AchievementId)
-                select new AchievementUnlocked
+                select new AccountAchievement
                 {
                     Date = DateTimeOffset.UtcNow,
                     Id = Guid.NewGuid(),

@@ -21,7 +21,7 @@ namespace Hanekawa.Bot.Service.AutoMessage
         private readonly CacheService _cache;
         private readonly Hanekawa _bot;
 
-        public AutoMessageService(ILogger logger, DiscordClientBase client, IServiceProvider provider, CacheService cache) 
+        public AutoMessageService(ILogger<AutoMessageService> logger, DiscordClientBase client, IServiceProvider provider, CacheService cache) 
             : base(logger, client)
         {
             _provider = provider;

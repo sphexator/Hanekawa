@@ -9,9 +9,8 @@ namespace Hanekawa.Database
 {
     public partial class DbService
     {
-        // Achievements
         public DbSet<Achievement> Achievements { get; set; }
-        public DbSet<AchievementUnlocked> AchievementUnlocks { get; set; }
+        public DbSet<AccountAchievement> AchievementUnlocks { get; set; }
         
         private static void AchievementBuilder(ModelBuilder modelBuilder)
         {
@@ -177,11 +176,18 @@ namespace Hanekawa.Database
                     }
                 });
             });
-            modelBuilder.Entity<AchievementUnlocked>(x =>
+            
+            modelBuilder.Entity<AccountAchievement>(x =>
             {
-                x.HasKey(e => e.Id);
-                x.Property(e => e.Id).ValueGeneratedOnAdd();
-                x.HasOne(e => e.Achievement).WithMany(e => e.Unlocked);
+                x.HasOne(achievement => achievement.Achievement)
+                    .WithMany(aa => aa.Unlocked)
+                    .HasForeignKey(fKey => fKey.UserId);
+            });
+            modelBuilder.Entity<AccountAchievement>(x =>
+            {
+                x.HasOne(user => user.User)
+                    .WithMany(account => account.AchievementUnlocks)
+                    .HasForeignKey(fKey => fKey.AchievementId);
             });
         }
     }

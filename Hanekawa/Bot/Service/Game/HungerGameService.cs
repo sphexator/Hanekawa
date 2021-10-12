@@ -308,7 +308,7 @@ namespace Hanekawa.Bot.Service.Game
                     IsTextToSpeech = false
                 });
 
-            await db.HungerGames.AddAsync(new HungerGame
+            await db.HungerGames.AddAsync(new Database.Tables.Account.HungerGame.Game
             {
                 Id = Guid.NewGuid(),
                 GuildId = cfg.GuildId,
@@ -352,7 +352,7 @@ namespace Hanekawa.Bot.Service.Game
             await RewardWinnerAsync(cfg, db, result, guild, participants, game);
         }
 
-        private async Task SendResultsAsync(HungerGameStatus cfg, HungerGame game, List<UserAction> result, int alive,
+        private async Task SendResultsAsync(HungerGameStatus cfg, Database.Tables.Account.HungerGame.Game game, List<UserAction> result, int alive,
             CachedGuild guild)
         {
             var sb = new StringBuilder();
@@ -411,7 +411,7 @@ namespace Hanekawa.Bot.Service.Game
 
         private async Task RewardWinnerAsync(HungerGameStatus cfg, DbService db, List<UserAction> result,
             CachedGuild guild, List<HungerGameProfile> participants,
-            HungerGame game)
+            Database.Tables.Account.HungerGame.Game game)
         {
             IMember user = null;
             var winner = result.FirstOrDefault(x => x.After.Alive);

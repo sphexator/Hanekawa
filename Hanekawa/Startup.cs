@@ -58,7 +58,7 @@ namespace Hanekawa
             }));
             services.AddSingleton<Random>();
             services.AddHttpClient();
-            services.AddInteractivity();
+            services.AddInteractivityExtension();
             var assembly = Assembly.GetEntryAssembly();
             if (assembly is null) return;
             var serviceList = assembly.GetTypes()
@@ -66,7 +66,7 @@ namespace Hanekawa
                             && !x.GetTypeInfo().IsInterface).ToList();
             foreach (var x in serviceList)
                 services.AddSingleton(x);
-
+            
             services.Configure<QuartzOptions>(e =>
             {
                 e.Scheduling.IgnoreDuplicates = false;

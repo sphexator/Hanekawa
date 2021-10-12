@@ -11,24 +11,24 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Hanekawa.Database.Migrations
 {
     [DbContext(typeof(DbService))]
-    [Migration("20210114110438_WelcomeBannerUpdate")]
-    partial class WelcomeBannerUpdate
+    [Migration("20211012080638_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityByDefaultColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.1");
+                .HasAnnotation("ProductVersion", "5.0.9")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.Account", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
@@ -48,6 +48,14 @@ namespace Hanekawa.Database.Migrations
                     b.Property<DateTime>("DailyCredit")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int>("Decay")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<long>("DropClaims")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Exp")
                         .HasColumnType("integer");
 
@@ -55,6 +63,9 @@ namespace Hanekawa.Database.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("GameKillAmount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GamePvPAmount")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("LastMessage")
@@ -106,10 +117,8 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.AccountGlobal", b =>
                 {
-                    b.Property<long>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Credit")
                         .HasColumnType("integer");
@@ -140,20 +149,206 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("AccountGlobals");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Highlight", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Achievement.Achievement", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("AchievementId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
 
-                    b.Property<string[]>("Highlights")
-                        .HasColumnType("text[]");
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
-                    b.HasKey("GuildId", "UserId");
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("integer");
 
-                    b.ToTable("Highlights");
+                    b.Property<bool>("Hidden")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Requirement")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Reward")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AchievementId");
+
+                    b.ToTable("Achievements");
+
+                    b.HasData(
+                        new
+                        {
+                            AchievementId = new Guid("624da012-2194-428a-b693-b9b08ad0a9af"),
+                            Category = 0,
+                            Description = "Reach Server Level 5",
+                            Difficulty = 0,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 5",
+                            Points = 10,
+                            Requirement = 5
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("aea7144b-e287-40ff-9a00-3a5a6b815170"),
+                            Category = 0,
+                            Description = "Reach Server Level 10",
+                            Difficulty = 0,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 10",
+                            Points = 10,
+                            Requirement = 10
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("7c315a8d-35cc-48de-8dd4-f90d1d36132e"),
+                            Category = 0,
+                            Description = "Reach Server Level 20",
+                            Difficulty = 0,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 20",
+                            Points = 10,
+                            Requirement = 20
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("915e030a-c71e-42fa-930a-ea250afb30aa"),
+                            Category = 0,
+                            Description = "Reach Server Level 30",
+                            Difficulty = 0,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 30",
+                            Points = 10,
+                            Requirement = 30
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("2790c6d3-d8bf-47a8-a89e-bb018982deaf"),
+                            Category = 0,
+                            Description = "Reach Server Level 40",
+                            Difficulty = 0,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 40",
+                            Points = 10,
+                            Requirement = 40
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("02d386b7-3ce5-442c-bd58-77a20dd4c5d3"),
+                            Category = 0,
+                            Description = "Reach Server Level 50",
+                            Difficulty = 1,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 50",
+                            Points = 10,
+                            Requirement = 50
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("c9a5ef51-2bd8-430f-bd82-c725d6220ae7"),
+                            Category = 0,
+                            Description = "Reach Server Level 60",
+                            Difficulty = 1,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 60",
+                            Points = 10,
+                            Requirement = 60
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("96785bc2-4de5-4d8d-9924-6c902729caf3"),
+                            Category = 0,
+                            Description = "Reach Server Level 70",
+                            Difficulty = 2,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Reach Server Level 70",
+                            Points = 10,
+                            Requirement = 70
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("110319eb-d9d9-4fe0-a695-d8a1f839f5b0"),
+                            Category = 0,
+                            Description = "Reach Server Level 80",
+                            Difficulty = 2,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 80",
+                            Points = 10,
+                            Requirement = 80
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("d33c6057-4128-4014-be25-ff9c08c0d9cc"),
+                            Category = 0,
+                            Description = "Reach Server Level 90",
+                            Difficulty = 3,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 90",
+                            Points = 10,
+                            Requirement = 90
+                        },
+                        new
+                        {
+                            AchievementId = new Guid("fe43f8c8-77eb-40ea-9b67-7ca8117160ba"),
+                            Category = 0,
+                            Description = "Reach Server Level 100",
+                            Difficulty = 3,
+                            Hidden = false,
+                            ImageUrl = "",
+                            Name = "Level 100",
+                            Points = 10,
+                            Requirement = 100
+                        });
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Achievement.AchievementUnlocked", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("AccountGlobalUserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<Guid>("AchieveId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AchievementId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountGlobalUserId");
+
+                    b.HasIndex("AchievementId");
+
+                    b.ToTable("AchievementUnlocks");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGame", b =>
@@ -165,8 +360,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Alive")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Participants")
                         .HasColumnType("integer");
@@ -181,13 +376,13 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGameCustomChar", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("numeric(20,0)")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
@@ -202,9 +397,9 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGameDefault", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("numeric(20,0)")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
 
                     b.Property<string>("Avatar")
@@ -220,151 +415,151 @@ namespace Hanekawa.Database.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1L,
+                            Id = 1m,
                             Avatar = "https://i.imgur.com/XMjW8Qn.png",
                             Name = "Dia"
                         },
                         new
                         {
-                            Id = 2L,
+                            Id = 2m,
                             Avatar = "https://i.imgur.com/7URjbvT.png",
                             Name = "Kanan"
                         },
                         new
                         {
-                            Id = 3L,
+                            Id = 3m,
                             Avatar = "https://i.imgur.com/tPDON9P.png",
                             Name = "Yoshiko"
                         },
                         new
                         {
-                            Id = 4L,
+                            Id = 4m,
                             Avatar = "https://i.imgur.com/dcB1loo.png",
                             Name = "Kongou"
                         },
                         new
                         {
-                            Id = 5L,
+                            Id = 5m,
                             Avatar = "https://i.imgur.com/7GC7FvJ.png",
                             Name = "Haruna"
                         },
                         new
                         {
-                            Id = 6L,
+                            Id = 6m,
                             Avatar = "https://i.imgur.com/8748bUL.png",
                             Name = "Yamato"
                         },
                         new
                         {
-                            Id = 7L,
+                            Id = 7m,
                             Avatar = "https://i.imgur.com/VLsezdF.png",
                             Name = "Akagi"
                         },
                         new
                         {
-                            Id = 8L,
+                            Id = 8m,
                             Avatar = "https://i.imgur.com/eyt9k8E.png",
                             Name = "Kaga"
                         },
                         new
                         {
-                            Id = 9L,
+                            Id = 9m,
                             Avatar = "https://i.imgur.com/4XYg6ch.png",
                             Name = "Zero Two"
                         },
                         new
                         {
-                            Id = 10L,
+                            Id = 10m,
                             Avatar = "https://i.imgur.com/Nl6WsbP.png",
                             Name = "Echidna"
                         },
                         new
                         {
-                            Id = 11L,
+                            Id = 11m,
                             Avatar = "https://i.imgur.com/kF9b4SJ.png",
                             Name = "Emilia"
                         },
                         new
                         {
-                            Id = 12L,
+                            Id = 12m,
                             Avatar = "https://i.imgur.com/y3bb8Sk.png",
                             Name = "Rem"
                         },
                         new
                         {
-                            Id = 13L,
+                            Id = 13m,
                             Avatar = "https://i.imgur.com/5CcdVBE.png",
                             Name = "Ram"
                         },
                         new
                         {
-                            Id = 14L,
+                            Id = 14m,
                             Avatar = "https://i.imgur.com/0VYBYEg.png",
                             Name = "Gura"
                         },
                         new
                         {
-                            Id = 15L,
+                            Id = 15m,
                             Avatar = "https://i.imgur.com/rYa5iYc.png",
                             Name = "Shiki"
                         },
                         new
                         {
-                            Id = 16L,
+                            Id = 16m,
                             Avatar = "https://i.imgur.com/PT8SsVB.png",
                             Name = "Chika"
                         },
                         new
                         {
-                            Id = 17L,
+                            Id = 17m,
                             Avatar = "https://i.imgur.com/5xR0ImK.png",
                             Name = "Sora"
                         },
                         new
                         {
-                            Id = 18L,
+                            Id = 18m,
                             Avatar = "https://i.imgur.com/U0NlfJd.png",
                             Name = "Nobuna"
                         },
                         new
                         {
-                            Id = 19L,
+                            Id = 19m,
                             Avatar = "https://i.imgur.com/CI9Osi5.png",
                             Name = "Akame"
                         },
                         new
                         {
-                            Id = 20L,
+                            Id = 20m,
                             Avatar = "https://i.imgur.com/GhSG97V.png",
                             Name = "Shiina"
                         },
                         new
                         {
-                            Id = 21L,
+                            Id = 21m,
                             Avatar = "https://i.imgur.com/VyJf95i.png",
                             Name = "Bocchi"
                         },
                         new
                         {
-                            Id = 22L,
+                            Id = 22m,
                             Avatar = "https://i.imgur.com/bv5ao8Z.png",
                             Name = "Enterprise"
                         },
                         new
                         {
-                            Id = 23L,
+                            Id = 23m,
                             Avatar = "https://i.imgur.com/HoNwKi9.png",
                             Name = "Chocola"
                         },
                         new
                         {
-                            Id = 24L,
+                            Id = 24m,
                             Avatar = "https://i.imgur.com/aijxHla.png",
                             Name = "Vanilla"
                         },
                         new
                         {
-                            Id = 25L,
+                            Id = 25m,
                             Avatar = "https://i.imgur.com/Wxhd5WY.png",
                             Name = "Shiro"
                         });
@@ -385,14 +580,14 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("ExpReward")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("SpecialCreditReward")
                         .HasColumnType("integer");
 
-                    b.Property<long>("Winner")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("Winner")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GameId");
 
@@ -401,11 +596,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGameProfile", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Alive")
                         .HasColumnType("boolean");
@@ -468,10 +663,8 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGameStatus", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("CreditReward")
                         .HasColumnType("integer");
@@ -479,8 +672,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("EmoteMessageFormat")
                         .HasColumnType("text");
 
-                    b.Property<long?>("EventChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("EventChannel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("ExpReward")
                         .HasColumnType("integer");
@@ -488,11 +681,11 @@ namespace Hanekawa.Database.Migrations
                     b.Property<Guid?>("GameId")
                         .HasColumnType("uuid");
 
-                    b.Property<long?>("RoleReward")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("RoleReward")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("SignUpChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("SignUpChannel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("SignUpMessage")
                         .HasColumnType("text");
@@ -511,348 +704,57 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("HungerGameStatus");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Inventory", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Profile.Background", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
-
-                    b.HasKey("GuildId", "UserId", "ItemId");
-
-                    b.ToTable("Inventories");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Item", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("CriticalIncrease")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DamageIncrease")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("DateAdded")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long?>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("HealthIncrease")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<long?>("Role")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Sell")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementMeta", b =>
-                {
-                    b.Property<int>("AchievementId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("AchievementDifficulty")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AchievementNameId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AchievementTypeTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Global")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Hidden")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Once")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Requirement")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Reward")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TypeId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("AchievementId");
-
-                    b.HasIndex("AchievementNameId");
-
-                    b.HasIndex("AchievementTypeTypeId");
-
-                    b.ToTable("Achievements");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementName", b =>
-                {
-                    b.Property<int>("AchievementNameId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Stackable")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("AchievementNameId");
-
-                    b.ToTable("AchievementNames");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementTracker", b =>
-                {
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Count")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Type", "UserId");
-
-                    b.ToTable("AchievementTrackers");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementType", b =>
-                {
-                    b.Property<int>("TypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("TypeId");
-
-                    b.ToTable("AchievementTypes");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementUnlock", b =>
-                {
-                    b.Property<int>("AchievementId")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("TypeId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("AchievementId", "UserId");
-
-                    b.ToTable("AchievementUnlocks");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Administration.ApprovalQueue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("UploadTimeOffset")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("Uploader")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Url")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id", "GuildId");
-
-                    b.ToTable("ApprovalQueues");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Administration.Blacklist", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("text");
-
-                    b.Property<long>("ResponsibleUser")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset?>("Unban")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("Blacklists");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.DblAuth", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
-
-                    b.Property<Guid>("AuthKey")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CreditGain")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ExpGain")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Message")
+                    b.Property<string>("BackgroundUrl")
                         .HasColumnType("text");
-
-                    b.Property<long?>("RoleIdReward")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("SpecialCredit")
-                        .HasColumnType("integer");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("DblAuths");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.VoteLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("Time")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.ToTable("VoteLogs");
+                    b.ToTable("Backgrounds");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("27b87558-d918-42b3-80a2-e0e9a8798f4a"),
+                            BackgroundUrl = "https://i.imgur.com/epIb29P.png"
+                        },
+                        new
+                        {
+                            Id = new Guid("2ae7e0a7-d01c-4b8a-8382-6c55fd867d77"),
+                            BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
+                        },
+                        new
+                        {
+                            Id = new Guid("fc53eac7-1af1-48b0-ba40-b16f5339ebe3"),
+                            BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
+                        },
+                        new
+                        {
+                            Id = new Guid("fa056244-ae59-4c3a-8cb3-ed79a7d782a4"),
+                            BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
+                        },
+                        new
+                        {
+                            Id = new Guid("6d1b1dad-6f2c-44b2-9d76-9eeebd1893d1"),
+                            BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
+                        },
+                        new
+                        {
+                            Id = new Guid("9a34da71-2f36-4570-9f3e-4bc6306c28ec"),
+                            BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
+                        });
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.AutoMessage.AutoMessage", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.ShipGame.GameClass", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Creator")
-                        .HasColumnType("bigint");
-
-                    b.Property<TimeSpan>("Interval")
-                        .HasColumnType("interval");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.HasKey("GuildId", "Name");
-
-                    b.ToTable("AutoMessages");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.BoardConfig.Board", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("MessageId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset?>("Boarded")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("StarAmount")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("GuildId", "MessageId");
-
-                    b.ToTable("Boards");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.BotGame.GameClass", b =>
-                {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasColumnType("uuid");
 
                     b.Property<int>("ChanceAvoid")
                         .HasColumnType("integer");
@@ -860,8 +762,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("ChanceCrit")
                         .HasColumnType("integer");
 
-                    b.Property<long>("LevelRequirement")
-                        .HasColumnType("bigint");
+                    b.Property<int>("LevelRequirement")
+                        .HasColumnType("integer");
 
                     b.Property<double>("ModifierAvoidance")
                         .HasColumnType("double precision");
@@ -883,12 +785,11 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("GameClasses");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.BotGame.GameConfig", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.ShipGame.GameConfig", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasColumnType("uuid");
 
                     b.Property<int>("DefaultDamage")
                         .HasColumnType("integer");
@@ -901,12 +802,12 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("GameConfigs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.BotGame.GameEnemy", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.ShipGame.GameEnemy", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<ulong>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasColumnType("numeric(20,0)")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
 
                     b.Property<int>("ClassId")
                         .HasColumnType("integer");
@@ -940,46 +841,191 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("GameEnemies");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubBlacklist", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Stores.ServerStore", b =>
                 {
-                    b.Property<int>("ClubId")
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("Price")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<bool>("SpecialCredit")
+                        .HasColumnType("boolean");
 
-                    b.Property<long>("BlackListUser")
-                        .HasColumnType("bigint");
+                    b.HasKey("GuildId", "RoleId");
 
-                    b.Property<long>("IssuedUser")
-                        .HasColumnType("bigint");
+                    b.ToTable("ServerStores");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Administration.ApprovalQueue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UploadTimeOffset")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<ulong>("Uploader")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id", "GuildId");
+
+                    b.ToTable("ApprovalQueues");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Administration.Blacklist", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("Time")
+                    b.Property<ulong>("ResponsibleUser")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset?>("Unban")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ClubId", "GuildId", "BlackListUser");
+                    b.HasKey("GuildId");
 
-                    b.ToTable("ClubBlacklists");
+                    b.ToTable("Blacklists");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubInformation", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.DblAuth", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<Guid>("AuthKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CreditGain")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ExpGain")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("RoleIdReward")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("SpecialCredit")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuildId");
+
+                    b.ToTable("DblAuths");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Advertise.VoteLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long?>("AdMessage")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text");
+
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VoteLogs");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.AutoMessage.AutoMessage", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("Creator")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<TimeSpan>("Interval")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Webhook")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("GuildId", "Name");
+
+                    b.ToTable("AutoMessages");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.BoardConfig.Board", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("MessageId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset?>("Boarded")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StarAmount")
+                        .HasColumnType("integer");
+
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("GuildId", "MessageId");
+
+                    b.ToTable("Boards");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Club.Club", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<ulong?>("AdMessage")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("AutoAdd")
                         .HasColumnType("boolean");
 
-                    b.Property<long?>("Channel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("Channel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
@@ -987,8 +1033,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("IconUrl")
                         .HasColumnType("text");
@@ -996,8 +1042,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<long>("LeaderId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("Leader")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -1005,63 +1051,86 @@ namespace Hanekawa.Database.Migrations
                     b.Property<bool>("Public")
                         .HasColumnType("boolean");
 
-                    b.Property<long?>("Role")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("Role")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id");
 
                     b.ToTable("ClubInfos");
                 });
 
+            modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubBlacklist", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("User")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<Guid>("ClubId")
+                        .HasColumnType("uuid");
+
+                    b.Property<ulong>("Issuer")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("GuildId", "User");
+
+                    b.HasIndex("ClubId");
+
+                    b.ToTable("ClubBlacklists");
+                });
+
             modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubUser", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ClubId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ClubId")
+                        .HasColumnType("uuid");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<DateTimeOffset>("JoinDate")
+                    b.Property<DateTimeOffset>("JoinedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Rank")
                         .HasColumnType("integer");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClubId");
 
                     b.ToTable("ClubPlayers");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Config.EventPayout", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Config.DropChannel", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
+                    b.HasKey("GuildId", "ChannelId");
 
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("EventPayouts");
+                    b.ToTable("DropChannels");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.AdminConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int?>("EmoteCountFilter")
                         .HasColumnType("integer");
@@ -1084,8 +1153,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int?>("MentionCountFilter")
                         .HasColumnType("integer");
 
-                    b.Property<long?>("MuteRole")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("MuteRole")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId");
 
@@ -1094,16 +1163,20 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.BoardConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("Channel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("Channel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Emote")
                         .HasColumnType("text");
+
+                    b.Property<string>("Webhook")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId");
 
@@ -1112,13 +1185,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.BoostConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("ChannelId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("CreditGain")
                         .HasColumnType("integer");
@@ -1132,6 +1203,9 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("SpecialCreditGain")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Webhook")
+                        .HasColumnType("text");
+
                     b.HasKey("GuildId");
 
                     b.ToTable("BoostConfigs");
@@ -1139,34 +1213,17 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.ChannelConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("DesignChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("ReportChannel")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("EventChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("SelfAssignableChannel")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("EventSchedulerChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ModChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("QuestionAndAnswerChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ReportChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("SelfAssignableChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long[]>("SelfAssignableMessages")
-                        .HasColumnType("bigint[]");
+                    b.Property<string>("WebhookReport")
+                        .HasColumnType("text");
 
                     b.HasKey("GuildId");
 
@@ -1175,25 +1232,26 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.ClubConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("AdvertisementChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("AdvertisementChannel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("AutoPrune")
                         .HasColumnType("boolean");
 
-                    b.Property<long?>("ChannelCategory")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("ChannelCategory")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("ChannelRequiredAmount")
                         .HasColumnType("integer");
 
                     b.Property<int>("ChannelRequiredLevel")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("EnableTextChannel")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("EnableVoiceChannel")
                         .HasColumnType("boolean");
@@ -1208,16 +1266,17 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.CurrencyConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("CurrencyName")
                         .HasColumnType("text");
 
                     b.Property<string>("CurrencySign")
                         .HasColumnType("text");
+
+                    b.Property<ulong?>("CurrencySignId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("EmoteCurrency")
                         .ValueGeneratedOnAdd()
@@ -1229,6 +1288,9 @@ namespace Hanekawa.Database.Migrations
 
                     b.Property<string>("SpecialCurrencySign")
                         .HasColumnType("text");
+
+                    b.Property<ulong?>("SpecialCurrencySignId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("SpecialEmoteCurrency")
                         .ValueGeneratedOnAdd()
@@ -1242,10 +1304,8 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.DropConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Emote")
                         .HasColumnType("text");
@@ -1257,15 +1317,18 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.LevelConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<double>("BoostExpMultiplier")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("double precision")
                         .HasDefaultValue(1.0);
+
+                    b.Property<bool>("Decay")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("ExpDisabled")
                         .HasColumnType("boolean");
@@ -1292,37 +1355,71 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.LoggingConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
-
-                    b.Property<long?>("LogAutoMod")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LogAvi")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LogBan")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LogJoin")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LogMsg")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("LogReaction")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal?>("LogVoice")
+                    b.Property<ulong>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("LogWarn")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("LogAutoMod")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<string>("ReactionWebhook")
+                    b.Property<ulong?>("LogAvi")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("LogBan")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("LogJoin")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("LogMsg")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("LogVoice")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("LogWarn")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookAutoMod")
                         .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookAutoModId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookAvi")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookAviId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookBan")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookBanId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookJoin")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookJoinId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookMessage")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookMessageId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookVoice")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookVoiceId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("WebhookWarn")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookWarnId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId");
 
@@ -1331,13 +1428,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.SuggestionConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("Channel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("Channel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("EmoteNo")
                         .HasColumnType("text");
@@ -1352,10 +1447,8 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.WelcomeConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("AutoDelOnLeave")
                         .HasColumnType("boolean");
@@ -1363,11 +1456,11 @@ namespace Hanekawa.Database.Migrations
                     b.Property<bool>("Banner")
                         .HasColumnType("boolean");
 
-                    b.Property<long?>("Channel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("Channel")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<DateTimeOffset?>("IgnoreNew")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<TimeSpan?>("IgnoreNew")
+                        .HasColumnType("interval");
 
                     b.Property<int>("Limit")
                         .HasColumnType("integer");
@@ -1381,6 +1474,12 @@ namespace Hanekawa.Database.Migrations
                     b.Property<TimeSpan?>("TimeToDelete")
                         .HasColumnType("interval");
 
+                    b.Property<string>("Webhook")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
+
                     b.HasKey("GuildId");
 
                     b.ToTable("WelcomeConfigs");
@@ -1388,39 +1487,20 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.GuildConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
-
-                    b.Property<long?>("AnimeAirChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("AutomaticEventSchedule")
-                        .HasColumnType("boolean");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("EmbedColor")
                         .HasColumnType("integer");
 
-                    b.Property<long?>("HungerGameChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("MusicChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("MusicVcChannel")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("MvpChannel")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("MvpChannel")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Prefix")
                         .HasColumnType("text");
 
-                    b.Property<bool>("Premium")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                    b.Property<DateTimeOffset?>("Premium")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("GuildId");
 
@@ -1429,11 +1509,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.IgnoreChannel", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId", "ChannelId");
 
@@ -1442,22 +1522,20 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.LevelExpEvent", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("ChannelId")
-                        .HasColumnType("bigint");
+                    b.Property<DateTimeOffset>("End")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<long?>("MessageId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("Multiplier")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateTimeOffset>("Start")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("GuildId");
 
@@ -1466,15 +1544,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.LevelExpReduction", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("ChannelType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId", "ChannelId");
 
@@ -1483,14 +1557,19 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.LevelReward", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
-                    b.Property<long>("Role")
-                        .HasColumnType("bigint");
+                    b.Property<bool>("NoDecay")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<ulong>("Role")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Stackable")
                         .HasColumnType("boolean");
@@ -1500,26 +1579,16 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("LevelRewards");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Config.LootChannel", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("LootChannels");
-                });
-
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.SelfAssignAbleRole", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("EmoteId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("EmoteMessageFormat")
                         .HasColumnType("text");
@@ -1535,15 +1604,45 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("SelfAssignAbleRoles");
                 });
 
+            modelBuilder.Entity("Hanekawa.Database.Tables.Config.SelfAssignReactionRole", b =>
+                {
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("MessageId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong>("ConfigId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("Exclusive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<List<string>>("Reactions")
+                        .HasColumnType("text[]");
+
+                    b.HasKey("GuildId", "ChannelId", "MessageId");
+
+                    b.HasIndex("ConfigId");
+
+                    b.ToTable("SelfAssignReactionRoles");
+                });
+
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.WelcomeBanner", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("AvatarSize")
                         .ValueGeneratedOnAdd()
@@ -1581,8 +1680,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<DateTimeOffset>("UploadTimeOffset")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("Uploader")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("Uploader")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Url")
                         .HasColumnType("text");
@@ -1610,14 +1709,14 @@ namespace Hanekawa.Database.Migrations
                     b.Property<DateTimeOffset>("CreatedAtOffset")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("Creator")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("Creator")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("IdNum")
                         .HasColumnType("integer");
@@ -1627,6 +1726,9 @@ namespace Hanekawa.Database.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<ulong?>("ReactionMessage")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<TimeSpan?>("ServerAgeRequirement")
                         .HasColumnType("interval");
@@ -1650,8 +1752,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<DateTimeOffset>("ClosedAtOffset")
                         .HasColumnType("timestamp with time zone");
@@ -1659,8 +1761,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<DateTimeOffset>("CreatedAtOffset")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("Creator")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("Creator")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -1674,8 +1776,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<long[]>("Winner")
-                        .HasColumnType("bigint[]");
+                    b.Property<ulong[]>("Winner")
+                        .HasColumnType("numeric[]");
 
                     b.HasKey("Id", "GuildId");
 
@@ -1694,11 +1796,11 @@ namespace Hanekawa.Database.Migrations
                     b.Property<Guid>("GiveawayId")
                         .HasColumnType("uuid");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id");
 
@@ -1712,7 +1814,7 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("CallSite")
                         .HasColumnType("text");
@@ -1742,8 +1844,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Action")
                         .HasColumnType("text");
@@ -1751,17 +1853,17 @@ namespace Hanekawa.Database.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long>("MessageId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("MessageId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long?>("ModId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("ModId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Response")
                         .HasColumnType("text");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id", "GuildId");
 
@@ -1770,11 +1872,11 @@ namespace Hanekawa.Database.Migrations
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Moderation.MuteTimer", b =>
                 {
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<DateTime>("Time")
                         .HasColumnType("timestamp without time zone");
@@ -1789,8 +1891,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Attachment")
                         .HasColumnType("text");
@@ -1801,14 +1903,14 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("text");
 
-                    b.Property<long?>("MessageId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("MessageId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id", "GuildId");
 
@@ -1820,26 +1922,26 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<long?>("MessageId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("MessageId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Response")
                         .HasColumnType("text");
 
-                    b.Property<long?>("ResponseUser")
-                        .HasColumnType("bigint");
+                    b.Property<ulong?>("ResponseUser")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("Id", "GuildId");
 
@@ -1851,10 +1953,10 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("Moderator")
+                    b.Property<ulong>("Moderator")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<TimeSpan?>("MuteTimer")
@@ -1869,8 +1971,8 @@ namespace Hanekawa.Database.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("UserId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<bool>("Valid")
                         .HasColumnType("boolean");
@@ -1880,48 +1982,15 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("Warns");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Music.MusicConfig", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
-
-                    b.Property<long?>("TextChId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("VoiceChId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("GuildId");
-
-                    b.ToTable("MusicConfigs");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Music.Playlist", b =>
-                {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<List<string>>("Songs")
-                        .HasColumnType("text[]");
-
-                    b.HasKey("GuildId", "Name");
-
-                    b.ToTable("Playlists");
-                });
-
             modelBuilder.Entity("Hanekawa.Database.Tables.Premium.MvpConfig", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.None);
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CreditReward")
                         .HasColumnType("integer");
 
                     b.Property<string>("Day")
@@ -1933,122 +2002,159 @@ namespace Hanekawa.Database.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<long?>("RoleId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("ExpReward")
+                        .HasColumnType("integer");
+
+                    b.Property<ulong?>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("SpecialCreditReward")
+                        .HasColumnType("integer");
 
                     b.HasKey("GuildId");
 
                     b.ToTable("MvpConfigs");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Profile.Background", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Quote.Quote", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<string>("BackgroundUrl")
+                    b.Property<string>("Key")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Added")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<ulong>("Creator")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("LevelCap")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("text");
+
+                    b.Property<List<string>>("Triggers")
+                        .HasColumnType("text[]");
+
+                    b.HasKey("GuildId", "Key");
+
+                    b.ToTable("Quotes");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<ulong?>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("MessageId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Backgrounds");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            BackgroundUrl = "https://i.imgur.com/epIb29P.png"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
-                        });
+                    b.ToTable("SelfAssignGroups");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Stores.ServerStore", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignItem", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Emote")
+                        .HasColumnType("text");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("integer");
+                    b.Property<ulong?>("EmoteId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<bool>("SpecialCredit")
+                    b.Property<bool>("Exclusive")
                         .HasColumnType("boolean");
 
-                    b.HasKey("GuildId", "RoleId");
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
 
-                    b.ToTable("ServerStores");
+                    b.HasKey("RoleId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("SelfAssignItems");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.VoiceRoles", b =>
                 {
-                    b.Property<long>("GuildId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("VoiceId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("VoiceId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId", "VoiceId");
 
                     b.ToTable("VoiceRoles");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementMeta", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Achievement.AchievementUnlocked", b =>
                 {
-                    b.HasOne("Hanekawa.Database.Tables.Achievement.AchievementName", "AchievementName")
-                        .WithMany()
-                        .HasForeignKey("AchievementNameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Hanekawa.Database.Tables.Account.AccountGlobal", null)
+                        .WithMany("AchievementUnlocks")
+                        .HasForeignKey("AccountGlobalUserId");
 
-                    b.HasOne("Hanekawa.Database.Tables.Achievement.AchievementType", "AchievementType")
-                        .WithMany()
-                        .HasForeignKey("AchievementTypeTypeId");
-
-                    b.Navigation("AchievementName");
-
-                    b.Navigation("AchievementType");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Achievement.AchievementUnlock", b =>
-                {
-                    b.HasOne("Hanekawa.Database.Tables.Achievement.AchievementMeta", "Achievement")
-                        .WithMany()
-                        .HasForeignKey("AchievementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Hanekawa.Database.Tables.Account.Achievement.Achievement", "Achievement")
+                        .WithMany("Unlocked")
+                        .HasForeignKey("AchievementId");
 
                     b.Navigation("Achievement");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubBlacklist", b =>
+                {
+                    b.HasOne("Hanekawa.Database.Tables.Club.Club", "Club")
+                        .WithMany("Blacklist")
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Club.ClubUser", b =>
+                {
+                    b.HasOne("Hanekawa.Database.Tables.Club.Club", "Club")
+                        .WithMany("Users")
+                        .HasForeignKey("ClubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Club");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Config.SelfAssignReactionRole", b =>
+                {
+                    b.HasOne("Hanekawa.Database.Tables.Config.Guild.ChannelConfig", "Config")
+                        .WithMany("AssignReactionRoles")
+                        .HasForeignKey("ConfigId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Config");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Giveaway.GiveawayParticipant", b =>
@@ -2062,9 +2168,47 @@ namespace Hanekawa.Database.Migrations
                     b.Navigation("Giveaway");
                 });
 
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignItem", b =>
+                {
+                    b.HasOne("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", "Group")
+                        .WithMany("Roles")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.AccountGlobal", b =>
+                {
+                    b.Navigation("AchievementUnlocks");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Achievement.Achievement", b =>
+                {
+                    b.Navigation("Unlocked");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Club.Club", b =>
+                {
+                    b.Navigation("Blacklist");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.ChannelConfig", b =>
+                {
+                    b.Navigation("AssignReactionRoles");
+                });
+
             modelBuilder.Entity("Hanekawa.Database.Tables.Giveaway.Giveaway", b =>
                 {
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", b =>
+                {
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

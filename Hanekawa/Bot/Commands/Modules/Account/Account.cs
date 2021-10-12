@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
 {
     [Name("Account")]
     [Description("Commands for user levels")]
-    [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.AttachFiles | Permission.SendMessages)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds | Permission.SendAttachments | Permission.SendMessages)]
     public class Account : HanekawaCommandModule
     {
         private readonly ExpService _exp;

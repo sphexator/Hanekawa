@@ -46,7 +46,7 @@ namespace Hanekawa
                     bot.UseMentionPrefix = true;
                     bot.Intents = new GatewayIntents(GatewayIntent.Bans |
                                                      GatewayIntent.Guilds |
-                                                     GatewayIntent.Emojis |
+                                                     GatewayIntent.EmojisAndStickers |
                                                      GatewayIntent.Integrations |
                                                      GatewayIntent.Webhooks |
                                                      GatewayIntent.Invites |

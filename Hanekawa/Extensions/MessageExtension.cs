@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
+using Disqord.Gateway;
 using Disqord.Rest;
 using Humanizer;
 
@@ -9,7 +10,7 @@ namespace Hanekawa.Extensions
 {
     public static class MessageExtension
     {
-        public static async Task<List<Snowflake>> FilterMessagesAsync(this ITextChannel channel, int amount = 100,
+        public static async Task<List<Snowflake>> FilterMessagesAsync(this CachedMessageGuildChannel channel, int amount = 100,
             IMember filterBy = null)
         {
             var messages = await channel.FetchMessagesAsync(amount);
@@ -86,12 +87,12 @@ namespace Hanekawa.Extensions
             }
         }
 
-        public static async Task<bool> TryDeleteMessagesAsync(this ITextChannel channel,
+        public static async Task<bool> TryDeleteMessagesAsync(this CachedMessageGuildChannel channel,
             IEnumerable<Snowflake> messageIds)
         {
             try
             {
-                await channel.DeleteMessagesAsync(messageIds);
+                await (channel as ITextChannel).DeleteMessagesAsync(messageIds);
                 return true;
             }
             catch

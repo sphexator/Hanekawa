@@ -22,7 +22,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
 {
     [Name("Economy")]
     [Description("Commands for user economy")]
-    [RequireBotGuildPermissions(Permission.EmbedLinks | Permission.SendMessages)]
+    [RequireBotGuildPermissions(Permission.SendEmbeds | Permission.SendMessages)]
     public class Economy : HanekawaCommandModule
     {
         [Name("Wallet")]

@@ -129,7 +129,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     return;
                 }
 
-                channel ??= Context.Channel;
+                channel ??= Context.Channel as ITextChannel;
                 if (channel == null) return;
                 cfg.ReportChannel = channel.Id;
                 await db.SaveChangesAsync();

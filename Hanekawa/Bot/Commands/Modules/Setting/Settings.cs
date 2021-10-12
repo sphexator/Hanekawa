@@ -13,7 +13,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
 {
     [Name("Settings")]
     [Description("Bot settings for all services and commands")]
-    [RequireBotGuildPermissions(Permission.SendMessages | Permission.EmbedLinks)]
+    [RequireBotGuildPermissions(Permission.SendMessages | Permission.SendEmbeds)]
     [RequireAuthorGuildPermissions(Permission.ManageGuild)]
     public class Settings : HanekawaCommandModule
     {

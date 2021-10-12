@@ -31,7 +31,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
-            channel ??= Context.Channel;
+            channel ??= Context.Channel as ITextChannel;
             if (channel == null) return null;
             var result = await _cache.AddOrRemoveChannel(channel, db);
             if (!result)

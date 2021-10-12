@@ -272,7 +272,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             if (ch.Overwrites.Select(z => z.Permissions).Contains(_deny)) return;
             try
             {
-                await channel.TryApplyPermissionOverwriteAsync(new LocalOverwrite(role, _deny))
+                await channel.TryApplyPermissionOverwriteAsync(new LocalOverwrite(role.Id, OverwriteTargetType.Role, _deny))
                     .ConfigureAwait(false);
             }
             catch (Exception e)

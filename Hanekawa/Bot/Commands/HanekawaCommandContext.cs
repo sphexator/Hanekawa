@@ -9,7 +9,7 @@ namespace Hanekawa.Bot.Commands
         public IServiceScope Scope { get; }
 
         public HanekawaCommandContext(DiscordBotBase bot, IPrefix prefix, string input, IGatewayUserMessage message, 
-            CachedTextChannel channel, IServiceScope serviceScope) : base(bot, prefix, input, message, channel, serviceScope) =>
+            CachedMessageGuildChannel channel, IServiceScope serviceScope) : base(bot, prefix, input, message, channel, serviceScope) =>
             Scope = serviceScope;
     }
 }

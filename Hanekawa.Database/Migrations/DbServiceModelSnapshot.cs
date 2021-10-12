@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using Hanekawa.Database;
-using Hanekawa.Database.Entities.Items;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,7 +17,7 @@ namespace Hanekawa.Database.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.6")
+                .HasAnnotation("ProductVersion", "5.0.9")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.Account", b =>
@@ -188,7 +187,7 @@ namespace Hanekawa.Database.Migrations
                     b.HasData(
                         new
                         {
-                            AchievementId = new Guid("b783466d-41cd-466e-9493-e2c0ea9cb1df"),
+                            AchievementId = new Guid("624da012-2194-428a-b693-b9b08ad0a9af"),
                             Category = 0,
                             Description = "Reach Server Level 5",
                             Difficulty = 0,
@@ -200,7 +199,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("5a34b70b-738b-4bbe-9879-46cc94879ae0"),
+                            AchievementId = new Guid("aea7144b-e287-40ff-9a00-3a5a6b815170"),
                             Category = 0,
                             Description = "Reach Server Level 10",
                             Difficulty = 0,
@@ -212,7 +211,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("3c7a5b98-3e23-4926-be08-0ff60e15ce00"),
+                            AchievementId = new Guid("7c315a8d-35cc-48de-8dd4-f90d1d36132e"),
                             Category = 0,
                             Description = "Reach Server Level 20",
                             Difficulty = 0,
@@ -224,7 +223,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("756cae12-4fe9-43e7-ab08-b21eddea494a"),
+                            AchievementId = new Guid("915e030a-c71e-42fa-930a-ea250afb30aa"),
                             Category = 0,
                             Description = "Reach Server Level 30",
                             Difficulty = 0,
@@ -236,7 +235,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("7a927920-6846-4255-8b85-442f17220482"),
+                            AchievementId = new Guid("2790c6d3-d8bf-47a8-a89e-bb018982deaf"),
                             Category = 0,
                             Description = "Reach Server Level 40",
                             Difficulty = 0,
@@ -248,7 +247,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("52e013bf-88f0-48cf-958a-e3fefb599146"),
+                            AchievementId = new Guid("02d386b7-3ce5-442c-bd58-77a20dd4c5d3"),
                             Category = 0,
                             Description = "Reach Server Level 50",
                             Difficulty = 1,
@@ -260,7 +259,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("79c5a480-55de-4532-a8ed-ba8708385f3e"),
+                            AchievementId = new Guid("c9a5ef51-2bd8-430f-bd82-c725d6220ae7"),
                             Category = 0,
                             Description = "Reach Server Level 60",
                             Difficulty = 1,
@@ -272,7 +271,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("266026f9-6b44-40f0-8fcd-896a129f461d"),
+                            AchievementId = new Guid("96785bc2-4de5-4d8d-9924-6c902729caf3"),
                             Category = 0,
                             Description = "Reach Server Level 70",
                             Difficulty = 2,
@@ -284,7 +283,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("967d82f6-23ce-4511-93e7-314f8176a2cc"),
+                            AchievementId = new Guid("110319eb-d9d9-4fe0-a695-d8a1f839f5b0"),
                             Category = 0,
                             Description = "Reach Server Level 80",
                             Difficulty = 2,
@@ -296,7 +295,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("e90cd59c-6d89-41ff-9b49-0b5df3295a61"),
+                            AchievementId = new Guid("d33c6057-4128-4014-be25-ff9c08c0d9cc"),
                             Category = 0,
                             Description = "Reach Server Level 90",
                             Difficulty = 3,
@@ -308,7 +307,7 @@ namespace Hanekawa.Database.Migrations
                         },
                         new
                         {
-                            AchievementId = new Guid("a6c4d454-8f52-4857-bd43-06117c52bfa3"),
+                            AchievementId = new Guid("fe43f8c8-77eb-40ea-9b67-7ca8117160ba"),
                             Category = 0,
                             Description = "Reach Server Level 100",
                             Difficulty = 3,
@@ -326,7 +325,7 @@ namespace Hanekawa.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal?>("AccountUserId")
+                    b.Property<decimal?>("AccountGlobalUserId")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<Guid>("AchieveId")
@@ -343,27 +342,11 @@ namespace Hanekawa.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountUserId");
+                    b.HasIndex("AccountGlobalUserId");
 
                     b.HasIndex("AchievementId");
 
                     b.ToTable("AchievementUnlocks");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Highlight", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<ulong>("UserId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<List<string>>("Keywords")
-                        .HasColumnType("text[]");
-
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("Highlights");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.HungerGame.HungerGame", b =>
@@ -719,33 +702,6 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("HungerGameStatus");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Inventory", b =>
-                {
-                    b.Property<ulong>("UserId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Inventories");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Account.Item", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("DateAdded")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<IItem>("ItemJson")
-                        .HasColumnType("jsonb");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Items");
-                });
-
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.Profile.Background", b =>
                 {
                     b.Property<Guid>("Id")
@@ -762,32 +718,32 @@ namespace Hanekawa.Database.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("33c231f4-f973-42c7-8e2c-59cb2454226a"),
+                            Id = new Guid("27b87558-d918-42b3-80a2-e0e9a8798f4a"),
                             BackgroundUrl = "https://i.imgur.com/epIb29P.png"
                         },
                         new
                         {
-                            Id = new Guid("9e3e8fc6-fe28-4d58-a5b9-89f4c3b43db4"),
+                            Id = new Guid("2ae7e0a7-d01c-4b8a-8382-6c55fd867d77"),
                             BackgroundUrl = "https://i.imgur.com/04PbzvT.png"
                         },
                         new
                         {
-                            Id = new Guid("90485743-8cb6-45e0-ad6f-f3dd6f4909aa"),
+                            Id = new Guid("fc53eac7-1af1-48b0-ba40-b16f5339ebe3"),
                             BackgroundUrl = "https://i.imgur.com/5ojmh76.png"
                         },
                         new
                         {
-                            Id = new Guid("54bc322b-00e6-4649-a313-eea32eccf960"),
+                            Id = new Guid("fa056244-ae59-4c3a-8cb3-ed79a7d782a4"),
                             BackgroundUrl = "https://i.imgur.com/OAMpNDh.png"
                         },
                         new
                         {
-                            Id = new Guid("fac4b8a9-aeaa-456a-b844-ee42d9900842"),
+                            Id = new Guid("6d1b1dad-6f2c-44b2-9d76-9eeebd1893d1"),
                             BackgroundUrl = "https://i.imgur.com/KXO5bx5.png"
                         },
                         new
                         {
-                            Id = new Guid("10175ccf-dd52-4a49-85ab-88a8eceb1b66"),
+                            Id = new Guid("9a34da71-2f36-4570-9f3e-4bc6306c28ec"),
                             BackgroundUrl = "https://i.imgur.com/5h5zZ7C.png"
                         });
                 });
@@ -1024,6 +980,9 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("Webhook")
                         .HasColumnType("text");
 
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
+
                     b.HasKey("GuildId", "Name");
 
                     b.ToTable("AutoMessages");
@@ -1153,20 +1112,17 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("ClubPlayers");
                 });
 
-            modelBuilder.Entity("Hanekawa.Database.Tables.Config.EventPayout", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.Config.DropChannel", b =>
                 {
                     b.Property<ulong>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<ulong>("UserId")
+                    b.Property<ulong>("ChannelId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
+                    b.HasKey("GuildId", "ChannelId");
 
-                    b.HasKey("GuildId", "UserId");
-
-                    b.ToTable("EventPayouts");
+                    b.ToTable("DropChannels");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.Guild.AdminConfig", b =>
@@ -1216,6 +1172,9 @@ namespace Hanekawa.Database.Migrations
 
                     b.Property<string>("Webhook")
                         .HasColumnType("text");
+
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("GuildId");
 
@@ -1516,6 +1475,9 @@ namespace Hanekawa.Database.Migrations
                     b.Property<string>("Webhook")
                         .HasColumnType("text");
 
+                    b.Property<ulong?>("WebhookId")
+                        .HasColumnType("numeric(20,0)");
+
                     b.HasKey("GuildId");
 
                     b.ToTable("WelcomeConfigs");
@@ -1561,17 +1523,17 @@ namespace Hanekawa.Database.Migrations
                     b.Property<ulong>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<ulong?>("ChannelId")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<DateTimeOffset>("End")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<ulong?>("MessageId")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("Multiplier")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<DateTimeOffset>("Start")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("GuildId");
 
@@ -1613,19 +1575,6 @@ namespace Hanekawa.Database.Migrations
                     b.HasKey("GuildId", "Level");
 
                     b.ToTable("LevelRewards");
-                });
-
-            modelBuilder.Entity("Hanekawa.Database.Tables.Config.LootChannel", b =>
-                {
-                    b.Property<ulong>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<ulong>("ChannelId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("GuildId", "ChannelId");
-
-                    b.ToTable("LootChannels");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Config.SelfAssignAbleRole", b =>
@@ -2005,7 +1954,7 @@ namespace Hanekawa.Database.Migrations
                     b.Property<ulong>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("Moderator")
+                    b.Property<ulong>("Moderator")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<TimeSpan?>("MuteTimer")
@@ -2093,6 +2042,57 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("Quotes");
                 });
 
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<ulong?>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<ulong?>("MessageId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SelfAssignGroups");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignItem", b =>
+                {
+                    b.Property<ulong>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Emote")
+                        .HasColumnType("text");
+
+                    b.Property<ulong?>("EmoteId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("Exclusive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RoleId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("SelfAssignItems");
+                });
+
             modelBuilder.Entity("Hanekawa.Database.Tables.VoiceRoles", b =>
                 {
                     b.Property<ulong>("GuildId")
@@ -2109,32 +2109,15 @@ namespace Hanekawa.Database.Migrations
                     b.ToTable("VoiceRoles");
                 });
 
-            modelBuilder.Entity("InventoryItem", b =>
-                {
-                    b.Property<Guid>("ItemsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("UsersUserId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("ItemsId", "UsersUserId");
-
-                    b.HasIndex("UsersUserId");
-
-                    b.ToTable("InventoryItem");
-                });
-
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.Achievement.AchievementUnlocked", b =>
                 {
-                    b.HasOne("Hanekawa.Database.Tables.Account.AccountGlobal", "Account")
+                    b.HasOne("Hanekawa.Database.Tables.Account.AccountGlobal", null)
                         .WithMany("AchievementUnlocks")
-                        .HasForeignKey("AccountUserId");
+                        .HasForeignKey("AccountGlobalUserId");
 
                     b.HasOne("Hanekawa.Database.Tables.Account.Achievement.Achievement", "Achievement")
                         .WithMany("Unlocked")
                         .HasForeignKey("AchievementId");
-
-                    b.Navigation("Account");
 
                     b.Navigation("Achievement");
                 });
@@ -2183,19 +2166,15 @@ namespace Hanekawa.Database.Migrations
                     b.Navigation("Giveaway");
                 });
 
-            modelBuilder.Entity("InventoryItem", b =>
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignItem", b =>
                 {
-                    b.HasOne("Hanekawa.Database.Tables.Account.Item", null)
-                        .WithMany()
-                        .HasForeignKey("ItemsId")
+                    b.HasOne("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", "Group")
+                        .WithMany("Roles")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Hanekawa.Database.Tables.Account.Inventory", null)
-                        .WithMany()
-                        .HasForeignKey("UsersUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("Hanekawa.Database.Tables.Account.AccountGlobal", b =>
@@ -2223,6 +2202,11 @@ namespace Hanekawa.Database.Migrations
             modelBuilder.Entity("Hanekawa.Database.Tables.Giveaway.Giveaway", b =>
                 {
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("Hanekawa.Database.Tables.SelfAssign.SelfAssignGroup", b =>
+                {
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

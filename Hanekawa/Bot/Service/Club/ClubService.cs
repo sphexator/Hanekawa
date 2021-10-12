@@ -13,8 +13,9 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Club
 {
@@ -28,7 +29,7 @@ namespace Hanekawa.Bot.Service.Club
         private readonly OverwritePermissions _allowOverwrite =
             new(new ChannelPermissions(19520), ChannelPermissions.None);
 
-        public ClubService(IServiceProvider provider, ILogger logger, DiscordClientBase client) : base(logger, client)
+        public ClubService(IServiceProvider provider, ILogger<ClubService> logger, DiscordClientBase client) : base(logger, client)
         {
             _bot = (Hanekawa)client;
             _provider = provider;
@@ -55,7 +56,7 @@ namespace Hanekawa.Bot.Service.Club
 
             var clubChannel = await guild.CreateTextChannelAsync(club.Name, e =>
             {
-                e.ParentId = cfg.ChannelCategory.Value;
+                e.CategoryId = cfg.ChannelCategory.Value;
                 e.Overwrites = overWrites;
             });
             club.Channel = clubChannel.Id;

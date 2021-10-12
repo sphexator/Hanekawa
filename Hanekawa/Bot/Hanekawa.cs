@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
 using Disqord.Gateway;
 using Hanekawa.Bot.Commands;
+using Hanekawa.Bot.Commands.TypeReaders;
 using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,11 +19,16 @@ namespace Hanekawa.Bot
         public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger,
             IServiceProvider services,
             DiscordClient client) : base(options, logger, services, client)
+        { }
+
+        protected override ValueTask AddTypeParsersAsync(CancellationToken cancellationToken = new ())
         {
+            Commands.AddTypeParser(new TimeSpanTypeParser());
+            return base.AddTypeParsersAsync(cancellationToken);
         }
 
         public override DiscordCommandContext CreateCommandContext(IPrefix prefix, string input,
-            IGatewayUserMessage message, CachedTextChannel channel)
+            IGatewayUserMessage message, CachedMessageGuildChannel channel)
         {
             var scope = Services.CreateScope();
             var context = message.GuildId != null
