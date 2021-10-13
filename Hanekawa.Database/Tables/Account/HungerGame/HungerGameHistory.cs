@@ -1,16 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using Disqord;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class HungerGameHistory
     {
-        public Guid GameId { get; set; }
+        public Guid Id { get; set; }
         public Snowflake GuildId { get; set; }
+        public DateTimeOffset Start { get; set; }
+        public DateTimeOffset End { get; set; } = DateTimeOffset.UtcNow;
         public Snowflake Winner { get; set; }
-        public DateTimeOffset Date { get; set; }
-        public int ExpReward { get; set; } = 0;
-        public int CreditReward { get; set; } = 0;
-        public int SpecialCreditReward { get; set; } = 0;
+        public Snowflake[] Participants { get; set; }
+
+        public int Experience { get; set; } = 0;
+        public int Credit { get; set; } = 0;
+        public int SpecialCredit { get; set; } = 0;
+        public Snowflake? Role { get; set; } = null;
     }
 }

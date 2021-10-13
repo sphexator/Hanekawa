@@ -1,4 +1,5 @@
 ﻿using System;
+using Disqord;
 using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
@@ -6,9 +7,10 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
     public class Participants
     {
         public Guid Id { get; set; }
-        public bool Bot { get; set; } = false;
         public string Name { get; set; } = "Test";
+        public Snowflake UserId { get; set; }
         public string AvatarUrl { get; set; } = null;
+        public bool Bot { get; set; } = false;
         public int Health { get; set; } = 100;
         public int Stamina { get; set; } = 100;
         public bool Bleeding { get; set; } = false;
@@ -26,5 +28,8 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public int MeleeWeapon { get; set; } = 0;
         public int RangeWeapon { get; set; } = 0;
         public int Bullets { get; set; } = 0;
+        
+        public Guid GameId { get; set; }
+        public Game Game { get; set; }
     }
 }

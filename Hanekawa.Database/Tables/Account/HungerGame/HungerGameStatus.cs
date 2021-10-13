@@ -11,8 +11,6 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public Snowflake? EventChannel { get; set; } = null;
         public string EmoteMessageFormat { get; set; } 
 
-        public GameStage Stage { get; set; } = GameStage.Closed;
-        public DateTimeOffset SignUpStart { get; set; }
         public string SignUpMessage { get; set; }
         public Guid? GameId { get; set; } = null;
 
