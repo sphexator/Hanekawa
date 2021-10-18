@@ -92,9 +92,10 @@ namespace Hanekawa.Bot.Service.Game
             {
                 _cache.AddGame(game.Channel.Id, ShipGameType.PvE);
                 var result = await BattleAsync(game);
-                if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc)
-                    _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
-                else _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, true);
+                // TODO: Game Achieve 
+                // if (game.Type == ShipGameType.PvE && !result.Winner.IsNpc)
+                //     _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, false);
+                // else _ = _achievement.GameKill(game.Channel.GuildId, result.Winner.Id, true);
                 _cache.RemoveGame(game.Channel.Id);
                 return result;
             }

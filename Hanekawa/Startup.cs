@@ -94,12 +94,13 @@ namespace Hanekawa
                     x.WithDescription("Weekly reward server boosters");
                     x.WithCronSchedule("0 0 12 ? * MON *");
                 });
-                e.ScheduleJob<HungerGameService>(x =>
-                {
-                    x.WithIdentity("HungerGame");
-                    x.WithDescription("Handler for rounds for hunger games");
-                    x.WithCronSchedule("0 0 0/3 1/1 * ? *");
-                });
+                // TODO: Hunger Game Timed Service
+                // e.ScheduleJob<HungerGameService>(x =>
+                // {
+                //     x.WithIdentity("HungerGame");
+                //     x.WithDescription("Handler for rounds for hunger games");
+                //     x.WithCronSchedule("0 0 0/3 1/1 * ? *");
+                // });
                 e.ScheduleJob<MvpService>(x =>
                 {
                     x.WithIdentity("MVP");

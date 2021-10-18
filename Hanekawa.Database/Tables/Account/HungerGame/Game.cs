@@ -12,7 +12,7 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
         public GameStage Stage = GameStage.Signup;
         public DateTimeOffset Start { get; set; }
         public int Round { get; set; }
-        
+
         public List<Participants> Participants { get; set; }
     }
 }

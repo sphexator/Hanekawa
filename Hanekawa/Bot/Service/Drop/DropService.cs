@@ -135,7 +135,7 @@ namespace Hanekawa.Bot.Service.Drop
                 /* Ignore */
             }
 
-            await _achievement.DropAchievement(userData, db);
+            // TODO: Drop Achieve await _achievement.DropAchievement(userData, db);
         }
 
         private async ValueTask<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)

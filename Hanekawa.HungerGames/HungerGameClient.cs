@@ -5,6 +5,7 @@ using Hanekawa.Database.Tables.Account.HungerGame;
 using Hanekawa.HungerGames.Entities;
 using Hanekawa.HungerGames.Entities.Configs;
 using Hanekawa.HungerGames.Events;
+using HungerGameConfig = Hanekawa.HungerGames.Entities.Configs.HungerGameConfig;
 
 namespace Hanekawa.HungerGames
 {

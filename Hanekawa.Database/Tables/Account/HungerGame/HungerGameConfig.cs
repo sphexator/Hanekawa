@@ -1,10 +1,9 @@
 ﻿using System;
 using Disqord;
-using Hanekawa.Database.Entities;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame
 {
-    public class HungerGameStatus
+    public class HungerGameConfig
     {
         public Snowflake GuildId { get; set; }
         public Snowflake? SignUpChannel { get; set; } = null;

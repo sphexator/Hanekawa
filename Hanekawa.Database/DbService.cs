@@ -46,7 +46,8 @@ namespace Hanekawa.Database
             DropBuilder(modelBuilder);
             GameBuilder(modelBuilder);
             GiveawayBuilder(modelBuilder);
-            HungerGameBuilder(modelBuilder);
+            // TODO: Recreate hunger game entities
+            //HungerGameBuilder(modelBuilder);
             InventoryStoreBuilder(modelBuilder);
             LevelBuilder(modelBuilder);
             MvpBuilder(modelBuilder);

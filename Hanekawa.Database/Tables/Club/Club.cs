@@ -8,7 +8,6 @@ namespace Hanekawa.Database.Tables.Club
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Snowflake GuildId { get; set; }
-        public Snowflake Leader { get; set; }
         public string Name { get; set; }
         public string Description { get; set; } = "N/A";
         public string IconUrl { get; set; }

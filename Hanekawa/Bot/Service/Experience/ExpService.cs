@@ -96,7 +96,7 @@ namespace Hanekawa.Bot.Service.Experience
                     var exp = GetExp((IVoiceChannel) channel, time);
                     userData.StatVoiceTime += time;
                     await AddExpAsync(user, userData, exp, Convert.ToInt32(exp / 2), db, ExpSource.Voice);
-                    await _achievement.TotalTime(userData, db);
+                    // TODO: VC Achieve await _achievement.TotalTime(userData, db);
                 }
             }
             catch (Exception z)
