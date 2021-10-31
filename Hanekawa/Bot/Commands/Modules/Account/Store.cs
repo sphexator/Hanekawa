@@ -6,9 +6,9 @@ using Disqord.Bot;
 using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
-using Hanekawa.Database.Entities.Items;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account.Stores;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +29,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         public async Task<DiscordCommandResult> ShopAsync()
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
             var store = await db.ServerStores.Where(x => x.GuildId == Context.GuildId).ToArrayAsync();
             if (store.Length == 0)
                 return Reply("Store is empty",
@@ -138,7 +138,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> AddAsync(int price, [Remainder] IRole role)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 var item = await db.ServerStores.FindAsync(Context.GuildId, role.Id);
                 if (item != null) return Reply($"This role is already added to the store !", HanaBaseColor.Bad());
                 await db.ServerStores.AddAsync(new ServerStore
@@ -158,7 +158,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> AddSpecialAsync(int specialPrice, [Remainder] IRole role)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 var item = await db.ServerStores.FindAsync(Context.GuildId, role.Id);
                 if (item != null) return Reply($"This role is already added to the store !", HanaBaseColor.Bad());
                 await db.ServerStores.AddAsync(new ServerStore

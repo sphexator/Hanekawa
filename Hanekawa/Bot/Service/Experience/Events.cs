@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Hanekawa.Bot.Commands;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +28,7 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 using var scope = _provider.CreateScope();
                 await using var database = scope.ServiceProvider.GetRequiredService<DbService>();
-                var config = await database.GetOrCreateLevelConfigAsync(context.GuildId);
+                var config = await database.GetOrCreateEntityAsync<LevelConfig>(context.GuildId);
                 _cache.AdjustExpMultiplier(ExpSource.Text, context.GuildId, config.TextExpMultiplier);
                 _cache.AdjustExpMultiplier(ExpSource.Voice, context.GuildId, config.VoiceExpMultiplier);
                 _cache.AdjustExpMultiplier(ExpSource.Other, context.GuildId, 1);
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 _logger.Error(e, "Error in exp event creation");
                 await timer.DisposeAsync();
-                var config = await db.GetOrCreateLevelConfigAsync(context.GuildId);
+                var config = await db.GetOrCreateEntityAsync<LevelConfig>(context.GuildId);
                 _cache.AdjustExpMultiplier(ExpSource.Text, context.GuildId, config.TextExpMultiplier);
                 _cache.AdjustExpMultiplier(ExpSource.Voice, context.GuildId, config.VoiceExpMultiplier);
                 _cache.AdjustExpMultiplier(ExpSource.Other, context.GuildId, 1);

@@ -4,6 +4,12 @@ namespace Hanekawa.Database.Tables.Config.Guild
 {
     public class LevelConfig
     {
+        public LevelConfig() {}
+        public LevelConfig(Snowflake guildId)
+        {
+            GuildId = guildId;
+        }
+        
         public Snowflake GuildId { get; set; }
         public double TextExpMultiplier { get; set; } = 1;
         public double VoiceExpMultiplier { get; set; } = 1;

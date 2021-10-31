@@ -126,7 +126,7 @@ namespace Hanekawa.Bot.Commands.Modules
             Database.Tables.Account.Account movePerm = null;
             foreach (var xPair in voiceStates)
             {
-                var userData = await db.GetOrCreateUserData(Context.GuildId, xPair.Key);
+                var userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, xPair.Key);
                 if (movePerm == null || movePerm.VoiceExpTime <= userData.VoiceExpTime) movePerm = userData;
             }
             

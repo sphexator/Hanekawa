@@ -7,6 +7,7 @@ using Disqord.Rest;
 using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -20,7 +21,7 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(e.NewMember.GuildId);
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
             if (!cfg.LogAvi.HasValue) return;
             if (guild.GetChannel(cfg.LogAvi.Value) is not ITextChannel channel) return;
 

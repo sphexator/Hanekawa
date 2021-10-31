@@ -5,6 +5,9 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class HungerGameConfig
     {
+        public HungerGameConfig() { }
+        public HungerGameConfig(Snowflake guildId) => GuildId = guildId;
+
         public Snowflake GuildId { get; set; }
         public Snowflake? SignUpChannel { get; set; } = null;
         public Snowflake? EventChannel { get; set; } = null;

@@ -8,6 +8,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Color;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         {
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<AdminConfig>(Context.GuildId);
             channel ??= Context.Channel as ITextChannel;
             if (channel == null) return null;
             var result = await _cache.AddOrRemoveChannel(channel, db);
@@ -59,7 +60,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         {
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<AdminConfig>(Context.GuildId);
             if (cfg.IgnoreAllChannels)
             {
                 cfg.IgnoreAllChannels = false;
@@ -79,7 +80,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> ListIgnoreChannelsAsync()
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateAdminConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<AdminConfig>(Context.GuildId);
             var list = await db.IgnoreChannels.Where(x => x.GuildId == Context.Guild.Id).ToListAsync();
             string content;
             if (list.Count != 0)

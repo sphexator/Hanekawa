@@ -11,6 +11,7 @@ using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Humanizer;
@@ -43,8 +44,8 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             user ??= Context.Author;
-            var serverData = await db.GetOrCreateUserData(user);
-            var globalData = await db.GetOrCreateGlobalUserDataAsync(user);
+            var serverData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(user.GuildId, user.Id);
+            var globalData = await db.GetOrCreateEntityAsync<AccountGlobal>(user.Id);
             var embed = new LocalEmbed
             {
                 Author = new () {Name = user.DisplayName()},
@@ -136,22 +137,18 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         public async Task<DiscordCommandResult> ReputationAsync(IMember user = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cdCheck = await db.GetOrCreateUserData(Context.Author);
+            var cdCheck = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
             if (user == null || user == Context.Author)
             {
-                if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
-                {
-                    var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
-                    await Reply(
-                        $"{Context.Author.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
-                        "Reputation reset at midnight UTC!");
-                }
-                else
-                {
+                if (cdCheck.RepCooldown.Date.AddDays(1) <= DateTime.UtcNow)
                     return Reply(
                         $"{Context.Author.Mention}, you got a reputation point available!",
                         HanaBaseColor.Ok());
-                }
+                
+                var timer = cdCheck.RepCooldown.Date.AddDays(1) - DateTime.UtcNow;
+                return Reply(
+                    $"{Context.Author.Mention} daily rep refresh in {timer.Humanize(2)}\n" +
+                    "Reputation reset at midnight UTC!");
             }
             
             if (cdCheck.RepCooldown.Date.AddDays(1) > DateTime.UtcNow)
@@ -162,7 +159,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                     HanaBaseColor.Bad());
             }
 
-            var userData = await db.GetOrCreateUserData(user);
+            var userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
             cdCheck.RepCooldown = DateTime.UtcNow.Date;
             userData.Rep++;
             await db.SaveChangesAsync();

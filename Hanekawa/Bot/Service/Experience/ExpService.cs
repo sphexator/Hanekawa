@@ -11,6 +11,8 @@ using Hanekawa.Bot.Service.Drop;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +56,7 @@ namespace Hanekawa.Bot.Service.Experience
                 {
                     using var serviceScope = _provider.CreateScope();
                     await using var database = serviceScope.ServiceProvider.GetRequiredService<DbService>();
-                    var config = await database.GetOrCreateLevelConfigAsync(x.GuildId);
+                    var config = await database.GetOrCreateEntityAsync<LevelConfig>(x.GuildId);
                     _cache.AdjustExpMultiplier(ExpSource.Text, x.GuildId, config.TextExpMultiplier);
                     _cache.AdjustExpMultiplier(ExpSource.Voice, x.GuildId, config.VoiceExpMultiplier);
                     _cache.AdjustExpMultiplier(ExpSource.Other, x.GuildId, 1);
@@ -78,9 +80,9 @@ namespace Hanekawa.Bot.Service.Experience
                 if (before != null && after != null) return;
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLevelConfigAsync(e.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(e.GuildId);
                 if (!cfg.VoiceExpEnabled) return;
-                var userData = await db.GetOrCreateUserData(user);
+                var userData = await db.GetOrCreateEntityAsync<Account>(e.GuildId, user.Id);
                 if (before == null && after != null)
                 {
                     userData.VoiceExpTime = DateTime.UtcNow;
@@ -139,7 +141,7 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var userData = await db.GetOrCreateUserData(e.Member);
+                var userData = await db.GetOrCreateEntityAsync<Account>(e.GuildId.Value, e.Member.Id);
                 userData.LastMessage = DateTime.UtcNow;
                 userData.FirstMessage ??= DateTime.UtcNow;
                 await AddExpAsync(e.Member, userData, GetExp(e.Channel), _random.Next(0, 3), db, ExpSource.Text);
@@ -159,7 +161,7 @@ namespace Hanekawa.Bot.Service.Experience
             _cache.AddGlobalCooldown(e.Member.Id);
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateGlobalUserDataAsync(e.Member);
+            var userData = await db.GetOrCreateEntityAsync<AccountGlobal>(e.Member.Id);
             await AddExpAsync(userData, GetExp(e.Channel), _random.Next(1, 3), db);
         }
 

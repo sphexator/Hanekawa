@@ -170,7 +170,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
         
         private async Task<IRole> GetMuteRoleAsync(Snowflake guildId, DbService db)
         {
-            var cfg = await db.GetOrCreateAdminConfigAsync(guildId);
+            var cfg = await db.GetOrCreateEntityAsync<AdminConfig>(guildId);
             if (cfg.MuteRole.HasValue && _bot.GetGuild(guildId).Roles.TryGetValue(cfg.MuteRole.Value, out var muteRole))
                 return muteRole;
             muteRole = await CreateRoleAsync(guildId, cfg, db);

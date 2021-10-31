@@ -29,9 +29,10 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             if (bet <= 0) return null;
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(Context.Author);
+            var userData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
             if (userData.Credit == 0) return Reply($"You don't have any credit to gamble with", HanaBaseColor.Bad());
-            return await GambleBetAsync(db, userData, await db.GetOrCreateCurrencyConfigAsync(Context.GuildId), bet);
+            return await GambleBetAsync(db, userData, await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId), bet);
         }
 
         [Name("Roll")]
@@ -44,9 +45,10 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             if (bet <= 0) return null;
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(Context.Author);
+            var userData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
             if (userData.Credit == 0) return Reply($"You don't have any credit to gamble with", HanaBaseColor.Bad());
-            return await GambleRollAsync(db, userData, await db.GetOrCreateCurrencyConfigAsync(Context.GuildId), bet);
+            return await GambleRollAsync(db, userData, await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId), bet);
         }
 
         private async Task<DiscordCommandResult> GambleBetAsync(DbContext db, Database.Tables.Account.Account userData, CurrencyConfig cfg, int bet)

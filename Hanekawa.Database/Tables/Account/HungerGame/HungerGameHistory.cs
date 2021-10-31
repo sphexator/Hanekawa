@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Disqord;
 
 namespace Hanekawa.Database.Tables.Account.HungerGame

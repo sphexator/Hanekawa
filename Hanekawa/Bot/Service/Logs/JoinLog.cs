@@ -12,6 +12,7 @@ using Disqord.Webhook;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +47,7 @@ namespace Hanekawa.Bot.Service.Logs
             if(guild == null) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
             if (!cfg.LogJoin.HasValue) return;
             if (guild.GetChannel(cfg.LogJoin.Value) is not ITextChannel channel) return;
             var embed = new LocalEmbed
@@ -110,7 +111,7 @@ namespace Hanekawa.Bot.Service.Logs
             var user = e.User;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
             if (!cfg.LogJoin.HasValue) return;
             if (guild.GetChannel(cfg.LogJoin.Value) is not ITextChannel channel) return;
             var embed = new LocalEmbed

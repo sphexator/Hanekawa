@@ -10,6 +10,7 @@ using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Humanizer;
@@ -33,8 +34,8 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             user ??= Context.Author;
-            var userData = await db.GetOrCreateUserData(user);
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            var userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
+            var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
 
             var embed = new LocalEmbed
             {
@@ -55,28 +56,32 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         {
             if (amount <= 0) return null;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(Context.Author);
-            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
-            if (userData.Credit < amount * users.Length)
-            {
-                return Reply($"{Context.Author.Mention} doesn't have enough {currencyCfg.CurrencyName}",
+            var userData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
+            var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
+            if (userData.Credit < amount * users.Length) 
+                return Reply($"{Context.Author.Mention} doesn't have enough {currencyCfg.CurrencyName}", 
                     HanaBaseColor.Bad());
-            }
 
             var str = new StringBuilder();
+            var total = 0;
             foreach (var user in users)
             {
                 if (user == Context.Author) continue;
-                var receiverData = await db.GetOrCreateUserData(user);
+                if (userData.Credit - amount < 0) continue;
+                var receiverData =
+                    await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
 
                 userData.Credit -= amount;
                 receiverData.Credit += amount;
+                total += amount;
                 str.AppendLine($"{user.Mention}");
+                if (userData.Credit - amount < 0) str.AppendLine($"Insufficient {currencyCfg.CurrencyName}");
             }
 
             await db.SaveChangesAsync();
-            return Reply(
-                $"{Context.Author.Mention} transferred {currencyCfg.ToCurrencyFormat(amount)} to:\n{str}",
+            return Reply($"{Context.Author.Mention} transferred {currencyCfg.ToCurrencyFormat(amount)} " + 
+                         $"(total: {currencyCfg.ToCurrencyFormat(total)}) to:\n{str}", 
                 HanaBaseColor.Ok());
         }
 
@@ -87,8 +92,9 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         public async Task<DiscordCommandResult> DailyAsync(IMember user = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(Context.Author);
-            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            var userData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
+            var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
             if (userData.DailyCredit.Date.AddDays(1) > DateTime.UtcNow)
             {
                 var timer = userData.DailyCredit.Date.AddDays(1) - DateTime.UtcNow;
@@ -112,7 +118,8 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             }
 
             reward = new Random().Next(200, 300);
-            var receiverData = await db.GetOrCreateUserData(user);
+            var receiverData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
             userData.DailyCredit = DateTime.UtcNow.Date;
             receiverData.Credit += reward;
             await db.SaveChangesAsync();
@@ -128,7 +135,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
         public async Task<DiscordMenuCommandResult> LeaderboardAsync(int amount = 50)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
 
             amount = Context.Guild.MemberCount < amount ? Context.Guild.MemberCount : amount;
             var users = await db.Accounts.Where(x => x.Active && x.GuildId == Context.Guild.Id)
@@ -166,10 +173,11 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             if (amount <= 0) return null;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
             var str = new StringBuilder();
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
             foreach (var user in users)
             {
-                var userData = await db.GetOrCreateUserData(user);
+                var userData =
+                    await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
                 userData.CreditSpecial += amount;
                 str.AppendLine($"{user.Mention}");
             }
@@ -191,7 +199,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetRegularNameAsync([Remainder] string name = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.CurrencyName = "Credit";
@@ -210,7 +218,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetSpecialNameAsync([Remainder] string name = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 if (name.IsNullOrWhiteSpace())
                 {
                     cfg.SpecialCurrencyName = "Special Credit";
@@ -230,7 +238,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetRegularSymbolAsync(IGuildEmoji emote)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.EmoteCurrency = true;
                 cfg.CurrencySign = emote.GetMessageFormat();
                 await db.SaveChangesAsync();
@@ -243,7 +251,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetRegularSymbolAsync([Remainder] string symbol)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 if (symbol.IsNullOrWhiteSpace()) symbol = "$";
 
                 cfg.EmoteCurrency = false;
@@ -258,7 +266,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetSpecialSymbolAsync(IGuildEmoji emote)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.SpecialEmoteCurrency = true;
                 cfg.SpecialCurrencySign = emote.GetMessageFormat();
                 await db.SaveChangesAsync();
@@ -271,7 +279,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
             public async Task<DiscordCommandResult> SetSpecialSymbolAsync([Remainder] string symbol)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateCurrencyConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 if (symbol.IsNullOrWhiteSpace()) symbol = "$";
 
                 cfg.SpecialEmoteCurrency = false;

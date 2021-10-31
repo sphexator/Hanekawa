@@ -12,6 +12,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
@@ -341,7 +342,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     new LocalMessage().Create("Couldn't find the message, retrying in 5 seconds...",
                         HanaBaseColor.Bad()), TimeSpan.FromSeconds(10));
                 var delay = Task.Delay(5000);
-                var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild).ConfigureAwait(false);
+                var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId).ConfigureAwait(false);
                 await Task.WhenAll(delay);
                 if (cfg.LogBan.HasValue)
                     updMsg =

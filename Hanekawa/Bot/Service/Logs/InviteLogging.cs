@@ -2,6 +2,7 @@
 using Disqord.Gateway;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Service.Logs
@@ -13,7 +14,7 @@ namespace Hanekawa.Bot.Service.Logs
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(e.GuildId.Value);
             if (!cfg.LogJoin.HasValue) return;
             _cache.AddInvite(e.GuildId.Value, e.Inviter.Id, e.Code, e.Uses);
         }
@@ -23,7 +24,7 @@ namespace Hanekawa.Bot.Service.Logs
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(e.GuildId.Value);
             if (!cfg.LogJoin.HasValue) return;
             _cache.RemoveInvite(e.GuildId.Value, e.Code);
         }

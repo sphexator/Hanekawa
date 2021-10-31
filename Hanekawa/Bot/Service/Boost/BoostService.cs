@@ -10,6 +10,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
@@ -82,7 +83,7 @@ namespace Hanekawa.Bot.Service.Boost
         private async Task RewardGuildAsync(IGatewayGuild guild, DbService db, BoostConfig x)
         {
             var users = guild.Members.Where(u => u.Value.BoostedAt.HasValue).ToList();
-            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(guild);
+            var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(guild.Id);
             foreach (var (_, member) in users)
                 try
                 {
@@ -101,7 +102,7 @@ namespace Hanekawa.Bot.Service.Boost
         private async Task RewardUserAsync(DbService db, IMember member, BoostConfig x, IGuild guild,
             CurrencyConfig currencyCfg)
         {
-            var userData = await db.GetOrCreateUserData(member);
+            var userData = await db.GetOrCreateEntityAsync<Account>(member.GuildId, member.Id);
             var exp = await _exp.AddExpAsync(member, userData, x.ExpGain, x.CreditGain, db, ExpSource.Other);
             userData.CreditSpecial += x.SpecialCreditGain;
             var sb = new StringBuilder();
@@ -155,8 +156,8 @@ namespace Hanekawa.Bot.Service.Boost
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var userData = await db.GetOrCreateUserData(user);
-                var config = await db.GetOrCreateBoostConfigAsync(user.GuildId);
+                var userData = await db.GetOrCreateEntityAsync<Account>(user.GuildId, user.Id);
+                var config = await db.GetOrCreateEntityAsync<BoostConfig>(user.GuildId);
                 await _exp.AddExpAsync(user, userData, config.ExpGain, config.CreditGain, db, ExpSource.Other);
                 if (config.SpecialCreditGain > 0) userData.CreditSpecial += config.SpecialCreditGain;
                 await db.SaveChangesAsync();
@@ -188,7 +189,7 @@ namespace Hanekawa.Bot.Service.Boost
                     }
                 }
 
-                var logCfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
+                var logCfg = await db.GetOrCreateEntityAsync<LoggingConfig>(user.GuildId);
                 if (!logCfg.LogAvi.HasValue) return;
                 var logChannel = guild.GetChannel(logCfg.LogAvi.Value);
                 if (logChannel == null) return;
@@ -227,7 +228,7 @@ namespace Hanekawa.Bot.Service.Boost
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var logCfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
+                var logCfg = await db.GetOrCreateEntityAsync<LoggingConfig>(user.GuildId);
                 if (!logCfg.LogAvi.HasValue) return;
                 var guild = _bot.GetGuild(user.GuildId);
                 var channel = guild.GetChannel(logCfg.LogAvi.Value);

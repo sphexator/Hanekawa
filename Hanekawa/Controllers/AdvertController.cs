@@ -13,6 +13,7 @@ using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Advertise;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Giveaway;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
@@ -65,7 +66,7 @@ namespace Hanekawa.Controllers
                 if (guild == null) return BadRequest("Invalid guild");
                 // Get user data and reward from config
                 var userId = Convert.ToUInt64(model.User);
-                var userData = await _db.GetOrCreateUserData(guildId, userId);
+                var userData = await _db.GetOrCreateEntityAsync<Account>(guildId, userId);
                 var user = await guild.FetchMemberAsync(userId);
                 if (cfg.SpecialCredit > 0)
                     userData.CreditSpecial +=
@@ -95,7 +96,7 @@ namespace Hanekawa.Controllers
                     Time = DateTimeOffset.UtcNow
                 }, token);
 
-                var logCfg = await _db.GetOrCreateLoggingConfigAsync(guild);
+                var logCfg = await _db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
                 var logChannel = guild.GetChannel(logCfg.LogAvi.Value);
                 if (logChannel != null)
                 {
@@ -141,7 +142,7 @@ namespace Hanekawa.Controllers
                 try
                 {
                     var str = new StringBuilder();
-                    var currencyCfg = await _db.GetOrCreateCurrencyConfigAsync(guildId);
+                    var currencyCfg = await _db.GetOrCreateEntityAsync<CurrencyConfig>(guildId);
                     if (cfg.ExpGain > 0) str.AppendLine($"{cfg.ExpGain} Exp");
                     if (cfg.CreditGain > 0)
                         str.AppendLine($"{currencyCfg.CurrencyName}: {currencyCfg.ToCurrencyFormat(cfg.CreditGain)}");

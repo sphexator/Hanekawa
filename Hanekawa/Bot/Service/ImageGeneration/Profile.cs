@@ -29,8 +29,8 @@ namespace Hanekawa.Bot.Service.ImageGeneration
             var stream = new MemoryStream();
             using var img = new Image<Rgba32>(400, 400);
 
-            var userData = await db.GetOrCreateUserData(user);
-            var globalData = await db.GetOrCreateGlobalUserDataAsync(user);
+            var userData = await db.GetOrCreateEntityAsync<Account>(user.GuildId, user.Id);
+            var globalData = await db.GetOrCreateEntityAsync<AccountGlobal>(user.Id);
             var progressBar = CreateProfileProgressBar(userData);
             // TODO: Create a inventory for backgrounds
             var background = await GetProfileBackground(db);

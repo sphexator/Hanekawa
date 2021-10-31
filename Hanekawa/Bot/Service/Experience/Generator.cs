@@ -4,6 +4,7 @@ using Disqord;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using NLog;
 
@@ -19,7 +20,7 @@ namespace Hanekawa.Bot.Service.Experience
         {
             if (user.BoostedAt.HasValue)
             {
-                var cfg = await db.GetOrCreateLevelConfigAsync(user.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(user.GuildId);
                 exp = Convert.ToInt32(exp * cfg.BoostExpMultiplier);
             }
             exp = Convert.ToInt32(exp * await GetMultiplier(source, user.GuildId, db));
@@ -78,7 +79,7 @@ namespace Hanekawa.Bot.Service.Experience
         private async Task<double> GetMultiplier(ExpSource source, Snowflake guildId, DbService db)
         {
             if(_cache.TryGetMultiplier(source, guildId, out var value)) return value;
-            var cfg = await db.GetOrCreateLevelConfigAsync(guildId);
+            var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(guildId);
             _cache.AdjustExpMultiplier(ExpSource.Text, guildId, cfg.TextExpMultiplier);
             _cache.AdjustExpMultiplier(ExpSource.Voice, guildId, cfg.VoiceExpMultiplier);
             _cache.AdjustExpMultiplier(ExpSource.Other, guildId, cfg.TextExpMultiplier);

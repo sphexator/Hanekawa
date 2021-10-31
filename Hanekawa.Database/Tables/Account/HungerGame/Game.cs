@@ -7,12 +7,12 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class Game
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public Snowflake GuildId { get; set; }
         public GameStage Stage = GameStage.Signup;
-        public DateTimeOffset Start { get; set; }
-        public int Round { get; set; }
+        public DateTimeOffset Start { get; set; } = DateTimeOffset.UtcNow;
+        public int Round { get; set; } = 0;
 
-        public List<Participants> Participants { get; set; }
+        public List<Participants> Participants { get; set; } = new ();
     }
 }

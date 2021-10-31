@@ -6,6 +6,7 @@ using Disqord.Gateway;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hanekawa.Bot.Commands
@@ -25,7 +26,7 @@ namespace Hanekawa.Bot.Commands
 
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateGuildConfigAsync(message.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<GuildConfig>(message.GuildId.Value);
             var prefix = new StringPrefix(cfg.Prefix);
             collection = new HashSet<IPrefix> {prefix};
             cache.AddOrUpdatePrefix(message.GuildId.Value, prefix);

@@ -12,6 +12,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
@@ -144,7 +145,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             {
                 channel ??= Context.Channel as ITextChannel;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(Context.GuildId);
                 if (!await _assignService.PostAsync(Context, channel, cfg, db))
                 {
                     await Reply("There's no self-assignable roles to post!", HanaBaseColor.Bad());
@@ -282,7 +283,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
             private async ValueTask<bool> UpdateOrCreateNewEmbeds(IGatewayGuild guild, SelfAssignAbleRole update,
                 LocalEmoji emote, DbService db)
             {
-                var cfg = await db.GetOrCreateChannelConfigAsync(update.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(update.GuildId);
                 if (!cfg.SelfAssignableChannel.HasValue) return false;
                 try
                 {

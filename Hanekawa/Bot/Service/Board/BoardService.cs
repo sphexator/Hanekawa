@@ -8,6 +8,7 @@ using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
@@ -50,10 +51,10 @@ namespace Hanekawa.Bot.Service.Board
                 if (e.Emoji.Name != emote.Name) return;
             }
 
-            var cfg = await db.GetOrCreateBoardConfigAsync(e.GuildId.Value);
-            var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
-            var giver = await db.GetOrCreateUserData(e.Member);
-            var receiver = await db.GetOrCreateUserData(e.GuildId.Value, e.Message.Author.Id);
+            var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(e.GuildId.Value);
+            var stat = await db.GetOrCreateEntityAsync<Database.Tables.BoardConfig.Board>(e.GuildId.Value, e.MessageId);
+            var giver = await db.GetOrCreateEntityAsync<Account>(e.GuildId.Value, e.UserId);
+            var receiver = await db.GetOrCreateEntityAsync<Account>(e.GuildId.Value, e.Message.Author.Id);
             receiver.StarReceived++;
             giver.StarGiven++;
             stat.StarAmount++;
@@ -82,12 +83,12 @@ namespace Hanekawa.Bot.Service.Board
                 if (e.Emoji.Name != emote.Name) return;
             }
 
-            var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
-            var giver = await db.GetOrCreateUserData(e.GuildId.Value, e.UserId);
-            var receiver = await db.GetOrCreateUserData(e.GuildId.Value, e.Message.Author.Id);
+            var stat = await db.GetOrCreateEntityAsync<Database.Tables.BoardConfig.Board>(e.GuildId.Value, e.MessageId);
+            var giver = await db.GetOrCreateEntityAsync<Account>(e.GuildId.Value, e.UserId);
+            var receiver = await db.GetOrCreateEntityAsync<Account>(e.GuildId.Value, e.Message.Author.Id);
             if (receiver.StarReceived != 0) receiver.StarReceived--;
-            giver.StarGiven--;
-            stat.StarAmount--;
+            if (giver.StarGiven != 0) giver.StarGiven--;
+            if (stat.StarAmount != 0) stat.StarAmount--;
             await db.SaveChangesAsync();
         }
 
@@ -96,14 +97,14 @@ namespace Hanekawa.Bot.Service.Board
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var stat = await db.GetOrCreateBoardAsync(e.GuildId.Value, e.Message);
+            var stat = await db.GetOrCreateEntityAsync<Database.Tables.BoardConfig.Board>(e.GuildId.Value, e.MessageId);
             db.Remove(stat);
             await db.SaveChangesAsync();
         }
 
         private static async Task<IEmoji> UpdateEmoteAsync(Snowflake guildId, DbService db)
         {
-            var cfg = await db.GetOrCreateBoardConfigAsync(guildId);
+            var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(guildId);
             return LocalCustomEmoji.TryParse(cfg.Emote, out var emoji)
                 ? emoji
                 : new LocalEmoji("U+2B50");

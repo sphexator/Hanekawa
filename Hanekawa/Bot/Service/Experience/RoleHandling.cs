@@ -30,7 +30,7 @@ namespace Hanekawa.Bot.Service.Experience
             if (roles == null || roles.Count == 0) return;
 
             var role = roles.FirstOrDefault(x => x.Level == userData.Level - levelDecay);
-            var cfg = await db.GetOrCreateLevelConfigAsync(user.GuildId);
+            var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(user.GuildId);
 
             if (role == null)
             {

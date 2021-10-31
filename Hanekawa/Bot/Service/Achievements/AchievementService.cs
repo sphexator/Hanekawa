@@ -3,7 +3,7 @@ using Hanekawa.Entities;
 
 namespace Hanekawa.Bot.Service.Achievements
 {
-    public partial class AchievementService : INService
+    public class AchievementService : INService
     {
         private readonly IServiceProvider _provider;
 

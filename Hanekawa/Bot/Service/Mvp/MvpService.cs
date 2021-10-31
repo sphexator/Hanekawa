@@ -146,7 +146,7 @@ namespace Hanekawa.Bot.Service.Mvp
         private async Task PostAsync(DbService db, CachedGuild guild, IReadOnlyList<IMember> mvp,
             IReadOnlyList<IMember> oldMvp)
         {
-            var guildConfig = await db.GetOrCreateGuildConfigAsync(guild);
+            var guildConfig = await db.GetOrCreateEntityAsync<GuildConfig>(guild.Id);
             if (!guildConfig.MvpChannel.HasValue) return;
             try
             {

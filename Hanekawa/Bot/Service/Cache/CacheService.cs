@@ -11,6 +11,7 @@ using Hanekawa.Bot.Commands;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Microsoft.EntityFrameworkCore;
@@ -326,7 +327,7 @@ namespace Hanekawa.Bot.Service.Cache
         {
             using var scope = context.Services.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateAdminConfigAsync(context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<AdminConfig>(context.GuildId);
             UpdateIgnoreAllChannel(cfg.GuildId, cfg.IgnoreAllChannels);
             return cfg.IgnoreAllChannels;
         }

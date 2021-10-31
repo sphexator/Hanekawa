@@ -5,6 +5,7 @@ using Disqord.Extensions.Interactivity;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
 using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -26,7 +27,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> AddPrefixAsync([Remainder] string prefix)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var config = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            var config = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
             if (config.Prefix == prefix)
                 return Reply($"{prefix} is already a prefix on this server.", HanaBaseColor.Bad());
             
@@ -49,7 +50,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                 return Reply("Cancelled", HanaBaseColor.Bad());
             
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
             _cache.AddOrUpdateColor(Context.Guild.Id, new Color(color));
             cfg.EmbedColor = color.RawValue;
             await db.SaveChangesAsync();

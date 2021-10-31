@@ -5,6 +5,13 @@ namespace Hanekawa.Database.Tables.Account.HungerGame
 {
     public class HungerGameProfile
     {
+        public HungerGameProfile() { }
+        public HungerGameProfile(Snowflake guildId, Snowflake userId)
+        {
+            GuildId = guildId;
+            UserId = userId;
+        }
+        
         public Snowflake GuildId { get; set; }
         public Snowflake UserId { get; set; }
         public bool Bot { get; set; } = false;

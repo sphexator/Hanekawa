@@ -169,7 +169,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (e.Member is null) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateChannelConfigAsync(e.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(e.GuildId.Value);
             if (!cfg.SelfAssignableChannel.HasValue) return;
             if (e.ChannelId != cfg.SelfAssignableChannel.Value) return;
             var reactMessage = cfg.AssignReactionRoles.FirstOrDefault(x => x.MessageId == e.MessageId);
@@ -217,7 +217,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (!e.GuildId.HasValue) return;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateChannelConfigAsync(e.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(e.GuildId.Value);
             if (!cfg.SelfAssignableChannel.HasValue) return;
             if (e.ChannelId != cfg.SelfAssignableChannel.Value) return;
             var reactMessage = cfg.AssignReactionRoles.FirstOrDefault(x => x.MessageId == e.MessageId);

@@ -6,6 +6,7 @@ using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Microsoft.EntityFrameworkCore;
@@ -28,9 +29,9 @@ namespace Hanekawa.Bot.Commands.Modules
         {
             user ??= Context.Author;
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(Context.GuildId);
             TryParse(cfg.Emote, out var emote);
-            var userData = await db.GetOrCreateUserData(user);
+            var userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
             var boardData = await db.Boards.Where(x => x.GuildId == Context.Guild.Id && x.UserId == user.Id)
                 .OrderByDescending(x => x.StarAmount).ToListAsync();
             string topStar = null;
@@ -75,7 +76,7 @@ namespace Hanekawa.Bot.Commands.Modules
             {
                 var cache = Context.Services.GetRequiredService<CacheService>();
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(Context.GuildId);
                 cfg.Emote = emote.GetMessageFormat();
                 await db.SaveChangesAsync();
                 cache.AddOrUpdateEmote(EmoteType.Board, Context.GuildId, emote);
@@ -89,7 +90,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> BoardChannelAsync(ITextChannel channel = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateBoardConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(Context.GuildId);
                 if (channel == null)
                 {
                     cfg.Channel = null;

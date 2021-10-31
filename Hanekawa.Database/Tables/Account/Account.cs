@@ -5,6 +5,13 @@ namespace Hanekawa.Database.Tables.Account
 {
     public class Account
     {
+        public Account() { }
+        public Account(Snowflake guildId, Snowflake userId)
+        {
+            GuildId = guildId;
+            UserId = userId;
+        }
+
         public Snowflake GuildId { get; set; }
         public Snowflake UserId { get; set; }
 
@@ -43,11 +50,11 @@ namespace Hanekawa.Database.Tables.Account
         
         // Board
         public int StarGiven { get; set; } = 0;
-
         public int StarReceived { get; set; } = 0;
 
         // Misc
         public DateTime ChannelVoiceTime { get; set; } = DateTime.UtcNow;
+        public string VoiceSessionId { get; set; } = null;
         
         // Mvp
         public int MvpCount { get; set; } = 0;

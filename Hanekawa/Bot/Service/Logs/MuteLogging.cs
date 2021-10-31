@@ -8,6 +8,8 @@ using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Humanizer;
 using NLog;
@@ -19,10 +21,11 @@ namespace Hanekawa.Bot.Service.Logs
         public async ValueTask MuteAsync(IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
             var guild = _bot.GetGuild(target.GuildId);
-            var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(target.GuildId);
             if (!cfg.LogBan.HasValue) return;
             if (guild.GetChannel(cfg.LogBan.Value) is not ITextChannel channel) return;
-            var caseId = await db.CreateCaseId(target, guild, DateTime.UtcNow, ModAction.Mute);
+            var caseId = await db.CreateIncrementEntityAsync<ModLog>(staff.GuildId, target.Id);
+            caseId.Action = nameof(ModAction.Mute);
             var embed = new LocalEmbed
             {
                 Author = new LocalEmbedAuthor { Name = $"Case ID: {caseId.Id} - User Muted | {target}" },
@@ -69,7 +72,7 @@ namespace Hanekawa.Bot.Service.Logs
 
         public async ValueTask WarnAsync(WarnReason warn, IMember target, IMember staff, string reason, DbService db, TimeSpan? duration = null)
         {
-            var cfg = await db.GetOrCreateLoggingConfigAsync(target.GuildId);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(target.GuildId);
             if (!cfg.LogWarn.HasValue) return;
             var guild = _bot.GetGuild(target.GuildId);
             if (guild.GetChannel(cfg.LogWarn.Value) is not ITextChannel channel) return;

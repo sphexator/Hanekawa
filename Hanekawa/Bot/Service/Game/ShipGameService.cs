@@ -11,7 +11,9 @@ using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.ShipGame;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Exceptions;
@@ -57,7 +59,7 @@ namespace Hanekawa.Bot.Service.Game
             if (chance < 40) return null;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(context.Author);
+            var userData = await db.GetOrCreateEntityAsync<Account>(context.GuildId, context.Author.Id);
             var gameClass = await db.GameClasses.FindAsync(userData.Class);
             var enemies = await db.GameEnemies.Where(x => !x.Elite && !x.Rare).ToListAsync();
             var enemy = enemies[_random.Next(enemies.Count)];
@@ -75,7 +77,7 @@ namespace Hanekawa.Bot.Service.Game
                 Channel = context.Channel as ITextChannel
             });
             if (result.Winner.IsNpc) return result;
-            var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(context.GuildId);
+            var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(context.GuildId);
             var exp = await _exp.AddExpAsync(context.Author, userData, enemy.ExpGain, enemy.CreditGain, db,
                 ExpSource.Other);
             result.Log.AddFirst($"Rewarded: {currencyCfg.ToCurrencyFormat(enemy.CreditGain)} & {exp} experience");

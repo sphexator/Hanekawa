@@ -3,6 +3,7 @@ using Disqord;
 using Disqord.Bot;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -22,7 +23,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> JoinLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogJoin = null;
@@ -41,7 +42,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WarnLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogWarn = null;
@@ -60,7 +61,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> MessageLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogMsg = null;
@@ -79,7 +80,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> BanLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogBan = null;
@@ -98,7 +99,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> UserLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogAvi = null;
@@ -118,7 +119,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> AutoModeratorLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogAutoMod = null;
@@ -138,7 +139,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> VoiceLogAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.LogVoice = null;

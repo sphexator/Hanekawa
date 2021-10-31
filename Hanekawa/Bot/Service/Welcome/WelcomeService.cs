@@ -13,6 +13,8 @@ using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Config;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
@@ -52,7 +54,7 @@ namespace Hanekawa.Bot.Service.Welcome
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateWelcomeConfigAsync(user.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(user.GuildId);
                 if (!cfg.Channel.HasValue) return;
                 var guild = e.Member.GetGuild();
                 var msg = MessageUtil.FormatMessage(cfg.Message, user, guild);
@@ -70,7 +72,7 @@ namespace Hanekawa.Bot.Service.Welcome
 
                 if (cfg.Banner)
                 {
-                    var guildCfg = await db.GetOrCreateGuildConfigAsync(guild);
+                    var guildCfg = await db.GetOrCreateEntityAsync<GuildConfig>(guild.Id);
                     var (stream, isGif) = await _image.WelcomeAsync(user, db,
                         guildCfg.Premium.HasValue && guildCfg.Premium.Value >= DateTimeOffset.UtcNow);
                     stream.Position = 0;
@@ -181,7 +183,7 @@ namespace Hanekawa.Bot.Service.Welcome
                 await Task.Delay(TimeSpan.FromSeconds(5), token);
                 foreach (var x in users)
                 {
-                    var userData = await db.GetOrCreateUserData(x);
+                    var userData = await db.GetOrCreateEntityAsync<Account>(x.GuildId, x.Id);
                     await _exp.AddExpAsync(x, userData, cfg.Reward.Value, 0, db, ExpSource.Other);
                 }
             }

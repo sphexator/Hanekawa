@@ -11,6 +11,8 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -111,8 +113,8 @@ namespace Hanekawa.Bot.Service.Drop
                 ? _random.Next(15, 150)
                 : _random.Next(150, 250);
 
-            var userData = await db.GetOrCreateUserData(user);
-            var cfg = await db.GetOrCreateCurrencyConfigAsync(user.GuildId);
+            var userData = await db.GetOrCreateEntityAsync<Account>(user.GuildId, user.Id);
+            var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(user.GuildId);
             var exp = await _exp.AddExpAsync(user, userData, rand, rand, db, ExpSource.Other);
             var trgMsg = await _bot.SendMessageAsync(msg.ChannelId, new LocalMessage
             {
@@ -141,7 +143,7 @@ namespace Hanekawa.Bot.Service.Drop
         private async ValueTask<IEmoji> GetClaimEmoteAsync(IGuild guild, DbService db)
         {
             if (_cache.TryGetEmote(EmoteType.Drop, guild.Id, out var emote)) return emote;
-            var cfg = await db.GetOrCreateDropConfigAsync(guild);
+            var cfg = await db.GetOrCreateEntityAsync<DropConfig>(guild.Id);
             if (TryParse(cfg.Emote, out var sEmote))
             {
                 _cache.AddOrUpdateEmote(EmoteType.Drop, guild.Id, sEmote);

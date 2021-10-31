@@ -6,6 +6,9 @@ namespace Hanekawa.Database.Tables.Account
 {
     public class AccountGlobal
     {
+        public AccountGlobal() { }
+        public AccountGlobal(Snowflake userId) => UserId = userId;
+
         public Snowflake UserId { get; set; }
         public int Level { get; set; } = 1;
         public int Exp { get; set; } = 0;

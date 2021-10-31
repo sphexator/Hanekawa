@@ -7,6 +7,7 @@ using Disqord.Rest;
 using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -22,7 +23,7 @@ namespace Hanekawa.Bot.Service.Logs
             var after = e.NewVoiceState;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(user.GuildId);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(user.GuildId);
             if (!cfg.LogVoice.HasValue) return;
             var guild = _bot.GetGuild(e.GuildId);
             if (guild.GetChannel(cfg.LogVoice.Value) is not ITextChannel channel) return;

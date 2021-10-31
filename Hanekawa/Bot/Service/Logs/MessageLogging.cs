@@ -9,6 +9,7 @@ using Disqord.Rest;
 using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,7 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(e.GuildId.Value);
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
             if (!cfg.LogMsg.HasValue) return;
             if (guild.GetChannel(cfg.LogMsg.Value) is not ITextChannel channel) return;
             if (e.Message == null || e.Message.Author.IsBot) return;
@@ -83,7 +84,7 @@ namespace Hanekawa.Bot.Service.Logs
             var guild = _bot.GetGuild(e.GuildId);
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(guild.Id);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
             if (!cfg.LogMsg.HasValue) return;
             if (guild.GetChannel(cfg.LogMsg.Value) is not ITextChannel channel) return;
             var tempChannel = guild.GetChannel(e.ChannelId);
@@ -149,7 +150,7 @@ namespace Hanekawa.Bot.Service.Logs
             var after = e.NewMessage;
             using var scope = _provider.CreateScope();
             await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLoggingConfigAsync(e.GuildId.Value);
+            var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(e.GuildId.Value);
             if (!cfg.LogMsg.HasValue) return;
             if (guild.GetChannel(cfg.LogMsg.Value) is not ITextChannel channel) return;
             if (before != null && before.Content == after.Content) return;

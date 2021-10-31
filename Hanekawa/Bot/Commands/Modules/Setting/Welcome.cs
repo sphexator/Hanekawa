@@ -14,6 +14,7 @@ using Hanekawa.Bot.Service.ImageGeneration;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Hanekawa.Utility;
@@ -43,7 +44,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
                     HanaBaseColor.Bad()); // TODO: Use own images
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var guildCfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+            var guildCfg = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
             await Context.Channel.TriggerTypingAsync();
             var (stream, _) = await Context.Services.GetRequiredService<ImageGenerationService>()
                 .WelcomeAsync(Context.Author, url, aviSize, aviX, aviY, textSize, textX, textY,
@@ -133,7 +134,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WelcomeMessageAsync([Remainder] string message = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             cfg.Message = message.IsNullOrWhiteSpace() ? null : message;
             await db.SaveChangesAsync();
             return Reply("Updated welcome message!\n" +
@@ -148,7 +149,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WelcomeChannelAsync(ITextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             switch (channel)
             {
                 case null when cfg.Channel.HasValue:
@@ -177,7 +178,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WelcomeTimeout(TimeSpan? timeout = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             if (!cfg.TimeToDelete.HasValue && timeout == null) return null;
             if (timeout == null)
             {
@@ -228,7 +229,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> Welcomebanner()
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             if (cfg.Banner)
             {
                 cfg.Banner = false;
@@ -248,7 +249,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WelcomeIgnoreUsers(TimeSpan? time = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             if (time == null)
             {
                 cfg.IgnoreNew = null;
@@ -270,7 +271,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> WelcomeRewardAsync(int reward = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateWelcomeConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<WelcomeConfig>(Context.GuildId);
             if (reward == 0)
             {
                 cfg.Reward = null;

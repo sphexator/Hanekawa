@@ -7,6 +7,8 @@ using Disqord.Rest;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Humanizer;
@@ -30,8 +32,8 @@ namespace Hanekawa.Bot.Commands.Modules
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
-            var report = await db.CreateReport(Context.Author, Context.Guild, DateTime.UtcNow);
-            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            var report = await db.CreateIncrementEntityAsync<ModLog>(Context.GuildId, Context.Author.Id);
+            var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(Context.GuildId);
             if (!cfg.ReportChannel.HasValue) return;
 
             var builder = new LocalMessage
@@ -74,7 +76,7 @@ namespace Hanekawa.Bot.Commands.Modules
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
 
             var report = await db.Reports.FindAsync(id, Context.Guild.Id);
-            var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(Context.GuildId);
 
             if (report?.MessageId == null || !cfg.ReportChannel.HasValue) return;
 
@@ -120,7 +122,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task SetReportChannelAsync(ITextChannel channel = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateChannelConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<ChannelConfig>(Context.GuildId);
                 if (cfg.ReportChannel.HasValue && channel == null)
                 {
                     cfg.ReportChannel = null;

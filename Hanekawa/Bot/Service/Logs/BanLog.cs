@@ -10,6 +10,7 @@ using Disqord.Webhook;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
@@ -29,11 +30,12 @@ namespace Hanekawa.Bot.Service.Logs
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
                 if (!cfg.LogBan.HasValue) return;
                 if(guild.GetChannel(cfg.LogBan.Value) is not ITextChannel channel) return;
 
-                var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Ban);
+                var caseId = await db.CreateIncrementEntityAsync<ModLog>(e.GuildId, e.UserId);
+                caseId.Action = nameof(ModAction.Ban);
                 IMember mod;
                 var banCacheUser = _cache.TryGetBanCache(guild.Id, e.UserId);
                 if (banCacheUser != null)
@@ -103,10 +105,11 @@ namespace Hanekawa.Bot.Service.Logs
             {
                 using var scope = _provider.CreateScope();
                 await using var db = scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLoggingConfigAsync(guild);
+                var cfg = await db.GetOrCreateEntityAsync<LoggingConfig>(guild.Id);
                 if (!cfg.LogBan.HasValue) return;
                 if(guild.GetChannel(cfg.LogBan.Value) is not CachedTextChannel channel) return;
-                var caseId = await db.CreateCaseId(e.User, guild, DateTime.UtcNow, ModAction.Unban);
+                var caseId = await db.CreateIncrementEntityAsync<ModLog>(e.GuildId, e.UserId);
+                caseId.Action = nameof(ModAction.Unban);
                 
                 IMember mod;
                 var banCacheUser = _cache.TryGetBanCache(guild.Id, e.UserId);
@@ -132,11 +135,9 @@ namespace Hanekawa.Bot.Service.Logs
                             Timestamp = DateTimeOffset.UtcNow,
                             Fields =
                             {
-                                new ()
-                                    {Name = "User", Value = $"{e.User.Mention}", IsInline = true},
-                                new()
-                                    {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = true},
-                                new()  {Name = "Reason", Value = "N/A", IsInline = true}
+                                new LocalEmbedField {Name = "User", Value = $"{e.User.Mention}", IsInline = true},
+                                new LocalEmbedField {Name = "Moderator", Value = mod?.Mention ?? "N/A", IsInline = true},
+                                new LocalEmbedField {Name = "Reason", Value = "N/A", IsInline = true}
                             }
                         }
                     },

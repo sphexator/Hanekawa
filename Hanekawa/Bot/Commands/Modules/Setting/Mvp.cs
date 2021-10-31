@@ -6,6 +6,9 @@ using Hanekawa.Bot.Commands.Preconditions;
 using Hanekawa.Bot.Service.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
+using Hanekawa.Database.Tables.Premium;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +28,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> OptOutAsync()
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var userData = await db.GetOrCreateUserData(Context.Author);
+            var userData =
+                await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, Context.Author.Id);
             if (userData.MvpOptOut)
             {
                 userData.MvpOptOut = false;
@@ -50,7 +54,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             public async Task<DiscordCommandResult> SetAnnouncementChannelAsync(ITextChannel channel = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
                 if (channel == null)
                 {
                     await db.SaveChangesAsync();
@@ -69,7 +73,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             public async Task<DiscordCommandResult> SetMvpRoleAsync(IRole role = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateMvpConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
                 if (role == null)
                 {
                     cfg.RoleId = null;
@@ -89,7 +93,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             {
                 if (exp < 0) exp = 0;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateMvpConfigAsync(Context.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
                 cfg.ExpReward = exp;
                 return Reply($"Set exp reward to {exp}!", HanaBaseColor.Ok());
             }
@@ -101,8 +105,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             {
                 if (credit < 0) credit = 0;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateMvpConfigAsync(Context.GuildId);
-                var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
+                var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.CreditReward = credit;
                 return Reply($"Set {currencyCfg.CurrencyName} reward to {currencyCfg.ToCurrencyFormat(credit)}!",
                     HanaBaseColor.Ok());
@@ -115,8 +119,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             {
                 if (specialCredit < 0) specialCredit = 0;
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateMvpConfigAsync(Context.GuildId);
-                var currencyCfg = await db.GetOrCreateCurrencyConfigAsync(Context.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
+                var currencyCfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.SpecialCreditReward = specialCredit;
                 return Reply(
                     $"Set {currencyCfg.SpecialCurrencyName} reward to {currencyCfg.ToCurrencyFormat(specialCredit, true)}!",
@@ -129,7 +133,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             public async Task<DiscordCommandResult> SetMvpDayAsync(DayOfWeek? day = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateMvpConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
                 if (!day.HasValue)
                 {
                     cfg.Disabled = true;
@@ -151,7 +155,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             public async Task<DiscordCommandResult> ForceMvpAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var guildConfig = await db.GetOrCreateGuildConfigAsync(Context.Guild);
+                var guildConfig = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
                 await Reply("Executing MVP rewards...");
                 await Context.Services.GetRequiredService<MvpService>().RewardAsync(guildConfig, db, true);
                 return Reply("Rewarded MVP users and reset MVP counter", HanaBaseColor.Ok());

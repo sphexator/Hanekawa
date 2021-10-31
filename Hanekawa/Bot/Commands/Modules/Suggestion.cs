@@ -33,9 +33,9 @@ namespace Hanekawa.Bot.Commands.Modules
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
             if (!cfg.Channel.HasValue) return;
-            var caseId = await db.CreateSuggestion(Context.Author, Context.Guild, DateTime.UtcNow);
+            var caseId = await db.CreateIncrementEntityAsync<Database.Tables.Moderation.Suggestion>(Context.GuildId, Context.Author.Id);
             var builder = new LocalMessage
             {
                 Content = $"New Suggestion from {Context.Author}",
@@ -91,7 +91,7 @@ namespace Hanekawa.Bot.Commands.Modules
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (suggestion?.MessageId == null)
@@ -115,7 +115,7 @@ namespace Hanekawa.Bot.Commands.Modules
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (suggestion?.MessageId == null)
@@ -139,7 +139,7 @@ namespace Hanekawa.Bot.Commands.Modules
             await Context.Message.TryDeleteMessageAsync();
 
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
             if (!cfg.Channel.HasValue) return;
             var suggestion = await db.Suggestions.FindAsync(id, Context.Guild.Id);
             if (!Context.Author.GetPermissions().Has(Permission.ManageGuild) &&
@@ -246,7 +246,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> SetSuggestionChannelAsync(ITextChannel channel = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
                 if (cfg.Channel.HasValue && channel == null)
                 {
                     cfg.Channel = null;
@@ -268,7 +268,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> SetSuggestEmoteYesAsync(IGuildEmoji emote = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
                 if (emote == null)
                 {
                     cfg.EmoteYes = null;
@@ -287,7 +287,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> SetSuggestEmoteNoAsync(IGuildEmoji emote = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateSuggestionConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<SuggestionConfig>(Context.GuildId);
                 if (emote == null)
                 {
                     cfg.EmoteNo = null;

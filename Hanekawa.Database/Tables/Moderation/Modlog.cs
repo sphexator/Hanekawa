@@ -5,6 +5,15 @@ namespace Hanekawa.Database.Tables.Moderation
 {
     public class ModLog
     {
+        public ModLog() { }
+
+        public ModLog(int id, Snowflake guildId, Snowflake userId)
+        {
+            Id = id;
+            GuildId = guildId;
+            UserId = userId;
+        }
+        
         public int Id { get; set; }
         public Snowflake GuildId { get; set; }
         public Snowflake UserId { get; set; }

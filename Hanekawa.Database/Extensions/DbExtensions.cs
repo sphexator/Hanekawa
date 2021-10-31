@@ -19,7 +19,8 @@ namespace Hanekawa.Database.Extensions
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                var properties = entityType.ClrType.GetProperties().Where(p => p.PropertyType == type);
+                var properties = entityType.ClrType.GetProperties()
+                    .Where(p => p.PropertyType == type);
                 foreach (var property in properties)
                 {
                     modelBuilder.Entity(entityType.Name).Property(property.Name)
@@ -29,55 +30,42 @@ namespace Hanekawa.Database.Extensions
 
             return modelBuilder;
         }
-
-        public static async Task<Board> GetOrCreateBoardAsync(this DbService context, Snowflake guild, IMessage msg)
-        {
-            var check = await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);
-            if (check != null) return check;
         
-            var data = new Board
-            {
-                GuildId = guild,
-                MessageId = msg.Id,
-                StarAmount = 0,
-                Boarded = null,
-                UserId = msg.Author.Id
-            };
+        public static async ValueTask<TEntity> GetOrCreateEntityAsync<TEntity>(this DbService context, 
+            params Snowflake[] args) where TEntity : class, new()
+        {
+            var config = await context.FindAsync<TEntity>(args);
+            if (config != null) return config;
+            
+            config = (TEntity)Activator.CreateInstance(typeof(TEntity), new { args });
             try
             {
-                await context.Boards.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.Boards.FindAsync(guild, msg.Id).ConfigureAwait(false);
+                if (config != null) await context.AddAsync(config);
+                await context.SaveChangesAsync();
+                return await context.FindAsync<TEntity>(args);
             }
             catch
             {
-                return data;
+                return config;
             }
         }
         
-        public static async Task<Suggestion> CreateSuggestion(this DbService context, IUser user, CachedGuild guild,
-            DateTime time)
+        public static async ValueTask<TEntity> CreateIncrementEntityAsync<TEntity>(this DbService context,
+            Snowflake primaryId, Snowflake secondaryId) where TEntity : class, new()
         {
-            var counter = await context.Suggestions.CountAsync(x => x.GuildId == guild.Id).ConfigureAwait(false);
+            var counter = await context.Suggestions.CountAsync(x => x.GuildId == primaryId);
             var nr = counter == 0 ? 1 : counter + 1;
         
-            var data = new Suggestion
-            {
-                Id = nr,
-                GuildId = guild.Id,
-                Date = time,
-                UserId = user.Id,
-                Status = true
-            };
+            var entity = (TEntity)Activator.CreateInstance(typeof(TEntity), new { nr, primaryId, secondaryId });
             try
             {
-                await context.Suggestions.AddAsync(data).ConfigureAwait(false);
-                await context.SaveChangesAsync().ConfigureAwait(false);
-                return await context.Suggestions.FirstOrDefaultAsync(x => x.Date == time).ConfigureAwait(false);
+                await context.AddAsync(entity);
+                await context.SaveChangesAsync();
+                return await context.FindAsync<TEntity>(nr, primaryId);
             }
             catch
             {
-                return data;
+                return entity;
             }
         }
     }

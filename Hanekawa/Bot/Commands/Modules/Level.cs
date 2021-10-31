@@ -12,6 +12,7 @@ using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
@@ -121,7 +122,8 @@ namespace Hanekawa.Bot.Commands.Modules
                 for (var i = 1; i < level + 1; i++) totalExp += exp.ExpToNextLevel(i);
 
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var userdata = await db.GetOrCreateUserData(user);
+                var userdata =
+                    await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
                 userdata.Level = level;
                 userdata.Exp = 0;
                 userdata.TotalExp = totalExp;
@@ -135,7 +137,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> DecayAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(Context.GuildId);
                 if (cfg.Decay)
                 {
                     cfg.Decay = false;
@@ -171,7 +173,7 @@ namespace Hanekawa.Bot.Commands.Modules
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cache = Context.Services.GetRequiredService<CacheService>();
-                var cfg = await db.GetOrCreateLevelConfigAsync(Context.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(Context.GuildId);
                 cache.TryGetMultiplier(ExpSource.Text, Context.GuildId, out var textMulti);
                 cache.TryGetMultiplier(ExpSource.Voice, Context.GuildId, out var voiceMulti);
                 cache.TryGetMultiplier(ExpSource.Other, Context.GuildId, out var otherMulti);
@@ -192,7 +194,7 @@ namespace Hanekawa.Bot.Commands.Modules
             public async Task<DiscordCommandResult> StackToggleAsync()
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
+                var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(Context.GuildId);
                 if (cfg.StackLvlRoles)
                 {
                     cfg.StackLvlRoles = false;

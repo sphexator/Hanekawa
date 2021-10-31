@@ -7,6 +7,7 @@ using Disqord.Rest;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Color;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> SetBoostExpAsync(int exp = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoostConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoostConfig>(Context.GuildId);
             cfg.ExpGain = exp;
             await db.SaveChangesAsync();
             return Reply($"Set experience boost reward to {exp}!", HanaBaseColor.Ok());
@@ -38,7 +39,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> SetBoostCreditAsync(int credit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoostConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoostConfig>(Context.GuildId);
             cfg.CreditGain = credit;
             await db.SaveChangesAsync();
             return Reply($"Set credit boost reward to {credit}!", HanaBaseColor.Ok());
@@ -50,7 +51,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> SetBoostSpecialCreditAsync(int specialCredit = 0)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoostConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoostConfig>(Context.GuildId);
             cfg.SpecialCreditGain = specialCredit;
             await db.SaveChangesAsync();
             return Reply($"Set special credit boost reward to {specialCredit}!", HanaBaseColor.Ok());
@@ -62,7 +63,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> SetBoostExpMultiplier(double multiplier = 1)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateLevelConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<LevelConfig>(Context.GuildId);
             cfg.BoostExpMultiplier = multiplier;
             await db.SaveChangesAsync();
             return Reply($"Set experience multiplier for boosting people to {multiplier}!", HanaBaseColor.Ok());
@@ -74,7 +75,7 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> SetAnnouncementChannelAsync(CachedTextChannel channel = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoostConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoostConfig>(Context.GuildId);
             if (channel == null)
             {
                 cfg.ChannelId = null;
@@ -94,12 +95,12 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
         public async Task<DiscordCommandResult> ForceBoostReward(IMember user = null)
         {
             await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-            var cfg = await db.GetOrCreateBoostConfigAsync(Context.Guild);
+            var cfg = await db.GetOrCreateEntityAsync<BoostConfig>(Context.GuildId);
             var expService = Context.Services.GetRequiredService<ExpService>();
             Database.Tables.Account.Account userData;
             if (user != null)
             {
-                userData = await db.GetOrCreateUserData(user);
+                userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId, user.Id);
                 await expService.AddExpAsync(user, userData, cfg.ExpGain, cfg.CreditGain, db, ExpSource.Other);
                 userData.CreditSpecial += cfg.SpecialCreditGain;
                 await db.SaveChangesAsync();
@@ -114,7 +115,8 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             foreach (var x in users)
             {
                 var (_, cachedMember) = x;
-                userData = await db.GetOrCreateUserData(cachedMember);
+                userData = await db.GetOrCreateEntityAsync<Database.Tables.Account.Account>(Context.GuildId,
+                    cachedMember.Id);
                 await expService.AddExpAsync(cachedMember, userData, cfg.ExpGain, cfg.CreditGain, db, ExpSource.Other);
                 userData.CreditSpecial += cfg.SpecialCreditGain;
                 await db.SaveChangesAsync();

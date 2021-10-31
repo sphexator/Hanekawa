@@ -10,6 +10,7 @@ using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Database;
 using Hanekawa.Database.Entities;
 using Hanekawa.Database.Extensions;
+using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Entities;
 using Hanekawa.Extensions;
@@ -61,7 +62,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
 
         public async Task<List<LocalEmbed>> GetWarnLogAsync(IMember user, WarnLogType type, DbService db)
         {
-            var userData = await db.GetOrCreateUserData(user);
+            var userData = await db.GetOrCreateEntityAsync<Account>(user.GuildId, user.Id);
             var toReturn = new List<LocalEmbed>();
             var sb = new StringBuilder();
             var warn = new StringBuilder();
