@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hanekawa.Database.Entities;
-using Hanekawa.Database.Tables.Account.HungerGame;
+using Hanekawa.Entities;
+using Hanekawa.Entities.Game.HungerGame;
 using Hanekawa.HungerGames.Entities;
 using Hanekawa.HungerGames.Events;
 using HungerGameConfig = Hanekawa.HungerGames.Entities.Configs.HungerGameConfig;

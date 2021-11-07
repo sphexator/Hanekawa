@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
+    <ProjectReference Include="..\Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,13 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Database", "Hanekawa.Database\Hanekawa.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Infrastructure", "Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.WebUI", "Hanekawa.WebUI\Hanekawa.WebUI.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.HungerGames", "Hanekawa.HungerGames\Hanekawa.HungerGames.csproj", "{67260630-8313-42A4-BC51-BE99255F2E03}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D03E0475-07EA-4D31-BBE1-19F3DA8FA206}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Application", "Hanekawa.Application\Hanekawa.Application.csproj", "{7B2768DF-1D5C-4F5F-843B-CD97F09275D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{EE36D38D-2BED-41CA-83C0-DE75C46073AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +33,14 @@ Global
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B2768DF-1D5C-4F5F-843B-CD97F09275D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B2768DF-1D5C-4F5F-843B-CD97F09275D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B2768DF-1D5C-4F5F-843B-CD97F09275D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B2768DF-1D5C-4F5F-843B-CD97F09275D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE36D38D-2BED-41CA-83C0-DE75C46073AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE36D38D-2BED-41CA-83C0-DE75C46073AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE36D38D-2BED-41CA-83C0-DE75C46073AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE36D38D-2BED-41CA-83C0-DE75C46073AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,5 +52,7 @@ Global
 		{36916A6C-1437-4D5E-AF90-245145F30BED} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
 		{56714493-6317-4237-B7EA-9A9A25E1C999} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
 		{67260630-8313-42A4-BC51-BE99255F2E03} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
+		{7B2768DF-1D5C-4F5F-843B-CD97F09275D6} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
+		{EE36D38D-2BED-41CA-83C0-DE75C46073AF} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
 	EndGlobalSection
 EndGlobal

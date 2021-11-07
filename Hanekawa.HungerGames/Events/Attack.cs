@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Hanekawa.Database.Tables.Account.HungerGame;
+using Hanekawa.Entities.Game.HungerGame;
 
 namespace Hanekawa.HungerGames.Events
 {
