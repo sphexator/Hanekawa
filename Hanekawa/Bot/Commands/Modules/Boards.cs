@@ -77,7 +77,7 @@ namespace Hanekawa.Bot.Commands.Modules
                 var cache = Context.Services.GetRequiredService<CacheService>();
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateEntityAsync<BoardConfig>(Context.GuildId);
-                cfg.Emote = emote.GetMessageFormat();
+                cfg.Emote = emote.GetReactionFormat();
                 await db.SaveChangesAsync();
                 cache.AddOrUpdateEmote(EmoteType.Board, Context.GuildId, emote);
                 await Reply($"Changed board emote to {emote}", HanaBaseColor.Ok());

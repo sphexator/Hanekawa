@@ -7,19 +7,16 @@ using Hanekawa.Bot.Commands;
 using Hanekawa.Bot.Service.Administration.Warning;
 using Hanekawa.Bot.Service.Boost;
 using Hanekawa.Bot.Service.Experience;
-using Hanekawa.Bot.Service.Game;
 using Hanekawa.Bot.Service.Mvp;
 using Hanekawa.Database;
 using Hanekawa.Entities;
 using Hanekawa.HungerGames;
-using Hanekawa.HungerGames.Entities.Configs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 using Qmmands;
 using Quartz;
@@ -45,17 +42,8 @@ namespace Hanekawa
                 e.DefaultRunMode = RunMode.Parallel;
                 e.StringComparison = StringComparison.OrdinalIgnoreCase;
             });
-            services.AddDbContextPool<DbService>(x =>
-            {
-                x.UseNpgsql(Configuration["connectionString"]);
-                x.EnableDetailedErrors();
-                x.EnableSensitiveDataLogging(false);
-                x.UseLoggerFactory(MyLoggerFactory);
-            });
-            services.AddSingleton(new HungerGameClient(new Random(), new HungerGameConfig
-            {
-                LootChance = new LootChanceConfig()
-            }));
+            services.AddInfrastructureLayer(Configuration);
+            services.AddSingleton<HungerGameClient>();
             services.AddSingleton<Random>();
             services.AddHttpClient();
             services.AddInteractivityExtension();
@@ -72,6 +60,7 @@ namespace Hanekawa
                 e.Scheduling.IgnoreDuplicates = false;
                 e.Scheduling.OverWriteExistingData = true;
             });
+            
             services.AddQuartz(e =>
             {
                 e.SchedulerId = "Hanekawa-Scheduler";
@@ -131,15 +120,5 @@ namespace Hanekawa
                     "{controller}/{action=Index}/{id?}");
             });
         }
-        
-        private static readonly ILoggerFactory MyLoggerFactory
-            = LoggerFactory.Create(builder =>
-            {
-                builder
-                    .AddFilter((category, level) =>
-                        category == DbLoggerCategory.Update.Name
-                        && level == LogLevel.Information)
-                    .AddConsole();
-            });
     }
 }

@@ -54,16 +54,16 @@ namespace Hanekawa.Bot.Commands.Modules.Setting
             public async Task<DiscordCommandResult> SetAnnouncementChannelAsync(ITextChannel channel = null)
             {
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
-                var cfg = await db.GetOrCreateEntityAsync<GuildConfig>(Context.GuildId);
+                var cfg = await db.GetOrCreateEntityAsync<MvpConfig>(Context.GuildId);
                 if (channel == null)
                 {
                     await db.SaveChangesAsync();
-                    cfg.MvpChannel = null;
+                    cfg.ChannelId = null;
                     return Reply("Disabled MVP Announcement!", HanaBaseColor.Ok());
                 }
 
                 await db.SaveChangesAsync();
-                cfg.MvpChannel = channel.Id;
+                cfg.ChannelId = channel.Id;
                 return Reply($"Set MVP Announcement channel to {channel.Mention} !", HanaBaseColor.Ok());
             }
 

@@ -9,8 +9,5 @@ namespace Hanekawa.Database.Tables.Config
         public string Prefix { get; set; } = "h.";
         public DateTimeOffset? Premium { get; set; } = null;
         public int EmbedColor { get; set; }
-
-        // Premium
-        public Snowflake? MvpChannel { get; set; } = null;
     }
 }

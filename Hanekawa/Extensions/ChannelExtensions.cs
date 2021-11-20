@@ -12,7 +12,7 @@ namespace Hanekawa.Extensions
         {
             var guild = channel.GetGatewayClient().GetGuild(channel.GuildId);
             var currentUser = guild.GetCurrentUser();
-            if (!Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageChannels) return false;
+            if (!Disqord.Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageChannels) return false;
             await channel.SetOverwriteAsync(perms);
             return true;
         }

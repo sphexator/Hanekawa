@@ -7,6 +7,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Experience
 {
@@ -61,7 +62,7 @@ namespace Hanekawa.Bot.Service.Experience
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Error in exp event creation");
+                Logger.LogError(e, "Error in exp event creation");
                 await timer.DisposeAsync();
                 var config = await db.GetOrCreateEntityAsync<LevelConfig>(context.GuildId);
                 _cache.AdjustExpMultiplier(ExpSource.Text, context.GuildId, config.TextExpMultiplier);

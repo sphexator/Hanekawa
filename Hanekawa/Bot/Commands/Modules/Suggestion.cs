@@ -276,7 +276,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
                 }
 
-                cfg.EmoteYes = emote.GetMessageFormat();
+                cfg.EmoteYes = emote.GetReactionFormat();
                 await db.SaveChangesAsync();
                 return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
             }
@@ -295,7 +295,7 @@ namespace Hanekawa.Bot.Commands.Modules
                     return Reply("Set `no` reaction to default emote", HanaBaseColor.Ok());
                 }
 
-                cfg.EmoteNo = emote.GetMessageFormat();
+                cfg.EmoteNo = emote.GetReactionFormat();
                 await db.SaveChangesAsync();
                 return Reply($"Set `no` reaction to {emote}", HanaBaseColor.Ok());
             }

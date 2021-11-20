@@ -1,30 +1,19 @@
 ﻿using System;
-using System.Diagnostics;
 using Disqord;
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
-using NLog.Targets.Wrappers;
-using NLog.Web;
+using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Hanekawa
 {
     public static class Program
     {
-        public static void Main(string[] args)
-        {
-            try { CreateWebHostBuilder(args).Build().Run(); }
-            finally { LogManager.Shutdown(); }
-        }
+        public static void Main(string[] args) => CreateWebHostBuilder(args).Build().Run();
 
         private static IHostBuilder CreateWebHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -33,12 +22,12 @@ namespace Hanekawa
                     webBuilder.UseStartup<Startup>();
                     webBuilder.UseUrls("http://*:61039");
                 })
-                .ConfigureLogging((e, x) =>
+                .ConfigureLogging((_, x) =>
                 {
-                    x.AddNLog(ConfigureNLog(e.Configuration), NLogAspNetCoreOptions.Default);
                     x.ClearProviders();
                     x.SetMinimumLevel(LogLevel.Information);
                     x.Services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+                    x.AddSerilog();
                 })
                 .ConfigureDiscordBot<Bot.Hanekawa>((context, bot) =>
                 {
@@ -56,70 +45,7 @@ namespace Hanekawa
                                                      GatewayIntent.Members);
                     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
                 })
-                .UseNLog();
-
-        private static LoggingConfiguration ConfigureNLog(IConfiguration configuration)
-        {
-            var consoleTarget = new ConsoleTarget
-            {
-                Name = "Console",
-                Layout = @"[${longdate} | ${level}] [${CallSite}] [${message} ${exception}]",
-                DetectConsoleAvailable = true,
-                OptimizeBufferReuse = true,
-                AutoFlush = true
-            };
-            var dbTarget = new DatabaseTarget
-            {
-                Name = "Database",
-                ConnectionString = configuration["connectionString"],
-                DBProvider = "Npgsql.NpgsqlConnection,Npgsql",
-                CommandText = @"INSERT INTO ""Logs"" " +
-                              @"(""TimeStamp"", ""Level"", ""Message"", ""Logger"", ""CallSite"", ""Exception"") " +
-                              @"VALUES " +
-                              @"(@datetime, @level, @message, @logger, @callsite, @exception)",
-                KeepConnection = true,
-                Parameters =
-                {
-                    new ("@datetime", "${longdate}"),
-                    new ("@level", "${level}"),
-                    new ("@message", "${message}"),
-                    new ("@logger", "${logger}"),
-                    new ("@callsite", "${callsite}"),
-                    new ("@exception", "${exception:format=toString,Data}")
-                },
-                OptimizeBufferReuse = true
-            };
-            var asyncConsoleTarget = new AsyncTargetWrapper
-            {
-                Name = "Async Console Target",
-                OptimizeBufferReuse = true,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = consoleTarget,
-                TimeToSleepBetweenBatches = 1,
-                QueueLimit = 25
-            };
-
-            var asyncDatabaseTarget = new AsyncTargetWrapper
-            {
-                Name = "Async Database Target",
-                OptimizeBufferReuse = true,
-                OverflowAction = AsyncTargetWrapperOverflowAction.Grow,
-                WrappedTarget = dbTarget,
-                TimeToSleepBetweenBatches = 1,
-                QueueLimit = 25
-            };
-
-            var config = new LoggingConfiguration();
-            config.AddTarget(asyncConsoleTarget);
-            config.AddTarget(asyncDatabaseTarget);
-
-            config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, asyncConsoleTarget);
-            config.AddRule(NLog.LogLevel.Warn, NLog.LogLevel.Fatal, asyncDatabaseTarget);
-            LogManager.Configuration = config;
-            LogManager.ThrowExceptions = Debugger.IsAttached;
-
-            return config;
-        }
+                .UseSerilog();
     }
     
     public class Logger<T> : ILogger<T>

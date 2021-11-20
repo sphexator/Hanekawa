@@ -2,15 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Gateway;
-using Hanekawa.Database.Tables.BoardConfig;
-using Hanekawa.Database.Tables.Moderation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis.Extensions.Core.Abstractions;
 
 namespace Hanekawa.Database.Extensions
 {
-    public static partial class DbExtensions
+    public static class DbExtensions
     {
         internal static ModelBuilder UseValueConverterForType<T>(this ModelBuilder modelBuilder, ValueConverter converter) 
             => modelBuilder.UseValueConverterForType(typeof(T), converter);
@@ -31,6 +30,30 @@ namespace Hanekawa.Database.Extensions
             return modelBuilder;
         }
         
+        public static async ValueTask<TEntity> GetOrReceiveCacheAsync<TEntity>(this IServiceProvider serviceProvider,
+            Snowflake id, TimeSpan? timeSpan = null) where TEntity : class, new()
+            => await GetOrReceiveCacheAsync<TEntity>(serviceProvider.CreateScope(), id);
+
+        public static async ValueTask<TEntity> GetOrReceiveCacheAsync<TEntity>(this IServiceScope serviceScope,
+            Snowflake key, TimeSpan? timeSpan = null) where TEntity : class, new()
+        {
+            var cache = serviceScope.ServiceProvider.GetRequiredService<IRedisCacheClient>();
+            var result = timeSpan.HasValue
+                ? await cache.Db0.GetAsync<TEntity>($"{nameof(TEntity)}-{key.RawValue}", timeSpan.Value)
+                : await cache.Db0.GetAsync<TEntity>($"{nameof(TEntity)}-{key.RawValue}");
+            if (result != null) return result;
+            
+            await using var db = serviceScope.ServiceProvider.GetRequiredService<DbService>();
+            result = await GetOrCreateEntityAsync<TEntity>(db, key);
+
+            if (timeSpan.HasValue)
+                await cache.Db0.AddAsync($"{nameof(TEntity)}-{key.RawValue}", result, timeSpan.Value);
+            else
+                await cache.Db0.AddAsync($"{nameof(TEntity)}-{key.RawValue}", result);
+
+            return result;
+        }
+
         public static async ValueTask<TEntity> GetOrCreateEntityAsync<TEntity>(this DbService context, 
             params Snowflake[] args) where TEntity : class, new()
         {

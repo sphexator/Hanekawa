@@ -18,7 +18,6 @@ using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 
 namespace Hanekawa.Bot.Service.Administration
 {
@@ -26,14 +25,14 @@ namespace Hanekawa.Bot.Service.Administration
     {
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
+        private readonly ILogger<AutoAssignService> _logger;
         private readonly SemaphoreSlim _lock = new (1, 1);
 
         public AutoAssignService(ILogger<AutoAssignService> logger, Hanekawa client, IServiceProvider provider) : base(logger, client)
         {
             _provider = provider;
             _bot = client;
-            _logger = LogManager.GetCurrentClassLogger();
+            _logger = logger;
         }
 
         public async Task<bool> PostAsync(HanekawaCommandContext context, ITextChannel channel, ChannelConfig cfg, DbService db)
@@ -62,7 +61,7 @@ namespace Hanekawa.Bot.Service.Administration
                     if (result != null)
                     {
                         emotes.Add(result);
-                        emoteStrings.Add(result.GetMessageFormat());
+                        emoteStrings.Add(result.GetReactionFormat());
                     }
 
                     i++;
@@ -104,7 +103,7 @@ namespace Hanekawa.Bot.Service.Administration
                     if (result != null)
                     {
                         emotes.Add(result);
-                        emoteStrings.Add(result.GetMessageFormat());
+                        emoteStrings.Add(result.GetReactionFormat());
                     }
 
                     i++;
@@ -176,7 +175,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (reactMessage != null) return;
             
             var reaction = await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
-                x.GuildId == e.GuildId.Value && x.EmoteMessageFormat == e.Emoji.GetMessageFormat());
+                x.GuildId == e.GuildId.Value && x.EmoteMessageFormat == e.Emoji.GetReactionFormat());
             if (reaction == null) return;
             var guild = e.Member.GetGuild();
             if (!guild.Roles.TryGetValue(reaction.RoleId, out var role)) return;
@@ -203,8 +202,9 @@ namespace Hanekawa.Bot.Service.Administration
             }
             catch (Exception exception)
             {
-                _logger.Error(exception,
-                    $"Couldn't modify roles for {e.UserId} in {e.GuildId.Value} for emote {e.Emoji}");
+                _logger.LogError(exception,
+                    "Couldn't modify roles for {UserId} in {GuildId} for emote {Emoji}", 
+                    e.UserId, e.GuildId.Value, e.Emoji);
             }
             finally
             {
@@ -224,7 +224,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (reactMessage != null) return;
             
             var reaction = await db.SelfAssignAbleRoles.FirstOrDefaultAsync(x =>
-                x.GuildId == e.GuildId.Value && x.EmoteMessageFormat == e.Emoji.GetMessageFormat());
+                x.GuildId == e.GuildId.Value && x.EmoteMessageFormat == e.Emoji.GetReactionFormat());
             if (reaction == null) return;
             if (!_bot.GetGuild(e.GuildId.Value).Roles.TryGetValue(reaction.RoleId, out var role)) return;
             await _lock.WaitAsync();
@@ -236,8 +236,9 @@ namespace Hanekawa.Bot.Service.Administration
             }
             catch (Exception exception)
             {
-                _logger.Error(exception,
-                    $"Couldn't modify roles for {e.UserId} in {e.GuildId.Value} for emote {e.Emoji}");
+                _logger.LogError(exception,
+                    "Couldn't modify roles for {UserId} in {GuildId} for emote {Emoji}", 
+                    e.UserId, e.GuildId.Value, e.Emoji);
             }
             finally
             {

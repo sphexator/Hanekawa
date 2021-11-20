@@ -19,9 +19,7 @@ using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 using Quartz;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Boost
 {
@@ -30,7 +28,6 @@ namespace Hanekawa.Bot.Service.Boost
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
         private readonly ExpService _exp;
-        private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
         public BoostService(ILogger<BoostService> logger, Hanekawa bot, ExpService exp,
@@ -40,7 +37,6 @@ namespace Hanekawa.Bot.Service.Boost
             _exp = exp;
             _provider = provider;
             _cache = cache;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         public Task Execute(IJobExecutionContext context)
@@ -72,12 +68,10 @@ namespace Hanekawa.Bot.Service.Boost
                 }
                 catch (Exception e)
                 {
-                    _logger.Log(LogLevel.Error, e,
-                        $"(Boost Service) Error in {x.GuildId} when rewarding users - {e.Message}");
+                    Logger.LogError(e,"(Boost Service) Error in {GuildId} when rewarding users - {BoostMessage}", x.GuildId, e.Message);
                 }
 
-            _logger.Log(LogLevel.Info,
-                "(Boost Service) Finished rewarding users in all guilds configured for it");
+            Logger.LogInformation("(Boost Service) Finished rewarding users in all guilds configured for it");
         }
 
         private async Task RewardGuildAsync(IGatewayGuild guild, DbService db, BoostConfig x)
@@ -91,12 +85,12 @@ namespace Hanekawa.Bot.Service.Boost
                 }
                 catch (Exception e)
                 {
-                    _logger.Log(LogLevel.Error, e,
-                        $"(Boost Service) Error in {x.GuildId} when rewarding {member.Id} - {e.Message}");
+                    Logger.LogError(e,
+                        "(Boost Service) Error in {GuildId} when rewarding {UserId} - {BoostMessage}", x.GuildId, member.Id, e.Message);
                 }
 
             await db.SaveChangesAsync();
-            _logger.Log(LogLevel.Info, $"Rewarded {users.Count} boosters in {guild.Id}");
+            Logger.LogInformation("Rewarded {BoostedUsers} boosters in {GuildId}", users.Count, guild.Id);
         }
 
         private async Task RewardUserAsync(DbService db, IMember member, BoostConfig x, IGuild guild,
@@ -217,8 +211,8 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e,
-                    $"(Boost Service) Error for start boosting in {user.GuildId} for {user.Id} - {e.Message}");
+                Logger.LogError(e,
+                    "(Boost Service) Error for start boosting in {GuildId} for {UserId} - {BoostMessage}", user.GuildId, user.Id, e.Message);
             }
         }
 
@@ -257,8 +251,8 @@ namespace Hanekawa.Bot.Service.Boost
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e,
-                    $"(Boost Service) Error for end boosting in {user.GuildId} for {user.Id} - {e.Message}");
+                Logger.LogError(e,
+                    "(Boost Service) Error for end boosting in {GuildId} for {UserId} - {BoostMessage}", user.GuildId, user.Id, e.Message);
             }
         }
     }

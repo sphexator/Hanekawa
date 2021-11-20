@@ -12,7 +12,7 @@ using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Database.Tables.Moderation;
 using Hanekawa.Extensions;
 using Humanizer;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Logs
 {
@@ -59,7 +59,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for mute log, re-creating");
+                Logger.LogWarning(ex, $"No valid webhook for mute log, re-creating");
                 var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookBan != webhook.Token) cfg.WebhookBan = webhook.Token;
                 if (!cfg.WebhookBanId.HasValue || cfg.WebhookBanId.Value != webhook.Id)
@@ -108,7 +108,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for warn log, re-creating");
+                Logger.LogWarning(ex, $"No valid webhook for warn log, re-creating");
                 var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookWarn != webhook.Token) cfg.WebhookWarn = webhook.Token;
                 if (!cfg.WebhookWarnId.HasValue || cfg.WebhookWarnId.Value != webhook.Id)

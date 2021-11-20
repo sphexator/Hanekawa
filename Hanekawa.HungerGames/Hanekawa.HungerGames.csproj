@@ -1,23 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <LangVersion>latestmajor</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latestmajor</LangVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Hanekawa.Database\Hanekawa.Database.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Disqord" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Bot" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Core" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Gateway" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Rest" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-09062021-117" />
-    <PackageReference Include="Disqord.Webhook" Version="1.0.0-09062021-117" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Disqord" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Bot" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Core" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Gateway" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Gateway.Api" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Rest" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Rest.Api" Version="1.0.0-11112021-148"/>
+        <PackageReference Include="Disqord.Webhook" Version="1.0.0-11112021-148"/>
+    </ItemGroup>
 
 </Project>

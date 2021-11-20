@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Gateway;
 using Disqord.Hosting;
-using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Drop;
 using Hanekawa.Database;
@@ -18,29 +17,23 @@ using Hanekawa.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 using Quartz;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Experience
 {
     public partial class ExpService : DiscordClientService, IJob
     {
         private readonly CacheService _cache;
-        private readonly AchievementService _achievement;
-        private readonly Logger _logger;
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement, ILogger<ExpService> logger) : base(logger, bot)
+        public ExpService(CacheService cache, Hanekawa bot, IServiceProvider provider, Random random, ILogger<ExpService> logger) : base(logger, bot)
         {
-            _logger = LogManager.GetCurrentClassLogger();
             _cache = cache;
             _bot = bot;
             _provider = provider;
             _random = random;
-            _achievement = achievement;
 
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -103,8 +96,7 @@ namespace Hanekawa.Bot.Service.Experience
             }
             catch (Exception z)
             {
-                _logger.Log(LogLevel.Error, z,
-                    $"Error in {e.GuildId} for Voice - {z.Message}");
+                Logger.LogError(z, "Error in {GuildId} by {UserId} for Voice - {ExceptionMessage}", e.GuildId, e.MemberId, z.Message);
             }
         }
 
@@ -149,8 +141,7 @@ namespace Hanekawa.Bot.Service.Experience
             }
             catch (Exception z)
             {
-                _logger.Log(LogLevel.Error, z,
-                    $"Error in {e.GuildId.Value} for Server Exp - {z.Message}");
+                Logger.LogError(z, "Error in {GuildId} by {UserId} for Server Exp - {ExceptionMessage}", e.GuildId.Value, e.Member.Id, z.Message);
             }
         }
         

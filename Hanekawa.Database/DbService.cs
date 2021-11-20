@@ -65,6 +65,7 @@ namespace Hanekawa.Database
             modelBuilder.Entity<VoiceRoles>(x => { x.HasKey(e => new {e.GuildId, e.VoiceId}); });
             modelBuilder.Entity<AutoMessage>(x => { x.HasKey(e => new {e.GuildId, e.Name}); });
             modelBuilder.Entity<Quote>(x => { x.HasKey(e => new {e.GuildId, e.Key}); });
+            
         }
     }
 }

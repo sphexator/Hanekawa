@@ -13,7 +13,7 @@ namespace Hanekawa.Bot.Commands.Preconditions
         {
             if (_ is not HanekawaCommandContext context) return CheckResult.Failed("Wrong command context.");
             var roles = context.Author.GetRoles();
-            if (Discord.Permissions.CalculatePermissions(context.Guild, context.Author, roles.Values).Has(Permission.ManageGuild))
+            if (Disqord.Discord.Permissions.CalculatePermissions(context.Guild, context.Author, roles.Values).Has(Permission.ManageGuild))
                 return CheckResult.Successful;
             var cache = context.Services.GetRequiredService<CacheService>();
             var ignoreAll = cache.TryGetIgnoreChannel(context.GuildId, out var status);

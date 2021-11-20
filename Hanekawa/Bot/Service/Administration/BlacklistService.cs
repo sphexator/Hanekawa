@@ -6,21 +6,15 @@ using Disqord.Rest;
 using Hanekawa.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Administration
 {
     public class BlacklistService : DiscordClientService
     {
-        private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
-        public BlacklistService(IServiceProvider provider, Hanekawa bot, ILogger<BlacklistService> logger) : base(logger, bot)
-        {
-            _logger = LogManager.GetCurrentClassLogger();
-            _provider = provider;
-        }
+        public BlacklistService(IServiceProvider provider, Hanekawa bot, ILogger<BlacklistService> logger) : base(logger, bot) 
+            => _provider = provider;
 
         protected override async ValueTask OnJoinedGuild(JoinedGuildEventArgs e)
         {
@@ -31,11 +25,11 @@ namespace Hanekawa.Bot.Service.Administration
                 var check = await db.Blacklists.FindAsync(e.GuildId);
                 if (check == null) return;
                 await e.Guild.LeaveAsync();
-                _logger.Log(LogLevel.Info, $"Left {e.GuildId} as the server is blacklisted");
+                Logger.LogInformation("Left {GuildId} as the server is blacklisted", e.GuildId);
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"(Blacklist Service) Error for {e.GuildId} - {exception.Message}");
+                Logger.LogError(exception, "(Blacklist Service) Error for {GuildId} - {ExceptionMessage}", e.GuildId, exception.Message);
             }
         }
     }

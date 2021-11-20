@@ -8,7 +8,6 @@ using Hanekawa.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 
 namespace Hanekawa.Bot.Service.Administration
 {
@@ -16,13 +15,11 @@ namespace Hanekawa.Bot.Service.Administration
     {
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
 
         protected VoiceRoleService(ILogger<VoiceRoleService> logger, Hanekawa bot, IServiceProvider provider) : base(logger, bot)
         {
             _bot = bot;
             _provider = provider;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         protected override async ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
@@ -40,7 +37,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (role == null) return;
             db.VoiceRoles.Remove(role);
             await db.SaveChangesAsync();
-            _logger.Info($"Removed voice role {e.Role.Name} in {e.GuildId} as it got deleted");
+            Logger.LogInformation("Removed voice role {RoleName} in {GuildId} as it got deleted", e.Role.Name, e.GuildId);
         }
 
         private async ValueTask JoinedAsync(VoiceStateUpdatedEventArgs e)
@@ -52,7 +49,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (newChannel == null) return;
             if (!_bot.GetGuild(e.GuildId).Roles.TryGetValue(newChannel.RoleId, out var role)) return;
             await e.Member.GrantRoleAsync(role.Id);
-            _logger.Info($"Added {role.Name} to {e.Member.Id} in {e.GuildId}");
+            Logger.LogInformation("Added {RoleName} to {UserId} in {GuildId}", role.Name, e.Member.Id, e.GuildId);
         }
 
         private async ValueTask DisconnectedAsync(VoiceStateUpdatedEventArgs e)
@@ -64,7 +61,7 @@ namespace Hanekawa.Bot.Service.Administration
             if (oldChannel == null) return;
             if (!_bot.GetGuild(e.GuildId).Roles.TryGetValue(oldChannel.RoleId, out var role)) return; 
             await e.Member.RevokeRoleAsync(role.Id);
-            _logger.Info($"Removed {role.Name} to {e.Member.Id} in {e.GuildId}");
+            Logger.LogInformation("Removed {RoleName} to {UserId} in {GuildId}", role.Name, e.Member.Id, e.GuildId);
         }
 
         private async ValueTask ChangedChannelAsync(VoiceStateUpdatedEventArgs e)
@@ -82,14 +79,14 @@ namespace Hanekawa.Bot.Service.Administration
                 if(guild.Roles.TryGetValue(checkNew.RoleId, out var newRole) && !roles.Contains(newRole.Id)) roles.Add(newRole.Id);
                 if(guild.Roles.TryGetValue(checkOld.RoleId, out var oldRole) && !roles.Contains(oldRole.Id)) roles.Add(oldRole.Id);
                 await e.Member.ModifyAsync(x => x.RoleIds = roles);
-                _logger.Info($"Updated voice roles to {e.Member.Id} in {e.GuildId}");
+                Logger.LogInformation("Updated voice roles to {UserId} in {GuildId}", e.Member.Id, e.GuildId);
                 return;
             }
             if (checkOld != null)
             {
                 if (!guild.Roles.TryGetValue(checkOld.RoleId, out var role)) return;
                 await e.Member.RevokeRoleAsync(role.Id);
-                _logger.Info($"Removed {role.Name} to {e.Member.Id} in {e.GuildId}");
+                Logger.LogInformation("Removed {RoleName} to {UserId} in {GuildId}", role.Name, e.Member.Id, e.GuildId);
                 return;
             }
             if (checkNew != null)

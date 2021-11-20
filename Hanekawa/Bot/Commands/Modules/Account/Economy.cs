@@ -240,7 +240,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.EmoteCurrency = true;
-                cfg.CurrencySign = emote.GetMessageFormat();
+                cfg.CurrencySign = emote.GetReactionFormat();
                 await db.SaveChangesAsync();
                 return Reply($"Set regular currency sign to {emote}", HanaBaseColor.Ok());
             }
@@ -268,7 +268,7 @@ namespace Hanekawa.Bot.Commands.Modules.Account
                 await using var db = Context.Scope.ServiceProvider.GetRequiredService<DbService>();
                 var cfg = await db.GetOrCreateEntityAsync<CurrencyConfig>(Context.GuildId);
                 cfg.SpecialEmoteCurrency = true;
-                cfg.SpecialCurrencySign = emote.GetMessageFormat();
+                cfg.SpecialCurrencySign = emote.GetReactionFormat();
                 await db.SaveChangesAsync();
                 return Reply($"Set special currency sign to {emote}", Color.Green);
             }

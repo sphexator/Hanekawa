@@ -17,15 +17,12 @@ using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 using Quartz.Util;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Logs
 {
     public partial class LogService : DiscordClientService
     {
-        private readonly Logger _logger;
         private readonly IServiceProvider _provider;
         private readonly IWebhookClientFactory _webhookClientFactory;
         private readonly Hanekawa _bot;
@@ -38,7 +35,6 @@ namespace Hanekawa.Bot.Service.Logs
             _provider = provider;
             _cache = cache;
             _webhookClientFactory = webhookClientFactory;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
@@ -86,7 +82,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Warn, exception, $"No valid webhook for member joined, re-creating");
+                Logger.LogWarning(exception, $"No valid webhook for member joined, re-creating");
                 var builder = new LocalWebhookMessage
                 {
                     Embeds = new List<LocalEmbed> {embed},
@@ -145,7 +141,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for member left, re-creating");
+                Logger.LogWarning(ex, $"No valid webhook for member left, re-creating");
                 var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookJoin != webhook.Token) cfg.WebhookJoin = webhook.Token;
                 if (!cfg.WebhookJoinId.HasValue || cfg.WebhookJoinId.Value != webhook.Id)

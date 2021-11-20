@@ -21,6 +21,13 @@ namespace Hanekawa.HungerGames
             _events = new HungerGameEvent(_random);
         }
 
+        public HungerGameClient()
+        {
+            _random = new Random();
+            _config = new HungerGameConfig();
+            _events = new HungerGameEvent(_random);
+        }
+
         public List<UserAction> PlayAsync(List<HungerGameProfile> participants)
         {
             var results = new List<UserAction>();

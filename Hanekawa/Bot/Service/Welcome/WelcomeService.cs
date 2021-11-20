@@ -22,8 +22,6 @@ using Hanekawa.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Welcome
 {
@@ -32,7 +30,6 @@ namespace Hanekawa.Bot.Service.Welcome
         private readonly Hanekawa _bot;
         private readonly ExpService _exp;
         private readonly ImageGenerationService _image;
-        private readonly Logger _logger;
         private readonly IServiceProvider _provider;
 
         public WelcomeService(IServiceProvider provider, ExpService exp, ImageGenerationService image,
@@ -42,7 +39,6 @@ namespace Hanekawa.Bot.Service.Welcome
             _provider = provider;
             _exp = exp;
             _image = image;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e)
@@ -118,12 +114,12 @@ namespace Hanekawa.Bot.Service.Welcome
                 var exp = RewardAsync(channel, cfg, db, source.Token);
                 await Task.WhenAny(del, exp);
                 source.Cancel();
-                _logger.Log(LogLevel.Info, $"(Welcome Service) User joined {e.GuildId}");
+                Logger.LogInformation("(Welcome Service) {UserId} joined {GuildId}", e.Member.Id, e.GuildId);
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Welcome Service) Error in {e.GuildId} for User Joined - {exception.Message}");
+                Logger.LogError(exception,
+                    "(Welcome Service) Error in {GuildId} for {UserId} Joined - {ExceptionMessage}", e.GuildId, e.Member.Id, exception.Message);
             }
         }
 
@@ -139,13 +135,11 @@ namespace Hanekawa.Bot.Service.Welcome
                     await db.SaveChangesAsync();
                 }
 
-                _logger.Log(LogLevel.Info,
-                    $"(Welcome Service) Cleaned up banners in {e.Guild.Id} as bot left server");
+                Logger.LogInformation("(Welcome Service) Cleaned up banners in {GuildId} as bot left server", e.GuildId);
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Welcome Service) Error in {e.GuildId} for Bot Left Guild - {exception.Message}");
+                Logger.LogError(exception, "(Welcome Service) Error in {GuildId} for Bot Left Guild - Couldn't clear banners - {ExceptionMessage}", e.GuildId, exception.Message);
             }
         }
 
@@ -174,7 +168,7 @@ namespace Hanekawa.Bot.Service.Welcome
                         }
                         catch (Exception e)
                         {
-                            _logger.Log(LogLevel.Error, e, e.Message);
+                            Logger.LogError(e, "Error adding {UserId} for welcome reward in {GuildId} - {ExceptionMessage}", response.Member.Id, cfg.GuildId, e.Message);
                         }
                     }, token);
                 }
@@ -189,7 +183,7 @@ namespace Hanekawa.Bot.Service.Welcome
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, e.Message);
+                Logger.LogError(e, "Error rewarding user for welcome reward in {GuildId} - {ExceptionMessage}", cfg.GuildId, e.Message);
             }
         }
 
@@ -203,7 +197,7 @@ namespace Hanekawa.Bot.Service.Welcome
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"(Welcome Service) Couldn't delete banner in {cfg.GuildId}");
+                Logger.LogError(e, "(Welcome Service) Couldn't delete banner in {GuildId}", cfg.GuildId);
             }
         }
     }

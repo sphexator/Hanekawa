@@ -10,7 +10,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Logs
 {
@@ -150,7 +150,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Warn, ex, $"No valid webhook for voice log, re-creating");
+                Logger.LogWarning(ex, $"No valid webhook for voice log, re-creating");
                 var webhook = await channel.GetOrCreateWebhookClientAsync();
                 if (cfg.WebhookVoice != webhook.Token) cfg.WebhookVoice = webhook.Token;
                 if (!cfg.WebhookVoiceId.HasValue || cfg.WebhookVoiceId.Value != webhook.Id)

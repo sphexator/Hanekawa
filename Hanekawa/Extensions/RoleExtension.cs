@@ -20,7 +20,7 @@ namespace Hanekawa.Extensions
         {
             var guild = user.GetGuild();
             var currentUser = guild.GetCurrentUser();
-            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+            if (Disqord.Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
                 throw new HanaCommandException("");
 
             var finalRoles = user.GetRoles().Keys;
@@ -38,7 +38,7 @@ namespace Hanekawa.Extensions
         {
             var guild = user.GetGuild();
             var currentUser = guild.GetCurrentUser();
-            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+            if (Disqord.Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
                 throw new HanaCommandException("");
             if (guild.HierarchyCheck(currentUser, role)) throw new HanaCommandException("Can't add a role that's placed higher than the bot");
             await user.RevokeRoleAsync(role.Id);
@@ -48,7 +48,7 @@ namespace Hanekawa.Extensions
         {
             var guild = user.GetGuild();
             var currentUser = guild.GetCurrentUser();
-            if (Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
+            if (Disqord.Discord.Permissions.CalculatePermissions(guild, currentUser, currentUser.GetRoles().Values).ManageRoles)
                 throw new HanaCommandException("");
             var finalRoles = user.GetRoles().Keys;
             var snowflakes = new List<Snowflake>(finalRoles);

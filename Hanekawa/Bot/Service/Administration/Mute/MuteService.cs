@@ -19,15 +19,12 @@ using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Administration.Mute
 {
     public class MuteService : DiscordClientService
     {
         private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
         private readonly LogService _logService;
         private readonly CacheService _cache;
         private readonly WarnService _warn;
@@ -42,7 +39,6 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             _cache = cache;
             _bot = bot;
             _warn = warn;
-            _logger = LogManager.GetCurrentClassLogger();
             
             using var scope = _provider.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<DbService>();
@@ -59,7 +55,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 catch (Exception e)
                 {
                     db.Remove(x);
-                    _logger.Log(LogLevel.Error, e, $"Couldn't create unmute timer in {x.GuildId} for {x.UserId}");
+                    Logger.LogError(e, "Couldn't create unmute timer in {GuildId} for {UserId}", x.GuildId, x.UserId);
                 }
             }
             db.SaveChanges();
@@ -100,7 +96,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             
             await db.SaveChangesAsync();
             StartUnMuteTimer(user.GuildId, user.Id, duration.Value);
-            _logger.Log(LogLevel.Info, $"Muted {user.Id} in {user.GuildId}");
+            Logger.LogInformation("Muted {UserId} in {GuildId}", user.Id, user.GuildId);
             return true;
         }
 
@@ -126,9 +122,9 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             if (check)
             {
                 _ = ApplyPermissions(user.GetGuild(), role);
-                _logger.Log(LogLevel.Info, $"Muted {user.Id} in {user.GuildId}");
+                Logger.LogInformation("Muted {UserId} in {GuildId}", user.Id, user.GuildId);
             }
-            else _logger.Log(LogLevel.Warn, $"Failed to mute {user.Id} in {user.GuildId}");
+            else Logger.LogWarning("Failed to mute {UserId} in {GuildId}", user.Id, user.GuildId);
             return check;
         }
         
@@ -152,7 +148,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 var check = await user.TryRemoveRoleAsync(await GetMuteRoleAsync(user.GuildId, db));
                 if (!check) return false;
             }
-            _logger.Log(LogLevel.Info, $"Unmuted {user.Id} in {user.GuildId}");
+            Logger.LogInformation("Unmuted {UserId} in {GuildId}", user.Id, user.GuildId);
             return true;
         }
         
@@ -163,7 +159,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                 x.UserId == user.Id &&
                 x.Type == WarnReason.Muted &&
                 x.Time >= DateTime.UtcNow.AddDays(-30)).ToListAsync();
-            return warns == null || warns.Count == 0 
+            return warns.Count == 0 
                 ? TimeSpan.FromHours(1) 
                 : TimeSpan.FromHours(warns.Count + 2);
         }
@@ -226,8 +222,8 @@ namespace Hanekawa.Bot.Service.Administration.Mute
                     catch (Exception e)
                     {
                         await RemoveFromDatabaseAsync(guildId, userId, db);
-                        _logger.Log(LogLevel.Error, e,
-                            $"Error for {userId} in {guildId} for UnMute - {e.Message}");
+                        Logger.LogError(e,
+                            "Error for {UserId} in {GuildId} for UnMute - {ExceptionMessage}", userId, guildId, e.Message);
                     }
                 }, null, duration, Timeout.InfiniteTimeSpan);
                 
@@ -235,7 +231,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"Couldn't create unmute timer in {guildId} for {userId}");
+                Logger.LogError(e, "Couldn't create unmute timer in {GuildId} for {UserId}", guildId, userId);
             }
         }
 
@@ -277,7 +273,7 @@ namespace Hanekawa.Bot.Service.Administration.Mute
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Error, e, $"Couldn't apply permission overwrite in {ch.GuildId} in channel {ch.Id}");
+                Logger.LogError(e, "Couldn't apply permission overwrite in {GuildId} in channel {ChannelId}", ch.GuildId, ch.Id);
             }
 
             await Task.Delay(200).ConfigureAwait(false);

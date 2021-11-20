@@ -17,7 +17,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Modules
@@ -50,14 +50,14 @@ namespace Hanekawa.Bot.Commands.Modules
                     }
                     catch(Exception e)
                     {
-                        LogManager.GetCurrentClassLogger().Log(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
+                        Logger.LogError(e, "{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                         var result = await Context.Guild.CreateEmojiAsync("ToBeRenamed", stream);
                         list.Append($"{result} (rename)");
                     }
                 }
                 catch (Exception e)
                 {
-                    LogManager.GetCurrentClassLogger().Log(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
+                    Logger.LogError(e, "{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                     // Ignore
                 }
             }
@@ -89,7 +89,7 @@ namespace Hanekawa.Bot.Commands.Modules
             }
             catch(Exception e)
             {
-                LogManager.GetCurrentClassLogger().Log(LogLevel.Error, e, $"{e.Message}\n{e.StackTrace}");
+                Logger.LogError(e, "{ErrorMessage}\n{StackTrace}", e.Message, e.StackTrace);
                 var emote = await Context.Guild.CreateEmojiAsync("ToBeRenamed", result);
                 return Reply($"Added {emote}",
                     Context.Services.GetRequiredService<CacheService>().GetColor(Context.GuildId));

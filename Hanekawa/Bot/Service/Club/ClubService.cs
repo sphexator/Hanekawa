@@ -14,8 +14,6 @@ using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Club
 {
@@ -23,7 +21,6 @@ namespace Hanekawa.Bot.Service.Club
     {
         private readonly Hanekawa _bot;
         private readonly IServiceProvider _provider;
-        private readonly Logger _logger;
         private readonly OverwritePermissions _denyOverwrite =
             new(ChannelPermissions.None, new ChannelPermissions(19520));
         private readonly OverwritePermissions _allowOverwrite =
@@ -33,7 +30,6 @@ namespace Hanekawa.Bot.Service.Club
         {
             _bot = (Hanekawa)client;
             _provider = provider;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         public async Task CreateChannelAsync(IGuild guild, ClubConfig cfg, Database.Tables.Club.Club club, DbService db)
@@ -176,8 +172,8 @@ namespace Hanekawa.Bot.Service.Club
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id} for reaction added - {exception.Message}");
+                Logger.LogError(exception,
+                    "(Club Service) Error in {GuildId} for reaction added - {ExceptionMessage}", guild.Id, exception.Message);
             }
         }
 
@@ -197,12 +193,12 @@ namespace Hanekawa.Bot.Service.Club
                 if (clubUser.Rank == ClubRank.Owner) return;
                 await RemoveAsync(user.Id, user.GuildId, clubUser.ClubId, db);
                 await db.SaveChangesAsync();
-                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id} left their club with reaction removed");
+                Logger.LogInformation("(Club Service) {UserId} left their club with reaction removed in {GuildId}", user.Id, guild.Id);
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id} for reaction removed- {exception.Message}");
+                Logger.LogError(exception,
+                    "(Club Service) Error in {GuildId} for reaction removed for {UserId} - {ExceptionMessage}", guild.Id, e.UserId, exception.Message);
             }
         }
 
@@ -219,12 +215,12 @@ namespace Hanekawa.Bot.Service.Club
                 if (clubUser == null) return;
                 db.ClubPlayers.Remove(clubUser);
                 await db.SaveChangesAsync();
-                _logger.Log(LogLevel.Info, $"(Club Service) {user.Id} left {guild.Id} and left their club");
+                Logger.LogInformation("(Club Service) {UserId} left {GuildId} and left their club", user.Id, guild.Id);
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception,
-                    $"(Club Service) Error in {guild.Id} for User Left- {exception.Message}");
+                Logger.LogInformation(exception,
+                    "(Club Service) Error in {GuildId} for User Left ( {UserId} )- {exception.Message}", guild.Id, user.Id, exception.Message);
             }
         }
     }

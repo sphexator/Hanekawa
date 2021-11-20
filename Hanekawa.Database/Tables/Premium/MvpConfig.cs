@@ -6,6 +6,7 @@ namespace Hanekawa.Database.Tables.Premium
     public class MvpConfig
     {
         public Snowflake GuildId { get; set; }
+        public Snowflake? ChannelId { get; set; } = null;
         public bool Disabled { get; set; }
         public DayOfWeek Day { get; set; } = DayOfWeek.Wednesday;
         public Snowflake? RoleId { get; set; } = null;

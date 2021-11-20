@@ -15,7 +15,6 @@ using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 
 namespace Hanekawa.Bot.Service.Board
 {
@@ -23,7 +22,6 @@ namespace Hanekawa.Bot.Service.Board
     {
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
-        private readonly Logger _logger;
 
         private readonly IServiceProvider _provider;
 
@@ -35,7 +33,6 @@ namespace Hanekawa.Bot.Service.Board
             _bot = bot;
             _provider = provider;
             _cache = cache;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
@@ -66,7 +63,7 @@ namespace Hanekawa.Bot.Service.Board
                 await db.SaveChangesAsync();
                 await SendMessageAsync(await _bot.GetOrFetchMemberAsync(e.GuildId.Value, e.Message.Author.Id),
                     e.Message, cfg, db);
-                _logger.Info($"Sent board message in {cfg.GuildId} by user {receiver.UserId}");
+                Logger.LogInformation("Sent board message in {GuildId} by user {UserId}", cfg.GuildId, receiver.UserId);
             }
         }
 

@@ -264,7 +264,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                     RoleId = role.Id,
                     EmoteId = emote?.GetId(),
                     Exclusive = exclusive,
-                    EmoteMessageFormat = emote?.GetMessageFormat(),
+                    EmoteMessageFormat = emote?.GetReactionFormat(),
                     EmoteReactFormat = emote?.GetReactionFormat()
                 };
                 await db.SelfAssignAbleRoles.AddAsync(data);
@@ -307,7 +307,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                             ChannelId = channel.Id,
                             MessageId = message.Id,
                             Exclusive = update.Exclusive,
-                            Reactions = new List<string> {emote.GetMessageFormat()}
+                            Reactions = new List<string> {emote.GetReactionFormat()}
                         });
                     }
                     else
@@ -318,7 +318,7 @@ namespace Hanekawa.Bot.Commands.Modules.Administration
                             embed.Description.Split("-",
                                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), guild.Id);
                         await message.ModifyAsync(x => x.Embeds = new[] {embed});
-                        reactionRoles.Reactions.Add(emote.GetMessageFormat());
+                        reactionRoles.Reactions.Add(emote.GetReactionFormat());
                     }
 
                     await db.SaveChangesAsync();

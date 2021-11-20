@@ -22,7 +22,7 @@ using Hanekawa.Utility;
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Quartz.Util;
 
 namespace Hanekawa.Controllers
@@ -35,15 +35,15 @@ namespace Hanekawa.Controllers
         private readonly Bot.Hanekawa _client;
         private readonly DbService _db;
         private readonly ExpService _exp;
-        private readonly Logger _log;
+        private readonly ILogger<AdvertController> _logger;
 
-        public AdvertController(DbService db, Bot.Hanekawa client, CacheService cache, ExpService exp)
+        public AdvertController(DbService db, Bot.Hanekawa client, CacheService cache, ExpService exp, ILogger<AdvertController> logger)
         {
             _db = db;
             _client = client;
-            _log = LogManager.GetCurrentClassLogger();
             _cache = cache;
             _exp = exp;
+            _logger = logger;
         }
 
         [HttpPost("dbl")]
@@ -121,8 +121,7 @@ namespace Hanekawa.Controllers
                     });
                 }
                 
-                _log.Log(LogLevel.Info,
-                    $"(Advert Endpoint) Rewarded {userId} in {guild.Id} for voting on the server!");
+                _logger.LogInformation("(Advert Endpoint) Rewarded {UserId} in {GuildId} for voting on the server!", userId, guild.Id);
                 
                 var giveaways = await _db.Giveaways
                     .Where(x => x.GuildId == guildId && x.Type == GiveawayType.Vote && x.Active).ToListAsync(token);
@@ -178,7 +177,7 @@ namespace Hanekawa.Controllers
             }
             catch (Exception e)
             {
-                _log.Log(LogLevel.Error, e, $"(Advert Endpoint) Error in awarding user for voting - {e.Message}");
+                _logger.LogError(e,"(Advert Endpoint) Error in awarding for voting - {ExceptionMessage}", e.Message);
                 return StatusCode(500);
             }
         }

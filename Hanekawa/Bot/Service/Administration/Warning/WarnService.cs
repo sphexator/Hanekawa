@@ -16,7 +16,7 @@ using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Util;
 
@@ -26,17 +26,18 @@ namespace Hanekawa.Bot.Service.Administration.Warning
     {
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
-        private readonly Logger _logger;
+        private readonly ILogger<WarnService> _logger;
 
-        public WarnService(Hanekawa bot, CacheService cache)
+        public WarnService(Hanekawa bot, CacheService cache, ILogger<WarnService> logger)
         {
             _bot = bot;
             _cache = cache;
-            _logger = LogManager.GetCurrentClassLogger();
+            _logger = logger;
         }
 
         public Task Execute(IJobExecutionContext context)
         {
+            // TODO: Warn service
             throw new NotImplementedException();
         }
 
@@ -57,7 +58,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             });
             await db.SaveChangesAsync();
             if (notify) await NotifyUserAsync(user, staff, muteTime, reason, type);
-            _logger.Log(LogLevel.Info, $"Warned {user.Id} in {user.GuildId}");
+            _logger.LogInformation("Warned {UserId} in {GuildId}", user.Id, user.GuildId);
         }
 
         public async Task<List<LocalEmbed>> GetWarnLogAsync(IMember user, WarnLogType type, DbService db)
@@ -162,7 +163,7 @@ namespace Hanekawa.Bot.Service.Administration.Warning
             }
             catch (Exception e)
             {
-                _logger.Log(LogLevel.Warn, e, "Couldn't DM user. DMs possibly closed.");
+                _logger.LogWarning(e, "Couldn't DM user. DMs possibly closed");
             }
         }
     }

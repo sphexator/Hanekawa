@@ -6,7 +6,6 @@ using Disqord;
 using Disqord.Gateway;
 using Disqord.Hosting;
 using Disqord.Rest;
-using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Database;
@@ -17,32 +16,26 @@ using Hanekawa.Entities;
 using Hanekawa.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
 using static Disqord.LocalCustomEmoji;
-using LogLevel = NLog.LogLevel;
 
 namespace Hanekawa.Bot.Service.Drop
 {
     public class DropService : DiscordClientService
     {
-        private readonly AchievementService _achievement;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
         private readonly ExpService _exp;
-        private readonly Logger _logger;
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random,
-            AchievementService achievement, ILogger<DropService> logger) : base(logger, bot)
+        public DropService(Hanekawa bot, CacheService cache, IServiceProvider provider, ExpService exp, Random random, 
+            ILogger<DropService> logger) : base(logger, bot)
         {
             _bot = bot;
             _cache = cache;
             _provider = provider;
             _exp = exp;
             _random = random;
-            _achievement = achievement;
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         public async Task MessageReceived(MessageReceivedEventArgs e)
@@ -59,8 +52,8 @@ namespace Hanekawa.Bot.Service.Drop
                 }
                 catch (Exception exception)
                 {
-                    _logger.Log(LogLevel.Error, exception,
-                        $"Error in {e.GuildId.Value} for drop create - {exception.Message}");
+                    Logger.LogError(exception,
+                        "Error in {GuildId} for drop create - {ExceptionMessage}", e.GuildId.Value, exception.Message);
                 }
         }
 
@@ -93,7 +86,7 @@ namespace Hanekawa.Bot.Service.Drop
             foreach (var x in emotes.OrderBy(_ => _random.Next()).Take(emotes.Count))
                 await ApplyReactionAsync(triggerMsg, x, claim, type);
 
-            _logger.Log(LogLevel.Info, $"Drop event created in {guildId}");
+            Logger.LogInformation("Drop event created in {GuildId}", guildId);
         }
 
         private async Task ClaimAsync(IUserMessage msg, IMember user, DropType type)

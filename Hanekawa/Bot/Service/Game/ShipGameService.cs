@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Disqord;
 using Disqord.Rest;
 using Hanekawa.Bot.Commands;
-using Hanekawa.Bot.Service.Achievements;
 using Hanekawa.Bot.Service.Cache;
 using Hanekawa.Bot.Service.Experience;
 using Hanekawa.Bot.Service.ImageGeneration;
@@ -20,32 +19,30 @@ using Hanekawa.Exceptions;
 using Hanekawa.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Game
 {
     public class ShipGameService : INService
     {
-        private readonly AchievementService _achievement;
         private readonly Hanekawa _bot;
         private readonly CacheService _cache;
         private readonly ExpService _exp;
         private readonly ImageGenerationService _image;
-        private readonly Logger _logger;
+        private readonly ILogger<ShipGameService> _logger;
         private readonly IServiceProvider _provider;
         private readonly Random _random;
 
-        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random, AchievementService achievement,
-            ExpService exp, CacheService cache, ImageGenerationService image)
+        public ShipGameService(Hanekawa bot, IServiceProvider provider, Random random,
+            ExpService exp, CacheService cache, ImageGenerationService image, ILogger<ShipGameService> logger)
         {
             _bot = bot;
             _provider = provider;
             _random = random;
-            _achievement = achievement;
             _exp = exp;
             _cache = cache;
             _image = image;
-            _logger = LogManager.GetCurrentClassLogger();
+            _logger = logger;
         }
 
         private int DefaultHealth { get; } = 10;
@@ -104,7 +101,8 @@ namespace Hanekawa.Bot.Service.Game
             catch (Exception e)
             {
                 _cache.RemoveGame(game.Channel.Id);
-                _logger.Log(LogLevel.Error, e, $"(ShipGame Service) Error while executing a PvE game - {e.Message}");
+                _logger.Log(LogLevel.Error, e,
+                    "(ShipGame Service) Error while executing a PvE game in guild {GuildId} for channel {Channel} - {ExceptionMessage}", game.Channel.GuildId, game.Channel.Id, e.Message);
                 throw new HanaCommandException("Couldn't finish the game...");
             }
         }
@@ -147,9 +145,7 @@ namespace Hanekawa.Bot.Service.Game
                     continue;
                 }
 
-                var temp = attacker;
-                attacker = target;
-                target = temp;
+                (attacker, target) = (target, attacker);
 
                 var embed = LocalEmbed.FromEmbed(msg.Embeds[0]);
                 embed.Description = UpdateCombatLog(log.Reverse());

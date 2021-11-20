@@ -18,8 +18,7 @@ namespace Hanekawa.Bot
     {
         public Hanekawa(IOptions<DiscordBotConfiguration> options, ILogger<DiscordBot> logger,
             IServiceProvider services,
-            DiscordClient client) : base(options, logger, services, client)
-        { }
+            DiscordClient client) : base(options, logger, services, client) { }
 
         protected override ValueTask AddTypeParsersAsync(CancellationToken cancellationToken = new ())
         {

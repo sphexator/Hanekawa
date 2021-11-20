@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Disqord;
-using Disqord.Api;
 using Disqord.Bot;
 using Disqord.Gateway;
 using Disqord.Models;
@@ -151,7 +150,7 @@ namespace Hanekawa.Bot.Commands.Modules.Owner
                     User = userModel
                 }),
                 EditedTimestamp = null,
-                Type = MessageType.Default
+                Type = UserMessageType.Default
             });
         }
     }

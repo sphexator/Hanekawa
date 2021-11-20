@@ -6,7 +6,7 @@ using Hanekawa.Database.Extensions;
 using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Config.Guild;
 using Hanekawa.Entities;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Experience
 {
@@ -31,8 +31,8 @@ namespace Hanekawa.Bot.Service.Experience
                 userData.Level += 1;
                 await LevelUpCheckAsync(user, userData, db, userData.Decay);
                 // TODO: Server Achieve await _achievement.ServerLevel(user, userData, db);
-                _logger.Log(LogLevel.Info,
-                    $"(Exp Service | Server) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
+                Logger.LogInformation("(Exp Service | Server) {GuildId} - {UserId} Leveled up {Level} and gained {Exp} exp {Credit} credit", 
+                    userData.GuildId, userData.UserId, userData.Level, exp, credit);
             }
             else if (userData.Exp + exp < 0)
             {
@@ -42,8 +42,8 @@ namespace Hanekawa.Bot.Service.Experience
             else
             {
                 userData.Exp += exp;
-                _logger.Log(LogLevel.Info,
-                    $"(Exp Service | Server) {userData.UserId} gained {exp} exp {credit} credit");
+                Logger.LogInformation("(Exp Service | Server) {GuildId} - {UserId} gained {Exp} exp {Credit} credit",
+                    userData.GuildId, userData.UserId, exp, credit);
             }
             
             if (userData.Decay != 0) userData.Decay = 0;
@@ -59,14 +59,12 @@ namespace Hanekawa.Bot.Service.Experience
             {
                 userData.Level += 1;
                 userData.Exp = userData.Exp + exp - ExpToNextLevel(userData);
-                _logger.Log(LogLevel.Info,
-                    $"(Exp Service | Global) {userData.UserId} Leveled up {userData.Level} and gained {exp} exp {credit} credit");
+                Logger.LogInformation("(Exp Service | Global) {UserId} Leveled up {Level} and gained {Exp} exp {Credit} credit", userData.UserId, userData.Level, exp, credit);
             }
             else
             {
                 userData.Exp += exp;
-                _logger.Log(LogLevel.Info,
-                    $"(Exp Service | Global) {userData.UserId} gained {exp} exp {credit} credit");
+                Logger.LogInformation("(Exp Service | Global) {UserId} gained {Exp} exp {Credit} credit", userData.UserId, exp, credit);
             }
 
             userData.TotalExp += exp;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hanekawa.Database.Tables.Account;
 using Hanekawa.Database.Tables.Account.Profile;
 using Hanekawa.Database.Tables.Account.Stores;
 using Hanekawa.Database.Tables.Config.Guild;

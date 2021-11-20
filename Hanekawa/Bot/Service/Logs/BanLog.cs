@@ -16,7 +16,7 @@ using Hanekawa.Entities.Color;
 using Hanekawa.Extensions;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Bot.Service.Logs
 {
@@ -78,7 +78,7 @@ namespace Hanekawa.Bot.Service.Logs
                 }
                 catch (Exception exception)
                 {
-                    _logger.Log(LogLevel.Warn, exception, $"No valid webhook for ban, re-creating");
+                    Logger.LogWarning(exception, $"No valid webhook for ban, re-creating");
                     var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
@@ -92,7 +92,8 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"Error in {guild.Id} for Ban Log - {exception.Message}");
+                Logger.LogError(exception, "Error in {GuildId} for Ban Log - {ExceptionMessage}", 
+                    guild.Id, exception.Message);
             }
         }
 
@@ -154,7 +155,7 @@ namespace Hanekawa.Bot.Service.Logs
                 }
                 catch (Exception exception)
                 {
-                    _logger.Log(LogLevel.Warn, exception, $"No valid webhook for unban, re-creating");
+                    Logger.LogWarning(exception, $"No valid webhook for unban, re-creating");
                     var webhook = await channel.GetOrCreateWebhookClientAsync();
                     cfg.WebhookBan = webhook.Token;
                     cfg.WebhookBanId = webhook.Id;
@@ -168,7 +169,7 @@ namespace Hanekawa.Bot.Service.Logs
             }
             catch (Exception exception)
             {
-                _logger.Log(LogLevel.Error, exception, $"Error in {e.GuildId} for UnBan Log - {exception.Message}");
+                Logger.LogError(exception, "Error in {GuildId} for UnBan Log - {ExceptionMessage}", e.GuildId, exception.Message);
             }
         }
         
@@ -206,7 +207,7 @@ namespace Hanekawa.Bot.Service.Logs
                 if (modId.HasValue)
                 {
                     temp = await _bot.GetOrFetchMemberAsync(guild.Id, modId.Value);
-                    if (temp is {IsBot: false} && Discord.Permissions
+                    if (temp is {IsBot: false} && Disqord.Discord.Permissions
                         .CalculatePermissions(guild, temp, temp.GetRoles().Values).BanMembers) mod = temp;
                 }
             }
