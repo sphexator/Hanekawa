@@ -1,0 +1,173 @@
+{
+    "schema_version": 1,
+    "global_localizations":
+    {
+        "slash_commands":
+        {
+            "toggleimage":
+            {
+                "name": "",
+                "description": ""
+            },
+            "setmessage":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "setimage":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "url":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "setchannel":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "channel":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "test2":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "test4":
+            {
+                "name": "",
+                "description": ""
+            },
+            "test1":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "channel":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "test3":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "url":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            },
+            "greet":
+            {
+                "name": "",
+                "description": "",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "message":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "imageurl":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "url":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "channel":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "channel":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "image":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "listimages":
+                    {
+                        "name": "",
+                        "description": ""
+                    },
+                    "removeimage":
+                    {
+                        "name": "",
+                        "description": "",
+                        "options":
+                        {
+                            "id":
+                            {
+                                "name": "",
+                                "description": ""
+                            }
+                        }
+                    },
+                    "imagelist":
+                    {
+                        "name": "",
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "guild_localizations": null
+}

@@ -3,13 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Database", "Hanekawa.Database\Hanekawa.Database.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa.Infrastructure", "Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj", "{56714493-6317-4237-B7EA-9A9A25E1C999}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hanekawa", "Hanekawa\Hanekawa.csproj", "{36916A6C-1437-4D5E-AF90-245145F30BED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.HungerGames", "Hanekawa.HungerGames\Hanekawa.HungerGames.csproj", "{67260630-8313-42A4-BC51-BE99255F2E03}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D03E0475-07EA-4D31-BBE1-19F3DA8FA206}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Bot", "Hanekawa.Bot\Hanekawa.Bot.csproj", "{BBF25A86-4BB4-4139-9622-138CC8E69DE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Application", "Hanekawa.Application\Hanekawa.Application.csproj", "{1D51BE03-540D-4666-A2E3-E63261C476FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C9A602AF-3A0B-458C-AC14-25C645AE1A58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hanekawa.Test", "Hanekawa.Test\Hanekawa.Test.csproj", "{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +37,18 @@ Global
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{67260630-8313-42A4-BC51-BE99255F2E03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBF25A86-4BB4-4139-9622-138CC8E69DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBF25A86-4BB4-4139-9622-138CC8E69DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBF25A86-4BB4-4139-9622-138CC8E69DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBF25A86-4BB4-4139-9622-138CC8E69DE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D51BE03-540D-4666-A2E3-E63261C476FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D51BE03-540D-4666-A2E3-E63261C476FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D51BE03-540D-4666-A2E3-E63261C476FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D51BE03-540D-4666-A2E3-E63261C476FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,5 +60,8 @@ Global
 		{36916A6C-1437-4D5E-AF90-245145F30BED} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
 		{56714493-6317-4237-B7EA-9A9A25E1C999} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
 		{67260630-8313-42A4-BC51-BE99255F2E03} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
+		{BBF25A86-4BB4-4139-9622-138CC8E69DE4} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
+		{1D51BE03-540D-4666-A2E3-E63261C476FF} = {D03E0475-07EA-4D31-BBE1-19F3DA8FA206}
+		{089DAC7E-ACEF-4FDB-8197-49C5B6DAE923} = {C9A602AF-3A0B-458C-AC14-25C645AE1A58}
 	EndGlobalSection
 EndGlobal

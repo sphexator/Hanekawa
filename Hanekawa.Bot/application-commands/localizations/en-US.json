@@ -1,0 +1,173 @@
+{
+    "schema_version": 1,
+    "global_localizations":
+    {
+        "slash_commands":
+        {
+            "toggleimage":
+            {
+                "name": "toggleimage",
+                "description": "Enables or disables image to be sent with the greet message. Need to set a greet channel for it to be sent"
+            },
+            "setmessage":
+            {
+                "name": "setmessage",
+                "description": "Sets message to be sent with the greet message. Need to set a greet channel for it to be sent",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "message",
+                        "description": "No description."
+                    }
+                }
+            },
+            "setimage":
+            {
+                "name": "setimage",
+                "description": "Sets image to be sent with the greet message. Need to set a greet channel for it to be sent",
+                "options":
+                {
+                    "url":
+                    {
+                        "name": "url",
+                        "description": "No description."
+                    }
+                }
+            },
+            "setchannel":
+            {
+                "name": "setchannel",
+                "description": "Sets which channel to send greet messages to",
+                "options":
+                {
+                    "channel":
+                    {
+                        "name": "channel",
+                        "description": "No description."
+                    }
+                }
+            },
+            "test2":
+            {
+                "name": "test2",
+                "description": "No description.",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "message",
+                        "description": "No description."
+                    }
+                }
+            },
+            "test4":
+            {
+                "name": "test4",
+                "description": "No description."
+            },
+            "test1":
+            {
+                "name": "test1",
+                "description": "No description.",
+                "options":
+                {
+                    "channel":
+                    {
+                        "name": "channel",
+                        "description": "No description."
+                    }
+                }
+            },
+            "test3":
+            {
+                "name": "test3",
+                "description": "No description.",
+                "options":
+                {
+                    "url":
+                    {
+                        "name": "url",
+                        "description": "No description."
+                    }
+                }
+            },
+            "greet":
+            {
+                "name": "greet",
+                "description": "No description.",
+                "options":
+                {
+                    "message":
+                    {
+                        "name": "message",
+                        "description": "Set the greet message",
+                        "options":
+                        {
+                            "message":
+                            {
+                                "name": "message",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "imageurl":
+                    {
+                        "name": "imageurl",
+                        "description": "Set the greet image url",
+                        "options":
+                        {
+                            "url":
+                            {
+                                "name": "url",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "channel":
+                    {
+                        "name": "channel",
+                        "description": "Set the greet channel",
+                        "options":
+                        {
+                            "channel":
+                            {
+                                "name": "channel",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "image":
+                    {
+                        "name": "image",
+                        "description": "Toggle the greet image"
+                    },
+                    "listimages":
+                    {
+                        "name": "listimages",
+                        "description": "List the greet images"
+                    },
+                    "removeimage":
+                    {
+                        "name": "removeimage",
+                        "description": "Remove the greet image",
+                        "options":
+                        {
+                            "id":
+                            {
+                                "name": "id",
+                                "description": "No description."
+                            }
+                        }
+                    },
+                    "imagelist":
+                    {
+                        "name": "imagelist",
+                        "description": "List the greet images"
+                    }
+                }
+            }
+        }
+    },
+    "guild_localizations": null
+}
