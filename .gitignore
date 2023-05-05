@@ -260,4 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 /Hanekawa/Properties/launchSettings.json
-/Hanekawa.Web/Properties/launchSettings.json
+/Hanekawa.Bot/Properties/launchSettings.json
