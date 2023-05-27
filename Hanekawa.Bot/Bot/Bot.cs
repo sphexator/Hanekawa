@@ -2,6 +2,7 @@
 using Disqord;
 using Disqord.Bot;
 using Disqord.Bot.Commands;
+using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
@@ -63,10 +64,19 @@ public class Bot : DiscordBot, IBot
     public async Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
         => await this.ModifyMemberAsync(member.GuildId, member.UserId, x =>
         {
-            x.RoleIds = ConvertRoles(modifiedRoles);
+            x.RoleIds = ConvertToSnowflake(modifiedRoles);
         });
+    
+    /// <inheritdoc />
+    public ulong? GetChannel(ulong guildId, ulong channelId) 
+        => this.GetGuild(guildId)!.GetChannel(channelId)!.Id;
 
-    private static Snowflake[] ConvertRoles(ulong[] modifiedRoles)
+    /// <inheritdoc />
+    public async Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds) 
+        => await (this.GetGuild(guildId)!.GetChannel(channelId) as ITextChannel)
+            !.DeleteMessagesAsync(ConvertToSnowflake(messageIds));
+
+    private static Snowflake[] ConvertToSnowflake(ulong[] modifiedRoles)
     {
         var result = new Snowflake[modifiedRoles.Length];
         var span = modifiedRoles.AsSpan();

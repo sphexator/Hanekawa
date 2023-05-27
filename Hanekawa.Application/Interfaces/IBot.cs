@@ -72,4 +72,19 @@ public interface IBot
     /// <param name="modifiedRoles"></param>
     /// <returns></returns>
     public Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles);
+    /// <summary>
+    /// Gets a channel from a guild.
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="channelId"></param>
+    /// <returns></returns>
+    public ulong? GetChannel(ulong guildId, ulong channelId);
+    /// <summary>
+    /// Prune messages from a channel
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="channelId"></param>
+    /// <param name="messageIds"></param>
+    /// <returns></returns>
+    public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds);
 }
