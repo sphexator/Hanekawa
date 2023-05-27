@@ -12,7 +12,8 @@ namespace Hanekawa.Infrastructure
     public class DbService : DbContext, IDbContext
     {
         public DbService(DbContextOptions<DbService> options) : base(options) { }
-
+        /// <inheritdoc />
+        public DbSet<Warning> Warnings { get; set; }
         /// <inheritdoc />
         public DbSet<Log> Logs { get; set; } = null!;
         /// <inheritdoc />
