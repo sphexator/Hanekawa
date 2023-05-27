@@ -16,7 +16,6 @@ public class GreetConfig : IConfig
     public ulong? Channel { get; set; }
     
     public bool ImageEnabled { get; set; } = false;
-    public string ImageUrl { get; set; } = "";
 
     public bool DmEnabled { get; set; } = false;
     public string DmMessage { get; set; } = "";

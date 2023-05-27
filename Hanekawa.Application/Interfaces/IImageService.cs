@@ -1,4 +1,6 @@
-﻿using Hanekawa.Entities.Discord;
+﻿using Hanekawa.Entities.Configs;
+using Hanekawa.Entities.Discord;
+using Hanekawa.Entities.Users;
 
 namespace Hanekawa.Application.Interfaces;
 
@@ -7,23 +9,27 @@ public interface IImageService
     /// <summary>
     /// Draws an avatar onto the image image
     /// </summary>
-    /// <param name="image">Image stream to draw avatar to</param>
+    /// <param name="avatarUrl"></param>
     /// <param name="size">Size of avatar</param>
-    /// <param name="xPos">X position on the image to start drawing</param>
-    /// <param name="yPos">Y position on the image to start drawing</param>
-    /// <param name="isCircle">Whether the avatar should be a circle, or square. Default is square.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Stream> DrawAvatarAsync(Stream image, int size, int xPos, int yPos, bool isCircle = false);
+    Task<Image> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a welcome image
     /// </summary>
     /// <param name="member">Discord user</param>
+    /// <param name="cfg"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Stream> DrawWelcome(DiscordMember member);
+    Task<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a profile image
     /// </summary>
     /// <param name="member">Discord user</param>
+    /// <param name="userData"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Stream> DrawProfile(DiscordMember member);
+    Task<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default);
 }

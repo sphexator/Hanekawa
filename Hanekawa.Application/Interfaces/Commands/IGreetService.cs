@@ -24,13 +24,15 @@ public interface IGreetService
     /// <param name="message"></param>
     /// <returns></returns>
     Task<string> SetMessage(ulong guildId, string message);
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="guildId"></param>
     /// <param name="url"></param>
+    /// <param name="uploaderId">User uploading image</param>
     /// <returns></returns>
-    Task<string> SetImage(ulong guildId, string url);
+    Task<string> SetImage(ulong guildId, string url, ulong uploaderId);
     /// <summary>
     /// 
     /// </summary>

@@ -9,6 +9,8 @@ public class GuildUser : IMemberEntity
     public ulong UserId { get; set; }
     public int Level { get; set; } = 1;
     public long Experience { get; set; } = 0;
+    public long NextLevelExperience { get; set; } = 100;
+    public long CurrentLevelExperience { get; set; } = 0;
 
     public DateTimeOffset DailyClaimed { get; set; } = DateTimeOffset.MinValue;
     public int DailyStreak { get; set; } = 0;

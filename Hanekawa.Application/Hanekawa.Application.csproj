@@ -11,6 +11,8 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.4" />
       <PackageReference Include="OneOf" Version="3.0.243" />
       <PackageReference Include="OneOf.SourceGenerator" Version="3.0.243" />
+      <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
     </ItemGroup>
 
     <ItemGroup>

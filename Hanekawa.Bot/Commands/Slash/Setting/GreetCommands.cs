@@ -4,7 +4,6 @@ using Disqord.Bot.Commands.Application;
 using Disqord.Bot.Commands.Interaction;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
-using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Entities.Configs;
 using Qmmands;
@@ -45,7 +44,7 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     {
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
-        var response = await service.SetImage(Context.GuildId, url);
+        var response = await service.SetImage(Context.GuildId, url, Context.AuthorId);
         return Response(response);
     }
     

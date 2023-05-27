@@ -37,8 +37,4 @@
       <ProjectReference Include="..\Hanekawa.Infrastructure\Hanekawa.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Commands\Slash\Administration" />
-    </ItemGroup>
-
 </Project>

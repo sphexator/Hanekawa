@@ -53,8 +53,8 @@ public class GreetService : IGreetService
         await _db.SaveChangesAsync();
         return "Updated greet message !";
     }
-    
-    public async Task<string> SetImage(ulong guildId, string url)
+
+    public async Task<string> SetImage(ulong guildId, string url, ulong uploaderId)
     {
         _logger.LogInformation("Setting greet image to {Url} for guild {Guild}", url, guildId);
         var config = await _db.GuildConfigs.Include(e => e.GreetConfig)
@@ -66,7 +66,13 @@ public class GreetService : IGreetService
             await _db.GuildConfigs.AddAsync(config);
         }
 
-        config.GreetConfig.ImageUrl = url;
+        config.GreetConfig.Images.Add(new ()
+        {
+            GuildId = guildId,
+            ImageUrl = url,
+            Uploader = uploaderId,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
         await _db.SaveChangesAsync();
         return "Updated greet image !";
     }

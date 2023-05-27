@@ -24,6 +24,10 @@ public interface IDbContext : IAsyncDisposable
     /// </summary>
     DbSet<LevelRequirement> LevelRequirements { get; set; }
     /// <summary>
+    /// Warning store
+    /// </summary>
+    DbSet<Warning> Warnings { get; set; }
+    /// <summary>
     /// Logging store
     /// </summary>
     DbSet<Log> Logs { get; set; }
