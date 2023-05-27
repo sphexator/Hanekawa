@@ -3,8 +3,13 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
+ENV botToken, applicationId, connectionString
+
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
+COPY ["Hanekawa.Bot/Hanekawa.csproj", "Hanekawa/"]
+COPY ["Hanekawa.Bot/Hanekawa.Application.csproj", "Hanekawa.Application/"]
+COPY ["Hanekawa.Bot/Hanekawa.Infrastructure.csproj", "Hanekawa.Infrastructure/"]
 COPY ["Hanekawa.Bot/Hanekawa.Bot.csproj", "Hanekawa.Bot/"]
 RUN dotnet restore "Hanekawa.Bot/Hanekawa.Bot.csproj"
 COPY . .
