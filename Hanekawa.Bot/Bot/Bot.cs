@@ -4,8 +4,10 @@ using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Hanekawa.Application.Handlers.Metrics;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
+using MediatR;
 using Microsoft.Extensions.Options;
 using IResult = Qmmands.IResult;
 
@@ -14,7 +16,8 @@ namespace Hanekawa.Bot.Bot;
 /// <inheritdoc cref="Hanekawa.Application.Interfaces.IBot" />
 public class Bot : DiscordBot, IBot
 {
-    public Bot(IOptions<DiscordBotConfiguration> options, ILogger<Bot> logger, IServiceProvider services, DiscordClient client) : base(options, logger, services, client) 
+    public Bot(IOptions<DiscordBotConfiguration> options, ILogger<Bot> logger, 
+        IServiceProvider services, DiscordClient client) : base(options, logger, services, client)
     { }
 
     protected override async ValueTask<IResult> OnBeforeExecuted(IDiscordCommandContext context)
@@ -22,7 +25,14 @@ public class Bot : DiscordBot, IBot
         var start = Stopwatch.GetTimestamp();
         var result = await base.OnBeforeExecuted(context);
         var elapsedTime = Stopwatch.GetElapsedTime(start);
-        Serilog.Log.Information("Command {Command} executed in {Elapsed}ms", context.Command?.Name, elapsedTime);
+        Serilog.Log.Information("Command {Command} executed in {Elapsed}ms", 
+            context.Command?.Name, elapsedTime);
+
+        if(context.GuildId is not null)
+            await Services.GetRequiredService<IMediator>().Send(new CommandMetric(context.GuildId.Value, 
+                context.Author.Id, $"{context.Command?.Module.Name ?? "Unknown"}-{context.Command?.Name ?? "Unknown"}", 
+                DateTimeOffset.UtcNow));
+        
         return result;
     }
 

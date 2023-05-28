@@ -9,7 +9,6 @@ namespace Hanekawa.Bot.Services.Bot;
 public class DiscordEventRegister : DiscordBotService
 {
     private readonly IMediator _mediator;
-
     public DiscordEventRegister(IMediator mediator) => _mediator = mediator;
 
     protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e) =>
