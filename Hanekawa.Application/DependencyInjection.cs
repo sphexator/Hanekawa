@@ -3,6 +3,8 @@ using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Prometheus.Client.Collectors;
+using Prometheus.Client.DependencyInjection;
 using SixLabors.Fonts;
 
 namespace Hanekawa.Application;
@@ -21,6 +23,8 @@ public static class DependencyInjection
         fontCollection.Add("Hanekawa/Data/Fonts/TIMES.TTF");
         
         serviceCollection.AddSingleton(fontCollection);
+
+        serviceCollection.AddMetricFactory(new CollectorRegistry());
         
         return serviceCollection;
     }

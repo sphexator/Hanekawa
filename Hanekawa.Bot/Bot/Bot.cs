@@ -9,6 +9,7 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
 using MediatR;
 using Microsoft.Extensions.Options;
+using Prometheus.Client;
 using IResult = Qmmands.IResult;
 
 namespace Hanekawa.Bot.Bot;
@@ -19,6 +20,14 @@ public class Bot : DiscordBot, IBot
     public Bot(IOptions<DiscordBotConfiguration> options, ILogger<Bot> logger, 
         IServiceProvider services, DiscordClient client) : base(options, logger, services, client)
     { }
+
+    protected override ValueTask<bool> OnAfterExecuted(IDiscordCommandContext context, IResult result)
+    {
+        Services.GetRequiredService<IMetricFactory>().CreateCounter("hanekawa_commands_executed_total", 
+            "Total number of commands executed", "command", "module").WithLabels(
+            context.Command?.Name ?? "Unknown", context.Command?.Module.Name ?? "Unknown").Inc();
+        return base.OnAfterExecuted(context, result);
+    }
 
     protected override async ValueTask<IResult> OnBeforeExecuted(IDiscordCommandContext context)
     {
