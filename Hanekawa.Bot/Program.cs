@@ -9,10 +9,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Additional configuration is required to successfully run gRPC on macOS.
-// For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
-
-// Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
@@ -37,7 +33,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope()) 
+using (var scope = app.Services.CreateScope())
     await scope.ServiceProvider.GetRequiredService<IDbContext>()
         .MigrateDatabaseAsync();
 

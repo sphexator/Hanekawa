@@ -2,8 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class UserLeave : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong UserId { get; set; }
-}
+public record UserLeave(ulong GuildId, ulong UserId) : ISqs<bool>;

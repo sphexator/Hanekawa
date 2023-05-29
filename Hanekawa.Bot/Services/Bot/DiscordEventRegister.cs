@@ -12,35 +12,18 @@ public class DiscordEventRegister : DiscordBotService
     public DiscordEventRegister(IMediator mediator) => _mediator = mediator;
 
     protected override async ValueTask OnMemberJoined(MemberJoinedEventArgs e) =>
-        await _mediator.Send(new UserJoin
-        {
-            GuildId = e.GuildId,
-            UserId = e.MemberId,
-            Username = e.Member.Name,
-            AvatarUrl = e.Member.GetAvatarUrl(),
-            Discriminator = e.Member.Discriminator,
-            CreatedAt = e.Member.CreatedAt()
-        });
+        await _mediator.Send(new UserJoin(e.GuildId, e.MemberId, e.Member.Name,
+            e.Member.GetGuildAvatarUrl(), e.Member.CreatedAt()));
 
     protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e)
     {
-        await _mediator.Send(new UserLeave
-        {
-            GuildId = e.GuildId,
-            UserId = e.MemberId
-        });
+        await _mediator.Send(new UserLeave(e.GuildId, e.MemberId));
     }
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
         if (e.GuildId is null || e.Member is null) return;
-        await _mediator.Send(new MessageReceived
-        {
-            GuildId = e.GuildId.Value,
-            ChannelId = e.ChannelId,
-            MessageId = e.MessageId,
-            CreatedAt = e.Message.CreatedAt(),
-            Member = new ()
+        await _mediator.Send(new MessageReceived(e.GuildId.Value, e.ChannelId, new()
             {
                 GuildId = e.GuildId.Value,
                 UserId = e.Member.Id,
@@ -51,52 +34,27 @@ public class DiscordEventRegister : DiscordBotService
                 Username = e.Member.Name,
                 AvatarUrl = e.Member.GetAvatarUrl(),
                 VoiceSessionId = e.Member.GetVoiceState()?.SessionId
-            }
-        });
+            }, e.MessageId, e.Message.Content, e.Message.CreatedAt()));
     }
     
     protected override async ValueTask OnMessageDeleted(MessageDeletedEventArgs e)
     {
         if (e.GuildId.HasValue is false || e.Message is null) return;
-        await _mediator.Send(new MessageDeleted
-        {
-            GuildId = e.GuildId.Value,
-            ChannelId = e.ChannelId,
-            AuthorId = e.Message.Author.Id.RawValue,
-            MessageId = e.MessageId,
-            MessageContent = e.Message.Content
-        });
+        await _mediator.Send(new MessageDeleted(e.GuildId.Value, e.ChannelId, e.Message.Author.Id, 
+            e.MessageId, e.Message.Content));
     }
 
-    protected override async ValueTask OnMessagesDeleted(MessagesDeletedEventArgs e)
-    {
-        await _mediator.Send(new MessagesDeleted
-        {
-            GuildId = e.GuildId,
-            ChannelId = e.ChannelId,
-            AuthorId = e.Messages.Select(x => x.Value.Author.Id.RawValue).ToArray(),
-            MessageContents = e.Messages.Select(x => x.Value.Content).ToArray(),
-            MessageIds = e.MessageIds.Select(x => x.RawValue).ToArray()
-        });
-    }
+    protected override async ValueTask OnMessagesDeleted(MessagesDeletedEventArgs e) 
+        => await _mediator.Send(new MessagesDeleted(e.GuildId, e.ChannelId,
+            e.Messages.Select(x => x.Key.RawValue).ToArray(), 
+            e.MessageIds.Select(x => x.RawValue).ToArray(),
+            e.Messages.Select(x => x.Value.Content).ToArray()));
 
-    protected override async ValueTask OnBanCreated(BanCreatedEventArgs e)
-    {
-        await _mediator.Send(new UserBanned
-        {
-            GuildId = e.GuildId,
-            UserId = e.UserId
-        });
-    }
+    protected override async ValueTask OnBanCreated(BanCreatedEventArgs e) 
+        => await _mediator.Send(new UserBanned(e.GuildId, e.UserId));
 
-    protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e)
-    {
-        await _mediator.Send(new UserUnbanned
-        {
-            GuildId = e.GuildId,
-            UserId = e.UserId
-        });
-    }
+    protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e) 
+        => await _mediator.Send(new UserUnbanned(e.GuildId, e.UserId));
 
     protected override ValueTask OnVoiceServerUpdated(VoiceServerUpdatedEventArgs e)
     {
@@ -105,50 +63,28 @@ public class DiscordEventRegister : DiscordBotService
     
     protected override async ValueTask OnVoiceStateUpdated(VoiceStateUpdatedEventArgs e)
     {
-        await _mediator.Send(new VoiceStateUpdate
-        {
-            GuildId = e.GuildId,
-            ChannelId = e.NewVoiceState.ChannelId,
-            SessionId = e.NewVoiceState.SessionId,
-            UserId = e.MemberId
-        });
+        await _mediator.Send(new VoiceStateUpdate(e.GuildId, e.MemberId, e.NewVoiceState.ChannelId,
+            e.NewVoiceState.SessionId));
     }
     
     protected override async ValueTask OnReactionAdded(ReactionAddedEventArgs e)
     {
         if(e.GuildId.HasValue is false) return;
-        await _mediator.Send(new ReactionAdd
-        {
-            GuildId = e.GuildId.Value,
-            ChannelId = e.ChannelId,
-            MessageId = e.MessageId,
-            UserId = e.UserId,
-            Emoji = e.Emoji.GetReactionFormat()
-        });
+        await _mediator.Send(new ReactionAdd(e.GuildId.Value, e.ChannelId,
+            e.MessageId, e.UserId, e.Emoji.GetReactionFormat()));
     }
     
     protected override async ValueTask OnReactionRemoved(ReactionRemovedEventArgs e)
     {
         if(e.GuildId.HasValue is false) return;
-        await _mediator.Send(new ReactionRemove
-        {
-            GuildId = e.GuildId.Value,
-            ChannelId = e.ChannelId,
-            MessageId = e.MessageId,
-            UserId = e.UserId,
-            Emoji = e.Emoji.GetReactionFormat()
-        });
+        await _mediator.Send(new ReactionRemove(e.GuildId.Value, e.ChannelId, e.MessageId, e.UserId,
+            e.Emoji.GetReactionFormat()));
     }
     
     protected override async ValueTask OnReactionsCleared(ReactionsClearedEventArgs e)
     {
         if(e.GuildId.HasValue is false) return;
-        await _mediator.Send(new ReactionCleared
-        {
-            GuildId = e.GuildId.Value,
-            ChannelId = e.ChannelId,
-            MessageId = e.MessageId
-        });
+        await _mediator.Send(new ReactionCleared(e.GuildId.Value, e.ChannelId, e.MessageId));
     }
     
     private static HashSet<ulong> ConvertRoles(IEnumerable<Snowflake> roles)

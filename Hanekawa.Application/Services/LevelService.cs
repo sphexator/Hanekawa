@@ -1,4 +1,5 @@
-﻿using Hanekawa.Application.Contracts;
+﻿using System.Runtime.InteropServices;
+using Hanekawa.Application.Contracts;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
@@ -50,17 +51,11 @@ public class LevelService : ILevelService
             var result = await AdjustRoles(member, user.Level, config);
             _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", member.UserId,
                 member.GuildId, user.Level);
-            await _serviceProvider.GetRequiredService<IMediator>().Send(new LevelUp
-            {
-                GuildId = member.GuildId,
-                UserId = member.UserId,
-                Level = user.Level,
-                RoleIds = member.RoleIds
-            });
+            await _serviceProvider.GetRequiredService<IMediator>()
+                .Send(new LevelUp(member.GuildId, member.UserId, member.RoleIds, user.Level));
         }
 
         user.Experience += experience;
-
         await _db.SaveChangesAsync();
 
         return experience;

@@ -2,11 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class ReactionAdd : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong ChannelId { get; set; }
-    public ulong MessageId { get; set; }
-    public ulong UserId { get; set; }
-    public string? Emoji { get; set; }
-}
+public record ReactionAdd(ulong GuildId, ulong ChannelId, ulong MessageId, ulong UserId, string? Emoji) : ISqs<bool>;

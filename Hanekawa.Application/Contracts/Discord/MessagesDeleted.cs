@@ -2,11 +2,5 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class MessagesDeleted : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong ChannelId { get; set; }
-    public ulong[] AuthorId { get; set; }
-    public ulong[] MessageIds { get; set; }
-    public string[] MessageContents { get; set; }
-}
+public record MessagesDeleted(ulong GuildId, ulong ChannelId, ulong[] AuthorId, 
+    ulong[] MessageIds, string[] MessageContents) : ISqs<bool>;

@@ -2,10 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class VoiceStateUpdate : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong UserId { get; set; }
-    public ulong? ChannelId { get; set; }
-    public string? SessionId { get; set; }
-}
+public record VoiceStateUpdate(ulong GuildId, ulong UserId, ulong? ChannelId, string? SessionId) : ISqs<bool>;

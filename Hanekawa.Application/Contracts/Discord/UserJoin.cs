@@ -2,12 +2,5 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class UserJoin : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong UserId { get; set; }
-    public string Username { get; set; }
-    public string Discriminator { get; set; }
-    public string AvatarUrl { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-}
+public record UserJoin(ulong GuildId, ulong UserId, string Username, 
+    string AvatarUrl, DateTimeOffset CreatedAt) : ISqs<bool>;

@@ -3,9 +3,9 @@ using MediatR;
 
 namespace Hanekawa.Application.Handlers.Logs;
 
-public class UserUnbannedHandler : IRequestHandler<UserUnbanned>
+public class UserUnbannedHandler : IRequestHandler<UserUnbanned, bool>
 {
-    public Task Handle(Contracts.Discord.UserUnbanned request, CancellationToken cancellationToken)
+    public Task<bool> Handle(Contracts.Discord.UserUnbanned request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

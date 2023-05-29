@@ -2,9 +2,9 @@
 
 namespace Hanekawa.Application.Handlers.Logs;
 
-public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned>
+public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned, bool>
 {
-    public Task Handle(Contracts.Discord.UserBanned request, CancellationToken cancellationToken)
+    public Task<bool> Handle(Contracts.Discord.UserBanned request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

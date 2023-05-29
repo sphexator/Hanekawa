@@ -2,8 +2,4 @@
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public class UserUnbanned : ISqs
-{
-    public ulong GuildId { get; set; }
-    public ulong UserId { get; set; }
-}
+public record UserUnbanned(ulong GuildId, ulong UserId) : ISqs<bool>;
