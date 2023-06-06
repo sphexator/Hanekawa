@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Hanekawa.Entities.Discord;
 
@@ -8,9 +9,9 @@ namespace Hanekawa.Entities.Discord;
 public class Embed
 {
     /// <summary>
-    /// Header tuple, first string is avatar, other is header test
+    /// Header tuple, First value = Avatar Url, Second value = Content value, Third value = Uri
     /// </summary>
-    public Tuple<string, string> Header { get; set; }
+    public Tuple<string, string, string> Header { get; set; }
     /// <summary>
     /// Title of embed
     /// </summary>
@@ -28,6 +29,10 @@ public class Embed
     /// </summary>
     public DateTimeOffset Timestamp { get; set; }
     /// <summary>
+    /// Fields of tuple. First value = title, second value = content
+    /// </summary>
+    public List<Tuple<string, string, bool>> Fields { get; set; }
+    /// <summary>
     /// Icon of the embed
     /// </summary>
     public string Icon { get; set; }
@@ -36,7 +41,7 @@ public class Embed
     /// </summary>
     public string Attachment { get; set; }
     /// <summary>
-    /// Footer tuple, first string is avatar if provided, other is footer text that's next to timestamp.
+    /// Footer tuple.First value = Avatar url. Second value = text
     /// </summary>
     public Tuple<string, string> Footer { get; set; }
 }
