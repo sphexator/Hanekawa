@@ -95,6 +95,44 @@ public class Bot : DiscordBot, IBot
         => await (this.GetGuild(guildId)!.GetChannel(channelId) as ITextChannel)
             !.DeleteMessagesAsync(ConvertToSnowflake(messageIds));
 
+    /// <inheritdoc />
+    public async Task SendMessageAsync(ulong channelId, string message, Attachment? attachment = null)
+    {
+        var localMsg = new LocalMessage()
+            .WithContent(message)
+            .WithAllowedMentions(LocalAllowedMentions.None);
+        if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
+        await this.SendMessageAsync(channelId, localMsg);
+    }
+
+    /// <inheritdoc />
+    public async Task SendMessageAsync(ulong channelId, Embed embedMessage, Attachment? attachment = null)
+    {
+        var localMsg = new LocalMessage()
+            .WithEmbeds(new LocalEmbed
+            {
+                Author = new LocalEmbedAuthor()
+                {
+                    Name = embedMessage.Header.Item2,
+                    IconUrl = embedMessage.Header.Item1
+                },
+                Title = embedMessage.Title,
+                ThumbnailUrl = embedMessage.Icon,
+                Color = new Color(embedMessage.Color),
+                Description = embedMessage.Content,
+                ImageUrl = embedMessage.Attachment,
+                Timestamp = embedMessage.Timestamp,
+                Footer = new LocalEmbedFooter()
+                {
+                    IconUrl = embedMessage.Footer.Item1,
+                    Text = embedMessage.Footer.Item2
+                }
+            })
+            .WithAllowedMentions(LocalAllowedMentions.None);
+        if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
+        await this.SendMessageAsync(channelId, localMsg);
+    }
+
     private static Snowflake[] ConvertToSnowflake(ulong[] modifiedRoles)
     {
         var result = new Snowflake[modifiedRoles.Length];

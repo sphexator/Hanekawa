@@ -87,4 +87,22 @@ public interface IBot
     /// <param name="messageIds"></param>
     /// <returns></returns>
     public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds);
+
+    /// <summary>
+    /// Sends a message to a channel
+    /// </summary>
+    /// <param name="channelId"></param>
+    /// <param name="message"></param>
+    /// <param name="attachment"></param>
+    /// <returns></returns>
+    public Task SendMessageAsync(ulong channelId, string message, Attachment? attachment = null);
+
+    /// <summary>
+    /// Sends a message to a channel with an embed
+    /// </summary>
+    /// <param name="channelId"></param>
+    /// <param name="embedMessage"></param>
+    /// <param name="attachment"></param>
+    /// <returns></returns>
+    public Task SendMessageAsync(ulong channelId, Embed embedMessage, Attachment? attachment = null);
 }
