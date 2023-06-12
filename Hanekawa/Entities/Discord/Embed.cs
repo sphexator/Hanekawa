@@ -11,7 +11,7 @@ public class Embed
     /// <summary>
     /// Header tuple, First value = Avatar Url, Second value = Content value, Third value = Uri
     /// </summary>
-    public Tuple<string, string, string> Header { get; set; }
+    public EmbedHeader Header { get; set; }
     /// <summary>
     /// Title of embed
     /// </summary>
@@ -31,7 +31,7 @@ public class Embed
     /// <summary>
     /// Fields of tuple. First value = title, second value = content
     /// </summary>
-    public List<Tuple<string, string, bool>> Fields { get; set; }
+    public List<EmbedField> Fields { get; set; }
     /// <summary>
     /// Icon of the embed
     /// </summary>
@@ -43,5 +43,5 @@ public class Embed
     /// <summary>
     /// Footer tuple.First value = Avatar url. Second value = text
     /// </summary>
-    public Tuple<string, string> Footer { get; set; }
+    public EmbedFooter Footer { get; set; }
 }

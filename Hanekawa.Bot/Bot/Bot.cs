@@ -6,6 +6,7 @@ using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Application.Handlers.Metrics;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Bot.Extensions;
 using Hanekawa.Entities.Discord;
 using MediatR;
 using Microsoft.Extensions.Options;
@@ -108,36 +109,8 @@ public class Bot : DiscordBot, IBot
     /// <inheritdoc />
     public async Task SendMessageAsync(ulong channelId, Embed embedMessage, Attachment? attachment = null)
     {
-        var embed = new LocalEmbed()
-        {
-            Author = new LocalEmbedAuthor()
-            {
-                Name = embedMessage.Header.Item2,
-                IconUrl = embedMessage.Header.Item1,
-                Url = embedMessage.Header.Item3
-            },
-            Title = embedMessage.Title,
-            ThumbnailUrl = embedMessage.Icon,
-            Color = new Color(embedMessage.Color),
-            Description = embedMessage.Content,
-            ImageUrl = embedMessage.Attachment,
-            Timestamp = embedMessage.Timestamp,
-            Footer = new LocalEmbedFooter
-            {
-                IconUrl = embedMessage.Footer.Item1,
-                Text = embedMessage.Footer.Item2
-            }
-        };
-        var fields = new List<LocalEmbedField>();
-        for (var i = 0; i < embedMessage.Fields.Count; i++)
-        {
-            var x = embedMessage.Fields[i];
-            fields.Add(new LocalEmbedField{ Name = x.Item1, Value = x.Item2, IsInline = x.Item3 });
-        }
-
-        if (fields.Count != 0) embed.Fields = fields;
         var localMsg = new LocalMessage()
-            .WithEmbeds(embed)
+            .WithEmbeds(embedMessage.ToLocalEmbed())
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
         await this.SendMessageAsync(channelId, localMsg);
