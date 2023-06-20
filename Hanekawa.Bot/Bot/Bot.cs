@@ -4,6 +4,7 @@ using Disqord.Bot;
 using Disqord.Bot.Commands;
 using Disqord.Gateway;
 using Disqord.Rest;
+using Disqord.Rest.Pagination;
 using Hanekawa.Application.Handlers.Metrics;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Extensions;
@@ -114,6 +115,12 @@ public class Bot : DiscordBot, IBot
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
         await this.SendMessageAsync(channelId, localMsg);
+    }
+
+    public async Task GetAuditLogAsync(ulong guildId)
+    {
+        var auditLogs = this.GetGuild(guildId)!.EnumerateAuditLogs(5);
+        var result = await auditLogs.FlattenAsync();
     }
 
     private static Snowflake[] ConvertToSnowflake(ulong[] modifiedRoles)
