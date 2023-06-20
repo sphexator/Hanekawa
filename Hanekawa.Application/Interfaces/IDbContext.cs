@@ -1,4 +1,5 @@
-﻿using Hanekawa.Entities.Configs;
+﻿using Hanekawa.Entities;
+using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Entities.Users;
@@ -31,6 +32,10 @@ public interface IDbContext : IAsyncDisposable
     /// Logging store
     /// </summary>
     DbSet<Log> Logs { get; set; }
+    /// <summary>
+    /// Guild moderator store. Ban / Mute / etc
+    /// </summary>
+    DbSet<GuildModerationLog> ModerationLogs { get; set; }
 
     /// <summary>
     /// Saves changes in current context

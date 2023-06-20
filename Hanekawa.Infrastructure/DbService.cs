@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Internals;
 using Hanekawa.Entities.Levels;
@@ -9,13 +10,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Hanekawa.Infrastructure
 {
     /// <inheritdoc cref="Hanekawa.Application.Interfaces.IDbContext" />
-    public class DbService : DbContext, IDbContext
+    internal class DbService : DbContext, IDbContext
     {
         public DbService(DbContextOptions<DbService> options) : base(options) { }
         /// <inheritdoc />
         public DbSet<Warning> Warnings { get; set; }
         /// <inheritdoc />
         public DbSet<Log> Logs { get; set; } = null!;
+        /// <inheritdoc />
+        public DbSet<GuildModerationLog> ModerationLogs { get; set; }
         /// <inheritdoc />
         public DbSet<GuildConfig> GuildConfigs { get; set; } = null!;
         /// <inheritdoc />
@@ -64,6 +67,10 @@ namespace Hanekawa.Infrastructure
             modelBuilder.Entity<LevelRequirement>(x =>
             {
                 x.HasKey(e => e.Level);
+            });
+            modelBuilder.Entity<GuildModerationLog>(x =>
+            {
+                x.HasKey(e => new { e.GuildId, e.Id });
             });
         }
         /// <inheritdoc />

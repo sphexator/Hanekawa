@@ -9,7 +9,7 @@ internal static class DiscordExtensions
     {
         var toReturn = new LocalEmbed
         {
-            Author = new LocalEmbedAuthor()
+            Author = new LocalEmbedAuthor
             {
                 Name = embed.Header.Name,
                 IconUrl = embed.Header.IconUrl,

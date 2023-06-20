@@ -15,10 +15,8 @@ public class DiscordEventRegister : DiscordBotService
         await _mediator.Send(new UserJoin(e.GuildId, e.MemberId, e.Member.Name,
             e.Member.GetGuildAvatarUrl(), e.Member.CreatedAt()));
 
-    protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e)
-    {
-        await _mediator.Send(new UserLeave(e.GuildId, e.MemberId));
-    }
+    protected override async ValueTask OnMemberLeft(MemberLeftEventArgs e) 
+        => await _mediator.Send(new UserLeave(e.GuildId, e.MemberId));
 
     protected override async ValueTask OnMessageReceived(BotMessageReceivedEventArgs e)
     {
