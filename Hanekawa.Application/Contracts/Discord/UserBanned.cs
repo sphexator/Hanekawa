@@ -1,5 +1,6 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Entities.Discord;
+using MediatR;
 
 namespace Hanekawa.Application.Contracts.Discord;
 
-public record UserBanned(ulong GuildId, ulong UserId) : ISqs<bool>;
+public record UserBanned(DiscordMember Member) : IRequest<bool>;
