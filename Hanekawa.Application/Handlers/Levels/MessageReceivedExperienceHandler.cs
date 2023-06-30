@@ -1,10 +1,11 @@
-﻿using Hanekawa.Application.Interfaces.Services;
+﻿using Hanekawa.Application.Contracts.Discord;
+using Hanekawa.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 
 namespace Hanekawa.Application.Handlers.Levels;
 
-public class MessageReceivedExperienceHandler: IRequestHandler<Contracts.Discord.MessageReceived, bool>
+public class MessageReceivedExperienceHandler: IRequestHandler<MessageReceived, bool>
 {
     private readonly IConfiguration _configuration;
     private readonly ILevelService _levelService;
@@ -15,7 +16,7 @@ public class MessageReceivedExperienceHandler: IRequestHandler<Contracts.Discord
         _configuration = configuration;
     }
     
-    public async Task<bool> Handle(Contracts.Discord.MessageReceived request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(MessageReceived request, CancellationToken cancellationToken)
     {
         await _levelService.AddExperience(request.Member,
             Random.Shared.Next(Convert.ToInt32(_configuration["expLower"]),

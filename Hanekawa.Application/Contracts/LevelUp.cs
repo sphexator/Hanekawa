@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using Hanekawa.Entities.Configs;
+using Hanekawa.Entities.Discord;
+using MediatR;
 
 namespace Hanekawa.Application.Contracts;
 
-public record LevelUp(ulong GuildId, ulong UserId, HashSet<ulong> RoleIds, int Level) : IRequest;
+public record LevelUp(DiscordMember Member, HashSet<ulong> RoleIds, int Level, GuildConfig GuildConfig) : IRequest;

@@ -52,7 +52,7 @@ public class LevelService : ILevelService
             _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", member.UserId,
                 member.GuildId, user.Level);
             await _serviceProvider.GetRequiredService<IMediator>()
-                .Send(new LevelUp(member.GuildId, member.UserId, member.RoleIds, user.Level));
+                .Send(new LevelUp(member, member.RoleIds, user.Level, config));
         }
 
         user.Experience += experience;
@@ -63,13 +63,14 @@ public class LevelService : ILevelService
     /// <inheritdoc />
     public async Task<DiscordMember> AdjustRoles(DiscordMember member, int level, GuildConfig config)
     {
-        foreach (var x in config.LevelConfig.Rewards)
+        for (var i = 0; i < config.LevelConfig.Rewards.Count; i++)
         {
-            if(!x.RoleId.HasValue) continue;
+            var x = config.LevelConfig.Rewards[i];
+            if (!x.RoleId.HasValue) continue;
             if (x.Level <= level && !member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Add(x.RoleId.Value);
             else if (x.Level > level && member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Remove(x.RoleId.Value);
         }
-        
+
         var bot = _serviceProvider.GetRequiredService<IBot>();
         await bot.ModifyRolesAsync(member, member.RoleIds.ToArray());
         return member;
