@@ -1,4 +1,5 @@
 ﻿using Disqord;
+using Disqord.Gateway;
 using Hanekawa.Entities.Discord;
 
 namespace Hanekawa.Bot.Extensions;
@@ -37,4 +38,40 @@ internal static class DiscordExtensions
         if (fields.Count != 0) toReturn.Fields = fields;
         return toReturn;
     }
+
+    internal static DiscordMember ToDiscordMember(this IMember member) =>
+        new()
+        {
+            UserId = member.Id,
+            Username = member.Name,
+            AvatarUrl = member.GetAvatarUrl(),
+            Guild = new ()
+            {
+                Id = member.GetGuild().Id,
+                Name = member.GetGuild().Name,
+                IconUrl = member.GetGuild().GetIconUrl(),
+                Description = member.GetGuild().Description,
+                BoostCount = member.GetGuild().BoostingMemberCount,
+                BoostTier = member.GetGuild().BoostTier.GetHashCode(),
+                MemberCount = member.GetGuild().MemberCount,
+                EmoteCount = member.GetGuild().Emojis.Count
+            },
+            Nickname = member.Nick,
+            IsBot = member.IsBot,
+            RoleIds = member.RoleIds.Select(x => x.RawValue).ToHashSet(),
+            VoiceSessionId = member.GetVoiceState()?.SessionId
+        };
+
+    internal static Guild ToGuild(this IMember user) =>
+        new()
+        {
+            Id = user.GetGuild().Id,
+            Name = user.GetGuild().Name,
+            IconUrl = user.GetGuild().GetIconUrl(),
+            Description = user.GetGuild().Description,
+            BoostCount = user.GetGuild().BoostingMemberCount,
+            BoostTier = user.GetGuild().BoostTier.GetHashCode(),
+            MemberCount = user.GetGuild().MemberCount,
+            EmoteCount = user.GetGuild().Emojis.Count
+        };
 }
