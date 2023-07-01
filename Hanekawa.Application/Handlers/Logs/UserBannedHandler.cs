@@ -20,9 +20,9 @@ public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned, b
     public async Task<bool> Handle(Contracts.Discord.UserBanned request, CancellationToken cancellationToken)
     {
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == request.Member.GuildId, cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.Id, cancellationToken: cancellationToken);
         if (cfg is { LogConfig.ModLogChannelId: null }) return false;
-        var channel = _bot.GetChannel(request.Member.GuildId, cfg.LogConfig.ModLogChannelId.Value);
+        var channel = _bot.GetChannel(request.Member.Guild.Id, cfg.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {
             cfg.LogConfig.ModLogChannelId = null;
@@ -32,7 +32,7 @@ public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned, b
         
         await _bot.SendMessageAsync(channel.Value, new Embed
         {
-            Title = $"User Banned | Case ID: {request.Member.UserId} | ${request.Member.GuildId}",
+            Title = $"User Banned | Case ID: {request.Member.UserId} | ${request.Member.Guild.Id}",
             Color = Color.Red.ToArgb(),
             Fields = new List<EmbedField>
             {

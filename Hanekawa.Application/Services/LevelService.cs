@@ -30,18 +30,18 @@ public class LevelService : ILevelService
     public async Task<int?> AddExperience(DiscordMember member, int experience)
     {
         var config = await _db.GuildConfigs.Include(x => x.LevelConfig).ThenInclude(x => x.Rewards)
-            .FirstOrDefaultAsync(x => x.GuildId == member.GuildId);
+            .FirstOrDefaultAsync(x => x.GuildId == member.Guild.Id);
         if (config?.LevelConfig is null || !config.LevelConfig.LevelEnabled) return null;
         _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}", experience,
-            member.UserId, member.GuildId);
+            member.UserId, member.Guild.Id);
 
-        var user = await _db.Users.FindAsync(member.GuildId, member.UserId) 
-                   ?? new GuildUser { GuildId = member.GuildId, UserId = member.UserId };
+        var user = await _db.Users.FindAsync(member.Guild.Id, member.UserId) 
+                   ?? new GuildUser { GuildId = member.Guild.Id, UserId = member.UserId };
         var nextLevel = await _db.LevelRequirements.FindAsync(user.Level + 1);
         if (nextLevel is null)
         {
             _logger.LogInformation("User {User} in guild {Guild} has reached max level or {Level} is unreachable",
-                member.UserId, member.GuildId, user.Level);
+                member.UserId, member.Guild.Id, user.Level);
             return null;
         }
         
@@ -50,7 +50,7 @@ public class LevelService : ILevelService
             user.Level++;
             var result = await AdjustRoles(member, user.Level, config);
             _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", member.UserId,
-                member.GuildId, user.Level);
+                member.Guild.Id, user.Level);
             await _serviceProvider.GetRequiredService<IMediator>()
                 .Send(new LevelUp(member, member.RoleIds, user.Level, config));
         }

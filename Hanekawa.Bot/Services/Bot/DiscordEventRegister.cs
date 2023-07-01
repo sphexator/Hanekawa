@@ -24,12 +24,11 @@ public class DiscordEventRegister : DiscordBotService
         if (e.GuildId is null || e.Member is null) return;
         await _mediator.Send(new MessageReceived(e.GuildId.Value, e.ChannelId, new()
             {
-                GuildId = e.GuildId.Value,
+                Guild = new () { Id = e.GuildId.Value },
                 UserId = e.Member.Id,
                 RoleIds = ConvertRoles(e.Member.RoleIds),
                 Nickname = e.Member.Nick,
                 IsBot = e.Member.IsBot,
-                Discriminator = e.Member.Discriminator,
                 Username = e.Member.Name,
                 AvatarUrl = e.Member.GetAvatarUrl(),
                 VoiceSessionId = e.Member.GetVoiceState()?.SessionId
@@ -52,7 +51,7 @@ public class DiscordEventRegister : DiscordBotService
     protected override async ValueTask OnBanCreated(BanCreatedEventArgs e) 
         => await _mediator.Send(new UserBanned(new DiscordMember
         {
-            GuildId = e.UserId,
+            Guild = new () { Id = e.GuildId },
             UserId = e.UserId,
             Username = e.User.Name,
             IsBot = e.User.IsBot,
@@ -62,7 +61,7 @@ public class DiscordEventRegister : DiscordBotService
     protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e) 
         => await _mediator.Send(new UserUnbanned(new DiscordMember
         {
-            GuildId = e.UserId,
+            Guild = new () { Id = e.GuildId },
             UserId = e.UserId,
             Username = e.User.Name,
             IsBot = e.User.IsBot,
