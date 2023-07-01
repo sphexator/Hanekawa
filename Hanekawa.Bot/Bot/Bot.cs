@@ -7,7 +7,7 @@ using Disqord.Rest;
 using Disqord.Rest.Pagination;
 using Hanekawa.Application.Handlers.Metrics;
 using Hanekawa.Application.Interfaces;
-using Hanekawa.Bot.Extensions;
+using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Discord;
 using MediatR;
 using Microsoft.Extensions.Options;

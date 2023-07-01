@@ -65,13 +65,35 @@ internal static class DiscordExtensions
     internal static Guild ToGuild(this IMember user) =>
         new()
         {
-            Id = user.GetGuild().Id,
-            Name = user.GetGuild().Name,
-            IconUrl = user.GetGuild().GetIconUrl(),
-            Description = user.GetGuild().Description,
-            BoostCount = user.GetGuild().BoostingMemberCount,
-            BoostTier = user.GetGuild().BoostTier.GetHashCode(),
-            MemberCount = user.GetGuild().MemberCount,
-            EmoteCount = user.GetGuild().Emojis.Count
+            Id = user.GetGuild()!.Id,
+            Name = user.GetGuild()!.Name,
+            IconUrl = user.GetGuild()?.GetIconUrl()!,
+            Description = user.GetGuild()?.Description,
+            BoostCount = user.GetGuild()?.BoostingMemberCount,
+            BoostTier = user.GetGuild()!.BoostTier.GetHashCode(),
+            MemberCount = user.GetGuild()!.MemberCount,
+            EmoteCount = user.GetGuild()!.Emojis.Count
+        };
+    
+    internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response)
+    {
+        var toReturn = new LocalInteractionMessageResponse
+        {
+            Content = response.Data.Content,
+            Embeds = new List<LocalEmbed> { response.Data.Embed.ToLocalEmbed() },
+            IsTextToSpeech = false,
+            AllowedMentions = response.Data.AllowMentions 
+                ? LocalAllowedMentions.ExceptEveryone : LocalAllowedMentions.None,
+            Components = new List<LocalRowComponent>
+            {
+                new ()
+                {
+                    Components = new List<LocalComponent>
+                    {
+                        
+                    }
+                }
+            },
+            IsEphemeral = response.Data.Emphemeral
         };
 }

@@ -5,8 +5,7 @@ using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Application.Commands.Administration;
-using Hanekawa.Bot.Extensions;
-using Humanizer;
+using Hanekawa.Bot.Mapper;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Administration;
@@ -25,9 +24,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> BanAsync(AutoComplete<IMember> member, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result = await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .BanUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
-        return Response($"Banned {user.Mention} from {user.GetGuild()?.Name}");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("unban")]
@@ -37,9 +36,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> UnbanAsync(AutoComplete<IMember> member, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result = await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .UnbanUserAsync(user.ToGuild(),user.Id, Context.AuthorId.RawValue, reason);
-        return Response($"Unbanned {user.Id} from {Context.Author.GetGuild()?.Name}");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("kick")]
@@ -49,9 +48,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> KickAsync(AutoComplete<IMember> member, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result = await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .KickUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
-        return Response($"Kicked {user.Name} from {user.GetGuild()?.Name}");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("mute")]
@@ -62,9 +61,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
         TimeSpan duration, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result = await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .MuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason, duration);
-        return Response($"Muted {user.Mention} for {duration.Humanize()}");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("unmute")]
@@ -74,9 +73,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> UnmuteAsync(AutoComplete<IMember> member, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result = await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .UnmuteUserAsync(user.ToDiscordMember(), Context.AuthorId, reason);
-        return Response($"Un-muted {user.Mention}");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("warn")]
@@ -142,10 +141,10 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
             messageIds[i] = msg.Id.RawValue;
         }
 
-        await _serviceProvider.GetRequiredService<AdministrationCommandService>()
+        var result= await _serviceProvider.GetRequiredService<AdministrationCommandService>()
             .PruneAsync(Context.GuildId, Context.ChannelId, 
                 messageIds, Context.AuthorId,
                 "");
-        return Response($"Pruned {messageIds.Length} messages from this channel");
+        return Response(result.ToLocalInteractionMessageResponse());
     }
 }
