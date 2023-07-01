@@ -5,6 +5,7 @@ using Disqord.Bot.Commands.Interaction;
 using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces.Commands;
+using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Configs;
 using Qmmands;
 using IResult = Qmmands.IResult;
@@ -15,8 +16,6 @@ namespace Hanekawa.Bot.Commands.Slash.Setting;
 [RequireAuthorPermissions(Permissions.ManageChannels)]
 public class GreetCommands : DiscordApplicationGuildModuleBase
 {
-    private readonly Mapper.Mapper _mapper = new ();
-
     [SlashCommand("channel")]
     [Description("Set the greet channel")]
     public async Task<DiscordInteractionResponseCommandResult> Set(IChannel channel)
@@ -24,7 +23,7 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
         if (channel is not TransientInteractionChannel { Type: ChannelType.Text } textChannel) return Response("Channel must be a text channel !");
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
-        var response = await service.SetChannel(Context.GuildId, _mapper.MapToTextChannel(textChannel));
+        var response = await service.SetChannel(Context.GuildId, textChannel.ToTextChannel());
         return Response(response);
     }
     

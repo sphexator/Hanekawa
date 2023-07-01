@@ -1,8 +1,9 @@
 ﻿using Disqord;
 using Disqord.Gateway;
+using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
 
-namespace Hanekawa.Bot.Extensions;
+namespace Hanekawa.Bot.Mapper;
 
 internal static class DiscordExtensions
 {
@@ -39,6 +40,16 @@ internal static class DiscordExtensions
         return toReturn;
     }
 
+    internal static TextChannel ToTextChannel(this TransientInteractionChannel channel) =>
+        new()
+        {
+            Id = channel.Id,
+            GuildId = (channel as ITextChannel)?.GuildId ?? 0,
+            Name = channel.Name,
+            Mention = "<#" + channel.Id + ">",
+            IsNsfw = (channel as ITextChannel)?.IsAgeRestricted ?? false
+        };
+
     internal static DiscordMember ToDiscordMember(this IMember member) =>
         new()
         {
@@ -47,14 +58,14 @@ internal static class DiscordExtensions
             AvatarUrl = member.GetAvatarUrl(),
             Guild = new ()
             {
-                Id = member.GetGuild().Id,
-                Name = member.GetGuild().Name,
-                IconUrl = member.GetGuild().GetIconUrl(),
-                Description = member.GetGuild().Description,
-                BoostCount = member.GetGuild().BoostingMemberCount,
-                BoostTier = member.GetGuild().BoostTier.GetHashCode(),
-                MemberCount = member.GetGuild().MemberCount,
-                EmoteCount = member.GetGuild().Emojis.Count
+                Id = member.GetGuild()!.Id,
+                Name = member.GetGuild()!.Name,
+                IconUrl = member.GetGuild()?.GetIconUrl()!,
+                Description = member.GetGuild()?.Description,
+                BoostCount = member.GetGuild()?.BoostingMemberCount,
+                BoostTier = member.GetGuild()!.BoostTier.GetHashCode(),
+                MemberCount = member.GetGuild()!.MemberCount,
+                EmoteCount = member.GetGuild()!.Emojis.Count
             },
             Nickname = member.Nick,
             IsBot = member.IsBot,
@@ -96,4 +107,6 @@ internal static class DiscordExtensions
             },
             IsEphemeral = response.Data.Emphemeral
         };
+        return toReturn;
+    }
 }
