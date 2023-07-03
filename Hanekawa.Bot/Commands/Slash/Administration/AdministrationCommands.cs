@@ -5,7 +5,9 @@ using Disqord.Bot.Commands.Interaction;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Hanekawa.Application.Commands.Administration;
+using Hanekawa.Application.Handlers.Warnings;
 using Hanekawa.Bot.Mapper;
+using MediatR;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Administration;
@@ -84,9 +86,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> WarnAsync(AutoComplete<IMember> member, string reason)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<WarningCommandService>()
-            .WarnUserAsync(user.GuildId, user.Id, Context.AuthorId, reason);
-        return Response($"Warned {user.Mention}");
+        var response = await _serviceProvider.GetRequiredService<IMediator>()
+            .Send(new WarningReceived(user.ToDiscordMember(), reason, Context.AuthorId));
+        return Response(response.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("voidwarn")]
@@ -95,9 +97,9 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> VoidWarnAsync(AutoComplete<IMember> member)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<WarningCommandService>()
-            .ClearUserWarnAsync(user.GuildId, user.Id, Context.AuthorId, "Voided by moderator");
-        return Response("yes");
+        var response = await _serviceProvider.GetRequiredService<IMediator>()
+            .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, "Voided by moderator"));
+        return Response(response.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("warnlog")]
@@ -106,21 +108,20 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
     public async Task<DiscordInteractionResponseCommandResult> WarnsAsync(AutoComplete<IMember> member)
     {
         var user = member.Argument.Value;
-        var warns = await _serviceProvider.GetRequiredService<WarningCommandService>()
-            .WarnsAsync(user.GuildId, user.Id);
-        
-        return Response("yes");
+        var response = await _serviceProvider.GetRequiredService<IMediator>()
+            .Send(new WarningList(user.GuildId, user.Id));
+        return Response(response.ToLocalInteractionMessageResponse());
     }
     
-    [SlashCommand("clearwarn")]    
+    [SlashCommand("clearwarns")]    
     [RequireAuthorPermissions(Permissions.BanMembers)]
     [Description("Clears all warnings from a user in the server")]
     public async Task<DiscordInteractionResponseCommandResult> ClearWarnsAsync(AutoComplete<IMember> member)
     {
         var user = member.Argument.Value;
-        await _serviceProvider.GetRequiredService<WarningCommandService>()
-            .ClearUserWarnAsync(user.GuildId, user.Id, 
-                Context.AuthorId, "Cleared by moderator", true);
+        var response = await _serviceProvider.GetRequiredService<IMediator>()
+            .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, 
+                "Cleared by moderator", true));
         return Response($"Cleared all warnings for {user.Mention}");
     }
     
