@@ -47,13 +47,13 @@ internal static class DiscordExtensions
             GuildId = (channel as ITextChannel)?.GuildId ?? 0,
             Name = channel.Name,
             Mention = "<#" + channel.Id + ">",
-            IsNsfw = (channel as ITextChannel)?.IsAgeRestricted ?? false
+            IsNsfw = (channel as ITextChannel)?.IsAgeRestricted ?? true
         };
 
     internal static DiscordMember ToDiscordMember(this IMember member) =>
         new()
         {
-            UserId = member.Id,
+            Id = member.Id,
             Username = member.Name,
             AvatarUrl = member.GetAvatarUrl(),
             Guild = new ()
@@ -86,9 +86,8 @@ internal static class DiscordExtensions
             EmoteCount = user.GetGuild()!.Emojis.Count
         };
     
-    internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response)
-    {
-        var toReturn = new LocalInteractionMessageResponse
+    internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>
+        new ()
         {
             Content = response.Data.Content,
             Embeds = new List<LocalEmbed> { response.Data.Embed.ToLocalEmbed() },
@@ -107,6 +106,4 @@ internal static class DiscordExtensions
             },
             IsEphemeral = response.Data.Emphemeral
         };
-        return toReturn;
-    }
 }

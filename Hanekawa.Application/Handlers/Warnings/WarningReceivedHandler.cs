@@ -1,27 +1,31 @@
 ﻿using Hanekawa.Application.Interfaces;
+using Hanekawa.Entities;
+using Hanekawa.Entities.Discord;
 using MediatR;
 
 namespace Hanekawa.Application.Handlers.Warnings;
 
-public record WarningReceived(ulong GuildId, ulong UserId, string Warning, ulong ModeratorId) : ISqs;
+public record WarningReceived(DiscordMember User, string Warning, ulong ModeratorId) : IRequest<Response<Message>>;
 
-public class WarningReceivedHandler : IRequestHandler<WarningReceived>
+public class WarningReceivedHandler : IRequestHandler<WarningReceived, Response<Message>>
 {
     private readonly IDbContext _db;
     public WarningReceivedHandler(IDbContext db) => _db = db;
 
-    public async Task Handle(WarningReceived request, CancellationToken cancellationToken)
+    public async Task<Response<Message>> Handle(WarningReceived request, CancellationToken cancellationToken)
     {
         await _db.Warnings.AddAsync(new()
         {
             Id = Guid.NewGuid(),
-            GuildId = request.GuildId,
-            UserId = request.UserId,
+            GuildId = request.User.Guild.Id,
+            UserId = request.User.Id,
             ModeratorId = request.ModeratorId,
             Reason = request.Warning,
             Valid = true,
             CreatedAt = DateTimeOffset.UtcNow
         }, cancellationToken);
         await _db.SaveChangesAsync();
+        // Change to mention the user
+        return new Response<Message>(new($"Warned {request.User.Mention}"));
     }
 }

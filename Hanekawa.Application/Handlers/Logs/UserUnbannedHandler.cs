@@ -33,11 +33,11 @@ public class UserUnbannedHandler : IRequestHandler<UserUnbanned, bool>
         
         await _bot.SendMessageAsync(channel.Value, new Embed
         {
-            Title = $"User Banned | Case ID: {request.Member.UserId} | ${request.Member.Guild.Id}",
+            Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.Id}",
             Color = Color.LimeGreen.ToArgb(),
             Fields = new List<EmbedField>
             {
-                new("User", $"<@{request.Member.UserId}>", false),
+                new("User", $"<@{request.Member.Id}>", false),
                 new("Moderator", "N/A", false),
                 new("Reason", "No reason provided", false),
             }

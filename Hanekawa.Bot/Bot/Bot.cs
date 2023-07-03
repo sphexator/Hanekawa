@@ -83,7 +83,7 @@ public class Bot : DiscordBot, IBot
     
     /// <inheritdoc />
     public async Task ModifyRolesAsync(DiscordMember member, ulong[] modifiedRoles) 
-        => await this.ModifyMemberAsync(member.Guild.Id, member.UserId, x =>
+        => await this.ModifyMemberAsync(member.Guild.Id, member.Id, x =>
         {
             x.RoleIds = ConvertToSnowflake(modifiedRoles);
         });

@@ -6,7 +6,7 @@ public class DiscordMember
 {
     public DiscordMember() => Mention = $"<@{Username}>";
 
-    public ulong UserId { get; set; }
+    public ulong Id { get; set; }
     public Guild Guild { get; set; }
     public HashSet<ulong> RoleIds { get; set; }
     public string? Nickname { get; set; }

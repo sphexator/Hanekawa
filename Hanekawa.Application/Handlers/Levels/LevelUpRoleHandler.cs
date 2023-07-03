@@ -25,7 +25,7 @@ public class LevelUpRoleHandler : IRequestHandler<LevelUp>
     public async Task Handle(LevelUp request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("handing out roles for user {UserId} in guild {GuildId} for level {Level}", 
-            request.Member.UserId, request.Member.Guild.Id, request.Level);
+            request.Member.Id, request.Member.Guild.Id, request.Level);
         await _levelService.AdjustRoles(request.Member, request.Level, request.GuildConfig);
     }
 }

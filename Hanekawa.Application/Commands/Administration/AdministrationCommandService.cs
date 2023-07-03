@@ -22,8 +22,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> BanUserAsync(DiscordMember user, ulong moderatorId, string reason, int days = 0)
     {
         _logger.LogInformation("Banning user {UserId} from guild {GuildId} by moderator {ModeratorId} for reason {Reason}", 
-            user.UserId, user.Guild.Id, moderatorId, reason);
-        await _bot.BanAsync(user.Guild.Id, user.UserId, days, reason);
+            user.Id, user.Guild.Id, moderatorId, reason);
+        await _bot.BanAsync(user.Guild.Id, user.Id, days, reason);
         return new (new ($"Banned {user.Mention} from {user.Guild.Name}"));
     }
     
@@ -40,8 +40,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> KickUserAsync(DiscordMember user, ulong moderatorId, string reason)
     {
         _logger.LogInformation("Kicking user {UserId} from guild {GuildId} by moderator {ModeratorId} for reason {Reason}", 
-            user.UserId, user.Guild.Id, moderatorId, reason);
-        await _bot.KickAsync(user.Guild.Id, user.UserId, reason);
+            user.Id, user.Guild.Id, moderatorId, reason);
+        await _bot.KickAsync(user.Guild.Id, user.Id, reason);
         return new (new ($"Kicked {user.Username} from {user.Guild.Name}"));
     }
     
@@ -49,8 +49,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> MuteUserAsync(DiscordMember user, ulong moderatorId, string reason, TimeSpan duration)
     {
         _logger.LogInformation("Muting user {UserId} from guild {GuildId} by moderator {ModeratorId} for reason {Reason} for duration {Duration}", 
-            user.UserId, user.Guild.Id, moderatorId, reason, duration);
-        await _bot.MuteAsync(user.Guild.Id, user.UserId, reason, duration);
+            user.Id, user.Guild.Id, moderatorId, reason, duration);
+        await _bot.MuteAsync(user.Guild.Id, user.Id, reason, duration);
         return new (new ($"Muted {user.Mention} for {duration.Humanize()}"));
     }
     
@@ -58,8 +58,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> UnmuteUserAsync(DiscordMember user, ulong moderatorId, string reason)
     {
         _logger.LogInformation("Unmuting user {UserId} from guild {GuildId} by moderator {ModeratorId} for reason {Reason}", 
-            user.UserId, user.Guild.Id, moderatorId, reason);
-        await _bot.UnmuteAsync(user.Guild.Id, user.UserId, reason);
+            user.Id, user.Guild.Id, moderatorId, reason);
+        await _bot.UnmuteAsync(user.Guild.Id, user.Id, reason);
         return new (new ($"Un-muted {user.Mention}"));
     }
     
@@ -67,8 +67,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> AddRoleAsync(DiscordMember user, ulong moderatorId, ulong roleId)
     {
         _logger.LogInformation("Adding role {RoleId} to user {UserId} from guild {GuildId} by moderator {ModeratorId}", 
-            roleId, user.UserId, user.Guild.Id, moderatorId);
-        await _bot.AddRoleAsync(user.Guild.Id, user.UserId, roleId);
+            roleId, user.Id, user.Guild.Id, moderatorId);
+        await _bot.AddRoleAsync(user.Guild.Id, user.Id, roleId);
         return new (new (""));
     }
     
@@ -76,8 +76,8 @@ public class AdministrationCommandService : IAdministrationCommandService
     public async Task<Response<Message>> RemoveRoleAsync(DiscordMember user, ulong moderatorId, ulong roleId)
     {
         _logger.LogInformation("Removing role {RoleId} from user {UserId} from guild {GuildId} by moderator {ModeratorId}", 
-            roleId, user.UserId, user.Guild.Id, moderatorId);
-        await _bot.RemoveRoleAsync(user.Guild.Id, user.UserId, roleId);
+            roleId, user.Id, user.Guild.Id, moderatorId);
+        await _bot.RemoveRoleAsync(user.Guild.Id, user.Id, roleId);
         return new (new (""));
     }
     

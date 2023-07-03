@@ -25,7 +25,7 @@ public class DiscordEventRegister : DiscordBotService
         await _mediator.Send(new MessageReceived(e.GuildId.Value, e.ChannelId, new()
             {
                 Guild = new () { Id = e.GuildId.Value },
-                UserId = e.Member.Id,
+                Id = e.Member.Id,
                 RoleIds = ConvertRoles(e.Member.RoleIds),
                 Nickname = e.Member.Nick,
                 IsBot = e.Member.IsBot,
@@ -52,7 +52,7 @@ public class DiscordEventRegister : DiscordBotService
         => await _mediator.Send(new UserBanned(new DiscordMember
         {
             Guild = new () { Id = e.GuildId },
-            UserId = e.UserId,
+            Id = e.UserId,
             Username = e.User.Name,
             IsBot = e.User.IsBot,
             AvatarUrl = e.User.GetAvatarUrl()
@@ -62,7 +62,7 @@ public class DiscordEventRegister : DiscordBotService
         => await _mediator.Send(new UserUnbanned(new DiscordMember
         {
             Guild = new () { Id = e.GuildId },
-            UserId = e.UserId,
+            Id = e.UserId,
             Username = e.User.Name,
             IsBot = e.User.IsBot,
             AvatarUrl = e.User.GetAvatarUrl(),
