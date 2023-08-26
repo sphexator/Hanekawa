@@ -21,15 +21,19 @@ public class WarningAdded : IPipelineBehavior<WarningReceived, WarningReceivedHa
         CancellationToken cancellationToken)
     {
         var result = await next();
+        var config = await _db.GuildConfigs.Include(x => x.AdminConfig)
+            .FirstOrDefaultAsync(x => x.GuildId == request.User.Guild.Id, 
+                cancellationToken: cancellationToken);
         var warningCount =
-            await _db.Warnings.CountAsync(x => x.GuildId == request.GuildId 
-                                               && x.UserId == request.UserId
+            await _db.Warnings.CountAsync(x => x.GuildId == request.User.Guild.Id 
+                                               && x.UserId == request.User.Id
                                                && x.Valid
                                                && x.CreatedAt > DateTimeOffset.UtcNow.AddDays(-7), 
                 cancellationToken);
         // TODO: Add a warning threshold to the guild configuration
-        if (warningCount >= 3)
-            await _bot.MuteAsync(request.GuildId, request.UserId, $"Auto-mod warning threshold reached ({3})",
+        if (warningCount >= config?.AdminConfig.MaxWarnings)
+            await _bot.MuteAsync(request.User.Guild.Id, request.User.Id, 
+                $"Auto-mod warning threshold reached ({config.AdminConfig.MaxWarnings})",
                 TimeSpan.FromHours(2 * Convert.ToDouble(warningCount / 3)));
         return result;
     }

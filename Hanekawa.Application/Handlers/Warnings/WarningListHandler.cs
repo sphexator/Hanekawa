@@ -1,13 +1,13 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Entities;
 using MediatR;
 
 namespace Hanekawa.Application.Handlers.Warnings;
 
-public record WarningList(ulong GuildId, ulong? UserId) : IRequest<List<string>>;
+public record WarningList(ulong GuildId, ulong? UserId) : IRequest<Response<Message>>;
 
-public class WarningListHandler : IRequestHandler<WarningList, List<string>>
+public class WarningListHandler : IRequestHandler<WarningList, Response<Message>>
 {
-    public Task<List<string>> Handle(WarningList request, CancellationToken cancellationToken)
+    public Task<Response<Message>> Handle(WarningList request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

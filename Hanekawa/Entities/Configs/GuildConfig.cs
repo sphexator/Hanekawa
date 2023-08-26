@@ -11,4 +11,5 @@ public class GuildConfig : IConfig
     public GreetConfig GreetConfig { get; set; }
     public LevelConfig LevelConfig { get; set; }
     public LogConfig LogConfig { get; set; }
+    public AdminConfig AdminConfig { get; set; }
 }

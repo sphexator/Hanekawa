@@ -1,4 +1,5 @@
-﻿using Hanekawa.Application.Interfaces;
+﻿using Hanekawa.Application.Contracts.Discord;
+using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Discord;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Color = System.Drawing.Color;
 
 namespace Hanekawa.Application.Handlers.Logs;
 
-public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned, bool>
+public class UserBannedHandler : IRequestHandler<UserBanned, bool>
 {
     private readonly IBot _bot;
     private readonly IDbContext _db;
@@ -17,12 +18,12 @@ public class UserBannedHandler : IRequestHandler<Contracts.Discord.UserBanned, b
         _db = db;
     }
 
-    public async Task<bool> Handle(Contracts.Discord.UserBanned request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(UserBanned request, CancellationToken cancellationToken)
     {
         var cfg = await _db.GuildConfigs.Include(x => x.LogConfig)
             .FirstOrDefaultAsync(x => x.GuildId == request.Member.Guild.Id, cancellationToken: cancellationToken);
         if (cfg is { LogConfig.ModLogChannelId: null }) return false;
-        var channel = _bot.GetChannel(request.Member.Guild.Id, cfg.LogConfig.ModLogChannelId.Value);
+        var channel = _bot.GetChannel(request.Member.Guild.Id, cfg!.LogConfig.ModLogChannelId.Value);
         if (channel is null)
         {
             cfg.LogConfig.ModLogChannelId = null;

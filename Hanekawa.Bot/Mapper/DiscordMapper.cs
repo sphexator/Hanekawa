@@ -36,7 +36,7 @@ internal static class DiscordExtensions
             fields.Add(new LocalEmbedField{ Name = x.Name, Value = x.Value, IsInline = x.IsInline });
         }
 
-        if (fields.Count != 0) toReturn.Fields = fields;
+        if (fields.Count is not 0) toReturn.Fields = fields;
         return toReturn;
     }
 
