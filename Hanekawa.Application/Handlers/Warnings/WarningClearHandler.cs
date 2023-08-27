@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Localize;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,8 @@ public class WarningClearHandler : IRequestHandler<WarningClear, Response<Messag
                 x.Valid = false;
             }
             await _db.SaveChangesAsync();
-            return new Response<Message>(new($"Cleared all warnings for {request.user.Mention}"));
+            return new Response<Message>(new(string.Format(Localization.ClearedAllWarnUserMention, 
+                request.user.Mention)));
         }
         var warning = await _db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.user.Guild.Id
                                                                   && x.UserId == request.user.Id
@@ -42,12 +44,14 @@ public class WarningClearHandler : IRequestHandler<WarningClear, Response<Messag
             cancellationToken: cancellationToken);
         if (warning is null)
         {
-            return new Response<Message>(new($"No warnings found for {request.user.Mention}"));
+            return new Response<Message>(new(string.Format(Localization.NoWarningsUserMention, 
+                request.user.Mention)));
         }
 
         warning.Valid = false;
         _db.Warnings.Update(warning);
         await _db.SaveChangesAsync();
-        return new Response<Message>(new($"Cleared warning for {request.user.Mention}"));
+        return new Response<Message>(new(string.Format(Localization.ClearedWarningUserMention, 
+            request.user.Mention)));
     }
 }

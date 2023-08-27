@@ -7,6 +7,7 @@ using Disqord.Gateway;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Configs;
+using Hanekawa.Localize;
 using Qmmands;
 using IResult = Qmmands.IResult;
 
@@ -20,7 +21,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
     [Description("Set the greet channel")]
     public async Task<DiscordInteractionResponseCommandResult> Set(IChannel channel)
     {
-        if (channel is not TransientInteractionChannel { Type: ChannelType.Text } textChannel) return Response("Channel must be a text channel !");
+        if (channel is not TransientInteractionChannel { Type: ChannelType.Text } textChannel) 
+            return Response(Localization.ChannelMustBeTextChannel);
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.SetChannel(Context.GuildId, textChannel.ToTextChannel());
@@ -54,7 +56,7 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.ListImages(Context.GuildId);
-        if (response.Value is not List<GreetImage> images) return Response("No images found");
+        if (response.Value is not List<GreetImage> images) return Response(Localization.NoImagesFound);
         
         var pages = new List<Page>();
         for (var i = 0; i < images.Count / 5; i++)
@@ -78,8 +80,8 @@ public class GreetCommands : DiscordApplicationGuildModuleBase
         var service = scope.ServiceProvider.GetRequiredService<IGreetService>();
         var response = await service.RemoveImage(Context.GuildId, id);
         return Response(response 
-            ? "Removed image" 
-            : "Image with that ID not found");
+            ? Localization.RemovedImage 
+            : Localization.NoImageWithIdFound);
     }
     
     [SlashCommand("image")]

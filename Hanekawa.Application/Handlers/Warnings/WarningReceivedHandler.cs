@@ -1,6 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities;
 using Hanekawa.Entities.Discord;
+using Hanekawa.Localize;
 using MediatR;
 
 namespace Hanekawa.Application.Handlers.Warnings;
@@ -26,6 +27,6 @@ public class WarningReceivedHandler : IRequestHandler<WarningReceived, Response<
         }, cancellationToken);
         await _db.SaveChangesAsync();
         // Change to mention the user
-        return new Response<Message>(new($"Warned {request.User.Mention}"));
+        return new Response<Message>(new(string.Format(Localization.WarnedUser, request.User.Mention)));
     }
 }

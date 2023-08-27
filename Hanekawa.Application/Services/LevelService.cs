@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Hanekawa.Application.Contracts;
+﻿using Hanekawa.Application.Contracts;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Application.Interfaces.Services;
 using Hanekawa.Entities.Configs;
@@ -29,11 +28,12 @@ public class LevelService : ILevelService
     /// <inheritdoc />
     public async Task<int?> AddExperience(DiscordMember member, int experience)
     {
-        var config = await _db.GuildConfigs.Include(x => x.LevelConfig).ThenInclude(x => x.Rewards)
+        var config = await _db.GuildConfigs.Include(x => x.LevelConfig)
+            .ThenInclude(x => x.Rewards)
             .FirstOrDefaultAsync(x => x.GuildId == member.Guild.Id);
         if (config?.LevelConfig is null || !config.LevelConfig.LevelEnabled) return null;
-        _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}", experience,
-            member.Id, member.Guild.Id);
+        _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}", 
+            experience, member.Id, member.Guild.Id);
 
         var user = await _db.Users.FindAsync(member.Guild.Id, member.Id) 
                    ?? new GuildUser { GuildId = member.Guild.Id, UserId = member.Id };
@@ -49,8 +49,8 @@ public class LevelService : ILevelService
         {
             user.Level++;
             var result = await AdjustRoles(member, user.Level, config);
-            _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", member.Id,
-                member.Guild.Id, user.Level);
+            _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", 
+                member.Id, member.Guild.Id, user.Level);
             await _serviceProvider.GetRequiredService<IMediator>()
                 .Send(new LevelUp(member, member.RoleIds, user.Level, config));
         }

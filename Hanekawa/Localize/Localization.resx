@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="BannedGuildUser" xml:space="preserve">
+        <value>Banned {0} from {1}</value>
+    </data>
+    <data name="UnbannedGuildUser" xml:space="preserve">
+        <value>Unbanned {0} from {1}</value>
+    </data>
+    <data name="UnMutedUser" xml:space="preserve">
+        <value>Un-muted {0}</value>
+    </data>
+    <data name="KickedGuildUser" xml:space="preserve">
+        <value>Kicked {0} from {1}</value>
+    </data>
+    <data name="PrunedMessages" xml:space="preserve">
+        <value>Pruned {0} messages from this channel</value>
+    </data>
+    <data name="WarnedUser" xml:space="preserve">
+        <value>Warned {0}</value>
+    </data>
+    <data name="MutedGuildUserDuration" xml:space="preserve">
+        <value>Muted {0} for {1}</value>
+    </data>
+    <data name="NoImagesFound" xml:space="preserve">
+        <value>No images found</value>
+    </data>
+    <data name="ChannelMustBeTextChannel" xml:space="preserve">
+        <value>Channel must be a text channel!</value>
+    </data>
+    <data name="RemovedImage" xml:space="preserve">
+        <value>Removed image</value>
+    </data>
+    <data name="NoImageWithIdFound" xml:space="preserve">
+        <value>Image with that ID not found</value>
+    </data>
+    <data name="NoRolesFound" xml:space="preserve">
+        <value>No roles found</value>
+    </data>
+    <data name="ClearedAllWarnUserMention" xml:space="preserve">
+        <value>Cleared all warnings for {0}</value>
+    </data>
+    <data name="ClearedWarningUserMention" xml:space="preserve">
+        <value>Cleared warning for {0}</value>
+    </data>
+    <data name="NoWarningsUserMention" xml:space="preserve">
+        <value>No warnings found for {0}</value>
+    </data>
+</root>

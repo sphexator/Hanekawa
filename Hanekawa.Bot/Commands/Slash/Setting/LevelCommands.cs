@@ -7,6 +7,7 @@ using Disqord.Extensions.Interactivity.Menus.Paged;
 using Disqord.Gateway;
 using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Entities.Levels;
+using Hanekawa.Localize;
 using Qmmands;
 
 namespace Hanekawa.Bot.Commands.Slash.Setting;
@@ -42,7 +43,7 @@ public class LevelCommands : DiscordApplicationGuildModuleBase
         await using var scope = Bot.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ILevelCommandService>();
         var response = await service.ListAsync(Context.GuildId, Context.CancellationToken);
-        if (response.Count == 0) return Response("No roles found");
+        if (response.Count == 0) return Response(Localization.NoRolesFound);
         return Pages(BuildPages(response));
     }
     

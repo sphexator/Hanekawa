@@ -122,7 +122,7 @@ public class AdministrationCommands : DiscordApplicationGuildModuleBase
         var response = await _serviceProvider.GetRequiredService<IMediator>()
             .Send(new WarningClear(user.ToDiscordMember(), Context.AuthorId, 
                 "Cleared by moderator", true));
-        return Response($"Cleared all warnings for {user.Mention}");
+        return Response(response.ToLocalInteractionMessageResponse());
     }
     
     [SlashCommand("prune")]
