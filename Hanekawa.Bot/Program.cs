@@ -16,7 +16,7 @@ builder.Services.AddApplicationLayer();
 builder.Host.ConfigureDiscordBot((_, bot) =>
 {
     bot.Token = builder.Configuration["botToken"];
-    bot.ApplicationId = new Snowflake(ulong.Parse(builder.Configuration["applicationId"]));
+    bot.ApplicationId = new Snowflake(ulong.Parse(builder.Configuration["applicationId"]!));
     bot.UseMentionPrefix = true;
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
     bot.Intents |= GatewayIntents.Unprivileged | GatewayIntents.Members;
@@ -30,6 +30,7 @@ builder.Host.UseDefaultServiceProvider(x =>
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
+builder.Logging.ClearProviders();
 builder.Host.UseSerilog();
 
 var app = builder.Build();

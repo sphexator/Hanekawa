@@ -9,7 +9,7 @@ public class ClubCommandService : IClubCommandService
     {
         throw new NotImplementedException();
     }
-
+    
     public Task<Response<Message>> Delete(ulong guildId, string name, ulong authorId)
     {
         throw new NotImplementedException();
