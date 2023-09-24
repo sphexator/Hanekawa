@@ -27,8 +27,8 @@ public class GreetService : IGreetService
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
+            config ??= new() { GuildId = guildId };
+            config.GreetConfig = new() { GuildId = guildId };
             await _db.GuildConfigs.AddAsync(config);
         }
 
@@ -44,8 +44,8 @@ public class GreetService : IGreetService
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
+            config ??= new() { GuildId = guildId };
+            config.GreetConfig = new() { GuildId = guildId };
             await _db.GuildConfigs.AddAsync(config);
         }
 
@@ -61,8 +61,8 @@ public class GreetService : IGreetService
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig is null)
         {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
+            config ??= new() { GuildId = guildId };
+            config.GreetConfig = new() { GuildId = guildId };
             await _db.GuildConfigs.AddAsync(config);
         }
 
@@ -116,8 +116,8 @@ public class GreetService : IGreetService
             .FirstOrDefaultAsync(e => e.GuildId == guildId);
         if (config?.GreetConfig == null)
         {
-            config ??= new GuildConfig { GuildId = guildId };
-            config.GreetConfig = new GreetConfig { GuildId = guildId };
+            config ??= new() { GuildId = guildId };
+            config.GreetConfig = new() { GuildId = guildId };
             await _db.GuildConfigs.AddAsync(config);
         }
 

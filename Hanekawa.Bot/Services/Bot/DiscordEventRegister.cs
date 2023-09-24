@@ -2,7 +2,6 @@
 using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application.Contracts.Discord;
-using Hanekawa.Entities.Discord;
 using MediatR;
 
 namespace Hanekawa.Bot.Services.Bot;
@@ -49,7 +48,7 @@ public class DiscordEventRegister : DiscordBotService
             e.Messages.Select(x => x.Value.Content).ToArray()));
 
     protected override async ValueTask OnBanCreated(BanCreatedEventArgs e) 
-        => await _mediator.Send(new UserBanned(new DiscordMember
+        => await _mediator.Send(new UserBanned(new()
         {
             Guild = new () { Id = e.GuildId },
             Id = e.UserId,
@@ -59,7 +58,7 @@ public class DiscordEventRegister : DiscordBotService
         }));
 
     protected override async ValueTask OnBanDeleted(BanDeletedEventArgs e) 
-        => await _mediator.Send(new UserUnbanned(new DiscordMember
+        => await _mediator.Send(new UserUnbanned(new()
         {
             Guild = new () { Id = e.GuildId },
             Id = e.UserId,

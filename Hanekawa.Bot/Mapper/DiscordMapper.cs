@@ -33,7 +33,7 @@ internal static class DiscordExtensions
         for (var i = 0; i < embed.Fields.Count; i++)
         {
             var x = embed.Fields[i];
-            fields.Add(new LocalEmbedField{ Name = x.Name, Value = x.Value, IsInline = x.IsInline });
+            fields.Add(new() { Name = x.Name, Value = x.Value, IsInline = x.IsInline });
         }
 
         if (fields.Count is not 0) toReturn.Fields = fields;

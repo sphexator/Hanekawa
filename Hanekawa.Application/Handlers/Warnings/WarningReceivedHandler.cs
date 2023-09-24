@@ -27,6 +27,6 @@ public class WarningReceivedHandler : IRequestHandler<WarningReceived, Response<
         }, cancellationToken);
         await _db.SaveChangesAsync();
         // Change to mention the user
-        return new Response<Message>(new(string.Format(Localization.WarnedUser, request.User.Mention)));
+        return new(new(string.Format(Localization.WarnedUser, request.User.Mention)));
     }
 }

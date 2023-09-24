@@ -10,7 +10,7 @@ namespace Hanekawa.Infrastructure
             var builder = new DbContextOptionsBuilder<DbService>();
             builder.UseNpgsql(
                 "Server=localhost; Port=5432; Database=hanekawa-development; Userid=postgres;Password=1023;");
-            return new DbService(builder.Options);
+            return new(builder.Options);
         }
     }
 }

@@ -35,7 +35,7 @@ public class UserBannedHandler : IRequestHandler<UserBanned, bool>
         {
             Title = $"User Banned | Case ID: {request.Member.Id} | ${request.Member.Guild.Id}",
             Color = Color.Red.ToArgb(),
-            Fields = new List<EmbedField>
+            Fields = new()
             {
                 new("User", $"<@{request.Member.Id}>", false),
                 new("Moderator", "N/A", false),

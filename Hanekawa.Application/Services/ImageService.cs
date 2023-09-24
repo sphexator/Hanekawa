@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Hanekawa.Application.Extensions;
+﻿using Hanekawa.Application.Extensions;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
@@ -28,30 +27,32 @@ public class ImageService : IImageService
     /// <inheritdoc />
     public async Task<Image> CreateAvatarAsync(string avatarUrl, int size, CancellationToken cancellationToken = default)
     {
-        using var img = await GetImageFromUrlAsync(new Uri(avatarUrl), cancellationToken);
+        using var img = await GetImageFromUrlAsync(new(avatarUrl), cancellationToken);
         img.Mutate(e => 
-            e.ConvertToAvatar(new Size(size), (int)Math.Ceiling((size * Math.PI) / (2 * Math.PI))));
+            e.ConvertToAvatar(new(size), (int)Math.Ceiling((size * Math.PI) / (2 * Math.PI))));
         return img.CloneAs<Rgba32>();
     }
+    
     /// <inheritdoc />
     public async Task<Stream> DrawWelcomeAsync(DiscordMember member, GreetConfig cfg, CancellationToken cancellationToken = default)
     {
         var toReturn = new MemoryStream();
         var dbImage = cfg.Images[Random.Shared.Next(cfg.Images.Count)];
-        var image = await GetImageFromUrlAsync(new Uri(dbImage.ImageUrl), cancellationToken);
+        var image = await GetImageFromUrlAsync(new(dbImage.ImageUrl), cancellationToken);
 
         var avatar =
             await CreateAvatarAsync(member.AvatarUrl, dbImage.AvatarSize, cancellationToken);
         image.Mutate(x =>
         {
             x.DrawImage(avatar, new Point(dbImage.AvatarX, dbImage.AvatarY), 1f);
-            x.DrawText(member.Username, new Font(_fontCollection.Get("Arial"), dbImage.UsernameSize), Color.White,
+            x.DrawText(member.Username, new(_fontCollection.Get("Arial"), dbImage.UsernameSize), Color.White,
                 new Point(dbImage.UsernameX, dbImage.UsernameY));
         });
         
         await image.SaveAsync(toReturn, PngFormat.Instance, cancellationToken: cancellationToken);
         return toReturn;
     }
+    
     /// <inheritdoc />
     public async Task<Stream> DrawProfileAsync(DiscordMember member, GuildUser userData, CancellationToken cancellationToken = default)
     {
@@ -97,7 +98,7 @@ public class ImageService : IImageService
 
             var x = 200 + radius * Math.Cos(radians - Math.PI / 2);
             var y = 59 + radius * Math.Sin(radians - Math.PI / 2);
-            points.Add(new PointF((float) x, (float) y));
+            points.Add(new((float) x, (float) y));
         }
         return points.ToArray();
     }

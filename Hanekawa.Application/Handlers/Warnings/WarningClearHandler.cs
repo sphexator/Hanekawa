@@ -35,7 +35,7 @@ public class WarningClearHandler : IRequestHandler<WarningClear, Response<Messag
                 x.Valid = false;
             }
             await _db.SaveChangesAsync();
-            return new Response<Message>(new(string.Format(Localization.ClearedAllWarnUserMention, 
+            return new(new(string.Format(Localization.ClearedAllWarnUserMention, 
                 request.user.Mention)));
         }
         var warning = await _db.Warnings.FirstOrDefaultAsync(x => x.GuildId == request.user.Guild.Id
@@ -44,14 +44,14 @@ public class WarningClearHandler : IRequestHandler<WarningClear, Response<Messag
             cancellationToken: cancellationToken);
         if (warning is null)
         {
-            return new Response<Message>(new(string.Format(Localization.NoWarningsUserMention, 
+            return new(new(string.Format(Localization.NoWarningsUserMention, 
                 request.user.Mention)));
         }
 
         warning.Valid = false;
         _db.Warnings.Update(warning);
         await _db.SaveChangesAsync();
-        return new Response<Message>(new(string.Format(Localization.ClearedWarningUserMention, 
+        return new(new(string.Format(Localization.ClearedWarningUserMention, 
             request.user.Mention)));
     }
 }
