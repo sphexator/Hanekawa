@@ -25,7 +25,7 @@ namespace Hanekawa.Infrastructure
         public DbSet<GuildUser> Users { get; set; } = null!;
         /// <inheritdoc />
         public DbSet<LevelRequirement> LevelRequirements { get; set; } = null!;
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<GuildConfig>(x =>
@@ -73,6 +73,7 @@ namespace Hanekawa.Infrastructure
                 x.HasKey(e => new { e.GuildId, e.Id });
             });
         }
+
         /// <inheritdoc />
         public async Task<int> SaveChangesAsync() => await base.SaveChangesAsync();
         /// <inheritdoc />

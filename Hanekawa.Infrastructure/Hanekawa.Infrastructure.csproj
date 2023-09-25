@@ -26,8 +26,5 @@
       <ProjectReference Include="..\Hanekawa.Application\Hanekawa.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Tables\Internal\" />
-    </ItemGroup>
 
 </Project>
