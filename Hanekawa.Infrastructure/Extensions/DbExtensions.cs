@@ -17,17 +17,17 @@ namespace Hanekawa.Infrastructure.Extensions
         {
             var cache = serviceScope.ServiceProvider.GetRequiredService<ICacheContext>();
             var result = timeSpan.HasValue
-                ? await cache.GetAsync<TEntity>($"{nameof(TEntity)}-{key}", timeSpan.Value)
-                : await cache.GetAsync<TEntity>($"{nameof(TEntity)}-{key}");
+                ? cache.Get<TEntity>($"{nameof(TEntity)}-{key}", timeSpan.Value)
+                : cache.Get<TEntity>($"{nameof(TEntity)}-{key}");
             if (result is not null) return result;
             
             await using var db = serviceScope.ServiceProvider.GetRequiredService<DbService>();
             result = await GetOrCreateEntityAsync<TEntity>(db, key);
 
             if (timeSpan.HasValue)
-                await cache.AddAsync($"{nameof(TEntity)}-{key}", result, timeSpan.Value);
+                cache.Add($"{nameof(TEntity)}-{key}", result, timeSpan.Value);
             else
-                await cache.AddAsync($"{nameof(TEntity)}-{key}", result);
+                cache.Add($"{nameof(TEntity)}-{key}", result);
 
             return result;
         }
