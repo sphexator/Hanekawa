@@ -81,7 +81,12 @@ internal static class DiscordExtensions
                 BoostCount = member.GetGuild()?.BoostingMemberCount,
                 BoostTier = member.GetGuild()!.BoostTier.GetHashCode(),
                 MemberCount = member.GetGuild()!.MemberCount,
-                EmoteCount = member.GetGuild()!.Emojis.Count
+                Emotes = member.GetGuild()!.Emojis
+                    .Select(e => new Emote
+                    {
+                        Id = e.Key.RawValue,
+                        Name = e.Value.Name
+                    }).ToList()
             },
             Nickname = member.Nick,
             IsBot = member.IsBot,
@@ -99,7 +104,12 @@ internal static class DiscordExtensions
             BoostCount = user.GetGuild()?.BoostingMemberCount,
             BoostTier = user.GetGuild()!.BoostTier.GetHashCode(),
             MemberCount = user.GetGuild()!.MemberCount,
-            EmoteCount = user.GetGuild()!.Emojis.Count
+            Emotes = user.GetGuild()!.Emojis
+                .Select(e => new Emote
+                {
+                    Id = e.Key.RawValue,
+                    Name = e.Value.Name
+                }).ToList()
         };
     
     internal static LocalInteractionMessageResponse ToLocalInteractionMessageResponse(this Response<Message> response) =>
