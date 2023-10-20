@@ -60,7 +60,8 @@ internal static class DiscordExtensions
         new()
         {
             Id = channel.Id,
-            GuildId = (channel as ITextChannel)?.GuildId ?? 0,
+            Category = (channel as ITextChannel)?.CategoryId ?? null,
+            GuildId = (channel as ITextChannel)?.GuildId ?? null,
             Name = channel.Name,
             Mention = "<#" + channel.Id + ">",
             IsNsfw = (channel as ITextChannel)?.IsAgeRestricted ?? true
