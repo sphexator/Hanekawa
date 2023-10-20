@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hanekawa.Application.Interfaces;
 
+/// <inheritdoc />
 /// <summary>
 /// Database context interface
 /// </summary>
@@ -36,7 +37,7 @@ public interface IDbContext : IAsyncDisposable
     /// Guild moderator store. Ban / Mute / etc
     /// </summary>
     DbSet<GuildModerationLog> ModerationLogs { get; set; }
-
+    
     /// <summary>
     /// Saves changes in current context
     /// </summary>

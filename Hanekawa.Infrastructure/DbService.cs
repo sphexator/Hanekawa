@@ -14,11 +14,11 @@ namespace Hanekawa.Infrastructure
     {
         public DbService(DbContextOptions<DbService> options) : base(options) { }
         /// <inheritdoc />
-        public DbSet<Warning> Warnings { get; set; }
+        public DbSet<Warning> Warnings { get; set; } = null!;
         /// <inheritdoc />
         public DbSet<Log> Logs { get; set; } = null!;
         /// <inheritdoc />
-        public DbSet<GuildModerationLog> ModerationLogs { get; set; }
+        public DbSet<GuildModerationLog> ModerationLogs { get; set; } = null!;
         /// <inheritdoc />
         public DbSet<GuildConfig> GuildConfigs { get; set; } = null!;
         /// <inheritdoc />
@@ -38,6 +38,18 @@ namespace Hanekawa.Infrastructure
                 x.HasOne(e => e.LevelConfig)
                     .WithOne(e => e.GuildConfig)
                     .HasForeignKey<LevelConfig>(f => f.GuildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                x.HasOne(e => e.LogConfig)
+                    .WithOne(e => e.GuildConfig)
+                    .HasForeignKey<LogConfig>(f => f.GuildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                x.HasOne(e => e.AdminConfig)
+                    .WithOne(e => e.GuildConfig)
+                    .HasForeignKey<AdminConfig>(f => f.GuildId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                x.HasOne(e => e.DropConfig)
+                    .WithOne(e => e.GuildConfig)
+                    .HasForeignKey<DropConfig>(f => f.GuildId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             

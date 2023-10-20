@@ -12,4 +12,5 @@ public class GuildConfig : IConfig
     public LevelConfig LevelConfig { get; set; }
     public LogConfig LogConfig { get; set; }
     public AdminConfig AdminConfig { get; set; }
+    public DropConfig DropConfig { get; set; }
 }
