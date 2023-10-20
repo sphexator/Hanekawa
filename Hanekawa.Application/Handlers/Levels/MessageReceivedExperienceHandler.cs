@@ -18,7 +18,7 @@ public class MessageReceivedExperienceHandler: IRequestHandler<MessageReceived, 
     
     public async Task<bool> Handle(MessageReceived request, CancellationToken cancellationToken)
     {
-        await _levelService.AddExperience(request.Member,
+        await _levelService.AddExperienceAsync(request.Member,
             Random.Shared.Next(Convert.ToInt32(_configuration["expLower"]),
                 Convert.ToInt32(_configuration["expUpper"])));
         return true;

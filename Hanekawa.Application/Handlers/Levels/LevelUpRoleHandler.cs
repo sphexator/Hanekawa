@@ -26,6 +26,6 @@ public class LevelUpRoleHandler : IRequestHandler<LevelUp>
     {
         _logger.LogInformation("handing out roles for user {UserId} in guild {GuildId} for level {Level}", 
             request.Member.Id, request.Member.Guild.Id, request.Level);
-        await _levelService.AdjustRoles(request.Member, request.Level, request.GuildConfig);
+        await _levelService.AdjustRolesAsync(request.Member, request.Level, request.GuildConfig);
     }
 }
