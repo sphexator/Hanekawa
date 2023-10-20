@@ -40,6 +40,22 @@ internal static class DiscordExtensions
         return toReturn;
     }
 
+    internal static Embed ToEmbed(this IEmbed embed)
+    {
+        var toReturn = new Embed
+        {
+            Header = new (embed.Author!.Name, (embed.Author.IconUrl ?? null)!, (embed.Author.Url ?? null)!),
+            Title = embed.Title,
+            Icon = embed.Thumbnail!.Url,
+            Color = embed.Color!.Value.RawValue,
+            Content = embed.Description!,
+            Attachment = embed.Image!.Url,
+            Timestamp = embed.Timestamp!.Value,
+            Footer = new ((embed.Footer!.Text), (embed.Footer.IconUrl ?? null)!)
+        };
+        return toReturn;
+    }
+
     internal static TextChannel ToTextChannel(this TransientInteractionChannel channel) =>
         new()
         {

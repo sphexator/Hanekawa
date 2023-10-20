@@ -89,13 +89,22 @@ public interface IBot
     public Task PruneMessagesAsync(ulong guildId, ulong channelId, ulong[] messageIds);
 
     /// <summary>
+    /// Deletes a message from a channel
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="channelId"></param>
+    /// <param name="messageId"></param>
+    /// <returns></returns>
+    public Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId);
+    
+    /// <summary>
     /// Sends a message to a channel
     /// </summary>
     /// <param name="channelId"></param>
     /// <param name="message"></param>
     /// <param name="attachment"></param>
     /// <returns></returns>
-    public Task SendMessageAsync(ulong channelId, string message, Attachment? attachment = null);
+    public Task<RestMessage> SendMessageAsync(ulong channelId, string message, Attachment? attachment = null);
 
     /// <summary>
     /// Sends a message to a channel with an embed

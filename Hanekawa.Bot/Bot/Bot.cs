@@ -98,13 +98,27 @@ public class Bot : DiscordBot, IBot
             !.DeleteMessagesAsync(ConvertToSnowflake(messageIds));
 
     /// <inheritdoc />
-    public async Task SendMessageAsync(ulong channelId, string message, Attachment? attachment = null)
+    public async Task DeleteMessageAsync(ulong guildId, ulong channelId, ulong messageId) 
+        => await (this.GetGuild(guildId)?.GetChannel(channelId) as ITextChannel)
+            !.DeleteMessageAsync(messageId);
+
+    /// <inheritdoc />
+    public async Task<RestMessage> SendMessageAsync(ulong channelId, string message, Attachment? attachment = null)
     {
         var localMsg = new LocalMessage()
             .WithContent(message)
             .WithAllowedMentions(LocalAllowedMentions.None);
         if (attachment is not null) localMsg.WithAttachments(new LocalAttachment(attachment.Stream, attachment.FileName));
-        await this.SendMessageAsync(channelId, localMsg);
+        var result = await this.SendMessageAsync(channelId, localMsg);
+        return new ()
+        {
+            Id = result.Id,
+            ChannelId = result.ChannelId,
+            Content = result.Content,
+            AuthorId = result.Author.Id, 
+            Attachment = result.Attachments.FirstOrDefault()?.Url,
+            Embed = result.Embeds[0].ToEmbed()
+        };
     }
 
     /// <inheritdoc />
