@@ -32,4 +32,6 @@ public interface ICacheContext
     /// <param name="expiration"></param>
     /// <typeparam name="TEntity"></typeparam>
     void Add<TEntity>(string key, TEntity value, TimeSpan expiration);
+    
+    bool Remove(string key);
 }
