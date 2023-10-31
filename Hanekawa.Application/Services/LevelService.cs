@@ -6,7 +6,6 @@ using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Users;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Hanekawa.Application.Services;
@@ -15,14 +14,17 @@ namespace Hanekawa.Application.Services;
 public class LevelService : ILevelService
 {
     private readonly IDbContext _db;
+    private readonly IBot _bot;
     private readonly ILogger<LevelService> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IMediator _mediator;
     
-    public LevelService(IDbContext db, ILogger<LevelService> logger, IServiceProvider serviceProvider)
+    public LevelService(IDbContext db, ILogger<LevelService> logger, 
+        IBot bot, IMediator mediator)
     {
         _db = db;
         _logger = logger;
-        _serviceProvider = serviceProvider;
+        _bot = bot;
+        _mediator = mediator;
     }
     
     /// <inheritdoc />
@@ -44,8 +46,7 @@ public class LevelService : ILevelService
             await AdjustRolesAsync(member, user.Level, config);
             _logger.LogInformation("User {User} in guild {Guild} has leveled up to level {Level}", 
                 member.Id, member.Guild.Id, user.Level);
-            await _serviceProvider.GetRequiredService<IMediator>()
-                .Send(new LevelUp(member, member.RoleIds, user.Level, config));
+            await _mediator.Send(new LevelUp(member, member.RoleIds, user.Level, config));
         }
 
         user.Experience += experience;
@@ -64,9 +65,8 @@ public class LevelService : ILevelService
             if (x.Level <= level && !member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Add(x.RoleId.Value);
             else if (x.Level > level && member.RoleIds.Contains(x.RoleId.Value)) member.RoleIds.Remove(x.RoleId.Value);
         }
-
-        var bot = _serviceProvider.GetRequiredService<IBot>();
-        await bot.ModifyRolesAsync(member, member.RoleIds.ToArray());
+        
+        await _bot.ModifyRolesAsync(member, member.RoleIds.ToArray());
         return member;
     }
 }
