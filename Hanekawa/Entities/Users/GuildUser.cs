@@ -16,7 +16,7 @@ public class GuildUser : IMemberEntity
     public int DailyStreak { get; set; } = 0;
     
     public TimeSpan TotalVoiceTime { get; set; } = TimeSpan.Zero;
-    public DateTimeOffset LastSeen { get; set; } = DateTime.MinValue;
+    public DateTimeOffset LastSeen { get; set; } = DateTimeOffset.MinValue;
     
     public User User { get; set; }
 }
