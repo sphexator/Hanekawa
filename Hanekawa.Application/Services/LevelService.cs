@@ -37,9 +37,9 @@ public class LevelService : ILevelService
         _logger.LogInformation("Adding {Experience} experience to guild user {User} in guild {Guild}", 
             experience, member.Id, member.Guild.Id);
 
-        var user = await _db.Users.FindAsync(member.Guild.Id, member.Id) 
+        var user = await _db.Users.FirstOrDefaultAsync(x => x.GuildId == member.Guild.Id && x.UserId == member.Id) 
                    ?? new GuildUser { GuildId = member.Guild.Id, UserId = member.Id };
-        var nextLevel = await _db.LevelRequirements.FindAsync(user.Level + 1);
+        var nextLevel = await _db.LevelRequirements.FirstOrDefaultAsync(x => x.Level == user.Level + 1);
         if(nextLevel is not null && user.Experience + experience >= nextLevel.Experience)
         {
             user.Level++;
