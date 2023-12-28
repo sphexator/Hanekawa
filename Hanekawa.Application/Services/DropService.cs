@@ -15,19 +15,31 @@ public class DropService : IDropService
     private readonly ILogger<DropService> _logger;
     private readonly SemaphoreSlim _semaphoreSlim;
     private readonly IServiceProvider _serviceProvider;
+    private readonly Random _random;
     
     public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider)
     {
         _levelService = levelService;
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _random = Random.Shared;
+        _semaphoreSlim = new (1);
+    }
+    
+    public DropService(ILevelService levelService, ILogger<DropService> logger, IServiceProvider serviceProvider, 
+        Random random)
+    {
+        _levelService = levelService;
+        _logger = logger;
+        _serviceProvider = serviceProvider;
+        _random = random;
         _semaphoreSlim = new (1);
     }
     
     /// <inheritdoc />
     public async Task DropAsync(TextChannel channel, DiscordMember user, CancellationToken cancellationToken = default)
     {
-        var chance = Random.Shared.Next(1000);
+        var chance = _random.Next(1000);
         if (chance < 850) return;
 
         await using var scope = _serviceProvider.CreateAsyncScope();
@@ -43,21 +55,20 @@ public class DropService : IDropService
                                            $"React with {config.DropConfig.Emote} as it appears to claim it!");
 
         var emotes = user.Guild.Emotes
-            .OrderBy(e => Random.Shared.Next())
+            .OrderBy(e => _random.Next())
             .Take(3)
             .ToList();
-        
         
         for (var i = 0; i < emotes.Count; i++)
         {
             Start:
-            var emote = "";
+            var emote = "123";
             await Task.Delay(1500, cancellationToken);
             if(emote is "") goto Start;
         }
         
         var cache = scope.ServiceProvider.GetRequiredService<ICacheContext>();
-        cache.Add($"{msg.Id}-{msg.ChannelId}-drop", user.Id);
+        cache.Add($"{msg.ChannelId}-{msg.Id}-drop", user.Id);
     }
 
     /// <inheritdoc />
@@ -101,8 +112,14 @@ public class DropService : IDropService
         var db = scope.ServiceProvider.GetRequiredService<IDbContext>();
         var cfg = await db.GuildConfigs
             .Include(x => x.DropConfig)
-            .FirstOrDefaultAsync(x => x.GuildId == config.GuildId);
-        if (cfg?.DropConfig is null) return;
+            .FirstOrDefaultAsync(x => x.GuildId == config.GuildId) 
+                  ?? new GuildConfig { GuildId = config.GuildId };
+
+        if (cfg.DropConfig is null)
+        {
+            cfg.DropConfig = config;
+            goto Save;
+        }
         
         if (config.ExpReward is not 100) cfg.DropConfig.ExpReward = config.ExpReward;
         if (config.Emote is not "") cfg.DropConfig.Emote = config.Emote;
@@ -118,7 +135,7 @@ public class DropService : IDropService
                 newBlacklist[i] = x;
             }
         }
-        
+        Save:
         await db.SaveChangesAsync();
     }
 }
