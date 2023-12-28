@@ -3,6 +3,7 @@ using Hanekawa.Application.Interfaces;
 using Hanekawa.Entities.Configs;
 using Hanekawa.Entities.Discord;
 using Hanekawa.Entities.Users;
+using Microsoft.Extensions.Logging;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
@@ -13,15 +14,15 @@ namespace Hanekawa.Application.Services;
 /// <inheritdoc />
 public class ImageService : IImageService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IFontCollection _fontCollection;
-
-    public ImageService(IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, IFontCollection fontCollection)
+    private readonly ILogger<ImageService> _logger;
+    
+    public ImageService(IHttpClientFactory httpClientFactory, IFontCollection fontCollection, ILogger<ImageService> logger)
     {
-        _serviceProvider = serviceProvider;
         _httpClientFactory = httpClientFactory;
         _fontCollection = fontCollection;
+        _logger = logger;
     }
 
     /// <inheritdoc />

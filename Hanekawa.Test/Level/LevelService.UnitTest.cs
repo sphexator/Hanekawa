@@ -19,7 +19,7 @@ public class LevelServiceUnitTest
     private readonly Mock<IBot> _mockBot = new();
     private readonly Mock<IMediator> _mockMediator = new();
     
-    private readonly DiscordMember member = new()
+    private readonly DiscordMember _member = new()
         { Id = 1, Guild = new() { Id = 1 }, Username = "Bob", RoleIds = new() { 1, 2, 3 } };
     private readonly GuildConfig _config = new ()
     {
@@ -81,7 +81,7 @@ public class LevelServiceUnitTest
         const int expected = 100;
         
         // Act
-        var actual = await _levelService.AddExperienceAsync(member, experience);
+        var actual = await _levelService.AddExperienceAsync(_member, experience);
         
         // Assert
         Assert.Equal(expected, actual);
@@ -108,11 +108,11 @@ public class LevelServiceUnitTest
         const int expected = 200;
         
         // Act
-        var actual = await _levelService.AddExperienceAsync(member, experience);
+        var actual = await _levelService.AddExperienceAsync(_member, experience);
         
         // Assert
         Assert.Equal(expected, actual);
         Assert.Equal(2, _user.Level);
-        Assert.Equal(member.RoleIds, new List<ulong> { 1, 2, 3, 4 });
+        Assert.Equal(_member.RoleIds, new List<ulong> { 1, 2, 3, 4 });
     }
 }
