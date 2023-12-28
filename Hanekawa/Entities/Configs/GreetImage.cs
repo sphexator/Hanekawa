@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Hanekawa.Interfaces;
 
 namespace Hanekawa.Entities.Configs;
@@ -22,5 +23,6 @@ public class GreetImage : IConfig
     
     public DateTimeOffset CreatedAt { get; set; }
     
+    [JsonIgnore]
     public GreetConfig GreetConfig { get; set; }
 }

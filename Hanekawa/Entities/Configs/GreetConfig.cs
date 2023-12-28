@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Hanekawa.Interfaces;
 
 namespace Hanekawa.Entities.Configs;
@@ -20,6 +21,7 @@ public class GreetConfig : IConfig
     public bool DmEnabled { get; set; } = false;
     public string DmMessage { get; set; } = "";
     
+    [JsonIgnore]
     public GuildConfig GuildConfig { get; set; }
     public List<GreetImage> Images { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Hanekawa.Entities.Levels;
 using Hanekawa.Interfaces;
 
@@ -17,6 +18,7 @@ public class LevelConfig : IConfig
     public DateTimeOffset MultiplierEnd { get; set; } = DateTimeOffset.MinValue;
     
 
+    [JsonIgnore]
     public GuildConfig GuildConfig { get; set; }
     public List<LevelReward> Rewards { get; set; }
 }

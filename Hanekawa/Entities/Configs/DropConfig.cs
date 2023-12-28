@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Hanekawa.Interfaces;
 
 namespace Hanekawa.Entities.Configs;
@@ -22,5 +23,6 @@ public class DropConfig : IConfig
     /// </summary>
     public ulong[] Blacklist { get; set; } = Array.Empty<ulong>();
     
+    [JsonIgnore]
     public GuildConfig GuildConfig { get; set; } = null!;
 }
