@@ -3,6 +3,9 @@ using Disqord.Bot.Hosting;
 using Disqord.Gateway;
 using Hanekawa.Application;
 using Hanekawa.Application.Interfaces;
+using Hanekawa.Bot.Commands.Slash.Administration;
+using Hanekawa.Bot.Commands.Slash.Club;
+using Hanekawa.Bot.Commands.Slash.Setting;
 using Hanekawa.Bot.Services.Grpc;
 using Hanekawa.Infrastructure;
 using Serilog;
@@ -10,8 +13,14 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddGrpc();
-builder.Services.AddInfrastructureLayer(builder.Configuration);
+
+builder.Services.AddSingleton<Metrics<AdministrationCommands>>();
+builder.Services.AddSingleton<Metrics<ClubCommands>>();
+builder.Services.AddSingleton<Metrics<GreetCommands>>();
+builder.Services.AddSingleton<Metrics<LevelCommands>>();
+
 builder.Services.AddApplicationLayer();
+builder.Services.AddInfrastructureLayer(builder.Configuration);
 
 builder.Host.ConfigureDiscordBot((_, bot) =>
 {
@@ -19,8 +28,9 @@ builder.Host.ConfigureDiscordBot((_, bot) =>
     bot.ApplicationId = new Snowflake(ulong.Parse(builder.Configuration["applicationId"]!));
     bot.UseMentionPrefix = true;
     bot.ReadyEventDelayMode = ReadyEventDelayMode.Guilds;
-    bot.Intents |= GatewayIntents.Unprivileged | GatewayIntents.Members;
+    bot.Intents |= GatewayIntents.All;
 });
+
 builder.Host.UseDefaultServiceProvider(x =>
 {
     x.ValidateScopes = true;
@@ -30,6 +40,7 @@ builder.Host.UseDefaultServiceProvider(x =>
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
+
 builder.Logging.ClearProviders();
 builder.Host.UseSerilog();
 
