@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using OneOf;
 using OneOf.Types;
 
-namespace Hanekawa.Application.Commands.Settings;
+namespace Hanekawa.Application.Handlers.Commands.Settings;
 
 public class GreetService : IGreetService
 {

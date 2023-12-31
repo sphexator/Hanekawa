@@ -6,7 +6,7 @@ using Hanekawa.Localize;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
-namespace Hanekawa.Application.Commands.Administration;
+namespace Hanekawa.Application.Handlers.Commands.Administration;
 
 /// <inheritdoc />
 public class AdministrationCommandService : IAdministrationCommandService

@@ -5,7 +5,7 @@ using Disqord.Bot.Commands;
 using Disqord.Gateway;
 using Disqord.Rest;
 using Disqord.Rest.Pagination;
-using Hanekawa.Application.Handlers.Metrics;
+using Hanekawa.Application.Handlers.Services.Metrics;
 using Hanekawa.Application.Interfaces;
 using Hanekawa.Bot.Mapper;
 using Hanekawa.Entities.Discord;

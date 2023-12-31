@@ -1,7 +1,7 @@
 ﻿using Hanekawa.Entities;
 using MediatR;
 
-namespace Hanekawa.Application.Handlers.Warnings;
+namespace Hanekawa.Application.Handlers.Services.Warnings;
 
 public record WarningList(ulong GuildId, ulong? UserId) : IRequest<Response<Message>>;
 

@@ -1,7 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Entities.Levels;
 
-namespace Hanekawa.Application.Commands.Settings;
+namespace Hanekawa.Application.Handlers.Commands.Settings;
 
 public class LevelCommandService : ILevelCommandService
 {

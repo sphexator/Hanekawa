@@ -3,7 +3,7 @@ using Hanekawa.Application.Interfaces.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Hanekawa.Application.Commands.Settings;
+namespace Hanekawa.Application.Handlers.Commands.Settings;
 
 public class LogSettingService : ILogService
 {

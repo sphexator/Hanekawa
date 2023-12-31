@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Color = System.Drawing.Color;
 
-namespace Hanekawa.Application.Handlers.Logs;
+namespace Hanekawa.Application.Handlers.Services.Logs;
 
 public class UserUnbannedHandler : IRequestHandler<UserUnbanned, bool>
 {

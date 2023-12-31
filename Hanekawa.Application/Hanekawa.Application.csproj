@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Handlers\BotLeave" />
+      <Folder Include="Handlers\Services\BotLeave\" />
     </ItemGroup>
 
 

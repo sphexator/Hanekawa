@@ -4,7 +4,7 @@ using Hanekawa.Entities.Discord;
 using Hanekawa.Localize;
 using MediatR;
 
-namespace Hanekawa.Application.Handlers.Warnings;
+namespace Hanekawa.Application.Handlers.Services.Warnings;
 
 public record WarningReceived(DiscordMember User, string Warning, ulong ModeratorId) : IRequest<Response<Message>>;
 

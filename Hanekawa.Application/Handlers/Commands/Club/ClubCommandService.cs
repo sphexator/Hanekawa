@@ -1,7 +1,7 @@
 ﻿using Hanekawa.Application.Interfaces.Commands;
 using Hanekawa.Entities;
 
-namespace Hanekawa.Application.Commands.Club;
+namespace Hanekawa.Application.Handlers.Commands.Club;
 
 public class ClubCommandService : IClubCommandService
 {

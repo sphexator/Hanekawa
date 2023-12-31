@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Hanekawa.Application.Handlers.Metrics;
+namespace Hanekawa.Application.Handlers.Services.Metrics;
 
 public record CommandMetric(ulong GuildId, ulong UserId, string Command, DateTimeOffset Timestamp) : IRequest;
 

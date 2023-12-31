@@ -1,4 +1,4 @@
-﻿using Hanekawa.Application.Handlers.Warnings;
+﻿using Hanekawa.Application.Handlers.Services.Warnings;
 using Hanekawa.Application.Interfaces;
 using Moq;
 

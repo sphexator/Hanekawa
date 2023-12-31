@@ -3,7 +3,7 @@ using Hanekawa.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Hanekawa.Application.Handlers.Levels;
+namespace Hanekawa.Application.Handlers.Services.Levels;
 
 public class LevelUpRoleHandler : IRequestHandler<LevelUp>
 {

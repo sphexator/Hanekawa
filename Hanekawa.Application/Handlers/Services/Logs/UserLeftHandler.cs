@@ -1,7 +1,7 @@
 ﻿using Hanekawa.Application.Contracts.Discord;
 using MediatR;
 
-namespace Hanekawa.Application.Handlers.Logs;
+namespace Hanekawa.Application.Handlers.Services.Logs;
 
 public class UserLeftHandler : IRequestHandler<UserLeave, bool>
 {

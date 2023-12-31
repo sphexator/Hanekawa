@@ -6,7 +6,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Hanekawa.Application.Handlers.Warnings;
+namespace Hanekawa.Application.Handlers.Services.Warnings;
 
 public record WarningClear(DiscordMember user, ulong ModeratorId, string? Reason, bool All = false) : IRequest<Response<Message>>;
 
